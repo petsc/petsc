@@ -1,21 +1,25 @@
-
-C      'Solves a nonlinear system in parallel with a user-defined\n\
-C      Newton method that uses SLES to solve the linearized Newton sytems.  This solver\n\
-C      is a very simplistic inexact Newton method.  The intent of this code is to\n\
-C      demonstrate the repeated solution of linear sytems with the same nonzero pattern.\n\
-C      This is NOT the recommended approach for solving nonlinear problems with PETSc!\n\
-C      We urge users to employ the SNES component for solving nonlinear problems whenever\n\
-C      possible, as it offers many advantages over coding nonlinear solvers independently.\n\
 C
-C We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
-C domain, using distributed arrays (DAs) to partition the parallel grid.\n\
-C The command line options include:\n\
-C  -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
-C     problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
-C  -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-C  -my <yg>, where <yg> = number of grid points in the y-direction\n\
-C  -Nx <npx>, where <npx> = number of processors in the x-direction\n\
-C  -Ny <npy>, where <npy> = number of processors in the y-direction\n\n'
+C    "$Id: ex2f.F,v 1.40 1996/12/10 23:36:41 curfman Exp $";
+C
+C  Solves a nonlinear system in parallel with a user-defined
+C  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
+C  is a very simplistic inexact Newton method.  The intent of this code is to
+C  demonstrate the repeated solution of linear sytems with the same nonzero pattern.
+C
+C  This is NOT the recommended approach for solving nonlinear problems with PETSc!
+C  We urge users to employ the SNES component for solving nonlinear problems whenever
+C  possible, as it offers many advantages over coding nonlinear solvers independently.
+C
+C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
+C  domain, using distributed arrays (DAs) to partition the parallel grid.
+C
+C The command line options include:
+C  -par <parameter>, where <parameter> indicates the problem's nonlinearity
+C     problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
+C  -mx <xg>, where <xg> = number of grid points in the x-direction
+C  -my <yg>, where <yg> = number of grid points in the y-direction
+C  -Nx <npx>, where <npx> = number of processors in the x-direction
+C  -Ny <npy>, where <npy> = number of processors in the y-directionn'
 C
 C   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example)
 C   Concepts: DA^Using distributed arrays
@@ -24,8 +28,7 @@ C   Routines: DACreate2d() DADestroy() DAGetDistributedVector() DAGetLocalVector
 C   Routines: DAGetCorners() DAGetGhostCorners() DALocalToGlobal()
 C   Routines: DAGlobalToLocalBegin() DAGlobalToLocalEnd() DAGetGlobalIndices()
 C   Processors: n
-
-
+C
 C  ------------------------------------------------------------------------
 C
 C    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -50,7 +53,7 @@ C     petsc.h  - base PETSc routines   vec.h - vectors
 C     sys.h    - system routines       mat.h - matrices
 C     is.h     - index sets            ksp.h - Krylov subspace methods
 C     viewer.h - viewers               pc.h  - preconditioners
-
+C
       implicit none
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
@@ -59,36 +62,29 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
-      external ComputeFunction, FormInitialialGuess, ComputeJacobian
+
       MPI_Comm comm
       SLES     sles
       Vec      X, Y, F
       Mat      J
-      integer      Nx, Ny
-      integer  flg, N, ierr
-      integer user(6)
+      integer  Nx, Ny, flg, N, ierr
+      integer  user(6)
 
 C     --------------- Data to define nonlinear solver -------------- 
-      double precision   rtol
-      double precision   xtol
-      double precision   ttol
+      double precision   rtol, xtol, ttol
       double precision   fnorm, ynorm, xnorm
-      integer      max_nonlin_its
-      integer      max_functions
-      integer      lin_its
-      MatStructure mat_flag
-      integer      i
-      integer      no_output
-      Scalar       mone
+      integer            max_nonlin_its
+      integer            lin_its
+      integer            i,m
+      Scalar             mone
 
-      mone = -1.d0
-      max_functions = 50
-      rtol = 1.d-8
-      xtol = 1.d-8
+      mone           = -1.d0
+      rtol           = 1.d-8
+      xtol           = 1.d-8
       max_nonlin_its = 10
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr )
-      comm = MPI_COMM_WORLD
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      comm = PETSC_COMM_WORLD
 
 C  
 C     Initialize problem parameters
@@ -97,7 +93,7 @@ C      user(1) = mx user(2) = my user(3) = localX user(4) = localF user(5) = da
 C
       user(1) = 4
       user(2) = 4
-      call OptionsGetInteger(PETSC_NULL_CHARACTER,'-mx',user(1),flg,
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,
      &                       ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
 
@@ -107,7 +103,7 @@ C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C     Create linear solver context
 C     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       call SLESCreate(comm,sles,ierr)
+      call SLESCreate(comm,sles,ierr)
 
 C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C     Create vector data structures
@@ -156,7 +152,6 @@ C
 C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C     Customize linear solver set runtime options
 C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 C  
 C     Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
 C  
@@ -179,12 +174,12 @@ C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C   
 C      This solver is a very simplistic inexact Newton method, with no
 C      no damping strategies of bells and whistles. The intent of this code
-CC      is  merely to demonstrate the repeated solution with SLES of linear
+C      is  merely to demonstrate the repeated solution with SLES of linear
 C      sytems with the same nonzero structure.
 C
 C      This is NOT the recommended approach for solving nonlinear problems
 C      with PETSc!  We urge users to employ the SNES component for solving
-CC      nonlinear problems whenever possible with application codes, as it
+C      nonlinear problems whenever possible with application codes, as it
 C      offers many advantages over coding nonlinear solvers independently.
 C   
 
@@ -195,7 +190,7 @@ C        Compute the Jacobian matrix.  See the comments in this routine for
 C        important information about setting the flag mat_flag.
 C     
 
-         call ComputeJacobian(user,X,J,mat_flag,ierr)
+         call ComputeJacobian(user,X,J,ierr)
 
 C     
 C        Solve J Y = F, where J is the Jacobian matrix.
@@ -204,7 +199,7 @@ C            defines the linear system also serves as the preconditioning
 C            matrix.
 C          - Then solve the Newton system.
 C     
-         call SLESSetOperators(sles,J,J,mat_flag,ierr)
+         call SLESSetOperators(sles,J,J,SAME_NONZERO_PATTERN,ierr)
          call SLESSolve(sles,F,Y,lin_its,ierr)
 
 C     
@@ -214,21 +209,21 @@ C
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
-       print*,'   linear solve iterations =, xnorm=, ynorm=,',
-     &        lin_its,xnorm,ynorm
+         print*,'linear solve iterations = ',lin_its,' xnorm = ',
+     &        xnorm,' ynorm = ',ynorm
 
 C     
-C       Evaluate new nonlinear function
+C       Evaluate nonlinear function at new location
 C     
          call ComputeFunction(user,X,F,ierr)
          call VecNorm(F,NORM_2,fnorm,ierr)
-       print*, 'Iteration , function norm',i+1,fnorm
+         print*, 'Iteration ',i+1,' function norm',fnorm
 
 C    
 C       Test for convergence
 C     
        if (fnorm .le. ttol) then 
-         print*,'Converged ',fnorm,ttol
+         print*,'Converged: function norm ',fnorm,' tolerance ',ttol
          goto 20
        endif
  10   continue
@@ -248,7 +243,7 @@ C   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        call VecDestroy(F,ierr)
        call SLESDestroy(sles,ierr)
        call DADestroy(user(5),ierr)
-       call PetscFinalize()
+       call PetscFinalize(ierr)
        stop 
        end
 
@@ -264,12 +259,13 @@ C   Output Parameter:
 C   X - vector
 C 
       subroutine FormInitialGuess(user,X,ierr)
+      implicit none
 C
 C     petsc.h  - base PETSc routines   vec.h - vectors
 C     sys.h    - system routines       mat.h - matrices
 C     is.h     - index sets            ksp.h - Krylov subspace methods
 C     viewer.h - viewers               pc.h  - preconditioners
-      implicit none
+
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
@@ -278,29 +274,27 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
-      integer user(6),ierr,idx
-      Vec     X
-      integer     i, j, row, mx, my,  xs, ys, xm
-      integer     ym, gxm, gym, gxs, gys
-      double precision  one, lambda, temp1, temp, hx, hy
+      integer          user(6),ierr,idx
+      Vec              X,localX
+      integer          i, j, row, mx, my,  xs, ys, xm
+      integer          ym, gxm, gym, gxs, gys
+      double precision one, lambda, temp1, temp, hx, hy
       double precision hxdhy, hydhx,sc
-      Scalar  xx(1)
-      Vec     localX
-      DA      da
+      Scalar           xx(1)
+      DA               da
  
-      da  = user(5)
-
+      da     = user(5)
       localX = user(3)
-      one = 1.d0
-      mx = user(1)
-      my = user(2) 
-      lambda = 3.d0
-      hx = one/(mx-1)
-      hy = one/(my-1)
-      sc = hx*hy*lambda  
-      hxdhy = hx/hy 
-      hydhx = hy/hx
-      temp1 = lambda/(lambda + one)
+      one    = 1.d0
+      mx     = user(1)
+      my     = user(2) 
+      lambda = 6.d0
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
+      sc     = hx*hy*lambda  
+      hxdhy  = hx/hy 
+      hydhx  = hy/hx
+      temp1  = lambda/(lambda + one)
 
 C  
 C     Get a pointer to vector data.
@@ -328,7 +322,7 @@ C
       do 30 j=ys,ys+ym-1
         temp = (min(j,my-j-1))*hy
         do 40 i=xs,xs+xm-1
-          row = i - gxs + (j - gys)*gxm 
+          row = i - gxs + (j - gys)*gxm + 1
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
             xx(idx+row) = 0.0 
             continue
@@ -341,7 +335,6 @@ C
 C     Restore vector
 C  
        call VecRestoreArray(localX,xx,idx,ierr)
-
 C  
 C     Insert values into global vector
 C  
@@ -360,13 +353,13 @@ C
 C   Output Parameter:
 C.  F - function vector
 C 
-      subroutine  ComputeFunction(user,X,F)
+      subroutine  ComputeFunction(user,X,F,ierr)
+      implicit none
 C
 C     petsc.h  - base PETSc routines   vec.h - vectors
 C     sys.h    - system routines       mat.h - matrices
 C     is.h     - index sets            ksp.h - Krylov subspace methods
 C     viewer.h - viewers               pc.h  - preconditioners
-      implicit none
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
@@ -375,29 +368,28 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
-      Vec X,F
-      integer user(6)
-      integer  ierr, i, j, row, mx, my, xs, ys, xm, ym, gxs 
-      integer gys, gxm, gym,idx,idf
-      double precision  two, one, lambda,hx
+      Vec              X,F,localX, localF
+      integer          user(6), gys, gxm, gym,idx,idf
+      integer          ierr, i, j, row, mx, my, xs,ys,xm,ym,gxs 
+      double precision two, one, lambda,hx
       double precision hy, hxdhy, hydhx,sc
-      Scalar  u, uxx, uyy, xx(1),ff(1)
-      Vec     localX, localF
-      DA      da
+      Scalar           u, uxx, uyy, xx(1),ff(1)
+      DA               da
 
       two    = 2.d0
       one    = 1.d0
       da     = user(5)
       localX = user(3)
       localF = user(4)
+      lambda = 6.d0
 
-      mx = user(1)
-      my = user(2)
-      hx = one/(mx-1)
-      hy = one/(my-1)
-      sc = hx*hy*lambda 
-      hxdhy = hx/hy  
-      hydhx = hy/hx
+      mx     = user(1)
+      my     = user(2)
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
+      sc     = hx*hy*lambda 
+      hxdhy  = hx/hy  
+      hydhx  = hy/hx
 
 C  
 C     Scatter ghost points to local vector, using the 2-step process
@@ -405,20 +397,20 @@ C        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
 C     By placing code between these two statements, computations can be
 C     done while messages are in transition.
 C  
-       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 C  
 C     Get pointers to vector data
 C  
-       call VecGetArray(localX,xx,idx,ierr)
-       call VecGetArray(localF,ff,idf,ierr)
+      call VecGetArray(localX,xx,idx,ierr)
+      call VecGetArray(localF,ff,idf,ierr)
 
 C  
 C     Get local grid boundaries
 C  
-       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,PETSC_NULL,
+      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,PETSC_NULL,
      &                        ierr)
 
 C  
@@ -426,15 +418,15 @@ C     Compute function over the locally owned part of the grid
 C  
       do 50 j=ys,ys+ym-1
 
-        row = (j - gys)*gxm + xs - gxs - 1 
+        row = (j - gys)*gxm + xs - gxs
         do 60 i=xs,xs+xm-1
           row = row + 1
 
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
             ff(idf+row) = xx(idx+row)
-            goto 50
+            goto 60
           endif
-          u = xx(idx+row)
+          u   = xx(idx+row)
           uxx = (two*u - xx(idx+row-1) - xx(idx+row+1))*hydhx
           uyy = (two*u - xx(idx+row-gxm) - xx(idx+row+gxm))*hxdhy
           ff(idf+row) = uxx + uyy - sc*exp(u)
@@ -446,12 +438,10 @@ C     Restore vectors
 C  
        call VecRestoreArray(localX,xx,idx,ierr)
        call VecRestoreArray(localF,ff,idf,ierr)
-
 C  
 C     Insert values into global vector
 C  
        call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
-
        return 
        end
 
@@ -474,13 +464,13 @@ C   global numbering with the 'ltog' mapping (via DAGetGlobalIndices()).
 C   We cannot work directly with the global numbers for the original
 C   uniprocessor grid!
 C
-      subroutine ComputeJacobian(user,X,jac,flag)
+      subroutine ComputeJacobian(user,X,jac,ierr)
+      implicit none
 C
 C     petsc.h  - base PETSc routines   vec.h - vectors
 C     sys.h    - system routines       mat.h - matrices
 C     is.h     - index sets            ksp.h - Krylov subspace methods
 C     viewer.h - viewers               pc.h  - preconditioners
-      implicit none
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
@@ -490,29 +480,29 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
       integer user(6)
-      Vec X
-      Mat jac
-      MatStructure flag
+      Vec     X
+      Mat     jac
       Vec     localX
       DA      da
-      integer     ltog(1),idltog
-      integer     ierr, i, j, row, mx, my, col(5)
-      integer     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
-      Scalar  two, one, lambda, v(5), hx, hy, hxdhy,idx 
+      integer ltog(1),idltog
+      integer ierr, i, j, row, mx, my, col(5),idx 
+      integer nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
+      Scalar  two, one, lambda, v(5), hx, hy, hxdhy
       Scalar  hydhx, sc, xx(1)
 
-      da = user(5)
-      one  = 1.d0
-      two  = 2.d0
+      da     = user(5)
+      one    = 1.d0
+      two    = 2.d0
       localX = user(3)
       da     = user(5)
-      mx = user(1)
-      my = user(2)
-      hx = one/(mx-1)
-      hy = one/(my-1)
-      sc = hx*hy  
-      hxdhy = hx/hy        
-      hydhx = hy/hx
+      mx     = user(1)
+      my     = user(2)
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
+      sc     = hx*hy  
+      hxdhy  = hx/hy        
+      hydhx  = hy/hx
+      lambda = 6.d0
 
 C  
 C     Scatter ghost points to local vector, using the 2-step process
@@ -520,25 +510,25 @@ C        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
 C     By placing code between these two statements, computations can be
 C     done while messages are in transition.
 C  
-       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 C  
 C     Get pointer to vector data
 C  
-       call VecGetArray(localX,xx,idx,ierr)
+      call VecGetArray(localX,xx,idx,ierr)
 
 C  
 C     Get local grid boundaries
 C  
-       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
      &                        PETSC_NULL,ierr)
 
 C  
 C     Get the global node numbers for all local nodes, including ghost points
 C  
-       call DAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 C   
 C     Compute entries for the locally owned part of the Jacobian.
@@ -553,29 +543,29 @@ C      - Always specify global row and columns of matrix entries.
 C      - Here, we set all entries for a particular row at once.
 C  
       do 10 j=ys,ys+ym-1
-        row = (j - gys)*gxm + xs - gxs - 1 
+        row = (j - gys)*gxm + xs - gxs 
         do 20 i=xs,xs+xm-1
           row = row + 1
           grow = ltog(idltog+row)
-          if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
+          if (i.eq.0 .or. j.eq.0 .or. i. eq. (mx-1) .or. 
+     &        j .eq. (my-1)) then
              call MatSetValues(jac,1,grow,1,grow,one,INSERT_VALUES,
      &                         ierr)
              go to 20
           endif
-          v(1) = -hxdhy
+          v(1)   = -hxdhy
           col(1) = ltog(idltog+row - gxm)
-          v(2) = -hydhx 
+          v(2)   = -hydhx 
           col(2) = ltog(idltog+row - 1)
-          v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(xx(idx+row))
+          v(3)   = two*(hydhx + hxdhy) - sc*lambda*exp(xx(idx+row))
           col(3) = grow
-          v(4) = -hydhx 
+          v(4)   = -hydhx 
           col(4) = ltog(idltog+row + 1)
-          v(5) = -hxdhy 
+          v(5)   = -hxdhy 
           col(5) = ltog(idltog+row + gxm)
-           call MatSetValues(jac,1,grow,5,col,v,INSERT_VALUES,ierr)
- 20      continue
- 10    continue
-
+          call MatSetValues(jac,1,grow,5,col,v,INSERT_VALUES,ierr)
+ 20     continue
+ 10   continue
 
 C   
 C     Assemble matrix, using the 2-step process:
@@ -583,30 +573,11 @@ C       MatAssemblyBegin(), MatAssemblyEnd().
 C     By placing code between these two statements, computations can be
 C     done while messages are in transition.
 C  
-       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-       call VecRestoreArray(localX,xx,idx,ierr)
-       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
-C  
-C     Set flag to indicate that the Jacobian matrix retains an identical
-C     nonzero structure throughout all nonlinear iterations (although the
-C     values of the entries change). Thus, we can save some work in setting
-C     up the preconditioner (e.g., no need to redo symbolic factorization for
-C     ILU/ICC preconditioners).
-C      - If the nonzero structure of the matrix is different during
-C        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-C        must be used instead.  If you are unsure whether the matrix
-C        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-C      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-C        believes your assertion and does not check the structure
-C        of the matrix.  If you erroneously claim that the structure
-C        is the same when it actually is not, the new preconditioner
-C        will not function correctly.  Thus, use this optimization
-C        feature with caution!
-C  
-        flag = SAME_NONZERO_PATTERN
-        return 
-        end
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call VecRestoreArray(localX,xx,idx,ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      return 
+      end
 
 
 
