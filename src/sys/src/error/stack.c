@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.9 1998/08/21 22:31:59 ibrahba Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.10 1998/08/27 14:49:50 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -8,10 +7,6 @@ static char vcid[] = "$Id: stack.c,v 1.9 1998/08/21 22:31:59 ibrahba Exp bsmith 
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
-
-#if defined(HAVE_AMS)
-#include "ams.h"
-#endif
 
 #if defined(USE_PETSC_STACK)
 
@@ -41,10 +36,10 @@ int PetscStackCreate(int stacksize)
   petscstacksize     = 0;
   petscstacksize_max = stacksize;
 
-  petscstack_in->function  = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->function);
-  petscstack_in->line      = (int *) PetscMalloc(stacksize*sizeof(int));CHKPTRQ(petscstack_in->line);
-  petscstack_in->directory = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
-  petscstack_in->file      = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
+  petscstack_in->function =(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->function);
+  petscstack_in->line     =(int *) PetscMalloc(stacksize*sizeof(int));CHKPTRQ(petscstack_in->line);
+  petscstack_in->directory=(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
+  petscstack_in->file     =(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
 
   PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
   PetscMemzero(petscstack_in->line,stacksize*sizeof(int));
@@ -55,7 +50,7 @@ int PetscStackCreate(int stacksize)
 
 #if defined(HAVE_AMS)
   /*
-        Publishes the stake to AMS if AMS is installed and requested 
+        Publishes the stack to AMS if AMS is installed and requested 
   */
   ierr = OptionsHasName(0, "-ams_publish_stack", &ams_flag);CHKERRQ(ierr);
   if (ams_flag) {
