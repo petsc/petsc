@@ -34,11 +34,10 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Input file not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATBAIJ,&A);CHKERRQ(ierr);
   if (size == 1){
-    ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
     ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
   } else {
-    ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRQ(ierr);
     ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);

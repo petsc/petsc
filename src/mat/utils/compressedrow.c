@@ -23,7 +23,7 @@
 PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscReal ratio) 
 {
   PetscErrorCode ierr;
-  PetscInt       nrows,*cpi=PETSC_NULL,*rindex=PETSC_NULL,nz,i,row,m=A->m/A->bs; 
+  PetscInt       nrows,*cpi=PETSC_NULL,*ridx=PETSC_NULL,nz,i,row,m=A->m/A->bs; 
 
   PetscFunctionBegin;  
   compressedrow->checked = PETSC_TRUE; 
@@ -45,18 +45,18 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
     /* set compressed row format */
     nrows = m - nrows; /* num of non-zero rows */
     ierr = PetscMalloc((2*nrows+1)*sizeof(PetscInt),&cpi);CHKERRQ(ierr);
-    rindex = cpi + nrows + 1;
+    ridx = cpi + nrows + 1;
     row    = 0;
     cpi[0] = 0; 
     for (i=0; i<m; i++){                
       nz = ai[i+1] - ai[i];
       if (nz == 0) continue;
-      cpi[row+1]    = ai[i+1];    /* compressed row pointer */
-      rindex[row++] = i;          /* compressed row local index */
+      cpi[row+1]  = ai[i+1];    /* compressed row pointer */
+      ridx[row++] = i;          /* compressed row local index */
     }
     compressedrow->nrows  = nrows;
     compressedrow->i      = cpi;
-    compressedrow->rindex = rindex;
+    compressedrow->rindex = ridx;
   }
   PetscFunctionReturn(0);
 }
