@@ -175,8 +175,9 @@ class CompileFiles (Action):
     if echo: print 'Compiling '+str(files)
     flags = self.compilerFlags + self.getIncludeFlags()
     for source in files:
-      (base, ext) = os.path.splitext(source)
-      object      = base+'.o'
+      (dir, file) = os.path.split(source)
+      (base, ext) = os.path.splitext(file)
+      object      = os.path.join(dir, string.replace(dir, '/', '_')+'_'+base+'.o')
       command = self.compiler+' '+flags+' -c -o '+object+' '+source
       self.executeShellCommand(command)
       self.objects.append(object)
