@@ -11,22 +11,22 @@ OBJSF	       =
 LIBBASE	       = libpetscsles
 LOCDIR         = src/sles/examples/
 TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
-		clean ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 runex2_5 \
-		clean ex3.PETSc runex3 runex3_2 runex3_3 clean ex4.PETSc\
-		runex4 runex4_2 clean runex4_3 runex4_4 runex4_5 clean\
-		ex5.PETSc runex5 clean ex8.PETSc runex8 runex8_2 clean\
-		ex19.PETSc runex19 clean
+		ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 runex2_5 \
+		ex2.rm ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc\
+		runex4 runex4_2 runex4_3 runex4_4 runex4_5 ex4.rm\
+		ex5.PETSc runex5 ex5.rm ex8.PETSc runex8 runex8_2 ex8.rm\
+		ex19.PETSc runex19 ex19.rm
 TESTEXAMPLES_2 = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
-		runex6_6 clean ex8.PETSc runex8_3 runex8_4 clean ex10.PETSc\
-		ex11.PETSc ex13.PETSc runex13 clean ex14.PETSc ex15.PETSc\
-		clean
-TESTEXAMPLES_3 = ex7.PETSc runex7 clean ex12.PETSc ex16.PETSc runex16 clean\
-		ex20.PETSc runex20 clean
-TESTEXAMPLES_4 = ex1.PETSc runex1 runex1_3 runex1_5 clean ex2.PETSc runex2\
-		runex2_3 runex2_5 clean ex3.PETSc runex3 clean ex4.PETSc \
-		runex4 clean ex5.PETSc ex8.PETSc clean ex11.PETSc ex19.PETSc\
-		 runex19 clean
-TESTEXAMPLES_5 = ex17.PETSc runex17 clean
+		runex6_6 ex6.rm ex8.PETSc runex8_3 runex8_4 ex8.rm ex10.PETSc\
+		ex10.rm ex11.PETSc ex11.rm ex13.PETSc runex13 ex13.rm ex14.PETSc\
+		ex14.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_3 = ex7.PETSc runex7 ex7.rm ex12.PETSc ex12.rm ex16.PETSc runex16 \
+		ex16.rm ex20.PETSc runex20 ex20.rm
+TESTEXAMPLES_4 = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
+		runex2_3 runex2_5 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc \
+		runex4 ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
+		ex11.rm ex19.PETSc ex19.rm runex19 ex19.rm
+TESTEXAMPLES_5 = ex17.PETSc runex17 ex17.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
 		ex11.c ex13.c ex14.c ex15.c ex17.c ex19.c
 EXAMPLESF      = ex7.F ex12.F ex16.F ex20.F

@@ -11,7 +11,7 @@ OBJSF	       =
 LIBBASE	       = libpetscts
 LOCDIR         = src/ts/examples/
 TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5\
-		 runex1_6 ex2.PETSc runex6 clean
+		 runex1_6 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_2 = 
 TESTEXAMPLES_3 = 
 TESTEXAMPLES_4 = 

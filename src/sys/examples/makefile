@@ -10,10 +10,10 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscsys
 LOCDIR         = src/sys/examples/
-TESTEXAMPLES_2 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc\
-		 runex3 clean ex4.PETSc runex4 clean
-TESTEXAMPLES_3 = ex5.PETSc runex5 clean ex6.PETSc runex6 clean
-TESTEXAMPLES_4 = ex1.PETSc ex2.PETSc ex3.PETSc ex4.PETSc clean
+TESTEXAMPLES_2 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
+		 runex3 ex3.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_3 = ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm
+TESTEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF      = ex5.F
 

@@ -13,20 +13,20 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscvec
 LOCDIR         = src/vec/examples/
-TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 clean ex2.PETSc runex2 clean\
-		ex3.PETSc runex3 clean ex4.PETSc runex4 clean ex5.PETSc\
-		clean ex6.PETSc runex6 clean ex7.PETSc runex7 clean\
-		ex8.PETSc runex8 clean ex9.PETSc runex9 clean ex10.PETSc\
-		runex10 clean ex11.PETSc runex11 clean ex12.PETSc runex12\
-		clean ex13.PETSc runex13 clean ex14.PETSc runex14 clean\
-		ex16.PETSc runex16 clean ex17.PETSc runex17 clean ex20.PETSc\
-		runex20 runex20_2 clean ex23.PETSc runex23 clean
-TESTEXAMPLES_2 = ex15.PETSc runex15 ex22.PETSc clean
-TESTEXAMPLES_3 = ex19.PETSc runex19 clean ex21.PETSc runex21 clean ex24.PETSc\
-		runex24 clean
-TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex4.PETSc\
-		ex6.PETSc runex6 clean ex7.PETSc runex7 clean ex8.PETSc\
-		runex8 clean ex14.PETSc ex20.PETSc runex20 clean
+TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm\
+		ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc\
+		ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm\
+		ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc\
+		runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12\
+		ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
+		ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 ex17.rm ex20.PETSc\
+		runex20 runex20_2 ex20.rm ex23.PETSc runex23 ex23.rm
+TESTEXAMPLES_2 = ex15.PETSc runex15 ex15.rm ex22.PETSc ex22.rm
+TESTEXAMPLES_3 = ex19.PETSc runex19 ex19.rm ex21.PETSc runex21 ex21.rm ex24.PETSc\
+		runex24 ex24.rm
+TESTEXAMPLES_4 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
+		ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc\
+		runex8 ex8.rm ex14.PETSc ex14.rm ex20.PETSc runex20 ex20.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
                 ex20.c ex22.c ex23.c ex24.c

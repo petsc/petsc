@@ -11,7 +11,7 @@ OBJSF	       =
 LOCDIR         = src/viewer/examples/
 LIBBASE	       = libpetscvec
 TESTEXAMPLES_2 = 
-TESTEXAMPLES_4 = ex1.PETSc ex2.PETSc clean
+TESTEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm
 EXAMPLESC      = ex1.c ex2.c ex1.m
 
 runex2:

@@ -9,11 +9,11 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscvec
 LOCDIR         = src/pc/examples/
-TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc \
-		runex3 clean ex4.PETSc runex4 clean 
-TESTEXAMPLES_2 = ex5.PETSc runex5 clean
-TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 ex3.PETSc runex3 \
-		clean ex4.PETSc runex4 clean ex5.PETSc runex5 clean
+TESTEXAMPLES_1 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
+TESTEXAMPLES_2 = ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_4 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 

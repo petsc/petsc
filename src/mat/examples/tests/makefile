@@ -10,27 +10,28 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscmat
 LOCDIR         = src/mat/examples/
-TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex3.PETSc runex3 clean ex5.PETSc \
-		runex5 runex5_2 clean ex6.PETSc runex6 clean ex8.PETSc \
-		runex8 clean ex9.PETSc runex9 clean ex10.PETSc runex10 clean\
-		ex11.PETSc runex11 clean ex14.PETSc runex14 clean \
-		ex15.PETSc runex15 clean ex19.PETSc ex20.PETSc runex20 clean\
-		ex21.PETSc runex21 clean ex22.PETSc runex22 clean
-TESTEXAMPLES_2 = ex2.PETSc runex2 clean ex4.PETSc runex4 clean ex7.PETSc \
-		runex7 clean ex12.PETSc runex12 clean  ex13.PETSc runex13 \
-		clean ex17.PETSc ex19.PETSc runex19 clean ex24.PETSc \
-		ex25.PETSc ex27.PETSc ex28.PETSc ex29.PETSc clean \
-		ex30.PETSc ex31.PETSc ex32.PETSc ex33.PETSc ex34.PETSc \
-		clean ex35.PETSc runex35 clean ex37.PETSc ex38.PETSc \
-		ex40.PETSc runex40 clean ex41.PETSc ex42 runex42.PETSc clean\
-		ex43.PETSc ex46.PETSc runex46 clean ex48.PETSc runex48 clean\
-		ex49.PETSc ex50.PETSc ex51.PETSc clean
-TESTEXAMPLES_3 = ex36.PETSc runex36 clean
-TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex4.PETSc\
-		runex4 clean ex5 runex5.PETSc clean ex6.PETSc runex6 clean\
-		ex10.PETSc runex10 clean ex14.PETSc runex14 clean ex15.PETSc\
-		runex15 clean ex20.PETSc runex20 clean ex21.PETSc runex21 \
-		clean ex35.PETSc runex35 clean ex47.PETSc clean
+TESTEXAMPLES_1 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
+		runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
+		runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
+		ex11.PETSc runex11 ex11.rm ex14.PETSc runex14 ex14.rm \
+		ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
+		ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm
+TESTEXAMPLES_2 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
+		runex7 ex7.rm ex12.PETSc runex12 ex12.rm  ex13.PETSc runex13 \
+		ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
+		ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
+		ex29.PETSc ex29.rm ex30.PETSc ex30.rm ex31.PETSc ex31.rm ex32.PETSc\
+		ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
+		ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm ex40.PETSc runex40 \
+		ex40.rm ex41.PETSc ex41.rm ex42.PETSc runex42 ex42.rm \
+		ex43.PETSc ex43.rm ex46.PETSc runex46 ex46.rm ex48.PETSc runex48 \
+		ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
+TESTEXAMPLES_3 = ex36.PETSc runex36 ex36.rm
+TESTEXAMPLES_4 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
+		runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
+		ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
+		runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
+		ex21.rm ex35.PETSc runex35 ex35.rm ex47.PETSc ex47.rm
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \

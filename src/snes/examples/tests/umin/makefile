@@ -11,10 +11,10 @@ OBJSC          =
 OBJSF          =
 LIBBASE        = libpetscsnes
 LOCDIR         = src/snes/examples/umin/
-TESTEXAMPLES_1 = ex2.PETSc runex2 runex2_2 runex2_3 clean ex3.PETSc\
-		 runex3 clean
-TESTEXAMPLES_2 = ex3.PETSc runex3_2 clean
-TESTEXAMPLES_3 = ex1.PETSc  runex1 runex1_2 clean
+TESTEXAMPLES_1 = ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm ex3.PETSc\
+		 runex3 ex3.rm
+TESTEXAMPLES_2 = ex3.PETSc runex3_2 ex3.rm
+TESTEXAMPLES_3 = ex1.PETSc  runex1 runex1_2 ex1.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF      = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f \
 		dsscfg.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f \

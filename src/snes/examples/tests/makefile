@@ -10,17 +10,17 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscsnes
 LOCDIR         = src/snes/examples/
-TESTEXAMPLES_1 = ex3.PETSc runex3 runex3_2 clean ex4.PETSc runex4 runex4_2 \
-		clean ex5.PETSc runex5 runex5_2 clean ex6.PETSc runex6\
-		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 clean
-TESTEXAMPLES_2 = ex1.PETSc runex1 cleanf ex2.PETSc runex2 clean ex7.PETSc\
-		runex7 clean ex8.PETSc runex8 runex8_2 clean ex9.PETSc\
-		 runex9 ex13.PETSc clean 
-TESTEXAMPLES_3 = ex12.PETSc runex12  clean
-TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc\
-		runex3 runex3_2 clean ex4.PETSc runex4 runex4_2 clean \
-		ex5.PETSc runex5 runex5_2 clean ex6.PETSc ex7.PETSc runex7\
-		clean ex8.PETSc ex9.PETSc clean
+TESTEXAMPLES_1 = ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 \
+		ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc runex6\
+		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 ex6.rm
+TESTEXAMPLES_2 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex7.PETSc\
+		runex7 ex7.rm ex8.PETSc runex8 runex8_2 ex8.rm ex9.PETSc\
+		runex9 ex9.rm ex13.PETSc ex13.rm 
+TESTEXAMPLES_3 = ex12.PETSc runex12  ex12.rm
+TESTEXAMPLES_4 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
+		runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 ex4.rm \
+		ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc runex6.rm ex7.PETSc \
+		runex7 ex7.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex13.c
 EXAMPLESF      = ex12.F ex10.f
 DIRS	       = umin
