@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.17 1998/01/10 05:12:13 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.18 1999/01/08 18:18:13 balay Exp balay $";
 #endif
 
 
@@ -19,8 +19,53 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   int        col,bs = baij->bs,*tmp,*stmp;
   IS         from,to;
   Vec        gvec;
+#if defined (USE_CTABLE)
+  Table gid1_lid1;
+  CTablePos tpos;
+  int gid, lid; 
+#endif  
 
   PetscFunctionBegin;
+
+#if defined (USE_CTABLE)
+  /* use a table - Mark Adams */
+  TableCreate( &gid1_lid1, B->mbs ); 
+  for ( i=0; i<B->mbs; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+      int gid1 = aj[B->i[i] + j] + 1;
+      if ( !TableFind( gid1_lid1, gid1 ) ){
+        /* one based table */ 
+        ierr = TableAdd( gid1_lid1, gid1, ++ec ); CHKERRQ(ierr); 
+      }
+    }
+  } 
+  /* form array of columns we need */
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
+  tmp    = (int *) PetscMalloc( (ec*bs+1)*sizeof(int) ); CHKPTRQ(tmp);
+  ierr = TableGetHeadPosition( gid1_lid1, &tpos ); CHKERRQ(ierr); 
+  while( tpos ) {  
+    ierr = TableGetNext( gid1_lid1, &tpos, &gid, &lid ); CHKERRQ(ierr); 
+    gid--; lid--;
+    garray[lid] = gid; 
+  }
+  qsort( garray, ec, sizeof(int), intcomparc ); /* sort */ 
+  TableRemoveAll( gid1_lid1 );
+  for ( i=0; i<ec; i++ ) {
+    ierr = TableAdd( gid1_lid1, garray[i] + 1, i + 1 ); CHKERRQ(ierr); 
+  }
+  /* compact out the extra columns in B */
+  for ( i=0; i<B->mbs; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+      int gid1 = aj[B->i[i] + j] + 1;
+      lid = TableFind( gid1_lid1, gid1 ) - 1;
+	aj[B->i[i] + j] = lid;
+    }
+  }
+  B->nbs = ec;
+  B->n   = ec*B->bs;
+  TableDelete(gid1_lid1);
+  /* Mark Adams */
+#else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
   indices = (int *) PetscMalloc( (Nbs+1)*sizeof(int) ); CHKPTRQ(indices);
@@ -56,7 +101,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   B->nbs = ec;
   B->n   = ec*B->bs;
   PetscFree(indices);
-  
+#endif  
+
   for ( i=0,col=0; i<ec; i++ ) {
     for ( j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
   }
