@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.176 1999/09/14 18:35:25 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.177 1999/09/15 16:33:20 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -327,6 +327,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         rend=baij->rend,cstart=baij->cstart,stepval;
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
   
+  PetscFunctionBegin;
   if(!barray) {
     baij->barray = barray = (Scalar*) PetscMalloc(bs2*sizeof(Scalar));CHKPTRQ(barray);
   }
@@ -2492,8 +2493,6 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNC__  
 #define __FUNC__ "MatMPIBAIJSetHashTableFactor"
