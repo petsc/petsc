@@ -513,8 +513,6 @@ int Initialize(DMMG *dmmg)
   ierr = DARestoreLocalVector(da,&localX);
   CHKERRQ(ierr);
 
-  ierr = VecView(dmmg[param->mglevels-1]->x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 } 
 
@@ -739,7 +737,6 @@ int Update(DMMG *dmmg)
 
     snes = DMMGGetSNES(dmmg);
 
-#ifdef SAVE_JACOBIAN 
 
     if (tsCtx->itstep == 665000)
     {
@@ -773,14 +770,12 @@ int Update(DMMG *dmmg)
       SETERRQ(1,"Done saving Jacobian");
     }
 
-#endif
 
     tsCtx->t += tsCtx->dt;
 
     /* save restart solution if requested at a particular time, then exit */
     if (tsCtx->dump_time > 0.0 && tsCtx->t >= tsCtx->dump_time) {
-      Vec v;
-      ierr = SNESGetSolution(snes,&v);CHKERRQ(ierr);
+      Vec v = DMMGGetx(dmmg);
       ierr = VecView(v,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
       SETERRQ1(1,"Saved solution at time %g",tsCtx->t);
     }

@@ -51,8 +51,9 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
   /* Allocate space and set pointers to beginning */
   ierr = PetscMalloc(size,&fgmres->hh_origin);CHKERRQ(ierr);
+  ierr = PetscMemzero(fgmres->hh_origin,size);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
-                                                      rotations) hessenburg */
+                                                     rotations) hessenburg */
   fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   fgmres->rs_origin  = fgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
                                                       Hessenberg system */
@@ -757,6 +758,56 @@ EXTERN int KSPGMRESSetRestart_GMRES(KSP,int);
 EXTERN int KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_FGMRES_Internal" 
+int KSPDestroy_FGMRES_Internal(KSP ksp)
+{
+  KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
+  int       i,ierr;
+
+  PetscFunctionBegin;
+  /* Free the Hessenberg matrix */
+  if (gmres->hh_origin) {ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);}
+
+  /* Free the pointer to user variables */
+  if (gmres->vecs) {ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);}
+
+  /* free work vectors */
+  for (i=0; i<gmres->nwork_alloc; i++) {
+    ierr = VecDestroyVecs(gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
+  }
+  if (gmres->user_work)  {ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);}
+  if (gmres->mwork_alloc) {ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);}
+  if (gmres->nrs) {ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);}
+  if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
+  if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
+  if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
+
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESSetRestart_FGMRES" 
+int KSPGMRESSetRestart_FGMRES(KSP ksp,int max_k)
+{
+  KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (max_k < 1) SETERRQ(1,"Restart must be positive");
+  if (!ksp->setupcalled) {
+    gmres->max_k = max_k;
+  } else if (gmres->max_k != max_k) {
+     gmres->max_k = max_k;
+     ksp->setupcalled = 0;
+     /* free the data structures, then create them again */
+     ierr = KSPDestroy_FGMRES_Internal(ksp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_FGMRES"
@@ -787,8 +838,8 @@ int KSPCreate_FGMRES(KSP ksp)
                                     "KSPGMRESSetOrthogonalization_GMRES",
                                      KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
-                                    "KSPGMRESSetRestart_GMRES",
-                                     KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+                                    "KSPGMRESSetRestart_FGMRES",
+                                     KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
                                      KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
