@@ -69,7 +69,7 @@ int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
   int        *petsc = aomap->petsc;
   int        *perm  = aomap->petscPerm;
   int         N     = aomap->N;
-  int         low, high, mid;
+  int         low, high, mid=0;
   int         idex;
   int         i;
 
@@ -110,7 +110,7 @@ int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
   int        *petsc = aomap->petsc;
   int        *perm  = aomap->appPerm;
   int         N     = aomap->N;
-  int         low, high, mid;
+  int         low, high, mid=0;
   int         idex;
   int         i;
 
