@@ -7,9 +7,6 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  fix ILU(0) with natural ordering for AIJ and BAIJ to generate
-  error with empty rows rather than crash and burn. See some petsc-maint
-  from someone at FDI/Fluent.
 
   Add -ams_publish_notify to attempt to attach to server when starting up
 
