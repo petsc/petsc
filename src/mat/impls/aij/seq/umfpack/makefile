@@ -7,7 +7,7 @@ ALL: lib
 
 CFLAGS   = ${UMFPACK_INCLUDE}
 FFLAGS   =
-SOURCEC  = mfpack.c
+SOURCEC  = umfpack.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = umfpack.o
