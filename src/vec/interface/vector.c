@@ -993,6 +993,43 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecMaxPointwiseDivide"
+/*@
+   VecMaxPointwiseDivide - Computes the maximum of the componentwise division w = abs(x/y).
+
+   Collective on Vec
+
+   Input Parameters:
+.  x, y  - the vectors
+
+   Output Parameter:
+.  w - the result
+
+   Level: advanced
+
+   Notes: any subset of the x, y, and w may be the same vector.
+
+.seealso: VecPointwiseDivide(), VecPointwiseMult()
+@*/
+int VecMaxPointwiseDivide(Vec x,Vec y,PetscScalar *max)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE); 
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidType(x);
+  PetscValidType(y);
+  PetscCheckSameType(x,y);
+  PetscCheckSameComm(x,y);
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+
+  ierr = (*x->ops->maxpointwisedivide)(x,y,max);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate"
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.

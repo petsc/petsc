@@ -176,7 +176,9 @@ int MatDestroy_MFFD(Mat mat)
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
+  if (ctx->w != PETSC_NULL) {
+    ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
+  }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   PetscHeaderDestroy(ctx);
@@ -490,6 +492,9 @@ int MatSNESMFSetBase_FD(Mat J,Vec U)
   ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
   ctx->usesnes   = PETSC_FALSE;
+  if (ctx->w == PETSC_NULL) {
+    ierr = VecDuplicate(ctx->current_u,&ctx->w);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -615,6 +620,7 @@ int MatCreate_MFFD(Mat A)
   mfctx->func                = 0;
   mfctx->funcctx             = 0;
   mfctx->funcvec             = 0;
+  mfctx->w                   = PETSC_NULL;
 
   A->data                = mfctx;
 
@@ -632,7 +638,6 @@ int MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetCheckh_C","MatSNESMFSetCheckh_FD",MatSNESMFSetCheckh_FD);CHKERRQ(ierr);
   mfctx->mat = A;
-  ierr = VecCreateMPI(A->comm,A->n,A->N,&mfctx->w);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

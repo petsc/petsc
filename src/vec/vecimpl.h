@@ -72,7 +72,8 @@ struct _VecOps {
        (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
        (*setvalueslocal)(Vec,int,const int *,const PetscScalar *,InsertMode),
        (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-       (*setfromoptions)(Vec);
+       (*setfromoptions)(Vec),
+       (*maxpointwisedivide)(Vec,Vec,PetscScalar*);      /* m = max abs(x ./ y) */
 };
 
 /* 
