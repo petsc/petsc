@@ -67,6 +67,9 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
 
+    self.framework.argDB['PETSCFLAGS']    = ''
+    self.framework.argDB['COPTFLAGS']     = ''
+    self.framework.argDB['FOPTFLAGS']     = ''
     self.framework.argDB['with-bopt']     = 'g'
     self.framework.argDB['enable-debug']  = 1
     self.framework.argDB['enable-log']    = 1
