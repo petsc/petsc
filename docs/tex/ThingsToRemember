@@ -75,6 +75,7 @@ Nightly build:
      For the t3d we are not allowed to use cron so buildtest 
      uses at to start itself up again 24 hours later.
   The password is in petsc/maint/autoftp
+  h4p.nersc.gov name changed to h4p.llnl.gov
 
 ICASE suns:
   ete08-f.icase.ed
