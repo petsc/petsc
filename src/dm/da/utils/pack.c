@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.6 2000/06/19 03:50:40 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.7 2000/06/19 20:33:10 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -23,6 +23,7 @@ struct _p_VecPack {
   int                rank;
   int                n,N,rstart;   /* rstart is relative to all processors */
   Vec                globalvector;
+  int                nDA,nredundant;
   struct VecPackLink *next;
 };
 
@@ -57,6 +58,8 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->next         = PETSC_NULL;
   p->comm         = comm;
   p->globalvector = PETSC_NULL;
+  p->nredundant   = 0;
+  p->nDA          = 0;
   ierr            = MPI_Comm_rank(comm,&p->rank);CHKERRQ(ierr);
   *packer = p;
   PetscFunctionReturn(0);
@@ -113,6 +116,7 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     varray += mine->rstart;
     ierr    = PetscMemcpy(array,varray,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    varray -= mine->rstart;
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,0,packer->comm);CHKERRQ(ierr);
@@ -150,6 +154,7 @@ int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     varray += mine->rstart;
     ierr    = PetscMemcpy(varray,array,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    varray -= mine->rstart;
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -298,6 +303,7 @@ int VecPackAddArray(VecPack packer,int n)
     while (next->next) next = next->next;
     next->next = mine;
   }
+  packer->nredundant++;
   PetscFunctionReturn(0);
 }
 
@@ -331,6 +337,7 @@ int VecPackAddDA(VecPack packer,DA da)
     while (next->next) next = next->next;
     next->next = mine;
   }
+  packer->nDA++;
   PetscFunctionReturn(0);
 }
 
@@ -383,6 +390,90 @@ int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackGetGlobalIndices"></a>*/"VecPackGetGlobalIndices"
+/*@C
+    VecPackGetGlobalIndices - Gets the global indices for all the entries in the packed
+      vectors.
+
+    Collective on VecPack
+
+    Input Parameter:
+.    packer - the packer object
+
+    Output Parameters:
+.    idx - the individual indices for each packed vector/array
+ 
+    Notes:
+       The idx parameters should be freed by the calling routine with PetscFree()
+
+.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
+         VecPackGather(), VecPackCreate()
+
+@*/
+int VecPackGetGlobalIndices(VecPack packer,...)
+{
+  va_list            Argp;
+  int                ierr,i,**idx,n;
+  struct VecPackLink *next = packer->next;
+  Vec                global;
+  PF                 pf;
+  Scalar             *array;
+
+  PetscFunctionBegin;
+  ierr = VecPackCreateGlobalVector(packer,&global);CHKERRQ(ierr);
+
+  /* put 0 to N-1 into the global vector */
+  ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
+  ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
+  ierr = PFDestroy(pf);CHKERRQ(ierr);
+
+  /* loop over packed objects, handling one at at time */
+  va_start(Argp,packer);
+  while (next) {
+    idx = va_arg(Argp, int**);
+
+    if (next->type == VECPACK_ARRAY) {
+      
+      *idx   = (int*)PetscMalloc(next->n*sizeof(int));CHKPTRQ(*idx);
+      if (!packer->rank) {
+        ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
+        array += next->rstart;
+        for (i=0; i<next->n; i++) (*idx)[i] = PetscRealPart(array[i]);
+        array -= next->rstart;
+        ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
+      }
+      ierr = MPI_Bcast(*idx,next->n,MPI_INT,0,packer->comm);CHKERRQ(ierr);
+
+    } else if (next->type == VECPACK_DA) {
+      Vec local;
+
+      ierr    = DACreateLocalVector(next->da,&local);CHKERRQ(ierr);
+      ierr    = VecGetArray(global,&array);CHKERRQ(ierr);
+      array  += next->rstart;
+      ierr    = VecPlaceArray(next->globalholder,array);CHKERRQ(ierr);
+      ierr    = DAGlobalToLocalBegin(next->da,next->globalholder,INSERT_VALUES,local);CHKERRQ(ierr);
+      ierr    = DAGlobalToLocalEnd(next->da,next->globalholder,INSERT_VALUES,local);CHKERRQ(ierr);
+      array  -= next->rstart;
+      ierr    = VecRestoreArray(global,&array);CHKERRQ(ierr);
+
+      ierr    = VecGetArray(local,&array);CHKERRQ(ierr);
+      ierr    = VecGetSize(local,&n);CHKERRQ(ierr);
+      *idx    = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(*idx);
+      for (i=0; i<n; i++) (*idx)[i] = PetscRealPart(array[i]);
+      ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
+      ierr    = VecDestroy(local);CHKERRQ(ierr);
+
+    } else {
+      SETERRQ(1,1,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  va_end(Argp);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
