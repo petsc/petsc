@@ -3,6 +3,7 @@
    set various grid parameters.
  */
 #include "user.h"
+#include "src/fortran/custom/zpetsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "UserSetGridParameters"
@@ -307,5 +308,44 @@ int UserSetGrid(Euler *app)
     app->zc = zt;
   }
   MPI_Barrier(app->comm);
+  return 0;
+}
+/* ------------------------------------------------------------------------ */
+#undef __FUNC__
+#define __FUNC__ "GetWingCommunicator"
+/* 
+   GetWingCommunicator - Creates communicator with processor subset that
+                         owns the wing surface.  Used in pvar().
+
+   Input Parameter:
+   app - user-defined application context
+
+   Ouput Parameter:
+   fxcomm - the newly created communicator (Fortran version)
+ */
+
+int GetWingCommunicator(Euler *app,int* fxcomm)
+{
+  MPI_Group group_all, group_x;
+  MPI_Comm  comm_x;
+  int       ierr, ict, i, *ranks_x, *recv, send[2];
+
+
+  ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
+  PetscMemzero(ranks_x,3*app->size*sizeof(int));
+  recv = (int *) ranks_x + app->size;
+  ierr = wingsurface_(&send[0]); CHKERRQ(ierr);
+  send[1] = app->rank;
+  ierr = MPI_Allgather(send,2,MPI_INT,recv,2,MPI_INT,app->comm); CHKERRQ(ierr);
+  ict = 0;
+  for (i=0; i<app->size; i++) {
+    if (recv[2*i]) ranks_x[ict++] = recv[2*i+1];
+  }
+  ierr = MPI_Comm_group(app->comm,&group_all); CHKERRQ(ierr);
+  ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
+  ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
+  PetscFree(ranks_x);
+  *(int*)fxcomm = PetscFromPointerComm(comm_x);
+
   return 0;
 }

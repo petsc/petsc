@@ -45,7 +45,6 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       if (ysf1 .eq. 1) then
          DO 10 K=zsf2,KTIPP
 c         DO 10 K=2,KTIP
-            ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*p5
             CHORD   = X(ITU,1,K)-X(ILE,1,K)
             DO 10 I=ITLP,ITUP1
 c            DO 10 I=ITL,ITU+1
@@ -120,24 +119,25 @@ c        DO 41 K=2,KTIP
           CC(K)=zero
           AREA1(K)=zero
           AREA(K)=zero
-          DO 42 I=ITLP1,ITUP
-c          DO 42 I=ITL+1,ITU
+          DO 41 I=ITLP1,ITUP
+c          DO 41 I=ITL+1,ITU
             AREA1(K)=AREA1(K)+ABS(AJY(I,1,K))*p5
             PBODY=p5*(P(I,1,K)+P(I,2,K))
             CN1(K)=CN1(K)-(PBODY-RGAM)*AJY(I,1,K)/FSMACH**2*2.
             CC1(K)=CC1(K)-(PBODY-RGAM)*AJX(I,1,K)/FSMACH**2*2.
 c            CN=CN-(PBODY-RGAM)*AJY(I,1,K)
 c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
- 42       CONTINUE
+ 41     CONTINUE
 
 c  Sum over each section of mesh, using the communicator xcomm
-
           call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,xcomm,ierr)
           call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,xcomm,ierr)
           call MPI_Allreduce(area1,area,d_nk,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,xcomm,ierr)
+
+        DO 42 K=zsf2,KTIPP
           CLS=CN(K)*COS(-BETA)-CC(K)*SIN(-BETA)
           CDS=CN(K)*SIN(-BETA)+CC(K)*COS(-BETA)
           CL(K) = CLS/AREA(K)
@@ -145,7 +145,7 @@ c  Sum over each section of mesh, using the communicator xcomm
           AREAS = AREAS+AREA(K)
           TCL=TCL+CLS
           TCD=TCD+CDS
- 41     CONTINUE
+ 42     CONTINUE
         if (zsf .eq. 1) then
            dsend(1) = tcl
            dsend(2) = tcd

@@ -232,7 +232,7 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
-  ierr = GetXCommunicator(app,&app->fort_xcomm); CHKERRQ(ierr);
+  ierr = GetWingCommunicator(app,&app->fort_xcomm); CHKERRQ(ierr);
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1628,41 +1628,5 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = BCScatterSetUp(app); CHKERRQ(ierr);
 
   *newapp = app;
-  return 0;
-}
-
-
-/***************************************************************************/
-
-int GetXCommunicator(Euler *app,int* fxcomm)
-{
-  MPI_Group group_all, group_x;
-  MPI_Comm  comm_x;
-  int       ierr, ict, i, *ranks_x, *recv, send[2];
-
-  /* Create communicator with processor subset (defined by those having the
-     same region of grid in x-direction, y=0 boundary only) */
-
-  ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
-  PetscMemzero(ranks_x,3*app->size*sizeof(int));
-  recv = (int *) ranks_x + app->size;
-  ierr = wingsurface_(&send[0]); CHKERRQ(ierr);
-  send[1] = app->rank;
-  ierr = MPI_Allgather(send,2,MPI_INT,recv,2,MPI_INT,app->comm); CHKERRQ(ierr);
-  ict = 0;
-  for (i=0; i<app->size; i++) {
-    if (recv[2*i]) ranks_x[ict++] = recv[2*i+1];
-  }
-  printf("Getting communicator for j=1: rank =%d, xs=%d, ict=%d\n",app->rank,app->xs,ict);
-  for (i=0; i<ict; i++) {
-    printf("[%d] xs=%d, ict=%d, i=%d, member=%d\n",app->rank,app->xs,ict,i,ranks_x[i]);
-  }
-  fflush(stdout);
-  ierr = MPI_Comm_group(app->comm,&group_all); CHKERRQ(ierr);
-  ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
-  ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
-  PetscFree(ranks_x);
-  *(int*)fxcomm = PetscFromPointerComm(comm_x);
-
   return 0;
 }
