@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Use macro for MatSetValuesBlock_SeqBAIJ() in MatSetValuesBlocked_MPIBAIJ()
+
   Add new MatSetValuesBlocked for BAIJ matrices for repeated same assembly.
   Keep addresses from each call to MatSetValues()
 
