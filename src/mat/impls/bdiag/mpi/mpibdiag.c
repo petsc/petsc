@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.34 1995/09/30 19:29:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.35 1995/10/01 21:52:51 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -142,6 +142,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   int        ierr;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  Mat_SeqBDiag *mlocal;
 
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = mbd->nrecvs, count = nrecvs, i, n;
@@ -181,6 +182,13 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   mbd->insertmode = NOTSETVALUES;
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
+
+  /* Fix main diagonal location */
+  mlocal = (Mat_SeqBDiag *) mbd->A->data;
+  mlocal->mainbd = -1; 
+  for (i=0; i<mlocal->nd; i++) {
+    if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
+  }
 
   if (!mbd->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
@@ -559,6 +567,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,
        0};
 
+extern int PCSetUp_BJacobiMPIBDiag(PC);
+
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
 
@@ -604,7 +614,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  Mat_SeqBDiag    *mlocal;
+  Mat_SeqBDiag *mlocal;
   int          ierr, i, k, *ldiag;
   Scalar       **ldiagv = 0;
 
@@ -712,6 +722,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->lvec      = 0;
   mbd->Mvctx     = 0;
   mbd->assembled = 0;
+
+  /* set preconditioner modules */
+  mat->pcsetups.bjacobi = PCSetUp_BJacobiMPIBDiag;
 
   *newmat = mat;
   return 0;
