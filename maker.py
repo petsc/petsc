@@ -23,26 +23,30 @@ class Maker (logging.Logger):
     - Shell commands
     - Advanced debug output
   """
-  def __init__(self, locArgDB = None):
-    if not locArgDB: locArgDB = bs.argDB
-    logging.Logger.__init__(self, locArgDB)
+  def __init__(self, argDB = None):
+    if argDB is None:
+      self.argDB = bs.argDB
+    else:
+      self.argDB = argDB
+    logging.Logger.__init__(self, self.argDB)
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
+    return
 
   def checkTmpDir(self, mainTmp):
     if not os.path.exists(mainTmp):
-      del bs.argDB['TMPDIR']
-      bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Temporary directory '+mainTmp+' does not exist. Select another directory'))
-      newTmp = bs.argDB['TMPDIR']
+      del self.argDB['TMPDIR']
+      self.argDB.setType('TMPDIR', nargs.ArgDir(1,'Temporary directory '+mainTmp+' does not exist. Select another directory'))
+      newTmp = self.argDB['TMPDIR']
       return 0
       
     try:
       stats     = os.statvfs(mainTmp)
       freeSpace = stats.f_bavail*stats.f_frsize
       if freeSpace < 50*1024*1024:
-        del bs.argDB['TMPDIR']
-        bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
-        newTmp = bs.argDB['TMPDIR']
+        del self.argDB['TMPDIR']
+        self.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
+        newTmp = self.argDB['TMPDIR']
         return 0
     except: pass
     return 1
@@ -50,20 +54,20 @@ class Maker (logging.Logger):
   def setupTmpDir(self):
         
     #  get tmp directory; needs to be different for each user
-    if not bs.argDB.has_key('TMPDIR') and os.environ.has_key('TMPDIR'):
-      bs.argDB['TMPDIR'] = os.environ['TMPDIR']
+    if not self.argDB.has_key('TMPDIR') and os.environ.has_key('TMPDIR'):
+      self.argDB['TMPDIR'] = os.environ['TMPDIR']
 
-    if not bs.argDB.has_key('TMPDIR') or bs.argDB['TMPDIR'] == '/tmp':
-      bs.argDB['TMPDIR'] = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0])
-    if not os.path.exists(bs.argDB['TMPDIR']):
+    if not self.argDB.has_key('TMPDIR') or self.argDB['TMPDIR'] == '/tmp':
+      self.argDB['TMPDIR'] = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0])
+    if not os.path.exists(self.argDB['TMPDIR']):
       try:
-        os.makedirs(bs.argDB['TMPDIR'])
+        os.makedirs(self.argDB['TMPDIR'])
       except:
-        raise RuntimeError("Cannot create tmp directory "+bs.argDB['TMPDIR'])
+        raise RuntimeError("Cannot create tmp directory "+self.argDB['TMPDIR'])
 
-    mainTmp = bs.argDB['TMPDIR']
+    mainTmp = self.argDB['TMPDIR']
     while not self.checkTmpDir(mainTmp):
-      mainTmp = bs.argDB['TMPDIR']
+      mainTmp = self.argDB['TMPDIR']
     self.tmpDir = os.path.join(mainTmp, 'bs')
 
   def forceRemove(self, file):

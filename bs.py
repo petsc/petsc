@@ -12,32 +12,68 @@ import sys
 import traceback
 import re
 
+class Project:
+  def __init__(self, name, url, root = None):
+    if root is None: root = os.path.abspath(os.getcwd())
+    # Needs to be immutable
+    self.name = name
+    self.url  = url
+    self.root = root
+    return
+
+  def __hash__(self):
+    return name.__hash__()
+
+  def __lt__(self, other):
+    return name.__lt__(other.getName())
+
+  def __le__(self, other):
+    return name.__le__(other.getName())
+
+  def __eq__(self, other):
+    return name.__eq__(other.getName())
+
+  def __ne__(self, other):
+    return name.__ne__(other.getName())
+
+  def __gt__(self, other):
+    return name.__gt__(other.getName())
+
+  def __ge__(self, other):
+    return name.__ge__(other.getName())
+
+  def getName(self):
+    return self.name
+
+  def getUrl(self):
+    return self.url
+
+  def getRoot(self):
+    return self.root
+
 class BS (maker.Maker):
   targets     = {}
   batchArgs   = 0
   directories = {}
   filesets    = {}
 
-  def __init__(self, project, clArgs = None):
+  def __init__(self, projectObj, clArgs = None):
     self.setupArgDB(clArgs)
     maker.Maker.__init__(self)
-    self.project = project
+    self.project          = projectObj.getName()
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
+    # Put current project name into the database
+    if argDB.has_key('installedprojects'):
+      argDB['installedprojects'] = []
+    if projectObj not in argDB['installedprojects']:
+      argDB['installedprojects'].append(projectObj)
     return
 
   def setupArgDB(self, clArgs):
     global argDB
     argDB = nargs.ArgDict('ArgDict', clArgs)
-    # put current package name into the database
-    package = os.path.basename(os.getcwd())
-    if argDB.has_key('installedprojects'):
-      packages = argDB['installedprojects']
-      if package not in packages:
-        packages.append(package)
-        argDB['installedprojects'] = packages
-    else:
-      argDB['installedprojects'] = [package]
+    return
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
@@ -94,6 +130,9 @@ class BS (maker.Maker):
         self.filesets['etags'] = None
       self.compileDefaults = BSTemplates.compileTargets.Defaults(self.getSIDLDefaults(), self.filesets['etags'])
     return self.compileDefaults
+
+  def t_getDependencies(self):
+    return []
 
   def t_sidl(self):
     return self.getSIDLDefaults().getSIDLTarget().execute()
@@ -188,32 +227,31 @@ class BS (maker.Maker):
 
   def executeTarget(self, target):
     if self.targets.has_key(target):
-      self.targets[target].execute()
+      output = self.targets[target].execute()
     elif hasattr(self, 't_'+target):
-      getattr(self, 't_'+target)()
+      output = getattr(self, 't_'+target)()
     else:
       print 'Invalid target: '+target
-    return
+    return output
 
   def main(self):
     # add to database list of packages in current project
     try:
-##      import SIDLLanguage.Parser
-##      import SIDLLanguage.Visitor
-##      import ANL.SIDLVisitorI.GetPackageNames
-##      import ANL.SIDLCompilerI.SIDLCompiler
+      import SIDL.Loader
+      import SIDLLanguage.Parser
+      import SIDLLanguage.Visitor
 
-##      compiler = SIDLLanguage.Parser.Parser(ANL.SIDLCompilerI.SIDLCompiler.SIDLCompiler())
+      compiler = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
       if argDB.has_key('installedpackages'):
         ipackages = argDB['installedpackages']
       else: ipackages = []
-##      for target in self.filesets['sidl'].getFiles():
-##        tree = compiler.parseFile(target)
-##        v = ANL.SIDLVisitorI.GetPackageNames.GetPackageNames()
-##        tree.accept(v)
-##        for p in v.getnames():
-##           if not p in ipackages:
-##              ipackages.append(p)
+      for target in self.filesets['sidl'].getFiles():
+        tree = compiler.parseFile(target)
+        v = SIDLLanguage.Visitor.Visitor(SIDL.Loader.createClass('ANL.SIDLVisitorI.GetPackageNames'))
+        tree.accept(v)
+        for p in v.getnames():
+          if not p in ipackages:
+            ipackages.append(p)
       argDB['installedpackages'] = ipackages
     except: pass
 
