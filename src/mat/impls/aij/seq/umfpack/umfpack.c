@@ -72,7 +72,6 @@ int MatDestroy_UMFPACK(Mat A) {
     umfpack_di_free_numeric(&lu->Numeric) ;
     ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
     ierr = PetscFree(lu->W);CHKERRQ(ierr);
-
     if (lu->PetscMatOdering) {
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
@@ -88,6 +87,7 @@ int MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
   Mat_UMFPACK *lu = (Mat_UMFPACK*)A->spptr;
   PetscScalar *av=lu->av,*ba,*xa;
   int         ierr,*ai=lu->ai,*aj=lu->aj,status;
+  int         m;
   
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_di_wsolve */
@@ -104,6 +104,7 @@ int MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
     
   ierr = VecRestoreArray(b,&ba);
   ierr = VecRestoreArray(x,&xa);
+
   PetscFunctionReturn(0);
 }
 
@@ -117,6 +118,9 @@ int MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) {
   PetscFunctionBegin;
   /* numeric factorization of A' */
   /* ----------------------------*/
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
+      umfpack_di_free_numeric(&lu->Numeric) ;
+  }
   status = umfpack_di_numeric (ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info) ;
   if (status < 0) SETERRQ(1,"umfpack_di_numeric failed");
   /* report numeric factorization of A' when Control[PRL] > 3 */
@@ -126,10 +130,9 @@ int MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) {
     /* allocate working space to be used by Solve */
     ierr = PetscMalloc(m * sizeof(int), &lu->Wi);CHKERRQ(ierr);
     ierr = PetscMalloc(5*m * sizeof(double), &lu->W);CHKERRQ(ierr);
-
-    lu->flg = SAME_NONZERO_PATTERN;
   }
-
+  lu->flg = SAME_NONZERO_PATTERN;
+  lu->CleanUpUMFPACK = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
