@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.74 1999/09/27 21:15:55 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.75 2000/01/11 20:59:45 bsmith Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -51,15 +51,21 @@
   doing the buffering accordingly (until the receive is called) - or
   what if a nonblocking receive is called, do a copy etc.. Handling
   the buffering aspects might be complicated enough, that in this
-  case, a proper implementation of MPI might aswell be used. This is
-  the reason the send to self is not implemented in MPIUNI.
-
+  case, a proper implementation of MPI might as well be used. This is
+  the reason the send to self is not implemented in MPIUNI, and never
+  will be.
 */
 
 #if !defined(__MPI_H)
 #define __MPI_H
 
 #define USING_MPIUNI
+
+/*
+
+    MPIUNI_TMP is used in the macros below only to stop various C/C++ compilers
+from generating warning messages about unused variables while compiling PETSc.
+*/
 extern void *MPIUNI_TMP;
 
 #define MPI_COMM_WORLD       1
@@ -294,13 +300,10 @@ extern int    Petsc_MPI_Finalize(void);
       MPI_SUCCESS)
 #define MPI_Testsome(incount,array_of_requests,outcount,\
                      array_of_indices,array_of_statuses) MPI_SUCCESS
-#define MPI_Iprobe(source,tag,comm,flag,status)  \
-      *(flag)=0, MPI_SUCCESS)
+#define MPI_Iprobe(source,tag,comm,flag,status) (*(flag)=0, MPI_SUCCESS)
 #define MPI_Probe(source,tag,comm,status) MPI_SUCCESS
-#define MPI_Cancel(request) (MPIUNI_TMP = (void*)(long) (request),\
-      MPI_SUCCESS)
-#define MPI_Test_cancelled(status,flag)  \
-     (*(flag)=0,MPI_SUCCESS)
+#define MPI_Cancel(request) (MPIUNI_TMP = (void*)(long) (request),MPI_SUCCESS)
+#define MPI_Test_cancelled(status,flag) (*(flag)=0,MPI_SUCCESS)
 #define MPI_Send_init(buf,count, datatype,dest,tag,comm,request) \
      (MPIUNI_TMP = (void*)(long) (buf),\
      MPIUNI_TMP = (void*)(long) (count),\
@@ -355,9 +358,7 @@ extern int    Petsc_MPI_Finalize(void);
      MPIUNI_TMP = (void*)(long) (comm),\
      MPIUNI_TMP = (void*)(long) (request),\
      MPI_SUCCESS)
-#define MPI_Start(request) \
-     (MPIUNI_TMP = (void*)(long) (request),\
-     MPI_SUCCESS)
+#define MPI_Start(request) (MPIUNI_TMP = (void*)(long) (request),MPI_SUCCESS)
 #define MPI_Startall(count,array_of_requests) \
      (MPIUNI_TMP = (void*)(long) (count),\
      MPIUNI_TMP = (void*)(long) (array_of_requests),\
@@ -372,10 +373,8 @@ extern int    Petsc_MPI_Finalize(void);
      source,recvtag,comm,status) MPI_SUCCESS
 #define MPI_Type_contiguous(count, oldtype,newtype) \
      (*(newtype) = (count)*(oldtype),MPI_SUCCESS)
-#define MPI_Type_vector(count,blocklength,stride,oldtype, newtype) \
-     MPI_SUCCESS
-#define MPI_Type_hvector(count,blocklength,stride,oldtype, newtype) \
-     MPI_SUCCESS
+#define MPI_Type_vector(count,blocklength,stride,oldtype, newtype) MPI_SUCCESS
+#define MPI_Type_hvector(count,blocklength,stride,oldtype, newtype) MPI_SUCCESS
 #define MPI_Type_indexed(count,array_of_blocklengths,\
      array_of_displacements, oldtype,\
      newtype) MPI_SUCCESS
@@ -554,8 +553,7 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Cart_shift(comm,direction,disp,rank_source,rank_dest) \
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Cart_sub(comm,remain_dims,newcomm) MPI_Abort(MPI_COMM_WORLD,0)
-#define MPI_Cart_map(comm,ndims,dims,periods,newrank) \
-     MPI_Abort(MPI_COMM_WORLD,0)
+#define MPI_Cart_map(comm,ndims,dims,periods,newrank) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Graph_map(comm,a,b,c,d) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Get_processor_name(name,result_len) \
      (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)),name[10] = 0,*(result_len) = 10)
