@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.19 1995/08/23 17:19:25 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.20 1995/08/25 19:35:23 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -44,20 +44,22 @@ int ViewerDestroy_Private()
   return 0;
 }
 
-FILE *ViewerFileGetPointer_Private(Viewer viewer)
+int ViewerFileGetPointer_Private(Viewer viewer, FILE **fd)
 {
-  return viewer->fd;
+  *fd = viewer->fd;
+  return 0;
 }
 
 
-char *ViewerFileGetOutputname_Private(Viewer viewer)
+int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 {
-  return viewer->outputname;
+  *name = viewer->outputname;
+  return 0;
 }
 
-int ViewerFileGetFormat_Private(Viewer viewer)
+int ViewerFileGetFormat_Private(Viewer viewer,int *format)
 {
-  return viewer->format;
+  *format =  viewer->format;
 }
 
 /*@

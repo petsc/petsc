@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.43 1995/09/04 17:24:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.44 1995/09/04 21:55:01 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -819,9 +819,13 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
     return 0;
   }
   else {
-    FILE *fd = ViewerFileGetPointer_Private(ptr);
-    char *outputname = (char *)ViewerFileGetOutputname_Private(ptr);
-    int format = ViewerFileGetFormat_Private(ptr);
+    FILE *fd;
+    char *outputname;
+    int format;
+
+    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetOutputname_Private(ptr,&outputname);
+    ierr = ViewerFileGetFormat_Private(ptr,&format);
     if (format == FILE_FORMAT_INFO) {
       fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,mat->nd);
     }

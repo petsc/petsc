@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.12 1995/08/22 21:12:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.13 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
@@ -75,6 +75,7 @@ extern void sleep(int);
 @*/
 void PetscSleep(int s)
 {
-  sleep(s);
+  if (s < 0) getc(stdin);
+  else       sleep(s);
 }
 

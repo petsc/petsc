@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.10 1995/07/28 04:14:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.11 1995/08/07 18:50:31 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
@@ -62,7 +62,7 @@ int VecSum(Vec v,Scalar *sum)
 
 /*@
    VecShift - Shifts all of the components of a vector by computing
-   x[i] <- x[i] + shift.
+   x[i] = x[i] + shift.
 
    Input Parameters:
 .  v - the vector 

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.55 1995/08/07 22:01:52 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.56 1995/08/22 02:23:57 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -53,7 +53,13 @@ extern int  TrGetMaximumAllocated(double*);
 #if !defined(__DIR__)
 #define __DIR__ 0
 #endif
-#define PETSC_ERROR_NO_MEM 55
+
+/*
+       Unable to malloc error and no supported function
+*/
+#define PETSC_ERR_MEM 55
+#define PETSC_ERR_SUP 56
+
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
@@ -61,8 +67,8 @@ extern int  TrGetMaximumAllocated(double*);
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERROR_NO_MEM,(char*)0);
-#define CHKPTRA(p)      if (!p) SETERRA(PETSC_ERROR_NO_MEM,(char*)0);
+#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
+#define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #else
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
@@ -70,8 +76,8 @@ extern int  TrGetMaximumAllocated(double*);
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERROR_NO_MEM,(char*)0);
-#define CHKPTRA(p)      if (!p) SETERRA(PETSC_ERROR_NO_MEM,(char*)0);
+#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
+#define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #endif
 
 typedef struct _PetscObject* PetscObject;

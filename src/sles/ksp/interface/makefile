@@ -2,7 +2,7 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I.. $(PETSC_INCLUDE) \
+CFLAGS   = -I.. $(PETSC_INCLUDE) \
            $(CONF) -D__DIR__='"ksp/src/"'
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
            xmon.c

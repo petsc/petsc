@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.24 1995/08/15 20:26:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.25 1995/08/24 22:26:57 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -147,7 +147,10 @@ static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           itP = (KSP)obj;
   KSP_Chebychev *cheb = (KSP_Chebychev *) itP->MethodPrivate;
-  FILE          *fd = ViewerFileGetPointer_Private(viewer);
+  FILE          *fd;
+  int           ierr;
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
 
   MPIU_fprintf(itP->comm,fd,
     "    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.12 1995/08/22 19:40:11 curfman Exp curfman $ */
+/* $Id: viewer.h,v 1.13 1995/08/23 17:21:15 curfman Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -11,7 +11,6 @@ typedef struct _Viewer*      Viewer;
 #define FILE_VIEWER          1
 #define FILES_VIEWER         2
 #define BIN_FILE_VIEWER      3
-#define BIN_FILES_VIEWER     4
 
 #define FILE_FORMAT_DEFAULT  0
 #define FILE_FORMAT_MATLAB   1

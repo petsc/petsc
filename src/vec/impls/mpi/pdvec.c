@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.22 1995/08/27 13:56:35 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.23 1995/09/05 18:17:53 curfman Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -26,218 +26,267 @@ static int VecDestroy_MPI(PetscObject obj )
   return 0;
 }
 
-static int VecView_MPI( PetscObject obj, Viewer ptr )
+static int VecView_MPI_File(Vec xin, Viewer ptr )
 {
-  Vec         xin = (Vec) obj;
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         i,mytid,ierr;
+  FILE        *fd;
+  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+
+  MPI_Comm_rank(xin->comm,&mytid); 
+  MPIU_Seq_begin(xin->comm,1);
+  fprintf(fd,"Processor [%d] \n",mytid);
+  for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+    if (imag(x->array[i]) != 0.0) {
+      fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+    }
+    else {
+      fprintf(fd,"%g \n",real(x->array[i]));
+    }
+#else
+    fprintf(fd,"%g \n",x->array[i]);
+#endif
+  }
+  fflush(fd);
+  MPIU_Seq_end(xin->comm,1);
+  return 0;
+}
+
+static int VecView_MPI_Files(Vec xin, Viewer ptr )
+{
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         i,mytid;
+  MPI_Status  status;
+  FILE        *fd;
+  int         len, work = x->n,n,j,numtids,ierr;
+  Scalar      *values;
+
+  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+  /* determine maximum message to arrive */
+  MPI_Comm_rank(xin->comm,&mytid);
+  MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
+  MPI_Comm_size(xin->comm,&numtids);
+
+  if (!mytid) {
+    values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
+    fprintf(fd,"Processor [%d]\n",mytid);
+    for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+      if (imag(x->array[i]) != 0.0) {
+        fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+      }
+      else {
+        fprintf(fd,"%g \n",real(x->array[i]));
+      }
+#else
+      fprintf(fd,"%g \n",x->array[i]);
+#endif
+
+    }
+    /* receive and print messages */
+    for ( j=1; j<numtids; j++ ) {
+      MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
+      MPI_Get_count(&status,MPIU_SCALAR,&n);          
+      fprintf(fd,"Processor [%d]\n",j);
+      for ( i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+        if (imag(values[i]) != 0.0) {
+          fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
+        }
+        else {
+          fprintf(fd,"%g\n",real(values[i]));
+        }
+#else
+        fprintf(fd,"%g\n",values[i]);
+#endif
+      }          
+    }
+    PETSCFREE(values);
+  }
+  else {
+    /* send values */
+    MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);
+  }
+  return 0;
+}
+
+static int VecView_MPI_Binary(Vec xin, Viewer ptr )
+{
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         mytid,ierr;
+  MPI_Status  status;
+  int         len, work = x->n,n,j,numtids;
+  Scalar      *values;
+  int         fdes;
+
+  ierr = ViewerFileGetDescriptor_Private(ptr,&fdes); CHKERRQ(ierr);
+
+  /* determine maximum message to arrive */
+  MPI_Comm_rank(xin->comm,&mytid);
+  MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
+  MPI_Comm_size(xin->comm,&numtids);
+
+  if (!mytid) {
+    ierr = SYWrite(fdes,(char *)&xin->cookie,sizeof(int),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,(char *)&x->N,sizeof(int),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,(char *)x->array,x->n*sizeof(Scalar),SYSCALAR,0); 
+    CHKERRQ(ierr);
+
+    values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
+    /* receive and print messages */
+    for ( j=1; j<numtids; j++ ) {
+      MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
+      MPI_Get_count(&status,MPIU_SCALAR,&n);          
+      ierr = SYWrite(fdes,(char *)values,n*sizeof(Scalar),SYSCALAR,0); 
+    }
+    PETSCFREE(values);
+  }
+  else {
+    /* send values */
+    MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);
+  }
+  return 0;
+}
+
+static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
+{
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,mytid,numtid,ierr;
   MPI_Status  status;
-  PetscObject vobj = (PetscObject) ptr;
+  int         start,end;
+  double      coors[4],ymin,ymax,xmin,xmax,tmp;
 
-  MPI_Comm_rank(xin->comm,&mytid); 
+  MPI_Comm_size(xin->comm,&numtid); 
+
+  xmin = 1.e20; xmax = -1.e20;
+  for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+    if (real(x->array[i]) < xmin) xmin = real(x->array[i]);
+    else if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
+#else
+    if (x->array[i] < xmin) xmin = x->array[i];
+    else if (x->array[i] > xmax) xmax = x->array[i];
+#endif
+  }
+  MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
+  MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
+  MPI_Comm_rank(xin->comm,&mytid);
+  if (!mytid) {
+    DrawAxisCtx axis;
+    DrawClear(win); DrawFlush(win);
+    ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
+    PLogObjectParent(win,axis);
+    ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
+    ierr = DrawAxis(axis); CHKERRQ(ierr);
+    DrawAxisDestroy(axis);
+    DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
+  }
+  MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
+  if (mytid) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
+  /* draw local part of vector */
+  VecGetOwnershipRange(xin,&start,&end);
+  if (mytid < numtid-1) { /*send value to right */
+    MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,xin->tag,xin->comm);
+  }
+  for ( i=1; i<x->n; i++ ) {
+#if !defined(PETSC_COMPLEX)
+    DrawLine(win,(double)(i-1+start),x->array[i-1],(double)(i+start),
+                   x->array[i],DRAW_RED);
+#else
+    DrawLine(win,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
+                   real(x->array[i]),DRAW_RED);
+#endif
+  }
+  if (mytid) { /* receive value from right */
+    MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,xin->tag,xin->comm,&status);
+#if !defined(PETSC_COMPLEX)
+    DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
+                   DRAW_RED);
+#else
+    DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),
+                    DRAW_RED);
+#endif
+  }
+  DrawSyncFlush(win);
+  return 0;
+}
+
+static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
+{
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         i,mytid,numtid;
+  DrawCtx     win;
+  double      *xx,*yy;
+  int         N = x->N,*lens;
+
+  MPI_Comm_rank(xin->comm,&mytid);
+  MPI_Comm_size(xin->comm,&numtid);
+  if (!mytid) {
+    DrawLGReset(lg);
+    xx = (double *) PETSCMALLOC( 2*N*sizeof(double) ); CHKPTRQ(xx);
+    for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
+    yy = xx + N;
+    lens = (int *) PETSCMALLOC(numtid*sizeof(int)); CHKPTRQ(lens);
+    for (i=0; i<numtid; i++ ) {
+      lens[i] = x->ownership[i+1] - x->ownership[i];
+    }
+    /* The next line is wrong for complex, one should stride out the 
+         real part of x->array and Gatherv that */
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
+                  0,xin->comm);
+    PETSCFREE(lens);
+    DrawLGAddPoints(lg,N,&xx,&yy);
+    PETSCFREE(xx);
+    DrawLG(lg);
+  }
+  else {
+    /* The next line is wrong for complex, one should stride out the 
+         real part of x->array and Gatherv that */
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+  }
+  DrawLGGetDrawCtx(lg,&win);
+  DrawSyncFlush(win);
+  return 0;
+}
+
+static int VecView_MPI(PetscObject obj,Viewer ptr)
+{
+  Vec         xin = (Vec) obj;
+  PetscObject vobj = (PetscObject) ptr;
+  Vec_MPI     *x = (Vec_MPI*) xin->data;
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-
   if (vobj->cookie == VIEWER_COOKIE) {
-    FILE *fd = ViewerFileGetPointer_Private(ptr);
-    if (vobj->type == FILE_VIEWER) {
-      MPIU_Seq_begin(xin->comm,1);
-      fprintf(fd,"Processor [%d] \n",mytid);
-      for ( i=0; i<x->n; i++ ) {
-#if defined(PETSC_COMPLEX)
-        if (imag(x->array[i]) != 0.0) {
-          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-        }
-        else {
-          fprintf(fd,"%g \n",real(x->array[i]));
-        }
-#else
-        fprintf(fd,"%g \n",x->array[i]);
-#endif
-      }
-      fflush(fd);
-      MPIU_Seq_end(xin->comm,1);
+    if (vobj->type == FILE_VIEWER){
+      return VecView_MPI_File(xin,ptr);
     }
-    else if (vobj->type == FILES_VIEWER) {
-      int        len, work = x->n,n,j,numtids;
-      Scalar     *values;
-      /* determine maximum message to arrive */
-      MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
-      MPI_Comm_size(xin->comm,&numtids);
-
-      if (!mytid) {
-        values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
-        fprintf(fd,"Processor [%d]\n",mytid);
-        for ( i=0; i<x->n; i++ ) {
-#if defined(PETSC_COMPLEX)
-          if (imag(x->array[i]) != 0.0) {
-            fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-          }
-          else {
-            fprintf(fd,"%g \n",real(x->array[i]));
-          }
-#else
-          fprintf(fd,"%g \n",x->array[i]);
-#endif
-
-        }
-        /* receive and print messages */
-        for ( j=1; j<numtids; j++ ) {
-          MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
-          MPI_Get_count(&status,MPIU_SCALAR,&n);          
-          fprintf(fd,"Processor [%d]\n",j);
-          for ( i=0; i<n; i++ ) {
-#if defined(PETSC_COMPLEX)
-            if (imag(values[i]) != 0.0) {
-              fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
-            }
-            else {
-              fprintf(fd,"%g\n",real(values[i]));
-            }
-#else
-            fprintf(fd,"%g\n",values[i]);
-#endif
-          }          
-        }
-        PETSCFREE(values);
-      }
-      else {
-        /* send values */
-        MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);
-      }
+    else if (vobj->type == FILES_VIEWER){
+      return VecView_MPI_Files(xin,ptr);
     }
-    else if (vobj->type == BIN_FILE_VIEWER || vobj->type == BIN_FILES_VIEWER) {
-#if defined(PETSC_COMPLEX)
-      SETERRQ(1,"VecView_MPI:  Not done for complex version.");
-#else
-      Vec     v2;
-      Vec_MPI *v2d;
-      VecType ntype;
-      int     *iglobal, fdes = ViewerFileGetDescriptor_Private(ptr);
-      int     rstart = x->ownership[x->mytid];
-
-      /* transfer vector to 1 processor; perhaps we should do this manually
-         instead of with the vector assembly? */
-      if (!mytid) {ierr = VecCreateMPI(MPI_COMM_WORLD,x->N,x->N,&v2); CHKERRQ(ierr);}
-      else {ierr = VecCreateMPI(MPI_COMM_WORLD,0,x->N,&v2); CHKERRQ(ierr);}
-      v2d = (Vec_MPI *) v2->data;
-
-      iglobal = (int *) PETSCMALLOC(x->n*sizeof(int));
-      for (i=0; i<x->n; i++) iglobal[i] = i + rstart;
-      ierr = VecSetValues(v2,x->n,iglobal,x->array,INSERTVALUES); CHKERRQ(ierr);
-      PETSCFREE(iglobal);
-      ierr = VecAssemblyBegin(v2); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(v2); CHKERRQ(ierr);
-
-      if (!mytid) {
-        /* Write vector header */
-        ntype = VECSEQ; /* pretend that the type is VECSEQ */
-        ierr = SYWrite(fdes,(char *)&ntype,sizeof(int),SYINT,0); CHKERRQ(ierr);
-        ierr = SYWrite(fdes,(char *)&v2d->N,sizeof(int),SYINT,0); CHKERRQ(ierr);
-
-        /* Write vector contents */
-        ierr = SYWrite(fdes,(char *)v2d->array,v2d->N*sizeof(Scalar),
-                       SYSCALAR,0); CHKERRQ(ierr);
-      }
-      ierr = VecDestroy(v2); CHKERRQ(ierr);
+    else if (vobj->type == MATLAB_VIEWER) {
+      return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
+    } 
+    else if (vobj->type==BIN_FILE_VIEWER) {
+      return VecView_MPI_Binary(xin,ptr);
     }
-#endif
+  }
+#if !defined(PETSC_COMPLEX)
+  else if (vobj->cookie == LG_COOKIE){
+    return VecView_MPI_LG(xin,(DrawLGCtx) ptr);
   }
   else if (vobj->cookie == DRAW_COOKIE) {
-    DrawCtx win = (DrawCtx) ptr;
-    int     start,end;
-    double  coors[4],ymin,ymax,xmin,xmax,tmp;
-
-    MPI_Comm_size(xin->comm,&numtid); 
-
-    xmin = 1.e20; xmax = -1.e20;
-    for ( i=0; i<x->n; i++ ) {
-#if defined(PETSC_COMPLEX)
-      if (real(x->array[i]) < xmin) xmin = real(x->array[i]);
-      else if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
-#else
-      if (x->array[i] < xmin) xmin = x->array[i];
-      else if (x->array[i] > xmax) xmax = x->array[i];
-#endif
-    }
-    MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
-    MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
-    MPI_Comm_rank(xin->comm,&mytid);
-    if (!mytid) {
-      DrawAxisCtx axis;
-      DrawClear(win); DrawFlush(win);
-      ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
-      PLogObjectParent(win,axis);
-      ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
-      ierr = DrawAxis(axis); CHKERRQ(ierr);
-      DrawAxisDestroy(axis);
-      DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
-    }
-    MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
-    if (mytid) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
-    /* draw local part of vector */
-    VecGetOwnershipRange(xin,&start,&end);
-    if (mytid < numtid-1) { /*send value to right */
-      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,xin->tag,xin->comm);
-    }
-    for ( i=1; i<x->n; i++ ) {
-#if !defined(PETSC_COMPLEX)
-      DrawLine(win,(double)(i-1+start),x->array[i-1],(double)(i+start),
-                   x->array[i],DRAW_RED);
-#else
-      DrawLine(win,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
-                   real(x->array[i]),DRAW_RED);
-#endif
-    }
-    if (mytid) { /* receive value from right */
-      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,xin->tag,xin->comm,&status);
-#if !defined(PETSC_COMPLEX)
-      DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
-                   DRAW_RED);
-#else
-      DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),
-                    DRAW_RED);
-#endif
-    }
-    DrawSyncFlush(win);
-  }
-  else if (vobj->cookie == LG_COOKIE){
-    DrawLGCtx lg = (DrawLGCtx) ptr;
-    DrawCtx   win;
-    double    *xx,*yy;
-    int       N = x->N,*lens;
-    MPI_Comm_rank(xin->comm,&mytid);
-    MPI_Comm_size(xin->comm,&numtid);
-    if (!mytid) {
-      DrawLGReset(lg);
-      xx = (double *) PETSCMALLOC( 2*N*sizeof(double) ); CHKPTRQ(xx);
-      for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
-      yy = xx + N;
-      lens = (int *) PETSCMALLOC(numtid*sizeof(int)); CHKPTRQ(lens);
-      for (i=0; i<numtid; i++ ) {
-        lens[i] = x->ownership[i+1] - x->ownership[i];
-      }
-      /* The next line is wrong for complex, one should stride out the 
-         real part of x->array and Gatherv that */
-      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
-                  0,xin->comm);
-      PETSCFREE(lens);
-      DrawLGAddPoints(lg,N,&xx,&yy);
-      PETSCFREE(xx);
-      DrawLG(lg);
+    if (vobj->type == NULLWINDOW){ 
+      return 0;
     }
     else {
-      /* The next line is wrong for complex, one should stride out the 
-         real part of x->array and Gatherv that */
-      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+      return VecView_MPI_DrawCtx(xin,(DrawCtx) ptr);
     }
-    DrawLGGetDrawCtx(lg,&win);
-    DrawSyncFlush(win);
   }
+#endif
   return 0;
 }
 

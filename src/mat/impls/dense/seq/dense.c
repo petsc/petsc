@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.52 1995/08/24 22:28:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.53 1995/09/04 17:24:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -363,7 +363,7 @@ int MatView_Dense(PetscObject obj,Viewer ptr)
   Mat         matin = (Mat) obj;
   Mat_Dense   *mat = (Mat_Dense *) matin->data;
   Scalar      *v;
-  int         i,j;
+  int         i,j,ierr;
   PetscObject vobj = (PetscObject) ptr;
 
   if (ptr == 0) {
@@ -373,8 +373,10 @@ int MatView_Dense(PetscObject obj,Viewer ptr)
     return ViewerMatlabPutArray_Private(ptr,mat->m,mat->n,mat->v); 
   }
   else {
-    FILE *fd = ViewerFileGetPointer_Private(ptr);
-    int format = ViewerFileGetFormat_Private(ptr);
+    FILE *fd;
+    int format;
+    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);
     if (format == FILE_FORMAT_INFO) {
       /* do nothing for now */
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.16 1995/09/01 16:40:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.17 1995/09/04 17:25:57 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -28,7 +28,8 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
 
   if (vobj->cookie == VIEWER_COOKIE) {
-    FILE *fd = ViewerFileGetPointer_Private(ptr);
+    FILE *fd;
+    ierr = ViewerFileGetPointer_Private(ptr,&fd);  CHKERRQ(ierr);
     if (vobj->type == FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
@@ -422,7 +423,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
   base = bases[mytid];
-  PETSCFREE(bases);
   ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -448,6 +448,141 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->view         = DAView_2d;
   da->stencil_type = stencil_type;
   *inra = da;
+
+  /* recalculate the idx including missed ghost points */
+  /* Assume the Non-Periodic Case */
+  n1 = mytid - m; 
+  if (mytid % m) {
+    n0 = n1 - 1; 
+  }
+  else {
+    n0 = -1;
+  }
+  if ((mytid+1) % m) {
+    n2 = n1 + 1;
+    n5 = mytid + 1;
+    n8 = mytid + m + 1; if (n8 >= m*n) n8 = -1;
+  }
+  else {
+    n2 = -1; n5 = -1; n8 = -1;
+  }
+  if (mytid % m) {
+    n3 = mytid - 1; 
+    n6 = n3 + m; if (n6 >= m*n) n6 = -1;
+  }
+  else {
+    n3 = -1; n6 = -1;
+  }
+  n7 = mytid + m; if (n7 >= m*n) n7 = -1;
+
+
+  /* Modify for Periodic Cases */
+  if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = mytid + m * (n-1);
+    if (n7 < 0) n7 = mytid - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+  } 
+  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = mytid + (m-1);
+    if (n5 < 0) n5 = mytid - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+  }
+  else if (wrap == DA_XYPERIODIC) {
+
+    /* Handle all four corners */
+    if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
+    if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
+    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = numtid-m;
+    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = numtid-1;   
+
+    /* Handle sides */
+
+    /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = mytid + m * (n-1);
+    if (n7 < 0) n7 = mytid - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+
+    /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = mytid + (m-1);
+    if (n5 < 0) n5 = mytid - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+  }
+
+  nn = 0;
+
+  xbase = bases[mytid];
+  for ( i=1; i<=s_y; i++ ) {
+    if (n0 >= 0) { /* left below */
+      x_t = (M/m + ((M % m) > (n0 % m)))*w;
+      y_t = N/n + ((N % n) > (n0/m));
+      s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n1 >= 0) { /* directly below */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n1/m));
+      s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n2 >= 0) { /* right below */
+      x_t = (M/m + ((M % m) > (n2 % m)))*w;
+      y_t = N/n + ((N % n) > (n2/m));
+      s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=0; i<y; i++ ) {
+    if (n3 >= 0) { /* directly left */
+      x_t = (M/m + ((M % m) > (n3 % m)))*w;
+      y_t = y;
+      s_t = bases[n3] + (i+1)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+
+    for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+
+    if (n5 >= 0) { /* directly right */
+      x_t = (M/m + ((M % m) > (n5 % m)))*w;
+      y_t = y;
+      s_t = bases[n5] + (i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=1; i<=s_y; i++ ) {
+    if (n6 >= 0) { /* left above */
+      x_t = (M/m + ((M % m) > (n6 % m)))*w;
+      y_t = N/n + ((N % n) > (n6/m));
+      s_t = bases[n6] + (i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n7 >= 0) { /* directly above */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n7/m));
+      s_t = bases[n7] + (i-1)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n8 >= 0) { /* right above */
+      x_t = (M/m + ((M % m) > (n8 % m)))*w;
+      y_t = N/n + ((N % n) > (n8/m));
+      s_t = bases[n8] + (i-1)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+  PETSCFREE(bases);
   return 0;
 }
 

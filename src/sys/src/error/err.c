@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.27 1995/09/01 14:05:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.28 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -93,10 +93,10 @@ $    PetscAbortErrorHandler()
 int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
 {
-  static int out_of_memory = 0;
+  static int out_of_memory = 0, no_support = 0;
   int tid;
   MPI_Comm_rank(MPI_COMM_WORLD,&tid);
-  if (number == PETSC_ERROR_NO_MEM && !out_of_memory) {
+  if (number == PETSC_ERR_MEM && !out_of_memory) {
     if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
     else      fprintf(stderr,"[%d]PETSC ERROR: %s%s %d\n",tid,dir,file,line);
     fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",tid);
@@ -110,6 +110,12 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
       fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
     }
     out_of_memory++;
+  }
+  else if (number == PETSC_ERR_SUP && !no_support) {
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s %d\n",tid,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",tid,message);
+    fprintf(stderr,"[%d]PETSC ERROR: for this matrix type!\n",tid);
   }
   else {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);

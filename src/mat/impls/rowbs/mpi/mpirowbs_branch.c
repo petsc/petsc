@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.55 1995/09/02 02:00:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.56 1995/09/04 17:24:52 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -548,14 +548,15 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  format = ViewerFileGetFormat_Private(viewer);
+  ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
      (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
    /* do nothing for now */
   }
   else if ((vobj->cookie == DRAW_COOKIE) || (vobj->cookie == VIEWER_COOKIE && 
      (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER))) {
-    FILE *fd = ViewerFileGetPointer_Private(viewer);
+    FILE *fd;
+    ierr = ViewerFileGetPointer_Private(viewer,&fd);  CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
            mrow->mytid,mrow->m,mrow->rstart,mrow->rend,mrow->n,0,mrow->N);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.45 1995/08/24 22:26:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.46 1995/09/04 17:23:20 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -253,7 +253,7 @@ int VecSet(Scalar *alpha,Vec x)
 } 
 
 /*@
-   VecAXPY - Computes y <- alpha x + y. 
+   VecAXPY - Computes y = alpha x + y. 
 
    Input Parameters:
 .  alpha - the scalar
@@ -277,7 +277,7 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
   return 0;
 } 
 /*@
-   VecAYPX - Computes y <- x + alpha y.
+   VecAYPX - Computes y = x + alpha y.
 
    Input Parameters:
 .  alpha - the scalar
@@ -319,7 +319,7 @@ int VecSwap(Vec x,Vec y)
   return 0;
 }
 /*@
-   VecWAXPY - Computes w <- alpha x + y.
+   VecWAXPY - Computes w = alpha x + y.
 
    Input Parameters:
 .  alpha - the scalar
@@ -601,7 +601,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 }
 
 /*@
-   VecMAXPY - Computes y <- alpha[j] x[j] + y. 
+   VecMAXPY - Computes y = alpha[j] x[j] + y. 
 
    Input Parameters:
 .  nv - number of scalars and x-vectors

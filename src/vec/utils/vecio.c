@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.6 1995/09/05 16:16:07 curfman Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.7 1995/09/05 18:26:28 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: vecio.c,v 1.6 1995/09/05 16:16:07 curfman Exp curfman
  */
 
 #include "petsc.h"
-#include "vec/vecimpl.h"
+#include "vec/impls/mpi/pvecimpl.h"
 #include "sysio.h"
 #include "pinclude/pviewer.h"
 
@@ -33,67 +33,67 @@ static char vcid[] = "$Id: vecio.c,v 1.6 1995/09/05 16:16:07 curfman Exp curfman
   are specified by the index set "ind" are read into the local vector
   segment on a given processor. 
 @*/  
-int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
+int VecLoad(Viewer bview,IS ind,Vec *newvec)
 {
-  int    i, rows, ierr, lsize, gsize, *pind, low, high, iglobal, type, fd;
-  Vec    vec, tempvec;
-  Scalar *avec;
-  PetscObject vobj = (PetscObject) bview;
+  int         i,rows,ierr,lsize, gsize, *pind, low, high, iglobal, type, fd;
+  Vec         vec, tempvec;
+  Vec_MPI     v;
+  Scalar      *avec;
+  int         mytid,numtid,n;
+  PetscObject obj = (PetscObject) bview;
+  MPI_Comm    comm;
 
-  PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
-  if (vobj->type != BIN_FILES_VIEWER && vobj->type != BIN_FILES_VIEWER)
-   SETERRQ(1,"VecLoad: Invalid viewer; open viewer with ViewerFileOpenBinary().");
-  fd = ViewerFileGetDescriptor_Private(bview);
+  PETSCVALIDHEADERSPECIFIC(obj,VIEWER_COOKIE);
+  if (bview->type != BIN_FILE_VIEWER)
+   SETERRQ(1,"VecLoad:Invalid viewer;open viewer with ViewerFileOpenBinary()");
+  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  
+  PetscObjectGetComm(obj,&comm);
+  MPI_Comm_rank(comm,&mytid);
+  MPI_Comm_size(comm,&numtid);
 
-  /* Read vector header.  Should this really be the full header? */
-  ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);
-  if ((VecType)type != VECSEQ)
-    SETERRQ(1,"VecLoadBinary: Only VECSEQ input format supported.");
-  ierr = SYRead(fd,(char *)&rows,sizeof(int),SYINT); CHKERRQ(ierr);
-
-  /* Read vector contents */
   if (!ind) {
-    if (outtype == VECSEQ) {
-      ierr = VecCreateSequential(MPI_COMM_SELF,rows,&vec); CHKERRQ(ierr);
+    if (!mytid) {
+      /* Read vector header. */
+      ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);
+      if ((VecType)type != VEC_COOKIE)
+           SETERRQ(1,"VecLoadBinary: Trying to read a non-vector object");
+      ierr = SYRead(fd,(char *)&rows,sizeof(int),SYINT); CHKERRQ(ierr);
+      ierr = VecCreate(MPI_COMM_SELF,rows,&vec); CHKERRQ(ierr);
       ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-      ierr = SYRead(fd,(char *)avec,rows*sizeof(Scalar),SYSCALAR); CHKERRQ(ierr);
+      ierr = SYRead(fd,(char *)avec,v->n*sizeof(Scalar),SYSCALAR);
+      CHKERRQ(ierr);
       ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
-    } else SETERRQ(1,"Must specify index set for parallel input.");
+
+      if (numtid > 1) {
+        /* read in other chuncks and send to other processors */
+        v = (Vec_MPI*) vec->data;
+        /* determine maximum chunck owned by other */
+        n = 1;
+        for ( i=1; i<numtid; i++ ) {
+          n = PETSCMAX(n,v->ownership[i] - v->ownership[i-1]);
+        }
+        avec = (Scalar *) PETSCMALLOC( n*sizeof(Scalar) ); CHKPTRQ(avec);
+        for ( i=1; i<numtid; i++ ) {
+          n = v->ownership[i+1]-v->ownership[i];
+          ierr = SYRead(fd,(char *)avec,n*sizeof(Scalar),SYSCALAR);
+          CHKERRQ(ierr);
+          MPI_Isend(avec,n,MPIU_Scalar,i,vec->tag,vec->comm);
+        }
+      PETSCFREE(avec);
+      }
+    } else {
+      VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
+      VecGetArray(vec,&avec); CHKERRQ(ierr);
+      MPI_Irecv(avec,n,MPIU_Scalar,0,vec->tag,vec->comm);
+      ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
+    }
   }
   else {
-    /* We should change this to allow reading partial vector */
     ierr = ISGetLocalSize(ind,&lsize); CHKERRQ(ierr);
     MPI_Allreduce(&lsize,&gsize,1,MPI_INT,MPI_SUM,comm);
     if (gsize != rows) SETERRQ(1,"Incompatible parallel vector length.");
-    if (outtype == VECSEQ) {
-      ierr = VecCreateSequential(MPI_COMM_SELF,rows,&vec); CHKERRQ(ierr);
-      ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-      ierr = SYRead(fd,(char *)avec,rows*sizeof(Scalar),SYSCALAR); CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
-      ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
-    } else if (outtype == VECMPI) {
-      ierr = VecCreateMPI(comm,lsize,rows,&vec); CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(vec,&low,&high);
-      ierr = VecCreateSequential(MPI_COMM_SELF,rows,&tempvec); CHKERRQ(ierr);
-      ierr = VecGetArray(tempvec,&avec); CHKERRQ(ierr);
-      ierr = SYRead(fd,(char *)avec,rows*sizeof(Scalar),SYSCALAR); CHKERRQ(ierr);
-      ierr = ISGetIndices(ind,&pind); CHKERRQ(ierr);
-      for (i=0; i<lsize; i++) {
-        iglobal = i + low;
-        ierr = VecSetValues(vec,1,&iglobal,&avec[pind[i]],INSERTVALUES);
-        CHKERRQ(ierr);
-      }
-      ierr = VecRestoreArray(tempvec,&avec); CHKERRQ(ierr);
-      ierr = VecDestroy(tempvec); CHKERRQ(ierr);
-      ierr = ISRestoreIndices(ind,&pind); CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
-    } else {
-     SETERRQ(1,"Only VECSEQ and VECMPI output vectors are supported.");
-    }
+    SETERRQ(1,"No support yet for permuted vectors");
   }
   *newvec = vec;
   return 0;

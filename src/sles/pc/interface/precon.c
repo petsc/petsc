@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.46 1995/08/27 13:58:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.47 1995/09/04 17:24:09 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -465,8 +465,8 @@ int PCView(PC pc,Viewer viewer)
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if ((vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER) &&
      vobj->cookie == VIEWER_COOKIE) {
-    fd = ViewerFileGetPointer_Private(viewer);
-    fmt = ViewerFileGetFormat_Private(viewer);
+    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetFormat_Private(viewer,&fmt); CHKERRQ(ierr);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
     PCGetMethodName((PCMethod)pc->type,&cstring);
     MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);

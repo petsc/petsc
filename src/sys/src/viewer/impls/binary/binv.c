@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.4 1995/09/05 19:23:00 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.5 1995/09/05 19:24:57 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,21 +12,18 @@ struct _Viewer {
   int         fdes;            /* file descriptor */
 };
 
-int ViewerFileGetDescriptor_Private(Viewer viewer)
+int ViewerFileGetDescriptor_Private(Viewer viewer,int *fdes)
 {
-  return viewer->fdes;
+  *fdes = viewer->fdes;
+  return 0;
 }
 
 static int ViewerDestroy_BinaryFile(PetscObject obj)
 {
+  int    mytid;
   Viewer v = (Viewer) obj;
-
-/*  int    mytid = 0;
-  if (v->type == BIN_FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
-  if (!mytid) close(v->fdes); */
-
-  /* for now, file is opened on all processors, so close on all procs */
-  close(v->fdes);
+  MPI_Comm_rank(v->comm,&mytid);
+  if (!mytid) close(v->fdes);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
   return 0;
@@ -55,17 +52,16 @@ $    BIN_WRONLY - open existing file for binary output
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
                          Viewer *binv)
-{
+{  
+  int    mytid;
   Viewer v;
-  if (comm == MPI_COMM_SELF) {
-    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BIN_FILE_VIEWER,comm);
-  } else {
-    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BIN_FILES_VIEWER,comm);
-  }
+  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BIN_FILE_VIEWER,comm);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   *binv = v;
 
+  MPI_Comm_rank(comm,&mytid);
+  if (!mytid) {
     if (type == BIN_CREAT) {
       if ((v->fdes = creat(name,0666)) == -1)
         SETERRQ(1,"ViewerFileOpenBinary: Cannot create file for writing");
@@ -80,10 +76,11 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
         SETERRQ(1,"ViewerFileOpenBinary: Cannot open file for writing");
       }
     } else SETERRQ(1,"ViewerFileOpenBinary: File type not supported");
+  }
+  else v->fdes = -1;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
-
   return 0;
 }
 

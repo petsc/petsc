@@ -2,8 +2,7 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-           $(CONF) -D__DIR__='"vec/src/"'
+CFLAGS   = $(PETSC_INCLUDE) -I..  $(CONF) -D__DIR__='"vec/src/"'
 SOURCEC  = vector.c 
 SOURCEF  =
 SOURCEH  = 

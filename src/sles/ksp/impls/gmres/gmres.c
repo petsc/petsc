@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.38 1995/08/15 20:26:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.39 1995/08/24 22:26:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -590,9 +590,11 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 {
   KSP       itP = (KSP)obj;
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate; 
-  FILE      *fd = ViewerFileGetPointer_Private(viewer);
+  FILE      *fd;
   char      *cstring;
-  int       GMRESBasicOrthog(KSP,int);
+  int       GMRESBasicOrthog(KSP,int),ierr;
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
 
   if (gmresP->orthog == GMRESUnmodifiedOrthog) 
     cstring = "GMRESUnmodifiedOrthog";

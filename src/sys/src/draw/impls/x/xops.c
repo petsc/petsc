@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.26 1995/08/22 16:32:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.27 1995/08/24 22:30:03 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -147,8 +147,7 @@ static int DrawFlush_X(DrawCtx Win )
 {
   DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
   XFlush( XiWin->disp ); XSync(XiWin->disp,False);
-  if (Win->pause > 0) PetscSleep(Win->pause);
-  if (Win->pause < 0) getc(stdin);
+  PetscSleep(Win->pause);
   return 0;
 }
 
@@ -168,8 +167,7 @@ static int DrawSyncFlush_X(DrawCtx Win )
       XFlush( XiWin->disp );
     }
   }
-  if (Win->pause > 0) PetscSleep(Win->pause);
-  if (Win->pause < 0) getc(stdin);
+  PetscSleep(Win->pause);
   return 0;
 }
 

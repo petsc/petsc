@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.5 1995/08/23 17:21:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.6 1995/08/30 01:27:27 curfman Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   Vec            local,global;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;
-  DAStencilType  stencil_type = DA_STENCIL_STAR;
+  DAStencilType  stencil_type = DA_STENCIL_BOX;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
@@ -38,6 +38,8 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-p",&p);
   OptionsGetInt(0,"-s",&s);
   OptionsGetInt(0,"-w",&w);
+
+  if (OptionsHasName(0,"-star")) stencil_type =  DA_STENCIL_STAR;
 
   ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,&da); 
   CHKERRA(ierr);

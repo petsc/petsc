@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.31 1995/08/15 20:27:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.32 1995/08/24 22:27:47 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -318,12 +318,13 @@ static int PCPrintHelp_MG(PC pc)
 static int PCView_MG(PetscObject obj,Viewer viewer)
 {
   PC     pc = (PC)obj;
-  FILE   *fd = ViewerFileGetPointer_Private(viewer);
+  FILE   *fd;
   MG     *mg = (MG *) pc->data;
   KSP    kspu, kspd;
-  int    itu, itd;
+  int    itu, itd,ierr;
   double dtol, atol, rtol;
   char   *cstring;
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   SLESGetKSP(mg[0]->smoothu,&kspu);
   SLESGetKSP(mg[0]->smoothd,&kspd);
   KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.26 1995/08/24 22:28:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.27 1995/09/04 17:25:00 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -426,16 +426,18 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  format = ViewerFileGetFormat_Private(viewer);
+  ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
      (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
       Mat_BDiag *dmat = (Mat_BDiag *) mbd->A->data;
-      FILE *fd = ViewerFileGetPointer_Private(viewer);
+      FILE *fd;
+      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
   }
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
-    FILE *fd = ViewerFileGetPointer_Private(viewer);
+    FILE *fd;
+    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mbd->mytid,mbd->m,mbd->rstart,mbd->rend,mbd->n);

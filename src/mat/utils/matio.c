@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.2 1995/08/22 19:36:37 curfman Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.3 1995/09/05 23:04:23 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: matio.c,v 1.2 1995/08/22 19:36:37 curfman Exp curfman
 #include <unistd.h>
 #include "vec/vecimpl.h"
 #include "sysio.h"
-#include "viewer.h"
+#include "pviewer.h"
 #include "matimpl.h"
 #include "row.h"
 
@@ -61,9 +61,9 @@ int MatLoad(MPI_Comm comm,Viewer bview,MatType outtype,IS ind,IS ind2,Mat *newma
   PetscObject vobj = (PetscObject) bview;
 
   PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
-  if (vobj->type != BIN_FILE_VIEWER);
+  if (vobj->type != BIN_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary().");
-  fd = ViewerFileGetDescriptor_Private(bview);
+  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
 
   /* Get the location of the beginning of the matrix data, in case the
   file contains multiple elements */
