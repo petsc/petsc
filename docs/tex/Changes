@@ -60,6 +60,13 @@ add to it).
     to return as the final value the number of eigenvalues computed; see the manual
     page for more details.
 
+  PC
+
+    Added PCLUSetReuseReordering() and PCLUSetReuseFill() so that SLES can reuse the 
+    reordering and fill information for a new factorization of a slightly different nonzero
+    structure matrix from the previous factorization. Command line options -pc_lu_reuse_reordering
+    and -pc_lu_reuse_fill
+
   AO
 
     AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash

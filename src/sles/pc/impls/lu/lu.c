@@ -1,5 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.94 1998/05/29 20:36:34 bsmith Exp bsmith $";
+ #ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: lu.c,v 1.95 1998/07/23 19:28:02 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -15,8 +15,34 @@ typedef struct {
   int               inplace;          /* flag indicating in-place factorization */
   IS                row, col;         /* index sets used for reordering */
   MatReorderingType ordering;         /* matrix ordering */
+  int               reusereordering;  /* reuses previous reordering computed */
+  int               reusefill;        /* reuse fill from previous LU */
 } PC_LU;
 
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetReuseReordering_LU"
+int PCLUSetReuseReordering_LU(PC pc,PetscTruth flag)
+{
+  PC_LU *lu;
+
+  PetscFunctionBegin;
+  lu                  = (PC_LU *) pc->data;
+  lu->reusereordering = (int) flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetReuseFill_LU"
+int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
+{
+  PC_LU *lu;
+
+  PetscFunctionBegin;
+  lu = (PC_LU *) pc->data;
+  lu->reusefill = (int) flag;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions_LU"
@@ -33,6 +59,14 @@ static int PCSetFromOptions_LU(PC pc)
   ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCLUSetFill(pc,fill); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetReuseFill(pc,PETSC_TRUE); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_reordering",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetReuseReordering(pc,PETSC_TRUE); CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -51,6 +85,8 @@ static int PCPrintHelp_LU(PC pc,char *p)
   (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
   (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
   (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_reordering:                          \n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_fill:                             \n",p);
   PetscFunctionReturn(0);
 }
 
@@ -77,6 +113,8 @@ static int PCView_LU(PC pc,Viewer viewer)
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
       PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
     }
+    if (lu->reusefill) PetscFPrintf(pc->comm,fd,"         Reusing fill from past factorization\n");
+    if (lu->reusereordering) PetscFPrintf(pc->comm,fd,"         Reusing reordering from past factorization\n");
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," order=%s",order);
   } else {
@@ -102,11 +140,13 @@ static int PCSetUp_LU(PC pc)
 {
   int         ierr,flg;
   PC_LU       *dir = (PC_LU *) pc->data;
-  MatType     type;
 
   PetscFunctionBegin;
-  ierr = MatGetType(pc->pmat,&type,PETSC_NULL); CHKERRQ(ierr);
+  if (dir->reusefill && pc->setupcalled) dir->fill = dir->actualfill;
+
   if (dir->inplace) {
+    if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
+    if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
     ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
     ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
@@ -125,18 +165,20 @@ static int PCSetUp_LU(PC pc)
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
-    } else if (pc->flag != SAME_NONZERO_PATTERN) { 
-      ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-      if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
-      ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
-      ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
-      if (flg) {
-        double tol = 1.e-10;
-        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+    } else if (pc->flag != SAME_NONZERO_PATTERN) {
+      if (!dir->reusereordering) {
+        if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
+        if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
+        ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
+        ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+        if (flg) {
+          double tol = 1.e-10;
+          ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
+          ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+        }
+        if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       }
-      if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
+      ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
@@ -211,6 +253,71 @@ int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
 }
 
 /* -----------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetReuseReordering"
+/*@
+   PCLUSetReuseReordering - When similar matrices are factored, this
+   causes the ordering computed in the first factor to be used for all
+   following factors; applies to both fill and drop tolerance LUs.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_lu_reuse_reordering - Activate PCLUSetReuseReordering()
+
+.keywords: PC, levels, reordering, factorization, incomplete, LU
+
+.seealso: PCLUSetReuseFill(), PCILUSetReuseReordering(), PCILUSetReuseFill()
+@*/
+int PCLUSetReuseReordering(PC pc,PetscTruth flag)
+{
+  int ierr, (*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseReordering_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,flag);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetReuseFill"
+/*@
+   PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
+     this causes later ones to use the fill computed in the initial factorization.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
+
+.keywords: PC, levels, reordering, factorization, incomplete, LU
+
+.seealso: PCILUSetReuseReordering(), PCLUSetReuseReordering(), PCILUSetReuseFill()
+@*/
+int PCLUSetReuseFill(PC pc,PetscTruth flag)
+{
+  int ierr, (*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseFill_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,flag);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetFill"
@@ -352,6 +459,9 @@ int PCCreate_LU(PC pc)
                     (void*)PCLUSetUseInPlace_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetMatReordering_C","PCLUSetMatReordering_LU",
                     (void*)PCLUSetMatReordering_LU);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetReuseReordering_C","PCLUSetReuseReordering_LU",
+                    (void*)PCLUSetReuseReordering_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
+                    (void*)PCLUSetReuseFill_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
