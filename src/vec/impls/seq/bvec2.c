@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.200 2001/09/07 20:08:59 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.201 2001/09/11 16:31:59 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -429,6 +429,7 @@ static int VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   v->n               = PetscMax(v->n,v->N); 
   v->N               = PetscMax(v->n,v->N); 
   v->bs              = -1;
+  v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
   if (!v->map) {
