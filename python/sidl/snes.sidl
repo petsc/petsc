@@ -5,6 +5,11 @@ package PETSc {
     // Set the implementation type
     void setType(in string typeName);
 
+    // Get the object name
+    void getName(out string name);
+    // Set the object name
+    void setName(in string name);
+
     // Get the prefix appended to options directed to this object
     string getOptionsPrefix();
     // Set the prefix appended to options directed to this object

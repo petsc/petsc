@@ -7,17 +7,9 @@ gen:
 
 .c.so:
 	gcc -Wall -g -c -I/usr/include/python2.4 -I/usr/local/mpich/include -I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/linux-gnu -o $*.o $<
-	gcc -shared -o $@ $*.o -lpython2.4 -Wl,-rpath,/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -L/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc
-
-#PETSc/Base.so: PETSc/Base.c
-#	gcc -Wall -g -c -I/usr/include/python2.4 -I/usr/local/mpich/include -I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/linux-gnu -o $*.o $<
-#	gcc -shared -o $@ $*.o -lpython2.4 -Wl,-rpath,/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -L/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc
-
-#PETSc/SNES.so: PETSc/SNES.c
-#	gcc -Wall -g -c -I/usr/include/python2.4 -I/usr/local/mpich/include -I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/linux-gnu -o $*.o $<
-#	gcc -shared -o $@ $*.o -lpython2.4 -Wl,-rpath,/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -L/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc
+	gcc -shared -o $@ $*.o -lpython2.4 -Wl,-rpath,/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu-test -L/home/knepley/PETSc-dev/petsc-dev/lib/linux-gnu-test -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc
 
 build: PETSc/Base.so PETSc/PetscViewer.so PETSc/PetscMap.so PETSc/Vec.so PETSc/Mat.so PETSc/KSP.so PETSc/PC.so PETSc/SNES.so
 
 clean:
-	rm -f PETSc/SNES.so PETSc/Base.so
+	rm -f PETSc/Base.so PETSc/PetscViewer.so PETSc/PetscMap.so PETSc/Vec.so PETSc/Mat.so PETSc/KSP.so PETSc/PC.so PETSc/SNES.so
