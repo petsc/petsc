@@ -1,4 +1,6 @@
-# $Id: makefile,v 1.5 2000/01/12 14:31:53 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 2000/01/15 15:02:17 bsmith Exp bsmith $ 
+
+#requiresscalar real
 
 ALL: flow
 
