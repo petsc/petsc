@@ -4,6 +4,7 @@
 */
 #include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
 
+EXTERN_C_BEGIN
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
@@ -22,6 +23,7 @@ typedef struct {
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
   PetscTruth increment_dt_from_initial_dt;  
 } TS_Pseudo;
+EXTERN_C_END
 
 /* ------------------------------------------------------------------------------*/
 
@@ -320,7 +322,7 @@ static int TSView_Pseudo(TS ts,PetscViewer viewer)
 /* ----------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep"
-/*@
+/*@C
    TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
    last timestep.
 
@@ -439,7 +441,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStep"
-/*@
+/*@C
    TSPseudoSetTimeStep - Sets the user-defined routine to be
    called at each pseudo-timestep to update the timestep.
 

@@ -8,6 +8,7 @@
 #include "src/ksp/pc/pcimpl.h"        /*I "petscpc.h" I*/
 #include "src/vec/vecimpl.h"  
 
+EXTERN_C_BEGIN 
 typedef struct {
   void *ctx,*ctxrich;    /* user provided contexts for preconditioner */
   int  (*setup)(void *);
@@ -17,6 +18,7 @@ typedef struct {
   int  (*applyrich)(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
   char *name;
 } PC_Shell;
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_SetUp"

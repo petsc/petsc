@@ -466,6 +466,10 @@ int KSPSolve(KSP ksp)
     ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

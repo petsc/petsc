@@ -26,6 +26,7 @@ struct _MFOps {
   int (*setfromoptions)(MatSNESMFCtx);
 };
 
+EXTERN_C_BEGIN
 struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   PETSCHEADER(struct _MFOps)
   SNES             snes;                   /* nonlinear solver */
@@ -58,8 +59,9 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
 
   PetscScalar      vscale,vshift;
 };
+EXTERN_C_END
 
-EXTERN PetscFList      MatSNESMPetscFList;
+EXTERN PetscFList MatSNESMPetscFList;
 EXTERN PetscTruth MatSNESMFRegisterAllCalled;
 
 #endif

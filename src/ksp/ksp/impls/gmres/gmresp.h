@@ -7,6 +7,7 @@
 
 #include "src/ksp/ksp/kspimpl.h"        /*I "petscksp.h" I*/
 
+EXTERN_C_BEGIN
 typedef struct {
   /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used
@@ -47,6 +48,7 @@ typedef struct {
                                solution */
   Vec    sol_temp;        /* used to hold temporary solution */
 } KSP_GMRES;
+EXTERN_C_END
 
 #define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))
 #define HES(a,b) (gmres->hes_origin + (b)*(gmres->max_k+1)+(a))

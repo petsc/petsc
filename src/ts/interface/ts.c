@@ -1109,7 +1109,7 @@ int TSSetSolution(TS ts,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetRhsBC"
-/*@
+/*@C
   TSSetRhsBC - Sets the function which applies boundary conditions
   to the Rhs of each system.
 
@@ -1161,7 +1161,7 @@ int TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetSystemMatrixBC"
-/*@
+/*@C
   TSSetSystemMatrixBC - Sets the function which applies boundary conditions
   to the system matrix and preconditioner of each system.
 
@@ -1216,7 +1216,7 @@ int TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetSolutionBC"
-/*@
+/*@C
   TSSetSolutionBC - Sets the function which applies boundary conditions
   to the solution of each system. This is necessary in nonlinear systems
   which time dependent boundary conditions.
@@ -1270,7 +1270,7 @@ int TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetPreStep"
-/*@
+/*@C
   TSSetPreStep - Sets the general-purpose function
   called once at the beginning of time stepping.
 
@@ -1317,7 +1317,7 @@ int TSDefaultPreStep(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUpdate"
-/*@
+/*@C
   TSSetUpdate - Sets the general-purpose update function called
   at the beginning of every time step. This function can change
   the time step.
@@ -1372,7 +1372,7 @@ int TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetPostStep"
-/*@
+/*@C
   TSSetPostStep - Sets the general-purpose function
   called once at the end of time stepping.
 

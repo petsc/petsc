@@ -107,7 +107,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESAddOptionsChecker"
-/*@
+/*@C
   SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
   Not Collective
@@ -1449,7 +1449,7 @@ int SNESGetConvergenceHistory(SNES snes,PetscReal *a[],int *its[],int *na)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetRhsBC"
-/*@
+/*@C
   SNESSetRhsBC - Sets the function which applies boundary conditions
   to the Rhs of each system.
 
@@ -1503,7 +1503,7 @@ int SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetSolutionBC"
-/*@
+/*@C
   SNESSetSolutionBC - Sets the function which applies boundary conditions
   to the solution of each system.
 
@@ -1557,7 +1557,7 @@ int SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUpdate"
-/*@
+/*@C
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every step of the iteration.
 

@@ -49,7 +49,6 @@
 #define tssetrhsboundaryconditions_          tssetrhsboundaryconditions
 #endif
 
-EXTERN_C_BEGIN
 
 static int ourtsbcfunction(TS ts,PetscReal d,Vec x,void *ctx)
 {
@@ -57,6 +56,49 @@ static int ourtsbcfunction(TS ts,PetscReal d,Vec x,void *ctx)
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[0]))(&ts,&d,&x,ctx,&ierr);
   return 0;
 }
+
+static int ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
+{
+  int ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[1]))(&ts,&d,&x,&f,ctx,&ierr);
+  return 0;
+}
+
+static int ourtsmatrix(TS ts,PetscReal d,Mat* m,Mat* p,MatStructure* type,void*ctx)
+{
+  int ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[2]))(&ts,&d,m,p,type,ctx,&ierr);
+  return 0;
+}
+
+static int ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
+{
+  int ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[3]))(&ts,&d,&x,m,p,type,ctx,&ierr);
+  return 0;
+}
+
+/*
+   Note ctx is the same as ts so we need to get the Fortran context out of the TS
+*/
+static int ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
+{
+  int        ierr = 0;
+  void       (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
+  (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
+  return 0;
+}
+
+static int ourtsdestroy(void *ctx)
+{
+  int         ierr = 0;
+  TS          ts = (TS)ctx;
+  void        (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
+  (*(void (PETSC_STDCALL *)(void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
+  return 0;
+}
+
+EXTERN_C_BEGIN
 
 void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,void*,int*),void *ctx,int *ierr)
 {
@@ -107,12 +149,6 @@ void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),int *ierr PE
   FREECHAR(type,t);
 }
 
-static int ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
-{
-  int ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[1]))(&ts,&d,&x,&f,ctx,&ierr);
-  return 0;
-}
 
 void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,int*),void*fP,int *ierr)
 {
@@ -122,12 +158,6 @@ void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal
 
 
 /* ---------------------------------------------------------*/
-static int ourtsmatrix(TS ts,PetscReal d,Mat* m,Mat* p,MatStructure* type,void*ctx)
-{
-  int ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[2]))(&ts,&d,m,p,type,ctx,&ierr);
-  return 0;
-}
 
 void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,int (PETSC_STDCALL *f)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
                                                    void*,int *),void*fP,int *ierr)
@@ -141,12 +171,6 @@ void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,int (PETSC_STDCALL *f)(T
 }
 
 /* ---------------------------------------------------------*/
-static int ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
-{
-  int ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[3]))(&ts,&d,&x,m,p,type,ctx,&ierr);
-  return 0;
-}
 
 void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
                void*,int*),void*fP,int *ierr)
@@ -217,25 +241,6 @@ void PETSC_STDCALL tsdefaultmonitor_(TS *ts,int *step,PetscReal *dt,Vec *x,void 
   *ierr = TSDefaultMonitor(*ts,*step,*dt,*x,ctx);
 }
 
-/*
-   Note ctx is the same as ts so we need to get the Fortran context out of the TS
-*/
-static int ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
-{
-  int        ierr = 0;
-  void       (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
-  return 0;
-}
-
-static int ourtsdestroy(void *ctx)
-{
-  int         ierr = 0;
-  TS          ts = (TS)ctx;
-  void        (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (PETSC_STDCALL *)(void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
-  return 0;
-}
 
 void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,int*,PetscReal*,Vec*,void*,int*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,int*),int *ierr)
 {

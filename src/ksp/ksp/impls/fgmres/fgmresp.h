@@ -8,7 +8,8 @@
 
 #include "src/ksp/ksp/kspimpl.h"
 
-  typedef struct {
+EXTERN_C_BEGIN
+typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 
     PetscScalar *hh_origin;   /* holds hessenburg matrix that has been
                             multiplied by plane rotations (upper tri) */
@@ -76,7 +77,7 @@
     int    (*modifydestroy)(void*);
     void   *modifyctx;
 } KSP_FGMRES;
-
+EXTERN_C_END
 
 #define HH(a,b)  (fgmres->hh_origin + (b)*(fgmres->max_k+2)+(a)) 
                  /* HH will be size (max_k+2)*(max_k+1)  -  think of HH as 

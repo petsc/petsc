@@ -16,7 +16,7 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPAddOptionsChecker"
-/*@
+/*@C
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
     Not Collective
