@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1.1.1 1998/04/14 21:54:52 gropp Exp $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1998/04/15 02:29:26 curfman Exp curfman $";
 #endif
 
 static char help[] = "This is an introductory PETSc example that illustrates\n\
@@ -22,33 +22,33 @@ int main(int argc,char **argv)
     argc, argv - These command line arguments are taken to extract the options
                  supplied to PETSc and options supplied to MPI.
     help       - When PETSc executable is invoked with the option -help, 
-                 it prints all the useful optioins that can be applied at 
-                 the command line. If the user wishes to add to this list,
-                 additional help messages, he can do it using this variable.
+                 it prints the various options that can be applied at 
+                 runtime.  The user can use the "help" variable place
+                 additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help); CHKERRA(ierr);
   /* 
-     Thw following MPI calls gives the number of processors
-     being used, and the rank of this process in the group.
+     The following MPI calls return the number of processes
+     being used and the rank of this process in the group.
    */
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size); CHKERRA(ierr);
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank); CHKERRA(ierr);
   /* 
-     Here I would like to print only one message which represents
-     all the processors in the group. I use PetscPrintf() on the 
-     communicatior MPI_COMM_WORLD. This way only one message is
-     printed represeintng MPI_COMM_WORLD, i.e all the processors.
+     Here we would like to print only one message that represents
+     all the processes in the group.  We use PetscPrintf() with the 
+     communicator MPI_COMM_WORLD.  Thus, only one message is
+     printed representng MPI_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(MPI_COMM_WORLD,"No of processors = %d rank = %d\n",size,rank); CHKERRA(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank); CHKERRA(ierr);
   /* 
-     Here I would like to print info from each processor such that,
-     output from proc "n" appears after output from proc "n-1".
-     To do this I use a combination PetscSynchronizedPrintf() and
-     PetscSynchronizedFlush(). The communicator used is MPI_COMM_WORLD,
-     All the processors print the message one after another. 
-     PetscSynchronizedFlush() Indicates that the current proc in MPI_COMM
-     has printed all it wanted to, and now, the next proc in MPI_COMM
-     can start printing on the screen.
+     Here we would like to print info from each process such that
+     output from process "n" appears after output from process "n-1".
+     To do this we use a combination of PetscSynchronizedPrintf() and
+     PetscSynchronizedFlush() with the communicator MPI_COMM_WORLD.
+     All the processes print the message, one after another. 
+     PetscSynchronizedFlush() indicates that the current process in the
+     given communicator has concluded printing, so that the next process
+     in the communicator can begin printing to the screen.
      */
   ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d] Synchronized Hello World.\n",rank); CHKERRA(ierr);
   ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d] Synchronized Hello World - Part II.\n",rank); CHKERRA(ierr);
@@ -58,15 +58,14 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Barrier(MPI_COMM_WORLD); CHKERRA(ierr);
   /*
-    Here I simply use PetscPrintf(). So this time the output 
-    from different proc does not come in order. Note the use of
-    MPI_COMM_SELF. This way only one proc from MPI_COMM_SELF,
-    i.e each proc in MPI_COMM_WORLD prints to the screen.
+    Here we simply use PetscPrintf() with the communicator MPI_COMM_SELF
+    (where each process is considered separately).  Thus, this time the
+    output from different processes does not appear in any particular order.
   */
   ierr = PetscPrintf(MPI_COMM_SELF,"[%d] Jumbled Hello World\n",rank); CHKERRA(ierr);
   /*
-    Every PETSc program has to end with a call to PETScFinalize().
-    This routine calls MPI_Finalize()
+    Every PETSc program should conclude with a call to PETScFinalize().
+    This routine calls MPI_Finalize().
  */
   ierr = PetscFinalize(); CHKERRA(ierr);
   return 0;
