@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.136 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: vpscat.c,v 1.137 2000/05/20 20:25:29 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1808,7 +1808,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   int                    *source,*lens,rank,*owners;
   int                    size,*lowner,*start,found,lengthy;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int                    *owner,*starts,count,tag = ctx->tag,slen,ierr;
+  int                    *owner,*starts,count,tag,slen,ierr;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
@@ -1816,6 +1816,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   Map                    map;
   
   PetscFunctionBegin;
+  ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2125,6 +2126,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   if (nprocslocal) { 
     ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local,bs);CHKERRQ(ierr);
   }
+  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -2142,14 +2144,14 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   int                    *source,nprocslocal,*lens,rank = y->rank,*owners = yin->map->range;
   int                    ierr,size = y->size,*lowner,*start;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int                    *owner,*starts,count,tag = ctx->tag,slen;
+  int                    *owner,*starts,count,tag,slen;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,found;
   MPI_Comm               comm = yin->comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
 
   PetscFunctionBegin;
-
+  ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   /*  first count number of contributors to each processor */
   nprocs = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(nprocs);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
@@ -2344,6 +2346,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 
   to->bs   = 1;
   from->bs = 1;
+  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2354,7 +2357,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
 {
   int         *lens,rank,*owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag = ctx->tag,slen,ierr,start;
+  int         *owner,*starts,count,tag,slen,ierr,start;
   int         *rvalues,*svalues,base,imdex,nmax,*values,last;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
@@ -2362,6 +2365,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   PetscTruth  duplicate = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2510,7 +2514,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree(local_inidx);CHKERRQ(ierr);
-
+  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

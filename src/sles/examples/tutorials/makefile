@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.76 2000/03/28 13:55:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.77 2000/05/16 23:15:30 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -36,7 +36,7 @@ TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm clean
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm clean
 TESTEXAMPLES_15  = ex10.PETSc runex10_12  ex10.rm clean
-TESTEXAMPLES_17   =ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
 		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
