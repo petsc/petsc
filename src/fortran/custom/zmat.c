@@ -1,9 +1,10 @@
-/*$Id: zmat.c,v 1.95 2001/03/28 19:43:08 balay Exp bsmith $*/
+/*$Id: zmat.c,v 1.96 2001/03/30 15:58:58 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matsettype_                      MATSETTYPE
 #define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
 #define matmpibaijgetseqbaij_            MATMPIBAIJGETSEQBAIJ
 #define matgetrowij_                     MATGETROWIJ
@@ -56,6 +57,7 @@
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #define matsetvaluesstencil_             MATSETVALUESSTENCIL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
 #define matrestorerowij_                 matrestorerowij
@@ -110,6 +112,15 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matsettype_(Mat *x,CHAR type_name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type_name,len,t);
+  *ierr = MatSetType(*x,t);
+  FREECHAR(type_name,t);
+}
 
 void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,int *m,MatStencil *idxm,int *n,MatStencil *idxn,Scalar *v,InsertMode *addv,
                                         int *ierr)

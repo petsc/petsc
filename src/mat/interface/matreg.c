@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.14 2001/03/23 23:21:44 balay Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.15 2001/04/03 20:24:43 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -36,7 +36,7 @@ PetscFList MatList = 0;
 
 .keywords: Mat, set, method
 
-.seealso: PCSetType(), VecSetType(), MatCreate()
+.seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
 int MatSetType(Mat mat,MatType matype)
 {

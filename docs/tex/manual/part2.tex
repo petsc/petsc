@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.357 2001/04/04 17:07:54 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.358 2001/04/06 03:00:10 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -38,13 +38,13 @@ PETSc currently provides two basic vector types: sequential and parallel
 one can
 use the command \findex{VecCreateSeq()} \findex{Vec}
 \begin{verbatim}
-   ierr = VecCreateSeq(PETSC_COMM_SELF,int m,Vec *x);
+  VecCreateSeq(PETSC_COMM_SELF,int m,Vec *x);
 \end{verbatim}
 To create a parallel vector one can either specify the number of 
 components that will be stored on each processor or let PETSc decide. 
 The command \findex{VecCreateMPI()}
 \begin{verbatim}
-   ierr = VecCreateMPI(MPI_Comm comm,int m,int M,Vec *x);
+  VecCreateMPI(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
 creates a vector that is distributed over all processors in the communicator,
 \trl{comm}, where \trl{m} indicates the number 
@@ -54,8 +54,8 @@ dimension, but not both, can be set to \trl{PETSC_DECIDE} to
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
 More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFromOptions()}
 \begin{verbatim}
-   ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *v);
-   ierr = VecSetFromOptions(v);
+  VecCreate(MPI_Comm comm,int m,int M,Vec *v);
+  VecSetFromOptions(v);
 \end{verbatim}
 which automatically generates the appropriate vector type 
 (sequential or parallel) over all processors in \trl{comm}.
@@ -74,14 +74,14 @@ order on each processor in the communicator.
 One can assign a single value to all components of a vector with the 
 command \findex{VecSet()}
 \begin{verbatim}
-   ierr = VecSet(Scalar *value,Vec x);
+  VecSet(Scalar *value,Vec x);
 \end{verbatim}
 Assigning values to individual components of the vector is more 
 complicated, in order to make it possible to write efficient parallel 
 code.  Assigning a set of components is a two-step process: one 
 first calls  \findex{VecSetValues()} \findex{INSERT_VALUES}
 \begin{verbatim}
-   ierr = VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
 \end{verbatim}
 any number of times on any or all of the processors. The argument
 \trl{n} gives the number of components being set in this 
@@ -92,11 +92,11 @@ they are automatically stored in the correct location.
 Once all of the values have been inserted with \trl{VecSetValues()},
 one must call \sindex{assembly}
 \begin{verbatim}
-   ierr = VecAssemblyBegin(Vec x);
+  VecAssemblyBegin(Vec x);
 \end{verbatim}
 followed by \findex{VecAssemblyBegin()}\findex{VecAssemblyEnd()} 
 \begin{verbatim}
-   ierr = VecAssemblyEnd(Vec x);
+  VecAssemblyEnd(Vec x);
 \end{verbatim}
 to perform any needed message passing of nonlocal components.
 In order to allow the overlap of communication and calculation,
@@ -110,7 +110,7 @@ Often, rather than inserting elements in a vector, one may wish to
 add values. This process \sindex{vector values, setting}
 is also done with the command \findex{VecSetValues()}
 \begin{verbatim}
-   ierr = VecSetValues(Vec x,int n,int *indices, Scalar *values,ADD_VALUES);
+  VecSetValues(Vec x,int n,int *indices, Scalar *values,ADD_VALUES);
 \end{verbatim}
 Again \findex{ADD_VALUES} one must call the assembly routines \trl{
 VecAssemblyBegin()} and \trl{VecAssemblyEnd()} after all of the values
@@ -134,7 +134,7 @@ below for \trl{VecGetArray()}.
 
 One can examine a vector with the command \findex{VecView()}
 \begin{verbatim}
-   ierr = VecView(Vec x,PetscViewer v);
+  VecView(Vec x,PetscViewer v);
 \end{verbatim}
 To print the vector to the screen, one can use the viewer
 \findex{VIEWER_STDOUT_WORLD} \trl{VIEWER_STDOUT_WORLD}, which ensures
@@ -147,12 +147,12 @@ A variety of viewers are discussed further in Section \ref{sec:viewers}.
 To create a new vector of the same format as an existing vector, one uses
 the command \findex{VecDuplicate()}
 \begin{verbatim}
-   ierr = VecDuplicate(Vec old,Vec *new);
+  VecDuplicate(Vec old,Vec *new);
 \end{verbatim}
 To create several new vectors of the same format as an existing vector,
 one uses the command \findex{VecDuplicateVecs()}
 \begin{verbatim}
-   ierr = VecDuplicateVecs(Vec old,int n,Vec **new);
+  VecDuplicateVecs(Vec old,int n,Vec **new);
 \end{verbatim}
 This routine creates an array of pointers to vectors. The two routines 
 are very useful because they allow one to write library code that does 
@@ -165,11 +165,11 @@ differs slightly.
 When a vector is no longer needed, it should be destroyed with the 
 command \findex{VecDestroy()}
 \begin{verbatim}
-   ierr = VecDestroy(Vec x);
+  VecDestroy(Vec x);
 \end{verbatim}
 To destroy an array of vectors, one should use the command \findex{VecDestroyVecs()}
 \begin{verbatim}
-   ierr = VecDestroyVecs(Vec *vecs,int n);
+  VecDestroyVecs(Vec *vecs,int n);
 \end{verbatim}
 Note that the Fortran interface for \trl{VecDestroyVecs()} differs slightly,
 as described in Section~\ref{sec:fortvecd}.
@@ -180,11 +180,11 @@ rather than having PETSc internally allocate the array space.
 \sindex{vectors, user-supplied arrays} 
 Such vectors can be created with the routines
 \begin{verbatim}
-   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,int m,Scalar *array,Vec *x);
+  VecCreateSeqWithArray(PETSC_COMM_SELF,int m,Scalar *array,Vec *x);
 \end{verbatim}
 and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
 \begin{verbatim}
-   ierr = VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
+  VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
 \end{verbatim}
 Note that here one must provide the value \trl{m}, it cannot be \trl{PETSC_DECIDE} and
 the user is responsible for providing enough space in the array; \trl{m*sizeof(Scalar)}.
@@ -242,7 +242,7 @@ For parallel vectors that are distributed across the processors by ranges,
 it is possible to determine \findex{VecGetOwnershipRange()}
 a processor's local range with the routine
 \begin{verbatim}
-   ierr = VecGetOwnershipRange(Vec vec,int *low,int *high);
+  VecGetOwnershipRange(Vec vec,int *low,int *high);
 \end{verbatim}
 The argument \trl{low} indicates the first component owned by the local 
 processor, while \trl{high} specifies {\em one more than} the 
@@ -253,12 +253,12 @@ On occasion, the user needs to access the actual elements of the vector.
 The routine \trl{VecGetArray()} \findex{VecGetArray()}
 returns a pointer to the elements local to the processor:
 \begin{verbatim}
-   ierr = VecGetArray(Vec v,Scalar **array);
+  VecGetArray(Vec v,Scalar **array);
 \end{verbatim}
 When access to the array is no longer
 needed, the user should call
 \begin{verbatim}
-   ierr = VecRestoreArray(Vec v, Scalar **array);
+  VecRestoreArray(Vec v, Scalar **array);
 \end{verbatim}
 Minor differences exist in the Fortran interface for \trl{VecGetArray()} and 
 \trl{VecRestoreArray()}, as discussed in Section \ref{sec:fortranarrays}.  
@@ -270,11 +270,11 @@ no time to call and can be used efficiently.
 The number of elements stored locally can be accessed with
 \findex{VecGetLocalSize()}
 \begin{verbatim}
-   ierr = VecGetLocalSize(Vec v,int *size);
+  VecGetLocalSize(Vec v,int *size);
 \end{verbatim}
 The global vector length can be determined by \findex{VecGetSize()}
 \begin{verbatim}
-   ierr = VecGetSize(Vec v,int *size);
+  VecGetSize(Vec v,int *size);
 \end{verbatim}
 
 
@@ -283,19 +283,19 @@ split phase versions of these that allow several independent inner products and/
 to share the same communication (thus improving parallel efficiency). For example,
 one may have code such as 
 \begin{verbatim}
-  ierr = VecDot(Vec x,Vec y,Scalar *dot);
-  ierr = VecNorm(Vec x,NormType NORM_2,double *norm2);
-  ierr = VecNorm(Vec x,NormType NORM_1,double *norm1);
+ VecDot(Vec x,Vec y,Scalar *dot);
+ VecNorm(Vec x,NormType NORM_2,double *norm2);
+ VecNorm(Vec x,NormType NORM_1,double *norm1);
 \end{verbatim}
 This code works fine, the problem is that it performs three seperate parallel communication
 operations. Instead one can write 
 \begin{verbatim}
-  ierr = VecDotBegin(Vec x,Vec y,Scalar *dot);
-  ierr = VecNormBegin(Vec x,NormType NORM_2,double *norm2);
-  ierr = VecNormBegin(Vec x,NormType NORM_1,double *norm1);
-  ierr = VecDotEnd(Vec x,Vec y,Scalar *dot);
-  ierr = VecNormEnd(Vec x,NormType NORM_2,double *norm2);
-  ierr = VecNormEnd(Vec x,NormType NORM_1,double *norm1);
+ VecDotBegin(Vec x,Vec y,Scalar *dot);
+ VecNormBegin(Vec x,NormType NORM_2,double *norm2);
+ VecNormBegin(Vec x,NormType NORM_1,double *norm1);
+ VecDotEnd(Vec x,Vec y,Scalar *dot);
+ VecNormEnd(Vec x,NormType NORM_2,double *norm2);
+ VecNormEnd(Vec x,NormType NORM_1,double *norm1);
 \end{verbatim}
 With this code, \findex{VecDotBegin()} \findex{VecDotEnd()} \findex{VecNormBegin()} 
 the \findex{VecNormEnd()} communication is delayed until the first call to \trl{VecxxxEnd()} at which 
@@ -347,7 +347,7 @@ PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
 (called an \trl{AO} in PETSc), one can call the routine 
 \begin{verbatim}
-   ierr = AOCreateBasic(MPI_Comm comm,int n,int *apordering,int *petscordering,
+  AOCreateBasic(MPI_Comm comm,int n,int *apordering,int *petscordering,
                         AO *ao);
 \end{verbatim}
 The \findex{AOCreateBasic} 
@@ -368,19 +368,19 @@ We can write this correspondence as
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processors, one could call
 \begin{verbatim}
-   ierr = AOCreateBasic(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
+  AOCreateBasic(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
 \end{verbatim}
 on the first processor and 
 \begin{verbatim}
-   ierr = AOCreateBasic(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
+  AOCreateBasic(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
 \end{verbatim}
 on the other processor.
 
 Once the application ordering has been created, it can be used
 with either of the commands
 \begin{verbatim}
-   ierr = AOPetscToApplication(AO ao,int n,int *indices);
-   ierr = AOApplicationToPetsc(AO ao,int n,int *indices);
+  AOPetscToApplication(AO ao,int n,int *indices);
+  AOApplicationToPetsc(AO ao,int n,int *indices);
 \end{verbatim}
 Upon input, the \trl{n}-dimensional array \trl{indices} specifies 
 the indices to be mapped, while upon output, \trl{indices} contains
@@ -394,7 +394,7 @@ in the MPI communicator that was used in the call to \trl{AOCreateBasic()}.
 
 An alternative routine to create the application ordering, \trl{AO}, is 
 \begin{verbatim}
-   ierr = AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
+  AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{verbatim}
 \findex{AOCreateBasicIS}
 where index sets are used instead of integer arrays. 
@@ -402,8 +402,8 @@ where index sets are used instead of integer arrays.
 The 
 mapping routines 
 \begin{verbatim}
-   ierr = AOPetscToApplicationIS(AO ao,IS indices);
-   ierr = AOApplicationToPetscIS(AO ao,IS indices);
+  AOPetscToApplicationIS(AO ao,IS indices);
+  AOApplicationToPetscIS(AO ao,IS indices);
 \end{verbatim}
 \findex{AOPetscToApplicationIS()} \findex{AOApplicationToPetscIS()}
 will map index sets (IS objects) between orderings. Both the \trl{AOXxxToYyy()} and 
@@ -438,13 +438,13 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{verbatim}
-   ierr = ISLocalToGlobalMappingCreate(int N,int* globalnum,
+  ISLocalToGlobalMappingCreate(int N,int* globalnum,
                                        ISLocalToGlobalMapping* ctx);
-   ierr = ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,
+  ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,
                                       int *out);
-   ierr = ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,
+  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,
                                         IS* isout);
-   ierr = ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
+  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{verbatim}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
 \findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
@@ -469,7 +469,7 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of indices in a global numbering, the routine
 \begin{verbatim}
-   ierr = ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,
+  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,
                                       ISGlobalToLocalMappingType type,int nin,
                                       int *idxin,int *nout,int *idxout);
 \end{verbatim}
@@ -493,12 +493,12 @@ numbering rather than the global node numbering (e.g.,  each processor may
 maintain its own sublist of vertices and elements and number them locally).
 To set values into a vector with the local numbering, one must first call
 \begin{verbatim}
-   ierr = VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
+  VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \end{verbatim}
 \findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
 and then call \findex{VecSetValuesLocal}
 \begin{verbatim}
-   ierr = VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
 \end{verbatim}
 Now the \trl{indices} use the local numbering, rather than the global.
 
@@ -549,7 +549,7 @@ information.
 One creates a distributed array communication data structure 
 in two dimensions with the command 
 \begin{verbatim}
-   ierr = DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,
+  DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,
                      int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
 \end{verbatim}
 The \findex{DACreate2d} \sindex{array, distributed} arguments
@@ -598,9 +598,9 @@ The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{verbatim}
-   ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,
+  DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,
                      DA *inra);
-   ierr = DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
+  DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                      int M,int N,int P,int m,int n,int p,int w,int s,int *lx,
                      int *ly,int *lz,DA *inra);
 \end{verbatim}
@@ -623,8 +623,8 @@ allocate any associated storage space for field values.  Instead, the
 user can create vector objects that use the \trl{DA} layout
 information with the routines
 \begin{verbatim}
-   ierr = DACreateGlobalVector(DA da,Vec *g);
-   ierr = DACreateLocalVector(DA da,Vec *l);
+  DACreateGlobalVector(DA da,Vec *g);
+  DACreateLocalVector(DA da,Vec *l);
 \end{verbatim}
 \findex{DACreateGlobalVector}
 \findex{DACreateLocalVector()}
@@ -654,8 +654,8 @@ on a local portion of the vector, including the ghost points.
 This may be done by scattering a global vector into its 
 local parts by using the two-stage commands
 \begin{verbatim}
-   ierr = DAGlobalToLocalBegin(DA da,Vec g,InsertMode iora,Vec l);
-   ierr = DAGlobalToLocalEnd(DA da,Vec g,InsertMode iora,Vec l);
+  DAGlobalToLocalBegin(DA da,Vec g,InsertMode iora,Vec l);
+  DAGlobalToLocalEnd(DA da,Vec g,InsertMode iora,Vec l);
 \end{verbatim}
 which allow the overlap of communication and computation.
 \findex{DAGlobalToLocalEnd()}  \findex{DAGlobalToLocalBegin()}
@@ -670,7 +670,7 @@ The \trl{InsertMode} can be either \trl{ADD_VALUES} or \trl{INSERT_VALUES}.
 One can scatter the local patches into the distributed vector
 with the command \findex{DALocalToGlobal()}
 \begin{verbatim}
-   ierr = DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g);
+  DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g);
 \end{verbatim}
 Note that this function is not
 subdivided into beginning and ending phases, since it is purely local.
@@ -681,8 +681,8 @@ a local vector with correct ghost point values.
 This scatter may be done by \findex{DALocalToLocalBegin()}
 commands \findex{DALocalToLocalEnd()}
 \begin{verbatim}
-   ierr = DALocalToLocalBegin(DA da,Vec l1,InsertMode iora,Vec l2);
-   ierr = DALocalToLocalEnd(DA da,Vec l1,InsertMode iora,Vec l2);
+  DALocalToLocalBegin(DA da,Vec l1,InsertMode iora,Vec l2);
+  DALocalToLocalEnd(DA da,Vec l1,InsertMode iora,Vec l2);
 \end{verbatim}
 Since both local vectors, \trl{l1} and \trl{l2},
 must be compatible with the distributed array, \trl{da}, they should be
@@ -695,7 +695,7 @@ used in the local-to-global (\trl{ltog}), global-to-local
 (\trl{gtol}), and local-to-local (\trl{ltol})
 scatters with the command \findex{DAGetScatter()}
 \begin{verbatim}
-   ierr = DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
+  DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
 \end{verbatim}
 Most users should not need to use these contexts.
 
@@ -705,19 +705,19 @@ In most applications the local ghosted vectors are only needed during user
 essentially no CPU time) way to obtain these work vectors and return them when
 they are no longer needed. This is done with the routines
 \begin{verbatim}
-   ierr = DAGetLocalVector(DA da,Vec *l);
+  DAGetLocalVector(DA da,Vec *l);
    .... use the local vector l
-   ierr = DARestoreLocalVector(DA da,Vec *l);
+  DARestoreLocalVector(DA da,Vec *l);
 \end{verbatim}
 
 \subsection{Accessing the Vector Entries for DA Vectors}
 PETSc provides an easy way to set values into the DA Vectors and access them using
 the natural grid indexing. This is done with the routines 
 \begin{verbatim}
-   ierr = DAVecGetArray(DA da,Vec l,(void**)array);
+  DAVecGetArray(DA da,Vec l,(void**)array);
    .... use the array indexing it with 1 or 2 or 3 dimensions 
    .... depending on the dimension of the DA
-   ierr = DAVecRestoreArray(DA da,Vec l,(void**)array);
+  DAVecRestoreArray(DA da,Vec l,(void**)array);
 \end{verbatim}
 The vector l can be either a global vector or a local vector.
 The {\tt array} is accessed using the usual {\bf global} indexing
@@ -726,13 +726,13 @@ For example for a scalar problem in two dimensions one could do
 \begin{verbatim}
    Scalar **f,**u;
    ...
-   ierr = DAVecGetArray(DA da,Vec local,(void**)u);
-   ierr = DAVecGetArray(DA da,Vec global,(void**)f);
+  DAVecGetArray(DA da,Vec local,(void**)u);
+  DAVecGetArray(DA da,Vec global,(void**)f);
    ...
       f[i][j] = u[i][j] - ...
    ...
-   ierr = DAVecRestoreArray(DA da,Vec local,(void**)u);
-   ierr = DAVecRestoreArray(DA da,Vec global,(void**)f);
+  DAVecRestoreArray(DA da,Vec local,(void**)u);
+  DAVecRestoreArray(DA da,Vec global,(void**)f);
 \end{verbatim}
 See \trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c} for a 
 complete example and See \trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c} for an
@@ -745,8 +745,8 @@ The global indices of the lower left corner of the local portion of the array
 as well as the local array size can be obtained with the commands
 \findex{DAGetCorners()} \findex{DAGetGhostCorners()}
 \begin{verbatim}
-   ierr = DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
-   ierr = DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
+  DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
+  DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
 \end{verbatim}
 The first version excludes any ghost points, while the second version
 includes them. 
@@ -771,7 +771,7 @@ To assemble global stiffness matrices, one needs either
 including the ghost nodes. The number may be determined by using the 
 command \findex{DAGetGlobalIndices()}
 \begin{verbatim}
-   ierr = DAGetGlobalIndices(DA da,int *n,int **idx);
+  DAGetGlobalIndices(DA da,int *n,int **idx);
 \end{verbatim}
 The output argument \trl{n} contains the number of 
 local nodes, including ghost nodes, while \trl{idx} contains
@@ -782,12 +782,12 @@ for details.
 2) or to set up the vectors and matrices so that their entries may be
 added using the local numbering. This is done by first calling 
 \begin{verbatim}
-   ierr = DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map);
+  DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map);
 \end{verbatim}
 followed by 
 \begin{verbatim}
-   ierr = VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
-   ierr = MatSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
+  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
+  MatSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
 \end{verbatim}
 Now entries may be added to the vector and matrix using the local numbering
 and \trl{VecSetValuesLocal()} and \trl{MatSetValuesLocal()}.
@@ -800,7 +800,7 @@ an application ordering \trl{AO} (see Section \ref{sec:ao}) that maps
 between the natural ordering on a rectangular grid and the ordering PETSc
 uses to parallize. This ordering context can be obtained with the command
 \begin{verbatim}
-   ierr = DAGetAO(DA da,AO *ao);
+  DAGetAO(DA da,AO *ao);
 \end{verbatim}
 \findex{DAGetAO}
 In Figure \ref{fig:daao} we indicate the orderings for a two-dimensional distributed 
@@ -845,7 +845,7 @@ operations on vectors and matrices.
 The following command creates a index set based on a list 
 of integers: \findex{ISCreateGeneral()}
 \begin{verbatim}
-   ierr = ISCreateGeneral(MPI_Comm comm,int n,int *indices, IS *is);
+  ISCreateGeneral(MPI_Comm comm,int n,int *indices, IS *is);
 \end{verbatim}
 This routine essentially copies the \trl{n} indices passed 
 to it by the integer array \trl{indices}.  
@@ -857,12 +857,12 @@ processors that will be using the \trl{IS}.
 Another standard index set is defined by a starting point (\trl{first}) and a
 stride (\trl{step}), \sindex{stride} and can be created with the command
 \begin{verbatim}
-   ierr = ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
+  ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
 \end{verbatim}
 
 Index sets can be destroyed with the command \findex{ISDestroy()}
 \begin{verbatim}
-   ierr = ISDestroy(IS is); 
+  ISDestroy(IS is); 
 \end{verbatim}
 
 On rare occasions the user may have to access information directly 
@@ -870,9 +870,9 @@ from an index set. \findex{ISGetSize()}
 Several commands \findex{ISStrideGetInfo()} \findex{ISGetIndices()}
 assist in this process:
 \begin{verbatim}
-   ierr = ISGetSize(IS is,int *size);
-   ierr = ISStrideGetInfo(IS is,int *first,int *stride);
-   ierr = ISGetIndices(IS is,int **indices);
+  ISGetSize(IS is,int *size);
+  ISStrideGetInfo(IS is,int *first,int *stride);
+  ISGetIndices(IS is,int **indices);
 \end{verbatim}
 The function \trl{ISGetIndices()} returns a pointer to a list of the 
 indices in the index set. 
@@ -881,7 +881,7 @@ temporary array of indices created specifically for a given routine.
 Thus, once the user finishes using the array of indices, 
 the routine \findex{ISRestoreIndices()}
 \begin{verbatim}
-   ierr = ISRestoreIndices(IS is, int **indices); 
+  ISRestoreIndices(IS is, int **indices); 
 \end{verbatim}
 should be called to ensure that the system can free the space it 
 may have used to generate the list of indices.
@@ -889,7 +889,7 @@ may have used to generate the list of indices.
 A blocked version of the index sets can be created with the command
 \findex{ISCreateBlock}
 \begin{verbatim}
-   ierr = ISCreateBlock(MPI_Comm comm,int bs,int n,int *indices, IS *is);
+  ISCreateBlock(MPI_Comm comm,int bs,int n,int *indices, IS *is);
 \end{verbatim}
 This version is used for defining operations in which each element of the index
 set refers to a block of \trl{bs} vector entries.  Related routines analogous
@@ -915,10 +915,10 @@ actually a combination of scatters and gathers.
 To copy selected components from one vector 
 to another, one uses the following set of commands:
 \begin{verbatim}
-   ierr = VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
-   ierr = VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
-   ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
-   ierr = VecScatterDestroy(VecScatter ctx);
+  VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+  VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
+  VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
+  VecScatterDestroy(VecScatter ctx);
 \end{verbatim} 
 Here \trl{ix} denotes the index set of the first vector, while \trl{
 iy} indicates the index set of the destination vector.  The vectors
@@ -954,8 +954,8 @@ In some cases one may wish to ``undo'' a scatter, that is perform the
 scatter backwards switching the roles of the sender and receiver. This is 
 done by using 
 \begin{verbatim}
-   ierr = VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
-   ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+  VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+  VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
 \end{verbatim} 
 \findex{SCATTER_REVERSE} Note that the roles of the first 
 two arguments to these routines must be swapped whenever the \trl{SCATTER_REVERSE}
@@ -1025,16 +1025,16 @@ vector. In the simplest case this may be written as
 \begin{verbatim}
    Function: (Input Vec globalin, Output Vec globalout)
 
-   ierr = VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,
+  VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,
                           ScatterMode SCATTER_FORWARD,VecScatter scatter);
-   ierr = VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT_VALUES,
+  VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT_VALUES,
                         ScatterMode SCATTER_FORWARD,VecScatter scatter);
    /*
         For example,  do local calculations from localin to localout 
    */
-   ierr = VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD_VALUES,
+  VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD_VALUES,
                           ScatterMode SCATTER_REVERSE,VecScatter scatter);
-   ierr = VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD_VALUES,
+  VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD_VALUES,
                         ScatterMode SCATTER_REVERSE,VecScatter scatter);
 \end{verbatim}
 
@@ -1058,11 +1058,11 @@ There are two minor drawbacks to the basic approach described above:
 An alternative approach is to allocate global vectors with space preallocated for 
 the ghost values; this may be done with either 
 \begin{verbatim}
-   ierr = VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
+  VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
 \end{verbatim}
 or
 \begin{verbatim}
-   ierr = VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,
+  VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,
                                   Scalar *array,Vec *vv)
 \end{verbatim}
 Here \findex{VecCreateGhost()} \findex{VecCreateGhostWithArray()} \trl{n} is the 
@@ -1077,7 +1077,7 @@ by \trl{VecCreateMPI()}, the difference is that the ghosted vector has an additi
 ``local'' representation that allows one to access the ghost locations. This is done
 through the call to \findex{VecGhostGetLocalForm()} 
 \begin{verbatim}
-  ierr = VecGhostGetLocalForm(Vec g,Vec *l);
+ VecGhostGetLocalForm(Vec g,Vec *l);
 \end{verbatim}
 The vector \trl{l} is a \findex{VecGhostRestoreLocalForm()}
 sequential representation of the parallel vector \trl{g} 
@@ -1089,20 +1089,20 @@ are accessed in \trl{g} using the global numbering.
 A common usage of a ghosted vector is given by
 \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
 \begin{verbatim}
-   ierr = VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
+  VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD);
-   ierr = VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
+  VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD);
-   ierr = VecGhostGetLocalForm(Vec globalin,Vec *localin);
-   ierr = VecGhostGetLocalForm(Vec globalout,Vec *localout);
+  VecGhostGetLocalForm(Vec globalin,Vec *localin);
+  VecGhostGetLocalForm(Vec globalout,Vec *localout);
    /*
       Do local calculations from localin to localout 
    */
-   ierr = VecGhostRestoreLocalForm(Vec globalin,Vec *localin);
-   ierr = VecGhostRestoreLocalForm(Vec globalout,Vec *localout);
-   ierr = VecGhostUpdateBegin(Vec globalout,InsertMode ADD_VALUES,ScatterMode
+  VecGhostRestoreLocalForm(Vec globalin,Vec *localin);
+  VecGhostRestoreLocalForm(Vec globalout,Vec *localout);
+  VecGhostUpdateBegin(Vec globalout,InsertMode ADD_VALUES,ScatterMode
                           SCATTER_REVERSE);
-   ierr = VecGhostUpdateEnd(Vec globalout,InsertMode ADD_VALUES,ScatterMode
+  VecGhostUpdateEnd(Vec globalout,InsertMode ADD_VALUES,ScatterMode
                           SCATTER_REVERSE);
 \end{verbatim}
       
@@ -1149,7 +1149,7 @@ the particular storage formats of the matrices.
 
 The simplest routine for forming a PETSc matrix, \trl{A}, is \findex{MatCreate()}
 \begin{verbatim}
-   ierr = MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
+  MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 \end{verbatim}
 This routine generates a sequential matrix when running on one
 processor and a parallel matrix for two or more processors; the
@@ -1166,12 +1166,12 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{verbatim}
-   ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
                        INSERT_VALUES);
 \end{verbatim}
 or 
 \begin{verbatim}
-   ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
                        ADD_VALUES);
 \end{verbatim}
 This routine inserts or adds a logically dense subblock of dimension
@@ -1186,7 +1186,7 @@ By default the values are given in row major order, which is the opposite
 of the Fortran convention. To allow the insertion of values in column 
 major order, one can call the command \findex{MatSetOption()}
 \begin{verbatim}
-   ierr = MatSetOption(Mat A,MAT_COLUMN_ORIENTED);
+  MatSetOption(Mat A,MAT_COLUMN_ORIENTED);
 \end{verbatim}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently support
 the column-oriented option!
@@ -1208,11 +1208,11 @@ assembly process.  To indicate to PETSc that the row (\trl{im}) or
 column (\trl{in}) indices set with \trl{MatSetValues()} are sorted,
 one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
 \begin{verbatim}
-   ierr = MatSetOption(Mat A,MAT_ROWS_SORTED);
+  MatSetOption(Mat A,MAT_ROWS_SORTED);
 \end{verbatim}
 or 
 \begin{verbatim}
-   ierr = MatSetOption(Mat A,MAT_COLUMNS_SORTED);
+  MatSetOption(Mat A,MAT_COLUMNS_SORTED);
 \end{verbatim}
 Note that these flags indicate the format of the data passed in with 
 \trl{MatSetValues()}; they do not have anything to do with how the sparse
@@ -1222,8 +1222,8 @@ After the matrix elements have been inserted or added into the matrix,
 they must be processed before they can be used. The routines for matrix
 processing are \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{verbatim}
-   ierr = MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
-   ierr = MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
+  MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
+  MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
 \end{verbatim}
 By placing other code between these two calls, the user can perform
 computations while messages are in transition.
@@ -1243,7 +1243,7 @@ application programmer with this task for matrices that are
 distributed across the processors by ranges, the routine
 \findex{MatGetOwnershipRange()}
 \begin{verbatim}
-   ierr = MatGetOwnershipRange(Mat A,int *first_row,int *last_row);
+  MatGetOwnershipRange(Mat A,int *first_row,int *last_row);
 \end{verbatim}
 informs the user that all rows from \trl{first_row} to 
 \trl{last_row-1} will be stored on the local processor.
@@ -1260,7 +1260,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{verbatim}
-   ierr = MatSetOption(Mat mat,MAT_NO_NEW_NONZERO_LOCATIONS);
+  MatSetOption(Mat mat,MAT_NO_NEW_NONZERO_LOCATIONS);
 \end{verbatim}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1298,7 +1298,7 @@ To create a sequential AIJ sparse matrix, \trl{A},
 \findex{MatCreateSeqAIJ()} with \trl{m} rows and \trl{n} columns,
 one uses the command
 \begin{verbatim}
-   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nnz,Mat *A);
+  MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nnz,Mat *A);
 \end{verbatim}
 where \trl{nz} or \trl{nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set \trl{nz=0} and \trl{
@@ -1420,7 +1420,7 @@ expensive.
 Parallel sparse matrices with the AIJ 
 format can be created with the command \findex{MatCreateMPIAIJ()}
 \begin{verbatim}
-   ierr = MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,
+  MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,
                           int *d_nnz, int o_nz,int *o_nnz,Mat *A);
 \end{verbatim}
 \trl{A} is the newly created matrix, while the arguments \trl{m}, \trl{n}, 
@@ -1573,7 +1573,7 @@ usual Fortran style.  To create a sequential, dense PETSc matrix,
 \trl{A} of dimensions \trl{m} by \trl{n}, the user should
 call \findex{MatCreateSeqDense()}
 \begin{verbatim}
-   ierr = MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,Scalar *data,Mat *A);
+  MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,Scalar *data,Mat *A);
 \end{verbatim}
 The variable \trl{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
@@ -1581,7 +1581,7 @@ wish to allocate their own storage space).  Most users should merely
 set \trl{data} to \trl{PETSC_NULL} for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \trl{A}, the user should call
 \begin{verbatim}
-   ierr = MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,
+  MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,
                             Mat *A)
 \end{verbatim}
 The arguments \trl{m}, \trl{n}, 
@@ -1606,12 +1606,12 @@ The parallel matrix can multiply a vector with \trl{n}
 local entries, returning a vector with \trl{m} local entries. That is, 
 to form the product \findex{MatMult()}
 \begin{verbatim}
-   ierr = MatMult(Mat A,Vec x,Vec y);
+  MatMult(Mat A,Vec x,Vec y);
 \end{verbatim}
 the vectors \trl{x} and \trl{y} should be generated with 
 \begin{verbatim}
-   ierr = VecCreateMPI(MPI_Comm comm,n,N,&x);
-   ierr = VecCreateMPI(MPI_Comm comm,m,M,&y);
+  VecCreateMPI(MPI_Comm comm,n,N,&x);
+  VecCreateMPI(MPI_Comm comm,m,M,&y);
 \end{verbatim}
 By default, if the user lets PETSc decide the number of components to
 be stored locally (by passing in \trl{PETSC_DECIDE} as the second
@@ -1622,13 +1622,13 @@ parallel matrix-vector operations.
 Along with the matrix-vector multiplication routine, there is 
 a version for the transpose of the matrix, \findex{MatMultTrans()}
 \begin{verbatim}
-   ierr = MatMultTrans(Mat A,Vec x,Vec y);
+  MatMultTrans(Mat A,Vec x,Vec y);
 \end{verbatim}
 There are also versions that add the result
 to another vector: \findex{MatMultAdd()} \findex{MatMultTransAdd()}
 \begin{verbatim}
-   ierr = MatMultAdd(Mat A,Vec x,Vec y,Vec w);
-   ierr = MatMultTransAdd(Mat A,Vec x,Vec y,Vec w);
+  MatMultAdd(Mat A,Vec x,Vec y,Vec w);
+  MatMultTransAdd(Mat A,Vec x,Vec y,Vec w);
 \end{verbatim}
 These routines, respectively, produce $ w = A*x + y $ and $ w = A^{T}*x + y$ . 
 In C it is legal for the vectors \trl{y} and \trl{w} to be identical.
@@ -1638,17 +1638,17 @@ but we allow it anyway.
 One can print a matrix (sequential or parallel) to the screen with the 
 command \findex{MatView()}
 \begin{verbatim}
-   ierr = MatView(Mat mat,PETSC_VIEWER_STDOUT_WORLD);
+  MatView(Mat mat,PETSC_VIEWER_STDOUT_WORLD);
 \end{verbatim}
 Other viewers can be used as well. For instance, one can draw the
 nonzero stucture of the matrix into the default X-window with the 
 command 
 \begin{verbatim}
-   ierr = MatView(Mat mat,PETSC_VIEWER_DRAW_WORLD);
+  MatView(Mat mat,PETSC_VIEWER_DRAW_WORLD);
 \end{verbatim}
 Use \findex{VIEWER_DRAW_WORLD}
 \begin{verbatim}
-   ierr = MatView(Mat mat,PetscViewer viewer);
+  MatView(Mat mat,PetscViewer viewer);
 \end{verbatim}
 where \trl{viewer} was obtained with \trl{ViewerDrawOpenX()}.
 \findex{ViewerDrawOpenX} 
@@ -1695,7 +1695,7 @@ can use the following command to create a \trl{Mat} structure without
 ever actually generating the matrix:
 \findex{MatCreateShell()}
 \begin{verbatim}
-   ierr = MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *mat);
+  MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *mat);
 \end{verbatim}
 Here \trl{M} and \trl{N} are the global matrix dimensions (rows and
 columns), \trl{m} and \trl{n} are the local matrix dimensions, and
@@ -1705,12 +1705,12 @@ parameters.  Most matrix-free algorithms require only the application
 of the linear operator to a vector. To provide this action, the user
 must write a routine with the calling sequence
 \begin{verbatim}
-   ierr = UserMult(Mat mat,Vec x,Vec y);
+  UserMult(Mat mat,Vec x,Vec y);
 \end{verbatim}
 and then associate it with the matrix, \trl{mat}, by using the 
 command \findex{MatShellSetOperation()}
 \begin{verbatim}
-   ierr = MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
+  MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
                                (void(*)()) int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
 Here \trl{MATOP_MULT} is the name of the operation for matrix-vector
@@ -1757,7 +1757,7 @@ structure of a matrix, rather than determining it anew every time
 the matrix is generated.  To retain a given matrix but reinitialize
 its contents, one can employ \findex{MatZeroEntries()}
 \begin{verbatim}
-   ierr = MatZeroEntries(Mat A);
+  MatZeroEntries(Mat A);
 \end{verbatim}
 This routine will zero the matrix entries in the 
 data structure but keep all the data that indicates where the nonzeros
@@ -1772,7 +1772,7 @@ by calling \trl{MatSetValues()}.
 %To prevent the allocation of additional memory and simply discard those 
 %new entries, one can use the option \findex{MatSetOption()}
 %\begin{verbatim}
-%   ierr = MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+%  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
 %\end{verbatim}
 %Once the matrix has been assembled, one can factor it numerically
 %without repeating the ordering or the symbolic factorization. 
@@ -1797,7 +1797,7 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command \findex{MatZeroRows()}
 \begin{verbatim}
-   ierr = MatZeroRows(Mat A,IS rows,Scalar *diag_value);
+  MatZeroRows(Mat A,IS rows,Scalar *diag_value);
 \end{verbatim}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is \trl{PETSC_NULL}, it 
@@ -1812,7 +1812,7 @@ in the diagonal entry of the eliminated rows.
 %can call \trl{MatZeroRows()} in the first iteration. Then, before generating 
 %the matrix in the second iteration the user should call
 %\begin{verbatim}
-%   ierr = MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+%  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
 %\end{verbatim}
 %From that point, \findex{MatSetOption()}
 %no new values will be inserted into those (boundary) rows of 
@@ -1820,7 +1820,7 @@ in the diagonal entry of the eliminated rows.
 
 Another matrix routine of interest is \findex{MatConvert()}
 \begin{verbatim}
-   ierr = MatConvert(Mat mat,MatType newtype,Mat *M)
+  MatConvert(Mat mat,MatType newtype,Mat *M)
 \end{verbatim}
 which converts the matrix \trl{mat} to new matrix, \trl{M}, that has
 either the same or different format.  Set \trl{newtype} to \trl{MATSAME}
@@ -1834,7 +1834,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
 the command 
 \begin{verbatim}
-   ierr = MatGetRow(Mat A,int row, int *ncols,int **cols,Scalar **vals);
+  MatGetRow(Mat A,int row, int *ncols,int **cols,Scalar **vals);
 \end{verbatim}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices
@@ -1849,7 +1849,7 @@ To change the matrix entries, one must use \trl{MatSetValues()}.
 
 Once the user has finished using a row, he or she {\em must} call 
 \begin{verbatim}
-   ierr = MatRestoreRow(Mat A,int row,int *ncols,int **cols,Scalar **vals);
+  MatRestoreRow(Mat A,int row,int *ncols,int **cols,Scalar **vals);
 \end{verbatim}
 to free any space that was allocated during the call to \trl{MatGetRow()}.
 
@@ -1877,7 +1877,7 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{verbatim}
-  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja,
+ MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja,
                          int *weights,Mat *Adj);
 \end{verbatim}
 The argument \trl{mlocal} indicates the number of rows of the graph being provided
@@ -1920,13 +1920,13 @@ and (2) partition by vertex.
 Once the connectivity matrix has been created the following code will generate the 
 renumbering required for the new partition
 \begin{verbatim}
-  ierr = MatPartitioningCreate(MPI_Comm comm,MatPartitioning *part);
-  ierr = MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);
-  ierr = MatPartitioningSetFromOptions(MatPartitioning part);
-  ierr = MatPartitioningApply(MatPartitioning part,IS *is);
-  ierr = MatPartitioningDestroy(MatPartitioning part); 
-  ierr = MatDestroy(Mat Adj);
-  ierr = ISPartitioningToNumbering(IS is,IS *isg);
+ MatPartitioningCreate(MPI_Comm comm,MatPartitioning *part);
+ MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);
+ MatPartitioningSetFromOptions(MatPartitioning part);
+ MatPartitioningApply(MatPartitioning part,IS *is);
+ MatPartitioningDestroy(MatPartitioning part); 
+ MatDestroy(Mat Adj);
+ ISPartitioningToNumbering(IS is,IS *isg);
 \end{verbatim}
 The \findex{MatPartitioningCreate()} \findex{MatPartitioningSetAdjacency()} 
 \findex{MatPartitioningSetFromOptions()} \findex{MatPartitioningApply()} 
@@ -1938,7 +1938,7 @@ Now that a new numbering of the nodes has been determined one must
 renumber all the nodes and migrate the grid information to the correct processor.
 The command
 \begin{verbatim}
-  ierr = AOCreateBasicIS(isg,PETSC_NULL,&ao);
+ AOCreateBasicIS(isg,PETSC_NULL,&ao);
 \end{verbatim}
 generates, see Section \ref{sec:ao}, an AO object that can be used in conjunction with the
 \trl{is} and \trl{gis} to move the relevant grid information to the correct processor
@@ -1995,7 +1995,7 @@ directly, users should employ the interface of SLES.
 To solve a linear system with SLES, one must first create a solver context 
 with the command \findex{SLESCreate()}
 \begin{verbatim}
-   ierr = SLESCreate(MPI_Comm comm,SLES *sles); 
+  SLESCreate(MPI_Comm comm,SLES *sles); 
 \end{verbatim}
 Here \trl{comm} is the MPI communicator, and \trl{sles} is the newly
 formed solver context.
@@ -2003,7 +2003,7 @@ Before actually solving a linear system with SLES, the user must call
 the following routine to set the matrices associated with the linear
 system: \findex{SLESSetOperators()}
 \begin{verbatim}
-   ierr = SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag);
+  SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag);
 \end{verbatim}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.  
@@ -2037,14 +2037,14 @@ the flag \trl{DIFFERENT_NONZERO_PATTERN}.
  
 Much of the power of SLES can be accessed through the single routine
 \begin{verbatim}
-   ierr = SLESSetFromOptions(SLES sles);
+  SLESSetFromOptions(SLES sles);
 \end{verbatim}
 This \findex{SLESSetFromOptions()}
 routine accepts the options \trl{-h} and \trl{-help} as well as 
 any of the KSP and PC options discussed below. 
 To solve a linear system, one merely executes the command \findex{SLESSolve()}
 \begin{verbatim}
-   ierr = SLESSolve(SLES sles,Vec b,Vec x,int *its);
+  SLESSolve(SLES sles,Vec b,Vec x,int *its);
 \end{verbatim}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
 solution vectors.  On return, the parameter \trl{its} contains
@@ -2056,7 +2056,7 @@ Note that multiple linear solves can be performed by the same SLES context.
 Once the SLES context is no longer needed, it should be destroyed with the 
 command \findex{SLESDestroy()}
 \begin{verbatim}
-   ierr = SLESDestroy(SLES sles);
+  SLESDestroy(SLES sles);
 \end{verbatim}
 
 The above procedure is sufficient for general use of the SLES package.
@@ -2066,7 +2066,7 @@ performance data using the PETSc profiling facilities (as discussed in
 Chapter~\ref{ch:profiling}).
 In this case, the user can optionally explicitly call \findex{SLESSetUp()}
 \begin{verbatim}
-   ierr = SLESSetUp(SLES sles,Vec b,Vec x);
+  SLESSetUp(SLES sles,Vec b,Vec x);
 \end{verbatim}
 before calling \trl{SLESSolve()} to perform any setup required for 
 the linear solvers.  The explicit call of this routine enables the
@@ -2082,8 +2082,8 @@ To allow application programmers to set any of the preconditioner or
 Krylov subspace options directly within the code, we provide routines
 that extract the PC and KSP contexts, \findex{SLESGetPC()}
 \begin{verbatim}
-   ierr = SLESGetPC(SLES sles,PC *pc);
-   ierr = SLESGetKSP(SLES sles,KSP *ksp);
+  SLESGetPC(SLES sles,PC *pc);
+  SLESGetKSP(SLES sles,KSP *ksp);
 \end{verbatim}
 \findex{SLESGetKSP()}
 The application programmer can then directly call any of the PC or KSP 
@@ -2125,7 +2125,7 @@ The Krylov subspace methods accept a number of options, many of which
 are discussed below.  First, to set the Krylov subspace method that is to 
 be used, one calls the command \findex{KSPSetType()}
 \begin{verbatim}
-   ierr = KSPSetType(KSP ksp,KSPType method);
+  KSPSetType(KSP ksp,KSPType method);
 \end{verbatim}
 The type can be one of \trl{KSPRICHARDSON}, \trl{KSPCHEBYCHEV}, \trl{KSPCG}, \trl{KSPGMRES}, 
 \trl{KSPTCQMR}, \trl{KSPBCGS}, \trl{KSPCGS}, \trl{KSPTFQMR}, \trl{KSPCR}, \trl{KSPLSQR}, \trl{KSPBICG}, or \trl{KSPPREONLY.}
@@ -2140,9 +2140,9 @@ There are method-specific options for the Richardson, Chebychev,
 and GMRES \findex{KSPChebychevSetEigenvalues()} \findex{KSPGMRESSetRestart()}
 methods. \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
 \begin{verbatim}
-   ierr = KSPRichardsonSetScale(KSP ksp,double damping_factor);
-   ierr = KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);
-   ierr = KSPGMRESSetRestart(KSP ksp,int max_steps);
+  KSPRichardsonSetScale(KSP ksp,double damping_factor);
+  KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);
+  KSPGMRESSetRestart(KSP ksp,int max_steps);
 \end{verbatim}
 The default parameter values are \trl{damping_factor=1.0, 
 emax=0.01, emin=100.0}, and \trl{max_steps=30}. The GMRES 
@@ -2157,7 +2157,7 @@ matrix in GMRES is the iterative refinement Gram-Schmidt method.
 \trl{-ksp_gmres_irorthog}. \findex{-ksp_gmres_irorthog} Or
 via 
 \begin{verbatim}
-   ierr = KSPGMRESSetOrthogonalization(KSP ksp,
+  KSPGMRESSetOrthogonalization(KSP ksp,
                                KSPGMRESModifiedGramSchmidtOrthogonalization);
 \end{verbatim}
 A slightly
@@ -2166,7 +2166,7 @@ unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmid
 with \findex{KSPGMRESSetOrthogonalization()} 
 \findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
 \begin{verbatim}
-   ierr = KSPGMRESSetOrthogonalization(KSP ksp,
+  KSPGMRESSetOrthogonalization(KSP ksp,
                                KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
 \end{verbatim}
 or the options database \findex{-ksp_gmres_unmodifiedgramschmidt}
@@ -2185,7 +2185,7 @@ it is Hermitian symmetric). To indicate that it is symmetric, one uses the comma
 \findex{KSPCGSetType()} \findex{KSP_CG_SYMMETRIC} \findex{KSPCGType}
 \sindex{Hermitian matrix} 
 \begin{verbatim}
-   ierr = KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
+  KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
 \end{verbatim}
 Note that this option is not valid for all matrices.
 
@@ -2197,7 +2197,7 @@ value for the solution vector that is given; this zeroing is done at the
 call to \trl{SLESSolve()} (or \trl{KSPSolve()}). To use a nonzero 
 initial guess, the user {\em must} call \findex{KSPSetInitialGuessNonzero()}
 \begin{verbatim}
-   ierr = KSPSetInitialGuessNonzero(KSP ksp);
+  KSPSetInitialGuessNonzero(KSP ksp);
 \end{verbatim}
 
 \subsection{Preconditioning within KSP} 
@@ -2227,7 +2227,7 @@ Right preconditioning can be activated for some methods by
 using the options database command \trl{-ksp_right_pc} or
 calling the routine \findex{-ksp_right_pc} \findex{PCSide}
 \begin{verbatim}
-   ierr = KSPSetPreconditionerSide(KSP ksp,PCSide PC_RIGHT);
+  KSPSetPreconditionerSide(KSP ksp,PCSide PC_RIGHT);
 \end{verbatim}
 Attempting to use right preconditioning for a method that
 does not currently support it results in an error message of the form
@@ -2245,7 +2245,7 @@ Chebyshev methods.  For these three cases the true residual is used by
 default, but the preconditioned residual can be employed instead with
 the options database command \trl{ksp_preres} or by calling the routine
 \begin{verbatim}
-   ierr = KSPSetUsePreconditionedResidual(KSP ksp);
+  KSPSetUsePreconditionedResidual(KSP ksp);
 \end{verbatim}
 
 \begin{table}
@@ -2296,7 +2296,7 @@ where $r_k = b - A x_k$.  Divergence is detected if
 These parameters, as well as the maximum number of allowable iterations, 
 can be set with the routine \findex{KSPSetTolerances()}
 \begin{verbatim}
-   ierr = KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits);
+  KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits);
 \end{verbatim}
 The user can retain the default value of any of these parameters by
 specifying \trl{PETSC_DEFAULT} \findex{PETSC_DEFAULT} as the 
@@ -2314,7 +2314,7 @@ customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized 
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{verbatim}
-   ierr = KSPSetConvergenceTest(KSP ksp,
+  KSPSetConvergenceTest(KSP ksp,
                                 int (*test)(KSP ksp,int it,double rnorm,
                                             KSPConvergedReason *reason,void *ctx),
                                 void *ctx);
@@ -2341,7 +2341,7 @@ the options must be specified. \findex{-ksp_xmonitor}
 Application programmers can also provide their own routines to perform 
 the monitoring by using the command \findex{KSPSetMonitor()}
 \begin{verbatim}
-   ierr = KSPSetMonitor(KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),
+  KSPSetMonitor(KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),
                         void *ctx,int (*mondestroy)(void *));
 \end{verbatim}
 The final routine argument, \trl{ctx}, is an optional context for private
@@ -2357,9 +2357,9 @@ for more discussion of the use of MPI communicators within PETSc.
 Several monitoring routines are supplied with PETSc, 
 including \findex{KSPDefaultMonitor()} \findex{KSPSingularValueMonitor()}
 \begin{verbatim}
-   ierr = KSPDefaultMonitor(KSP,int,double, void *);
-   ierr = KSPSingularValueMonitor(KSP,int,double, void *);
-   ierr = KSPTrueMonitor(KSP,int,double, void *);
+  KSPDefaultMonitor(KSP,int,double, void *);
+  KSPSingularValueMonitor(KSP,int,double, void *);
+  KSPTrueMonitor(KSP,int,double, void *);
 \end{verbatim}
 The default monitor simply prints an estimate of the $l_2$-norm of the 
 residual at each iteration. The routine
@@ -2378,14 +2378,14 @@ To employ the default graphical monitor, one should use the
 commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
 \begin{verbatim}
    PetscDrawLG lg;
-   ierr = KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,
+  KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,
                              PetscDrawLG *lg);
-   ierr = KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
+  KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
 \end{verbatim}
 When no longer needed, the line graph should be destroyed 
 with the command
 \begin{verbatim}
-   ierr = KSPLGMonitorDestroy(PetscDrawLG lg);
+  KSPLGMonitorDestroy(PetscDrawLG lg);
 \end{verbatim}
 The user can change aspects of the graphs with the \trl{DrawLG*()} and 
 \trl{DrawAxis*()} routines. \findex{DrawAxis*()} \findex{DrawLG*()}
@@ -2414,11 +2414,11 @@ the spectrum (eigenvalues) of the preconditioned operator, PETSc has specific
 routines for eigenvalue approximation via the Arnoldi or Lanczos iteration.
 First, before the linear solve one must call 
 \begin{verbatim}
-  ierr = KSPSetComputeEigenvalues(KSP ksp);
+ KSPSetComputeEigenvalues(KSP ksp);
 \end{verbatim}
 Then after the SLES solve one calls \findex{KSPSetComputeEigenvalues()}
 \begin{verbatim}
-  ierr = KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart,
+ KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart,
                                int *neig);
 \end{verbatim}
 Here, \trl{n} is the size of the two arrays and the eigenvalues are 
@@ -2428,7 +2428,7 @@ linear system solution, for GMRES it is never larger than the restart parameter.
  \findex{KSPComputeEigenvalues()}
 There is an additional routine 
 \begin{verbatim}
-  ierr = KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,
+ KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,
                                          double *complexpart);
 \end{verbatim}
 that is useful only for very small problems. It explicitly computes the 
@@ -2450,15 +2450,15 @@ Or they can be dumped to the screen in ASCII text via
 To obtain the solution vector and right hand side from a KSP 
 context, one uses \findex{KSPGetSolution()} \findex{KSPGetRhs()}
 \begin{verbatim}
-   ierr = KSPGetSolution(KSP ksp,Vec *x);
-   ierr = KSPGetRhs(KSP ksp,Vec *rhs);
+  KSPGetSolution(KSP ksp,Vec *x);
+  KSPGetRhs(KSP ksp,Vec *rhs);
 \end{verbatim}
 During \findex{KSPSetRhs()} \findex{KSPSetSolution()} the iterative process
 the solution may not yet have been calculated or it may be stored in 
 a different location. To access the approximate solution during the 
 iterative process, one uses the command \findex{KSPBuildSolution()}
 \begin{verbatim}
-   ierr = KSPBuildSolution(KSP ksp,Vec w,Vec *v);
+  KSPBuildSolution(KSP ksp,Vec w,Vec *v);
 \end{verbatim}
 where the solution is returned in \trl{v}. The user can optionally provide
 a vector in \trl{w} as the location to store the vector; however, if 
@@ -2470,7 +2470,7 @@ others it requires not even a vector copy.
 Access to the residual is done in a similar way with the 
 command \findex{KSPBuildResidual()}
 \begin{verbatim}
-   ierr = KSPBuildResidual(KSP ksp,Vec t,Vec w,Vec *v);
+  KSPBuildResidual(KSP ksp,Vec t,Vec w,Vec *v);
 \end{verbatim}
 Again, for GMRES and certain other methods this is an expensive 
 operation.
@@ -2485,7 +2485,7 @@ it from the options database using input of the form
 \trl{-pc_type <methodname>} or set the method with the 
 command \findex{PCSetType()} \findex{-pc_type}
 \begin{verbatim}
-   ierr = PCSetType(PC pc,PCType method);
+  PCSetType(PC pc,PCType method);
 \end{verbatim}
 In Table~\ref{tab:pcdefaults} we summarize the basic
 preconditioning methods supported in PETSc. \findex{PCNONE}
@@ -2535,12 +2535,12 @@ just a few in the sections below.
 
 Some of the options for ILU preconditioner are 
 \begin{verbatim}
-   ierr = PCILUSetLevels(PC pc,int levels);
-   ierr = PCILUSetReuseOrdering(PC pc,PetscTruth flag);
-   ierr = PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
-   ierr = PCILUDTSetReuseFill(PC pc,PetscTruth flag);
-   ierr = PCILUSetUseInPlace(PC pc); 
-   ierr = PCILUSetAllowDiagonalFill(PC pc);
+  PCILUSetLevels(PC pc,int levels);
+  PCILUSetReuseOrdering(PC pc,PetscTruth flag);
+  PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
+  PCILUDTSetReuseFill(PC pc,PetscTruth flag);
+  PCILUSetUseInPlace(PC pc); 
+  PCILUSetAllowDiagonalFill(PC pc);
 \end{verbatim}
 \findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering}
 \findex{PCILUSetUseDropTolerance()} \findex{PCILUDTSetReuseFill()}
@@ -2599,7 +2599,7 @@ One can create a matrix that is compatible with BlockSolve95 by using
 \trl{MatCreate()} with the option \trl{-mat_mpirowbs}, or by directly
 calling \findex{MatCreateMPIRowbs()}
 \begin{verbatim}
-   ierr = MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,Mat *A)
+  MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,Mat *A)
 \end{verbatim}
 \trl{A} is the newly created matrix, while the arguments \trl{m} and
 \trl{M} indicate the number of local and global rows,
@@ -2617,7 +2617,7 @@ allocation.  The argument \trl{proci} is an optional BlockSolve95
 
 If the matrix is symmetric, one {\em may} call
 \begin{verbatim}
-   ierr = MatSetOption(Mat mat,MAT_SYMMETRIC);
+  MatSetOption(Mat mat,MAT_SYMMETRIC);
 \end{verbatim}
 to improve efficiency, but in this case one cannot use the ILU 
 preconditioner, only ICC.
@@ -2663,9 +2663,9 @@ ASM preconditioning, see below.
 The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
 preconditioning are \findex{PCSORSetOmega()}
 \begin{verbatim}
-   ierr = PCSORSetOmega(PC pc,double omega);
-   ierr = PCSORSetIterations(PC pc,int its);
-   ierr = PCSORSetSymmetric(PC pc,MatSORType type);
+  PCSORSetOmega(PC pc,double omega);
+  PCSORSetIterations(PC pc,int its);
+  PCSORSetSymmetric(PC pc,MatSORType type);
 \end{verbatim}
 The \findex{PCSORSetIterations()} \findex{PCSORSetSymmetric()}
 first of these commands sets the relaxation factor for successive
@@ -2714,7 +2714,7 @@ The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command \findex{PCLUSetUseInPlace()} \sindex{in-place solvers}
 \begin{verbatim}
-   ierr = PCLUSetUseInPlace(PC pc);
+  PCLUSetUseInPlace(PC pc);
 \end{verbatim}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
@@ -2779,8 +2779,8 @@ and PC options can be applied to the subproblems by inserting the prefix
 These options database commands set the particular options for {\em all} 
 of the blocks within the global problem.  In addition, the routines
 \begin{verbatim}
-   ierr = PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
-   ierr = PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
+  PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
+  PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
 \end{verbatim}
 extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local 
 block.  The argument \trl{n_local} is the number of blocks on the 
@@ -2805,9 +2805,9 @@ and \trl{-pc_bgs_blocks n}, and, within a program, the corresponding routines
 are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks} 
 \begin{verbatim}
-   ierr = PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);
-   ierr = PCASMSetTotalSubdomains(PC pc,int n,IS *is);
-   ierr = PCASMSetType(PC pc,PCASMType type);
+  PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);
+  PCASMSetTotalSubdomains(PC pc,int n,IS *is);
+  PCASMSetType(PC pc,PCASMType type);
 \end{verbatim}
 \findex{PCBJacobiSetTotalBlocks()}
 The \findex{PCASMSetTotalSubdomains()}
@@ -2843,14 +2843,14 @@ than the standard additive Schwarz method.
 The user can also set the number of blocks and sizes on a per-processor
 basis with the commands
 \begin{verbatim}
-   ierr = PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);
-   ierr = PCASMSetLocalSubdomains(PC pc,int N,IS *is);
+  PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);
+  PCASMSetLocalSubdomains(PC pc,int N,IS *is);
 \end{verbatim}
 
 For the ASM preconditioner one can use the following command to set
 the overlap to compute in constructing the subdomains.
 \begin{verbatim}
-   ierr = PCASMSetOverlap(PC pc,int overlap);
+  PCASMSetOverlap(PC pc,int overlap);
 \end{verbatim}
 \findex{PCASMSetOverlap()}
 The overlap defaults to 1, so if one desires that no additional
@@ -2872,7 +2872,7 @@ The shell preconditioner simply uses an application-provided routine to
 implement the preconditioner. To set this routine, one uses the 
 command \findex{PCShellSetApply()}
 \begin{verbatim}
-   ierr = PCShellSetApply(PC pc,int (*apply)(void *ctx,Vec,Vec),void *ctx);
+  PCShellSetApply(PC pc,int (*apply)(void *ctx,Vec,Vec),void *ctx);
 \end{verbatim}
 The final argument \trl{ctx} is a pointer to the application-provided 
 data structure needed by the preconditioner routine.
@@ -2885,7 +2885,7 @@ provide a ``setup'' routine that is called everytime the operator is
 changed (usually via \trl{SLESSetOperators()}).
 \findex{PCShellSetSetUp()}
 \begin{verbatim}
-   ierr = PCShellSetSetUp(PC pc,int (*setup)(void *ctx));
+  PCShellSetSetUp(PC pc,int (*setup)(void *ctx));
 \end{verbatim}
 The argument to the ``setup'' routine is the same application-provided 
 data structure passed in with the \trl{PCShellSetApply()} routine.
@@ -2907,9 +2907,9 @@ Let \trl{B1} and \trl{B2} represent the application of two
 preconditioners of type \trl{type1} and \trl{type2}. The preconditioner
 $ B = B1 + B2 $ can be obtained with
 \begin{verbatim}
-   ierr = PCSetType(pc,PCCOMPOSITE);
-   ierr = PCCompositeAddPC(pc,type1);
-   ierr = PCCompositeAddPC(pc,type2);
+  PCSetType(pc,PCCOMPOSITE);
+  PCCompositeAddPC(pc,type1);
+  PCCompositeAddPC(pc,type2);
 \end{verbatim}
 Any number of preconditioners may added in this way. 
 
@@ -2917,7 +2917,7 @@ This way of combining preconditioners is called additive, since
 the actions of the preconditioners are added together. This is the 
 default behavior. An alternative can be set with the option
 \begin{verbatim}
-   ierr = PCCompositeSetType(PC pc,PCCompositeType PC_COMPOSITE_MULTIPLICATIVE);
+  PCCompositeSetType(PC pc,PCCompositeType PC_COMPOSITE_MULTIPLICATIVE);
 \end{verbatim}
 \findex{PCCompositeSetType()} \findex{PC_COMPOSITE_MULTIPLICATIVE}
 \findex{PC_COMPOSITE_ADDITIVE} \findex{PCCompositeAddPC} \sindex{additive preconditioners}
@@ -2944,19 +2944,19 @@ or using the matrix used to build the preconditioners \trl{B1}, \trl{B2}, etc.
 By default it uses the ``preconditioner matrix'', to use the true matrix use the 
 option \findex{PCCompositeSetUseTrue()}
 \begin{verbatim}
-   ierr = PCCompositeSetUseTrue(PC pc);
+  PCCompositeSetUseTrue(PC pc);
 \end{verbatim}
 
 The individual 
 preconditioners can be accessed (in order to set options) via
 \begin{verbatim}
-   ierr = PCCompositeGetPC(PC pc,int count,PC *subpc);
+  PCCompositeGetPC(PC pc,int count,PC *subpc);
 \end{verbatim}
 For example, to set the first sub preconditioners to use ILU(1)
 \begin{verbatim}
    PC subpc;
-   ierr = PCCompositeGetPC(pc,0,&subpc);
-   ierr = PCILUSetFill(subpc,1);
+  PCCompositeGetPC(pc,0,&subpc);
+  PCILUSetFill(subpc,1);
 \end{verbatim}
 \findex{PCCompositeGetPC}
 
@@ -2975,8 +2975,8 @@ For example, \trl{-sub_0_pc_ilu_fill 0}.
 PETSc also allows a preconditioner to be a complete linear solver. This is 
 achieved with the \trl{PCSLES} type. \findex{PCSLES}
 \begin{verbatim}
-   ierr = PCSetType(PC pc,PCSLES PCSLES);
-   ierr = PCSLESGetSLES(pc,&sles);
+  PCSetType(PC pc,PCSLES PCSLES);
+  PCSLESGetSLES(pc,&sles);
    /* set any SLES/KSP/PC options */
 \end{verbatim}
 \findex{PCSLESGetSLES()} From the command line one can use 5 iterations of 
@@ -2987,7 +2987,7 @@ By default the inner SLES preconditioner uses the outter ``preconditioner matrix
 as the matrix to be solved in the linear system, to use the true matrix use the 
 option \findex{PCSLESSetUseTrue()}
 \begin{verbatim}
-   ierr = PCSLESSetUseTrue(PC pc);
+  PCSLESSetUseTrue(PC pc);
 \end{verbatim}
 at the command line with \trl{-pc_sles_true}. \findex{-pc_sles_true}
 
@@ -3011,15 +3011,15 @@ We fully support both matrix-free and matrix-based multigrid solvers.
 
 A multigrid preconditioner is created with the four commands 
 \begin{verbatim}
-   ierr = SLESCreate(MPI_Comm comm,SLES *sles);
-   ierr = SLESGetPC(SLES sles,PC *pc);
-   ierr = PCSetType(PC pc,PCMG);
-   ierr = MGSetLevels(pc,int levels,MPI_Comm *comms);
+  SLESCreate(MPI_Comm comm,SLES *sles);
+  SLESGetPC(SLES sles,PC *pc);
+  PCSetType(PC pc,PCMG);
+  MGSetLevels(pc,int levels,MPI_Comm *comms);
 \end{verbatim}
 A \findex{MGSetLevels()} 
 large number of parameters affect the multigrid behavior. The command
 \begin{verbatim}
-   ierr = MGSetType(PC pc,MGType mode); 
+  MGSetType(PC pc,MGType mode); 
 \end{verbatim}
 indicates which form of multigrid to apply \cite{1sbg}. 
 \findex{MGSetType()}
@@ -3038,7 +3038,7 @@ For the multiplicative and full multigrid options, one can use a
 W-cycle by \sindex{W-cycle} \sindex{V-cycle} calling
 \findex{MGSetCycles()} \findex{MG_W_CYCLE}
 \begin{verbatim}
-   ierr = MGSetCycles(PC pc,int cycles);
+  MGSetCycles(PC pc,int cycles);
 \end{verbatim}
 with a value of \trl{MG_W_CYCLE} for \trl{cycles}. 
 The commands above can also be set from the options database. The option 
@@ -3051,8 +3051,8 @@ either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
 \trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
 the routines \findex{MGSetNumberSmoothUp()} \findex{MGSetNumberSmoothDown()}
 \begin{verbatim}
-   ierr = MGSetNumberSmoothUp(PC pc,int m);
-   ierr = MGSetNumberSmoothDown(PC pc,int n);
+  MGSetNumberSmoothUp(PC pc,int m);
+  MGSetNumberSmoothDown(PC pc,int n);
 \end{verbatim}
 Note that if the command \trl{MGSetSmoother()} (discussed below) has
 \findex{MGSetSmoother()} been employed, the same amounts of pre-
@@ -3064,31 +3064,31 @@ are mandatory.
 To set the coarse grid solver, one must \sindex{coarse grid solve}
 call \findex{MGGetCoarseSolve()}
 \begin{verbatim}
-   ierr = MGGetCoarseSolve(PC pc,SLES *sles);
+  MGGetCoarseSolve(PC pc,SLES *sles);
 \end{verbatim}
 and set the appropriate options in \trl{sles}. Similarly, the 
 smoothers are set by calling \findex{MGGetSmoother()}
 \begin{verbatim}
-   ierr = MGGetSmoother(PC pc,int level,SLES *sles);
+  MGGetSmoother(PC pc,int level,SLES *sles);
 \end{verbatim}
 and setting the various options in \trl{sles.} 
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{verbatim}
-   ierr = MGGetSmootherUp(PC pc,int level,SLES *upsles);
+  MGGetSmootherUp(PC pc,int level,SLES *upsles);
 \end{verbatim}
 and 
 \begin{verbatim}
-   ierr = MGGetSmootherDown(PC pc,int level,SLES *downsles);
+  MGGetSmootherDown(PC pc,int level,SLES *downsles);
 \end{verbatim}
 
 Use
 \begin{verbatim}
-   ierr = MGSetInterpolate(PC pc,int level,Mat P);
+  MGSetInterpolate(PC pc,int level,Mat P);
 \end{verbatim}
 and
 \begin{verbatim}
-   ierr = MGSetRestriction(PC pc,int level,Mat R);
+  MGSetRestriction(PC pc,int level,Mat R);
 \end{verbatim}
 to define the intergrid transfer operations.
 
@@ -3117,9 +3117,9 @@ Finally, the user must provide three work vectors for each level
 The work vectors are set with the 
 commands \findex{MGSetRhs()} \findex{MGSetX()} \findex{MGSetR()} 
 \begin{verbatim}
-   ierr = MGSetRhs(PC pc,int level,Vec b);
-   ierr = MGSetX(PC pc,int level,Vec x);
-   ierr = MGSetR(PC pc,int level,Vec r);
+  MGSetRhs(PC pc,int level,Vec b);
+  MGSetX(PC pc,int level,Vec x);
+  MGSetR(PC pc,int level,Vec r);
 \end{verbatim}
 The user is responsible for freeing these vectors once the iteration 
 is complete.
@@ -3215,8 +3215,8 @@ Figure~\ref{fig:snesexample}, corresponding to
 To create a SNES solver, one must first call \trl{SNESCreate()} and indicate
 the class of problem being solved, using one of the following:
 \begin{verbatim}
-   ierr = SNESCreate(MPI_Comm comm,SNES_NONLINEAR_EQUATIONS,SNES *snes);
-   ierr = SNESCreate(MPI_Comm comm,SNES_UNCONSTRAINED_MINIMIZATION,SNES *snes);
+  SNESCreate(MPI_Comm comm,SNES_NONLINEAR_EQUATIONS,SNES *snes);
+  SNESCreate(MPI_Comm comm,SNES_UNCONSTRAINED_MINIMIZATION,SNES *snes);
 \end{verbatim}
 When solving a system of nonlinear equations, the user must then set
 routines for evaluating the function of equation~(\ref{eq:F=0}) and its
@@ -3225,7 +3225,7 @@ associated Jacobian matrix.
 To choose a nonlinear solution method, the user can either
 call \findex{SNESSetType()}
 \begin{verbatim}
-   ierr = SNESSetType(SNES snes,SNESType method);
+  SNESSetType(SNES snes,SNESType method);
 \end{verbatim}
 or use the the option \trl{-snes_type <method>}, \findex{-snes_type} 
 where details regarding the available methods are presented in
@@ -3234,7 +3234,7 @@ The application code can take complete control of the linear and
 nonlinear techniques used in the Newton-like method by calling
 \findex{SNESetFromOptions()}
 \begin{verbatim}
-   ierr = SNESSetFromOptions(snes);
+  SNESSetFromOptions(snes);
 \end{verbatim}
 This routine provides an interface to the PETSc options database, so
 that at runtime the user can select a particular nonlinear solver, set
@@ -3247,7 +3247,7 @@ in Chapter~\ref{ch:sles}.
 After having set these routines and options, the user
 solves the problem by calling \findex{SNESSolve}
 \begin{verbatim}
-   ierr = SNESSolve(SNES snes,Vec x,int *iters);
+  SNESSolve(SNES snes,Vec x,int *iters);
 \end{verbatim}
 where \trl{iters} is the number of nonlinear iterations required for
 convergence and \trl{x} indicates the solution vector. The user should
@@ -3258,7 +3258,7 @@ zero by calling \trl{VecSet()}.  Finally, after solving the nonlinear
 system (or several systems), the user should destroy the SNES context
 with
 \begin{verbatim}
-   ierr = SNESDestroy(SNES snes);
+  SNESDestroy(SNES snes);
 \end{verbatim}
 
 %----------------------------------------------------------------------
@@ -3271,7 +3271,7 @@ Equation~(\ref{eq:F=0}), as well as a routine that evaluates this
 function at the vector \trl{x}.  This information should be set with
 the command \findex{SNESSetFunction()}
 \begin{verbatim}
-   ierr = SNESSetFunction(SNES snes,Vec f,
+  SNESSetFunction(SNES snes,Vec f,
           int (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
 \end{verbatim}
 The argument \trl{ctx} is an optional user-defined context, which can
@@ -3288,7 +3288,7 @@ The user must also specify a routine to form some approximation of the
 Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{verbatim}
-   ierr = SNESSetJacobian(SNES snes,Mat A,Mat B,int (*FormJacobian)(SNES snes,
+  SNESSetJacobian(SNES snes,Mat A,Mat B,int (*FormJacobian)(SNES snes,
           Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{verbatim}
 The \findex{SNESSetJacobian()} arguments of the routine \trl{
@@ -3376,7 +3376,7 @@ default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
 \findex{SNESSetLineSearch()}
 \begin{verbatim}
-   ierr = SNESSetLineSearch(SNES snes,
+  SNESSetLineSearch(SNES snes,
           int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
 \end{verbatim}
 Other line search methods provided by PETSc are 
@@ -3449,7 +3449,7 @@ norm, \trl{atol}, or its relative decrease, \trl{rtol}, from an initial
 guess.  The following routine sets these parameters, which are used
 in many of the default SNES convergence tests: \findex{SNESSetTolerances()}
 \begin{verbatim}
-   ierr = SNESSetTolerances(SNES snes,double atol,double rtol,double stol,
+  SNESSetTolerances(SNES snes,double atol,double rtol,double stol,
           int its,int fcts);
 \end{verbatim}
 This routine also sets the maximum numbers of allowable
@@ -3466,20 +3466,20 @@ parameter that indicates the minimium allowable trust region radius.
 The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \findex{-snes_trtol} or with the routine
 \begin{verbatim}
-   ierr = SNESSetTrustRegionTolerance(SNES snes,double trtol);
+  SNESSetTrustRegionTolerance(SNES snes,double trtol);
 \end{verbatim}
 An additional parameter is sometimes used for unconstrained minimization
 problems, namely the minimum function tolerance, \trl{ftol}, which can
 be set with the option \trl{-snes_fmin <ftol>} \findex{-snes_fmin} or
 with the routine
 \begin{verbatim}
-   ierr = SNESSetMinimizationFunctionTolerance(SNES snes,double ftol);
+  SNESSetMinimizationFunctionTolerance(SNES snes,double ftol);
 \end{verbatim}
 
 Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{verbatim}
-   ierr = SNESSetConvergenceTest(SNES snes,int (*test)(SNES snes,double xnorm,
+  SNESSetConvergenceTest(SNES snes,int (*test)(SNES snes,double xnorm,
                                  double gnorm,double f,SNESConvergedReason reason,
                                  void *cctx),void *cctx);
 \end{verbatim}
@@ -3501,7 +3501,7 @@ By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{verbatim}
-   ierr = SNESSetMonitor(SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),
+  SNESSetMonitor(SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),
                          void *mctx,int (*monitordestroy)(void *));
 \end{verbatim}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
@@ -3534,8 +3534,8 @@ print the same numbers making cross processor testing easier.
 
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
 \begin{verbatim}
-   ierr = SNESGetSolution(SNES snes,Vec *x);
-   ierr = SNESGetFunction(SNES snes,Vec *r,void *ctx,
+  SNESGetSolution(SNES snes,Vec *x);
+  SNESGetFunction(SNES snes,Vec *r,void *ctx,
                           int(**func)(SNES,Vec,Vec,void*));
 \end{verbatim}
 return the solution vector and function vector from a SNES context. 
@@ -3641,7 +3641,7 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{verbatim}
-   ierr = MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
+  MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
 \end{verbatim}
 \findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 
@@ -3655,14 +3655,14 @@ option \trl{-snes_mf_operator}. \findex{-snes_mf_operator}
 
 See also
 \begin{verbatim}
-   ierr = MatCreateMF(Vec x, Mat *mat);
+  MatCreateMF(Vec x, Mat *mat);
 \end{verbatim}
 for users who need a matrix-free matrix but are not using SNES.
 
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{verbatim}
-   ierr = MatSNESMFSetFunctionError(Mat mat,double rerror);
+  MatSNESMFSetFunctionError(Mat mat,double rerror);
 \end{verbatim}
 \findex{MatSNESMFSetFunctionError()}
 The parameter \trl{rerror} should be set to the square root of the 
@@ -3682,7 +3682,7 @@ see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic). \finde
 \end{verbatim}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{verbatim}
-   ierr = MatSNESMFDefaultSetUmin(Mat mat,double);
+  MatSNESMFDefaultSetUmin(Mat mat,double);
 \end{verbatim}
 \findex{MatSNESMFDefaultSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
@@ -3711,8 +3711,8 @@ $ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does n
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{verbatim}
-   ierr = MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth);
-   ierr = MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth);
+  MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth);
+  MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth);
 \end{verbatim}
 or 
 \begin{verbatim}
@@ -3877,7 +3877,7 @@ As for the matrix-free computation of Jacobians (see Section
 \ref{sec:nlmatrixfree}), two parameters affect the accuracy of the
 finite difference Jacobian approximation.  These are set with the command
 \begin{verbatim}
-   ierr = MatFDColoringSetParameters(MatFDColoring fdcoloring,double rerror,
+  MatFDColoringSetParameters(MatFDColoring fdcoloring,double rerror,
                                      double umin);
 \end{verbatim}
 \findex{MatFDColoringSetParameters()}
@@ -3910,10 +3910,10 @@ if one can compute the coloring \trl{iscoloring} some other way, the routine
 \trl{DAGetColoring()}. \findex{DAGetColoring()}
 
 \begin{verbatim}
-    ierr = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);
-    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); 
-    ierr = MatFDColoringSetFromOptions(fdcoloring);
-    ierr = ISColoringDestroy(iscoloring);
+   DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);
+   MatFDColoringCreate(J,iscoloring,&fdcoloring); 
+   MatFDColoringSetFromOptions(fdcoloring);
+   ISColoringDestroy(iscoloring);
 \end{verbatim}
 
 Note that the routine \trl{MatFDColoringCreate()} currently is only 
@@ -3983,7 +3983,7 @@ a scalar timestep) as well as optionally the Jacobian of $ F(u).$
 
 The user first creates a TS object with the command
 \begin{verbatim}
-   ierr = int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *ts);
+  int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *ts);
 \end{verbatim}
 \findex{TSCreate()} The \trl{TSProblemType} \findex{TSProblemType}
 is one of \trl{TS_LINEAR} or \trl{TS_NONLINEAR},
@@ -3992,7 +3992,7 @@ function $ F(u,t). $
 
 One can set the solution method with the routine
 \begin{verbatim}
-  ierr = TSSetType(TS ts,TSType type);
+ TSSetType(TS ts,TSType type);
 \end{verbatim}
 \findex{TSSetType()} Currently supported types are \trl{TS_EULER},
 \trl{TS_BEULER}, and \trl{TS_PSEUDO}
@@ -4004,16 +4004,16 @@ or the command line option
 
 Set the initial time and timestep with the command
 \begin{verbatim}
-  ierr = TSSetInitialTimeStep(TS ts,double time,double dt);
+ TSSetInitialTimeStep(TS ts,double time,double dt);
 \end{verbatim}
 One \findex{TSSetInitialTimeStep} can change the timestep with the command
 \begin{verbatim}
-  ierr = TSSetTimeStep(TS ts,double dt);
+ TSSetTimeStep(TS ts,double dt);
 \end{verbatim}
 One \findex{TSSetTimeStep()} 
 can \findex{TSGetTimeStep()} determine the current timestep with the routine
 \begin{verbatim}
-  ierr = TSGetTimeStep(TS ts,double* dt);
+ TSGetTimeStep(TS ts,double* dt);
 \end{verbatim}
 Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
@@ -4021,19 +4021,19 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 One sets the total number of timesteps to run or the total time to run 
 (whatever is first) with the command \findex{TSSetDuration()}
 \begin{verbatim}
-  ierr = TSSetDuration(TS ts,int maxsteps,double maxtime);
+ TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{verbatim}
 One sets up the timestep context with \findex{TSSetUp()}
 \begin{verbatim}
-  ierr = TSSetUp(TS ts);
+ TSSetUp(TS ts);
 \end{verbatim}
 destroys it with \findex{TSDestroy()}
 \begin{verbatim}
-  ierr = TSDestroy(TS ts);
+ TSDestroy(TS ts);
 \end{verbatim}
 and views it with \findex{TSView()}
 \begin{verbatim}
-  ierr = TSView(TS ts,PetscViewer viewer);
+ TSView(TS ts,PetscViewer viewer);
 \end{verbatim}
 
 \subsection{Solving Time-dependent Problems}
@@ -4042,7 +4042,7 @@ To set up TS for solving an ODE, one must set the following:
 \begin{itemize}
 \item Solution:\\
 \begin{verbatim}
-  ierr = TSSetSolution(TS ts, Vec initialsolution);
+ TSSetSolution(TS ts, Vec initialsolution);
 \end{verbatim}
 The vector \trl{initialsolution} should contain the ``initial conditions''
 for the ODE. \findex{TSSetSolution()}
@@ -4051,7 +4051,7 @@ for the ODE. \findex{TSSetSolution()}
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{verbatim}
-  ierr = TSSetRHSMatrix(TS ts,Mat A, Mat B,int (*f)(TS,double,Mat*,Mat*,
+ TSSetRHSMatrix(TS ts,Mat A, Mat B,int (*f)(TS,double,Mat*,Mat*,
                         MatStructure*,void*),void *fP);
 \end{verbatim}
 The matrix \trl{B} (although usually the same as \trl{A}) allows one to 
@@ -4072,7 +4072,7 @@ explicit timestepping methods) the user  passes the function with
 the routine
 
 \begin{verbatim}
-  ierr = TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{verbatim}
 The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
@@ -4083,7 +4083,7 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{verbatim}
-  ierr = TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
+ TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
                           MatStructure*,void*),void *fP);
 \end{verbatim}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
@@ -4109,7 +4109,7 @@ The TS component provides an interface to use PVODE directly from PETSc.
 
 To use the PVODE integrators, call 
 \begin{verbatim}
-  ierr = TSSetType(TS ts,TSType TS_PVODE);
+ TSSetType(TS ts,TSType TS_PVODE);
 \end{verbatim}
 or use the command line option \trl{-ts_type pvode}. \findex{TS_PVODE} 
 \sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
@@ -4117,7 +4117,7 @@ or use the command line option \trl{-ts_type pvode}. \findex{TS_PVODE}
 PVODE comes with to main integrator families, Adams and BDF (backward 
 differentiation formula). One can select these with 
 \begin{verbatim}
-  ierr = TSPVodeSetType(TS ts,TSPVodeType [PVODE_ADAMS,PVODE_BDF]);
+ TSPVodeSetType(TS ts,TSPVodeType [PVODE_ADAMS,PVODE_BDF]);
 \end{verbatim}
 or the command line option \trl{-ts_pvode_type <adams,bdf>}. BDF is
 the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
@@ -4128,7 +4128,7 @@ solvers, so one cannot change the nonlinear solver options via
 SNES. Rather, PVODE uses the preconditioners within the PC component
 of PETSc, which can be accessed via
 \begin{verbatim}
-  ierr = TSPVodeGetPC(TS ts,PC *pc);
+ TSPVodeGetPC(TS ts,PC *pc);
 \end{verbatim}
 The user can then directly set preconditioner options; 
 alternatively, the usual runtime options can be employed
@@ -4136,14 +4136,14 @@ via \trl{-pc_xxx}. \findex{TSPVodeGetPC()}
 
 Finally, one can set the PVODE tolerances via
 \begin{verbatim}
-  ierr = TSPVodeSetTolerance(TS ts,double abs,double rel);
+ TSPVodeSetTolerance(TS ts,double abs,double rel);
 \end{verbatim}
 where \trl{abs} denotes the absolute tolerance and \trl{rel}
 the relative tolerance. \findex{TSPVodeSetTolerance()}
 
 Other PETSc-PVode options include
 \begin{verbatim}
-   ierr = TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type);
+  TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type);
 \end{verbatim}
 where \trl{type} is either \trl{PVODE_MODIFIED_GS} or 
 \trl{PVODE_UNMODIFIED_GS}. \findex{TSPVodeSetGramSchmidtType()}
@@ -4154,7 +4154,7 @@ with \trl{-ts_pvode_gramschmidt_type <modifed,unmodified>}.
 
 The routine 
 \begin{verbatim}
-   ierr = TSPVodeSetGMRESRestart(TS ts,int restart);
+  TSPVodeSetGMRESRestart(TS ts,int restart);
 \end{verbatim}
 sets the number of vectors in the Krylov subpspace used by GMRES.
 \findex{TSPVodeSetGMRESRestart()} This may be set in the options 
@@ -4168,7 +4168,7 @@ as follows.
 \begin{itemize}
 \item Provide the function \trl{F(u)} with the routine
 \begin{verbatim}
-  ierr = TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{verbatim}
 The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
@@ -4178,7 +4178,7 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{F(u,t)} and a 
 function to compute it at each Newton iteration. This is done with the command
 \begin{verbatim}
-  ierr = TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
+ TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
                           MatStructure*,void*),void *fP);
 \end{verbatim}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
@@ -4197,7 +4197,7 @@ with location.
 \begin{itemize}
 \item For location-independent pseudo-timestepping, one uses the routine 
 \begin{verbatim}
-  ierr = TSPseudoSetTimeStep(TS ts,int(*dt)(TS,double*,void*),void* dtctx);
+ TSPseudoSetTimeStep(TS ts,int(*dt)(TS,double*,void*),void* dtctx);
 \end{verbatim}
 The function \trl{dt} is a user-provided function that computes the next 
 pseudo-timestep. As a default one can use
@@ -4212,7 +4212,7 @@ or, the alternative,
 \]
 which can be set with the call
 \begin{verbatim}
-  ierr = TSPseudoIncrementDtFromInitialDt(TS ts);
+ TSPseudoIncrementDtFromInitialDt(TS ts);
 \end{verbatim}
 or \findex{TSPseudoIncrementDtFromInitialDt()} 
 the option \trl{-ts_pseudo_increment_dt_from_initial_dt}. 
@@ -4220,7 +4220,7 @@ the option \trl{-ts_pseudo_increment_dt_from_initial_dt}.
 The value $ dt_increment $ is by default $ 1.1$, but can be reset with the 
 call 
 \begin{verbatim}
-  ierr = TSPseudoSetTimeStepIncrement(TS ts,double inc); 
+ TSPseudoSetTimeStepIncrement(TS ts,double inc); 
 \end{verbatim}
 or \findex{TSPseudoSetTimeStepIncrement()} the option 
 \trl{ -ts_pseudo_increment <inc>}. \findex{-ts_pseudo_increment}
@@ -4249,14 +4249,14 @@ For drawing predefined PETSc objects such as matrices and vectors, one must
 first create a viewer using the 
 command \findex{ViewerDrawOpenX()}
 \begin{verbatim}
-   ierr = PetscViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
+  PetscViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
                           int h,PetscViewer *viewer);
 \end{verbatim}
 This viewer may be passed to any of the \trl{XXXView()} routines.
 To draw into the viewer, one must obtain the \trl{Draw} object with the
 command \findex{ViewerDrawGetDraw()}
 \begin{verbatim}
-   ierr = PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
+  PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 \end{verbatim}
 Then one can call any of the \trl{DrawXXX} commands on the \trl{draw}
 object. If one obtains the \trl{draw} object in this manner, 
@@ -4282,7 +4282,7 @@ One can open a window that is not associated with a viewer directly
 under the X11 Window System with the
 command \findex{DrawOpenX()} \sindex{X windows}
 \begin{verbatim}
-   ierr = PetscDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
+  PetscDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
                     int h,PetscDraw *win);
 \end{verbatim}
 All drawing routines are done relative to the windows coordinate system 
@@ -4291,13 +4291,13 @@ and viewport. By default the drawing coordinates are from \trl{(0,0)} to
 window. The application program can change the window coordinates with the 
 command \findex{DrawSetCoordinates()} \sindex{coordinates}
 \begin{verbatim}
-   ierr = PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
+  PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{verbatim}
 By default, graphics will be drawn in the entire window. To restrict the 
 drawing to a portion of the window, one may 
 use the command \findex{DrawSetViewPort()}
 \begin{verbatim}
-   ierr = PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
+  PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{verbatim}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
@@ -4306,7 +4306,7 @@ $ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$
 To draw a line, one uses
  the command \findex{DrawLine()} \sindex{lines, drawing}
 \begin{verbatim}
-   ierr = PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
+  PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
 \end{verbatim}
 The argument \trl{cl} indicates the color (which is an integer between 0 and 255)
 of the line. A list of predefined colors may be found in \trl{include/petscdraw.h}
@@ -4316,16 +4316,16 @@ To ensure that all graphics actually have been displayed, one should use
 \sindex{flushing, graphics} the
 command \findex{DrawFlush()}
 \begin{verbatim}
-   ierr = PetscDrawFlush(PetscDraw win);
+  PetscDrawFlush(PetscDraw win);
 \end{verbatim}
 When displaying by using double buffering, which is set with the
 command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
 \begin{verbatim}
-   ierr = PetscDrawSetDoubleBuffer(PetscDraw win);
+  PetscDrawSetDoubleBuffer(PetscDraw win);
 \end{verbatim}
 {\em all} processors must call \findex{DrawSynchronizedFlush()}
 \begin{verbatim}
-   ierr = PetscDrawSynchronizedFlush(PetscDraw win);
+  PetscDrawSynchronizedFlush(PetscDraw win);
 \end{verbatim}
 in order to swap the buffers. From the options database one may use 
 \trl{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
@@ -4336,14 +4336,14 @@ input from the user.
 Text can be drawn with either of the two \findex{DrawStringVertical()}
 commands \findex{DrawString()} \sindex{text, drawing}
 \begin{verbatim}
-   ierr = PetscDrawString(PetscDraw win,double x,double y,int color,char *text);
-   ierr = PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
 \end{verbatim}
 The user can set the text font size or determine it with the 
 commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
 \begin{verbatim}
-   ierr = PetscDrawStringSetSize(PetscDraw win,double width,double height);
-   ierr = PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
+  PetscDrawStringSetSize(PetscDraw win,double width,double height);
+  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
 \end{verbatim}
 
 \section{Line Graphs}
@@ -4354,53 +4354,53 @@ employs the line graph routines to draw simple line graphs.
 As shown in the program, within Figure~\ref{fig:plot}, line graphs 
 are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
 \begin{verbatim}
-   ierr = PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
+  PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
 \end{verbatim}
 The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the 
 command \findex{DrawLGAddPoint()}
 \begin{verbatim}
-   ierr = PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
+  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
 \end{verbatim}
 The arguments \trl{x} and \trl{y} are arrays containing the next 
 point value for each curve.
 Several points for each curve may be added with \findex{DrawLGAddPoints()}
 \begin{verbatim}
-   ierr = PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
+  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
 \end{verbatim}
 
 The line graph is drawn (or redrawn) with the command \findex{DrawLGDraw()}
 \begin{verbatim}
-   ierr = PetscDrawLGDraw(PetscDrawLG ctx);
+  PetscDrawLGDraw(PetscDrawLG ctx);
 \end{verbatim}
 A line graph that is no longer needed can be destroyed with the 
 command \findex{DrawLGDestroy()}
 \begin{verbatim}
-   ierr = PetscDrawLGDestroy(PetscDrawLG ctx);
+  PetscDrawLGDestroy(PetscDrawLG ctx);
 \end{verbatim}
 To plot new curves, one can reset a linegraph with the
 command \findex{DrawLGReset()}
 \begin{verbatim}
-   ierr = PetscDrawLGReset(PetscDrawLG ctx);
+  PetscDrawLGReset(PetscDrawLG ctx);
 \end{verbatim}
 The line graph automatically determines the range of values to 
 display on the two axes.  The user can change these defaults with the 
 command \findex{DrawLGSetLimits()}
 \begin{verbatim}
-   ierr = PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
+  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
 \end{verbatim}
 
 It is also possible to change the display of the axes and to label
 them. This procedure is done by first obtaining the axes context with the 
 command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
 \begin{verbatim}
-   ierr = PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
+  PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
 \end{verbatim}
 One can set the axes' colors and labels, respectively, by using the
 commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
 \begin{verbatim}
-   ierr = PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
-   ierr = PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
+  PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
+  PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
 \end{verbatim}
 
 \begin{figure}[H]
@@ -4626,7 +4626,7 @@ is zero.  For example, the Fortran and C variants of \trl{SLESSolve()} are
 given, respectively, below, where \trl{ierr} denotes the error variable:
 \begin{verbatim}
    call SLESSolve(SLES sles,Vec b,Vec x,int its,int ierr)
-   ierr = SLESSolve(SLES sles,Vec b,Vec x,int *its);
+  SLESSolve(SLES sles,Vec b,Vec x,int *its);
 \end{verbatim}
 
 Fortran programmers using the \trl{.F} file suffix, as discussed in
@@ -4735,7 +4735,7 @@ objects simply as integers.
 %   PetscFortranAddr fmat;
 %   Mat              mat;
 %    ....
-%   ierr = PetscCObjectToFortranObject(mat,&fmat);
+%  PetscCObjectToFortranObject(mat,&fmat);
 %   fortranroutine(&fmat,...other arguments);
 %\end{verbatim}
 %\findex{PetscCObjectToFortranObject()} 
@@ -4747,7 +4747,7 @@ objects simply as integers.
 %\begin{verbatim}
 %   int cfunction(PetscFortranAddr *fmat,....)
 %   Mat mat;
-%   ierr = PetscFortranObjectToCObject(*fmat,&mat);
+%  PetscFortranObjectToCObject(*fmat,&mat);
 %\end{verbatim}
 %See \trl{${PETSC_DIR}/src/vec/examples/tests/ex24.c} for a complete
 %example demonstrating this interface.  Note that the pointer
@@ -5256,7 +5256,7 @@ One must register the event by calling \trl{
 PLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PLogEventRegister()}
 \begin{verbatim}
-   ierr = PLogEventRegister(int *e,char *string,char *color);
+  PLogEventRegister(int *e,char *string,char *color);
 \end{verbatim}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
@@ -5436,7 +5436,7 @@ PETSc application programmers can access the wall clock time directly
 with the command \sindex{wall clock time}
 \begin{verbatim}
   PLogDouble time;
- ierr = PetscGetTime(&time);CHKERRQ(ierr);
+PetscGetTime(&time);CHKERRQ(ierr);
 \end{verbatim}
 \findex{PetscGetTime()} \sindex{time}
 In addition, as discussed in Section~\ref{sec:profileuser},
@@ -5798,7 +5798,7 @@ of compile-time and runtime choices.  For example, when solving a linear
 system, one could explicitly specify use of the Krylov subspace
 technique BiCGStab by calling
 \begin{verbatim}
-    ierr = KSPSetType(ksp,KSPBCGS);
+   KSPSetType(ksp,KSPBCGS);
 \end{verbatim}
 One could then override this choice at runtime with the option
 \begin{verbatim}
@@ -5815,7 +5815,7 @@ Each PETSc process maintains a database of option names and values
 \trl{PETScInitialize()}, which is listed below in its C/C++ and
 Fortran variants, respectively:
 \begin{verbatim}
-   ierr = PetscInitialize(int *argc,char ***args,char *file_name,char *help_message);
+  PetscInitialize(int *argc,char ***args,char *file_name,char *help_message);
    call PetscInitialize(character file_name,integer ierr)
 \end{verbatim}
 The arguments \trl{argc} and \trl{args} (in the C/C++ version only) are
@@ -5867,22 +5867,22 @@ following symbols in the first column of a line: \trl{\#, \%}, or \trl{!}.
 Any subroutine in a PETSc program can add entries to the database with the 
 command \findex{OptionsSetValue()}
 \begin{verbatim}
-   ierr = OptionsSetValue(char *name,char *value);
+  OptionsSetValue(char *name,char *value);
 \end{verbatim}
 though this is rarely done.
 To locate options in the database, one should use the
 commands \findex{OptionsHasName()} \findex{OptionsGetInt()}
 \begin{verbatim}
-   ierr = OptionsHasName(char *pre,char *name,PetscTruth *flg);
-   ierr = OptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);
-   ierr = OptionsGetDouble(char *pre,char *name,double *value,PetscTruth *flg);
-   ierr = OptionsGetString(char *pre,char *name,char *value,int maxlen,
+  OptionsHasName(char *pre,char *name,PetscTruth *flg);
+  OptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);
+  OptionsGetDouble(char *pre,char *name,double *value,PetscTruth *flg);
+  OptionsGetString(char *pre,char *name,char *value,int maxlen,
                            PetscTruth *flg);
-   ierr = OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,
+  OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,
                            PetscTruth *flg);
-   ierr = OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,
+  OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,
                              PetscTruth *flg);
-   ierr = OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,
+  OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,
                              PetscTruth *flg);
 \end{verbatim}
 All \findex{OptionsGetDouble()}
@@ -5918,7 +5918,7 @@ misspelled.
 PETSc employs a consistent scheme for examining, printing, and 
 saving objects through commands of the form
 \begin{verbatim}
-   ierr = XXXView(XXX obj,PetscViewer viewer);
+  XXXView(XXX obj,PetscViewer viewer);
 \end{verbatim}
 Here \trl{obj} is any PETSc object of type
 \trl{XXX}, \findex{Viewer} where \trl{XXX} 
@@ -5970,7 +5970,7 @@ predefined viewers:
 The user can control the format of ASCII printed objects with viewers 
 created by \trl{ViewerASCIIOpen()} by calling
 \begin{verbatim}
-   ierr = PetscViewerSetFormat(PetscViewer viewer,int format);
+  PetscViewerSetFormat(PetscViewer viewer,int format);
 \end{verbatim}  
 \findex{PETSC_VIEWER_ASCII_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
 \findex{PETSC_VIEWER_ASCII_IMPL} \findex{ViewerSetFormat()}
@@ -5985,8 +5985,8 @@ uses the conventional row-oriented format.
 
 The routines
 \begin{verbatim}
-   ierr = PetscViewerPushFormat(PetscViewer viewer,int format);
-   ierr = PetscViewerPopFormat(PetscViewer viewer);
+  PetscViewerPushFormat(PetscViewer viewer,int format);
+  PetscViewerPopFormat(PetscViewer viewer);
 \end{verbatim} 
 allow one to temporarily change the format of a viewer.
 \findex{ViewerPushFormat()} \findex{ViewerPopFormat}
@@ -5998,8 +5998,8 @@ routines for input of a binary object have the form \trl{XXXLoad()}.  In
 particular, matrix and vector binary input is handled by the
 following routines: \findex{MatLoad()} \findex{VecLoad()}
 \begin{verbatim}
-   ierr = MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);
-   ierr = VecLoad(PetscViewer viewer,Vec *newvec);
+  MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);
+  VecLoad(PetscViewer viewer,Vec *newvec);
 \end{verbatim}
 These routines generate parallel matrices and vectors if the viewer's
 communicator has more than one processor.  The particular matrix and
@@ -6061,7 +6061,7 @@ If the stack is empty, it selects \trl{PetscTraceBackErrorHandler()},
 which \findex{PetscTraceBackErrorHandler()} tries to print a traceback. 
 A new error handler can be put on the stack with
 \begin{verbatim}
-   ierr = PetscPushErrorHandler(int (*HandlerFunction)(int line,char *dir,char *file,
+  PetscPushErrorHandler(int (*HandlerFunction)(int line,char *dir,char *file,
                                 char *message,int number,void*),void *HandlerContext)
 \end{verbatim}
 The arguments to \trl{HandlerFunction()} are the line number where 
@@ -6069,7 +6069,7 @@ the error occurred, the file in which the error was detected, the corresponding
 directory, the error message, the error integer, and the \trl{HandlerContext.}
 The routine \findex{PetscPushErrorHandler()}
 \begin{verbatim} 
-   ierr = PetscPopErrorHandler()
+  PetscPopErrorHandler()
 \end{verbatim}
 removes the last error handler and discards it. \findex{PetscPopErrorHandler()}
 
@@ -6099,7 +6099,7 @@ command \trl{PLogTraceBegin(FILE*)}. \findex{-log_trace} \findex{PLogTraceBegin(
 It is also possible to trap signals by using the \sindex{signals}
 command \findex{PetscPushSignalHandler()}
 \begin{verbatim}
-   ierr = PetscPushSignalHandler( int (*Handler)(int,void *),void *ctx);
+  PetscPushSignalHandler( int (*Handler)(int,void *),void *ctx);
 \end{verbatim}
 The default handler \trl{PetscDefaultSignalHandler()} 
 calls \findex{PetscDefaultSignalHandler()} 
@@ -6115,7 +6115,7 @@ There is a separate signal handler for floating-point exceptions.
 The option \trl{-fp_trap} turns on the floating-point trap at runtime,
 and the routine \findex{-fp_trap} \findex{PetscSetFPTrap()} \findex{PETSC_FP_TRAP_ON}
 \begin{verbatim}
-   ierr = PetscSetFPTrap(int flag);
+  PetscSetFPTrap(int flag);
 \end{verbatim}
 can be used in-line.
 A \trl{flag} of \trl{PETSC_FP_TRAP_ON} \findex{PETSC_FP_TRAP_OFF}
@@ -6135,7 +6135,7 @@ one should set it by calling
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 
 \begin{verbatim}
-   ierr = PetscRoutine(...);CHKERRQ(int ierr);
+  PetscRoutine(...);CHKERRQ(int ierr);
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
@@ -6595,7 +6595,7 @@ we recommend skipping this chapter during an initial reading.
 
 One can extract a (parallel) submatrix from a given (parallel) using
 \begin{verbatim}
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
+  MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
 \end{verbatim}
 This extracts the \trl{rows} and \trl{col}umns of the matrix \trl{A} into \trl{B}. If 
 call is  \trl{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
@@ -6605,8 +6605,8 @@ on sequential matrices, for parallel matrices it determines the ``local columns'
 format supports this concept. Often one can use the default by passing in \trl{PETSC_DECIDE}.
 To create a \trl{B} matrix that may be multiplied with a vector \trl{x} one can use
 \begin{verbatim}
-   ierr = VecGetLocalSize(x,&csize);
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
+  VecGetLocalSize(x,&csize);
+  MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
 \end{verbatim}
 
 
@@ -6629,7 +6629,7 @@ to calculate an ordering for the matrix.  The ordering generally is
 done to reduce fill in a sparse factorization; it does not make much 
 sense for a dense matrix. \findex{MatGetOrdering()} \sindex{reorder}
 \begin{verbatim}
-   ierr = MatGetOrdering(Mat matrix,MatOrderingType type,IS* rowperm,IS* colperm); 
+  MatGetOrdering(Mat matrix,MatOrderingType type,IS* rowperm,IS* colperm); 
 \end{verbatim}
 The currently available alternatives for the ordering \trl{type} are 
 \begin{itemize}
@@ -6664,7 +6664,7 @@ and column permutations generated by the ordering routine.
 The user registers the ordering routine
 with the command
 \begin{verbatim}
-   ierr = MatOrderingRegisterDynamic(MatOrderingType inname,char *path,char *sname,
+  MatOrderingRegisterDynamic(MatOrderingType inname,char *path,char *sname,
                                 int (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 \end{verbatim}
 The \findex{MatOrderingRegisterDynamic()} \sindex{ordering} \sindex{matrix ordering}
@@ -6683,8 +6683,8 @@ the user should provide the \trl{name} as the second input argument of
 The following routines perform complete, in-place, symbolic, and numerical 
 factorizations for symmetric and nonsymmetric matrices, respectively:
 \begin{verbatim}
-   ierr = MatCholeskyFactor(Mat matrix,IS permutation,double pf);
-   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,
+  MatCholeskyFactor(Mat matrix,IS permutation,double pf);
+  MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,
                       MatLUInfo *info); 
 \end{verbatim}
 The argument \trl{info->fill $ \ge $ 1} is the predicted fill
@@ -6705,11 +6705,11 @@ factorization
 stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
 can also be performed separately, by using the out-of-place mode:
 \begin{verbatim}
-   ierr = MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
-   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,
+  MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
+  MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,
                               Mat *result);
-   ierr = MatCholeskyFactorNumeric(Mat matrix,Mat *result);
-   ierr = MatLUFactorNumeric(Mat matrix, Mat *result);
+  MatCholeskyFactorNumeric(Mat matrix,Mat *result);
+  MatLUFactorNumeric(Mat matrix, Mat *result);
 \end{verbatim}
 In this case, the contents of the matrix \trl{result} is undefined between 
 the symbolic and numeric factorization stages. 
@@ -6743,7 +6743,7 @@ poor stepchild substitute. After one has obtained a reordering, with
 \trl{MatGetOrdering(Mat A,MatOrdering type,IS *row,IS *col)} one
 may call
 \begin{verbatim}
-   ierr = MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
+  MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
 \end{verbatim}
 which will try to reorder the columns to ensure that no values along 
 the diagonal are smaller than \trl{tol} in a absolute value. If small 
@@ -6760,10 +6760,10 @@ is $ 1.e-10.$
 Once a matrix has been factored, it is natural to solve linear systems.
 The following four routines enable this process: \findex{MatSolve()} 
 \begin{verbatim}
-   ierr = MatSolve(Mat A,Vec x, Vec y);
-   ierr = MatSolveTrans(Mat A, Vec x, Vec y);
-   ierr = MatSolveAdd(Mat A,Vec x, Vec y, Vec w);
-   ierr = MatSolveTransAdd(Mat A, Vec x, Vec y, Vec w);
+  MatSolve(Mat A,Vec x, Vec y);
+  MatSolveTrans(Mat A, Vec x, Vec y);
+  MatSolveAdd(Mat A,Vec x, Vec y, Vec w);
+  MatSolveTransAdd(Mat A, Vec x, Vec y, Vec w);
 \end{verbatim}
 The \findex{MatSolveTrans()} \findex{MatSolveAdd()}
 matrix \findex{MatSolveTransAdd()}
@@ -6781,26 +6781,26 @@ and, thus, will not need to know the details that follow.
 It is possible to generate a Krylov subspace context with the 
 command \findex{KSPCreate()}
 \begin{verbatim}
-   ierr = KSPCreate(MPI_Comm comm,KSP *kps);
+  KSPCreate(MPI_Comm comm,KSP *kps);
 \end{verbatim}
 Before using the Krylov context, one must set the matrix-vector multiplication routine and
 the preconditioner with the 
 commands \findex{PCSetOperators()} \findex{KSPSetPC()}
 \begin{verbatim}
-   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
-   ierr = KSPSetPC(KSP ksp,PC pc);
+  PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
+  KSPSetPC(KSP ksp,PC pc);
 \end{verbatim}
 In addition, the KSP solver must be initialized with \findex{KSPSetUp()}
 \begin{verbatim}
-   ierr = KSPSetUp(KSP ksp);
+  KSPSetUp(KSP ksp);
 \end{verbatim}
 Solving a linear system is done with the command \findex{KSPSolve()}
 \begin{verbatim}
-   ierr = KSPSolve(KSP ksp,int *its);
+  KSPSolve(KSP ksp,int *its);
 \end{verbatim}
 Finally, the KSP context should be destroyed with \findex{KSPDestroy()}
 \begin{verbatim}
-   ierr = KSPDestroy(KSP ksp);
+  KSPDestroy(KSP ksp);
 \end{verbatim}
 
 It may seem strange to put the matrix in the preconditioner rather
@@ -6838,24 +6838,24 @@ manipulate, and destroy PC contexts directly, although this capability
 should rarely be needed. To create a PC context, one uses the command
 \findex{PCCreate()}
 \begin{verbatim}
-   ierr = PCCreate(MPI_Comm comm,PC *pc);
+  PCCreate(MPI_Comm comm,PC *pc);
 \end{verbatim}
 The routine \findex{PCSetType()}
 \begin{verbatim}
-   ierr = PCSetType(PC pc,PCType method);
+  PCSetType(PC pc,PCType method);
 \end{verbatim}
 sets the preconditioner method to be used. 
 The two routines \findex{PCSetOperators()} \findex{PCSetVector()}
 \begin{verbatim}
-   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
-   ierr = PCSetVector(PC pc,Vec vec);
+  PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
+  PCSetVector(PC pc,Vec vec);
 \end{verbatim}
 set the matrices and type of vector that are to be used with 
 the preconditioner.  The \trl{vec} argument is needed by the PC routines 
 to determine the format of the vectors. 
 The routine \findex{PCGetOperators()}
 \begin{verbatim}
-   ierr = PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
+  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
 \end{verbatim}
 returns the values set with \trl{PCSetOperators()}.
 
@@ -6864,8 +6864,8 @@ The preconditioners in PETSc can be used in several ways.  The two
 most basic routines simply apply the preconditioner or its transpose
 and are given, respectively, by
 \begin{verbatim}
-   ierr = PCApply(PC pc,Vec x,Vec y);
-   ierr = PCApplyTrans(PC pc,Vec x,Vec y);
+  PCApply(PC pc,Vec x,Vec y);
+  PCApplyTrans(PC pc,Vec x,Vec y);
 \end{verbatim}
 In particular, for a preconditioner matrix, \trl{B}, that has
 been set via \trl{PCSetOperators(pc,A,B,flag)},
@@ -6877,9 +6877,9 @@ method.
 \findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
 Additional preconditioner routines are
 \begin{verbatim}
-   ierr = PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
-   ierr = PCApplyBAorABTrans(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
-   ierr = PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,int its);
+  PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
+  PCApplyBAorABTrans(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
+  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,int its);
 \end{verbatim}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending
@@ -6892,6 +6892,6 @@ efficiency for certain Krylov subspace methods.
 A PC context that is no longer needed can be destroyed with the 
 command \findex{PCDestroy()}
 \begin{verbatim}
-   ierr = PCDestroy(PC pc);
+  PCDestroy(PC pc);
 \end{verbatim}
 

@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.140 2001/04/04 16:36:23 bsmith Exp bsmith $ 
+% $Id: part1.tex,v 1.141 2001/04/06 02:59:34 bsmith Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -216,7 +216,7 @@ See Section \ref{sec:debugging} for more information on debugging PETSc programs
 
 Most PETSc programs begin with a call to \findex{PetscInitialize()}
 \begin{verbatim}
-   ierr = PetscInitialize(int *argc,char ***argv,char *file_name,char *help_mess);
+  PetscInitialize(int *argc,char ***argv,char *file_name,char *help_mess);
 \end{verbatim} 
 which initializes PETSc and MPI.  The arguments \trl{argc} and 
 \trl{argv} are the command line arguments delivered in all C and C++
@@ -262,7 +262,7 @@ processes, should specify an alternative communicator for \trl{
 PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
 \sindex{communicator}
 \begin{verbatim}
-   ierr = PetscSetCommWorld(MPI_Comm comm);
+  PetscSetCommWorld(MPI_Comm comm);
 \end{verbatim}
 {\em before} calling \trl{PetscInitialize()}, but, obviously, after
 calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
@@ -282,8 +282,8 @@ All PETSc programs should call \trl{PetscFinalize()} \findex{PetscFinalize()}
 as their final (or nearly final) statement, as given below in the C/C++
 and Fortran formats, respectively:
 \begin{verbatim}
-   ierr = PetscFinalize();
-   call PetscFinalize(ierr)
+  PetscFinalize();
+  call PetscFinalize(ierr)
 \end{verbatim}
 This routine handles options to be called at the conclusion of
 the program, and calls \trl{MPI_Finalize()} \findex{MPI_Finalize()}
@@ -348,7 +348,7 @@ One creates a new parallel or
 sequential vector, \trl{x}, of global dimension \trl{M} with the 
 command \findex{VecCreate()} \sindex{vectors}
 \begin{verbatim}
-   ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
+  VecCreate(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
 where \trl{comm} denotes the MPI communicator. The type of storage
 for the vector may be set with either calls to 
@@ -356,12 +356,12 @@ for the vector may be set with either calls to
 Additional vectors of the same type can be formed with
 \findex{VecDuplicate()}
 \begin{verbatim}
-   ierr = VecDuplicate(Vec old,Vec *new);
+  VecDuplicate(Vec old,Vec *new);
 \end{verbatim}
 The commands \findex{VecSet()} \findex{VecSetValues()}
 \begin{verbatim}
-   ierr = VecSet(Scalar *value,Vec x);
-   ierr = VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSet(Scalar *value,Vec x);
+  VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
 \end{verbatim}
 respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More
@@ -387,22 +387,22 @@ The user can create a new parallel or sequential matrix, \trl{A}, which
 has \trl{M} global rows and \trl{N} global columns, with the routine
 \findex{MatCreate()}
 \begin{verbatim}
-   ierr = MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A);
+  MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A);
 \end{verbatim}
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
 Values can then be set with the command
 \begin{verbatim}
-   ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
                        INSERT_VALUES);
 \end{verbatim}
 After \findex{MatSetValues()} all elements have been inserted into the
 matrix, it must be processed with the pair of commands
 \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{verbatim}
-   ierr = MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
-   ierr = MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
+  MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
+  MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
 \end{verbatim}
 Chapter~\ref{chapter:matrices} discusses various matrix formats as
 well as the details of some basic matrix manipulation routines.
@@ -415,11 +415,11 @@ with the following sequence of commands:
 \findex{SLESCreate()} \findex{SLESSetOperators()}
 \findex{SLESSetFromOptions()} \findex{SLESSolve()} \findex{SLESDestroy()}
 \begin{verbatim}
-   ierr = SLESCreate(MPI_Comm comm,SLES *sles); 
-   ierr = SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);
-   ierr = SLESSetFromOptions(SLES sles);
-   ierr = SLESSolve(SLES sles,Vec b,Vec x,int *its);
-   ierr = SLESDestroy(SLES sles);
+  SLESCreate(MPI_Comm comm,SLES *sles); 
+  SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);
+  SLESSetFromOptions(SLES sles);
+  SLESSolve(SLES sles,Vec b,Vec x,int *its);
+  SLESDestroy(SLES sles);
 \end{verbatim}
 The user first creates the SLES context and sets the operators
 associated with the system (linear system matrix and optionally different
@@ -504,9 +504,9 @@ processors over which the object is to be distributed.  For example,
 as mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 \begin{verbatim}
-   ierr = MatCreate(MPI_Comm comm,int M,int N,Mat *A);
-   ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
-   ierr = SLESCreate(MPI_Comm comm,SLES *sles); 
+  MatCreate(MPI_Comm comm,int M,int N,Mat *A);
+  VecCreate(MPI_Comm comm,int m,int M,Vec *x);
+  SLESCreate(MPI_Comm comm,SLES *sles); 
 \end{verbatim}
 The creation routines are collective over all processors in the
 communicator; thus, all processors in the communicator {\em must}
