@@ -302,7 +302,7 @@ class Configure(config.base.Configure):
       if line.startswith('AR_FLAGS  '):
         line = 'AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n'
       if line.startswith('LIB_SUFFIX '):
-        line = 'LIB_SUFFIX = '+self.libraries.suffix+'\n'
+        line = 'LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n'
       if line.startswith('RANLIB  '):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
@@ -323,7 +323,7 @@ class Configure(config.base.Configure):
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.libraries.suffix+' lib'+f2c+'lapack.'+self.libraries.suffix+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error moving '+l+'blaslapack libraries: '+str(e))
     try:
