@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.11 1996/01/16 23:15:20 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.12 1996/01/18 23:09:01 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -68,7 +68,7 @@ void PetscMemzero(void *a,int n)
 
   Note: 
   This routine is anologous to memcmp()
-  @*/
+@*/
 int PetscMemcmp(char* str1, char* str2, int len)
 {
   return memcmp(str1, str2, len);
