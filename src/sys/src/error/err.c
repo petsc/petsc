@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.117 2000/09/28 21:08:54 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.118 2000/10/03 20:20:18 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -157,7 +157,7 @@ int PetscPopErrorHandler(void)
   PetscFunctionReturn(0);
 }
 
-static char PetscErrorBaseMessage[1024];
+char PetscErrorBaseMessage[1024];
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscError" 
