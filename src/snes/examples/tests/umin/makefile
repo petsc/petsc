@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.72 2001/03/22 20:32:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.73 2001/03/29 16:36:31 balay Exp curfman $ 
 
 # This directory contains example programs for the SNES unconstrained
 # minimization solvers.  Examples of solving systems of nonlinear
@@ -20,6 +20,10 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
 	${RM} ex2.o
+
+ex2a: ex2a.o chkopts
+	-${CLINKER} -o ex2a ex2a.o ${PETSC_LIB}
+	${RM} ex2a.o
 
 ex3: ex3.o chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
