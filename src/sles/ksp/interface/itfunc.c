@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.29 1995/07/20 15:04:23 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.30 1995/07/20 18:09:57 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -192,8 +192,8 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
    Notes:
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
 
-   The first of the absolute and relative tolerances reached
-   will terminate the iterations. See also KSPSetConvergenceTest() 
+   See KSPDefaultConverged() for details on the use of these parameters
+   in the default convergence test.  See also KSPSetConvergenceTest() 
    for setting user-defined stopping criteria.
 
    Options Database Keys:
@@ -205,7 +205,7 @@ $  -ksp_max_it  maxits  (maximum iterations)
 .keywords: KSP, set, tolerance, absolute, relative, divergence, 
            convergence, maximum, iterations
 
-.seealso: KSPGetTolerances()
+.seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
 int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 {
