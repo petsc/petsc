@@ -21,7 +21,7 @@ to determine if any are required for your machine(s) of interest.
 
 Highlights of new features added since the last public release of
 PETSc (version 2.0.15) include:
- - Support for Windows NT (using the Microsoft Developers Studio Visual C++)
+ - Support for Windows NT/95 (using the Microsoft Developers Studio Visual C++)
  - Support for the Cray T3E and SGI Origin
  - Tools for sparse finite difference approximation of Jacobian matrices
  - More tools to help diagnose memory leaks and uninitialized memory
