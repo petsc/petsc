@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.128 2001/08/06 21:14:00 bsmith Exp balay $*/
+/*$Id: err.c,v 1.129 2001/08/07 03:01:58 balay Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -192,7 +192,7 @@ $     SETERRQ(n,mess)
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2()
 @*/
 int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,...)
 {
@@ -492,11 +492,162 @@ int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
 }
 
 
+/*MC
+   SETERRQ - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ(int errorcode,char *message)
 
 
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+-  message - error message
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
 
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+M*/
+
+/*MC
+   SETERRQ1 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ1(int errorcode,char *formatmessage,arg)
 
 
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+-  arg - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ(), SETERRQ2(), SETERRQ3()
+M*/
+
+
+/*MC
+   SETERRQ2 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ2(int errorcode,char *formatmessage,arg1,arg2)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+-  arg2 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+M*/
+
+/*MC
+   SETERRQ3 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ3(int errorcode,char *formatmessage,arg1,arg2,arg3)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+-  arg3 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+M*/
+
+
+/*MC
+   CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
+
+   Not Collective
+
+   Synopsis:
+   void CHKERRQ(int errorcode)
+
+
+   Input Parameters:
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+M*/
+
+/*MC
+   CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
+
+   Not Collective
+
+   Synopsis:
+   void CHKMEMQ(void)
+
+  Level: beginner
+
+   Notes:
+    Must run with the option -trdebug to enable this option
+
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    By defaults prints location where memory that is corrupted was allocated.
+
+   Concepts: memory corruption
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2(), 
+          PetscTrValid()
+M*/
 
 
