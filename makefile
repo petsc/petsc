@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.271 1999/03/15 22:01:20 balay Exp balay $ 
+# $Id: makefile,v 1.272 1999/03/16 20:24:09 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -347,12 +347,12 @@ alladiclib:
 #
 countfortranfunctions: 
 	-@cd ${PETSC_DIR}/src/fortran; egrep '^void' custom/*.c auto/*.c | \
-	cut -d'(' -f1 | tr -s '' ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
+	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
 countcfunctions:
-	-@ grep extern ${PETSC_DIR}/include/*.h *.h | grep "(" | tr -s '' ' ' | \
-	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '' '\012' |  \
+	-@ grep extern ${PETSC_DIR}/include/*.h *.h | grep "(" | tr -s ' ' | \
+	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '\012' |  \
 	tr 'A-Z' 'a-z' |  sort > /tmp/countcfunctions
 
 difffortranfunctions: countfortranfunctions countcfunctions
@@ -367,21 +367,21 @@ checkbadfortranstubs:
 	-@echo "Functions with MPI_Comm as an Argument"
 	-@echo "========================================="
 	-@cd ${PETSC_DIR}/src/fortran/auto; grep '^void' *.c | grep 'MPI_Comm' | \
-	tr -s '' ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
+	tr -s ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
 	-@echo "========================================="
 	-@echo "Functions with a String as an Argument"
 	-@echo "========================================="
 	-@cd ${PETSC_DIR}/src/fortran/auto; grep '^void' *.c | grep 'char \*' | \
-	tr -s '' ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
+	tr -s ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
 	-@echo "========================================="
 	-@echo "Functions with Pointers to PETSc Objects as Argument"
 	-@echo "========================================="
 	-@cd ${PETSC_DIR}/src/fortran/auto; \
-	_p_OBJ=`grep _p_ ${PETSC_DIR}/include/*.h | tr -s '' ' ' | \
-	cut -d' ' -f 3 | tr -s '' '\012' | grep -v '{' | cut -d'*' -f1 | \
+	_p_OBJ=`grep _p_ ${PETSC_DIR}/include/*.h | tr -s ' ' | \
+	cut -d' ' -f 3 | tr -s '\012' | grep -v '{' | cut -d'*' -f1 | \
 	sed "s/_p_//g" | tr -s '\012 ' ' *|' ` ; \
 	for OBJ in $$_p_OBJ; do \
-	grep "$$OBJ \*" *.c | tr -s '' ' ' | tr -s ':' ' ' | \
+	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
 	done 
 # Builds noise routines (not yet publically available)
