@@ -17,7 +17,7 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     self.load(filename)
     atexit.register(self.save)
     self.interactive   = 1
-    self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}, 'dir' : {}}
+    self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}, 'dir' : {}, 'saveinparent' : {}}
     self.argRE         = re.compile(r'\$(\w+|\{[^}]*\})')
     self.defaultParent = defaultParent
 
@@ -28,22 +28,27 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       import SIDL.Loader
       db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
     except:
-      return (0,none)
+      return (0,None)
     if self.metadata['help'].has_key(key): db.setTitle(self.metadata['help'][key])
     else:                                  db.setTitle('Select the directory for'+key)
     db.setMustExist(exist)
     return (1,db.getDirectory())
 
+  def __setitem__(self,key,value):
+    if self.metadata['saveinparent'].has_key(key):
+      p = self.getParent(key)
+      p.data[key] = value
+    else:
+      self.data[key] = value
+    
   def __getitem__(self, key):
-    ok = 1
-    if not self.data.has_key(key):
-      (ok, item) = self.getMissingItem(key)
-      if ok:
-        self.data[key] = item
-    if not ok:
-      print
-      sys.exit('Unable to get argument \''+key+'\'')
-    return self.data[key]
+    if self.data.has_key(key):    return self.data[key]
+    (ok, item) = self.getMissingItem(key)
+    if ok:
+      self[key] = item
+      return item
+    else: return None
+
 
   def has_key(self, key):
     if self.data.has_key(key):
@@ -139,15 +144,22 @@ class ArgDict (UserDict.UserDict, logging.Logger):
   def setDefault(self, key, default):
     self.metadata['default'][key] = default
 
+  # if key is saved it is saved in parent database
+  def setSaveInParent(self, key):
+    self.metadata['saveinparent'][key] = 1
+
   def setParent(self, key, parent):
     """This can be a filename or an ArgDict object. Arguments of form $var and ${var} in the filename will be expanded"""
     self.metadata['parent'][key] = parent
 
   def getParent(self, key):
+    isdefault = 0
     if self.metadata['parent'].has_key(key):
       parent = self.metadata['parent'][key]
     elif self.defaultParent:
       parent = self.defaultParent
+      self.metadata['parent'][key] = parent
+      isdefault = 1
     else:
       parent = None
 
@@ -157,6 +169,8 @@ class ArgDict (UserDict.UserDict, logging.Logger):
         if not os.path.exists(parent):
           raise RuntimeError('Invalid parent database ('+parent+') for '+key)
         self.metadata['parent'][key] = ArgDict(parent)
+        if isdefault:
+          self.defaultParent = self.metadata['parent'][key]
       elif not isinstance(parent, ArgDict):
         raise RuntimeError('Invalid parent database ('+parent+') for '+key)
       return self.metadata['parent'][key]

@@ -276,130 +276,141 @@ def getjavainclude():
 def getjavalib():
 #    return "/home/petsc/software/j2sdk1.4.0-linux/jre/lib/i386/client/libjvm.so"
      return ''
- 
-#==================================================================================
-def main():
-    if checkcxxcompiler() == 0: return
-    if checkpython() == 0: return
-    
-    logfile = open("logfile",'w')
-    
-    srcdir = os.getcwd()
-    print "Directory to compile source code (hit return for current) "+srcdir
-    c = stdin.readline()
-    if not len(c) == 1:
-      if c[0] == '/':
-         srcdir = c[:-1]
-      else:
-         srcdir = srcdir+c[:-1]
-    print "Compiling in directory: "+srcdir
-    try:
-      os.makedirs(srcdir)
-    except:
-      pass
 
-    installdir = os.getcwd()
-    print "Directory to install (hit return for current) "+installdir
-    c = stdin.readline()
-    if not len(c) == 1:
-      if c[0] == '/':
-         installdir = c[:-1]
-      else:
-         installdir = installdir+c[:-1]
-    print "Intalling in directory: "+installdir
-    try:
-      os.makedirs(installdir)
-    except:
-      pass
+class Bootstrap:
+    
+    def getPackage(self,package):
+        print "Getting "+package
+        if self.transfermode == "ftp":
+          x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/"+package+".tar.gz",self.srcdir+"/"+package+".tar.gz")
+          (status,output) = commands.getstatusoutput("cd "+self.srcdir+";tar -zxf "+package+".tar.gz")
+        elif self.transfermode == "ssh":
+          (status,output) = commands.getstatusoutput('cd '+self.srcdir+';ssh terra.mcs.anl.gov \"cd /sandbox/bsmith/petsc-3.0; tar --exclude-from xclude -zc '+package+' \" | tar -zx')
+        self.logfile.write(output)
+        if not status == 0:
+          print "Failed extracting "+package
+          print output
 
-    JAVA_INCLUDE = getjavainclude()
-    JAVA_LIB = getjavalib()
-    
-    if os.environ.has_key('TMPDIR'):
-      tmpdir =  os.environ['TMPDIR']+"/"
-      try:
-          os.makedirs(tmpdir)
-      except:
-          pass
-    else:
-      tmpdir = "/tmp/"
+    def compilePackage(self,package,flags):
+        (status,output) = commands.getstatusoutput("cd "+self.srcdir+"/"+package+";./make.py "+flags)
+        self.logfile.write(output)
+        if not status == 0:
+            print "Failed compiling "+package
+            print output
 
-    print "Retreiving build system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/bs.tar.gz",tmpdir+"bs.tar.gz",tmpdir)
-    (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"bs.tar.gz")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed extracting bs"
-        print output
-        return
-    
-    print "Initializing the database in the build system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;./make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed to initialize build system database"
-        print output
-        return
-    
-    if os.environ.has_key('PYTHONPATH'):
-        os.environ['PYTHONPATH'] = srcdir+"/bs:"+installdir+"/lib:"+os.environ['PYTHONPATH']
-    else:
-        os.environ['PYTHONPATH'] = srcdir+"/bs:"+installdir+"/lib"
+    def initializePackage(self,package):
+        self.compilePackage(package," -fileset=sidl update")
         
-    print "Retreiving runtime system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/SIDLRuntimeANL.tar.gz",tmpdir+"SIDLRuntimeANL.tar.gz",tmpdir)
-    (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"SIDLRuntimeANL.tar.gz")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed extracting SIDLRuntimeANL"
-        print output
-        return
-    
-    print "Compiling runtime system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/SIDLRuntimeANL;./make.py -install=1 compile")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed compiling SIDLRuntimeANL"
-        print output
-        return
-    
-    print "Compiling build system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;./make.py -install=1 compile")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed compiling the build system"
-        print output
-        return
-    
-    print "Retreiving GUI system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/gui.tar.gz",tmpdir+"gui.tar.gz",tmpdir)
-    (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"gui.tar.gz")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed extracting GUI"
-        print output
-        return
-    
-    print "Compiling GUI system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/gui;./make.py -install=1 compile")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed compiling GUI"
-        print output
-        return
+    def getPackageList(self):
+        if self.transfermode == "ftp":
+          print "Retreiving list of packages"
+          try:
+            x = bootstrap.urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/packages","packages")
+          except:
+            print "Unable to access list of packages; are you sure you are on the network?"
+            raise RuntimeError,"Unable to access list of packages; are you sure you are on the network?"
+          fd            = open("packages")
+          packages = fd.readlines()
+          fd.close()
+          os.unlink("packages")
+          return packages
+        elif self.transfermode == "ssh":
+          (status,output) = commands.getstatusoutput('ssh terra.mcs.anl.gov \"cd /sandbox/bsmith/petsc-3.0; ls -1 -p | grep / \"')
+          return output
+        
 
-    print "Running installer"
-    (status,output) = commands.getstatusoutput(installdir+"/examples/python/installer.py")
-    logfile.write(output)
-    if not status == 0:
-        print "Failed running installer"
-        print output
-        return
+#==================================================================================
+    def getPackages(self):
+        self.transfermode = "ssh"
+        
+        if checkcxxcompiler() == 0: return
+        if checkpython() == 0: return
+    
+        self.logfile = open("logfile.bootstrap",'w')
+    
+        self.srcdir = os.getcwd()
+        print "Directory to compile source code (hit return for current) "+self.srcdir
+        c = stdin.readline()
+        if not len(c) == 1:
+            if c[0] == '/':
+                self.srcdir = c[:-1]
+            else:
+                self.srcdir = self.srcdir+"/"+c[:-1]
+        print "Compiling in directory: "+self.srcdir
+        try:
+            os.makedirs(self.srcdir)
+        except:
+            pass
 
-    print "Set your PYTHONPATH to "+installdir+"/lib and try the examples in "+installdir+"/examples/[python,c++]"
-    logfile.close()
+        installdir = os.getcwd()
+        print "Directory to install (hit return for current) "+installdir
+        c = stdin.readline()
+        if not len(c) == 1:
+            if c[0] == '/':
+                installdir = c[:-1]
+            else:
+                installdir = installdir+"/"+c[:-1]
+        print "Intalling in directory: "+installdir
+        try:
+            os.makedirs(installdir)
+        except:
+            pass
+
+        JAVA_INCLUDE = getjavainclude()
+        JAVA_LIB = getjavalib()
+    
+        if os.environ.has_key('TMPDIR'):
+            tmpdir =  os.environ['TMPDIR']+"/"
+            try:
+                os.makedirs(tmpdir)
+            except:
+                pass
+        else:
+            tmpdir = "/tmp/"
+
+        self.getPackage("bs")
+    
+        print "Initializing the database in the build system"
+        self.compilePackage("bs","-debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+
+                            self.srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+
+                            " -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+
+                            installdir+"/examples -srcdir="+self.srcdir+" printTargets")
+    
+        if os.environ.has_key('PYTHONPATH'):
+            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+installdir+"/lib:"+os.environ['PYTHONPATH']
+        else:
+            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+installdir+"/lib"
+        
+        self.getPackage("SIDLRuntimeANL")
+        print 'Compiling SIDLRuntimeANL package'
+        self.initializePackage("SIDLRuntimeANL")
+        self.compilePackage("SIDLRuntimeANL","-install=1 compile")
+
+        print 'Compiling bs package'
+        self.initializePackage("bs")
+        self.compilePackage("bs"," -install=1 compile")
+        self.compilePackage("bs"," -arg=install purge")
+        
+        self.getPackage("gui")
+        print 'Compiling gui package'
+        self.initializePackage("gui")
+        self.compilePackage("gui"," -install=1 compile")
+
+        print "Running installer"
+        (status,output) = commands.getstatusoutput(installdir+"/examples/python/installer.py")
+        self.logfile.write(output)
+        if not status == 0:
+            print "Failed running installer"
+            print output
+            return
+
+        print "Do setenv PYTHONPATH "+installdir+"/lib (csh) export PYTHONPATH="+installdir+"/lib (sh)"
+        print "and try the examples in "+installdir+"/examples/[python,c++]"
+        self.logfile.close()
+    
 # The classes in this file can also
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__': 
-    main()
+    g = Bootstrap()
+    g.getPackages()
 

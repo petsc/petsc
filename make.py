@@ -4,6 +4,7 @@ import BSTemplates.sidl
 import fileset
 
 import os
+import os.path
 import sys
 import argtest
 import commands
@@ -46,6 +47,13 @@ class PetscMake(bs.BS):
     print "Using "+bs.argDB['TMPDIR']+" as tmp directory"
     
     self.defineHelp()
+
+    #  see if we can find SIDLRuntimeANL
+    if not bs.argDB.has_key('SIDLRUNTIME_DIR'):
+        if os.path.exists(os.getcwd()+"/../SIDLRuntimeANL"):
+           bs.argDB['SIDLRUNTIME_DIR'] = os.getcwd()+"/../SIDLRuntimeANL"
+
+                
     self.defineDirectories()
     self.defineFileSets()
     self.defineTargets()
@@ -66,9 +74,6 @@ class PetscMake(bs.BS):
     (status, output) = commands.getstatusoutput('cp -f lib/*.so '+bs.argDB['installlib'])
     
   def defineHelp(self):
-    bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory in which the Python headers were installed (like Python.h)')
-    bs.argDB.setTester('PYTHON_INCLUDE',argtest.DirectoryTester())
-
     bs.argDB.setHelp('SIDLRUNTIME_DIR', 'The directory in which the SIDL runtime was installed')
     bs.argDB.setTester('SIDLRUNTIME_DIR',argtest.DirectoryNotNoneTester())
 
