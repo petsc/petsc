@@ -1,15 +1,15 @@
-/*$Id: pcnull.c,v 1.30 2000/04/12 04:24:31 bsmith Exp balay $*/
+/*$Id: pcnull.c,v 1.31 2000/05/05 22:16:59 balay Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
 
-#include "src/sles/pc/pcimpl.h"      /*I "petscpc.h" I*/
+#include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNullSpaceCreate"
+#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceCreate"
 /*@C
-   PCNullSpaceCreate - Creates a data structure used to project vectors 
+   MatNullSpaceCreate - Creates a data structure used to project vectors 
    out of null spaces.
 
    Collective on MPI_Comm
@@ -28,32 +28,33 @@
 
 .keywords: PC, null space, create
 
-.seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove()
 @*/
-int PCNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,PCNullSpace *SP)
+int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *SP)
 {
-  PCNullSpace sp;
+  MatNullSpace sp;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(sp,_p_PCNullSpace,int,PCNULLSPACE_COOKIE,0,"PCNullSpace",comm,PCNullSpaceDestroy,0);
+  PetscHeaderCreate(sp,_p_MatNullSpace,int,MATNULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
   PLogObjectCreate(sp);
-  PLogObjectMemory(sp,sizeof(struct _p_PCNullSpace));
+  PLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
 
   sp->has_cnst = has_cnst; 
   sp->n        = n;
   sp->vecs     = vecs;
+  sp->vec      = PETSC_NULL;
 
   *SP          = sp;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNullSpaceDestroy"
+#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceDestroy"
 /*@
-   PCNullSpaceDestroy - Destroys a data structure used to project vectors 
+   MatNullSpaceDestroy - Destroys a data structure used to project vectors 
    out of null spaces.
 
-   Collective on PCNullSpace
+   Collective on MatNullSpace
 
    Input Parameter:
 .  sp - the null space context to be destroyed
@@ -62,13 +63,16 @@ int PCNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,PCNullSpace *SP
 
 .keywords: PC, null space, destroy
 
-.seealso: PCNullSpaceCreate(), PCNullSpaceRemove()
+.seealso: MatNullSpaceCreate(), MatNullSpaceRemove()
 @*/
-int PCNullSpaceDestroy(PCNullSpace sp)
+int MatNullSpaceDestroy(MatNullSpace sp)
 {
-  PetscFunctionBegin;
+  int ierr;
 
+  PetscFunctionBegin;
   if (--sp->refct > 0) PetscFunctionReturn(0);
+
+  if (sp->vec) {ierr = VecDestroy(sp->vec);CHKERRQ(ierr);}
 
   PLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
@@ -76,11 +80,11 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNullSpaceRemove"
+#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceRemove"
 /*@
-   PCNullSpaceRemove - Removes all the components of a null space from a vector.
+   MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
-   Collective on PCNullSpace
+   Collective on MatNullSpace
 
    Input Parameters:
 +  sp - the null space context
@@ -90,25 +94,35 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 
 .keywords: PC, null space, remove
 
-.seealso: PCNullSpaceCreate(), PCNullSpaceDestroy()
+.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
 @*/
-int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
+int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   Scalar sum;
   int    j,n = sp->n,N,ierr;
+  Vec    l = vec;
 
   PetscFunctionBegin;
+  if (out) {
+    if (!sp->vec) {
+      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
+    }
+    *out = sp->vec;
+    ierr = VecCopy(vec,*out);CHKERRQ(ierr);
+    l    = *out;
+  }
+
   if (sp->has_cnst) {
-    ierr = VecSum(vec,&sum);CHKERRQ(ierr);
-    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
+    ierr = VecSum(l,&sum);CHKERRQ(ierr);
+    ierr = VecGetSize(l,&N);CHKERRQ(ierr);
     sum  = sum/(-1.0*N);
-    ierr = VecShift(&sum,vec);CHKERRQ(ierr);
+    ierr = VecShift(&sum,l);CHKERRQ(ierr);
   }
 
   for (j=0; j<n; j++) {
-    ierr = VecDot(vec,sp->vecs[j],&sum);CHKERRQ(ierr);
+    ierr = VecDot(l,sp->vecs[j],&sum);CHKERRQ(ierr);
     sum  = -sum;
-    ierr = VecAXPY(&sum,sp->vecs[j],vec);CHKERRQ(ierr);
+    ierr = VecAXPY(&sum,sp->vecs[j],l);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
