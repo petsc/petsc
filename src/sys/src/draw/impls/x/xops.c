@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.64 1996/10/28 22:43:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.65 1996/11/07 15:10:27 bsmith Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -410,6 +410,10 @@ $     bad, this allows PETSc graphics to look good. You
 $     must put the mouse into the graphics window to see
 $     the correct colors.
 
+   Note:
+   When finished with the drawing context, it should be destroyed
+   with DrawDestroy().
+
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
    PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
@@ -418,7 +422,7 @@ $     the correct colors.
 
 .keywords: draw, open, x
 
-.seealso: DrawSyncFlush()
+.seealso: DrawSyncFlush(), DrawDestroy()
 @*/
 int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
               Draw* inctx)
