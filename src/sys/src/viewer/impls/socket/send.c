@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.95 1999/05/12 03:26:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.96 1999/05/12 11:16:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,9 +19,7 @@ typedef unsigned long   u_long;
 #include <stdlib.h>
 #endif
 #include <sys/types.h>
-#if defined(PETSC_HAVE_CTYPE_H)
 #include <ctype.h>
-#endif
 #if defined(PARCH_alpha)
 #include <machine/endian.h>
 #endif
@@ -37,9 +35,28 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
+#if defined (PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "pinclude/petscfix.h"
+
+#if defined(PETSC_NEED_SETSOCKETOPT_PROTO)
+extern int setsockopt(int,int,int,char*,int);
+#endif
+#if defined(PETSC_NEED_CLOSE_PROTO)
+extern int close(int);
+#endif
+#if defined(PETSC_NEED_SOCKET_PROTO)
+extern int socket(int,int,int);
+#endif
+#if defined(PETSC_NEED_SLEEP_PROTO)
+extern int sleep(unsigned);
+#endif
+#if defined(PETSC_NEED_CONNECT_PROTO)
+extern int connect(int,struct sockaddr *,int);
+#endif
 
 /*
      Many machines don't prototype many of the socket functions?
