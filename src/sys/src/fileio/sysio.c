@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.79 2001/04/09 19:27:02 balay Exp bsmith $*/
+/*$Id: sysio.c,v 1.80 2001/08/06 21:14:02 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -72,10 +72,10 @@ int PetscByteSwapShort(short *buff,int n)
 */
 int PetscByteSwapScalar(PetscScalar *buff,int n)
 {
-  int    i,j;
-  double tmp,*buff1 = (double*)buff;
-  double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
-  char   *ptr1,*ptr2 = (char*)&tmp;
+  int       i,j;
+  PetscReal tmp,*buff1 = (PetscReal*)buff;
+  PetscReal *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
+  char      *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -83,8 +83,8 @@ int PetscByteSwapScalar(PetscScalar *buff,int n)
 #endif
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<sizeof(double); i++) {
-      ptr2[i] = ptr1[sizeof(double)-1-i];
+    for (i=0; i<sizeof(PetscReal); i++) {
+      ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
     }
     buff1[j] = *tptr;
   }
