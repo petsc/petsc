@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.80 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zsys.c,v 1.81 2000/06/24 18:51:29 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -155,7 +155,8 @@ void PETSC_STDCALL petscbarrier_(PetscObject *obj,int *ierr)
   *ierr = PetscBarrier(*obj);
 }
 
-void PETSC_STDCALL petscstrncpy_(CHAR s1,CHAR s2,int *n,int *ierr,int len1,int len2)
+void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),int *n,
+                                 int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
   int  m;
@@ -172,7 +173,8 @@ void PETSC_STDCALL petscstrncpy_(CHAR s1,CHAR s2,int *n,int *ierr,int len1,int l
   *ierr = PetscStrncpy(t1,t2,m);
 }
 
-void PETSC_STDCALL petscfixfilename_(CHAR filein,CHAR fileout,int *ierr,int len1,int len2)
+void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR fileout PETSC_MIXED_LEN(len2),
+                                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   int  i,n;
   char *in,*out;
@@ -198,7 +200,8 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein,CHAR fileout,int *ierr,int len1
   out[i] = 0;
 }
 
-void PETSC_STDCALL petscbinaryopen_(CHAR name,int *type,int *fd,int *ierr,int len)
+void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),int *type,int *fd,
+                                    int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -295,7 +298,7 @@ static char FIXCHARSTRING[1024];
 
 #endif
 
-void PETSC_STDCALL chkmemfortran_(int *line,CHAR file,int *ierr,int len)
+void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -314,7 +317,8 @@ void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val,int *ierr)
 }
 
 
-void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name,int *ierr,int len)
+void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
+                                       int *ierr PETSC_END_LEN(len))
 {
   char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
@@ -346,7 +350,8 @@ void PETSC_STDCALL petscattachdebugger_(int *ierr)
   *ierr = PetscAttachDebugger();
 }
 
-void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name,int *ierr,int len)
+void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
+                                       int *ierr PETSC_END_LEN(len))
 {
   char *t1;
 
@@ -355,7 +360,8 @@ void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name,int *ierr,int 
   FREECHAR(name,t1);
 }
 
-void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message,int *ierr,int len)
+void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(len),
+                               int *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);
@@ -409,7 +415,8 @@ void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
 
 #if defined(PETSC_HAVE_MATLAB)
 
-void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m,PetscMatlabEngine *e,int *ierr,int len)
+void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
+                                            int *ierr PETSC_END_LEN(len))
 {
   char *ms;
 
@@ -423,7 +430,8 @@ void PETSC_STDCALL petscmatlabenginedestroy_(PetscMatlabEngine *e,int *ierr)
   *ierr = PetscMatlabEngineDestroy(*e);
 }
 
-void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m,int *ierr,int len)
+void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
+                                              int *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(m,len,ms);
@@ -441,7 +449,8 @@ void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,int
   *ierr = PetscMatlabEngineGet(*e,*o);
 }
 
-void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,CHAR s,int *ierr,int len)
+void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,
+                                              CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(s,len,ms);
@@ -449,7 +458,8 @@ void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n
   FREECHAR(s,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,CHAR s,int *ierr,int len)
+void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,
+                                              CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(s,len,ms);
