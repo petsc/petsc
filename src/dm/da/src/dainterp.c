@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.12 2000/06/27 15:55:37 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.13 2000/06/27 17:38:20 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -233,13 +233,13 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
-        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
         i_c = (i/ratio);
         j_c = (j/ratio);
         l_c = (l/ratio);
@@ -251,37 +251,33 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         */
         nc       = 0;
         col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-        cols[nc++] = idx_c[col]; 
+        cols[nc++] = idx_c[col]/dof; 
         if (i_c*ratio != i) { 
-          cols[nc++] = idx_c[col+dof];
+          cols[nc++] = idx_c[col+dof]/dof;
         }
         if (j_c*ratio != j) { 
-          cols[nc++] = idx_c[col+m_ghost_c*dof];
+          cols[nc++] = idx_c[col+m_ghost_c*dof]/dof;
         }
         if (l_c*ratio != l) { 
-          cols[nc++] = idx_c[col+m_ghost_c*n_ghost_c*dof];
+          cols[nc++] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
         }
         if (j_c*ratio != j && i_c*ratio != i) { 
-          cols[nc++] = idx_c[col+(m_ghost_c+1)*dof];
+          cols[nc++] = idx_c[col+(m_ghost_c+1)*dof]/dof;
         }
         if (j_c*ratio != j && l_c*ratio != l) { 
-          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof];
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
         }
         if (i_c*ratio != i && l_c*ratio != l) { 
-          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof];
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
         }
         if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
-          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
         }
         ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
-        for (k=1; k<dof; k++) {
-          row++;
-          ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
-        }
       }
     }
   }
-  ierr = MatCreateMPIAIJ(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dof*mx*my*mz,dof*Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
@@ -290,7 +286,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
-        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
 
         i_c = (i/ratio);
         j_c = (j/ratio);
@@ -309,58 +305,52 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         /* one left and below; or we are right on it */
         col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c)+m_ghost_c*(j_c-j_start_ghost_c)+(i_c-i_start_ghost_c));
 
-        cols[nc] = idx_c[col]; 
+        cols[nc] = idx_c[col]/dof; 
         v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
 
         if (i_c*ratio != i) { 
-          cols[nc] = idx_c[col+dof];
+          cols[nc] = idx_c[col+dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
         if (j_c*ratio != j) { 
-          cols[nc] = idx_c[col+m_ghost_c*dof];
+          cols[nc] = idx_c[col+m_ghost_c*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
         if (l_c*ratio != l) { 
-          cols[nc] = idx_c[col+m_ghost_c*n_ghost_c*dof];
+          cols[nc] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
         if (j_c*ratio != j && i_c*ratio != i) { 
-          cols[nc] = idx_c[col+(m_ghost_c+1)*dof];
+          cols[nc] = idx_c[col+(m_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
         if (j_c*ratio != j && l_c*ratio != l) { 
-          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof];
+          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
         if (i_c*ratio != i && l_c*ratio != l) { 
-          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof];
+          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
         if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
-          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
+          cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
         }
         ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
-        for (k=1; k<dof; k++) {
-          for (ll=0; ll<nc; ll++) {
-            cols[ll]++;
-          }
-          row++;
-          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
-        }
       }
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  *A = mat;
+  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
   PLogFlops(13*m_f*n_f);
   PetscFunctionReturn(0);
 }
