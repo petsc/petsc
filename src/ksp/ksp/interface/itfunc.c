@@ -247,7 +247,8 @@ PetscErrorCode KSPSetUp(KSP ksp)
     The numerical values for these is set in include/petscksp.h changes
    there must be made here.
 */
-static const char *convergedreasons[] = {"preconditioner is indefinite",                         "matrix or preconditioner is nonsymmetric",
+static const char *convergedreasons[] = {"residual norm became not-a-number (0/0)",               
+                                         "preconditioner is indefinite",                         "matrix or preconditioner is nonsymmetric",
 					 "breakdown in BICG",                                    "breakdown",
 					 "residual norm increased by dtol",                      "reached maximum number of iterations",
 					 "null operator or preconditioner",                      "not used",
@@ -370,9 +371,9 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   }
   if (ksp->printreason) {
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",convergedreasons[ksp->reason+8]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",convergedreasons[ksp->reason+9]);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",convergedreasons[ksp->reason+8]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",convergedreasons[ksp->reason+9]);CHKERRQ(ierr);
     }
   }
 

@@ -415,7 +415,11 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
       ksp->rnorm0 = rnorm;
     }
   }
-  if (rnorm <= ksp->ttol) {
+
+  if (rnorm != rnorm) {
+    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");
+    *reason = KSP_DIVERGED_NAN;
+  } else if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
       PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n);
       *reason = KSP_CONVERGED_ATOL;
@@ -425,9 +429,6 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
     PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
-    *reason = KSP_DIVERGED_DTOL;
-  } else if (rnorm != rnorm) {
-    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has created a not a number (NaN) as the residual norm, declaring divergence\n");
     *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);
@@ -618,6 +619,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 .  KSP_CONVERGED_STEP_LENGTH
 .  KSP_DIVERGED_ITS  (required more than its to reach convergence)
 .  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
+.  KSP_DIVERGED_NAN (residual norm became Not-a-number likely do to 0/0)
 .  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
 -  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
                                 residual. Try a different preconditioner, or a different initial guess.)
