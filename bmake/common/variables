@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.25 2001/02/14 22:33:45 balay Exp bsmith $ 
+# $Id: common_variables,v 1.26 2001/02/25 04:38:29 bsmith Exp balay $ 
 #
 # PDIR (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # LDIR defines location of libraries similar to PDIR. It can be reset by external packages like TAO.
@@ -21,7 +21,7 @@
 #
 LDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 PDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
-LIBNAME	       = ${LDIR}/${LIBBASE}.a
+LIBNAME	       = ${LDIR}/${LIBBASE}.${LIB_SUFFIX}
 SOURCE	       = ${SOURCEC} ${SOURCEF}
 OBJS	       = ${OBJSC} ${OBJSF}
 PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include ${MPI_INCLUDE} \

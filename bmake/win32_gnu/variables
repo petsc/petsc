@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.17 2001/01/04 22:00:47 balay Exp buschelm $ 
+# $Id: base_variables,v 1.18 2001/03/02 22:38:35 buschelm Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -10,6 +10,7 @@ RANLIB		   = ranlib
 SHELL		   = /bin/sh
 SED		   = sed
 MKDIR              = mkdir -p
+LIB_SUFFIX         = a
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc -D__USE_FIXED_PROTOTYPES__

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 2000/04/20 16:06:31 balay Exp balay $ 
+# $Id: base_variables,v 1.11 2001/01/04 21:56:44 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -14,6 +14,7 @@ OMAKE		   = make
 SHELL		   = /bin/sh
 SED		   = /bin/sed
 MKDIR              = mkdir -p
+LIB_SUFFIX         = a
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc -32 -woff 3262,3666
