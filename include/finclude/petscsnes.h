@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.17 1998/03/30 21:14:36 balay Exp bsmith $;
+!  $Id: snes.h,v 1.18 1999/02/04 23:07:06 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -28,6 +28,11 @@
       parameter (SNES_NONLINEAR_EQUATIONS = 0)
       parameter (SNES_UNCONSTRAINED_MINIMIZATION = 1)
 
+!
+!  Some PETSc fortran functions that the user might pass as arguments
+!
+      external SNESDEFAULTCOMPUTEJACOBIAN
+      external SNESDEFAULTCOMPUTEJACOBIANWITHCOLORING
 !
 !  End of Fortran include file for the SNES package in PETSc
 
