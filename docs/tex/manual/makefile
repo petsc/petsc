@@ -32,8 +32,8 @@ manual.ps:
 	mv intro.ps ../intro.ps
 
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
-	rm -f www.cit
-	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
+	-@rm -f www.cit
+	-@cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
 	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex \
                -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
@@ -49,24 +49,24 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's/bullet://g' \
             | sed 's/$$ //g' \
             > manual.html
-	-mv manual.html *.xbm ../../manual
-	-@chmod ug+w www.cit ../../manual/*
+	-@mv manual.html *.xbm ../../manual
+	-@chmod -R ug+w www.cit ../../manual
 	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 #
 # This is the split version; some users prefer this
 splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
-	rm -f www.cit latex.err
-	cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
+	-@rm -f www.cit latex.err
+	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit -quietlatex
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -useimg -mapref ../../manualpages/manualpages.cit -quietlatex
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w splitmanual
-	-@/bin/rm -f ../../splitmanual
-	-mv manual ../../splitmanual
-	-@chmod ug+w ../../splitmanual www.cit 
+	-@/bin/rm -fr ../../splitmanual
+	-@mv manual ../../splitmanual
+	-@chmod -R ug+w ../../splitmanual www.cit 
 	rm -f  latex.err findex.tex sindex.tex tmp.html
 
 clean:
