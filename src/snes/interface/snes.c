@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.46 1996/01/29 21:44:38 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.47 1996/01/29 23:18:03 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -409,7 +409,7 @@ $      (for unconstrained minimization)
 
 .keywords: SNES, nonlinear, create, context
 
-.seealso: SNESSetUp(), SNESSolve(), SNESDestroy()
+.seealso: SNESSolve(), SNESDestroy()
 @*/
 int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 {
@@ -844,7 +844,7 @@ int SNESSetUp(SNES snes,Vec x)
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
-  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+  if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     Mat J;
     ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
@@ -885,7 +885,7 @@ int SNESSetUp(SNES snes,Vec x)
 
 .keywords: SNES, nonlinear, destroy
 
-.seealso: SNESCreate(), SNESSetUp(), SNESSolve()
+.seealso: SNESCreate(), SNESSolve()
 @*/
 int SNESDestroy(SNES snes)
 {
@@ -1214,7 +1214,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 
 /*@
    SNESSolve - Solves a nonlinear system.  Call SNESSolve after calling 
-   SNESCreate(), optional routines of the form SNESSetXXX(), and SNESSetUp().
+   SNESCreate() and optional routines of the form SNESSetXXX().
 
    Input Parameter:
 .  snes - the SNES context
@@ -1231,7 +1231,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 
 .keywords: SNES, nonlinear, solve
 
-.seealso: SNESCreate(), SNESSetUp(), SNESDestroy()
+.seealso: SNESCreate(), SNESDestroy()
 @*/
 int SNESSolve(SNES snes,Vec x,int *its)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.38 1996/01/24 18:05:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.39 1996/01/29 21:46:50 curfman Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -76,6 +76,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES); CHKERRQ(ierr);
   *flag = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }/* --------------------  User-defined monitor ----------------------- */
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
