@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodebug.c,v 1.21 1997/07/09 21:02:01 balay Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.22 1997/08/22 15:19:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,14 +16,14 @@ typedef struct {
   int N;
   int *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
                     /* petsc[j] is the partner for the jth app slot */
-} AO_Debug;
+} AO_Basic;
 
 #undef __FUNC__  
 #define __FUNC__ "AODestroy_Debug" /* ADIC Ignore */
 int AODestroy_Debug(PetscObject obj)
 {
   AO       ao = (AO) obj;
-  AO_Debug *aodebug = (AO_Debug *) ao->data;
+  AO_Basic *aodebug = (AO_Basic *) ao->data;
   PetscFree(aodebug->app);
   PetscFree(ao->data); 
   PLogObjectDestroy(ao);
@@ -38,7 +39,7 @@ int AOView_Debug(PetscObject obj,Viewer viewer)
   int         rank,ierr,i;
   ViewerType  vtype;
   FILE        *fd;
-  AO_Debug    *aodebug = (AO_Debug*) ao->data;
+  AO_Basic    *aodebug = (AO_Basic*) ao->data;
 
   MPI_Comm_rank(ao->comm,&rank); if (rank) return 0;
 
@@ -63,7 +64,7 @@ int AOView_Debug(PetscObject obj,Viewer viewer)
 int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 {
   int      i;
-  AO_Debug *aodebug = (AO_Debug *) ao->data;
+  AO_Basic *aodebug = (AO_Basic *) ao->data;
 
   for ( i=0; i<n; i++ ) {
     if (ia[i] >= 0) {ia[i] = aodebug->app[ia[i]];}
@@ -76,7 +77,7 @@ int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 {
   int      i;
-  AO_Debug *aodebug = (AO_Debug *) ao->data;
+  AO_Basic *aodebug = (AO_Basic *) ao->data;
 
   for ( i=0; i<n; i++ ) {
     if (ia[i] >= 0) {ia[i] = aodebug->petsc[ia[i]];}
@@ -88,9 +89,9 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
                               AOApplicationToPetsc_Debug};
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateDebug" /* ADIC Ignore */
+#define __FUNC__ "AOCreateBasic" /* ADIC Ignore */
 /*@C
-   AOCreateDebug - Creates a basic application ordering using two integer arrays.
+   AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
@@ -102,24 +103,24 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
 .  aoout - the new application ordering
 
    Options Database Key:
-$   -ao_view : call AOView() at the conclusion of AOCreateDebug()
+$   -ao_view : call AOView() at the conclusion of AOCreateBasic()
 
 .keywords: AO, create
 
-.seealso: AOCreateBasic(), AOCreateDebugIS(), AODestroy()
+.seealso: AOCreateBasicIS(), AODestroy()
 @*/
-int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
+int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 {
-  AO_Debug  *aodebug;
+  AO_Basic  *aodebug;
   AO        ao;
   int       *lens,size,rank,N,i,flg1,ierr;
   int       *allpetsc,*allapp,*disp,ip,ia;
 
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_DEBUG,comm,AODestroy,AOView); 
+  PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_BASIC,comm,AODestroy,AOView); 
   PLogObjectCreate(ao);
-  aodebug            = PetscNew(AO_Debug);
-  PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Debug));
+  aodebug            = PetscNew(AO_Basic);
+  PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   PetscMemcpy(&ao->ops,&myops,sizeof(myops));
   ao->destroy = AODestroy_Debug;
@@ -173,9 +174,9 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateDebugIS" /* ADIC Ignore */
+#define __FUNC__ "AOCreateBasicIS" /* ADIC Ignore */
 /*@C
-   AOCreateDebugIS - Creates a basic application ordering using two index sets.
+   AOCreateBasicIS - Creates a basic application ordering using two index sets.
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
@@ -186,13 +187,13 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 .  aoout - the new application ordering
 
    Options Database Key:
-$   -ao_view : call AOView() at the conclusion of AOCreateDebugIS()
+$   -ao_view : call AOView() at the conclusion of AOCreateBasicIS()
 
 .keywords: AO, create
 
-.seealso: AOCreateBasic(), AOCreateDebug(), AODestroy()
+.seealso: AOCreateBasic(),  AODestroy()
 @*/
-int AOCreateDebugIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
+int AOCreateBasicIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
 {
   int       *mypetsc,*myapp,ierr,napp,npetsc;
 
@@ -203,7 +204,7 @@ int AOCreateDebugIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
   ierr = ISGetIndices(isapp,&myapp); CHKERRQ(ierr);
   ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
 
-  ierr = AOCreateDebug(comm,napp,myapp,mypetsc,aoout); CHKERRQ(ierr);
+  ierr = AOCreateBasic(comm,napp,myapp,mypetsc,aoout); CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isapp,&myapp); CHKERRQ(ierr);
   ierr = ISRestoreIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
