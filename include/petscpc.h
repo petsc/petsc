@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.25 1995/07/03 21:45:40 bsmith Exp curfman $ */
+/* $Id: pc.h,v 1.26 1995/07/07 17:53:54 curfman Exp curfman $ */
 
 /*
       Preconditioner module.
@@ -30,6 +30,7 @@ extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);
 extern int    PCGetMethodFromContext(PC,PCMethod*);
 extern int    PCGetMethodName(PCMethod,char **);
+extern int    PCGetFactoredMatrix(PC,Mat*);
 
 /* Flags for PCSetOperators */
 typedef enum {ALLMAT_DIFFERENT_NONZERO_PATTERN=0,MAT_SAME_NONZERO_PATTERN=1, 

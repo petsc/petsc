@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.41 1995/07/08 15:06:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.42 1995/07/08 16:24:13 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -31,10 +31,11 @@ int KSPView(KSP ksp,Viewer viewer)
     KSPGetMethodName((KSPMethod)ksp->type,&method);
     MPIU_fprintf(ksp->comm,fd,"  method: %s\n",method);
     if (ksp->guess_zero) MPIU_fprintf(ksp->comm,fd,
-      "  maximum iterations=%d\n, initial guess is zero",ksp->max_it);
-    else MPIU_fprintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
-    fprintf(fd,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
-            ksp->rtol, ksp->atol, ksp->divtol);
+      "  maximum iterations = %d, initial guess is zero\n",ksp->max_it);
+    else MPIU_fprintf(ksp->comm,fd,"  maximum iterations = %d\n", ksp->max_it);
+    MPIU_fprintf(ksp->comm,fd,
+      "  tolerances:  relative = %g, absolute = %g, divergence = %g\n",
+      ksp->rtol, ksp->atol, ksp->divtol);
     if (ksp->right_pre) MPIU_fprintf(ksp->comm,fd,"  right preconditioning\n");
     else MPIU_fprintf(ksp->comm,fd,"  left preconditioning\n");
   }

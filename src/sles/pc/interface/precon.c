@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.31 1995/07/08 17:46:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.32 1995/07/08 17:48:09 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -111,6 +111,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyrich   = 0;
   pc->prefix      = 0;
   pc->view        = 0;
+  pc->getfactmat  = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetMethod(pc,PCJACOBI);
@@ -407,6 +408,25 @@ int PCGetMethodFromContext(PC pc,PCMethod *method)
 {
   VALIDHEADER(pc,PC_COOKIE);
   *method = (PCMethod) pc->type;
+  return 0;
+}
+/*@ 
+   PCGetFactoredMatrix - Gets the factored matrix from the
+   preconditioner context.  This routine is valid only for the LU, 
+   Incomplete LU, Cholesky and Incomplete Cholesky methods.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output parameters:
+.  mat - the factored matrix
+
+.keywords: PC, get, factored, matrix
+@*/
+int PCGetFactoredMatrix(PC pc,Mat *mat)
+{
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->getfactmat) return (*pc->getfactmat)(pc,mat);
   return 0;
 }
 

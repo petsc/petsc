@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.5 1995/07/07 19:13:58 curfman Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.6 1995/07/08 18:05:22 bsmith Exp curfman $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -24,6 +24,7 @@ struct _PC {
   Vec          vec;
   void         *data;
   char         *prefix;
+  int          (*getfactmat)(PC,Mat*);
 };
 
 #endif
