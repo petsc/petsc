@@ -49,13 +49,4 @@ etags:
 	etags -a -f TAGS src/*/impls/*.c
 	chmod g+w TAGS
 
-keywords:
-	$(RM) -f keywords
-	grep Keywords src/*/src/*.c src/*/impls/*.c src/*/impls/*/*.c > key1
-	cut -f1 -d: key1 > key2
-	cut -f3 -d: key1 > key3
-	paste key3 key2 > Keywords
-	$(RM) -f key1 key2 key3
-	chmod g+w Keywords
-
 runexamples:

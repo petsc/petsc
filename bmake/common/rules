@@ -102,7 +102,7 @@ C2f77lib:
 
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(IPETSCDIR)/doc/doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
+	doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
                 -mpath $(PETSCLIB)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); \
                 chmod g+w $(PETSCLIB)/docs/man/man$(MANSEC)/*; fi 
@@ -115,7 +115,7 @@ latexpages:
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(IPETSCDIR)/doc/doctext -html -index $(PETSCLIB)/docs/www/www.cit \
+	doctext -html -index $(PETSCLIB)/docs/www/www.cit \
                 -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)\
                 -indexdir www/man$(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
