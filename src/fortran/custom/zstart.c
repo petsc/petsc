@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.40 1998/04/14 16:54:18 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.41 1998/05/04 04:09:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,6 +63,10 @@ extern int          PetscBeganMPI;
 extern "C" {
 #endif
 extern void mpi_init_(int*);
+
+/*
+     Different Fortran compilers handle command lines in different ways
+*/
 #if defined(PARCH_nt)
 /*
 extern short  __declspec(dllimport) __stdcall iargc_();
@@ -74,7 +78,10 @@ extern void __stdcall  getarg_(short*,char*,int,short *);
 #else
 extern int  iargc_();
 extern void getarg_(int*,char*,int);
-#if defined(PARCH_t3d)
+/*
+      The Cray T3D/T3E use the PXFGETARG() function
+*/
+#if defined(HAVE_PXFGETARG)
 extern void PXFGETARG(int *,_fcd,int*,int*);
 #endif
 #endif
@@ -96,14 +103,14 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 #else
   int  i;
 #endif
-  int warg = 256,rank;
+  int warg = 256,rank,ierr;
   char *p;
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!rank) {
     *argc = 1 + iargc_();
   }
-  MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);
+  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD); if (ierr) return ierr;
 
   *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)));CHKPTRQ(*argv);
   (*argv)[0] = (char*) (*argv + *argc + 1);
@@ -112,7 +119,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
     PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
-#if defined(PARCH_t3d)
+#if defined(HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
        int  ierr,ilen;
        PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr); CHKERRQ(ierr);
@@ -131,7 +138,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
     }
   }
-  MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);  
+  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD); if (ierr) return ierr; 
   if (rank) {
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
@@ -172,7 +179,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = OptionsCreate(); 
   if (*__ierr) return;
   i = 0;
-#if defined(PARCH_t3d)
+#if defined(HAVE_PXFGETARG)
   { int ilen;
     PXFGETARG(&i, _cptofcd(name,256),&ilen,__ierr); 
     if (*__ierr) return;

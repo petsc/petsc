@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.5 1997/10/19 03:23:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmreig.c,v 1.6 1997/12/01 01:53:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"
 #include <math.h>
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExtremeSingularValues_GMRES"
@@ -31,9 +31,11 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   }
   
   /* compute Singular Values */
-#if defined(PARCH_t3d)
-  SETERRQ(PETSC_ERR_SUP,0,"DGESVD not found on Cray T3D\n\
-             Therefore not able to provide singular value estimates.");
+  /*
+      The Cray math libraries do not seem to have the DGESVD() lapack routines
+  */
+#if defined(HAVE_MISSING_DGESVD) 
+  SETERRQ(PETSC_ERR_SUP,0,"DGESVD not found on Cray T3D\nNot able to provide singular value estimates.");
 #else
 #if !defined(USE_PETSC_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
