@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.112 1999/01/31 22:04:25 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.113 1999/02/01 16:33:58 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -208,6 +208,35 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "SLESSetTypesFromOptions"
+/*@
+   SLESSetTypesFromOptions - Sets KSP and PC types from options database, sets defaults
+        if not given.
+
+   Collective on SLES
+
+   Input Parameter:
+.  sles - the SLES context
+
+   Level: beginner
+
+.keywords: SLES, set, options, database
+
+.seealso: SLESPrintHelp(), SLESSetFromOptions(), KSPSetTypeFromOptions(),
+          PCSetTypeFromOptions(), SLESGetPC(), SLESGetKSP()
+@*/
+int SLESSetTypesFromOptions(SLES sles)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  ierr = KSPSetTypeFromOptions(sles->ksp); CHKERRQ(ierr);
+  ierr = PCSetTypeFromOptions(sles->pc); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "SLESSetFromOptions"
 /*@
    SLESSetFromOptions - Sets various SLES parameters from user options.
@@ -222,7 +251,8 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 
 .keywords: SLES, set, options, database
 
-.seealso: SLESPrintHelp()
+.seealso: SLESPrintHelp(), SLESSetTypesFromOptions(), KSPSetFromOptions(),
+          PCSetFromOptions(), , SLESGetPC(), SLESGetKSP()
 @*/
 int SLESSetFromOptions(SLES sles)
 {

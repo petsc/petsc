@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.154 1999/03/15 14:36:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.155 1999/03/15 21:58:53 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -490,7 +490,6 @@ int KSPSetTypeFromOptions(KSP ksp)
 int KSPSetFromOptions(KSP ksp)
 {
   int       flg, ierr,loc[4], nmax = 4,i;
-  char      method[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
