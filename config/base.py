@@ -301,7 +301,7 @@ class Configure(script.Script):
 
   def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Returns True if the compile was successful'''
-    (output, error, returnCode) = self.outputCompile(includes, body, cleanup)
+    (output, error, returnCode) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
