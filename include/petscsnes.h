@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.89 1999/05/16 14:48:52 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.90 1999/06/08 22:47:18 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -120,7 +120,6 @@ extern int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*
 extern int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
 extern int SNESSetLineSearchParams(SNES, double, double, double);
 extern int SNESGetLineSearchParams(SNES, double*, double*, double*);
-{
 
 /* --------- Unconstrained minimization routines --------------------------------*/
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);

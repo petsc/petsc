@@ -82,7 +82,8 @@ have the error flag as the final argument.
 
   Changed calling sequence of MatSNESMFAddNullSpace() to take PCNullSpace object rather than 
   array of vectors.
-    
+
+  Added SNESSetLineSearchParams() and  SNESGetLineSearchParams(), contributed by Matt Knepley.
 
   DA
 
