@@ -1,5 +1,9 @@
 import maker
 
+import urlparse
+# Fix parsing for nonstandard schemes
+urlparse.uses_netloc.extend(['bk', 'ssh'])
+
 class Base (maker.Maker):
   def __init__(self, argDB, base = ''):
     maker.Maker.__init__(self, argDB)
@@ -45,3 +49,19 @@ class Base (maker.Maker):
         self.debugPrint('Already installed '+project.getName()+'('+url+')', 3, 'install')
         return project
     return None
+
+  def getRepositoryName(self, url):
+    '''Return the repository name from a project URL. This is the base filename that should be used for tarball distributions.'''
+    import os
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    return os.path.basename(path)
+
+  def getRepositoryPath(self, url, noBase = 0):
+    '''Return the repository path from a project URL. This is the name that should be used for alternate retrieval.
+    - You can omit the repository name itself by giving the noBase flag'''
+    import os
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    sitename = location.split('.')[0]
+    pathname = path[1:]
+    if noBase: pathname = os.path.dirname(pathname)
+    return os.path.join(sitename, pathname)

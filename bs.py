@@ -137,9 +137,10 @@ class BS (install.base.Base):
       newDB[new_key] = self.sourceDB[key]
     self.sourceDB = newDB
 
-    dbFile = open(self.sourceDBFilename, 'w')
-    cPickle.dump(self.sourceDB, dbFile)
-    dbFile.close()
+    if os.path.exists(self.sourceDBFilename):
+      dbFile = open(self.sourceDBFilename, 'w')
+      cPickle.dump(self.sourceDB, dbFile)
+      dbFile.close()
     return
 
   def updateRepositoryDirs(self, repositoryDirs):

@@ -15,11 +15,10 @@ class Retriever(install.base.Base):
 
   def getInstallRoot(self, url):
     '''Guess the install root from the project URL'''
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    path = path[1:]
+    root = self.getRepositoryName(url)
     if self.base:
-      path = os.path.join(self.base, path)
-    return os.path.abspath(path)
+      root = os.path.join(self.base, root)
+    return os.path.abspath(root)
 
   def removeRoot(self,root,canExist,force = 0):
     'Returns 1 if removes root'
@@ -58,8 +57,7 @@ class Retriever(install.base.Base):
 
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
     if self.checkBootstrap():
-      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-      path   = os.path.join('/pub', 'petsc', location.split('.')[0], path[1:]+'.tgz')
+      path   = os.path.join('/pub', 'petsc', self.getRepositoryPath(url)+'.tgz')
       newUrl = urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment))
       return self.retrieve(newUrl, root, canExist, force)
 
@@ -92,6 +90,15 @@ class Retriever(install.base.Base):
     return root
 
   def retrieve(self, url, root = None, canExist = 0, force = 0):
+    '''Retrieve the project corresponding to url
+    - If root is None, the local root directory is automatically determined. If the project
+      was already installed, this root is used. Otherwise a guess is made based upon the url.
+    - If canExist is True and the root exists, an update is done instead of a full download.
+      The canExist is automatically true if the project has been installed. The retrievalCanExist
+      flag can also be used to set this.
+    - If force is True, a full dowmload is mandated.
+    Providing the root is an easy way to make a copy, for instance when making tarballs.
+    '''
 #    remapurls = {'bk://sidl.bkbits.net/Compiler' : 'bk:///home/web/Compiler',
 #                 'bk://sidl.bkbits.net/Runtime' : 'bk:///home/web/Runtime',
 #                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
@@ -114,7 +121,7 @@ class Retriever(install.base.Base):
 #      url = remapurls[url]
 
     project = self.getInstalledProject(url)
-    if not project is None:
+    if not project is None and root is None:
       root     = project.getRoot()
       canExist = 1
     if root is None:
@@ -123,7 +130,6 @@ class Retriever(install.base.Base):
     try:
       if self.argDB['retrievalCanExist']:
         canExist = 1
-
       return getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist, force)
     except AttributeError:
       raise RuntimeError('Invalid transport for retrieval: '+scheme)

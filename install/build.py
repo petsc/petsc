@@ -9,17 +9,18 @@ class Builder(install.base.Base):
     self.retriever = install.retrieval.Retriever(argDB)
     return
 
-  def build(self, root, target = 'default', setupTarget = None):
+  def build(self, root, target = 'default', setupTarget = None, ignoreDependencies = 0):
     self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
     try:
       maker = self.getMakeModule(root).PetscMake(sys.argv[1:], self.argDB)
     except ImportError:
       self.debugPrint('  No make module present in '+root, 2, 'install')
       return
-    root  = maker.getRoot()
-    for url in maker.executeTarget('getDependencies'):
-      self.debugPrint('  Building dependency '+url, 2, 'install')
-      self.build(self.retriever.retrieve(url), target, setupTarget)
+    root = maker.getRoot()
+    if not ignoreDependencies:
+      for url in maker.executeTarget('getDependencies'):
+        self.debugPrint('  Building dependency '+url, 2, 'install')
+        self.build(self.retriever.retrieve(url), target, setupTarget)
     self.debugPrint('Compiling in '+root, 2, 'install')
     if setupTarget is None:                 setupTarget = []
     elif not isinstance(setupTarget, list): setupTarget = [setupTarget]

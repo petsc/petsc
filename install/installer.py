@@ -47,13 +47,15 @@ class Installer(install.base.Base):
     argDB['installedprojects'] = self.argDB['installedprojects']
     return
 
-  def backup(self, projectUrl):
-    '''This should actually get a fresh copy instead of using the one in the database'''
-    self.debugPrint('Backing up '+projectUrl, 3, 'install')
-    root = self.retriever.retrieve(projectUrl, force = self.force);
-    self.builder.build(root, 'sidl')
-    project = self.getMakeModule(root).PetscMake(sys.argv[1:]).project
-    output  = self.executeShellCommand('tar -czf '+project.getName()+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
+  def backup(self, url):
+    '''This forces a fresh copy of the project instead of using the one in the database'''
+    import shutil
+
+    self.debugPrint('Backing up '+url, 3, 'install')
+    root = self.retriever.retrieve(url, self.retriever.getInstallRoot(url)+'_backup', force = self.force);
+    self.builder.build(root, 'sidl', ignoreDependencies = 1)
+    output = self.executeShellCommand('tar -czf '+self.getRepositoryName(url)+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
+    shutil.rmtree(root)
     return
 
 if __name__ == '__main__':
