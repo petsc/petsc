@@ -7,8 +7,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Provide sparse matrix matrix matrix R A R^T or sparse matrix-matrix? 
+     Possibilities coloring? or look at RAMG/SAMG contrib/lahaye fortran code
+     for ideas to do it efficiently.
+
   Provide efficient routines for converting to/from the AMG sky-line storage to 
-  PETSc aij; see contrib/laheye
+  PETSc aij; see contrib/lahaye
 
   Change PETSc to use http://subversion.tigris.org instead of RCS
 
