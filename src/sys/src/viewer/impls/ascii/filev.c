@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.15 1995/08/07 22:01:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.16 1995/08/17 16:09:53 curfman Exp curfman $";
 #endif
 
 
@@ -34,6 +34,14 @@ static int ViewerDestroy_File(PetscObject obj)
   if (!mytid && v->fd != stderr && v->fd != stdout) fclose(v->fd);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
+  return 0;
+}
+
+int ViewerDestroy_Private()
+{
+  ViewerDestroy_File((PetscObject)STDERR_VIEWER);
+  ViewerDestroy_File((PetscObject)STDOUT_VIEWER);
+  ViewerDestroy_File((PetscObject)SYNC_STDOUT_VIEWER);
   return 0;
 }
 
@@ -109,7 +117,7 @@ int ViewerFileOpen(char *name,Viewer *lab)
    As shown below, ViewerFileOpenSync() is useful in conjunction with 
    MatView() and VecView()
 $
-$    ViewerFileOpenSycn("mat.output",MPI_COMM_WORLD,&viewer);
+$    ViewerFileOpenSync("mat.output",MPI_COMM_WORLD,&viewer);
 $    MatView(matrix,viewer);
 
 .keywords: Viewer, file, open
@@ -151,8 +159,8 @@ int ViewerFileOpenSync(char *name,MPI_Comm comm,Viewer *lab)
 $    FILE_FORMAT_DEFAULT - default
 $    FILE_FORMAT_MATLAB - Matlab format
 $    FILE_FORMAT_IMPL - implementation-specific format
-$    FILE_FORMAT_INFO - basic information about object
 $      (which is in many cases the same as the default)
+$    FILE_FORMAT_INFO - basic information about object
  
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
@@ -170,3 +178,8 @@ int ViewerFileSetFormat(Viewer v,int format,char *name)
   }
   return 0;
 }
+
+
+
+
+
