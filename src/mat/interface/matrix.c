@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.244 1997/05/07 15:06:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.245 1997/05/28 23:20:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -182,6 +182,12 @@ int MatDestroy(Mat mat)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
   ierr = (*mat->destroy)((PetscObject)mat); CHKERRQ(ierr);
   return 0;
 }
@@ -431,6 +437,37 @@ int MatSetLocalToGlobalMapping(Mat x, int n,int *indices)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "MatSetLocalToGlobalMappingBlocked" /* ADIC Ignore */
+/*@
+   MatSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
+   by the routine MatSetValuesBlockedLocal() to allow users to insert matrices entries
+   using a local (per-processor) numbering.
+
+   Input Parameters:
+.  x - the matrix
+.  n - number of local indices
+.  indices - global index for each local block index
+
+.keywords: matrix, set, values, local ordering
+
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
+           MatSetValuesBlocked(), MatSetValuesLocal()
+@*/
+int MatSetLocalToGlobalMappingBlocked(Mat x, int n,int *indices)
+{
+  int ierr;
+  PetscValidHeaderSpecific(x,MAT_COOKIE);
+  PetscValidIntPointer(indices);
+
+  if (x->bmapping) {
+    SETERRQ(1,0,"Mapping already set for matrix");
+  }
+
+  ierr = ISLocalToGlobalMappingCreate(n,indices,&x->bmapping);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
@@ -494,7 +531,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetValuesLocal"
+#define __FUNC__ "MatSetValuesBlockedLocal"
 /*@
    MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
         using a local ordering of the nodes a block at a time. 
@@ -509,9 +546,9 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 .  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes:
-   When you set the local to global mapping with MatSetLocalToGlobalMapping() you 
+   When you set the local to global mapping with MatSetLocalToGlobalMappingBlocked() you 
    must set the mapping for blocks, not for matrix elements.
-   Calls to MatSetValuesLocalBlocked() with the INSERT_VALUES and ADD_VALUES 
+   Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
@@ -520,7 +557,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 .keywords: matrix, set, values, local ordering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
-           MatSetValuesLocal()
+           MatSetValuesLocal(), MatSetLocalToGlobalMappingBlocked()
 @*/
 int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
 {
@@ -537,8 +574,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scal
   else if (mat->insertmode != addv) {
     SETERRQ(1,1,"Cannot mix add values and insert values");
   }
-  if (!mat->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
+  if (!mat->bmapping) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlocked");
   }
   if (nrow > 128 || ncol > 128) {
     SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
@@ -551,8 +588,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scal
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
-  ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); 
-  ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm); 
+  ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm); 
+  ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm); 
   ierr = (*mat->ops.setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
