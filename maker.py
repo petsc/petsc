@@ -62,7 +62,7 @@ class Make(script.Script):
   def updateDependencyGraph(self, graph, head):
     '''Update the directed graph with the project dependencies of head'''
     for depMake, depSidlFiles in head[0].dependencies.values():
-      graph.addEdges(head, outputs = [(depMake, tuple(depSidlFiles))])
+      graph.addEdges(head, [(depMake, tuple(depSidlFiles))])
       self.updateDependencyGraph(graph, (depMake, tuple(depSidlFiles)))
     return
 
@@ -192,7 +192,7 @@ class SIDLMake(Make):
       import graph
       g = graph.DirectedGraph([os.path.join(self.root, 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.root, 'sidl')))])
       for vertex in g.vertices:
-        g.addEdges(vertex, outputs = self.builder.sourceDB.getDependencies(vertex))
+        g.addEdges(vertex, [os.path.join(self.root, dep) for dep in self.builder.sourceDB.getDependencies(vertex)])
       self._sidl = [v for v in g.topologicalSort(g)]
     return self._sidl
   def setSidl(self, sidl):
