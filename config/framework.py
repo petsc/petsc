@@ -211,10 +211,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     else:
       self.argDB['configModules'] = modules
     for moduleName in self.argDB['configModules']:
-      try:
-        self.getChild(moduleName)
-      except ImportError, e:
-        self.logPrint('Could not import config module '+moduleName+': '+str(e))
+      self.getChild(moduleName)
     return
 
   def require(self, moduleName, depChild, keywordArgs = {}):
