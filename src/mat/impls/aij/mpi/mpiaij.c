@@ -2875,7 +2875,9 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
     ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr); 
-    ierr = MatDestroy(merge->C_seq);CHKERRQ(ierr);
+    if (merge->ci){ierr = PetscFree(merge->ci);CHKERRQ(ierr);}
+    if (merge->cj){ierr = PetscFree(merge->cj);CHKERRQ(ierr);}
+    if (merge->C_seq){ierr = MatDestroy(merge->C_seq);CHKERRQ(ierr);}
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -3270,6 +3272,8 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   merge->buf_ri        = buf_ri;
   merge->buf_rj        = buf_rj;
   merge->C_seq         = seqmat;
+  merge->ci            = PETSC_NULL;
+  merge->cj            = PETSC_NULL;
 
   /* attach the supporting struct to B_mpi for reuse */
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
