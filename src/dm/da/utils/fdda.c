@@ -621,7 +621,7 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
 	  for (ii=istart; ii<iend+1; ii++) {
 	    for (jj=jstart; jj<jend+1; jj++) {
 	      for (kk=kstart; kk<kend+1; kk++) {
-		if ((st == DA_STENCIL_BOX) || (!ii || !jj || !kk)) {  /* entries on star  */
+		if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
 		  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
 		}
 	      }
@@ -670,7 +670,7 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
 	  for (ii=istart; ii<iend+1; ii++) {
 	    for (jj=jstart; jj<jend+1; jj++) {
 	      for (kk=kstart; kk<kend+1; kk++) {
-		if ((st == DA_STENCIL_BOX) || (!ii || !jj || !kk)) {  /* entries on star  */
+		if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
 		  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
 		}
 	      }
