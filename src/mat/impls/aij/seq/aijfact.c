@@ -593,10 +593,10 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   int          n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
-  PetscScalar  *x,*b,*aa = a->a,sum;
+  PetscScalar  *x,*b,*aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   int          adiag_i,i,*vi,nz,ai_i;
-  PetscScalar  *v;
+  PetscScalar  *v,sum;
 #endif
 
   PetscFunctionBegin;

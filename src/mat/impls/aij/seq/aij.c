@@ -892,10 +892,11 @@ int MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar  *x,*y,*v,sum;
+  PetscScalar  *x,*y,*v;
   int          ierr,m = A->m,*idx,shift = a->indexshift,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   int          n,i,jrow,j;
+  PetscScalar  sum;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -935,10 +936,11 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar  *x,*y,*z,*v,sum;
+  PetscScalar  *x,*y,*z,*v;
   int          ierr,m = A->m,*idx,shift = a->indexshift,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
   int          n,i,jrow,j;
+PetscScalar    sum;
 #endif
 
   PetscFunctionBegin;

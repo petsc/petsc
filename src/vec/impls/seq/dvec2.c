@@ -17,7 +17,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
   Vec_Seq     *xv = (Vec_Seq *)xin->data;
   int         i,nv_rem,n = xin->n,ierr;
-  PetscScalar sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
+  PetscScalar sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,*x;
   Vec         *yy;
 
   PetscFunctionBegin;
@@ -660,16 +660,20 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
 int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          i,n = xin->n,ierr;
-  PetscScalar  *xx = x->array,*yy,oalpha = *alpha;
+  int          n = xin->n,ierr;
+  PetscScalar  *xx = x->array,*yy;
 
   PetscFunctionBegin;
   ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
   fortranaypx_(&n,alpha,xx,yy);
 #else
-  for (i=0; i<n; i++) {
-    yy[i] = xx[i] + oalpha*yy[i];
+  {
+    int i;
+    PetscScalar oalpha = *alpha
+    for (i=0; i<n; i++) {
+      yy[i] = xx[i] + oalpha*yy[i];
+    }
   }
 #endif
   ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);

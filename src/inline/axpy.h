@@ -20,14 +20,18 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrancopy_ fortrancopy
 #endif
+EXTERN_C_BEGIN
 extern void fortrancopy_(int*,PetscScalar*,PetscScalar*); 
+EXTERN_C_END
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranzero_ FORTRANZERO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranzero_ fortranzero
 #endif
+EXTERN_C_BEGIN
 extern void fortranzero_(int*,PetscScalar*);
+EXTERN_C_END
 
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
@@ -36,7 +40,9 @@ extern void fortranzero_(int*,PetscScalar*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranaypx_ fortranaypx
 #endif
+EXTERN_C_BEGIN
 extern void fortranaypx_(int*,const PetscScalar*,PetscScalar*,PetscScalar*); 
+EXTERN_C_END
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
@@ -45,7 +51,9 @@ extern void fortranaypx_(int*,const PetscScalar*,PetscScalar*,PetscScalar*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranwaxpy_ fortranwaxpy
 #endif
+EXTERN_C_BEGIN
 extern void fortranwaxpy_(int*,const PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*); 
+EXTERN_C_END
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
