@@ -12,6 +12,7 @@ AR_FLAGS           = @AR_FLAGS@
 OMAKE              = @MAKE@ @MAKE_FLAGS@
 RANLIB             = @RANLIB@
 MKDIR              = @MKDIR@
+MV                 = @MV@
 @SET_MAKE@
 @SET_DATAFILESPATH@
 #
