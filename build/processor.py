@@ -447,12 +447,13 @@ class SharedLinker(Linker):
     import commands
     output = commands.getoutput(self.processor+' -shared')
     if output.find('unrecognized option') >= 0:
-      output = commands.getoutput(self.processor+' -Wl,dylib')
+      output = commands.getoutput('ld -dylib')
       if output.find('unrecognized option') >= 0:
         return Linker.getLinkerFlags(self, source)
       else:
-        flags = ['-Wl,dylib']
+        flags = ['-dylib']
         flags.extend(Linker.getLinkerFlags(self, source))
+        self.processor = 'ld'
         return flags
     else:
       flags = ['-shared']
