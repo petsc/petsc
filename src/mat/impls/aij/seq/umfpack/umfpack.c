@@ -1,7 +1,7 @@
 /*$Id: umfpack.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 
 /* 
-        Provides an interface to the UMFPACK sparse solver
+        Provides an interface to the UMFPACKv4.3 sparse solver
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -87,7 +87,6 @@ int MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
   Mat_UMFPACK *lu = (Mat_UMFPACK*)A->spptr;
   PetscScalar *av=lu->av,*ba,*xa;
   int         ierr,*ai=lu->ai,*aj=lu->aj,status;
-  int         m;
   
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_di_wsolve */
@@ -178,11 +177,6 @@ int MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
 
   /* Control parameters used by numeric factorization */
   ierr = PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],PETSC_NULL);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
-  ierr = PetscOptionsReal("-mat_umfpack_relaxed_amalgamation","Control[UMFPACK_RELAXED_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED_AMALGAMATION],&lu->Control[UMFPACK_RELAXED_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_umfpack_relaxed2_amalgamation","Control[UMFPACK_RELAXED2_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED2_AMALGAMATION],&lu->Control[UMFPACK_RELAXED2_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_umfpack_relaxed3_amalgamation","Control[UMFPACK_RELAXED3_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED3_AMALGAMATION],&lu->Control[UMFPACK_RELAXED3_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
-#endif
   ierr = PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],PETSC_NULL);CHKERRQ(ierr);
 
   /* Control parameters used by solve */
@@ -203,11 +197,7 @@ int MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
 
   /* symbolic factorization of A' */
   /* ---------------------------------------------------------------------- */
-#if defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
   status = umfpack_di_qsymbolic(n,m,ai,aj,PETSC_NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
-#else
-  status = umfpack_di_qsymbolic(n,m,ai,aj,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
-#endif
   if (status < 0){
     umfpack_di_report_info(lu->Control, lu->Info) ;
     umfpack_di_report_status(lu->Control, status) ;
@@ -260,11 +250,7 @@ int MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer) {
 
   /* Control parameters used by numeric factorization */
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_PIVOT_TOLERANCE]);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
-  ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED_AMALGAMATION]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED2_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED2_AMALGAMATION]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED3_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED3_AMALGAMATION]);CHKERRQ(ierr);
-#endif
+
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ALLOC_INIT]: %g\n",lu->Control[UMFPACK_ALLOC_INIT]);CHKERRQ(ierr);
 
   /* Control parameters used by solve */
