@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.9 2000/08/30 15:39:46 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.30 2000/11/28 17:26:31 bsmith Exp $"
 "Defines the configuration for this machine"
 #endif
 
@@ -10,8 +10,9 @@
 #define PETSC_ARCH_NAME "solaris"
 
 #define PETSC_HAVE_POPEN
-#define PETSC_HAVE_STROPTS_H 
+#define PETSC_USE_CTABLE
 #define PETSC_HAVE_LIMITS_H
+#define PETSC_HAVE_STROPTS_H 
 #define PETSC_HAVE_SEARCH_H 
 #define PETSC_HAVE_PWD_H 
 #define PETSC_HAVE_STRING_H 
@@ -23,8 +24,8 @@
 #define PETSC_HAVE_SYS_SYSTEMINFO_H
 #define PETSC_HAVE_SYSINFO
 #define PETSC_HAVE_SUNMATH_H
-#define PETSC_HAVE_RESTRICT
 #define PETSC_HAVE_SUNMATHPRO
+#define PETSC_HAVE_STD_COMPLEX
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE
 
@@ -41,16 +42,23 @@
 #define PETSC_HAVE_SYS_PROCFS_H
 #define PETSC_USE_PROCFS_FOR_SIZE
 #define PETSC_HAVE_FCNTL_H
-#define PETSC_SIZEOF_VOIDP 4
-#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_VOIDP  4
+#define PETSC_SIZEOF_INT    4
 #define PETSC_SIZEOF_DOUBLE 8
 
 #define PETSC_WORDS_BIGENDIAN 1
 
 #define PETSC_HAVE_RTLD_GLOBAL 1
+
 #define PETSC_HAVE_TIMES
+
+#define PETS_PREFER_DCOPY_FOR_MEMCPY
+
+#define PETSC_HAVE_F90_H "f90impl/f90_solaris.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_solaris.c"
 
 #define PETSC_HAVE_UCBPS
 
 #define PETSC_HAVE_SOLARIS_STYLE_FPTRAP
 #endif
+
