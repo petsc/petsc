@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.42 2000/07/10 03:39:47 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.43 2000/07/11 02:55:19 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -77,13 +77,13 @@ int MatDestroy_MPIAdj(Mat mat)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
   if (a->freeaij) {
     ierr = PetscFree(a->i);CHKERRQ(ierr);
     ierr = PetscFree(a->j);CHKERRQ(ierr);
-    ierr = PetscFree(a);CHKERRQ(ierr);
+    if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
   }
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
@@ -328,7 +328,8 @@ static struct _MatOps MatOps_Values = {0,
    Notes: This matrix object does not support most matrix operations, include
    MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
-   when the matrix is destroyed. And you must allocate them with PetscMalloc()
+   when the matrix is destroyed. And you must allocate them with PetscMalloc(). If you 
+    call from Fortran you need not create the arrays with PetscMalloc().
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 

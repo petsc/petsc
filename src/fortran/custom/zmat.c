@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.78 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zmat.c,v 1.79 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -46,6 +46,7 @@
 #define matpartitioningcreate_           MATPARTITIONINGCREATE
 #define matpartitioningsetadjacency_     MATPARTITIONINGSETADJACENCY
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
+#define matcreatempiadj_                 MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
@@ -89,9 +90,19 @@
 #define matpartitioningcreate_           matpartitioningcreate
 #define matpartitioningsetadjacency_     matpartitioningsetadjacency
 #define matpartitioningapply_            matpartitioningapply            
+#define matcreatempiadj_                 matcreatempiadj
 #endif
 
 EXTERN_C_BEGIN
+
+#include "src/mat/impls/adj/mpi/mpiadj.h"
+void PETSC_STDCALL matcreatempiadj(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
+{
+  Mat_MPIAdj *adj;
+  *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
+  adj = (Mat_MPIAdj*)(*A)->data;
+  adj->freeaij = PETSC_FALSE;
+}
 
 void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, int *ierr)
 {
@@ -300,12 +311,10 @@ void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *
 
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 /*  Fortran cannot pass in procinfo,hence ignored */
-void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
-                       void *procinfo,Mat *newmat,int *ierr)
+void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,Mat *newmat,int *ierr)
 {
   if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
-  *ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm(*comm),
-                               *m,*M,*nz,nnz,PETSC_NULL,newmat);
+  *ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm(*comm),*m,*M,*nz,nnz,newmat);
 }
 #endif
 
