@@ -1,4 +1,4 @@
-# $Id: base,v 1.55 1999/02/08 22:51:30 balay Exp balay $ 
+# $Id: base,v 1.56 1999/02/24 18:14:27 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -49,15 +49,9 @@ oshared:
 	mkdir tmp; \
 	cd tmp; \
         echo "building ${LIBNAME}.${SLSUFFIX}"; \
-	${AR} x ${LIBNAME}.a ;\
-	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
+	${AR} x ../${LIBNAME}.a ;\
+	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ../${LIBNAME}.${SLSUFFIX} \
                ${C_SYS_LIB} -lC ; \
 	cd ../ ; \
 	${RM} -rf tmp
-
-
-
-
-
-
 
