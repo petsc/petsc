@@ -18,6 +18,7 @@
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
@@ -41,6 +42,7 @@ extern int    exit(int);
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *getwd(char *);
 extern char   *mktemp(char *);
 extern int     gethostname(char *,int);
@@ -73,6 +75,7 @@ extern double atof(const char*);
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
@@ -90,6 +93,7 @@ extern double rint(double);
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 #endif
 #endif
@@ -99,6 +103,7 @@ extern char   *mktemp(char *);
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
 extern int     gethostname(char *,int);
@@ -114,6 +119,7 @@ extern void   *malloc(long unsigned int );
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern int    getdomainname(char *,int);
 extern char   *getenv( char *);
 extern double atof(char *);
@@ -126,6 +132,7 @@ extern int    atoi(char*);
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
 extern int     gethostname(char *,int);
@@ -142,6 +149,7 @@ extern double rint(double);
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *getenv( char *);
 extern int    atoi(char*);
 #endif
@@ -153,6 +161,7 @@ extern int    atoi(char*);
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
@@ -167,6 +176,7 @@ extern unsigned int sleep(unsigned int);
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern void   *malloc(long unsigned int);
 extern char   *getenv( char *);
@@ -180,24 +190,16 @@ extern int    atoi(char*);
 #if defined(PARCH_hpux)
 
 #if defined(__cplusplus)
+extern int    bcmp( char*, char*, int);
 extern int     getdomainname(char *,int);
 extern int    exit(int);
 extern int    abort();
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char *mktemp(char*);
 #define SIGBUS _SIGBUS
 #define SIGSYS _SIGSYS
-#endif
-#endif
-
-/* --------------------NeXT -----------------------------------*/
-#if defined(PARCH_NeXT)
-
-#if defined(__cplusplus)
-
-#else
-extern char   *mktemp(char *);
 #endif
 #endif
 
@@ -205,6 +207,7 @@ extern char   *mktemp(char *);
 #if defined(PARCH_t3d)
 
 #if defined(__cplusplus)
+extern int    bcmp( char*, char*, int);
 extern int    exit(int);
 extern int    abort();
 extern void   *malloc(long unsigned int );
@@ -216,6 +219,7 @@ extern char   *mktemp(char *);
 
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *getenv( char *);
 extern char   *mktemp(char *);
 #endif
@@ -227,6 +231,7 @@ extern char   *mktemp(char *);
 #if defined(__cplusplus)
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getenv( char *);
 extern void   *malloc(long unsigned int );
@@ -240,6 +245,7 @@ extern double atof(char *);
 
 #if defined(__cplusplus)
 extern "C" {
+extern int    bcmp( char*, char*, int);
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
 extern char   *getenv( char *);
@@ -251,6 +257,7 @@ extern void   *malloc(long unsigned int );
 }
 
 #else
+extern int    bcmp( char*, char*, int);
 extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
@@ -258,7 +265,6 @@ extern int    atoi(char*);
 #endif
 
 #endif
-
 
 
 
