@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.36 1996/08/31 15:43:43 curfman Exp bsmith $";
+C    "$Id: ex12.F,v 1.37 1996/10/02 20:56:20 bsmith Exp balay $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -117,6 +117,7 @@ C --------------------  Evaluate Function F(x) ---------------------
       integer          snes, x, f, ctx(*)
       integer          rank, size, i, s, n, ierr, ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
+      common           vf2, vxx, vff
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
@@ -207,6 +208,7 @@ C --------------------  Evaluate Jacobian --------------------
       integer          flag, ctx(*), ii, ixx, istart
       integer          iend, i,j, n, rank, size, end, start, ierr
       Scalar           d, A, h, vxx(1)
+      common           vxx
 
 #define xx(ib)  vxx(ixx + (ib))
 

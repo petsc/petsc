@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.4 1996/09/30 20:29:42 curfman Exp bsmith $";
+C "$Id: ex1f.F,v 1.5 1996/11/07 15:10:49 bsmith Exp balay $";
 C
 C       Formatted test for TS routines.
 C
@@ -437,6 +437,7 @@ C -------------------------------------------------------------------------
       Vec     local
       integer ierr,i,localsize,cdx,ldx 
       Scalar  copyptr(1), localptr(1),sc
+      common  copyptr, localptr
 
 C
 C    Application context data, stored in common block

@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.14 1996/10/01 02:03:49 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.15 1996/10/01 02:41:35 curfman Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -306,6 +306,7 @@ C
 
 C  Declarations for use with local arrays
       Scalar   lx_v(1)
+      common   lx_v
       integer  lx_i
 
       common /params/ lambda
@@ -406,6 +407,7 @@ C
 C  Declarations for use with local arrays
 
       Scalar   lx_v(1), lf_v(1)
+      common   lx_v, lf_v
       integer  lx_i, lf_i 
 
       common /params/ lambda
@@ -532,6 +534,7 @@ C
 C  Declarations for use with local arrays
 
       Scalar   lx_v(1)
+      common   lx_v
       integer  ltog_a(0:1), ltog_i, lx_i
 
 C  Macro to facilitate use of the local-to-global mapping
