@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.3 1998/03/20 22:53:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.4 1998/04/13 18:01:08 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: ploginfo.c,v 1.3 1998/03/20 22:53:33 bsmith Exp bsmit
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 
-extern int PLogPrintInfo;
+extern int PLogPrintInfo,PLogPrintInfoNull;
 extern int PLogInfoFlags[];
 
 /*
@@ -34,14 +34,14 @@ extern FILE *petsc_history;
     PLogInfo - Logs informative data, which is printed to standard output
     when the option -log_info is specified.
 
+    Collective over PetscObject argument
+
     Input Parameter:
-.   vobj - object most closely associated with the logging statement
-.   message - logging message, using standard "printf" format
++   vobj - object most closely associated with the logging statement
+-   message - logging message, using standard "printf" format
 
     Options Database Key:
 $    -log_info : activates printing of PLogInfo() messages 
-
-    Collective over PetscObject argument
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -67,6 +67,7 @@ int PLogInfo(void *vobj,char *message,...)
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);
   if (!PLogPrintInfo) PetscFunctionReturn(0);
+  if (!PLogPrintInfoNull && !vobj) PetscFunctionReturn(0);
   if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.183 1998/04/13 18:01:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.184 1998/04/27 18:21:04 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -24,12 +24,14 @@ static char vcid[] = "$Id: plog.c,v 1.183 1998/04/13 18:01:08 bsmith Exp curfman
 #include "pinclude/ptime.h"
 
 /*
-    The next two variables determine which, if any, PLogInfo() calls are used.
-  If PlogPrintInfo is zero, no info messages are printed. 
+    The next three variables determine which, if any, PLogInfo() calls are used.
+  If PLogPrintInfo is zero, no info messages are printed. 
+  IF PLogPrintInfoNull is zero, no info messages associated with a null object are printed.
+
   If PLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
-int PLogPrintInfo = 0;
+int PLogPrintInfo = 0,PLogPrintInfoNull = 0;
 int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
@@ -53,7 +55,8 @@ int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 int PLogInfoAllow(PetscTruth flag)
 {
   PetscFunctionBegin;
-  PLogPrintInfo = (int) flag;
+  PLogPrintInfo     = (int) flag;
+  PLogPrintInfoNull = (int) flag;
   PetscFunctionReturn(0);
 }
 
@@ -67,12 +70,21 @@ int PLogInfoAllow(PetscTruth flag)
     Input Parameter:
 .   objclass - object class,  e.g., MAT_COOKIE, SNES_COOKIE, etc.
 
+    Notes: One can pass PETSC_NULL to deactive all messages that are not associated
+           with an object.
+
 .seealso: PLogInfoActivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
 int PLogInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
+  
+  if (!objclass) {
+    PLogPrintInfoNull = 0;
+    PetscFunctionReturn(0); 
+  } 
   PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
+  
   if (objclass == SLES_COOKIE) {
     PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 0;
     PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 0;
@@ -931,8 +943,8 @@ int PLogDestroy(void)
     Not Collective
 
     Options Database Keys:
-.   -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
-.   -log_summary - Prints summary of flop and timing information to the 
++   -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
+-   -log_summary - Prints summary of flop and timing information to the 
                    screen (for code compiled with USE_PETSC_LOG)
 
 .keywords: log, begin
@@ -1002,8 +1014,8 @@ int PLogTraceBegin(FILE *file)
 .  name - an optional file name
 
    Options Database Keys:
-.  -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
-.  -log_all - Prints extensive log information (for code compiled with USE_PETSC_LOG)
++  -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
+-  -log_all - Prints extensive log information (for code compiled with USE_PETSC_LOG)
    
    Notes:
    The default file name is 
