@@ -9,12 +9,13 @@ this case each local vector is as long as the entire parallel vector.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr;
-  int           size,rank,i,N;
-  PetscScalar   value;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,i,N;
+  PetscMPIInt    size,rank;
+  PetscScalar    value;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

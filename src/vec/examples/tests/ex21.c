@@ -9,10 +9,11 @@ static char help[] = "Tests VecMax() with index.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr,idx;
-  PetscScalar   value;
-  Vec           x;
-  PetscRandom   rand;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,idx;
+  PetscScalar    value;
+  Vec            x;
+  PetscRandom    rand;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -29,9 +30,9 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %d\n",value,idx);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %d\n",value,(int)idx);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %d\n",value,idx);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %d\n",value,(int)idx);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
 

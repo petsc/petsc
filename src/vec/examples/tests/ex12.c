@@ -10,11 +10,13 @@ parallel vector.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr,size,rank,i;
-  PetscScalar   value;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       n = 5,i;
+  PetscScalar    value;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

@@ -12,9 +12,10 @@ arguments are\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          n = 15,ierr,i;
-  PetscScalar  v;
-  Vec          x,y;
+  PetscErrorCode ierr;
+  PetscInt       n = 15,i;
+  PetscScalar    v;
+  Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

@@ -270,6 +270,11 @@ runex21:
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi;\
 	   ${RM} -f ex21_1.tmp
+runex21_2:
+	-@${MPIRUN} -np 2 ex21 > ex21_2.tmp 2>&1;\
+	   if (${DIFF} output/ex21_2.out ex21_2.tmp) then true; \
+	   else echo "Possible problem with ex21_2, diffs above"; fi;\
+	   ${RM} -f ex21_2.tmp
 runex22:
 	-@${MPIRUN} -np 4 ex22 > ex22_1.tmp 2>&1;\
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
@@ -328,7 +333,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex11.PETSc runex11 ex11.rm ex12.PETSc runex12\
 		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
-                  ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm \
+                  ex17.PETSc runex17 ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm \
                   ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm \
                   ex34.PETSc runex34 ex34.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
