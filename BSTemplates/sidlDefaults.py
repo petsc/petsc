@@ -151,7 +151,10 @@ class UsingSIDL (logging.Logger):
   def getClientRootDir(self, lang, root = None):
     '''Always returns an absolute path'''
     dir = self.compilerDefaults.getClientRootDir(lang)
-    if root: dir = os.path.join(root, dir)
+    if root:
+      dir = os.path.join(root, dir)
+    else:
+      dir = os.path.join(self.project.getRoot(), dir)
     return os.path.abspath(dir)
 
   def getStubDir(self, lang, package):
