@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import action
 import fileset
+import logging
 import transform
 
 import os
@@ -39,7 +40,7 @@ class LinkSharedLibrary (action.Action):
         raise RuntimeError(e.getMessage())
     except ImportError:
       # If BS is not yet built or unavilable
-      self.debugPrint('Did not check shared library '+source, 4, 'link')
+      logging.debugPrint('Did not check shared library '+source, 4, 'link')
 
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
@@ -48,7 +49,7 @@ class LinkSharedLibrary (action.Action):
     os.chdir(linkDir)
     sharedLibrary = self.getSharedName(source)
     self.sharedLibs.append(sharedLibrary)
-    self.debugPrint('Linking '+source+' to '+sharedLibrary, 3, 'link')
+    logging.debugPrint('Linking '+source+' to '+sharedLibrary, 3, 'link')
 
     command = self.archiver+' '+self.archiverFlags+' '+source
     self.executeShellCommand(command)
@@ -99,7 +100,7 @@ class LinkExecutable (action.Action):
     command = self.linker+' '+self.flags
     files   = set.getFiles()
     if files:
-      self.debugPrint('Linking '+str(files)+' into '+self.executable[0], 3, 'link')
+      logging.debugPrint('Linking '+str(files)+' into '+self.executable[0], 3, 'link')
       for file in files:
         command += ' '+file
       for lib in self.extraLibraries.getFiles():

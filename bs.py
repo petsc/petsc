@@ -178,7 +178,7 @@ class BS (Maker):
     for arg in argList:
       if not arg[0] == '-':
         if args.has_key('target'):
-          args['target'].append[arg]
+          args['target'].append(arg)
         else:
           args['target'] = [arg]
       else:

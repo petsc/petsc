@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import bs
 import compile
+import logging
 import transform
 
 import os
@@ -95,7 +96,7 @@ class PythonModuleFixup (transform.Transform):
     if not base[-7:] == '_Module': return
     package     = base[:-7]
     moduleName  = os.path.join(dir, package+'module.so')
-    self.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
+    logging.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
     if os.path.exists(moduleName) or os.path.islink(moduleName):
       os.remove(moduleName)
     os.symlink(self.libName, moduleName)

@@ -2,6 +2,7 @@
 import action
 import bs
 import fileset
+import logging
 import transform
 
 import os
@@ -20,7 +21,7 @@ class Process (action.Action):
 
   def shellSetAction(self, set):
     if set.tag == self.tag:
-      self.debugPrint(self.program+' processing '+self.debugFileSetStr(set), 3, 'compile')
+      logging.debugPrint(self.program+' processing '+logging.debugFileSetStr(set), 3, 'compile')
       action.Action.shellSetAction(self, set)
       if not self.noUpdate:
         for file in set:
@@ -62,7 +63,7 @@ class Compile (action.Action):
     return flags
 
   def compile(self, source):
-    self.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
+    logging.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
     # Compile file
     command  = self.compiler
     flags    = self.compilerFlags+self.getDefines()+self.getIncludeFlags()
