@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.54 1995/08/22 21:26:12 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.55 1995/08/29 23:06:46 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -43,7 +43,7 @@ extern int MatAssemblyEnd(Mat,MatAssemblyType);
 
 typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-              YES_NEW_NONZERO_LOCATIONS=32} MatOption;
+              YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64} MatOption;
 
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*);
