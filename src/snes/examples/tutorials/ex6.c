@@ -13,7 +13,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
 #include "options.h"
 #include <math.h>
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,int*,void*),
+int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
      MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
@@ -106,7 +106,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /* This routine demonstrates the use of different matrices for the Jacobian 
    and preconditioner */
 
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,int *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
+                 void *dummy)
 {
   Scalar *xx, A, d;
   int    i, n, j, ierr;
