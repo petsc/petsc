@@ -15,6 +15,7 @@ class Configure(config.base.Configure):
     self.compilers     = self.framework.require('config.compilers', self)
     self.libraries     = self.framework.require('config.libraries', self)
     self.sourceControl = self.framework.require('config.sourceControl', self)
+    self.arch          = self.framework.require('PETSc.utilities.arch', self)
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     self.name         = 'ParMetis'
     self.PACKAGE      = self.name.upper()
@@ -208,7 +209,7 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build ParMetis
-    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC']]
+    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC'], '-PETSC_DIR='+self.arch.dir]
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))

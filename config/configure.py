@@ -95,10 +95,12 @@ def petsc_configure(configure_options):
 
 def while_petsc_configure(args):
   import config.framework
+  import cPickle
   while 1:
     framework = config.framework.Framework(args, loadArgDB = 0)
     try:
       framework.configure(out = sys.stdout)
+      framework.argDB['configureCache'] = cPickle.dumps(framework)
       break
     except RestartException, e:
       # ugly crap; merge additional args
