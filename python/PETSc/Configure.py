@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
+    self.missingPrototypesExternC = []
     self.defineAutoconfMacros()
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
@@ -386,15 +387,6 @@ libf: ${OBJSF}
       self.addDefine('HAVE_UCBPS', 1)
     return
 
-  def configureMissingPrototypes(self):
-    '''Checks for missing prototypes, which it adds to petscfix.h'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
-    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
-    self.missingPrototypesExternC = ''
-    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC)
-    return
-
   def configureMissingFunctions(self):
     '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
     if not self.functions.haveFunction('getpwuid'):
@@ -614,7 +606,20 @@ acfindx:
   def configureMacOSX(self):
     '''Mac specific stuff'''
     if self.archBase.startswith('darwin'):
-      self.framework.addDefine('MISSING_PROTOTYPES_EXTERN_C', 'void *memalign(size_t, size_t)')
+      self.missingPrototypesExternC.append('void *memalign(size_t, size_t)')
+      self.missingPrototypesExternC.append('int getdomainname(char *, size_t)')
+    return
+
+  def configureMissingPrototypes(self):
+    '''Checks for missing prototypes, which it adds to petscfix.h'''
+    if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
+      self.missingPrototypesExternC.append('#define MPI_Comm_f2c(a) (a)')
+    if not 'HAVE_MPI_COMM_C2F' in self.mpi.defines:
+      self.missingPrototypesExternC.append('#define MPI_Comm_c2f(a) (a)')
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', '\n'.join(self.missingPrototypesExternC))
     return
 
   def configureMachineInfo(self):
@@ -656,7 +661,6 @@ acfindx:
     self.executeTest(self.configureMake)
     self.executeTest(self.configureMkdir)
     self.executeTest(self.configurePrograms)
-    self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)
@@ -666,6 +670,7 @@ acfindx:
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
+    self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
     self.executeTest(self.configureMPIUNI)
