@@ -217,7 +217,10 @@ class Options(config.base.Configure):
           flags = '--version'
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' '+flags, log = self.framework.log)
       if not status:
-        version = output.split('\n')[0]
+        if compiler.split(' ')[0]=='win32fe':
+          version = '\n'.join(output.split('\n')[0:2])
+        else:
+          version = output.split('\n')[0]
     except RuntimeError, e:
       self.framework.log.write('Could not determine compiler version: '+str(e))
     return version
