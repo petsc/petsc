@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.49 1999/12/20 23:17:58 balay Exp balay $ 
+# $Id: base.site,v 1.50 2000/01/21 17:20:01 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -23,7 +23,7 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}include
+MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
 #MPI_HOME       = /home/petsc/software/mpich-1.1.2
