@@ -8,9 +8,11 @@ static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          i,n = 8,ierr,size,rank,bs = 2,indices[2];
-  PetscScalar  values[4];
-  Vec          x;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       i,n = 8,bs = 2,indices[2];
+  PetscScalar    values[4];
+  Vec             x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -464,6 +464,9 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">cd
          petsc-2.2.0<br>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; patch -Np1 &lt; petsc_patches_all_2.2.0 </font></li>
+        <li>sh/bash shell <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)</font><br>
+          csh/tcsh shell <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
      <li>Run <font color="#ff0000">bin/petscarch -suggest </font> and from the list
          of choices select the one that most closely resembles your system, call it <font color="#ff0000">arch</font></li>
      <li> Select a name for your configuration, we recommend <font color="#ff0000">arch</font>
