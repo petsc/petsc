@@ -78,6 +78,13 @@
 #define PETSCFORTRAN_DLLEXPORT
 #endif
 
+/* Use inline instead of macros whenever possible */
+#if defined(__cplusplus)
+#define PetscStaticInline PETSC_CXX_STATIC_INLINE
+#else
+#define PetscStaticInline PETSC_C_STATIC_INLINE
+#endif
+
 /* ========================================================================== */
 
 /*
@@ -117,8 +124,8 @@ typedef int PetscInt;
    check the error code and generate an exception.
 */
 #if defined(__cplusplus)
-#define PetscPolymorphicSubroutine(A,B,C) inline PetscErrorCode A B {return A C;}
-#define PetscPolymorphicFunction(A,B,C,D,E) inline D A B {D E; A C;return E;}
+#define PetscPolymorphicSubroutine(A,B,C) PetscStaticInline PetscErrorCode A B {return A C;}
+#define PetscPolymorphicFunction(A,B,C,D,E) PetscStaticInline D A B {D E; A C;return E;}
 #else
 #define PetscPolymorphicSubroutine(A,B,C)
 #define PetscPolymorphicFunction(A,B,C,D,E)
