@@ -647,14 +647,19 @@ class Configure(config.base.Configure):
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
+    import nargs
+
     scriptName = os.path.join(self.bmakeDir, 'configure.py')
+    args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
+    if not nargs.Arg.findArgument('PETSC_ARCH', args):
+      args.append('-PETSC_ARCH='+self.framework.argDB['PETSC_ARCH'])
     f = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
     f.write('  sys.path.insert(0, '+repr(os.path.join(self.framework.argDB['PETSC_DIR'], 'config'))+')\n')
     f.write('  import configure\n')
-    f.write('  configure_options = '+repr(filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs))+'\n')
+    f.write('  configure_options = '+repr(args)+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     os.chmod(scriptName, 0775)
