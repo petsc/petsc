@@ -1674,7 +1674,7 @@ int MatCreate_MPIRowbs(Mat A)
   bsmap->vglobal2proc	         = (void *)bsoff;
   bsmap->fglobal2proc	         = BSglob2proc;
   bsmap->free_g2p                = (void(*)(void*)) BSfree_off_map;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIRowbsSetPreallocation_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIRowbsSetPreallocation_C",
                                     "MatMPIRowbsSetPreallocation_MPIRowbs",
                                      MatMPIRowbsSetPreallocation_MPIRowbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
