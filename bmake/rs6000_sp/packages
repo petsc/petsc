@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1998/04/13 20:30:38 balay Exp bsmith $ 
+# $Id: base.site,v 1.18 1998/05/12 18:50:59 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -79,6 +79,11 @@ CMEX           =
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
+#
+#  Optional location for ALICE Memory Snooper
+#
+AMS_INCLUDE = -I/home/bsmith/ams/src/include
+AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpthreads
 # -------------------------------------------------------------------------
 #
 # PCONF - indicates which external packages are available at your site
@@ -88,6 +93,6 @@ CMEX           =
 #    have it listed above in the LAPACK_LIB line above.
 #
 #PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
-PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE
+PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE  -DHAVE_AMS
 #
-EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB}
+EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB} ${AMS_LIB}
