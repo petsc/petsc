@@ -10,7 +10,7 @@ cd /home/bsmith/petsc/maint
 /bin/rm -f ftp.log
 echo "ftp logging: `date` " > ftp.log
 chmod 660 ftp.log
-builddist >>& ftp.log
+builddist >>& /dev/null
 /bin/rm -f ~/petsc.tar.Z
 compress ~/petsc.tar
 chmod ug+w ~/petsc.tar.Z
