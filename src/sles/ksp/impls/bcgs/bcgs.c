@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.12 1995/05/18 22:44:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.13 1995/06/08 03:07:35 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -75,8 +75,8 @@ for (i=0; i<maxit; i++) {
 	   may be our solution.  Give it a try? */
 	VecDot(S,S,&d1);
 	if (d1 != 0.0) {
-	    SETERRQ(1,"Breakdown in BCGS");
-	    }
+	    SETERRQ(1,"KSPSolve_BCGS: Breakdown");
+	}
 	VecAXPY(&alpha,P,X);                     /*     x <- x + a p   */
 	if (history && hist_len > i+1) history[i+1] = 0.0;
 	MONITOR(itP,0.0,i+1);
