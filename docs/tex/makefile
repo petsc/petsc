@@ -37,6 +37,7 @@ homepage:
 	-/usr/bin/cp petsc-patches.html /mcs/www/petsc
 	-/usr/bin/cp petscwww.gif /mcs/www/petsc
 	-/usr/bin/cp ../manual.html /mcs/www/petsc
+	-/usr/bin/cp -r ../manual /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
