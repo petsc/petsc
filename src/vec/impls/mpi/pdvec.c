@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.40 1996/02/19 22:36:08 curfman Exp bsmith $ */
+/* $Id: pdvec.c,v 1.41 1996/03/04 05:14:41 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -106,6 +106,7 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
       }          
     }
     PetscFree(values);
+    fflush(fd);
   }
   else {
     /* send values */

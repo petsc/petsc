@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.73 1996/02/26 19:47:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.74 1996/02/27 06:31:56 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -79,6 +79,7 @@ static int PLogOpenHistoryFile(char *filename,FILE **fd)
             options->programname,arch,size);
     OptionsPrint(*fd);
     fprintf(*fd,"---------------------------------------------------------\n");
+    fflush(*fd);
   }
   return 0; 
 }
@@ -92,6 +93,7 @@ static int PLogCloseHistoryFile(FILE **fd)
   fprintf(*fd,"---------------------------------------------------------\n");
   fprintf(*fd,"Finished at %s",SYGetDate());
   fprintf(*fd,"---------------------------------------------------------\n");
+  fflush(*fd);
   fclose(*fd);
   return 0; 
 }
@@ -231,6 +233,7 @@ int PetscFinalize()
           fprintf(stdout,"Option left: name:-%s value: %s\n",options->names[i],
                                                            options->values[i]);
         }
+        fflush(stdout);
       }
     } 
   }
@@ -622,6 +625,7 @@ int OptionsPrint(FILE *fd)
       fprintf(fd,"OptionTable: -%s\n",options->names[i]);
     }
   }
+  fflush(fd);
   return 0;
 }
 
