@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.71 1995/11/09 22:29:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.72 1995/11/25 19:07:12 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -179,10 +179,9 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
 static int MatGetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          kk, loc, ldiag, shift, row, dfound, j, k, nb = a->nb, ict;
+  int          kk, loc, ldiag, shift, row, dfound, j, k, nb = a->nb;
   Scalar       *valpt, zero = 0.0;
 
-  ict = 0;
   if (nb == 1) {
     for ( kk=0; kk<m; kk++ ) { /* loop over rows */
       row = im[kk];   
@@ -199,13 +198,12 @@ static int MatGetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,Scalar *v)
 	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
 	    else           loc = row;
 	    if ((valpt = &((a->diagv[k])[loc]))) {
-	      v[ict] =  *valpt;
+	      *v++ =  *valpt;
             } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
             break;
           }
         }
-        if (!dfound) v[ict] = zero;
-        ict++;
+        if (!dfound) *v++ = zero;
       }
     }
   } else {
@@ -225,13 +223,12 @@ static int MatGetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,Scalar *v)
              else
 	      loc = shift;
 	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
-              v[ict] =  *valpt;
+              *v++ =  *valpt;
             } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
             break;
           }
         }
-        if (!dfound) v[ict] = zero;
-        ict++;
+        if (!dfound) *v++ = zero;
       }
     }
   }

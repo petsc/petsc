@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.11 1995/11/09 22:28:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.12 1995/11/21 03:27:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -27,15 +27,37 @@ static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
         if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIDense:Negative column");
-        if (idxn[j] >= mdn->N) 
-          SETERRQ(1,"MatSetValues_MPIDense:Column too large");
-        ierr = MatSetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j,addv);
-        CHKERRQ(ierr);
+        if (idxn[j] >= mdn->N) SETERRQ(1,"MatSetValues_MPIDense:Column too large");
+        ierr = MatSetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
       }
     } 
     else {
-      ierr = StashValues_Private(&mdn->stash,idxm[i],n,idxn,v+i*n,addv);
-      CHKERRQ(ierr);
+      ierr = StashValues_Private(&mdn->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+    }
+  }
+  return 0;
+}
+
+static int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+{
+  Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
+  int          ierr, i, j, rstart = mdn->rstart, rend = mdn->rend, row;
+
+  if (!mdn->assembled) SETERRQ(1,"MatGetValues_MPIDense:Not for unassembled matrix"); 
+  for ( i=0; i<m; i++ ) {
+    if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIDense:Negative row");
+    if (idxm[i] >= mdn->M) SETERRQ(1,"MatGetValues_MPIDense:Row too large");
+    if (idxm[i] >= rstart && idxm[i] < rend) {
+      row = idxm[i] - rstart;
+      for ( j=0; j<n; j++ ) {
+        if (idxn[j] < 0) SETERRQ(1,"MatGetValues_MPIDense:Negative column");
+        if (idxn[j] >= mdn->N) 
+          SETERRQ(1,"MatGetValues_MPIDense:Column too large");
+        ierr = MatGetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j); CHKERRQ(ierr);
+      }
+    } 
+    else {
+      SETERRQ(1,"MatGetValues_MPIDense:Only local values currently supported");
     }
   }
   return 0;
@@ -726,7 +748,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
        0,0,
-       0,0,0,0,0,MatCopyPrivate_MPIDense};
+       0,0,0,0,0,MatCopyPrivate_MPIDense,
+       0,0,0,0,0,
+       0,0,MatGetValues_MPIDense};
 
 /*@C
    MatCreateMPIDense - Creates a sparse parallel matrix in dense format.

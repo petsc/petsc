@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.56 1995/11/01 23:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.57 1995/11/04 23:19:05 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -28,13 +28,35 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       for ( j=0; j<n; j++ ) {
         if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
         if (idxn[j] >= mbd->N) SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
-        ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);
-        CHKERRQ(ierr);
+        ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
       }
     } 
     else {
-      ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv);
-      CHKERRQ(ierr);
+      ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+    }
+  }
+  return 0;
+}
+
+static int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+{
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
+
+  if (!mbd->assembled) SETERRQ(1,"MatGetValues_MPIBDiag:Not for unassembled matrix"); 
+  for ( i=0; i<m; i++ ) {
+    if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIBDiag:Negative row");
+    if (idxm[i] >= mbd->M) SETERRQ(1,"MatGetValues_MPIBDiag:Row too large");
+    if (idxm[i] >= rstart && idxm[i] < rend) {
+      row = idxm[i] - rstart;
+      for ( j=0; j<n; j++ ) {
+        if (idxn[j] < 0) SETERRQ(1,"MatGetValues_MPIBDiag:Negative column");
+        if (idxn[j] >= mbd->N) SETERRQ(1,"MatGetValues_MPIBDiag:Column too large");
+        ierr = MatGetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j); CHKERRQ(ierr);
+      }
+    } 
+    else {
+      SETERRQ(1,"MatGetValues_MPIBDiag:Only local values currently supported");
     }
   }
   return 0;
@@ -709,11 +731,11 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        MatSetOption_MPIBDiag,MatZeroEntries_MPIBDiag,MatZeroRows_MPIBDiag,0,
        0,0,0,0,
        MatGetSize_MPIBDiag,MatGetLocalSize_MPIBDiag,
-       MatGetOwnershipRange_MPIBDiag,
-       0,0,
-       0,0,
+       MatGetOwnershipRange_MPIBDiag,0,0,
        0,0,0,
-       0};
+       0,0,0,0,0,
+       0,0,0,
+       0,0,MatGetValues_MPIBDiag};
 
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.

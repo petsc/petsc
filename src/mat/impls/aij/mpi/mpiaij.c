@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.98 1995/11/06 21:31:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.99 1995/11/09 22:28:54 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -77,6 +77,40 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
     } 
     else {
       ierr = StashValues_Private(&aij->stash,idxm[i],n,idxn,v+i*n,addv);CHKERRQ(ierr);
+    }
+  }
+  return 0;
+}
+
+static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  Mat_SeqAIJ *C = (Mat_SeqAIJ*) aij->A->data;
+  int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
+  int        cstart = aij->cstart, cend = aij->cend,row,col;
+  int        shift = C->indexshift;
+
+  if (!aij->assembled) SETERRQ(1,"MatGetValues_MPIAIJ:Not for unassembled matrix"); 
+  for ( i=0; i<m; i++ ) {
+    if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIAIJ:Negative row");
+    if (idxm[i] >= aij->M) SETERRQ(1,"MatGetValues_MPIAIJ:Row too large");
+    if (idxm[i] >= rstart && idxm[i] < rend) {
+      row = idxm[i] - rstart;
+      for ( j=0; j<n; j++ ) {
+        if (idxn[j] < 0) SETERRQ(1,"MatGetValues_MPIAIJ:Negative column");
+        if (idxn[j] >= aij->N) SETERRQ(1,"MatGetValues_MPIAIJ:Col too large");
+        if (idxn[j] >= cstart && idxn[j] < cend){
+          col = idxn[j] - cstart;
+          ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+        }
+        else {
+          col = aij->colmap[idxn[j]] + shift;
+          ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+        }
+      }
+    } 
+    else {
+      SETERRQ(1,"MatGetValues_MPIAIJ:Only local values currently supported");
     }
   }
   return 0;
@@ -1044,7 +1078,8 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
-  if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIAIJ:only local rows")
+  if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIAIJ:Must assemble matrix");
+  if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIAIJ:Only local rows")
   lrow = row - rstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
@@ -1252,7 +1287,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatLUFactorSymbolic_MPIAIJ,MatLUFactorNumeric_MPIAIJ,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
-       0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ};
+       0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ,0,0,
+       0,0,0,
+       0,0,MatGetValues_MPIAIJ};
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format

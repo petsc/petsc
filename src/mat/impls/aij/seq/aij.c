@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.120 1995/11/21 21:07:55 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.121 1995/11/25 19:07:38 curfman Exp curfman $";
 #endif
 
 /*
@@ -142,12 +142,11 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
 static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        *rp, k, low, high, t, row, nrow, i, col, l, ict, *aj = a->j;
+  int        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
   int        *ai = a->i, *ailen = a->ilen, shift = a->indexshift;
   Scalar     *ap, *aa = a->a, zero = 0.0;
 
   if (!a->assembled) SETERRQ(1,"MatGetValues_SeqAIJ:Not for unassembled matrix");
-  ict = 0;
   for ( k=0; k<m; k++ ) { /* loop over rows */
     row  = im[k];   
     if (row < 0) SETERRQ(1,"MatGetValues_SeqAIJ:Negative row");
@@ -167,13 +166,12 @@ static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
       for ( i=low; i<high; i++ ) {
         if (rp[i] > col) break;
         if (rp[i] == col) {
-          v[ict] = ap[i];
+          *v++ = ap[i];
           goto finished;
         }
       } 
-      v[ict] = zero;
+      *v++ = zero;
       finished:;
-      ict++;
     }
   }
   return 0;
