@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.9 1995/03/17 04:57:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.10 1995/04/19 03:00:33 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -15,6 +15,7 @@ int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
                int cl, int cr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawline)(ctx,xl,yl,xr,yr,cl,cr);
 }
 
@@ -31,6 +32,7 @@ int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
 int DrawLineSetWidth(DrawCtx ctx,double width)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawlinewidth)(ctx,width);
 }
 
@@ -46,6 +48,7 @@ int DrawLineSetWidth(DrawCtx ctx,double width)
 int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawtext)(ctx,xl,yl,cl,text);
 }
 
@@ -61,6 +64,7 @@ int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
 int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawtextvert)(ctx,xl,yl,cl,text);
 }
 
@@ -78,6 +82,7 @@ int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
 int DrawTextSetSize(DrawCtx ctx,double width,double height)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawtextsize)(ctx,width,height);
 }
 /*@
@@ -94,6 +99,7 @@ int DrawTextSetSize(DrawCtx ctx,double width,double height)
 int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawtextgetsize)(ctx,width,height);
 }
 
@@ -108,6 +114,7 @@ int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
 int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawpoint)(ctx,xl,yl,cl);
 }
 
@@ -124,6 +131,7 @@ int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
 int DrawPointSetSize(DrawCtx ctx,double width)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->drawpointsize)(ctx,width);
 }
 
@@ -141,6 +149,7 @@ int DrawPointSetSize(DrawCtx ctx,double width)
 int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   ctx->port_xl = xl; ctx->port_yl = yl;
   ctx->port_xr = xr; ctx->port_yr = yr;
   if (ctx->ops->viewport) return (*ctx->ops->viewport)(ctx,xl,yl,xr,yr);
@@ -159,6 +168,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   ctx->coor_xl = xl; ctx->coor_yl = yl;
   ctx->coor_xr = xr; ctx->coor_yr = yr;
   return 0;
@@ -177,6 +187,7 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 int DrawSetPause(DrawCtx ctx,int pause)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   ctx->pause = pause;
   return 0;
 }
@@ -195,6 +206,7 @@ int DrawSetPause(DrawCtx ctx,int pause)
 int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   *xl = ctx->coor_xl; *yl = ctx->coor_yl;
   *xr = ctx->coor_xr; *yr = ctx->coor_yr;
   return 0;
@@ -209,6 +221,7 @@ int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 int DrawSetDoubleBuffer(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   if (ctx->ops->doublebuff) return (*ctx->ops->doublebuff)(ctx);
   return 0;
 }
@@ -222,6 +235,7 @@ int DrawSetDoubleBuffer(DrawCtx ctx)
 int DrawFlush(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   if (ctx->ops->flush) return (*ctx->ops->flush)(ctx);
   return 0;
 }
@@ -238,6 +252,7 @@ int DrawFlush(DrawCtx ctx)
 int DrawSyncFlush(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   if (ctx->ops->flush) return (*ctx->ops->sflush)(ctx);
   return 0;
 }
@@ -251,6 +266,7 @@ int DrawSyncFlush(DrawCtx ctx)
 int DrawClear(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   if (ctx->ops->clear) return (*ctx->ops->clear)(ctx);
   return 0;
 }
@@ -263,6 +279,7 @@ int DrawClear(DrawCtx ctx)
 int DrawDestroy(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   if (ctx->destroy) return (*ctx->destroy)((PetscObject)ctx);
   return 0;
 }
@@ -278,6 +295,7 @@ int DrawRectangle(DrawCtx ctx,double xl,double yl,double xr,double yr,
                int c1, int c2,int c3,int c4)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->rectangle)(ctx,xl,yl,xr,yr,c1,c2,c3,c4);
 }
 /*@
@@ -292,5 +310,39 @@ int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,
                  double x3,double y3,int c1, int c2,int c3)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops->triangle)(ctx,x1,y1,x2,y2,x3,y3,c1,c2,c3);
+}
+
+int DrawDestroy_Null(PetscObject obj)
+{
+  FREE(obj); 
+  return 0;
+}
+
+/*
+     DrawOpenNull - Opens a null drawing context. All draw commands to 
+  it are ignored.
+
+ Output Parameter:
+.  win - the drawing context
+
+*/
+int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
+{
+  DrawCtx ctx;
+  *win = 0;
+  PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,NULLWINDOW,comm);
+  PLogObjectCreate(ctx);
+  ctx->ops     = 0;
+  ctx->destroy = DrawDestroy_Null;
+  ctx->view    = 0;
+  ctx->comm    = comm;
+  ctx->pause   = 0;
+  ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
+  ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
+  ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
+  ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
+  *win = ctx;
+  return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.12 1995/03/27 22:58:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.13 1995/04/19 03:00:37 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -258,6 +258,10 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   DrawCtx_X *Xwin;
   int      ierr,numtid,mytid;
   char     string[128];
+
+  if (OptionsHasName(0,0,"-nox")) {
+    return DrawOpenNull(comm,inctx);
+  }
 
   *inctx = 0;
   PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
