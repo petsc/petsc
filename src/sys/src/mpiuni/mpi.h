@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.43 1997/04/04 18:00:01 balay Exp balay $ */
+/* $Id: mpi.h,v 1.44 1997/04/08 01:35:53 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -64,6 +64,7 @@ typedef char*   MPI_Errhandler;
 #define MPI_CHAR          sizeof(char)
 #define MPI_INT           sizeof(int)
 #define MPI_UNSIGNED_LONG sizeof(unsigned long)
+#define MPIU_PLOGDOUBLE   sizeof(PLogDouble)
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
