@@ -1,20 +1,28 @@
 
-#include "matimpl.h"
-#include "math.h"
+#include "aij.h"
+#include <math.h>
 
-/*  The i[] and j[] arrays start at 1 not zero to support Fortran 77 */
-/*  In Fortran j[i[k]+p-1] is the pth column in row k */
- 
-/*
-    singlemalloc indicates that a, i and j where all obtained with 
-  one big malloc 
-*/
+typedef  struct {int nmax, n, *idx, *idy; Scalar *array;} Stash;
+
 typedef struct {
-  int    sorted, roworiented, nonew, singlemalloc;
-  int    m,n,nz,mem,*diag,       /* rows and columns */
-         *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
-         *j;                     /* ilen is actual lenght of row */
-  Scalar *a;     
-} Matiaij;
+  int           *rowners,*cowners;  /* ranges owned by each processor */
+  int           m,n,M,N;            /* local rows, cols, global rows, cols */
+  int           rstart,rend,cstart,cend;
+  Mat           A,B;                
+  int           numtids,mytid;
+/*  Used in Matrix assembly */
+  int           assembled;          /* MatAssemble has been called */
+  InsertMode    insertmode;
+  Stash         stash;
+  MPI_Request   *send_waits,*recv_waits;
+  int           nsends,nrecvs;
+  Scalar        *svalues,*rvalues;
+  int           rmax;
+  int           *colmap;    /* indicates local col number of off proc column*/
+  int           *garray;
+/*  Used in Matrix-vector product */
+  Vec           lvec;
+  VecScatterCtx Mvctx;
+} Mat_MPIAIJ;
 
 
