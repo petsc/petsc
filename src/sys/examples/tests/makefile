@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 		  ex13.c ex14.c ex15.c ex16.c
-EXAMPLESF       = ex1f.F ex5.F ex6.F ex7f.F ex13f.F ex17f.F
+EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex7f.F ex13f.F ex17f.F
 MANSEC          = Sys
 
 include ${PETSC_DIR}/bmake/common/base
@@ -34,13 +34,13 @@ ex4: ex4.o chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_SYS_LIB}
 	${RM} -f ex4.o
 
-ex5: ex5.o chkopts
-	-${FLINKER} -o ex5 ex5.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
-	${RM} -f ex5.o
+ex5f: ex5f.o chkopts
+	-${FLINKER} -o ex5f ex5f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	${RM} -f ex5f.o
 
-ex6: ex6.o chkopts
-	-${FLINKER} -o ex6 ex6.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
-	${RM} -f ex6.o
+ex6f: ex6f.o chkopts
+	-${FLINKER} -o ex6f ex6f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	${RM} -f ex6f.o
 
 ex7: ex7.o chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
@@ -129,10 +129,10 @@ runex13f:
 TESTEXAMPLES_1  = ex7.PETSc runex7 ex7.rm ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm 
-TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm ex17f.F ex17f.rm
+TESTEXAMPLES_3  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex13f.PETSc runex13f ex13f.rm ex17f.F ex17f.rm
 TESTEXAMPLES_8  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_10 = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm
+TESTEXAMPLES_9  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
 TESTEXAMPLES_13 = ex7f.PETSc ex7f.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
 		  ex11.PETSc ex11.rm ex12.PETSc ex12.rm ex14.PETSc ex14.rm

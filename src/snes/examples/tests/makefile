@@ -6,7 +6,7 @@ CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
 EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
-EXAMPLESF       = ex12.F
+EXAMPLESF       = ex12f.F
 DIRS	        = 
 MANSEC          = SNES
 
@@ -60,9 +60,9 @@ ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o ${PETSC_SNES_LIB}
 	${RM} ex11.o
 
-ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
-	${RM} ex12.o
+ex12f: ex12f.o  chkopts
+	-${FLINKER} -o ex12f ex12f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	${RM} ex12f.o
 
 ex13: ex13.o  chkopts
 	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
@@ -215,8 +215,8 @@ runex10:
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
-runex12:
-	-@${MPIRUN} -np 2 ex12 -ksp_gmres_cgs_refinement_type always -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;	  \
+runex12f:
+	-@${MPIRUN} -np 2 ex12f -ksp_gmres_cgs_refinement_type always -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
@@ -243,7 +243,7 @@ runex14_3:
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
 TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 		  runex9 ex9.rm ex13.PETSc ex13.rm
-TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
+TESTEXAMPLES_3  = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_8  = 
 TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm

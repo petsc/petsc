@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c
-EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F ex79f.F ex85f.F
+EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
 
@@ -146,9 +146,9 @@ ex35: ex35.o chkopts
 	-${CLINKER} -o ex35 ex35.o ${PETSC_MAT_LIB}
 	${RM} ex35.o
 
-ex36: ex36.o chkopts
-	-${FLINKER} -o ex36 ex36.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
-	${RM} ex36.o
+ex36f: ex36f.o chkopts
+	-${FLINKER} -o ex36f ex36f.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex36f.o
 
 ex37: ex37.o chkopts
 	-${CLINKER} -o ex37 ex37.o ${PETSC_MAT_LIB}
@@ -254,9 +254,9 @@ ex62: ex62.o chkopts
 	-${CLINKER} -o ex62 ex62.o ${PETSC_MAT_LIB}
 	${RM} ex62.o
 
-ex63: ex63.o chkopts
-	-${FLINKER} -o ex63 ex63.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
-	${RM} ex63.o
+ex63f: ex63f.o chkopts
+	-${FLINKER} -o ex63f ex63f.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex63f.o
 
 ex64: ex64.o chkopts
 	-${CLINKER} -o ex64 ex64.o ${PETSC_MAT_LIB}
@@ -542,8 +542,8 @@ runex35:
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi; \
 	   ${RM} -f ex35_1.tmp
-runex36:
-	-@${MPIRUN} -np 1  ex36 > ex36_1.tmp 2>&1;   \
+runex36f:
+	-@${MPIRUN} -np 1  ex36f > ex36_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true; \
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
@@ -722,8 +722,8 @@ runex61_2:
 	   if (${DIFF} output/ex61_1.out ex61_2.tmp) then true; \
 	   else echo "Possible problem with ex61_2, diffs above"; fi; \
 	   ${RM} -f ex61_2.tmp
-runex63:
-	-@${MPIRUN} -np 2  ex63  > ex63_1.tmp 2>&1;   \
+runex63f:
+	-@${MPIRUN} -np 2  ex63f  > ex63_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex63_1.out ex63_1.tmp) then true; \
 	   else echo "Possible problem with ex63_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
@@ -806,9 +806,9 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm \
 		   ex76.PETSc runex76 ex76.rm ex77.PETSc  ex77.rm \
 		  ex78.PETSc ex78.rm
-TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
+TESTEXAMPLES_3	 = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm \
                    ex67f.PETSc ex67f.rm ex79f.PETSc ex79f.rm
-TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm
+TESTEXAMPLES_9	 = ex36f.PETSc runex36f ex36f.rm
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
 		   ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
