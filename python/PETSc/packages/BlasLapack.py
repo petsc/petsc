@@ -355,7 +355,9 @@ class Configure(config.base.Configure):
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
-      self.lib = self.lapackLibrary+self.blasLibrary
+      self.lib = []
+      if self.lapackLibrary[0]: self.lib.extend(self.lapackLibrary)
+      if self.blasLibrary[0]:   self.lib.extend(self.blasLibrary)
       if 'FC' in self.framework.argDB:
         self.lib.append(self.compilers.flibs)
       self.framework.packages.append(self)

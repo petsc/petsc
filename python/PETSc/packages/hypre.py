@@ -13,6 +13,7 @@ class Configure(config.base.Configure):
     self.libraries    = self.framework.require('config.libraries',self)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
+    self.functions    = self.framework.require('config.functions',         self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -273,15 +274,17 @@ class Configure(config.base.Configure):
         self.include = incl
         break
     if foundLibrary and foundHeader:
-      self.setFoundOutput()
+      self.framework.packages.append(self)
       self.found = 1
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
+
+    # hypre requires LAPACK routine dgels()
+    if not self.libraries.check(self.blasLapack.lib,'dgels',fortranMangle = 1):
+      raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+    self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
     return
 
-  def setFoundOutput(self):
-    self.framework.packages.append(self)
-    
   def configure(self):
     if self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
