@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.204 1996/10/23 13:54:05 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.205 1996/10/29 17:02:05 curfman Exp bsmith $";
 #endif
 
 /*
@@ -378,9 +378,9 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (mat->M != v3->N) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v3: global dim");
   if (mat->m != v3->n) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v3: local dim"); 
   if (mat->m != v2->n) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v2: local dim"); 
+  if (v1 == v3) SETERRQ(1,"MatMultAdd:v1 and v3 must be different vectors");
 
   PLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);
-  if (v1 == v3) SETERRQ(1,"MatMultAdd:v1 and v3 must be different vectors");
   ierr = (*mat->ops.multadd)(mat,v1,v2,v3); CHKERRQ(ierr);
   PLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);
   return 0;

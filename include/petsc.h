@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.140 1996/10/22 18:53:02 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.141 1996/10/24 15:17:32 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -106,7 +106,8 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
 #define PETSC_ERR_SIG 59   /* signal received */
 #define PETSC_ERR_SIZ 60   /* nonconforming object sizes */
-
+#define PETSC_ERR_IDN 61   /* two arguments not allowed to be the same */
+x
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
 #define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
