@@ -217,12 +217,12 @@ class UsingPython(UsingCompiler):
   def getCompiler(self, library):
     return compile.CompilePythonC()
 
-  def getClientLibrary(self, project, lang, isArchive = 1):
+  def getClientLibrary(self, project, lang, isArchive = 1, root = None):
     '''Need to return empty fileset for Python client library'''
     if lang == self.getLanguage():
       return fileset.FileSet()
     else:
-      return UsingCompiler.getClientLibrary(self, project, lang, isArchive)
+      return UsingCompiler.getClientLibrary(self, project, lang, isArchive, root)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -327,16 +327,17 @@ class UsingJava (UsingCompiler):
       runtimeLibs = [runtimeLibs]
     return runtimeLibs
 
-  def getClientLibrary(self, project, lang, isArchive = 1, isJNI = 0):
+  def getClientLibrary(self, project, lang, isArchive = 1, root = None, isJNI = 0):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.jar (or .a for JNI libraries)'''
+    if not root: root = self.libDir
     if isJNI:
       if isArchive:
-        libraryName = 'lib'+project+'-'+lang.lower()+'-client.a'
+        ext = '.a'
       else:
-        libraryName = 'lib'+project+'-'+lang.lower()+'-client.so'
+        ext = '.so'
     else:
-      libraryName = 'lib'+project+'-'+lang.lower()+'-client.jar'
-    return fileset.FileSet([os.path.join(self.libDir, libraryName)])
+      ext = '.jar'
+    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-client'+ext)])
 
   def getServerLibrary(self, project, lang, isJNI = 0):
     raise RuntimeError('No server for '+self.getLanguage())
