@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: receive.c,v 1.5 1996/12/18 17:05:23 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: receive.c,v 1.6 1997/02/20 20:39:58 bsmith Exp balay $";
 #endif
 /*
  
