@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.50 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.51 1999/03/01 04:52:38 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -47,11 +47,26 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetVisual" 
-int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
+int XiSetVisual(Draw_X* XiWin,Colormap colormap)
 {
-  int ierr;
+  int ierr,flag;
+  XVisualInfo vinfo;
 
   PetscFunctionBegin;
+
+
+  /* this is slow */
+  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
+  /*
+        Need to determine if window supports allocating a private colormap,
+    if not, set flag to 1
+  */
+  if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, StaticColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, TrueColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, StaticColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, TrueColor, &vinfo)) {
+    flag = 1;
+  }
 
   /*
        As a test due to problems on SGI reported in petsc-maint 1534 change
@@ -59,11 +74,10 @@ int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
   */
   XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
   XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
-  if (cmap)                    XiWin->cmap  = cmap;
-  else if (usedefaultcolormap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-  else                         XiWin->cmap = 0;
-
-  if (!XiWin->cmap) {
+  if (colormap) {
+    XiWin->cmap = colormap;
+  } else if (flag) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
+  else {
     XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
                                   XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
   }
@@ -74,7 +88,8 @@ int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
   PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
 
   /* reset the number of colors from info on the display, the colormap */
-  ierr = XiInitColors( XiWin, cmap);CHKERRQ(ierr);
+  ierr = XiInitColors( XiWin, XiWin->cmap);CHKERRQ(ierr);
+  ierr = XiUniformHues(XiWin,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -215,38 +230,18 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 #define __FUNC__ "XiQuickWindow" 
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
-  int         ierr,flag = 0;
-  XVisualInfo vinfo;
+  int         ierr;
 
   PetscFunctionBegin;
   ierr = XiOpenDisplay( w, host ); CHKERRQ(ierr);
 
-  /*
-      The reason these are slow is they call XAllocColor() for each 256 colors
-    each one, I think, requires communication with the X server.
-  */
 
-  /* this is slow */
-  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
-  /*
-        Need to determine if window supports allocating a private colormap,
-    if not, set flag to 1
-  */
-  if (XMatchVisualInfo( w->disp, w->screen, 24, StaticColor, &vinfo) ||
-      XMatchVisualInfo( w->disp, w->screen, 24, TrueColor, &vinfo) ||
-      XMatchVisualInfo( w->disp, w->screen, 16, StaticColor, &vinfo) ||
-      XMatchVisualInfo( w->disp, w->screen, 16, TrueColor, &vinfo)) {
-    flag = 1;
-  }
-
-  ierr = XiSetVisual( w, flag, (Colormap)0); CHKERRQ(ierr);
+  ierr = XiSetVisual( w, (Colormap)0); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
 
-  /* this is very slow */
-  ierr = XiUniformHues(w,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
 
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
@@ -275,7 +270,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
   w->win = win;
   XGetWindowAttributes(w->disp, w->win, &attributes);
 
-  ierr = XiSetVisual( w, 1, attributes.colormap); CHKERRQ(ierr);
+  ierr = XiSetVisual( w,attributes.colormap); CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
@@ -285,7 +280,6 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
-  ierr = XiUniformHues(w,256-DRAW_BASIC_COLORS); CHKERRQ(ierr);
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
