@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.7 1997/06/09 03:36:31 curfman Exp balay $";
+C "$Id: ex2f.F,v 1.8 1997/07/10 15:50:39 balay Exp balay $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -113,9 +113,9 @@ C  Initialize problem parameters
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,
      &                   flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
-      one_d0  = PetscDoubleExp(1.0,0)
-      two_d0  = PetscDoubleExp(2.0,0)
-      four_d0 = PetscDoubleExp(4.0,0)
+      one_d0  = 1.0d0
+      two_d0  = 2.0d0
+      four_d0 = 4.0d0
       h       = one_d0/(M-one_d0)
       dt      = h/two_d0
 
@@ -361,7 +361,7 @@ C  Local variables:
       Double   mone
       Draw     draw
 
-      mone = PetscDoubleExp(-1.0,0)
+      mone = -1.0d0
 
 C  We use the default X windows viewer
 C       VIEWER_DRAWX_PETSC_COMM 
