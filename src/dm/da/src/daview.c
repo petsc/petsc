@@ -6,7 +6,9 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 #if defined(PETSC_HAVE_NETCDF)
+EXTERN_C_BEGIN
 #include "pnetcdf.h"
+EXTERN_C_END
 #endif
 
 #undef __FUNCT__  

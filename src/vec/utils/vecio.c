@@ -10,7 +10,9 @@
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 #if defined(PETSC_HAVE_NETCDF)
+EXTERN_C_BEGIN
 #include "pnetcdf.h"
+EXTERN_C_END
 #endif
 int VecLoad_Binary(PetscViewer, Vec*);
 int VecLoad_Netcdf(PetscViewer, Vec*);
@@ -109,7 +111,7 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  ierr = ncmpi_inq_dim(ncid,0,name,&N); CHKERRQ(ierr); /* N gets the global vector size */
+  ierr = ncmpi_inq_dim(ncid,0,name,(size_t*)&N); CHKERRQ(ierr); /* N gets the global vector size */
   ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
   ierr = VecSetSizes(vec,PETSC_DECIDE,N);CHKERRQ(ierr);
   if (!rank) {
@@ -122,7 +124,7 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL); CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = ncmpi_get_vara_double_all(ncid,0,&start,&n,(double *)avec); CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,(const size_t*)&start,(const size_t*)&n,(double *)avec); CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
@@ -256,7 +258,7 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  ierr = ncmpi_inq_dim(ncid,0,name,&N); CHKERRQ(ierr); /* N gets the global vector size */
+  ierr = ncmpi_inq_dim(ncid,0,name,(size_t*)&N); CHKERRQ(ierr); /* N gets the global vector size */
   if (!rank) {
     ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
     if (N != rows) SETERRQ(1,"Vector in file different length then input vector");
@@ -269,7 +271,7 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL); CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = ncmpi_get_vara_double_all(ncid,0,&start,&n,(double *)avec); CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,(const size_t*)&start,(const size_t*)&n,(double *)avec); CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);

@@ -3,13 +3,15 @@
 */
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include "petscsys.h"
+EXTERN_C_BEGIN
 #include "pnetcdf.h"
-
+EXTERN_C_END
 typedef struct  {
   int                   ncid;            /* NetCDF dataset id */
   char                  *filename;        /* NetCDF dataset name */
   PetscViewerNetcdfType nctype;          /* read or write? */
 } PetscViewer_Netcdf;
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Netcdf" 
@@ -80,6 +82,21 @@ int PetscViewerNetcdfSetType_Netcdf(PetscViewer viewer,PetscViewerNetcdfType typ
 }
 EXTERN_C_END
 
+int PetscViewerNetcdfSetType(PetscViewer viewer,PetscViewerNetcdfType type)
+{
+  int ierr,(*f)(PetscViewer,PetscViewerNetcdfType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerNetcdfSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(viewer,type);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerNetcdfOpen"
 int PetscViewerNetcdfOpen(MPI_Comm comm,const char name[],PetscViewerNetcdfType type,PetscViewer* viewer)
@@ -91,20 +108,6 @@ int PetscViewerNetcdfOpen(MPI_Comm comm,const char name[],PetscViewerNetcdfType 
   ierr = PetscViewerSetType(*viewer,PETSC_VIEWER_NETCDF);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfSetType(*viewer,type);CHKERRQ(ierr);
   ierr = PetscViewerSetFilename(*viewer,name);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-int PetscViewerNetcdfSetType(PetscViewer viewer,PetscViewerNetcdfType type)
-{
-  int ierr,(*f)(PetscViewer,PetscViewerNetcdfType);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerNetcdfSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer,type);CHKERRQ(ierr);
-  }
 
   PetscFunctionReturn(0);
 }
@@ -139,3 +142,5 @@ int PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
   }
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_END
