@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.60 1996/01/09 14:54:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.61 1996/01/12 03:52:28 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -87,7 +87,6 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyBA     = 0;
   pc->applyBAtrans= 0;
   pc->applyrich   = 0;
-  pc->prefix      = 0;
   pc->view        = 0;
   pc->getfactmat  = 0;
   *newpc          = pc;

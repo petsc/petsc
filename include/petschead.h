@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.24 1995/12/12 17:36:44 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.25 1996/01/12 03:56:30 bsmith Exp balay $ */
 
 /*
     Defines the basic format of all data types. 
@@ -42,7 +42,8 @@
        CHKPTRQ((h));                                               \
        PetscMemzero(h,sizeof(struct tp));                          \
        (h)->cookie = cook;                                         \
-       (h)->type = t;                                              \
+       (h)->type   = t;                                            \
+       (h)->prefix = 0;                                            \
        MPIU_Comm_dup(com,&(h)->comm,&(h)->tag);}
 #define PetscHeaderDestroy(h)                                      \
        {MPIU_Comm_free(&(h)->comm);                                \
