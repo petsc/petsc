@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/spai_3.0.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0.tar.gz']
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['bspai']
     self.includes     = ['spai.h']
