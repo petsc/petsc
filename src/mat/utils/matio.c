@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.1 1995/08/18 21:50:55 curfman Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.2 1995/08/22 19:36:37 curfman Exp curfman $";
 #endif
 
 /* 
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: matio.c,v 1.1 1995/08/18 21:50:55 curfman Exp curfman
 #include <unistd.h>
 #include "vec/vecimpl.h"
 #include "sysio.h"
+#include "viewer.h"
 #include "matimpl.h"
 #include "row.h"
 
@@ -21,7 +22,7 @@ static char vcid[] = "$Id: matio.c,v 1.1 1995/08/18 21:50:55 curfman Exp curfman
 
 /* @
    MatLoadBinary - Loads a matrix that has been stored in binary format
-   with MatViewBinary().
+   with MatView().
 
    Input Parameters:
 .  comm - MPI communicator
@@ -47,22 +48,27 @@ static char vcid[] = "$Id: matio.c,v 1.1 1995/08/18 21:50:55 curfman Exp curfman
    Currently, the _entire_ matrix must be loaded.  This should
    probably change.
 
-.seealso: MatViewBinary(), VecLoadBinary() 
+.seealso: MatView(), VecLoadBinary() 
 */  
-int MatLoadBinary(MPI_Comm comm,int fd,MatType outtype,IS ind,IS ind2,
-                  Mat *newmat)
+int MatLoad(MPI_Comm comm,Viewer bview,MatType outtype,IS ind,IS ind2,Mat *newmat)
 {
   Mat mat;
   int rows, i, nz, nnztot, *rlen, ierr, lsize, gsize, *rptr, j, dstore;
-  int *cwork, rstart, rend, readst, *pind, *pind2, iinput, iglobal;
+  int *cwork, rstart, rend, readst, *pind, *pind2, iinput, iglobal, fd;
   Scalar *awork;
   MatType type;
   long startloc, mark;
+  PetscObject vobj = (PetscObject) bview;
+
+  PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
+  if (vobj->type != BIN_FILE_VIEWER);
+   SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary().");
+  fd = ViewerFileGetDescriptor_Private(bview);
 
   /* Get the location of the beginning of the matrix data, in case the
   file contains multiple elements */
   startloc = lseek(fd,0L,SEEK_CUR);
-  MPIU_printf(comm,"startloc=%d\n",startloc);
+  /* MPIU_printf(comm,"startloc=%d\n",startloc); */
   type = MATROW;
   if (outtype != MATROW && outtype != MATAIJ && outtype != MATMPIROW && 
     outtype != MATMPIAIJ) SETERRQ(1,
@@ -139,38 +145,5 @@ int MatLoadBinary(MPI_Comm comm,int fd,MatType outtype,IS ind,IS ind2,
   ierr = ISRestoreIndices(ind,&pind2); CHKERRQ(ierr);
 
   *newmat = mat;
-  return 0;
-}
-/* ------------------------------------------------------------- */
-
-int MatViewBinary(Mat mat,int fd)
-{
-  Mat_Row *mrow = (Mat_Row *) mat->data;
-  MatiVec *vs;
-  int     i, rows = mrow->m, nz, nnztot, ierr, *lwork;
-
-  if (mat->type != MATROW) SETERRQ(1,"Only MATROW currently supported.");
-  nnztot = 0;
-  for (i=0; i<rows; i++) nnztot += mrow->rs[i]->nz;
-
-  /* Write header */
-  ierr = SYWrite(fd,(char *)&rows,sizeof(int),SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(fd,(char *)&nnztot,sizeof(int),SYINT,0); CHKERRQ(ierr);
-
-  /* Write row length info */
-  lwork = (int *)PETSCMALLOC( rows * sizeof(int)); CHKPTRQ(lwork); 
-  for (i=0;i<rows;i++) {
-    lwork[i] = mrow->rs[i]->nz;
-  }
-  ierr = SYWrite(fd,(char *)lwork,rows*sizeof(int),SYINT,0); CHKERRQ(ierr);
-  PETSCFREE(lwork);
-
-  /* Write matrix data by rows */
-  for (i=0;i<rows;i++) {
-    vs = mrow->rs[i];
-    nz = vs->nz;
-    ierr = SYWrite(fd,(char *)vs->i,nz*sizeof(int),SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)vs->v,nz*sizeof(Scalar),SYSCALAR,0); CHKERRQ(ierr);
-  }
   return 0;
 }
