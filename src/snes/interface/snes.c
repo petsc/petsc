@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.61 1996/03/18 00:42:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.62 1996/03/19 21:28:59 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -971,13 +971,16 @@ int SNESSetUp(SNES snes,Vec x)
   if (flg) {
     Mat J;
     ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) PLogInfo((PetscObject)snes,
-        "SNESSetUp: Setting default matrix-free Jacobian routines\n");
-    else if (snes->method_class == SNES_NONLINEAR_EQUATIONS) PLogInfo((PetscObject)snes,
-        "SNESSetUp: Setting default matrix-free Hessian routines\n");
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
+      PLogInfo((PetscObject)snes,"SNESSetUp: Setting default matrix-free Jacobian routines\n");
+    }
+    else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+      ierr = SNESSetHessian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
+      PLogInfo((PetscObject)snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
+    } else SETERRQ(1,"SNESSetUp:Method class doesn't support matrix-free option");
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.27 1996/03/19 21:29:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.28 1996/03/20 05:14:18 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -98,8 +98,13 @@ int main(int argc,char **argv)
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
-  /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
+  /* Form Hessian matrix approx, using one of three methods:
+      (default)   : explicitly form Hessian approximation
+      -snes_mf    : employ default PETSc matrix-free code
+      -my_snes_mf : employ user-defined matrix-free code (since we just happen to
+                    have a routine for matrix-vector products in this example) 
+   */
+  ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {

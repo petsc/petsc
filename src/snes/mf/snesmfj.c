@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.25 1996/01/23 00:19:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.26 1996/02/08 16:54:00 curfman Exp curfman $";
 #endif
 
-#include "draw.h"   /*I  "draw.h"   I*/
-#include "snes.h"   /*I  "snes.h"   I*/
+#include "draw.h"       /*I  "draw.h"   I*/
+#include "snesimpl.h"   /*I  "snes.h"   I*/
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES        snes;
@@ -23,16 +23,16 @@ int SNESMatrixFreeDestroy_Private(void *ptr)
 }
 
 /*
-  SNESMatrixFreeMult_Private - Default matrix free form of A*u.
+  SNESMatrixFreeMult_Private - Default matrix-free form of A*u.
 */
 int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 {
   MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
   SNES          snes = ctx->snes;
-  double        norm,sum,epsilon = 1.e-8; /* assumes double precision */
-  Scalar        h,dot,mone = -1.0;
+  double        norm, sum, epsilon = 1.e-8; /* assumes double precision */
+  Scalar        h, dot, mone = -1.0;
   Vec           w = ctx->w,U,F;
-  int           ierr;
+  int           ierr, (*eval_fct)(SNES,Vec,Vec);
 
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
@@ -41,7 +41,15 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   PLogEventBegin(MAT_MatrixFreeMult,dx,y,0,0);
 
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
+  if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+    eval_fct = SNESComputeFunction;
+    ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
+  }
+  else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+    eval_fct = SNESComputeGradient;
+    ierr = SNESGetGradient(snes,&F); CHKERRQ(ierr);
+  }
+  else SETERRQ(1,"SNESMatrixFreeMult_Private: Invalid method class");
 
   /* Determine a "good" step size */
   ierr = VecDot(U,dx,&dot); CHKERRQ(ierr);
@@ -59,15 +67,16 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   
   /* Evaluate function at F(x + dx) */
   ierr = VecWAXPY(&h,dx,U,w); CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,w,y); CHKERRQ(ierr);
+  ierr = eval_fct(snes,w,y); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
   h = 1.0/h;
   ierr = VecScale(&h,y); CHKERRQ(ierr);
-  if (ctx->sp) { ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,dx,y,0,0);
   return 0;
 }
+
 /*@C
    SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as

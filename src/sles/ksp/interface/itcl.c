@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.59 1996/03/10 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.60 1996/03/19 21:23:32 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -77,23 +77,27 @@ int KSPSetFromOptions(KSP ctx)
     }
   }
   }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_preres", &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetUsePreconditionedResidual(ctx); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_left_pc", &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_left_pc",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetPreconditionerSide(ctx,PC_LEFT); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_right_pc", &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_right_pc",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetPreconditionerSide(ctx,PC_RIGHT); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_symmetric_pc", &flg); CHKERRQ(ierr);
-  if (flg) {  KSPSetPreconditionerSide(ctx,PC_SYMMETRIC); }
-  ierr = OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart, &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetPreconditionerSide(ctx,PC_SYMMETRIC); }
+  ierr = OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
   if (flg) { KSPGMRESSetRestart(ctx,restart); }
   ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ctx, 
              KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog", &flg);CHKERRQ(ierr);
-  if(flg) { KSPGMRESSetOrthogonalization(ctx, KSPGMRESIROrthogonalization);}
-  ierr = OptionsHasName(ctx->prefix,"-ksp_eigen", &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
+  if (flg) { KSPGMRESSetOrthogonalization(ctx, KSPGMRESIROrthogonalization);}
+  ierr = OptionsHasName(ctx->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetCalculateEigenvalues(ctx); }
+  ierr = OptionsHasName(ctx->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
+  if (flg) { KSPCGSetType(ctx,CG_HERMITIAN); }
+  ierr = OptionsHasName(ctx->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) { KSPCGSetType(ctx,CG_SYMMETRIC); }
   return 0;
 }
   
@@ -138,8 +142,12 @@ int KSPPrintHelp(KSP ctx)
     PetscPrintf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
     PetscPrintf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     PetscPrintf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
-    PetscPrintf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
     PetscPrintf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
+    PetscPrintf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+#if defined(PETSC_COMPLEX)
+    PetscPrintf(ctx->comm," %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
+    PetscPrintf(ctx->comm," %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
+#endif
   }
   return 1;
 }
@@ -176,8 +184,6 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   return PetscObjectAppendPrefix((PetscObject)ksp, prefix);
 }
-
- 
 
 /*@
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
