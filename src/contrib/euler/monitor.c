@@ -30,23 +30,20 @@
 int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
-  Euler  *app = (Euler *)dummy;
-  Scalar   negone = -1.0, ratio, cfl_min = 7.5, cfl_current, mfeps;
+  Euler    *app = (Euler *)dummy;
+  Scalar   negone = -1.0, mfeps;
   Vec      DX;
-  int      ierr;
   Viewer   view1;
   char     filename[64];
+  int      ierr, lits;
 
   PetscObjectGetComm((PetscObject)snes,&comm);
 
   if (app->matrix_free && app->mf_adaptive) {
     mfeps = fnorm * 1.e-3;
     ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
-    if (!app->no_output) PetscPrintf(comm,"iter = %d, Function norm=%g, mf_eps=%g\n",its,fnorm,mfeps);
-  } else {
-    if (!app->no_output) PetscPrintf(comm,"iter = %d, Function norm %g\n",its,fnorm);
+    if (!app->no_output) PetscPrintf(comm,"next mf_eps=%g\n",mfeps);
   }
-
   /* Print the vector F (intended for debugging) */
   if (app->print_vecs) {
     ierr = SNESGetFunction(snes,&app->F); CHKERRQ(ierr);
@@ -57,29 +54,76 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
   }
 
-  cfl_current = app->cfl;
-  if (its) {
-    /* Compute new CFL number 
-       Note: BCs change at iter 10.  Should we defer CFL increase until after this point? */
-    if (app->cfl_advance) {
-      /*    if (app->cfl_advance && its > 11) { */
-      /* Modify the CFL (increase or decrease) if we are past the threshold ratio
-         or cfl > cfl_min and fnorm is increasing */
-      ratio = app->fnorm_last / fnorm;
-      if ((fnorm/app->fnorm0 <= app->f_reduction) || 
-          (app->cfl > cfl_min && ratio < 1.0)) {
-        app->cfl = PetscMin(app->cfl * ratio,app->cfl_max);
-        app->cfl = PetscMax(app->cfl,cfl_min);
-        if (!app->no_output) {
-          if (app->cfl != app->cfl_max) PetscPrintf(comm,"New CFL: ratio=%g, cfl=%g\n",ratio,app->cfl);
-          else PetscPrintf(comm,"Max CFL: cfl=%g\n",app->cfl);
-        }
-      /* Otherwise hold constant if not past the threshold ratio */
-      } else {
-        if (!app->no_output) PetscPrintf(comm,"Same CFL: fnorm/fnorm0 = %g, f_reduction ratio = %g, cfl = %g\n",
-          fnorm/app->fnorm0,app->f_reduction,app->cfl);
+  app->flog[its]  = log10(fnorm);
+  app->fcfl[its]  = app->cfl; 
+  app->ftime[its] = PetscGetTime() - app->time_init;
+  if (!its) {
+    /* Do the following only during the initial call to this routine */
+    app->fnorm_init  = app->fnorm_last = fnorm;
+    app->cfl_init    = app->cfl;
+    app->lin_its[0]  = 0;
+    app->lin_rtol[0] = 0;
+    if (!app->no_output) {
+      if (app->cfl_advance != CONSTANT)
+        PetscPrintf(comm,"iter = %d, Function norm = %g, fnorm reduction ratio = %g, CFL_init = %g\n",
+           its,fnorm,app->f_reduction,app->cfl);
+      else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",
+           its,fnorm,app->f_reduction,app->cfl);
+      if (app->rank == 0) {
+        app->fp = fopen("fnorm.m","w"); 
+        fprintf(app->fp,"zsnes = [\n");
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
       }
-      app->fnorm_last = fnorm;
+    }
+  } else {
+    /* For the first iteration and onward we do the following */
+
+    /* Get some statistics about the iterative solver */
+    ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
+    app->lin_its[its] = lits - app->last_its;
+    app->last_its     = lits;
+    ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
+           PETSC_NULL); CHKERRQ(ierr);
+    if (!app->no_output) {
+      PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
+                  its,fnorm,app->lin_rtol[its],app->lin_its[its]);
+      if (app->rank == 0) {
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+        fflush(app->fp);
+      }
+    }
+
+    /* Compute new CFL number if desired */
+    /* Note: BCs change at iter 10, so we defer CFL increase until after this point */
+    if (app->cfl_advance != CONSTANT && its > 11) {
+      /* Check to see if last step was OK ... do we want to increase CFL and DT now? */
+
+      if (!app->cfl_begin_advancement) {
+        if (fnorm/app->fnorm_init <= app->f_reduction) {
+          app->cfl_begin_advancement = 1;
+          if (!app->no_output) 
+            PetscPrintf(comm,"Beginning CFL advancement: fnorm/fnorm_init = %g, f_reduction ratio = %g\n",
+            fnorm/app->fnorm_init,app->f_reduction);
+        } else {
+          if (!app->no_output)
+            PetscPrintf(comm,"Same CFL: fnorm/fnorm_init = %g, f_reduction ratio = %g, cfl = %g\n",
+            fnorm/app->fnorm_init,app->f_reduction,app->cfl);
+        }
+      }
+      if (app->cfl_begin_advancement) {
+        /* Modify the CFL if we are past the threshold ratio */
+        if (app->cfl_advance == ADVANCE_GLOBAL) {
+          app->cfl = app->cfl * app->fnorm_last / fnorm;
+          app->fnorm_last = fnorm;
+        } else if (app->cfl_advance == ADVANCE_LOCAL) {
+          app->cfl = app->cfl_init * app->fnorm_init / fnorm;
+        } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
+        app->cfl = PetscMin(app->cfl,app->cfl_max);
+        app->cfl = PetscMax(app->cfl,app->cfl_init);
+        if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
+      }
     }
 
     /* Calculate new pseudo-transient continuation term, dt */
@@ -96,41 +140,32 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
                     app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
 
     /* Call Julianne monitoring routine */
-    ierr = jmonitor_(&app->time_init,&fnorm,&app->cfl,&cfl_current,
+    ierr = jmonitor_(&app->flog[its],&app->cfl,
              app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
              app->p,app->dr,app->dru,app->drv,app->drw,app->de,
              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-             app->aiz,app->ajz,app->akz,app->flog,app->ftime,app->fcfl); CHKERRQ(ierr);
-  } else { /* Do this only during the initial call to this routine */
-    app->fnorm0 = app->fnorm_last = fnorm;
-    if (!app->no_output) {
-      if (app->cfl_advance) PetscPrintf(comm,"fnorm0 = %g, fnorm reduction = %g\n",
-                             fnorm,app->f_reduction);
-      else                   PetscPrintf(comm,"Not advancing CFL.\n");
-    } else {
-      app->flog[0] = log10(fnorm); app->fcfl[0] = app->cfl; 
-      app->ftime[0] = PetscGetTime() - app->time_init;
-    }
-  }
+             app->aiz,app->ajz,app->akz); CHKERRQ(ierr);
 
-  /* Print factored matrix - intended for debugging */
-  if (its && app->print_vecs) {
-    SLES   sles;
-    PC     pc;
-    PCType pctype;
-    Mat    fmat;
-    Viewer view;
-    ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-    ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-    ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
-    if (pctype == PCILU) {
-      ierr = PCGetFactoredMatrix(pc,&fmat);
-      ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
-      ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-      ierr = MatView(fmat,view); CHKERRQ(ierr);
-      ierr = ViewerDestroy(view); CHKERRQ(ierr);
+    /* Print factored matrix - intended for debugging */
+    if (app->print_vecs) {
+      SLES   sles;
+      PC     pc;
+      PCType pctype;
+      Mat    fmat;
+      Viewer view;
+      ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+      ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+      ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
+      if (pctype == PCILU) {
+        ierr = PCGetFactoredMatrix(pc,&fmat);
+        ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
+        ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+        ierr = MatView(fmat,view); CHKERRQ(ierr);
+        ierr = ViewerDestroy(view); CHKERRQ(ierr);
+      }
     }
   }
+  app->iter = its+1;
   return 0;
 }
 #undef __FUNC__
@@ -570,3 +605,25 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
   }
   return 0;
 }
+
+/* ------------------------------------------------------------------------------ */
+#include "src/ksp/impls/gmres/gmresp.h"
+/* 
+   UserConvergenceTestGMRES - 
+ */
+#undef __FUNC__  
+#define __FUNC__ "UserConvergenceTest_GMRES"
+/* Nothing for now ... */
+/*
+int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *ptr)
+{
+  Euler *app = (Euler *)ptr;
+  printf("iter = %d\n",n);
+  if (!n) app->rinit = rnorm;
+  if ( rnorm <= ksp->ttol ) {
+    app->lin_rtol[app->iter] = 
+    return(1);
+  }
+  else return(0);
+}
+*/

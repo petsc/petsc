@@ -16,7 +16,9 @@
 
   We use the PETSc nonlinear solvers (SNES) with pseudo-transient continuation
   to solve the nonlinear system.  We parallelize the grid using the PETSc
-  distributed arrays (DAs).
+  distributed arrays (DAs).  Note that this current version of code does not
+  use the higher level TS component of PETSc to handle the time stepping,
+  although it certainly could and it will soon be modified to do so.
 
   This code supports two variants for treating boundary conditions:
     - explicitly - only interior grid points are part of Newton systems;
@@ -42,7 +44,8 @@ Runtime options include:\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -implicit                  : use fully implicit formulation of boundary conditions\n\
-  -cfl_advance               : use advancing CFL number\n\
+  -cfl_advance_local         : use advancing CFL number (local strategy) \n\
+  -cfl_advance_global        : use advancing CFL number (global strategy) \n\
   -f_red <fraction>          : reduce the function norm by this fraction before advancing CFL\n\
   -no_output                 : do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
@@ -87,7 +90,6 @@ int main(int argc,char **argv)
   MPI_Comm comm;                  /* communicator */
   SNES     snes;                  /* SNES context */
   SLES     sles;                  /* SLES context */
-  KSP      ksp;                   /* KSP context */
   Euler    *app;                  /* user-defined context */
   Viewer   view;                  /* viewer for printing vectors */
   char     stagename[2][16];      /* names of profiling stages */
@@ -251,10 +253,10 @@ int main(int argc,char **argv)
      they can be overridden at runtime if desired */
 
   ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = KSPSetType(ksp,KSPGMRES); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,maxksp); CHKERRA(ierr);
-  ierr = KSPGMRESSetRestart(ksp,maxksp+1); CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&app->ksp); CHKERRA(ierr);
+  ierr = KSPSetType(app->ksp,KSPGMRES); CHKERRA(ierr);
+  ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,maxksp); CHKERRA(ierr);
+  ierr = KSPGMRESSetRestart(app->ksp,maxksp+1); CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,1000,100000); CHKERRA(ierr);
 
@@ -273,12 +275,15 @@ int main(int argc,char **argv)
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&maxsnes,
          PETSC_NULL); CHKERRA(ierr);
   len = maxsnes + 1;
-  app->farray = (Scalar *)PetscMalloc(5*len*sizeof(Scalar)); CHKPTRQ(app->farray);
-  PetscMemzero(app->farray,5*len*sizeof(Scalar));
-  app->favg  = app->farray + len;
-  app->flog  = app->favg   + len;
-  app->ftime = app->flog   + len;
-  app->fcfl  = app->ftime  + len;
+  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,6*len*sizeof(Scalar));
+  app->favg     = app->farray + len;
+  app->flog     = app->favg   + len;
+  app->ftime    = app->flog   + len;
+  app->fcfl     = app->ftime  + len;
+  app->lin_rtol = app->fcfl   + len;
+  app->lin_its  = (int *)PetscMalloc(len*sizeof(int)); CHKPTRQ(app->lin_its);
+  PetscMemzero(app->lin_its,len*sizeof(int));
   ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
   ierr = SNESSetConvergenceTest(snes,ConvergenceTestEuler,app); CHKERRA(ierr);
 
@@ -328,18 +333,17 @@ int main(int argc,char **argv)
      printing only after the completion of SNESSolve(), so that the timings
      are not distorted by output during the solve. */
   if (app->no_output) {
-    FILE *fp; int i;
+    int i;
     if (app->rank == 0) {
-      fp = fopen("fnorm.m","w"); 
-      fprintf(fp,"zsnes = [\n");
-      for (i=0; i<=its; i++) {
-        fprintf(fp,"  %d    %8.4f   %12.1f   %10.2f\n",
-                i,app->flog[i],app->fcfl[i],app->ftime[i]);
-      }
-      fprintf(fp," ];\n");
-      fclose(fp);
+      app->fp = fopen("fnorm.m","w"); 
+      fprintf(app->fp,"zsnes = [\n");
+      for (i=0; i<=its; i++)
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]);
     }
-  } 
+  }
+  fprintf(app->fp," ];\n");
+  fclose(app->fp);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free data structures 
@@ -1121,24 +1125,41 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
 
   /* Set various defaults */
-  app->cfl                 = 0;        /* Initial CFL is set within Julianne code */
-  app->cfl_switch          = 10.0;     /* CFL at which to dump binary linear system */
-  app->f_reduction         = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
-  app->cfl_max             = 100000.0; /* maximum CFL value */
-  app->cfl_advance         = 0;        /* flag - by default we don't advance CFL */
-  app->angle               = 3.06;     /* default angle of attack = 3.06 degrees */
-  app->mat_assemble_direct = 1;        /* by default, we assemble Jacobian directly */
-  app->jfreq               = 10;       /* default frequency of computing Jacobian matrix */
-  app->no_output           = 0;        /* flag - by default print some output as program runs */
-  app->use_vecsetvalues    = 0;        /* flag - by default assemble local vector data directly */
-  app->fstagnate_ratio     = .01;      /* stagnation detection parameter */
-  app->farray              = 0;        /* work array */
-  app->favg                = 0;        /* work array */
-  app->flog                = 0;        /* work array */
-  app->ftime               = 0;        /* work array */
+  app->cfl                   = 0;        /* Initial CFL is set within Julianne code */
+  app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
+  app->cfl_max               = 100000.0; /* maximum CFL value */
+  app->cfl_switch            = 10.0;     /* CFL at which to dump binary linear system */
+  app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
+  app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
+  app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
+  app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
+  app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
+  app->mf_adaptive           = 0;        /* by default, we do not adapt mf param */
+  app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
+  app->no_output             = 0;        /* flag - by default print some output as program runs */
+  app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
+  app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
+  app->farray                = 0;        /* work array */
+  app->favg                  = 0;        /* work array */
+  app->flog                  = 0;        /* work array */
+  app->ftime                 = 0;        /* work array */
+  app->lin_rtol              = 0;        /* work array */
+  app->lin_its               = 0;        /* work array */
+  app->last_its               = 0;
 
   /* Override default with runtime options */
-  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&app->cfl_advance); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
+  if (flg) {
+    app->cfl_advance = ADVANCE_LOCAL;
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n");
+  } else {
+    ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_global",&flg); CHKERRQ(ierr);
+    if (flg) {
+      app->cfl_advance = ADVANCE_GLOBAL;
+      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n");
+    } else PetscPrintf(comm,"CFL remains constant\n");
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_vecsetvalues",&app->use_vecsetvalues); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);

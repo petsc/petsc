@@ -7,12 +7,15 @@
 #include "da.h"
 #include "dfvec.h"
 #include "draw.h"
+#include <math.h>
 
 /*
    IMPLICIT ==> fully implicit treatment of boundary conditions
    EXPLICIT ==> explicit treatment of boundary conditions
 */
 typedef enum {EXPLICIT=0, IMPLICIT_SIZE=1, IMPLICIT=2} BCType;
+
+typedef enum {CONSTANT=0, ADVANCE_LOCAL=1, ADVANCE_GLOBAL=2} CFLAdvanceType;
 
 typedef enum {DT_MULT=0, DT_DIV=1} ScaleType;
 
@@ -120,12 +123,26 @@ typedef struct {
     int      gxmfp1, gymfp1, gzmfp1;        /* Julianne ghost width */
     int      xmfp1, ymfp1, zmfp1;           /* Julianne width */
     int      *is1;                          /* mapping from application to PETSc ordering */
-    Scalar   fnorm0, fnorm_last, cfl, cfl_switch, f_reduction, cfl_max;
-    int      cfl_advance;                   /* flag - 1 indicates advancing CFL number */
+    int      use_vecsetvalues;              /* flag - 1 indicates use of VecSetValues() */
     Scalar   eps_jac;                       /* differencing parameter for FD Jacobian approx */
     Scalar   eps_jac_inv;                   /* 1.0/eps_jac_inv */
-    Scalar   f_avg;
-    int      fstagnate;                     /* counter for stagnation detection */
+    Scalar   eps_mf_default;                /* default differencing parameter for FD 
+                                               matrix-vector product approx */
+    Scalar   fnorm_init, fnorm_last;        /* || F || - initial and last iterations */
+    Scalar   cfl, cfl_init, cfl_max;        /* CFL parameters */
+    Scalar   cfl_switch;                    /* CFL at which to dump binary linear system */
+    Scalar   cfl_begin_advancement;         /* flag - 1 indicates CFL advancement has begun */
+    Scalar   f_reduction;                   /* reduce fnorm by this much before advancing CFL */
+    CFLAdvanceType cfl_advance;             /* flag - indicates type of CFL advancement */
+    Scalar   fstagnate_ratio;               /* counter for stagnation detection */
+    Scalar   *farray;                       /* array for use with SNESSetConvergenceHistory() */
+    Scalar   *favg;                         /* array of average fnorm for the past 10 iterations */
+    double   time_init;                     /* initial time */
+    double   *flog, *ftime, *fcfl, *lin_rtol;
+    int      *lin_its, last_its, mf_adaptive;
+    int      iter;                          /* nonlinear iteration number */
+    KSP      ksp;                           /* Krylov context */
+    FILE     *fp;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -138,7 +155,9 @@ typedef struct {
 #define residbc_     RESIDBC
 #define bc_uni_      BC_UNI
 #define rbuild_      RBUILD
+#define rbuild_direct_ RBUILD_DIRECT
 #define jsetup_      JSETUP
+
 #define jstep_       JSTEP
 #define jfinish_     JFINISH
 #define jmonitor_    JMONITOR
@@ -173,6 +192,7 @@ typedef struct {
 #define bc_uni_      bc_uni
 #define residbc_     residbc
 #define rbuild_      rbuild
+#define rbuild_direct_ rbuild_direct
 #define jsetup_      jsetup
 #define jstep_       jstep
 #define jfinish_     jfinish
@@ -209,6 +229,7 @@ int ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int UserSetJacobian(SNES,Euler*);
 int UserMatrixFreeMatCreate(SNES,Euler*,Vec,Mat*);
 int UserMatrixFreeMatDestroy(Mat);
+int UserSetMatrixFreeParameters(SNES,double,double);
 int UserSetGridParameters(Euler*);
 int UserSetGrid(Euler*);
 int BoundaryConditionsExplicit(Euler*,Vec);
@@ -224,7 +245,8 @@ int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
 int GridTest(Euler*);
 
 /* Monitoring routines */
-int JulianneMonitor(SNES,int,double,void*);
+int MonitorEuler(SNES,int,double,void*);
+int ConvergenceTestEuler(SNES,double,double,double,void*);
 int TECPLOTMonitor(SNES,Vec,Euler*);
 int MonitorDumpGeneral(SNES,Vec,Euler*);
 int MonitorDumpGeneralJulianne(Euler*);
@@ -242,7 +264,7 @@ extern int printvec_(double*,int*,FILE*);
 extern int printjul_(double*,double*,double*,double*,double*,double*,int*);
 extern int printgjul_(double*,double*,double*,double*,double*,double*,int*);
 extern int printbjul_(double*,double*,double*,double*,double*,double*,int*);
-extern int julianne_(int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -292,9 +314,9 @@ extern int jform2_(Scalar*,Scalar*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
-extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
@@ -322,6 +344,12 @@ extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Sca
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
