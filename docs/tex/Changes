@@ -7,3 +7,6 @@ add to it).
   Added VecSetBlockSize(), VecSetValuesBlocked(), VecSetValuesBlockedLocal()
         VecSetLocalToGlobalMappingBlocked()
 
+  Changed docs/www to docs/manualpages and docs/www/www.html docs/manualpages/manualpages.html
+
+  Added VecCreateShared()
