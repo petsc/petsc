@@ -7,5 +7,4 @@
 # Makes the shadow directorys.
 #
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
-15 0 * * * rsh volcano /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
