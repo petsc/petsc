@@ -148,7 +148,7 @@ class Configure:
 
   def addArgumentSubstitution(self, name, arg):
     '''Designate that "@name@" should be replaced by "arg" in all files which experience substitution'''
-    self.framework.log.write('Substituting '+name+' with '+str(arg)+' in '+str(self.__module__)+'\n')
+    self.framework.log.write('Substituting '+name+' with '+str(arg)+'('+str(self.framework.argDB[arg])+') in '+str(self.__module__)+'\n')
     self.argSubst[name] = arg
     return
 
@@ -272,7 +272,7 @@ class Configure:
         self.linkerFlags = self.framework.argDB['LDFLAGS']
       else:
         self.linkerName  = 'CC'
-        self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+        self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerSource  = 'conftest.o'
       self.linkerObj     = 'conftest'
     elif language in ['C++', 'Cxx']:
@@ -285,7 +285,7 @@ class Configure:
         self.linkerFlags = self.framework.argDB['LDFLAGS']
       else:
         self.linkerName  = 'CXX'
-        self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+        self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerSource  = 'conftest.o'
       self.linkerObj     = 'conftest'
     elif language == 'F77':
@@ -484,15 +484,30 @@ class Configure:
     output = self.filterCompileOutput(output)
     return not (returnCode or len(output))
 
-  def checkCompilerFlag(self, flag):
+  def checkCompilerFlag(self, flag, includes = '', body = ''):
     '''Determine whether the compiler accepts the given flag'''
     self.getCompiler()
     self.compilerFlags += ' '+flag
-    (output, error, status) = self.outputCompile('', '')
+    (output, error, status) = self.outputCompile(includes, body)
     output += error
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
       return 0
     return 1
+
+  def addCompilerFlag(self, flag, includes = '', body = ''):
+    if self.checkCompilerFlag(flag, includes, body):
+      language = self.language[-1]
+      if language == 'C':
+        flagsArg = 'CFLAGS'
+      elif language in ['C++', 'Cxx']:
+        flagsArg = 'CXXFLAGS'
+      elif language == 'F77':
+        flagsArg = 'FFLAGS'
+      else:
+        raise RuntimeError('Unknown language: '+language)
+      self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
+      return
+    raise RuntimeError('Bad compiler flag: '+flag)
 
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
@@ -532,6 +547,21 @@ class Configure:
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
       return 0
     return 1
+
+  def addLinkerFlag(self, flag):
+    if self.checkLinkerFlag(flag):
+      language = self.language[-1]
+      if language == 'C':
+        flagsArg = 'LDFLAGS'
+      elif language in ['C++', 'Cxx']:
+        flagsArg = 'LDFLAGS'
+      elif language == 'F77':
+        flagsArg = 'LDFLAGS'
+      else:
+        raise RuntimeError('Unknown language: '+language)
+      self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
+      return
+    raise RuntimeError('Bad linker flag: '+flag)
 
   def outputRun(self, includes, body, cleanup = 1):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)

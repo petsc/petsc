@@ -144,7 +144,7 @@ class Configure(config.base.Configure):
         self.popLanguage()
         self.framework.argDB['CC'] = None
     if 'CC' in self.framework.argDB and not self.framework.argDB['CC'] is None:
-      self.addSubstitution('CC', self.framework.argDB['CC'])
+      self.addArgumentSubstitution('CC', 'CC')
       self.isGCC = Configure.isGNU(self.framework.argDB['CC'])
     else:
       raise RuntimeError('Could not locate a functional C compiler')
@@ -177,8 +177,8 @@ class Configure(config.base.Configure):
         self.popLanguage()
         self.framework.argDB['CPP'] = None
     if 'CPP' in self.framework.argDB and not self.framework.argDB['CPP'] is None:
-      self.addSubstitution('CPP', self.framework.argDB['CPP'])
-      self.addSubstitution('CPPFLAGS', self.framework.argDB['CPPFLAGS'])
+      self.addArgumentSubstitution('CPP', 'CPP')
+      self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
     return
 
   def checkCFlags(self):
@@ -189,7 +189,7 @@ class Configure(config.base.Configure):
       if self.checkCompilerFlag(flag):
         self.framework.argDB['CFLAGS'] = self.framework.argDB['CFLAGS']+' '+flag
       self.popLanguage()
-    self.addSubstitution('CFLAGS', self.framework.argDB['CFLAGS'])
+    self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
     return
 
   def checkCRestrict(self):
@@ -291,7 +291,7 @@ class Configure(config.base.Configure):
         self.popLanguage()
         self.framework.argDB['CXX'] = None
     if 'CXX' in self.framework.argDB and not self.framework.argDB['CXX'] is None:
-      self.addSubstitution('CXX', self.framework.argDB['CXX'])
+      self.addArgumentSubstitution('CXX', 'CXX')
       self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
     else:
       self.addSubstitution('CXX', '')
@@ -331,7 +331,7 @@ class Configure(config.base.Configure):
         self.popLanguage()
         self.framework.argDB['CXXCPP'] = None
     if 'CXXCPP' in self.framework.argDB and not self.framework.argDB['CXXCPP'] is None:
-      self.addSubstitution('CXXCPP', self.framework.argDB['CXXCPP'])
+      self.addArgumentSubstitution('CXXCPP', 'CXXCPP')
     return
 
   def checkCxxFlags(self):
@@ -345,7 +345,7 @@ class Configure(config.base.Configure):
       if self.checkCompilerFlag(flag):
         self.framework.argDB['CXXFLAGS'] = self.framework.argDB['CXXFLAGS']+' '+flag
       self.popLanguage()
-    self.addSubstitution('CXXFLAGS', self.framework.argDB['CXXFLAGS'])
+    self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
     return
 
   def checkCxxNamespace(self):
@@ -421,7 +421,7 @@ class Configure(config.base.Configure):
         self.popLanguage()
         self.framework.argDB['FC'] = None
     if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
-      self.addSubstitution('FC', self.framework.argDB['FC'])
+      self.addArgumentSubstitution('FC', 'FC')
     else:
       self.addSubstitution('FC', '')
     return
@@ -443,7 +443,7 @@ class Configure(config.base.Configure):
           self.framework.argDB['FFLAGS'] = flag          
       self.popLanguage()
 
-    self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
+    self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
     return
 
   def mangleFortranFunction(self, name):
@@ -722,7 +722,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerFlags(self):
     '''Just substitutes the flags right now'''
-    self.addSubstitution('LDFLAGS', self.framework.argDB['LDFLAGS'])
+    self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
     return
 
   def checkSharedLinkerFlag(self):
