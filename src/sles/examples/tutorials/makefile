@@ -327,7 +327,7 @@ runex20:
 	   $(RM) -f ex20_1.tmp
 
 runex22:
-	-@$(MPIRUN) ex22 -mat_aij -mat_view_info_detailed -ksp_smonitor > ex22_1.tmp 2>&1; \
+	-@$(MPIRUN) ex22 -mat_aij -mat_view_info_detailed -pc_type jacobi -ksp_smonitor > ex22_1.tmp 2>&1; \
 	   if (diff output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   $(RM) -f ex22_1.tmp

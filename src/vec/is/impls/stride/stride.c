@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.45 1996/08/15 12:44:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.46 1996/08/15 13:12:18 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -44,7 +44,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
   return 0;
 }
 
-/*@
+/*@C
    ISStride - Determines if an IS is based on a stride.
 
    Input Parameter:
