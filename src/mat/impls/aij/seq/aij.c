@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.93 1995/10/01 21:52:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.94 1995/10/06 22:24:26 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -835,11 +835,11 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 
 static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data,*c;
   int        nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
   int        *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift,*ssmap;
-  int        first,step,*starts;
-  Scalar     *vwork;
+  int        first,step,*starts,*j_new,*i_new;
+  Scalar     *vwork,*a_new;
   Mat        C;
 
   if (!a->assembled) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:Not for unassembled matrix");  
@@ -849,8 +849,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
   
   if (ISStrideGetInfo(iscol,&first,&step) && step == 1) {
     /* special case of contiguous rows */
-    cwork  = (int *) PETSCMALLOC((3*ncols+1)*sizeof(int)); CHKPTRQ(cwork);
-    lens   = cwork + ncols;
+    lens   = (int *) PETSCMALLOC((2*ncols+1)*sizeof(int)); CHKPTRQ(lens);
     starts = lens + ncols;
     /* loop over new rows determining lens and starting points */
     for (i=0; i<nrows; i++) {
@@ -870,15 +869,22 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
     }
     /* create submatrix */
     ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    c = (Mat_SeqAIJ*) C->data;
+
     /* loop over rows inserting into submatrix */
+    a_new    = c->a;
+    j_new    = c->j;
+    i_new    = c->i;
+    i_new[0] = -shift;
     for (i=0; i<nrows; i++) {
       for ( k=0; k<lens[i]; k++ ) {
-        cwork[k] = a->j[k+starts[i]] - first;
+        *j_new++ = a->j[k+starts[i]] - first;
       }
-      vwork = a->a + starts[i];
-      ierr = MatSetValues(C,1,&i,lens[i],cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+      PetscMemcpy(a_new,a->a + starts[i],lens[i]*sizeof(Scalar));
+      a_new     += lens[i];
+      i_new[i+1] = i_new[i] + lens[i];
     }
-    PETSCFREE(cwork);
+    PETSCFREE(lens);
   }
   else {
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
