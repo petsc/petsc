@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.8 1995/03/04 16:54:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.9 1995/03/06 03:49:35 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: rich.c,v 1.8 1995/03/04 16:54:18 bsmith Exp bsmith $"
 #include "kspimpl.h"         /*I "ksp.h" I*/
 #include "richctx.h"
 
-int KSPiRichardsonSetUp(KSP itP)
+int KSPSetUp_Richardson(KSP itP)
 {
   int ierr;
   if (itP->method != KSPRICHARDSON) {
@@ -36,22 +36,22 @@ int KSPiRichardsonSetUp(KSP itP)
 @*/
 int KSPRichardsonSetScale(KSP itP,double scale)
 {
-  KSPRichardsonCntx *richardsonP;
+  KSP_Richardson *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->method != KSPRICHARDSON) return 0;
-  richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
+  richardsonP = (KSP_Richardson *) itP->MethodPrivate;
   richardsonP->scale = scale;
   return 0;
 }
 
-int  KSPiRichardsonSolve(KSP itP,int *its)
+int  KSPSolve_Richardson(KSP itP,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr;
   double             rnorm,*history;
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
-  KSPRichardsonCntx  *richardsonP;
-  richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
+  KSP_Richardson  *richardsonP;
+  richardsonP = (KSP_Richardson *) itP->MethodPrivate;
 
   x       = itP->vec_sol;
   b       = itP->vec_rhs;
@@ -109,15 +109,15 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
   return 0;
 }
 
-int KSPiRichardsonCreate(KSP itP)
+int KSPCreate_Richardson(KSP itP)
 {
-  KSPRichardsonCntx *richardsonP;
-  richardsonP = NEW(KSPRichardsonCntx); CHKPTR(richardsonP);
+  KSP_Richardson *richardsonP;
+  richardsonP = NEW(KSP_Richardson); CHKPTR(richardsonP);
   itP->MethodPrivate = (void *) richardsonP;
   itP->method               = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
-  itP->setup      = KSPiRichardsonSetUp;
-  itP->solver     = KSPiRichardsonSolve;
+  itP->setup      = KSPSetUp_Richardson;
+  itP->solver     = KSPSolve_Richardson;
   itP->adjustwork = KSPiDefaultAdjustWork;
   itP->destroy    = KSPiDefaultDestroy;
   itP->calc_res   = 1;

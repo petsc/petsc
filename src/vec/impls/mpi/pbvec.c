@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: pvec.c,v 1.12 1995/03/17 04:55:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.10 1995/03/19 00:38:36 bsmith Exp bsmith $";
 #endif
 
 
@@ -23,55 +24,59 @@ static char vcid[] = "$Id: pvec.c,v 1.12 1995/03/17 04:55:44 bsmith Exp bsmith $
  */
 
 
-static int VeiDVPBdot( Vec xin, Vec yin, Scalar *z )
+static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
 {
-  DvPVector *x = (DvPVector *)xin->data;
+  Vec_MPI *x = (Vec_MPI *)xin->data;
   Scalar    sum, work;
-  VeiDVBdot(  xin, yin, &work );
+  VecDot_Blas(  xin, yin, &work );
   MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,x->comm );
   *z = sum;
   return 0;
 }
 
-static int VeiDVPBasum(  Vec xin, double *z )
+
+static int VecAsum_MPIBlas(  Vec xin, double *z )
 {
-  DvPVector *x = (DvPVector *) xin->data;
+  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
-  VeiDVBasum( xin, &work );
+  VecAsum_Blas( xin, &work );
   MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,x->comm );
   return 0;
 }
 
-static int VeiDVPCreateVectorMPIBLAS( Vec, Vec *);
+static int VecCreate_MPIBlas( Vec, Vec *);
 
-static struct _VeOps DvOps = { VeiDVPCreateVectorMPIBLAS, 
-            Veiobtain_vectors, Veirelease_vectors, VeiDVPBdot, VeiDVPmdot,
-            VeiDVPnorm, VeiDVPmax, VeiDVPBasum, VeiDVPBdot, VeiDVPmdot,
-            VeiDVBscal, VeiDVBcopy,
-            VeiDVset, VeiDVBswap, VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx,
-            VeiDVwaxpy,
-            VeiDVpmult,
-            VeiDVpdiv,
-            VeiPDVinsertvalues,
-            VeiDVPBeginAssembly,VeiDVPEndAssembly,
-            VeiDVgetarray, VeiPgsize,VeiDVsize,VeiPrange};
+static struct _VeOps DvOps = { VecCreate_MPIBlas, 
+            Veiobtain_vectors, Veirelease_vectors, VecDot_MPIBlas, 
+            VecMDot_MPI,
+            VecNorm_MPI, VecMax_MPI, VecAsum_MPIBlas, VecDot_MPIBlas, 
+            VecMDot_MPI,
+            VecScale_Blas, VecCopy_Blas,
+            VecSet_Seq, VecSwap_Blas, VecAXPY_Blas, VecMAXPY_Seq, VecAYPX_Seq,
+
+            VecWAXPY_Seq, VecPMult_Seq,
+            VecPDiv_Seq, 
+            VecSetValues_MPI,
+            VecBeginAssembly_MPI,VecEndAssembly_MPI,
+            VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
+            VecGetOwnershipRange_MPI};
 
 static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
                             int *owners,Vec *vv)
 {
   Vec       v;
-  DvPVector *s;
+  Vec_MPI *s;
   int       size,i;
   *vv = 0;
 
-  size           = sizeof(DvPVector)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
+  size           = sizeof(Vec_MPI)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,MPIVECTOR,comm);
   PLogObjectCreate(v);
-  s              = (DvPVector *) MALLOC(size); CHKPTR(s);
+  s              = (Vec_MPI *) MALLOC(size); CHKPTR(s);
   v->ops         = &DvOps;
   v->data        = (void *) s;
-  v->destroy     = VeiPDestroyVector;
-  v->view        = VeiDVPview;
+  v->destroy     = VecDestroy_MPI;
+  v->view        = VecView_MPI;
   s->n           = n;
   s->N           = N;
   s->comm        = comm;
@@ -129,9 +134,9 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N,Vec *vv)
   return VecCreateMPIBLASBase(comm,n,N,numtids,mytid,0,vv);
 }
 
-static int VeiDVPCreateVectorMPIBLAS( Vec win, Vec *v)
+static int VecCreate_MPIBlas( Vec win, Vec *v)
 {
-  DvPVector *w = (DvPVector *)win->data;
+  Vec_MPI *w = (Vec_MPI *)win->data;
   return VecCreateMPIBLASBase(w->comm,w->n,w->N,w->numtids,w->mytid,w->ownership,v);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.9 1995/03/17 04:56:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.10 1995/03/21 23:18:25 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,11 +10,11 @@ static char vcid[] = "$Id: cg.c,v 1.9 1995/03/17 04:56:00 bsmith Exp bsmith $";
 #include "kspimpl.h"
 #include "cgctx.h"
 
-int KSPiCGSetUp(KSP itP)
+int KSPSetUp_CG(KSP itP)
 {
-  CGCntx *cgP;
+  KSP_CG *cgP;
   int    maxit,ierr;
-  cgP = (CGCntx *) itP->MethodPrivate;
+  cgP = (KSP_CG *) itP->MethodPrivate;
   maxit = itP->max_it;
 
   if (itP->method != KSPCG) {
@@ -38,14 +38,14 @@ int KSPiCGSetUp(KSP itP)
   return 0;
 }
 
-int  KSPiCGSolve(KSP itP,int *its)
+int  KSPSolve_CG(KSP itP,int *its)
 {
   int       ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
   Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
   double   *history, dp;
   Vec       X,B,Z,R,P;
-  CGCntx    *cgP;
-  cgP = (CGCntx *) itP->MethodPrivate;
+  KSP_CG    *cgP;
+  cgP = (KSP_CG *) itP->MethodPrivate;
 
   eigs    = itP->calc_eigs;
   pres    = itP->use_pres;
@@ -127,11 +127,11 @@ int  KSPiCGSolve(KSP itP,int *its)
   *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiCGDestroy(PetscObject obj)
+int KSPDestroy_CG(PetscObject obj)
 {
   KSP itP = (KSP) obj;
-  CGCntx *cgP;
-  cgP = (CGCntx *) itP->MethodPrivate;
+  KSP_CG *cgP;
+  cgP = (KSP_CG *) itP->MethodPrivate;
 
   /* free space used for eigenvalue calculations */
   if ( itP->calc_eigs ) {
@@ -147,18 +147,18 @@ int KSPiCGDestroy(PetscObject obj)
   return 0;
 }
 
-int KSPiCGCreate(KSP itP)
+int KSPCreate_CG(KSP itP)
 {
-  CGCntx *cgP;
-  cgP = NEW(CGCntx);  CHKPTR(cgP);
+  KSP_CG *cgP;
+  cgP = NEW(KSP_CG);  CHKPTR(cgP);
   itP->MethodPrivate = (void *) cgP;
   itP->method               = KSPCG;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
-  itP->setup                = KSPiCGSetUp;
-  itP->solver               = KSPiCGSolve;
+  itP->setup                = KSPSetUp_CG;
+  itP->solver               = KSPSolve_CG;
   itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiCGDestroy;
+  itP->destroy              = KSPDestroy_CG;
   itP->converged            = KSPDefaultConverged;
   itP->BuildSolution        = KSPDefaultBuildSolution;
   itP->BuildResidual        = KSPDefaultBuildResidual;

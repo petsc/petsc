@@ -14,7 +14,7 @@ WSOURCEC  =
 WOBJS     = 
 MANSEC    = x
 LINCLUDE  = $(SOURCEH)
-LIBBASE   = libpetscdraw
+LIBBASE   = libpetscsys
 DIRS      = 
 
 runexamples:

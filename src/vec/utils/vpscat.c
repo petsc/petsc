@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.8 1995/03/10 04:43:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.9 1995/03/17 04:55:37 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -64,7 +64,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                      int mode)
 {
   VecScatterMPI *gen_to, *gen_from;
-  DvPVector     *x = (DvPVector *)xin->data;
+  Vec_MPI     *x = (Vec_MPI *)xin->data;
   MPI_Comm      comm = ctx->comm;
   Scalar        *rvalues,*svalues;
   int           nrecvs, nsends;
@@ -157,7 +157,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 {
   VecScatterMPI *gen_to;
   VecScatterMPI *gen_from;
-  DvPVector     *y = (DvPVector *)yin->data;
+  Vec_MPI     *y = (Vec_MPI *)yin->data;
   Scalar        *rvalues,*svalues;
   int           nrecvs, nsends;
   MPI_Request   *rwaits, *swaits;
@@ -346,7 +346,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
-  DvPVector     *y = (DvPVector *)yin->data;
+  Vec_MPI     *y = (Vec_MPI *)yin->data;
   MPI_Comm      comm = ctx->comm;
   Scalar        *rvalues = gen_from->values;
   int           nrecvs = gen_from->nbelow;
@@ -422,7 +422,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                            int mode)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
-  DvPVector     *x = (DvPVector *)xin->data;
+  Vec_MPI     *x = (Vec_MPI *)xin->data;
   MPI_Comm      comm = ctx->comm;
   Scalar        *svalues = gen_to->values;
   int           nsends = gen_to->n;
@@ -490,7 +490,7 @@ static int PtoPScatterDestroy(PetscObject obj)
 int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
                          VecScatterCtx ctx)
 {
-  DvPVector      *x = (DvPVector *)xin->data;
+  Vec_MPI      *x = (Vec_MPI *)xin->data;
   int            *source;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = x->mytid, *owners = x->ownership;
@@ -673,7 +673,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
                          VecScatterCtx ctx)
 {
-  DvPVector      *y = (DvPVector *)yin->data;
+  Vec_MPI      *y = (Vec_MPI *)yin->data;
   int            *source;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = y->mytid, *owners = y->ownership;

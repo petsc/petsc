@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: cheby.c,v 1.9 1995/03/06 04:48:43 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: $";
 #include "chebctx.h"
 
 
-int KSPiChebychevSetUp(KSP itP)
+int KSPSetUp_Chebychev(KSP itP)
 {
   int ierr;
   if (itP->method != KSPCHEBYCHEV) {
@@ -31,7 +31,7 @@ int KSPiChebychevSetUp(KSP itP)
 @*/
 int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
-  ChebychevCntx *chebychevP = (ChebychevCntx *) itP->MethodPrivate;
+  KSP_Chebychev *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->method != KSPCHEBYCHEV) return 0;
   chebychevP->emax = emax;
@@ -39,14 +39,14 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
   return 0;
 }
 
-int  KSPiChebychevSolve(KSP itP,int *its)
+int  KSPSolve_Chebychev(KSP itP,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0, hist_len,cerr;
   Scalar           alpha,omegaprod;
   Scalar           mu,omega,Gamma,c[3],scale;
   double           rnorm,*history;
   Vec              x,b,p[3],r;
-  ChebychevCntx    *chebychevP = (ChebychevCntx *) itP->MethodPrivate;
+  KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
   Scalar           mone = -1.0, tmp;
 
   history = itP->residual_history;
@@ -143,11 +143,11 @@ if (history) itP->res_act_size = (hist_len < i) ? hist_len : i;
   *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiChebychevCreate(KSP itP)
+int KSPCreate_Chebychev(KSP itP)
 {
-  ChebychevCntx *chebychevP;
+  KSP_Chebychev *chebychevP;
 
-  chebychevP = NEW(ChebychevCntx); CHKPTR(chebychevP);
+  chebychevP = NEW(KSP_Chebychev); CHKPTR(chebychevP);
   itP->MethodPrivate = (void *) chebychevP;
 
   itP->method               = KSPCHEBYCHEV;
@@ -157,8 +157,8 @@ int KSPiChebychevCreate(KSP itP)
   chebychevP->emin          = 1.e-2;
   chebychevP->emax          = 1.e+2;
 
-  itP->setup                = KSPiChebychevSetUp;
-  itP->solver               = KSPiChebychevSolve;
+  itP->setup                = KSPSetUp_Chebychev;
+  itP->solver               = KSPSolve_Chebychev;
   itP->adjustwork           = KSPiDefaultAdjustWork;
   itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.6 1995/03/04 16:54:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.7 1995/03/06 03:49:25 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: cr.c,v 1.6 1995/03/04 16:54:06 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiCRSetUp(KSP itP)
+static int KSPSetUp_CR(KSP itP)
 {
   int    ierr;
   if ( itP->right_pre ) {
@@ -21,7 +21,7 @@ static int KSPiCRSetUp(KSP itP)
   return ierr;
 }
 
-static int  KSPiCRSolve(KSP itP,int *its)
+static int  KSPSolve_CR(KSP itP,int *its)
 {
   int       i = 0,maxit,pres, hist_len, cerr;
   double    *history, dp;
@@ -110,13 +110,13 @@ static int  KSPiCRSolve(KSP itP,int *its)
   *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiCRCreate(KSP itP)
+int KSPCreate_CR(KSP itP)
 {
   itP->method               = KSPCR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
-  itP->setup                = KSPiCRSetUp;
-  itP->solver               = KSPiCRSolve;
+  itP->setup                = KSPSetUp_CR;
+  itP->solver               = KSPSolve_CR;
   itP->adjustwork           = KSPiDefaultAdjustWork;
   itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;

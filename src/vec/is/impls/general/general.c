@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.12 1995/03/24 15:24:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.13 1995/03/24 15:30:24 curfman Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -48,15 +48,22 @@ static int ISInvertPermutation_General(IS is, IS *isout)
 
 static int ISView_General(PetscObject obj, Viewer viewer)
 {
-  IS         is = (IS) obj;
-  IS_General *sub = (IS_General *)is->data;
-  int        i,n = sub->n,*idx = sub->idx;
-  if (is->isperm) {
-    ViewerPrintf(viewer,"Index set is permutation\n");
-  }
-  ViewerPrintf(viewer,"Number of indices in set %d\n",n);
-  for ( i=0; i<n; i++ ) {
-    ViewerPrintf(viewer,"%d %d\n",i,idx[i]);
+  IS          is = (IS) obj;
+  IS_General  *sub = (IS_General *)is->data;
+  int         i,n = sub->n,*idx = sub->idx;
+  FILE        *fd;
+  PetscObject vobj = (PetscObject) viewer;
+
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER) ||
+                                       (vobj->type == FILES_VIEWER)) {
+    fd = ViewerFileGetPointer(viewer);
+    if (is->isperm) {
+      fprintf(fd,"Index set is permutation\n");
+    }
+    fprintf(fd,"Number of indices in set %d\n",n);
+    for ( i=0; i<n; i++ ) {
+      fprintf(fd,"%d %d\n",i,idx[i]);
+    }
   }
   return 0;
 }

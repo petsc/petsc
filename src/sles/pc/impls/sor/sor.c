@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: sor.c,v 1.6 1995/03/06 04:13:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,19 +11,19 @@ static char vcid[] = "$Id: $";
 typedef struct {
   int    its,sym;
   double omega;
-} PCiSOR;
+} PC_SOR;
 
-static int PCiSORApply(PC pc,Vec x,Vec y)
+static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
+  PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
   if ((ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y))) return ierr;
   return 0;
 }
 
-static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
+static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
+  PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag;
   flag = jac->sym;
   if ((ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y))) return ierr;
@@ -31,7 +31,7 @@ static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
 }
 
 /* parses arguments of the form -sor [symmetric,forward,back][omega=...] */
-static int PCisetfrom(PC pc)
+static int PCSetFromOptions_SOR(PC pc)
 {
   int    its;
   double omega;
@@ -60,7 +60,7 @@ static int PCisetfrom(PC pc)
   return 0;
 }
 
-int PCiSORprinthelp(PC pc)
+int PCPrintHelp_SOR(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -73,13 +73,13 @@ int PCiSORprinthelp(PC pc)
   fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
-int PCiSORCreate(PC pc)
+int PCCreate_SOR(PC pc)
 {
-  PCiSOR *jac   = NEW(PCiSOR); CHKPTR(jac);
-  pc->apply     = PCiSORApply;
-  pc->applyrich = PCiSORApplyrich;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiSORprinthelp;
+  PC_SOR *jac   = NEW(PC_SOR); CHKPTR(jac);
+  pc->apply     = PCApply_SOR;
+  pc->applyrich = PCApplyRichardson_SOR;
+  pc->setfrom   = PCSetFromOptions_SOR;
+  pc->printhelp = PCPrintHelp_SOR;
   pc->setup     = 0;
   pc->type      = PCSOR;
   pc->data      = (void *) jac;
@@ -99,7 +99,7 @@ int PCiSORCreate(PC pc)
 @*/
 int PCSORSetSymmetric(PC pc, int flag)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data; 
+  PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
   jac->sym = flag;
   return 0;
@@ -114,7 +114,7 @@ int PCSORSetSymmetric(PC pc, int flag)
 @*/
 int PCSORSetOmega(PC pc, double omega)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data; 
+  PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
   if (omega >= 2.0 || omega <= 0.0) { SETERR(1,"Relaxation out of range");}
   jac->omega = omega;
@@ -130,7 +130,7 @@ int PCSORSetOmega(PC pc, double omega)
 @*/
 int PCSORSetIterations(PC pc, int its)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data; 
+  PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
   jac->its = its;
   return 0;

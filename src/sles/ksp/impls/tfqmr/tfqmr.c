@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.5 1995/02/18 05:34:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.6 1995/03/06 03:49:42 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: tfqmr.c,v 1.5 1995/02/18 05:34:09 bsmith Exp bsmith $
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiTFQMRSetUp(KSP itP)
+static int KSPSetUp_TFQMR(KSP itP)
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -18,7 +18,7 @@ static int KSPiTFQMRSetUp(KSP itP)
   return 0;
 }
 
-static int  KSPiTFQMRSolve(KSP itP,int *its)
+static int  KSPSolve_TFQMR(KSP itP,int *its)
 {
 int       i = 0, maxit, m, conv, hist_len, cerr;
 Scalar    rho, rhoold, a, s, b, eta,
@@ -123,18 +123,18 @@ KSPUnwindPre(  itP, X, T );
 *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiTFQMRCreate(KSP itP)
+int KSPCreate_TFQMR(KSP itP)
 {
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPTFQMR;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiTFQMRSetUp;
-itP->solver               = KSPiTFQMRSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
+  itP->MethodPrivate        = (void *) 0;
+  itP->method               = KSPTFQMR;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPSetUp_TFQMR;
+  itP->solver               = KSPSolve_TFQMR;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;
-  itP->BuildSolution = KSPDefaultBuildSolution;
-  itP->BuildResidual = KSPDefaultBuildResidual;
-return 0;
+  itP->BuildSolution        = KSPDefaultBuildSolution;
+  itP->BuildResidual        = KSPDefaultBuildResidual;
+  return 0;
 }

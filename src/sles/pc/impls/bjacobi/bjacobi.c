@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.7 1995/03/17 04:56:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.8 1995/03/21 23:18:56 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -14,31 +14,31 @@ static char vcid[] = "$Id: bjacobi.c,v 1.7 1995/03/17 04:56:29 bsmith Exp bsmith
 #include "options.h"
 #include "bjacobi.h"
 
-int PCiBJacobiMPIAIJSetup(PC);
+int PCSetUp_BJacobiMPIAIJ(PC);
 
-static int PCiBJacobiSetup(PC pc)
+static int PCSetUp_BJacobi(PC pc)
 {
   Mat        mat = pc->mat;
-  if (mat->type == MATAIJMPI) {
-    return PCiBJacobiMPIAIJSetup(pc);
+  if (mat->type == MATMPIAIJ) {
+    return PCSetUp_BJacobiMPIAIJ(pc);
   }
   SETERR(1,"Cannot use block Jacobi on this matrix type\n");
 }
 
-int PCiBJacobiMPIAIJApply(PC,Vec,Vec);
+int PCApply_BJacobiMPIAIJ(PC,Vec,Vec);
 
 /* default destroy, if it has never been setup */
-static int PCiBJacobiDestroy(PetscObject obj)
+static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
-  PCiBJacobi *jac = (PCiBJacobi *) pc->data;
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
   FREE(jac);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
 }
 
-static int PCisetfrom(PC pc)
+static int PCSetFromOptions_BJacobi(PC pc)
 {
   int        blocks;
 
@@ -62,15 +62,15 @@ static int PCisetfrom(PC pc)
 @*/
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
-  PCiBJacobi   *jac;
+  PC_BJacobi   *jac;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
-  jac = (PCiBJacobi *) pc->data;
+  jac = (PC_BJacobi *) pc->data;
   jac->usetruelocal = 1;
   return 0;
 }
   
-int PCiprinthelp(PC pc)
+int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -81,14 +81,14 @@ int PCiprinthelp(PC pc)
   return 0;
 }
 
-int PCiBJacobiCreate(PC pc)
+int PCCreate_BJacobi(PC pc)
 {
-  PCiBJacobi   *jac = NEW(PCiBJacobi); CHKPTR(jac);
+  PC_BJacobi   *jac = NEW(PC_BJacobi); CHKPTR(jac);
   pc->apply         = 0;
-  pc->setup         = PCiBJacobiSetup;
-  pc->destroy       = PCiBJacobiDestroy;
-  pc->setfrom       = PCisetfrom;
-  pc->printhelp     = PCiprinthelp;
+  pc->setup         = PCSetUp_BJacobi;
+  pc->destroy       = PCDestroy_BJacobi;
+  pc->setfrom       = PCSetFromOptions_BJacobi;
+  pc->printhelp     = PCPrintHelp_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
   jac->n            = 0;
@@ -105,7 +105,7 @@ int PCiBJacobiCreate(PC pc)
 @*/
 int PCBJacobiSetBlocks(PC pc, int blocks)
 {
-  PCiBJacobi *jac = (PCiBJacobi *) pc->data; 
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
   jac->n = blocks;
   return 0;

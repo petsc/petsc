@@ -11,9 +11,9 @@ OBJSC     = filev.o
 OBJSF     =
 WSOURCEC  =   
 WOBJS     = 
-MANSEC    = x
+MANSEC    = 7
 LINCLUDE  = $(SOURCEH)
-LIBBASE   = libpetscdraw
+LIBBASE   = libpetscsys
 DIRS      = 
 
 runexamples:

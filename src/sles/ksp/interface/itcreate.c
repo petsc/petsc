@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 15:57:22 curfman Exp $";
+static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 16:39:15 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,9 +19,15 @@ static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 15:57:22 curfman Exp $";
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  ViewerPrintf(viewer,"KSP Object\n");
-  ViewerPrintf(viewer,"Max. Its. %d rtol %g atol %g\n",
-          ksp->max_it,ksp->rtol,ksp->atol);
+  PetscObject vobj = (PetscObject) vobj;
+  FILE *fd;
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
+                                        vobj->type == FILES_VIEWER)){
+    fd = ViewerFileGetPointer(viewer);
+    fprintf(fd,"KSP Object\n");
+    fprintf(fd,"Max. Its. %d rtol %g atol %g\n",
+            ksp->max_it,ksp->rtol,ksp->atol);
+  }
   return 0;
 }
 int _KSPView(PetscObject obj,Viewer viewer)

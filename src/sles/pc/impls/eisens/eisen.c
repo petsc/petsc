@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.6 1995/03/17 04:56:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.7 1995/03/21 23:18:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -16,16 +16,16 @@ typedef struct {
   Mat    shell,A;
   Vec    b;
   double omega;
-} PCiESOR;
+} PC_Eisenstat;
 
-static int PCiESORmult(void *ptr,Vec b,Vec x)
+static int PCMult_Eisenstat(void *ptr,Vec b,Vec x)
 {
   PC      pc = (PC) ptr;
-  PCiESOR *jac = (PCiESOR *) pc->data;
+  PC_Eisenstat *jac = (PC_Eisenstat *) pc->data;
   return MatRelax(jac->A,b,jac->omega,SOR_EISENSTAT,0.0,1,x);
 }
 
-static int PCiNoneApply(PC ptr,Vec x,Vec y)
+static int PCApply_Eisenstat(PC ptr,Vec x,Vec y)
 {
   return VecCopy(x,y);
 }
@@ -33,9 +33,9 @@ static int PCiNoneApply(PC ptr,Vec x,Vec y)
 /* this cheats and looks inside KSP to determine if nonzero initial guess*/
 #include "src/ksp/kspimpl.h"
 
-static int PCiPre(PC pc,KSP ksp)
+static int PCPre_Eisenstat(PC pc,KSP ksp)
 {
-  PCiESOR *jac = (PCiESOR *) pc->data;
+  PC_Eisenstat *jac = (PC_Eisenstat *) pc->data;
   Vec     b,x;
   int     ierr;
 
@@ -68,9 +68,9 @@ static int PCiPre(PC pc,KSP ksp)
   return 0;
 }
 
-static int PCiPost(PC pc,KSP ksp)
+static int PCPost_Eisenstat(PC pc,KSP ksp)
 {
-  PCiESOR *jac = (PCiESOR *) pc->data;
+  PC_Eisenstat *jac = (PC_Eisenstat *) pc->data;
   Vec     x,b;
   int     ierr;
   KSPGetSolution(ksp,&x);
@@ -83,10 +83,10 @@ static int PCiPost(PC pc,KSP ksp)
   return 0;
 }
 
-int PCiESORDestroy(PetscObject obj)
+int PCDestroy_Eisenstat(PetscObject obj)
 {
   PC       pc = (PC) obj;
-  PCiESOR  *jac = ( PCiESOR  *) pc->data; 
+  PC_Eisenstat  *jac = ( PC_Eisenstat  *) pc->data; 
   if (jac->b) VecDestroy(jac->b);
   if (jac->shell) MatDestroy(jac->shell);
   FREE(jac);
@@ -95,47 +95,47 @@ int PCiESORDestroy(PetscObject obj)
   return 0;
 }
 
-static int PCisetfrom(PC pc)
+static int PCSetFrom_Eisenstat(PC pc)
 {
   double  omega;
 
   if (OptionsGetDouble(0,pc->prefix,"-sor_omega",&omega)) {
-    PCESORSetOmega(pc,omega);
+    PCEisenstatSetOmega(pc,omega);
   }
   return 0;
 }
 
-static int PCiprinthelp(PC pc)
+static int PCPrintHelp_Eisenstat(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
   return 0;
 }
-int PCiESORCreate(PC pc)
+int PCCreate_Eisenstat(PC pc)
 {
   int      ierr;
-  PCiESOR  *jac;
-  jac           = NEW(PCiESOR); CHKPTR(jac);
-  pc->apply     = PCiNoneApply;
-  pc->presolve  = PCiPre;
-  pc->postsolve = PCiPost;
+  PC_Eisenstat  *jac;
+  jac           = NEW(PC_Eisenstat); CHKPTR(jac);
+  pc->apply     = PCApply_Eisenstat;
+  pc->presolve  = PCPre_Eisenstat;
+  pc->postsolve = PCPost_Eisenstat;
   pc->applyrich = 0;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiprinthelp ;
-  pc->destroy   = PCiESORDestroy;
+  pc->setfrom   = PCSetFrom_Eisenstat;
+  pc->printhelp = PCPrintHelp_Eisenstat ;
+  pc->destroy   = PCDestroy_Eisenstat;
   pc->type      = PCESOR;
   pc->data      = (void *) jac;
   pc->setup     = 0;
   jac->omega    = 1.0;
   jac->b        = 0;
   ierr = MatShellCreate(0,0,(void*) pc,&jac->shell); CHKERR(ierr);
-  ierr = MatShellSetMult(jac->shell, PCiESORmult); CHKERR(ierr);
+  ierr = MatShellSetMult(jac->shell, PCMult_Eisenstat); CHKERR(ierr);
   return 0;
 }
 
 /*@ 
-      PCESORSetOmega - Sets relaxation factor to use with SSOR using 
+      PCEisenstatSetOmega - Sets relaxation factor to use with SSOR using 
                        Eisenstat's trick.
 
   Input Parameters:
@@ -143,12 +143,12 @@ int PCiESORCreate(PC pc)
 .  omega - relaxation factor between 0 and 2.
 
 @*/
-int PCESORSetOmega(PC pc,double omega)
+int PCEisenstatSetOmega(PC pc,double omega)
 {
-  PCiESOR  *jac;
+  PC_Eisenstat  *jac;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCESOR) return 0;
-  jac = (PCiESOR *) pc->data;
+  jac = (PC_Eisenstat *) pc->data;
   jac->omega = omega;
   return 0;
 }

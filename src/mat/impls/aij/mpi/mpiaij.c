@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.15 1995/03/23 23:12:56 curfman Exp $";
+static char vcid[] = "$Id: mpiaij.c,v 1.16 1995/03/25 01:10:01 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -547,16 +547,22 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   Mat        mat = (Mat) obj;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
+  PetscObject vobj = (PetscObject) viewer;
 
   if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
-  MPE_Seq_begin(mat->comm,1);
-    ViewerPrintf(viewer,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-          aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
-          aij->cend);
-    ierr = MatView(aij->A,viewer); CHKERR(ierr);
-    ierr = MatView(aij->B,viewer); CHKERR(ierr);
-    ViewerFlush(viewer);
-  MPE_Seq_end(mat->comm,1);
+  if (vobj->cookie == VIEWER_COOKIE) {
+    FILE *fd = ViewerFileGetPointer(viewer);
+    if (vobj->type == FILE_VIEWER) {
+      MPE_Seq_begin(mat->comm,1);
+      fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+             aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
+             aij->cend);
+      ierr = MatView(aij->A,viewer); CHKERR(ierr);
+      ierr = MatView(aij->B,viewer); CHKERR(ierr);
+      fflush(fd);
+      MPE_Seq_end(mat->comm,1);
+    }
+  }
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.7 1995/03/17 04:56:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.8 1995/03/21 23:18:48 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -8,12 +8,12 @@ static char vcid[] = "$Id: jacobi.c,v 1.7 1995/03/17 04:56:22 bsmith Exp bsmith 
 
 typedef struct {
   Vec diag;
-} PCiJacobi;
+} PC_Jacobi;
 
-int PCiJacobiSetup(PC pc)
+int PCSetUp_Jacobi(PC pc)
 {
   int       ierr;
-  PCiJacobi *jac = (PCiJacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   Vec       diag;
   if (pc->setupcalled == 0) {
     if ((ierr = VecCreate(pc->vec,&diag))) SETERR(ierr,0);
@@ -27,18 +27,18 @@ int PCiJacobiSetup(PC pc)
   return 0;
 }
 
-int PCiJacobiApply(PC pc,Vec x,Vec y)
+int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
-  PCiJacobi *jac = (PCiJacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   Vec       diag = jac->diag;
   VecPMult(x,diag,y);
   return 0;
 }
 
-int PCiJacobiDestroy(PetscObject obj)
+int PCDestroy_Jacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
-  PCiJacobi *jac = (PCiJacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   if (jac->diag) VecDestroy(jac->diag);
   FREE(jac);
   PLogObjectDestroy(pc);
@@ -46,14 +46,14 @@ int PCiJacobiDestroy(PetscObject obj)
   return 0;
 }
 
-int PCiJacobiCreate(PC pc)
+int PCCreate_Jacobi(PC pc)
 {
-  PCiJacobi *jac = NEW(PCiJacobi); CHKPTR(jac);
-  jac->diag = 0;
-  pc->apply = PCiJacobiApply;
-  pc->setup = PCiJacobiSetup;
-  pc->destroy = PCiJacobiDestroy;
-  pc->type  = PCJACOBI;
-  pc->data  = (void *) jac;
+  PC_Jacobi *jac = NEW(PC_Jacobi); CHKPTR(jac);
+  jac->diag   = 0;
+  pc->apply   = PCApply_Jacobi;
+  pc->setup   = PCSetUp_Jacobi;
+  pc->destroy = PCDestroy_Jacobi;
+  pc->type    = PCJACOBI;
+  pc->data    = (void *) jac;
   return 0;
 }

@@ -1,20 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.7 1995/03/06 04:12:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.8 1995/03/17 04:56:18 bsmith Exp bsmith $";
 #endif
 
 
 #include "petsc.h"
 #include "pcimpl.h"
 
-extern int PCiJacobiCreate(PC);
-extern int PCiBJacobiCreate(PC);
-extern int PCiNoneCreate(PC);
-extern int PCiDirectCreate(PC);
-extern int PCiSORCreate(PC);
-extern int PCiShellCreate(PC);
-extern int PCiMGCreate(PC);
-extern int PCiESORCreate(PC);
-extern int PCiILUCreate(PC);
+extern int PCCreate_Jacobi(PC);
+extern int PCCreate_BJacobi(PC);
+extern int PCCreate_None(PC);
+extern int PCCreate_Direct(PC);
+extern int PCCreate_SOR(PC);
+extern int PCCreate_Shell(PC);
+extern int PCCreate_MG(PC);
+extern int PCCreate_Eisenstat(PC);
+extern int PCCreate_ILU(PC);
 
 /*@
    PCRegisterAll - Registers all the iterative methods
@@ -27,15 +27,15 @@ extern int PCiILUCreate(PC);
 @*/
 int PCRegisterAll()
 {
-  PCRegister(PCNONE         , "none",       PCiNoneCreate);
-  PCRegister(PCJACOBI       , "jacobi",     PCiJacobiCreate);
-  PCRegister(PCBJACOBI      , "bjacobi",    PCiBJacobiCreate);
-  PCRegister(PCSOR          , "sor",        PCiSORCreate);
-  PCRegister(PCDIRECT       , "direct",     PCiDirectCreate);
-  PCRegister(PCSHELL        , "shell",      PCiShellCreate);
-  PCRegister(PCMG           , "mg",         PCiMGCreate);
-  PCRegister(PCESOR         , "eisenstat",  PCiESORCreate);
-  PCRegister(PCILU          , "ilu",        PCiILUCreate);
+  PCRegister(PCNONE         , "none",       PCCreate_None);
+  PCRegister(PCJACOBI       , "jacobi",     PCCreate_Jacobi);
+  PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
+  PCRegister(PCSOR          , "sor",        PCCreate_SOR);
+  PCRegister(PCDIRECT       , "direct",     PCCreate_Direct);
+  PCRegister(PCSHELL        , "shell",      PCCreate_Shell);
+  PCRegister(PCMG           , "mg",         PCCreate_MG);
+  PCRegister(PCESOR         , "eisenstat",  PCCreate_Eisenstat);
+  PCRegister(PCILU          , "ilu",        PCCreate_ILU);
   return 0;
 }
 

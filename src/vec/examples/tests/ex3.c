@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecBeginAssembly(y); CHKERR(ierr);
   ierr = VecEndAssembly(y); CHKERR(ierr);
 
-  VecView(y,STDOUT_VIEWER);
+  VecView(y,SYNC_STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

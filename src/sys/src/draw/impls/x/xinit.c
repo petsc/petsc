@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.6 1995/03/06 04:29:11 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
 
-extern int  XiUniformHues(XiWindow *,int);
-extern int  Xi_wait_map( XiWindow*);
-extern int XiInitColors(XiWindow*,Colormap,int);
-extern int XiFontFixed(XiWindow*,int,int,XiFont** );
+extern int  XiUniformHues(DrawCtx_X *,int);
+extern int  Xi_wait_map( DrawCtx_X*);
+extern int XiInitColors(DrawCtx_X*,Colormap,int);
+extern int XiFontFixed(DrawCtx_X*,int,int,XiFont** );
 /* 
    This file contains routines to open an X window display and window
    This consists of a number of routines that set the various
@@ -27,7 +27,7 @@ extern int XiFontFixed(XiWindow*,int,int,XiFont** );
   XiWin        - pointer to base window structure
   display_name - either null ("") or of the form "host:0"
 */
-int XiOpenDisplay(XiWindow* XiWin,char *display_name )
+int XiOpenDisplay(DrawCtx_X* XiWin,char *display_name )
 {
   XiWin->disp = XOpenDisplay( display_name );
   if (!XiWin->disp)  return 1;
@@ -42,7 +42,7 @@ int XiOpenDisplay(XiWindow* XiWin,char *display_name )
 .   nc - number of colors.  Use the maximum of the visual if
     nc == 0.  Use nc = 2 for black and white displays.
   */
-int XiSetVisual(XiWindow* XiWin,int q_default_visual,Colormap cmap,int nc )
+int XiSetVisual(DrawCtx_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 {
   if (q_default_visual) {
     XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
@@ -84,7 +84,7 @@ int XiSetVisual(XiWindow* XiWin,int q_default_visual,Colormap cmap,int nc )
 /* 
    XiSetGC - set the GC structure in the base window
   */
-int XiSetGC(XiWindow* XiWin,PixVal fg )
+int XiSetGC(DrawCtx_X* XiWin,PixVal fg )
 {
   XGCValues       gcvalues;       /* window graphics context values */
   /* Set the graphics contexts */
@@ -103,7 +103,7 @@ int XiSetGC(XiWindow* XiWin,PixVal fg )
     If w and/or h are 0, use the sizes in the fields of XiWin
     (which may have been set by, for example, XiSetWindowSize)
  */
-int XiDisplayWindow( XiWindow* XiWin, char *label, int x, int y,
+int XiDisplayWindow( DrawCtx_X* XiWin, char *label, int x, int y,
                      int w,int h,PixVal backgnd_pixel )
 {
   unsigned int            wavail, havail;
@@ -207,7 +207,7 @@ int XiDisplayWindow( XiWindow* XiWin, char *label, int x, int y,
   return 0;
 }
 
-int XiQuickWindow(XiWindow* mywindow,char* host,char* name,int x,int y,
+int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
   int ierr;
@@ -235,7 +235,7 @@ int XiQuickWindow(XiWindow* mywindow,char* host,char* name,int x,int y,
 /* 
    And a version from an already defined window
  */
-int XiQuickWindowFromWindow(XiWindow* mywindow,char *host,Window win,int nc)
+int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
 {
   Window       root;
   int          d,ierr;
@@ -267,7 +267,7 @@ int XiQuickWindowFromWindow(XiWindow* mywindow,char *host,Window win,int nc)
 .  window - Window to set label for
 .  label  - Label to give window
 */
-int XiSetWindowLabel(XiWindow* Xiwin, char *label )
+int XiSetWindowLabel(DrawCtx_X* Xiwin, char *label )
 {
   XTextProperty prop;
   XGetWMName(Xiwin->disp,Xiwin->win,&prop);
@@ -276,7 +276,7 @@ int XiSetWindowLabel(XiWindow* Xiwin, char *label )
   return 0;
 }
 
-int XiSetToBackground(XiWindow* XiWin )
+int XiSetToBackground(DrawCtx_X* XiWin )
 {
   if (XiWin->gc.cur_pix != XiWin->background) { 
     XSetForeground( XiWin->disp, XiWin->gc.set, XiWin->background ); 

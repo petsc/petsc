@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.2 1995/03/17 04:56:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.3 1995/03/21 23:19:01 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: ilu.c,v 1.2 1995/03/17 04:56:36 bsmith Exp bsmith $";
 typedef struct {
   Mat fact;
   int ordering,levels;
-} PCiILU;
+} PC_ILU;
 
 /*@
       PCILUSetLevels - Sets the number of levels of fill to use.
@@ -23,10 +23,10 @@ typedef struct {
 @*/
 int PCILUSetLevels(PC pc,int levels)
 {
-  PCiILU *dir;
+  PC_ILU *dir;
   VALIDHEADER(pc,PC_COOKIE);
   if (levels < 0) SETERR(1,"Number of levels may not be negative");
-  dir = (PCiILU *) pc->data;
+  dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->levels = levels;
   return 0;
@@ -47,15 +47,15 @@ $      ORDER_QMD - Quotient Minimum Degree
 @*/
 int PCILUSetOrdering(PC pc,int ordering)
 {
-  PCiILU *dir;
+  PC_ILU *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  dir = (PCiILU *) pc->data;
+  dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->ordering = ordering;
   return 0;
 }
 
-static int PCisetfrom(PC pc)
+static int PCSetFromOptions_ILU(PC pc)
 {
   char      name[10];
   int       ordering = ORDER_ND, levels;
@@ -74,7 +74,7 @@ static int PCisetfrom(PC pc)
   return 0;
 }
 
-static int PCiprinthelp(PC pc)
+static int PCPrintHelp_ILU(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -84,11 +84,11 @@ static int PCiprinthelp(PC pc)
   return 0;
 }
 
-static int PCiILUSetup(PC pc)
+static int PCSetUp_ILU(PC pc)
 {
   IS     row,col;
   int    ierr;
-  PCiILU *dir = (PCiILU *) pc->data;
+  PC_ILU *dir = (PC_ILU *) pc->data;
   ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
   if (!pc->setupcalled) {
     ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
@@ -101,10 +101,10 @@ static int PCiILUSetup(PC pc)
   return 0;
 }
 
-static int PCiILUDestroy(PetscObject obj)
+static int PCDestroy_ILU(PetscObject obj)
 {
   PC        pc   = (PC) obj;
-  PCiILU *dir = (PCiILU*) pc->data;
+  PC_ILU *dir = (PC_ILU*) pc->data;
 
   MatDestroy(dir->fact);
   FREE(dir); 
@@ -113,24 +113,24 @@ static int PCiILUDestroy(PetscObject obj)
   return 0;
 }
 
-static int PCiILUApply(PC pc,Vec x,Vec y)
+static int PCApply_ILU(PC pc,Vec x,Vec y)
 {
-  PCiILU *dir = (PCiILU *) pc->data;
+  PC_ILU *dir = (PC_ILU *) pc->data;
   return MatSolve(dir->fact,x,y);
 }
 
-int PCiILUCreate(PC pc)
+int PCCreate_ILU(PC pc)
 {
-  PCiILU *dir = NEW(PCiILU); CHKPTR(dir);
+  PC_ILU *dir = NEW(PC_ILU); CHKPTR(dir);
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
   dir->levels   = 0;
-  pc->destroy   = PCiILUDestroy;
-  pc->apply     = PCiILUApply;
-  pc->setup     = PCiILUSetup;
+  pc->destroy   = PCDestroy_ILU;
+  pc->apply     = PCApply_ILU;
+  pc->setup     = PCSetUp_ILU;
   pc->type      = PCILU;
   pc->data      = (void *) dir;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiprinthelp;
+  pc->setfrom   = PCSetFromOptions_ILU;
+  pc->printhelp = PCPrintHelp_ILU;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.4 1995/03/06 04:29:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 
 #include "ximpl.h"
 
-extern int   XiGetColor( XiWindow *, char *, int );
+extern int   XiGetColor( DrawCtx_X *, char *, int );
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         
@@ -25,7 +25,7 @@ static PixVal HiPix=0, LoPix=0;
 /* 
    Set the colors for the highlights by name 
  */
-int XiFrameColors( XiWindow* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
+int XiFrameColors( DrawCtx_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 {
   Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
   Rgn->Lo = XiGetColor( XiWin, Lo, 1 );
@@ -33,7 +33,7 @@ int XiFrameColors( XiWindow* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
   return 0;
 }
 
-int XiDrawFrame(XiWindow *XiWin, XiDecoration *Rgn )
+int XiDrawFrame(DrawCtx_X *XiWin, XiDecoration *Rgn )
 {
   int    xl = Rgn->Box.x, yl = Rgn->Box.y, xh = Rgn->Box.xh, yh = Rgn->Box.yh,
          o = Rgn->width;
@@ -102,7 +102,7 @@ int XiDrawFrame(XiWindow *XiWin, XiDecoration *Rgn )
 /*
    Set the colors for the highlights by name 
  */
-int XiFrameColorsByName(XiWindow* XiWin, char *Hi, char *Lo )
+int XiFrameColorsByName(DrawCtx_X* XiWin, char *Hi, char *Lo )
 {
   if (XiWin->numcolors > 2) {
     HiPix = XiGetColor( XiWin, Hi, 1 );

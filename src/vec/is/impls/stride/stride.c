@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.7 1995/03/21 23:17:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.8 1995/03/23 05:00:15 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -8,19 +8,19 @@ static char vcid[] = "$Id: stride.c,v 1.7 1995/03/21 23:17:58 bsmith Exp bsmith 
 
 typedef struct {
   int n,first,step;
-} IndexiStride;
+} IS_Stride;
 
 /*
    Returns info on stride index set. This is a pseudo-public function.
 */
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
-  IndexiStride *sub = (IndexiStride *) is->data;
+  IS_Stride *sub = (IS_Stride *) is->data;
   *first = sub->first; *step = sub->step;
   return 0;
 }
 
-static int ISidestroy(PetscObject obj)
+static int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
   FREE(is->data); 
@@ -28,9 +28,9 @@ static int ISidestroy(PetscObject obj)
   PETSCHEADERDESTROY(is); return 0;
 }
 
-static int ISiIndices(IS in,int **idx)
+static int ISGetIndices_Stride(IS in,int **idx)
 {
-  IndexiStride *sub = (IndexiStride *) in->data;
+  IS_Stride *sub = (IS_Stride *) in->data;
   int          i;
 
   if (sub->n) {
@@ -42,37 +42,45 @@ static int ISiIndices(IS in,int **idx)
   return 0;
 }
 
-static int ISiRestoreIndices(IS in,int **idx)
+static int ISRestoreIndices_Stride(IS in,int **idx)
 {
   if (*idx) FREE(*idx);
   return 0;
 }
 
-static int ISiSize(IS is,int *size)
+static int ISGetSize_Stride(IS is,int *size)
 {
-  IndexiStride *sub = (IndexiStride *)is->data;
+  IS_Stride *sub = (IS_Stride *)is->data;
   *size = sub->n; return 0;
 }
 
 
 
-static int ISgview(PetscObject obj, Viewer viewer)
+static int ISView_Stride(PetscObject obj, Viewer viewer)
 {
   IS            is = (IS) obj;
-  IndexiStride *sub = (IndexiStride *)is->data;
+  IS_Stride *sub = (IS_Stride *)is->data;
   int           i,n = sub->n;
-  if (is->isperm) {
-    ViewerPrintf(viewer,"Index set is permutation\n");
-  }
-  ViewerPrintf(viewer,"Number of indices in set %d\n",n);
-  for ( i=0; i<n; i++ ) {
-    ViewerPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);
+  PetscObject   vobj = (PetscObject) viewer;
+  FILE          *fd;
+
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER) ||
+                                       (vobj->type == FILES_VIEWER)){
+    fd = ViewerFileGetPointer(viewer);
+    if (is->isperm) {
+      fprintf(fd,"Index set is permutation\n");
+    }
+    fprintf(fd,"Number of indices in set %d\n",n);
+    for ( i=0; i<n; i++ ) {
+      fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
+    }
   }
   return 0;
 }
   
-static struct _ISOps myops = { ISiSize,ISiSize,
-                               ISiIndices,ISiRestoreIndices,0};
+static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
+                               ISGetIndices_Stride,
+                               ISRestoreIndices_Stride,0};
 /*@
     ISCreateStrideSequential - Creates data structure for 
      a index set containing a list of evenly spaced integers.
@@ -89,10 +97,10 @@ static struct _ISOps myops = { ISiSize,ISiSize,
 @*/
 int ISCreateStrideSequential(int n,int first,int step,IS *is)
 {
-  int          size = sizeof(IndexiStride);
+  int          size = sizeof(IS_Stride);
   int          min, max;
   IS           Nindex;
-  IndexiStride *sub;
+  IS_Stride *sub;
 
   *is = 0;
  
@@ -101,7 +109,7 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,MPI_COMM_SELF); 
   PLogObjectCreate(Nindex);
-  sub            = (IndexiStride *) MALLOC(size); CHKPTR(sub);
+  sub            = (IS_Stride *) MALLOC(size); CHKPTR(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;
@@ -112,8 +120,8 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   Nindex->ops     = &myops;
-  Nindex->destroy = ISidestroy;
-  Nindex->view    = ISgview;
+  Nindex->destroy = ISDestroy_Stride;
+  Nindex->view    = ISView_Stride;
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }

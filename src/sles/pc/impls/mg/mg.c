@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.6 1995/03/17 04:56:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.7 1995/03/21 23:18:57 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -271,7 +271,7 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   return 0;
 }
 
-static int PCisetfrom(PC pc)
+static int PCSetFromOptions_MG(PC pc)
 {
   int    m;
   char   buff[16];
@@ -300,7 +300,7 @@ static int PCisetfrom(PC pc)
   return 0;
 }
 
-static int PCiprinthelp(PC pc)
+static int PCPrintHelp_MG(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -312,15 +312,15 @@ static int PCiprinthelp(PC pc)
   return 0;
 }
 
-int PCiMGCreate(PC pc)
+int PCCreate_MG(PC pc)
 {
   pc->apply     = MGCycle;
   pc->setup     = 0;
   pc->destroy   = MGDestroy;
   pc->type      = PCMG;
   pc->data      = (void *) 0;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiprinthelp;
+  pc->setfrom   = PCSetFromOptions_MG;
+  pc->printhelp = PCPrintHelp_MG;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.1 1995/03/23 00:29:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.2 1995/03/23 05:02:31 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -10,50 +10,29 @@ struct _Viewer {
   FILE        *fd;
 };
 
-Viewer STDOUT_VIEWER,STDERR_VIEWER;
+Viewer STDOUT_VIEWER,STDERR_VIEWER,SYNC_STDOUT_VIEWER;
 
 int ViewerInitialize()
 {
-  ViewerFileCreate("stderr",&STDERR_VIEWER);
-  ViewerFileCreate("stout",&STDOUT_VIEWER);
+  ViewerFileOpen("stderr",&STDERR_VIEWER);
+  ViewerFileOpen("stdout",&STDOUT_VIEWER);
+  ViewerSyncFileOpen("stdout",MPI_COMM_WORLD,&SYNC_STDOUT_VIEWER);
   return 0;
 }
 
-static int FileDestroy(PetscObject obj)
+static int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
-  fclose(v->fd);
-  PETSCOBJECTDESTROY(obj);
+  int    mytid = 0;
+  if (v->type == FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
+  if (!mytid && v->fd != stderr && v->fd != stdout) fclose(v->fd);
+  PETSCHEADERDESTROY(obj);
   return 0;
 }
 
-/*@
-    ViewerPrintf  - Prints to the file pointed to by viewer, some 
-         viewers may not support this option.
-
-  Input Parameters:
-.   viewer - file to print to
-.   comm - communicator
-.   format - printf style format string 
-.   arguments
-@*/
-int ViewerPrintf(Viewer viewer,char *format,...)
+FILE *ViewerFileGetPointer(Viewer viewer)
 {
-  va_list Argp;
-  if (!viewer) return 0;
-  if (viewer->type != FILE_VIEWER) return 0;
-  va_start( Argp, format );
-  vfprintf(viewer->fd,format,Argp);
-  va_end( Argp );
-  return 0;
-}
-
-int ViewerFlush(Viewer viewer)
-{
-  if (!viewer) return 0;
-  if (viewer->type != FILE_VIEWER) return 0;
-  fflush(viewer->fd);
-  return 0;
+  return viewer->fd;
 }
 
 /*@
@@ -70,12 +49,39 @@ int ViewerFileOpen(char *name,Viewer *lab)
   Viewer v;
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILE_VIEWER,MPI_COMM_SELF);
   PLogObjectCreate(v);
-  v->destroy     = FileDestroy;
+  v->destroy     = ViewerDestroy_File;
 
   if (!strcmp(name,"stderr")) v->fd = stderr;
   else if (!strcmp(name,"stdout")) v->fd = stdout;
   else {
     v->fd          = fopen(name,"w"); if (!v->fd) SETERR(1,0);
+  }
+  *lab           = v;
+  return 0;
+}
+/*@
+     ViewerSyncFileOpen - Opens an ASCI file as a viewer, only the first
+            processor opens the file. All other processors ship the 
+            data to the first processor to print. 
+
+  Input Parameters:
+.   name - the file name
+.   comm - the communicator
+
+  Output Parameter:
+.   lab - the viewer to use with that file.
+@*/
+int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
+{
+  Viewer v;
+  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILES_VIEWER,comm);
+  PLogObjectCreate(v);
+  v->destroy     = ViewerDestroy_File;
+
+  if (!strcmp(name,"stderr")) v->fd = stderr;
+  else if (!strcmp(name,"stdout")) v->fd = stdout;
+  else {
+    v->fd        = fopen(name,"w"); if (!v->fd) SETERR(1,0);
   }
   *lab           = v;
   return 0;

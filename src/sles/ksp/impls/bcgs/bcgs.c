@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: bcgs.c,v 1.8 1995/03/06 04:47:25 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiBCGSSetUp(KSP itP)
+static int KSPSetUp_BCGS(KSP itP)
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -18,7 +18,7 @@ static int KSPiBCGSSetUp(KSP itP)
   return 0;;
 }
 
-static int  KSPiBCGSSolve(KSP itP,int *its)
+static int  KSPSolve_BCGS(KSP itP,int *its)
 {
 int       i = 0, maxit, hist_len, cerr;
 Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2;
@@ -106,18 +106,18 @@ KSPUnwindPre( itP, X, T );
 *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiBCGSCreate(KSP itP)
+int KSPCreate_BCGS(KSP itP)
 {
-itP->MethodPrivate = (void *) 0;
-itP->method               = KSPBCGS;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiBCGSSetUp;
-itP->solver               = KSPiBCGSSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
+  itP->MethodPrivate = (void *) 0;
+  itP->method               = KSPBCGS;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPSetUp_BCGS;
+  itP->solver               = KSPSolve_BCGS;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;
   itP->BuildSolution        = KSPDefaultBuildSolution;
   itP->BuildResidual        = KSPDefaultBuildResidual;
-return 0;
+  return 0;
 }

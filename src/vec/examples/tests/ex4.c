@@ -12,7 +12,7 @@ static char help[] = "Scatters from parallel vector into seqential vectors.\n";
 
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4};
+  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},mytid;
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
@@ -21,8 +21,9 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
-  /* create two vector */
+  /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&x); CHKERR(ierr);
   ierr = VecCreateSequential(n,&y); CHKERR(ierr);
 
@@ -39,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
   
-  VecView(y,STDOUT_VIEWER);
+  if (!mytid) VecView(y,STDOUT_VIEWER);
 
   ierr = ISDestroy(is1); CHKERR(ierr);
   ierr = ISDestroy(is2); CHKERR(ierr);

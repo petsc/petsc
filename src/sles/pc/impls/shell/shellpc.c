@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.6 1995/03/17 04:56:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.7 1995/03/21 23:18:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -16,25 +16,25 @@ typedef struct {
   void *ctx,*ctxrich;
   int  (*apply)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
-} PCShell;
+} PC_Shell;
 
-static int PCShellApply(PC pc,Vec x,Vec y)
+static int PCApply_Shell(PC pc,Vec x,Vec y)
 {
-  PCShell *shell;
-  shell = (PCShell *) pc->data;
+  PC_Shell *shell;
+  shell = (PC_Shell *) pc->data;
   return (*shell->apply)(shell->ctx,x,y);
 }
-static int PCShellApplyRichardson(PC pc,Vec x,Vec y,Vec w,int it)
+static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 {
-  PCShell *shell;
-  shell = (PCShell *) pc->data;
+  PC_Shell *shell;
+  shell = (PC_Shell *) pc->data;
   return (*shell->applyrich)(shell->ctx,x,y,w,it);
 }
-static int PCShellDestroy(PetscObject obj)
+static int PCDestroy_Shell(PetscObject obj)
 {
   PC      pc = (PC) obj;
-  PCShell *shell;
-  shell = (PCShell *) pc->data;
+  PC_Shell *shell;
+  shell = (PC_Shell *) pc->data;
   FREE(shell);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
@@ -42,7 +42,7 @@ static int PCShellDestroy(PetscObject obj)
 }
 
 /*
-   PCShellCreate - creates a new preconditioner class for use with your 
+   PCCreate_Shell - creates a new preconditioner class for use with your 
           own private data storage format. This is intended to 
           provide a simple class to use with KSP. You should 
           not use this if you plan to make a complete class.
@@ -51,18 +51,18 @@ static int PCShellDestroy(PetscObject obj)
   Usage:
 .             int (*mult)(void *,Vec,Vec);
 .             PCCreate(&pc);
-.             PCSetMethod(pc,PCSHELL);
-.             PCShellSetApply(pc,mult,ctx);
+.             PCSetMethod(pc,PC_Shell);
+.             PC_ShellSetApply(pc,mult,ctx);
 
 */
-int PCiShellCreate(PC pc)
+int PCCreate_Shell(PC pc)
 {
-  PCShell *shell;
+  PC_Shell *shell;
 
-  pc->destroy    = PCShellDestroy;
-  shell          = NEW(PCShell); CHKPTR(shell);
+  pc->destroy    = PCDestroy_Shell;
+  shell          = NEW(PC_Shell); CHKPTR(shell);
   pc->data       = (void *) shell;
-  pc->apply      = PCShellApply;
+  pc->apply      = PCApply_Shell;
   pc->applyrich  = 0;
   pc->setup      = 0;
   pc->type       = PCSHELL;
@@ -82,9 +82,9 @@ int PCiShellCreate(PC pc)
 @*/
 int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
 {
-  PCShell *shell;
+  PC_Shell *shell;
   VALIDHEADER(pc,PC_COOKIE);
-  shell        = (PCShell *) pc->data;
+  shell        = (PC_Shell *) pc->data;
   shell->apply = mult;
   shell->ctx   = ptr;
   return 0;
@@ -104,10 +104,10 @@ int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
 int PCShellSetApplyRichardson(PC pc, int (*mult)(void*,Vec,Vec,Vec,int),
                               void *ptr)
 {
-  PCShell *shell;
+  PC_Shell *shell;
   VALIDHEADER(pc,PC_COOKIE);
-  shell            = (PCShell *) pc->data;
-  pc->applyrich    = PCShellApplyRichardson;
+  shell            = (PC_Shell *) pc->data;
+  pc->applyrich    = PCApplyRichardson_Shell;
   shell->applyrich = mult;
   shell->ctxrich   = ptr;
   return 0;

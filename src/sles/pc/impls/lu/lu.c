@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.9 1995/03/17 04:56:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: direct.c,v 1.10 1995/03/21 23:18:53 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: direct.c,v 1.9 1995/03/17 04:56:26 bsmith Exp bsmith 
 typedef struct {
   Mat fact;
   int ordering,inplace;
-} PCiDirect;
+} PC_Direct;
 
 /*@
       PCDirectSetOrdering - Sets the ordering to use for a direct 
@@ -29,9 +29,9 @@ $      ORDER_QMD - Quotient Minimum Degree
 @*/
 int PCDirectSetOrdering(PC pc,int ordering)
 {
-  PCiDirect *dir;
+  PC_Direct *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  dir = (PCiDirect *) pc->data;
+  dir = (PC_Direct *) pc->data;
   if (pc->type != PCDIRECT) return 0;
   dir->ordering = ordering;
   return 0;
@@ -52,14 +52,14 @@ int PCDirectSetOrdering(PC pc,int ordering)
 @*/
 int PCDirectSetUseInplace(PC pc)
 {
-  PCiDirect *dir;
+  PC_Direct *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  dir = (PCiDirect *) pc->data;
+  dir = (PC_Direct *) pc->data;
   if (pc->type != PCDIRECT) return 0;
   dir->inplace = 1;
   return 0;
 }
-static int PCisetfrom(PC pc)
+static int PCSetFromOptions_Direct(PC pc)
 {
   char      name[10];
   int       ordering = ORDER_ND;
@@ -78,7 +78,7 @@ static int PCisetfrom(PC pc)
   return 0;
 }
 
-static int PCiprinthelp(PC pc)
+static int PCPrintHelp_Direct(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -88,11 +88,11 @@ static int PCiprinthelp(PC pc)
   return 0;
 }
 
-static int PCiDirectSetup(PC pc)
+static int PCSetUp_Direct(PC pc)
 {
   IS        row,col;
   int       ierr;
-  PCiDirect *dir = (PCiDirect *) pc->data;
+  PC_Direct *dir = (PC_Direct *) pc->data;
   ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
   if (dir->inplace) {
     if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERR(ierr,0);
@@ -110,10 +110,10 @@ static int PCiDirectSetup(PC pc)
   return 0;
 }
 
-static int PCiDirectDestroy(PetscObject obj)
+static int PCDestroy_Direct(PetscObject obj)
 {
   PC        pc   = (PC) obj;
-  PCiDirect *dir = (PCiDirect*) pc->data;
+  PC_Direct *dir = (PC_Direct*) pc->data;
 
   if (!dir->inplace) MatDestroy(dir->fact);
   FREE(dir); 
@@ -122,25 +122,25 @@ static int PCiDirectDestroy(PetscObject obj)
   return 0;
 }
 
-static int PCiDirectApply(PC pc,Vec x,Vec y)
+static int PCApply_Direct(PC pc,Vec x,Vec y)
 {
-  PCiDirect *dir = (PCiDirect *) pc->data;
+  PC_Direct *dir = (PC_Direct *) pc->data;
   if (dir->inplace) return MatSolve(pc->pmat,x,y);
   else  return MatSolve(dir->fact,x,y);
 }
 
-int PCiDirectCreate(PC pc)
+int PCCreate_Direct(PC pc)
 {
-  PCiDirect *dir = NEW(PCiDirect); CHKPTR(dir);
+  PC_Direct *dir = NEW(PC_Direct); CHKPTR(dir);
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
   dir->inplace  = 0;
-  pc->destroy   = PCiDirectDestroy;
-  pc->apply     = PCiDirectApply;
-  pc->setup     = PCiDirectSetup;
+  pc->destroy   = PCDestroy_Direct;
+  pc->apply     = PCApply_Direct;
+  pc->setup     = PCSetUp_Direct;
   pc->type      = PCDIRECT;
   pc->data      = (void *) dir;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiprinthelp;
+  pc->setfrom   = PCSetFromOptions_Direct;
+  pc->printhelp = PCPrintHelp_Direct;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.5 1995/03/06 04:30:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,9 +9,9 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 
 #include "ximpl.h"
 
-int XiInitFonts(XiWindow *);
+int XiInitFonts(DrawCtx_X *);
 int XiMatchFontSize(XiFont*,int,int);
-int XiLoadFont(XiWindow*,XiFont*);
+int XiLoadFont(DrawCtx_X*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
@@ -22,7 +22,7 @@ int XiLoadFont(XiWindow*,XiFont*);
 .   XBWin - window
 .   w,h   - requested width and height of a character
 */
-int XiFontFixed( XiWindow *XBWin,int w, int h,XiFont **outfont )
+int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
 {
   static XiFont *curfont = 0,*font = 0;
   static int    fw = 0, fh = 0;
@@ -67,7 +67,7 @@ static int act_nfonts = 0;
  * and load it if necessary
  */
 
-int XiLoadFont( XiWindow *XBWin, XiFont *font )
+int XiLoadFont( DrawCtx_X *XBWin, XiFont *font )
 {
   char        font_name[100];
   XFontStruct *FontInfo;
@@ -95,7 +95,7 @@ int XiLoadFont( XiWindow *XBWin, XiFont *font )
 }
 
 /* Code to find fonts and their characteristics */
-int XiInitFonts( XiWindow *XBWin )
+int XiInitFonts( DrawCtx_X *XBWin )
 {
   char         **names;
   int          cnt, i, j;

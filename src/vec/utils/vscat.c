@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.11 1995/03/21 23:18:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.12 1995/03/23 17:54:05 curfman Exp bsmith $";
 #endif
 
 
@@ -25,7 +25,7 @@ static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
   int               i, n = gen_from->n, *fslots = gen_from->slots;
   int               *tslots = gen_to->slots;
-  DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
+  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
   if (addv == InsertValues) {
@@ -42,7 +42,7 @@ static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
   int               i, n = gen_from->n, *fslots = gen_from->slots;
   int               first = gen_to->first,step = gen_to->step;
-  DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
+  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
   if (addv == InsertValues) {
@@ -60,7 +60,7 @@ static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
   int               i, n = gen_from->n, *fslots = gen_to->slots;
   int               first = gen_from->first,step = gen_from->step;
-  DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
+  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
   if (addv == InsertValues) {
@@ -79,7 +79,7 @@ static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   int               i, n = gen_from->n;
   int               to_first = gen_to->first,to_step = gen_to->step;
   int               from_first = gen_from->first,from_step = gen_from->step;
-  DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
+  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
   if (addv == InsertValues) {
@@ -231,7 +231,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   if (xin->type == MPIVECTOR && yin->type == SEQVECTOR) {
     /* special case extracting (subset of) local portion */ 
     if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
-      DvPVector         *x = (DvPVector *)xin->data;
+      Vec_MPI         *x = (Vec_MPI *)xin->data;
       int               nx,ny,to_first,to_step,from_first,from_step;
       int               start = x->ownership[x->mytid];
       int               end = x->ownership[x->mytid+1],islocal,cando;
@@ -270,7 +270,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   if (xin->type == SEQVECTOR && yin->type == MPIVECTOR) {
     /* special case local copy portion */ 
     if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
-      DvPVector         *y = (DvPVector *)yin->data;
+      Vec_MPI         *y = (Vec_MPI *)yin->data;
       int               nx,ny,to_first,to_step,from_first,from_step;
       int               start = y->ownership[y->mytid];
       int               end = y->ownership[y->mytid+1],islocal,cando;

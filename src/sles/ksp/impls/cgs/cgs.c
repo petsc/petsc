@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.6 1995/02/18 05:34:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.7 1995/03/06 03:49:30 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: cgs.c,v 1.6 1995/02/18 05:34:00 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiCGSSetUp(KSP itP)
+static int KSPSetUp_CGS(KSP itP)
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -19,7 +19,7 @@ static int KSPiCGSSetUp(KSP itP)
 }
 
 
-static int  KSPiCGSSolve(KSP itP,int *its)
+static int  KSPSolve_CGS(KSP itP,int *its)
 {
 int       i = 0, maxit, hist_len, cerr, ierr;
 Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
@@ -89,18 +89,19 @@ if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 KSPUnwindPre(  itP, X, T );
 *its =  RCONV(itP,i+1); return 0;
 }
-int KSPiCGSCreate(KSP itP)
+
+int KSPCreate_CGS(KSP itP)
 {
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPCGS;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiCGSSetUp;
-itP->solver               = KSPiCGSSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
+  itP->MethodPrivate        = (void *) 0;
+  itP->method               = KSPCGS;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPSetUp_CGS;
+  itP->solver               = KSPSolve_CGS;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;
   itP->BuildSolution        = KSPDefaultBuildSolution;
   itP->BuildResidual        = KSPDefaultBuildResidual;
-return 0;
+  return 0;
 }

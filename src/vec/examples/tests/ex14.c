@@ -25,7 +25,6 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
-
   /* create two vectors */
   N = numtids*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERR(ierr);
@@ -42,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
-  VecView(y,STDOUT_VIEWER);
+  VecView(y,SYNC_STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.12 1995/03/17 04:56:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.13 1995/03/21 23:18:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,11 +63,11 @@ int  BasicMultiMaxpy( Vec *,int,Scalar *,Vec);
 static int GMRESGetNewVectors( KSP ,int );
 static double GMRESUpdateHessenberg( KSP , int );
 static int BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
-static int KSPiGMRESSetUp(KSP itP )
+static int KSPSetUp_GMRES(KSP itP )
 {
   unsigned int size, hh, hes, rs, cc;
   int      ierr,  max_k, k;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate;
 
   if ((ierr = KSPCheckDef( itP ))) return ierr;
   max_k         = gmresP->max_k;
@@ -119,7 +119,7 @@ static int KSPiGMRESSetUp(KSP itP )
  */
 static int GMRESResidual(  KSP itP,int restart )
 {
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
   Scalar        mone = -1.0;
 
   /* compute initial residual: f - M*x */
@@ -167,7 +167,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   double  hapbnd,*nres = itP->residual_history,tt;
   /* Note that hapend is ignored in the code */
   int     it, hapend, converged;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
   int     max_k = gmresP->max_k;
   int     max_it = itP->max_it;
 
@@ -266,10 +266,10 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   return !converged;
 }
 
-static int KSPiGMRESSolve(KSP itP,int *outits )
+static int KSPSolve_GMRES(KSP itP,int *outits )
 {
   int err, restart, its, itcount;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate;
 
   restart = 0;
   itcount = 0;
@@ -298,13 +298,13 @@ static int KSPiGMRESSolve(KSP itP,int *outits )
   *outits = itcount;  return 0;
 }
 
-static int KSPiGMRESAdjustWork(KSP itP )
+static int KSPAdjustWork_GMRES(KSP itP )
 {
-  KSPiGMRESCntx *gmresP;
+  KSP_GMRES *gmresP;
   int          i;
 
   if ( itP->adjust_work_vectors ) {
-   gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
+   gmresP = (KSP_GMRES *) itP->MethodPrivate;
    for (i=0; i<gmresP->vv_allocated; i++) 
        if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
 					     gmresP->mwork_alloc[i] ) ) 
@@ -313,10 +313,10 @@ static int KSPiGMRESAdjustWork(KSP itP )
   return 0;
 }
 
-static int KSPiGMRESDestroy(PetscObject obj)
+static int KSPDestroy_GMRES(PetscObject obj)
 {
   KSP itP = (KSP) obj;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
+  KSP_GMRES *gmresP = (KSP_GMRES *) itP->MethodPrivate;
   int          i;
 
   /* Free the matrix */
@@ -352,7 +352,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 {
   Scalar  tt, zero = 0.0, one = 1.0;
   int     ii, k, j;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
 
   /* Solve for solution vector that minimizes the residual */
 
@@ -405,7 +405,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
 {
   register Scalar *hh, *cc, *ss, tt;
   register int    j;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
 
   hh  = HH(0,it);
   cc  = CC(0);
@@ -443,7 +443,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
  */
 static int GMRESGetNewVectors( KSP itP,int it )
 {
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate;
   int nwork = gmresP->nwork_alloc;
   int k, nalloc;
 
@@ -478,15 +478,15 @@ static int GMRESGetNewVectors( KSP itP,int it )
 @*/
 int KSPGMRESSetRestart(KSP itP,int max_k )
 {
-  KSPiGMRESCntx *gmresP;
+  KSP_GMRES *gmresP;
   VALIDHEADER(itP,KSP_COOKIE);
-  gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  gmresP = (KSP_GMRES *)itP->MethodPrivate;
   if (itP->method != KSPGMRES) return 0;
   gmresP->max_k = max_k;
   return 0;
 }
 
-int KSPiGMRESDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
+int KSPDefaultConverged_GMRES(KSP itP,int n,double rnorm,void *dummy)
 {
   if ( rnorm <= itP->ttol ) return(1);
   else return(0);
@@ -498,7 +498,7 @@ int KSPiGMRESDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
  */
 static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
 {
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate; 
+  KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate; 
 
   if (ptr == 0) {
     /* if (!gmresP->sol_temp)  need to allocate */
@@ -533,26 +533,26 @@ int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->method == KSPGMRES) {
-    ((KSPiGMRESCntx *)itP->MethodPrivate)->orthog = fcn;
+    ((KSP_GMRES *)itP->MethodPrivate)->orthog = fcn;
   }
   return 0;
 }
-int KSPiGMRESCreate(KSP itP)
+int KSPCreate_GMRES(KSP itP)
 {
-  KSPiGMRESCntx *gmresP;
+  KSP_GMRES *gmresP;
   int         GMRESBasicOrthog(KSP,int);
 
-  gmresP = NEW(KSPiGMRESCntx); CHKPTR(gmresP);
+  gmresP = NEW(KSP_GMRES); CHKPTR(gmresP);
 
   itP->MethodPrivate = (void *) gmresP;
   itP->method        = KSPGMRES;
-  itP->converged     = KSPiGMRESDefaultConverged;
+  itP->converged     = KSPDefaultConverged_GMRES;
   itP->BuildSolution = GMRESBuildSolution;
 
-  itP->setup         = KSPiGMRESSetUp;
-  itP->solver        = KSPiGMRESSolve;
-  itP->adjustwork    = KSPiGMRESAdjustWork;
-  itP->destroy       = KSPiGMRESDestroy;
+  itP->setup         = KSPSetUp_GMRES;
+  itP->solver        = KSPSolve_GMRES;
+  itP->adjustwork    = KSPAdjustWork_GMRES;
+  itP->destroy       = KSPDestroy_GMRES;
 
   gmresP->haptol    = 1.0e-8;
   gmresP->epsabs    = 1.0e-8;
@@ -564,3 +564,5 @@ int KSPiGMRESCreate(KSP itP)
   gmresP->max_k     = GMRES_DEFAULT_MAXK;
   return 0;
 }
+
+

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: tcqmr.c,v 1.6 1995/03/06 04:49:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: $";
 #include "kspimpl.h"
 #include "tcqmrp.h"
 
-static int KSPiTCQMRSolve(KSP itP,int *its )
+static int KSPSolve_TCQMR(KSP itP,int *its )
 {
 double      rnorm0, rnorm;                      /* residual values */
 Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
@@ -149,7 +149,7 @@ KSPUnwindPre(  itP, x, vtmp );
 *its = RCONV(itP,it); return 0;
 }
 
-static int KSPiTCQMRSetUp(KSP  itP )
+static int KSPSetUp_TCQMR(KSP  itP )
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -157,16 +157,16 @@ static int KSPiTCQMRSetUp(KSP  itP )
   return 0;
 }
 
-int KSPiTCQMRCreate(KSP itP)
+int KSPCreate_TCQMR(KSP itP)
 {
-itP->MethodPrivate = (void *) 0;
-itP->method        = KSPTCQMR;
-  itP->converged            = KSPDefaultConverged;
+  itP->MethodPrivate = (void *) 0;
+  itP->method        = KSPTCQMR;
+  itP->converged     = KSPDefaultConverged;
   itP->BuildSolution = KSPDefaultBuildSolution;
   itP->BuildResidual = KSPDefaultBuildResidual;
-itP->setup         = KSPiTCQMRSetUp;
-itP->solver        = KSPiTCQMRSolve;
-itP->adjustwork    = KSPiDefaultAdjustWork;
-itP->destroy       = KSPiDefaultDestroy;
-return 0;
+  itP->setup         = KSPSetUp_TCQMR;
+  itP->solver        = KSPSolve_TCQMR;
+  itP->adjustwork    = KSPiDefaultAdjustWork;
+  itP->destroy       = KSPiDefaultDestroy;
+  return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.6 1995/03/04 16:54:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.7 1995/03/06 03:49:37 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: lsqr.c,v 1.6 1995/03/04 16:54:20 bsmith Exp bsmith $"
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiLSQRSetUp(KSP itP)
+static int KSPSetUp_LSQR(KSP itP)
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -25,7 +25,7 @@ static int KSPiLSQRSetUp(KSP itP)
   return ierr;
 }
 
-static int KSPiLSQRSolve(KSP itP,int *its)
+static int KSPSolve_LSQR(KSP itP,int *its)
 {
 int       i = 0, maxit, hist_len, cerr;
 Scalar    rho, rhobar, phi, phibar, theta, c, s;
@@ -107,14 +107,14 @@ KSPUnwindPre(  itP, X, W );
 *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiLSQRCreate(KSP itP)
+int KSPCreate_LSQR(KSP itP)
 {
 itP->MethodPrivate        = (void *) 0;
 itP->method               = KSPLSQR;
 itP->right_pre            = 0;
 itP->calc_res             = 1;
-itP->setup                = KSPiLSQRSetUp;
-itP->solver               = KSPiLSQRSolve;
+itP->setup                = KSPSetUp_LSQR;
+itP->solver               = KSPSolve_LSQR;
 itP->adjustwork           = KSPiDefaultAdjustWork;
 itP->destroy              = KSPiDefaultDestroy;
 itP->converged            = KSPDefaultConverged;
