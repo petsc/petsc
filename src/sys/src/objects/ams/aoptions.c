@@ -871,7 +871,8 @@ int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 @*/
 int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
 {
-  int             ierr;
+  int        ierr;
+  PetscTruth iset;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -886,10 +887,13 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,&iset);CHKERRQ(ierr);
+  if (deflt && !iset && flg) *flg = PETSC_TRUE;
+  if (!deflt && !iset && flg) *flg = PETSC_FALSE;
+  if (set && iset) *set = PETSC_TRUE;
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     const char *v = (deflt ? "true" : "false");
-    ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
