@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.88 1995/10/12 13:41:03 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.89 1995/10/13 02:05:39 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -500,6 +500,7 @@ static int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
   if (aij->numtids == 1) {
     ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
   }
+  else SETERRQ(1,"MatView_MPIAIJ_Binary:Only uniprocessor output supported");
   return 0;
 }
 
