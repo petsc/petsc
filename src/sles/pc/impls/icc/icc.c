@@ -444,6 +444,7 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d levels of fill\n",(int)icc->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->info.fill);CHKERRQ(ierr);
+    if (icc->info.shift) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," lvls=%d",(int)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
