@@ -1,0 +1,118 @@
+% $Id: manual_tex.tex,v 1.100 1996/02/29 15:23:20 bsmith Exp curfman $ 
+%
+% Design of PETSc Version 2.0
+%
+% This document serves two roles:  a users manual for PETSc 2.0 and 
+% a design document. Certain blocks of text will be ifdefed out in the 
+% users manual version.
+%
+% Note that we use a modified version of report.sty, so that tables and
+% figures are numbered consecutively throughout the document (not by
+% chapters).  
+%
+% manual_tex.tex is the base file for LaTeX format, while manual.tex is
+% the corresponding base HTML format file.
+%
+\documentstyle[psfig,../sty/verbatim,../sty/tpage,../sty/here,../sty/anlhelper]{../sty/report_petsc} 
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textheight}{9.2in}
+\setlength{\topmargin}{-.8in}
+
+\newcommand{\findex}[1]{\index{FUNCTION #1}}
+\newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\F}{\mbox{\boldmath \(F\)}}
+\newcommand{\x}{\mbox{\boldmath \(x\)}}
+\newcommand{\rr}{\mbox{\boldmath \(r\)}}
+
+\makeindex
+ 
+% Defines the environment where design issues are discussed. In the manual
+% version of this report, these regions are ignored.
+\def\design{\medskip \noindent Design Issue:\begin{em}}
+\def\enddesign{\end{em} \medskip}
+% Manual version:
+% \def\design{\comment}
+% \def\enddesign{\endcomment}
+
+% Print DRAFT in large letters across every page
+%\special{!userdict begin /bop-hook{gsave 200 70 translate
+%65 rotate /Times-Roman findfont 216 scalefont setfont
+%0 0 moveto 0.95 setgray (DRAFT) show grestore}def end}
+
+% Defines that we're doing the whole manual, not the short intro part,
+% used in part1.tex.
+\def\shortintro{false}
+
+\begin{document}
+
+\ANLTitle{PETSc 2.0 Users Manual}{\em Satish Balay\\
+William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
+\hspace{1.0in} \\
+Mathematics and Computer Science Division}{95/11}{1995}
+
+\date{\today}
+\begin{centering}
+This manual is suitable for use with PETSc 2.0, beta version 13.\\
+\end{centering}
+
+\newpage
+
+\hbox{ }
+
+\vspace{2in}
+
+% Abstract for users manual
+\input{abstract.tex}
+
+\vspace{1in}
+
+% Acknowledgements for users manual
+\input{acknowl.tex}
+
+\pagenumbering{roman}
+\setcounter{page}{3}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+
+% --------------------------------------------------------------------
+%                            PART 1
+% --------------------------------------------------------------------
+\part{Introduction to PETSc}
+\label{part:intro}
+\chapter{Getting Started}
+\input{part1.tex}
+
+% --------------------------------------------------------------------
+%                            PART 2
+% --------------------------------------------------------------------
+\part{Programming with PETSc}
+\label{part:usage}
+\input{part2.tex}
+
+
+%------------------------------------------------------------------
+
+\appendix
+
+\chapter{PETSc Function Reference List}
+
+\input routin
+
+\vfill
+\eject
+
+\addcontentsline{toc}{chapter}{Subject Index}
+\include{sindex}
+\addcontentsline{toc}{chapter}{Function Index}
+\include{findex}
+
+\bibliographystyle{plain}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{petsc}
+
+\end{document}
+
