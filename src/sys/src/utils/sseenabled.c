@@ -86,15 +86,27 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
 #define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
 int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
   PetscFunctionBegin;
-  *flag = PETSC_TRUE;
+  if (flag) {
+    *flag = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
 #endif 
 #else  /* Not defined PETSC_HAVE_SSE */
 
-#define PetscSSEHardwareTest(arg) PETSC_FALSE
-#define PetscSSEOSEnabledTest(arg) PETSC_FALSE
+#define PetscSSEHardwareTest(arg) PetscSSEEnabledTest_FALSE(arg)
+#define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSSEEnabledTest_FALSE"
+int PetscSSEEnabledTest_FALSE(PetscTruth *flag) {
+  PetscFunctionBegin;
+  if (flag) {
+    *flag = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
 
 #endif /* defined PETSC_HAVE_SSE */
 
