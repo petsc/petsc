@@ -2,8 +2,7 @@
 /*
      Some useful vector utility functions.
 */
-#include "petscvec.h"                 /*I "petscvec.h" I*/
-#include "src/vec/vecimpl.h"
+#include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideNorm"

@@ -24,8 +24,8 @@
    includes information about the computation of h. It is shared by 
    all implementations that people provide.
 */
-#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 typedef struct {
   PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */

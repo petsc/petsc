@@ -4,10 +4,10 @@
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "petscsys.h"                     /*I "petscmat.h" I*/
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
+#include "petscsys.h"                     /*I "petscmat.h" I*/
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_SeqBAIJ_MatScalar() does 

@@ -1,5 +1,6 @@
 /*$Id: zmat.c,v 1.100 2001/08/07 03:05:11 balay Exp $*/
 
+#include "src/mat/impls/adj/mpi/mpiadj.h"
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
@@ -168,7 +169,6 @@ void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *
   *ierr = MatCreateSeqAIJWithArrays((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,a,mat);
 }
 
-#include "src/mat/impls/adj/mpi/mpiadj.h"
 void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
 {
   Mat_MPIAdj *adj;

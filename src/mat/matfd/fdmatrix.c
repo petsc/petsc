@@ -5,7 +5,6 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 
 /* Logging support */

@@ -1,8 +1,8 @@
 /*$Id: fdda.c,v 1.75 2001/08/07 21:31:51 bsmith Exp $*/
  
-#include "petscda.h"     /*I      "petscda.h"     I*/
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "src/dm/da/daimpl.h" 
+#include "src/dm/da/daimpl.h" /*I      "petscda.h"     I*/
+#include "petscmat.h"         /*I      "petscmat.h"    I*/
+
 
 EXTERN int DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);

@@ -1,7 +1,7 @@
 /*$Id: gcreate.c,v 1.131 2001/07/20 21:22:13 bsmith Exp $*/
 
-#include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
+#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPublish_Base"

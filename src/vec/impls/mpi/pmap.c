@@ -4,7 +4,6 @@
    This file contains routines for basic map object implementation.
 */
 
-#include "petsc.h"
 #include "src/vec/vecimpl.h"   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__  

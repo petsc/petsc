@@ -3,11 +3,11 @@
     Defines parallel vector scatters.
 */
 
-#include "petscsys.h"
 #include "src/vec/is/isimpl.h"
 #include "src/vec/vecimpl.h"                     /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h"
 #include "src/vec/impls/mpi/pvecimpl.h"
+#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterView_MPI"

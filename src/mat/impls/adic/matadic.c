@@ -3,10 +3,10 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "petscsys.h"
 #include "src/mat/matimpl.h"   /*I   "mat.h"  I*/
 #include "petscda.h"
 #include "petscsnes.h"
+#include "petscsys.h"
 EXTERN_C_BEGIN
 #include "adic_utils.h"
 EXTERN_C_END

@@ -4,7 +4,6 @@
    This file contains simple binary read/write routines for matrices.
  */
 
-#include "petsc.h"
 #include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
 PetscTruth MatLoadRegisterAllCalled = PETSC_FALSE;

@@ -2,10 +2,10 @@
 
 /* Block diagonal matrix format */
 
-#include "petscsys.h"
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
+#include "petscsys.h"
 
 EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
 EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *,InsertMode);

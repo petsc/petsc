@@ -1,5 +1,6 @@
 /*$Id: zda.c,v 1.49 2001/08/06 21:19:11 bsmith Exp $*/
 
+#include "src/dm/da/daimpl.h"
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 #include "petscda.h"
@@ -132,7 +133,6 @@ void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocal
   } else *ierr = 1;
 }
 
-#include "src/dm/da/daimpl.h"
 
 void PETSC_STDCALL dasetlocaladiforfunction_(DA *da,
 void (PETSC_STDCALL *jfunc)(int*,DALocalInfo*,void*,void*,int*,void*,void*,int*,void*,int*),int *ierr)

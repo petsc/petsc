@@ -1,7 +1,7 @@
 /*$Id: snesmfj.c,v 1.131 2001/09/05 18:45:40 bsmith Exp $*/
 
-#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 PetscFList      MatSNESMPetscFList              = 0;
 PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
