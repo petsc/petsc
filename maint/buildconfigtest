@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildconfigtest,v 1.1 2001/02/08 23:55:46 balay Exp balay $ 
+# $Id: buildconfigtest,v 1.2 2001/02/09 00:24:57 balay Exp balay $ 
 # 
 ## Compiles and tests PETSc using configure in our nightly builds.
 
@@ -11,9 +11,12 @@ rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 rsh $MACH -n "cd $TMP/maint;rm -f buildconfig_$ARCH.$MACH.log"
 rsh $MACH -n "cd $TMP/maint;touch buildconfig_$ARCH.$MACH.log"
 rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH `date` ' >> maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;echo 'bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI' >>& maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;echo 'bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX' >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;echo '===========================================================================' >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;cat config.log >>& maint/buildconfig_$ARCH.$MACH.log"
 
 rsh $MACH -n "cd $TMP;/bin/cp maint/buildconfig_$ARCH.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log"
+
 
 
