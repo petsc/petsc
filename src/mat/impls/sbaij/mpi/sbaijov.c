@@ -99,7 +99,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   } else {
     len += 1 + is_max; /* max length of data1 for one processor */
   }
-
+  
   ierr = PetscMalloc((size*len+1)*sizeof(int),&data1);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(int*),&data1_start);CHKERRQ(ierr);
   for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
@@ -108,8 +108,16 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   btable  = len_s + size;
   iwork   = btable + size;
   Bowners = iwork + size;
+
+  /* gather c->garray from all processors */
+  ierr = ISCreateGeneral(comm,Bnbs,c->garray,&garray_local);CHKERRQ(ierr);
+  ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
+  ierr = ISDestroy(garray_local);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&Bnbs,1,MPI_INT,Bowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  Bowners[0] = 0;
+  for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
   
-  if (is_max){
+  if (is_max){ 
     /* create hash table ctable which maps c->row to proc_id) */
     ierr = PetscMalloc(Mbs*sizeof(int),&ctable);CHKERRQ(ierr);
     for (proc_id=0,j=0; proc_id<size; proc_id++) {
@@ -125,14 +133,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     for (i=0; i<is_max; i++) {
       table[i]  = t_p  + (Mbs/PETSC_BITS_PER_BYTE+1)*i; 
     }
-   
-    ierr = ISCreateGeneral(comm,Bnbs,c->garray,&garray_local);CHKERRQ(ierr);
-    ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
-    ierr = ISDestroy(garray_local);CHKERRQ(ierr);
-    
-    ierr = MPI_Allgather(&Bnbs,1,MPI_INT,Bowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-    Bowners[0] = 0;
-    for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
 
     /* hash table table_i[idx] = 1 if idx is on is[] array
                                = 0 otherwise */
@@ -161,8 +161,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       }
     } 
     ierr = ISRestoreIndices(garray_gl,&idx_i);CHKERRQ(ierr);
-    ierr = ISDestroy(garray_gl);CHKERRQ(ierr); 
-  } /* if (is_max) */
+  }  /* if (is_max) */
+  ierr = ISDestroy(garray_gl);CHKERRQ(ierr); 
 
   /* evaluate communication - mesg to who, length, and buffer space */
   for (i=0; i<size; i++) len_s[i] = 0;
@@ -237,7 +237,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   
   /* 2. Do local work on this processor's is[] */
   /*-------------------------------------------*/
-  ierr = PetscBTCreate(Mbs,otable);CHKERRQ(ierr);
   len_max = is_max*(Mbs+1); /* max space storing all is[] for this processor */
   ierr = PetscMalloc((len_max+1)*sizeof(int),&data);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1_start[rank],MINE,data,table);CHKERRQ(ierr);
@@ -252,6 +251,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   }
   ierr = PetscMalloc((len+1)*sizeof(int),&odata1);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(int**),&odata2_ptr);CHKERRQ(ierr);
+  ierr = PetscBTCreate(Mbs,otable);CHKERRQ(ierr);
 
   len_max = ois_max*(Mbs+1);  /* max space storing all is[] for each receive */
   len_est = 2*len_max; /* estimated space of storing is[] for all receiving messages */
@@ -390,12 +390,13 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
                      only holds the newly found indices
        table - table[i]: mark the indices of is[i], i=0,...,is_max. Used only in the case 'whose=MINE'.
 */
+/* Would computation be reduced by swapping the loop 'for each is' and 'for each row'? */
 static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx,PetscBT *table)
 {
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ*)C->data;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)(c->A)->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(c->B)->data;
-  int          ierr,row,mbs,Mbs,*nidx_i,col,isz,isz0,*ai,*aj,*bi,*bj,*garray,rstart,l;
+  int          ierr,row,mbs,Mbs,*nidx_i,col,col_max,isz,isz0,*ai,*aj,*bi,*bj,*garray,rstart,l;
   int          a_start,a_end,b_start,b_end,i,j,k,is_max,*idx_i,n;
   PetscBT      table0;  /* mark the indices of input is[] for look up */
   PetscBT      table_i; /* poits to i-th table. When whose=OTHER, a single table is used for all is[] */
@@ -417,7 +418,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx
     isz  = 0;
     n = data[1+i]; /* size of input is[i] */
 
-    /* initialize table_i, set table0 */
+    /* initialize and set table_i(mark idx and nidx) and table0(only mark idx) */
     if (whose == MINE){ /* process this processor's is[] */
       table_i = table[i];
       nidx_i  = nidx + 1+ is_max + Mbs*i;
@@ -426,55 +427,61 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx
     }
     ierr = PetscBTMemzero(Mbs,table_i);CHKERRQ(ierr);
     ierr = PetscBTMemzero(Mbs,table0);CHKERRQ(ierr);
-    if (n > 0) {
-      isz0 = 0; 
-      for (j=0; j<n; j++){
-        col = idx_i[j]; 
-        if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %d >= Mbs %d",col,Mbs);
-        if(!PetscBTLookupSet(table_i,col)) { 
-          ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
-          if (whose == MINE) {nidx_i[isz0] = col;}
-          isz0++;
-        }
-      }
-      
-      if (whose == MINE) {isz = isz0;}
-      k = 0;  /* no. of indices from input is[i] that have been examined */
-      for (row=0; row<mbs; row++){ 
-        a_start = ai[row]; a_end = ai[row+1];
-        b_start = bi[row]; b_end = bi[row+1];
-        if (PetscBTLookup(table0,row+rstart)){ /* row is on input is[i]:
-           do row search: collect all col in this row */
-          for (l = a_start; l<a_end ; l++){ /* Amat */
-            col = aj[l] + rstart;
-            if (!PetscBTLookupSet(table_i,col)) {nidx_i[isz++] = col;}
-          }
-          for (l = b_start; l<b_end ; l++){ /* Bmat */
-            col = garray[bj[l]];
-            if (!PetscBTLookupSet(table_i,col)) {nidx_i[isz++] = col;}
-          }
-          k++;
-          if (k >= isz0) break; /* for (row=0; row<mbs; row++) */
-        } else { /* row is not on input is[i]:
-          do col serach: add row onto nidx_i if there is a col in nidx_i */
-          for (l = a_start; l<a_end ; l++){ /* Amat */
-            col = aj[l] + rstart;
-            if (PetscBTLookup(table0,col)){
-              if (!PetscBTLookupSet(table_i,row+rstart)) {nidx_i[isz++] = row+rstart;}
-              break; /* for l = start; l<end ; l++) */
-            }
-          } 
-          for (l = b_start; l<b_end ; l++){ /* Bmat */
-            col = garray[bj[l]];
-            if (PetscBTLookup(table0,col)){
-              if (!PetscBTLookupSet(table_i,row+rstart)) {nidx_i[isz++] = row+rstart;}
-              break; /* for l = start; l<end ; l++) */
-            }
-          } 
-        }
-      } 
-    } /* if (n > 0) */
+    if (n==0) {
+       nidx[1+i] = 0; /* size of new is[i] */
+       continue; 
+    }
 
+    isz0 = 0; col_max = 0;
+    for (j=0; j<n; j++){
+      col = idx_i[j]; 
+      if (col_max < col) col_max = col;
+      if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %d >= Mbs %d",col,Mbs);
+      if(!PetscBTLookupSet(table_i,col)) { 
+        ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
+        if (whose == MINE) {nidx_i[isz0] = col;}
+        isz0++;
+      }
+    }
+      
+    if (whose == MINE) {isz = isz0;}
+    k = 0;  /* no. of indices from input is[i] that have been examined */
+    for (row=0; row<mbs; row++){ 
+      a_start = ai[row]; a_end = ai[row+1];
+      b_start = bi[row]; b_end = bi[row+1];
+      if (PetscBTLookup(table0,row+rstart)){ /* row is on input is[i]:
+                                                do row search: collect all col in this row */
+        for (l = a_start; l<a_end ; l++){ /* Amat */
+          col = aj[l] + rstart;
+          if (!PetscBTLookupSet(table_i,col)) {nidx_i[isz++] = col;}
+        }
+        for (l = b_start; l<b_end ; l++){ /* Bmat */
+          col = garray[bj[l]];
+          if (!PetscBTLookupSet(table_i,col)) {nidx_i[isz++] = col;}
+        }
+        k++;
+        if (k >= isz0) break; /* for (row=0; row<mbs; row++) */
+      } else { /* row is not on input is[i]:
+                  do col serach: add row onto nidx_i if there is a col in nidx_i */
+        for (l = a_start; l<a_end ; l++){ /* Amat */
+          col = aj[l] + rstart;
+          if (col > col_max) break; 
+          if (PetscBTLookup(table0,col)){
+            if (!PetscBTLookupSet(table_i,row+rstart)) {nidx_i[isz++] = row+rstart;}
+            break; /* for l = start; l<end ; l++) */
+          }
+        } 
+        for (l = b_start; l<b_end ; l++){ /* Bmat */
+          col = garray[bj[l]];
+          if (col > col_max) break; 
+          if (PetscBTLookup(table0,col)){
+            if (!PetscBTLookupSet(table_i,row+rstart)) {nidx_i[isz++] = row+rstart;}
+            break; /* for l = start; l<end ; l++) */
+          }
+        } 
+      }
+    } 
+    
     if (i < is_max - 1){
       idx_i  += n;   /* ptr to input is[i+1] array */
       nidx_i += isz; /* ptr to output is[i+1] array */
