@@ -89,7 +89,7 @@ class UsingSIDL (maker.Maker):
     using          = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self, argDB = self.argDB)
     serverLib      = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
     extraLibraries['executable'].extend(serverLib)
-    for lang in sidlStructs.SIDLConstants.getLanguages():
+    for lang in self.serverLanguages+self.clientLanguages:
       extraLibraries[lang].extend(serverLib)
       if not self.project == runtimeProject and not lang == self.getBaseLanguage():
         using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self, argDB = self.argDB)

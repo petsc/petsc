@@ -26,6 +26,8 @@ class Builder(install.base.Base):
     for t in setupTarget:
       maker.executeTarget(t)
     ret = maker.main(target)
+    # Save source database (since atexit() functions might not be called before another build)
+    maker.cleanup()
     # Python filters nonexistent paths, so we must add it again
     #   TODO: Should use getClientDir() from maker here
     import os

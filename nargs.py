@@ -67,23 +67,23 @@ class ArgEmpty:
     return (0,None)
 
 class Arg(ArgEmpty):
-  def __init__(self,value):
+  def __init__(self, value):
     self.value = value
     return
 
-  def getValue(self,key):
+  def getValue(self, key):
     #   First argument = 0 indicates already contains value
     #                    1 indicates got the value, needs to be put back in dictionary server
-    return (0,self.value)
+    return (0, self.value)
 
 #  Objects that are stored in the ArgDict that represent directories
 class ArgDir(ArgEmpty):
-  def __init__(self,dirmustexist = 1, help = None):
-    self.exist = dirmustexist
+  def __init__(self, help = None, mustExist = 1):
+    self.exist = mustExist
     self.help  = help
     
-  def getValue(self,key):
-    if not hasattr(self,'value'):
+  def getValue(self, key):
+    if not hasattr(self, 'value'):
       try:
         import GUI.FileBrowser
         import SIDL.Loader
@@ -99,13 +99,13 @@ class ArgDir(ArgEmpty):
            if self.help: print self.help
            try: self.value = parseValue(raw_input('Please enter value for '+key+': '))
            except KeyboardInterrupt: sys.exit(1)
-           return (1,self.value)
-        else: return (0,self.value)
-    else: return (0,self.value)
+           return (1, self.value)
+        else: return (0, self.value)
+    else: return (0, self.value)
 
 #  Objects that are stored in the ArgDict that represent libraries
 class ArgLibrary(ArgEmpty):
-  def __init__(self, mustExist = 1, help = None):
+  def __init__(self, help = None, mustExist = 1):
     self.exist = mustExist
     self.help  = help
     
@@ -133,20 +133,20 @@ class ArgLibrary(ArgEmpty):
       
 #  Objects that are stored in the ArgDict that are strings
 class ArgString(ArgEmpty):
-  def __init__(self,help = None):
-    self.help  = help
+  def __init__(self, help = None):
+    self.help = help
     
   def getValue(self,key):
-    if not hasattr(self,'value'):
+    if not hasattr(self, 'value'):
       if self.help: print self.help
       try:                      self.value = parseValue(raw_input('Please enter value for '+str(key)+': '))
-      except KeyboardInterrupt:	sys.exit(1)
-      return (1,self.value)
-    else: return (0,self.value)
+      except KeyboardInterrupt: sys.exit(1)
+      return (1, self.value)
+    else: return (0, self.value)
 
 #  Objects that are stored in the ArgDict that are integers
 class ArgInt(ArgEmpty):
-  def __init__(self,help = None,min = -1000000, max = 1000000):
+  def __init__(self, help = None, min = -1000000, max = 1000000):
     self.help = help
     self.min  = min
     self.max  = max
@@ -158,7 +158,7 @@ class ArgInt(ArgEmpty):
       value = self.min
     return value
     
-  def getValue(self,key):
+  def getValue(self, key):
     if not hasattr(self,'value'):
       if self.help: print self.help
       while 1:
@@ -166,8 +166,8 @@ class ArgInt(ArgEmpty):
         except KeyboardInterrupt: sys.exit(1)
         try: self.value = int(self.value)
         except: self.value = self.min
-        if self.value > self.min and self.value < self.max: return (1,self.value)
-    else: return (0,self.value)
+        if self.value > self.min and self.value < self.max: return (1, self.value)
+    else: return (0, self.value)
 
 #  Objects that are stored in the ArgDict that are booleans
 class ArgBool(ArgEmpty):
@@ -184,7 +184,7 @@ class ArgBool(ArgEmpty):
       value = 1
     return value
 
-  def getValue(self,key):
+  def getValue(self, key):
     if not hasattr(self, 'value'):
       if self.help: print self.help
       try:
@@ -217,8 +217,8 @@ class ArgReal(ArgEmpty):
         except KeyboardInterrupt: sys.exit(1)
         try: self.value = float(self.value)
         except: self.value = self.min
-        if self.value > self.min and self.value < self.max: return (1,self.value)
-    else: return (0,self.value)
+        if self.value > self.min and self.value < self.max: return (1, self.value)
+    else: return (0, self.value)
 
 #=======================================================================================================
 #   Dictionary of actual command line arguments, etc.

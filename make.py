@@ -10,8 +10,8 @@ import string
 import nargs
 
 class PetscMake(bs.BS):
-  def __init__(self, args = None):
-    bs.BS.__init__(self, bs.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), args)
+  def __init__(self, clArgs = None, argDB = None):
+    bs.BS.__init__(self, bs.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
     return
 
   def t_getDependencies(self):
