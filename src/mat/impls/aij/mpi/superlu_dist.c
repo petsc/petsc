@@ -80,10 +80,10 @@ void zCompRow_to_CompCol(int m, int n, int nnz,
     int *marker;
     
     /* Allocate storage for another copy of the matrix. */
-    *at = (doublecomplex *) doublecomplexMalloc(nnz);
-    *rowind = (int *) intMalloc(nnz);
-    *colptr = (int *) intMalloc(n+1);
-    marker = (int *) intCalloc(n);
+    *at = (doublecomplex *) doublecomplexMalloc_dist(nnz);
+    *rowind = (int *) intMalloc_dist(nnz);
+    *colptr = (int *) intMalloc_dist(n+1);
+    marker = (int *) intCalloc_(n);
  
     /* Get counts of each column of A, and set up column pointers */
     for (i = 0; i < m; ++i)
