@@ -4,7 +4,9 @@ Additional Capabilities that PETSc Needs:
   X - denotes accomplishment!
   * - denotes work in progress
 
+ -------------------
  o High priorities:
+ -------------------
 
    To do BEFORE the next release:
 
@@ -15,6 +17,11 @@ Additional Capabilities that PETSc Needs:
      selection is correct and symmetric matrix can use ILU).
 
    - Change all CAPS macro to use _ between words, for example INSERT_VALUES
+
+   - Fix bug in MatCreateMPIAIJ() for rectangular matrices (not square)
+
+   - Fix bug in MatTranspose_AIJ for rectangular matrices.
+
 
    To do sometime soon:
 
@@ -42,7 +49,9 @@ Additional Capabilities that PETSc Needs:
    X Build wrapper for html manpages
 
 
+ -------------------------
  o Lower Priority issues:
+ -------------------------
 
    - Finite difference approximations of derivatives using coloring
 
