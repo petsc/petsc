@@ -1,7 +1,13 @@
+#!/bin/sh
 #
 #  shows output from nightly builds
 #
-\rm /home/bsmith/petsc/maint/nightlylogs/alllogs
+chmod u+w /home/bsmith/petsc/maint/nightlylogs/alllogs
+\rm -f /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/build_* > /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/examples_* >> /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/doc.log >> /home/bsmith/petsc/maint/nightlylogs/alllogs
+#
+#  Turn off write permission so don't accidently edit huge file while looking at it
+chmod u-w /home/bsmith/petsc/maint/nightlylogs/alllogs
+
