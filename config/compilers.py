@@ -420,9 +420,15 @@ class Configure(config.base.Configure):
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if self.framework.argDB.has_key('with-f90-header'):
-      self.addDefine('HAVE_F90_H', self.framework.argDB['with-f90-header'])
+      headerPath = self.framework.argDB['with-f90-header'].strip('"')
+      if not os.path.isfile(headerPath):
+        raise RuntimeError('Invalid F90 header: '+str(headerPath))
+      self.addDefine('HAVE_F90_H', '"'+headerPath+'"')
     if self.framework.argDB.has_key('with-f90-source'):
-      self.addDefine('HAVE_F90_C', self.framework.argDB['with-f90-source'])
+      sourcePath = self.framework.argDB['with-f90-source'].strip('"')
+      if not os.path.isfile(sourcePath):
+        raise RuntimeError('Invalid F90 source: '+str(sourcePath))
+      self.addDefine('HAVE_F90_C', '"'+sourcePath+'"')
     return
 
   def configure(self):
