@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 2000/09/27 20:28:30 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.6 2000/11/28 17:26:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -10,7 +10,6 @@
 #define PETSC_ARCH_NAME "linux"
 
 #define PETSC_HAVE_SYS_WAIT_H 1
-#define PETSC_HAVE_VPRINTF 1
 #define TIME_WITH_SYS_TIME 1
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 1
 #define PETSC_HAVE_DRAND48 1

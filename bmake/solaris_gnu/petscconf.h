@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.17 2000/05/05 18:28:31 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.18 2000/11/28 17:26:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -12,7 +12,6 @@
 #define PETSC_HAVE_POPEN
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
 #define PETSC_HAVE_SYS_WAIT_H 
-#define PETSC_HAVE_VPRINTF
 #define STDC_HEADERS 
 #define PETSC_HAVE_DRAND48 
 #define PETSC_HAVE_GETCWD 

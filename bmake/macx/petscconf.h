@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.4 2000/09/26 21:55:28 balay Exp balay $"
+"$Id: petscconf.h,v 1.5 2000/09/26 23:24:41 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -13,7 +13,6 @@
 #define PETSC_HAVE_POPEN
 
 #define PETSC_HAVE_SYS_WAIT_H 1
-#define PETSC_HAVE_VPRINTF 1
 #define PETSC_RETSIGTYPE void
 #define PETSC_STDC_HEADERS 1
 #define PETSC_TIME_WITH_SYS_TIME 1
