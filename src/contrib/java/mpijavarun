@@ -1,0 +1,108 @@
+#!/bin/sh
+
+JAVA=/usr/java1.2
+
+working_dir=/nfs/mcs-homes07/petsc/software/mpiJava-1.1
+
+prefix=/nfs/mcs-homes07/petsc/software/mpiJava-1.1
+exec_prefix=${prefix}
+
+if [ $# -lt 1 ]
+then
+  echo "Usage: prunjava [-t] <procnum> <classname> <options>"
+  exit 1
+fi
+
+if [ $1 = -t ] 
+then 
+  TESTMODE=1
+  shift
+else
+  TESTMODE=0
+fi
+
+PNUMBER=$1
+shift
+
+CLASSNAME=$1
+shift
+
+if test -f $CLASSNAME.jig
+then
+  rm -f $CLASSNAME.jig
+#  echo "There is a $CLASSNAME.jig in the current dir ..."
+#  exit 1
+fi
+
+cat > $CLASSNAME.jig <<EOF
+#!/bin/sh
+
+working_dir=/nfs/mcs-homes07/petsc/software/mpiJava-1.1
+
+prefix=/nfs/mcs-homes07/petsc/software/mpiJava-1.1
+exec_prefix=${prefix}
+
+JAVA=/usr/java1.2
+
+JAVA_COMPILER=sunwjit
+#export JAVA_COMPILER
+
+if test "$CLASSPATH" = ""
+then
+  if [ -f ${working_dir}/lib/libmpijava.so ]
+  then
+    CLASSPATH=.:${working_dir}/lib/classes
+    export CLASSPATH
+    LD_LIBRARY_PATH=${working_dir}/lib
+    export LD_LIBRARY_PATH
+  else
+    CLASSPATH=.:${exec_prefix}/lib
+    export CLASSPATH
+    LD_LIBRARY_PATH=${exec_prefix}
+    export LD_LIBRARY_PATH
+  fi
+else
+  if [ -f ${working_dir}/lib/libmpijava.so ]
+  then
+    CLASSPATH=.:${working_dir}/lib/classes:$CLASSPATH
+    export CLASSPATH
+    LD_LIBRARY_PATH=${working_dir}/lib
+    export LD_LIBRARY_PATH
+  else
+    CLASSPATH=.:${exec_prefix}/lib:$CLASSPATH
+    export CLASSPATH
+    LD_LIBRARY_PATH=${exec_prefix}
+    export LD_LIBRARY_PATH
+  fi
+fi
+
+#echo \$0
+cd \`dirname \$0\`
+
+exec $JAVA/bin/java -native $CLASSNAME $CLASSNAME \$*
+
+EOF
+
+chmod a+x $CLASSNAME.jig
+
+
+
+if [ $TESTMODE = 1 ]
+then 
+  if [ -f ${working_dir}/lib/libmpijava.so ]
+  then
+    ${working_dir}/src/scripts/prun -t $PNUMBER $CLASSNAME.jig $*  
+  else
+    echo " ${working_dir}/lib/libmpijava.so not found"
+  fi
+else
+  if [ -f ${working_dir}/lib/libmpijava.so ]
+  then
+    ${working_dir}/src/scripts/prun $PNUMBER $CLASSNAME.jig $*  
+  else
+    echo " ${working_dir}/lib/libmpijava.so not found"
+  fi
+fi
+
+rm -f $CLASSNAME.jig
+
