@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.107 2001/07/10 07:31:18 buschelm Exp buschelm $*/
+/*$Id: umtr.c,v 1.108 2001/07/10 07:41:08 buschelm Exp buschelm $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -118,12 +118,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
                            		               /* ftrial = f(Xtrial) */
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial);CHKERRQ(ierr);
-
-      /* Potentially unnecessary calls to get these values again since they might have changed */
-      /* in the Minimization Function evaluation above. */
-      ierr = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr);
-      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr); 
-      /* If not unnecessary, should these values be logged? */
 
       /* Compute the function reduction and the step size */
       neP->prered = -quadratic;
