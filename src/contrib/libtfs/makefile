@@ -1,11 +1,11 @@
-# $Id: makefile,v 1.1 2001/03/24 03:19:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $ 
 
 #requiresscalar real 
 
 ALL: lib
 
 #CFLAGS   = -Dr8 -DMPISRC -DSAFE   -DINFO -DDEBUG -DV -O
-CFLAGS   = -Dr8 -DMPISRC 
+CFLAGS   = -Dr8 -DMPISRC -DSAFE
 FFLAGS   =
 SOURCEC  = bit_mask.c bss_malloc.c comm.c error.c gs.c ivec.c queue.c stack.c xxt.c xyt.c 
 SOURCEF  =
