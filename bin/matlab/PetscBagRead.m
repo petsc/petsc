@@ -10,13 +10,13 @@ function bag = PetscBagRead(fd)
 bagsizecount = fread(fd,2,'int32');
 count        = bagsizecount(2);
 
-bag.bag_name = deblank(char(fread(fd,name_len,'uchar')'));
-bag.bag_help = deblank(char(fread(fd,help_len,'uchar')'));
+bag.bag_name      = deblank(char(fread(fd,name_len,'uchar')'));
+bag.help.bag_help = deblank(char(fread(fd,help_len,'uchar')'));
 
 for lcv = 1:count
   offsetdtype = fread(fd,2,'int32');
   dtype = offsetdtype(2);
-  name  = deblank(char(fread(fd,name_len,'uchar')'));
+  name  = strclean(deblank(char(fread(fd,name_len,'uchar')')));
   help  = deblank(char(fread(fd,help_len,'uchar')'));
   msize = fread(fd,1,'int32');
 
@@ -32,8 +32,8 @@ for lcv = 1:count
     val = [];
     warning('Bag entry %s could not be read',name);
   end 
-  bag = setfield(bag,name,val);
-  bag = setfield(bag,[name,'_help'],help);
+  bag      = setfield(bag     ,name,val);
+  bag.help = setfield(bag.help,name,help);
 end
 return
 
@@ -67,6 +67,16 @@ function [n, h] = ParsePetscBagDotH
       error(errstr);
    end
    fclose(fid);
+   return
+   
+% ---------------------------------------------------- %
+   
+function str = strclean(str)
+   
+   badchars = ' ()[]<>{}.-';
+   for i=1:length(badchars);
+      str(strfind(str,badchars(i))) = '_';
+   end
    return
    
 % ---------------------------------------------------- %
