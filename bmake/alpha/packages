@@ -44,6 +44,6 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/bslib.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 
