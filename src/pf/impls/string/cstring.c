@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.14 2001/06/02 03:01:25 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.15 2001/06/02 03:10:26 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -34,9 +34,21 @@ int PFDestroy_String(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFStringCreateFunction"
-/*@C
-    PFStringCreateFunction - Creates 
-@*/
+/*
+    PFStringCreateFunction - Creates a function from a string
+
+   Collective over PF
+
+  Input Parameters:
++    pf - the function object
+-    string - the string that defines the function
+
+  Output Parameter:
+.    f - the function pointer.
+
+.seealso: PFSetFromOptions()
+
+*/
 int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -67,7 +79,7 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   } 
   ierr = PetscOptionsHasName(pf->prefix,"-pf_string_keep_files",&keeptmpfiles);CHKERRQ(ierr);
   if (keeptmpfiles) {
-    sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,pf->dimin,pf->dimout,string);
+    sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make BOPT=${BOPT} MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,pf->dimin,pf->dimout,string);
   } else {
     sprintf(task,"cd %s ; mkdir ${USERNAME} ;cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,pf->dimin,pf->dimout,string);
   }
