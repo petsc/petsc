@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.124 2001/01/16 18:21:11 balay Exp bsmith $*/
+/*$Id: da3.c,v 1.125 2001/01/17 19:47:38 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -378,7 +378,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if ((P % p) > (rank / (m*n))) {zs = (rank/(m*n))*z;}
     else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
     ierr = PetscMalloc(p*sizeof(int),&lz);CHKERRQ(ierr);
-    fly = lz;
+    flz = lz;
     for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
     }
