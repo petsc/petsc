@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.17 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: matioall.c,v 1.18 2000/05/10 16:41:20 bsmith Exp balay $*/
 
 #include "petscmat.h"
 
@@ -12,6 +12,8 @@ EXTERN int MatLoad_MPIDense(Viewer,MatType,Mat*);
 EXTERN int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
 EXTERN int MatLoad_SeqAdj(Viewer,MatType,Mat*);
 EXTERN int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqSBAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPISBAIJ(Viewer,MatType,Mat*);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadRegisterAll"
@@ -45,6 +47,8 @@ int MatLoadRegisterAll(void)
   ierr = MatLoadRegister(MATMPIDENSE,MatLoad_MPIDense);CHKERRQ(ierr);
   ierr = MatLoadRegister(MATSEQBAIJ,MatLoad_SeqBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegister(MATMPIBAIJ,MatLoad_MPIBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegister(MATSEQSBAIJ,MatLoad_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegister(MATMPISBAIJ,MatLoad_MPISBAIJ);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }  
