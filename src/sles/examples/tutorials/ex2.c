@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.72 1998/04/27 18:17:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.73 1998/04/28 03:39:52 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
@@ -93,13 +93,18 @@ int main(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate(), we specify only the vector's global
-        dimension; the parallel partitioning is determined at runtime. 
+      - We form 1 vector from scratch and then duplicate as needed.
+      - When using VecCreate() in this example, we specify only the
+        vector's global dimension; the parallel partitioning is determined
+        at runtime. 
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
         appropriately partitioned matrices and vectors when MatCreate()
-        and VecCreate() are used with the same communicator. 
-      - Note: We form 1 vector from scratch and then duplicate as needed.
+        and VecCreate() are used with the same communicator.  
+      - The user can alternatively specify the local vector and matrix
+        dimensions when more sophisticated partitioning is needed
+        (replacing the PETSC_DECIDE argument in the VecCreate() statement
+        below).
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
@@ -147,7 +152,7 @@ int main(int argc,char **args)
      - By extracting the KSP and PC contexts from the SLES context,
        we can then directly call any KSP and PC routines to set
        various options.
-     - The following four statements are optional; all of these
+     - The following two statements are optional; all of these
        parameters could alternatively be specified at runtime via
        SLESSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
@@ -188,6 +193,7 @@ int main(int argc,char **args)
   /*
      Print convergence information.  PetscPrintf() produces a single 
      print statement from all processes that share a communicator.
+     An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm > 1.e-12)
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);

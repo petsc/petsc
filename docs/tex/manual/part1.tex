@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.113 1998/04/13 21:08:42 bsmith Exp balay $ 
+% $Id: part1.tex,v 1.114 1998/04/15 17:59:16 balay Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -118,22 +118,22 @@ accessed on line at
 \end{verbatim}
 The manual pages
 provide hyperlinked indices (organized by
-both concepts and routine names) to the tutorial examples and enables
+both concepts and routine names) to the tutorial examples and enable
 easy movement among related topics.  
 
 Within the PETSc distribution, the directory
 {\tt \$\{PETSC\_DIR\}/docs} contains all documentation, including this
 manual and the manual pages in PostScript and HTML
 formats. Note that one can also view the manual pages with
+the following utility that starts a Netscape session:
 \begin{verbatim}
   ${PETSC_DIR}/bin/petscman
 \end{verbatim}
-that will start a Netscape session for you.
 
 Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
-Section~\ref{sec:emacs}. Similarly, VI users may find the
+Section~\ref{sec:emacs}. Similarly, {\em vi} users may find the
 {\em ctags} option to be useful. Details of this 
 feature are provided in Section~\ref{sec:vi}.
 
@@ -246,21 +246,22 @@ circumstances in which MPI needs to be initialized directly (or is
 initialized by some other library), the user should first call 
 {\tt MPI\_Init()} (or have the other library do it), and then call
 {\tt PetscInitialize()}.
-
-\findex{PETSC_COMM_WORLD}
 By default, {\tt PetscInitialize()} sets the PETSc ``world''
 communicator, given by {\tt PETSC\_COMM\_WORLD}, to {\tt MPI\_COMM\_WORLD}.
+\findex{PETSC_COMM_WORLD}
 
-For those not familar with MPI, a {\em communicator} is a way of indicating
-a collection of processors that will be involved together in a calculation
-or communication. They are of variable type {\tt MPI\_Comm}. In most cases
-you would use {\tt PETSC\_COMM\_WORLD} to indicate all processes in the 
-run and {\tt PETSC\_COMM\_SELF} to indicate the single process. MPI provides
-routines for generating new communicators consisting of subsets of processors,
-that most users rarely need. The book {\em Using MPI}, by Lusk, Gropp, and Skjellum
-\cite{using-mpi} provides an excellent introduction to the concepts in MPI. Note
-that PETSc users need not program much message passing directly with MPI, but they
-must be familar with the basic concepts of message passing and distributed 
+For those not familar with MPI, a {\em communicator} is a way of
+indicating a collection of processors that will be involved together
+in a calculation or communication. Communicators has the variable type
+{\tt MPI\_Comm}. In most cases users can employ the communicator {\tt
+PETSC\_COMM\_WORLD} to indicate all processes in a given run and {\tt
+PETSC\_COMM\_SELF} to indicate a single process. MPI provides routines
+for generating new communicators consisting of subsets of processors,
+though most users rarely need to use these. The book {\em Using MPI},
+by Lusk, Gropp, and Skjellum \cite{using-mpi} provides an excellent
+introduction to the concepts in MPI. Note that PETSc users need not
+program much message passing directly with MPI, but they must be
+familar with the basic concepts of message passing and distributed
 memory computing.
 
 Users who wish to employ PETSc routines on only a subset
@@ -270,7 +271,7 @@ processes, should specify an alternative communicator for {\tt
 PETSC\_COMM\_WORLD} by calling \findex{PetscSetCommWorld}
 \sindex{communicator}
 \begin{verbatim}
-   ierr = PetscSetCommWorld(MPI_Comm comm)
+   ierr = PetscSetCommWorld(MPI_Comm comm);
 \end{verbatim}
 {\em before} calling {\tt PetscInitialize()}, but, obviously, after
 calling {\tt MPI\_Init()}. {\tt PetscSetCommWorld()} can be called
@@ -649,7 +650,7 @@ users examine programs in the directories
 where {\tt <component>}
 denotes any of the PETSc components (listed in the following
 section), such as {\tt snes} or {\tt sles}.  
-Currently some components have examples only in the directory
+Currently some components have examples only in
 {\tt \$\{PETSC\_DIR\}/src/<component>/examples/tests}; more tutorial examples
 will be forthcoming.  The HTML version of the manual pages located at
 \begin{verbatim}
