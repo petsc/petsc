@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.16 2001/04/19 15:47:39 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.17 2001/04/19 19:16:00 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -420,25 +420,25 @@ typedef struct {
 #define DERIV_grad(a) ((a).grad)
 void ad_AD_Init();
 void ad_AD_Final();
+#include "adic_utils.h"
 #include "ad_grad.h"
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetStructArray2d"
-static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void ***ptr)
+static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void ***ptr,void **array_start)
 {
   int  ierr,j;
   void *tmpptr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((ym)*sizeof(void *)+xm*ym*structsize,(void **)ptr);CHKERRQ(ierr);
-  tmpptr = *ptr + ym;
-  *ptr  -= ys;
+  ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*structsize,(void **)array_start);CHKERRQ(ierr);
+  *ptr  = (void**)(*array_start + xm*ym*structsize - ys*sizeof(void*));
 
   for(j=ys;j<ys+ym;j++) {
-    (*ptr)[j] = tmpptr + structsize*(xm*(j-ys) - xs);
+    (*ptr)[j] = *array_start + structsize*(xm*(j-ys) - xs);
   }
-  ierr = PetscMemzero(tmpptr,xm*ym*structsize);CHKERRQ(ierr);
+  ierr = PetscMemzero(*array_start,xm*ym*structsize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -464,6 +464,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   DAPeriodicType periodicity;
   DA             da= (DA) dmmg->dm;
   int            deriv_type_size;
+  void           *ad_xstart,*ad_fstart;
 
   PetscFunctionBegin;
   ad_AD_Init(dmmg->iscoloring->n);
@@ -502,13 +503,13 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x); CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x,&ad_xstart); CHKERRQ(ierr);
   for(j=gys;j<gys+gym;j++) {
     for(i=dof*gxs;i<dof*(gxs+gxm);i++) {
       DERIV_val(ad_x[j][i]) = x[j][i];
     }
   }
-  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f); CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f,&ad_fstart); CHKERRQ(ierr);
 
 
   ad_AD_ResetIndep();
