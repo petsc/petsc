@@ -462,7 +462,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    /* Get X into the local work vector */
    ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
    ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-   
+   /* VecCopy(x,localX); */
    /* access the local work f,grad,and input */
    ierr = VecGetArray(f,&res);CHKERRQ(ierr);
    ierr = VecGetArray(grid->grad,&grad);CHKERRQ(ierr);
@@ -477,7 +477,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ierr = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
 
    ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
-   ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
+   ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr); 
+   /*VecCopy(grid->grad,localGrad);*/
 
    ierr = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
    nbface = grid->nsface + grid->nvface + grid->nfface;
@@ -563,8 +564,9 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   int          ierr;
  
   PetscFunctionBegin;
-  ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  /*  ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+      ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr); */
+  /*VecCopy(x,localX);*/
   ierr = MatSetUnfactored(pc_mat);CHKERRQ(ierr); 
  
   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
@@ -681,6 +683,7 @@ int Update(SNES snes,void *ctx)
   
   ierr = VecScatterBegin(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  /* VecCopy(grid->qnode,localX); */
 
   ierr = VecGetArray(grid->res,&res);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);

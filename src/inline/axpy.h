@@ -15,6 +15,21 @@
 
 #include "petscblaslapack.h"
 
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortrancopy_ FORTRANCOPY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortrancopy_ fortrancopy
+#endif
+extern void fortrancopy_(int*,PetscScalar*,PetscScalar*); 
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranzero_ FORTRANZERO
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranzero_ fortranzero
+#endif
+extern void fortranzero_(int*,PetscScalar*);
+
+
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranaypx_ FORTRANAYPX

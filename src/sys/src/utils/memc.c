@@ -1,4 +1,5 @@
 /*$Id: memc.c,v 1.69 2001/09/07 20:08:33 bsmith Exp $*/
+
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -6,6 +7,8 @@
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/
+#include "src/inline/axpy.h"
+
 /*
     On the IBM Rs6000 using the Gnu G++ compiler you may have to include 
   <string.h> instead of <memory.h> 
@@ -70,15 +73,19 @@ int PetscMemcpy(void *a,const void *b,int n)
               or make sure your copy regions and lengths are correct");
     }
 #endif
-#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) && !defined(PETSC_USE_COMPLEX)
-#  if defined(HAVE_DOUBLE_ALIGN)
-    if (!(((long) a) % 8) && !(n % 8)) {
-#  else
-    if (!(((long) a) % 4) && !(n % 8)) {
-#endif
-      int one = 1;
+#if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
+   if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       int len = n/sizeof(PetscScalar);
+#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+      int one = 1;
       BLcopy_(&len,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
+#elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
+      fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a); 
+#else
+      int         i;
+      PetscScalar *x = (PetscScalar*)b, *y = (PetscScalar*)a;
+      for (i=0; i<len; i++) y[i] = x[i];
+#endif
     } else {
       memcpy((char*)(a),(char*)(b),n);
     }
@@ -165,10 +172,25 @@ int PetscMemzero(void *a,int n)
   PetscFunctionBegin;
   if (n < 0) SETERRQ(1,"Memory length must be >= 0");
   if (n > 0) {
+#if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
+    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+      int         i,len = n/sizeof(PetscScalar);
+      PetscScalar *x = (PetscScalar*)a;
+      for (i=0; i<len; i++) x[i] = 0.0;
+    } else {
+#elif defined(PETSC_PREFER_FORTRAN_FOR_MEMZERO)
+    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+      int len = n/sizeof(PetscScalar);
+      fortranzero_(&len,(PetscScalar*)a);
+    } else {
+#endif
 #if defined(PETSC_PREFER_BZERO)
-    bzero((char *)a,n);
+      bzero((char *)a,n);
 #else
-    memset((char*)a,0,n);
+      memset((char*)a,0,n);
+#endif
+#if defined(PETSC_PREFER_ZERO_FOR_MEMZERO) || defined(PETSC_PREFER_FORTRAN_FOR_MEMZERO)
+    }
 #endif
   }
   PetscFunctionReturn(0);
