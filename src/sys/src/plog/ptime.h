@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.43 1997/08/22 22:12:45 balay Exp balay $ */
+/* $Id: ptime.h,v 1.44 1997/09/04 23:00:26 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -132,7 +132,7 @@ extern rs6000_time(struct my_timestruc_t *);
     Cray MPI implementation has very fast MPI_Wtime()
 */
 #elif ((defined(PARCH_t3d) || defined(PARCH_paragon) || defined(PARCH_IRIX64) || \
- defined(PARCH_IRIX)) && !defined(PETSC_USING_MPIUNI) && !defined(PARCH_IRIX5))
+ defined(PARCH_IRIX)) && !defined(PETSC_USING_MPIUNI))
 #include <sys/time.h>
 #define PetscTime(v)         (v)=MPI_Wtime();
 
