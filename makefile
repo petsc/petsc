@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.187 1997/09/18 01:45:15 bsmith Exp balay $ 
+# $Id: makefile,v 1.188 1997/09/22 14:51:34 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -31,6 +31,8 @@ all: chkpetsc_dir
 	-@if [ "$(CCV)" != "unknown" ] ; then \
 	  echo "Compiler version:" ; \
           $(CCV) ; fi
+	-@echo "-----------------------------------------"
+	-@grep PETSC_VERSION_NUMBER include/petsc.h 
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "-----------------------------------------"
