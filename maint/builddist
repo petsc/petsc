@@ -3,8 +3,8 @@
 # This script builds the PETSc tar file distribution
 # It uses the bk rep in harley:/sandbox/petsc/petsc-dist (or asterix)
 #
-# Usage: builddist version
-# example usage: builddist -2.1.2
+# Usage: builddist petscrepo [version]
+# example usage: builddist /sandbox/petsc/petsc-dist -2.1.2
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
@@ -19,27 +19,46 @@
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 1 ] ; then 
-  version=$1
-  echo "Building ~/petsc$version.tar.gz"
-else
+if [ $# = 2 ] ; then 
+  petscrepo=$1
+  version=$2
+elif [ $# = 1 ]; then
+  set petscrepo=$1
   set version=""
+else
+  echo 'Error: petscrepo not specified. Usge: builddist petscrepo [version]'
+  exit
 fi
 
-# If /sandbox/petsc/tmp does not exist create it.
-tmpdir="/sandbox/petsc/tmp"
-if [ ! -d $tmpdir ]; then
-  mkdir -p $tmpdir
+echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
+
+# check petscrepo to be valid
+if [ ! -d $petscrepo ]; then
+  echo 'Error: dir $petscrepo does not exist'
+  exit
 fi
-if [ ! -d $tmpdir ]; then
-  echo 'Cannot create $tmpdir. Exiting..'
-  exit  
+
+# Initialize vars
+PETSC_ARCH=default; export PETSC_ARCH
+PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
+pdir=`basename $PETSC_DIR`
+
+# Create a tmp dir
+if [ ! -d /tmp ]; then
+  echo 'Error: /tmp does not exist!'
+  exit
 fi
-/bin/rm -rf ${tmpdir}/*
+tmpdir=/tmp/petsc-dist-tmp.$USER.$$
+if [ -d $tmpdir ]; then
+  /bin/rm -rf $tmpdir
+fi
+mkdir -p $tmpdir
+if [ ! -d $tmpdir ]; then
+  echo 'Error: Cannot create $tmpdir'
+  exit
+fi
 
 # Update the bk repository
-PETSC_ARCH=default; export PETSC_ARCH
-PETSC_DIR=/sandbox/petsc/petsc-dist; export PETSC_DIR
 cd $PETSC_DIR/python/BuildSystem
 bk pull
 bk -r co -q
@@ -51,20 +70,25 @@ bk -r co -q
 cd $PETSC_DIR
 make allfortranstubs
 make alldoc LOC=${PETSC_DIR}
+#
 make ACTION=clean tree_basic
+
 # now tar up the PETSc tree
-cd /sandbox/petsc
-/bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
+cd $PETSC_DIR/..
+cat ${PETSC_DIR}/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
+/bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  $tmpdir/xclude $pdir
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
-mv petsc-dist petsc
+# just make sure we are not doing 'mv petsc petsc'
+if [ ! -d petsc$version ]; then
+  /bin/mv $pdir petsc$version
+fi
 #
-# Before Creating the tarfile, make changes to the bmakefiles/makefiles,
+# Before Creating the final tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
 #
-cd $tmpdir/petsc
-
 # Eliminate chmods in the makefile & bmake/common/rules
+cd $tmpdir/petsc$version
 /bin/mv makefile makefile.bak
 /bin/grep -v 'chmod' makefile.bak > makefile
 /bin/rm -f makefile.bak
@@ -72,33 +96,33 @@ cd $tmpdir/petsc
 /bin/mv bmake/common/rules bmake/common/rules.bak
 /bin/grep -v 'chmod' bmake/common/rules.bak > bmake/common/rules
 /bin/rm -f  bmake/common/rules.bak
-
+# just to be sure
+/bin/rm -rf configure.log* RDict.* lib
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any
 /usr/bin/find . -type f -name "*.pyc" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
-make alletags 
+${PETSC_DIR}/maint/generateetags.py
 # Update project files
-cd $tmpdir/petsc/projects; make
+cd $tmpdir/petsc$version/projects; make
 
 # Set the correct file permissions.
 cd $tmpdir
-chmod -R a-w petsc
-chmod -R u+w petsc
-chmod -R a+r petsc
-find petsc -type d -name "*" -exec chmod a+x {} \;
+chmod -R a-w petsc$version
+chmod -R u+w petsc$version
+chmod -R a+r petsc$version
+find petsc$version -type d -name "*" -exec chmod a+x {} \;
 
-/bin/rm -f $tmpdir/petsc.tar
-if [ ! ${version}foo = foo ] ; then
-  /bin/mv petsc petsc$version
-fi
+# Now create the tar files
+cd $tmpdir
+/bin/tar -czf ~/petsc$version.tar.gz petsc$version
+# create lite version
+/bin/rm -rf $tmpdir/petsc$version/docs
+find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
+/bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
 
-/bin/tar cf $tmpdir/petsc$version.tar petsc$version
-/bin/rm -r -f $tmpdir/petsc$version
-gzip -f $tmpdir/petsc$version.tar
-/bin/cp $tmpdir/petsc$version.tar.gz ~/
-/bin/rm -f $tmpdir/petsc$version.tar.gz
-chmod ug+w ~/petsc$version.tar.gz
+#cleanup
+/bin/rm -rf $tmpdir
 
 echo "Ending date: `date`"
