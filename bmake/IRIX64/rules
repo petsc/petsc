@@ -1,4 +1,4 @@
-# $Id: base,v 1.49 1998/12/04 22:53:40 balay Exp balay $ 
+# $Id: base,v 1.50 1998/12/04 23:39:01 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -32,8 +32,8 @@ CXX_CLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
 CXX_FLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
-CXX_C_CCV        = unknown
-CXX_C_SYS_LIB    = -lcomplex -lpthread -lfortran -lftn -lfastm
+CXX_CCV          = unknown
+CXX_SYS_LIB      = -lcomplex -lpthread -lfortran -lftn -lfastm
 
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
