@@ -1,13 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "draw.h"
 #include "ksp.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
@@ -44,7 +41,7 @@ void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
   char *t;
   if (prefix[len] != 0) {
     t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
-    strncpy(t,prefix,len);
+    PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
   else t = prefix;
@@ -114,13 +111,13 @@ void ksplgmonitorcreate_(char *host,char *label,int *x,int *y,int *m,
   DrawLGCtx lg;
   if (host[len1] != 0) {
     t1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char) ); 
-    strncpy(t1,host,len1);
+    PetscStrncpy(t1,host,len1);
     t1[len1] = 0;
   }
   else t1 = host;
   if (label[len2] != 0) {
     t2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char) ); 
-    strncpy(t2,label,len2);
+    PetscStrncpy(t2,label,len2);
     t2[len2] = 0;
   }
   else t2 = label;

@@ -1,13 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "sles.h"
 #include "draw.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
@@ -31,7 +28,7 @@ void slessetoptionsprefix_(SLES sles,char *prefix, int *__ierr,int len ){
   char *t;
   if (prefix[len] != 0) {
     t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
-    strncpy(t,prefix,len);
+    PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
   else t = prefix;

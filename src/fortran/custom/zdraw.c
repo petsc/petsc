@@ -1,13 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "draw.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
@@ -41,7 +38,7 @@ void drawtext_(DrawCtx ctx,double* xl,double* yl,int* cl,char* text,
   char *t;
   if (text[len] != 0) {
     t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
-    strncpy(t,text,len);
+    PetscStrncpy(t,text,len);
     t[len] = 0;
   }
   else t = text;
@@ -54,7 +51,7 @@ void drawtextvertical_(DrawCtx ctx,double *xl,double *yl,int *cl,char *text,
   char *t;
   if (text[len] != 0) {
     t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
-    strncpy(t,text,len);
+    PetscStrncpy(t,text,len);
     t[len] = 0;
   }
   else t = text;
@@ -77,7 +74,7 @@ void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
   else {
     if (display[len1] != 0) {
       t1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char) ); 
-      strncpy(t1,display,len1);
+      PetscStrncpy(t1,display,len1);
       t1[len1] = 0;
     }
     else t1 = display;
@@ -86,7 +83,7 @@ void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
   else {
     if (title[len2] != 0) {
       t2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char) ); 
-      strncpy(t2,title,len2);
+      PetscStrncpy(t2,title,len2);
       t2[len2] = 0;
     }
     else t2 = display;
@@ -133,19 +130,19 @@ void drawaxissetlabels_(DrawAxisCtx axis,char* top,char *xlabel,char *ylabel,
   char *t1,*t2,*t3;
   if (top[len1] != 0) {
     t1 = (char *) PETSCMALLOC((len1+1)*sizeof(char)); if (!t1) *__ierr = 1;
-    strncpy(t1,top,len1);
+    PetscStrncpy(t1,top,len1);
     t1[len1] = 0;
   }
   else t1 = top;
   if (xlabel[len2] != 0) {
     t2 = (char *) PETSCMALLOC((len2+1)*sizeof(char));if (!t2) *__ierr = 1; 
-    strncpy(t2,xlabel,len2);
+    PetscStrncpy(t2,xlabel,len2);
     t2[len2] = 0;
   }
   else t2 = xlabel;
   if (ylabel[len3] != 0) {
     t3 = (char *) PETSCMALLOC((len3+1)*sizeof(char));if (!t3) *__ierr = 1; 
-    strncpy(t3,ylabel,len3);
+    PetscStrncpy(t3,ylabel,len3);
     t3[len3] = 0;
   }
   else t3 = ylabel;

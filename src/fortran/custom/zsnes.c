@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.1 1995/09/04 04:39:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -205,7 +205,8 @@ void snessetfunction_(SNES snes,Vec r,int (*func)(int*,int*,int*,void*,int*),
    f2 = func;
 *__ierr = SNESSetFunction(
 	(SNES)MPIR_ToPointer( *(int*)(snes) ),
-	(Vec)MPIR_ToPointer( *(int*)(r) ),oursnesfunction,ctx,*rneg);
+	(Vec)MPIR_ToPointer( *(int*)(r) ),oursnesfunction,ctx,
+        (SNESFunctionSign) *rneg);
 }
 /* ---------------------------------------------------------*/
 void snescreate_(MPI_Comm comm,SNESType *type,SNES *outsnes, int *__ierr ){

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 /*
     Fortran stub for PetscInitialize and Options routines. 
@@ -11,9 +11,6 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 */
 #include "zpetsc.h"
 #include "petsc.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include <stdio.h>
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
@@ -71,7 +68,7 @@ extern "C" {
 extern void mpi_init(int*);
 extern void petscsetcommonblock_(int*,int*,int*);
 #if defined(__cplusplus)
-};
+}
 #endif
 
 /*
@@ -84,7 +81,7 @@ extern "C" {
 extern int iargc_();
 extern void getarg_(int*,char*,int);
 #if defined(__cplusplus)
-};
+}
 #endif
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
@@ -101,7 +98,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   (*argv)[0] = (char*) (*argv + *argc + 1);
 
   if (!mytid) {
-    PETSCMEMSET((*argv)[0],0,(*argc)*warg*sizeof(char));
+    PetscZero((*argv)[0],(*argc)*warg*sizeof(char));
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
       getarg_( &i, (*argv)[i], warg );
@@ -167,12 +164,12 @@ int  optionssetvalue_(char *name,char *value,int *err, int len1,int len2)
   int  ierr;
   if (!name[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,name,len1);
+    PetscStrncpy(c1,name,len1);
     c1[len1] = 0;
   } else c1 = name;
   if (!value[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,value,len2);
+    PetscStrncpy(c2,value,len2);
     c2[len2] = 0;
   } else c2 = value;
   ierr = OptionsSetValue(c1,c2);
@@ -186,12 +183,12 @@ int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsHasName(c1,c2);
@@ -206,12 +203,12 @@ int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetInt(c1,c2,ivalue);
@@ -226,12 +223,12 @@ int  optionsgetdouble_(char* pre,char *name,double *dvalue,int *err,
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetDouble(c1,c2,dvalue);
@@ -246,12 +243,12 @@ int  optionsgetdoublearray_(char* pre,char *name,
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetDoubleArray(c1,c2,dvalue,nmax);
@@ -270,12 +267,12 @@ int  optionsgetintarray_(char* pre,char *name,int *dvalue,int *nmax,int *err,
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetIntArray(c1,c2,dvalue,nmax);
@@ -294,12 +291,12 @@ int  optionsgetstring_(char *pre,char *name,char *string,
   int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
-    strncpy(c1,pre,len1);
+    PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
     c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
-    strncpy(c2,name,len2);
+    PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetString(c1,c2,string,len);

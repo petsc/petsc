@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.1 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "vec.h"
 #ifdef FORTRANCAPS
-#define veccreatesequential_  VECCREATESEQUENTIAL
+#define veccreateseq_         VECCREATESEQ
 #define veccreate_            VECCREATE
 #define vecduplicate_         VECDUPLICATE
 #define veccreatempi_         VECCREATEMPI
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #define vecrestorearray_      VECRESTOREARRAY
 #define vecgetarray_          VECGETARRAY
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define veccreatesequential_  veccreatesequential
+#define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
 #define vecduplicate_         vecduplicate
 #define veccreatempi_         veccreatempi
@@ -92,10 +92,10 @@ void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
   *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,*N,&lV);
   *(int*)vv = MPIR_FromPointer(lV);
 }
-void veccreatesequential_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
+void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateSequential(
+  *__ierr = VecCreateSeq(
 	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,&lV);
   *(int*)V = MPIR_FromPointer(lV);
 }

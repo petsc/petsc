@@ -1,42 +1,83 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "sles.h"
 #include "mg.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
-#define pcregisterdestroy_   PCREGISTERDESTROY
-#define pcdestroy_           PCDESTROY
-#define pccreate_            PCCREATE
-#define pcgetoperators_      PCGETOPERATORS
-#define pcgetfactoredmatrix_ PCGETFACTOREDMATRIX
-#define pcsetoptionsprefix_  PCSETOPTIONSPREFIX
-#define pcgetmethodfromcontext_ PCGETMETHODFROMCONTEXT
-#define pcbjacobigetsubsles_ PCBJACOBIGETSUBSLES
-#define mggetcoarsesolve_    MGGETCOARSESOLVE
-#define mggetsmoother_       MGGETSMOOTHER
-#define mggetsmootherup_     MGGETSMOOTHERUP
-#define mggetsmootherdown_   MGGETSMOOTHERDOWN
+#define pcregisterdestroy_         PCREGISTERDESTROY
+#define pcdestroy_                 PCDESTROY
+#define pccreate_                  PCCREATE
+#define pcgetoperators_            PCGETOPERATORS
+#define pcgetfactoredmatrix_       PCGETFACTOREDMATRIX
+#define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
+#define pcgetmethodfromcontext_    PCGETMETHODFROMCONTEXT
+#define pcbjacobigetsubsles_       PCBJACOBIGETSUBSLES
+#define mggetcoarsesolve_          MGGETCOARSESOLVE
+#define mggetsmoother_             MGGETSMOOTHER
+#define mggetsmootherup_           MGGETSMOOTHERUP
+#define mggetsmootherdown_         MGGETSMOOTHERDOWN
+#define pcshellsetapply_           PCSHELLSETAPPLY
+#define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define pcregisterdestroy_   pcregisterdestroy
-#define pcdestroy_           pcdestroy
-#define pccreate_            pccreate
-#define pcgetoperators_      pcgetoperators
-#define pcgetfactoredmatrix_ pcgetfactoredmatrix
-#define pcsetoptionsprefix_  pcsetoptionsprefix
-#define pcgetmethodfromcontext_ pcgetmethodfromcontext
-#define pcbjacobigetsubsles_ pcbjacobigetsubsles
-#define mggetcoarsesolve_    mggetcoarsesolve
-#define mggetsmoother_       mggetsmoother
-#define mggetsmootherup_     mggetsmootherup
-#define mggetsmootherdown_   mggetsmootherdown
+#define pcregisterdestroy_         pcregisterdestroy
+#define pcdestroy_                 pcdestroy
+#define pccreate_                  pccreate
+#define pcgetoperators_            pcgetoperators
+#define pcgetfactoredmatrix_       pcgetfactoredmatrix
+#define pcsetoptionsprefix_        pcsetoptionsprefix
+#define pcgetmethodfromcontext_    pcgetmethodfromcontext
+#define pcbjacobigetsubsles_       pcbjacobigetsubsles
+#define mggetcoarsesolve_          mggetcoarsesolve
+#define mggetsmoother_             mggetsmoother
+#define mggetsmootherup_           mggetsmootherup
+#define mggetsmootherdown_         mggetsmootherdown
+#define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
+#define pcshellsetapply_           pcshellsetapply
 #endif
+
+static void (*f1)(void *,int*,int*,int*);
+static int ourshellapply(void *ctx,Vec x,Vec y)
+{
+  int ierr = 0, s1, s2;
+  s1 = MPIR_FromPointer(x);
+  s2 = MPIR_FromPointer(y);
+  (*f1)(ctx,&s1,&s2,&ierr); CHKERRQ(ierr);
+  MPIR_RmPointer(s1);
+  MPIR_RmPointer(s2); 
+  return 0;
+}
+void pcshellsetapply_(PC pc,void (*apply)(void*,int*,int*,int*),void *ptr,
+                      int *__ierr ){
+  f1 = apply;
+  *__ierr = PCShellSetApply(
+	(PC)MPIR_ToPointer( *(int*)(pc) ),ourshellapply,ptr);
+}
+/* -----------------------------------------------------------------*/
+static void (*f2)(void*,int*,int*,int*,int*,int*);
+static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
+{
+  int ierr = 0, s1,s2,s3;
+  s1 = MPIR_FromPointer(x);
+  s2 = MPIR_FromPointer(y);
+  s3 = MPIR_FromPointer(w);
+  (*f2)(ctx,&s1,&s2,&s3,&m,&ierr); CHKERRQ(ierr);
+  MPIR_RmPointer(s1);
+  MPIR_RmPointer(s2); 
+  MPIR_RmPointer(s3); 
+  return 0;
+}
+
+void pcshellsetapplyrichardson_(PC pc,
+                        void (*apply)(void*,int*,int*,int*,int*,int*),
+                              void *ptr, int *__ierr ){
+  f2 = apply;
+  *__ierr = PCShellSetApplyRichardson(
+	(PC)MPIR_ToPointer( *(int*)(pc) ),ourapplyrichardson,ptr);
+}
 
 void mggetcoarsesolve_(PC pc,SLES *sles, int *__ierr ){
   SLES asles;
@@ -88,7 +129,7 @@ void pcsetoptionsprefix_(PC pc,char *prefix, int *__ierr,int len ){
   char *t;
   if (prefix[len] != 0) {
     t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
-    strncpy(t,prefix,len);
+    PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
   else t = prefix;
