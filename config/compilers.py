@@ -366,10 +366,12 @@ class Configure(config.base.Configure):
           self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
           flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
-        if arg.startswith('-z'):
-          self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
-          flibs.append(arg)
-          continue
+        # commenting you temporarily as this causes grief on solaris builds
+        #if arg.startswith('-z'):
+        #  self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
+        #  flibs.append(arg)
+        #  continue
+        
         # Check for ???
         # Should probably try to ensure unique directory options here too.
         # This probably only applies to Solaris systems, and then will only
