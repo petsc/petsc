@@ -1,12 +1,50 @@
+
+
+
 #ifndef lint
-static char vcid[] = "$Id: formjac.c,v 1.17 1996/08/02 20:11:58 curfman Exp $";
+static char vcid[] = "$Id: formjac.c,v 1.1 1996/08/20 21:28:06 curfman Exp bsmith $";
 #endif
 
 #include "puser.h"
 
 /*
+       This is the routine that PETSc calls that up-dates the Jacobians for all the 
+    grid levels. In this code it calls the routine ApplicationJacobianOnAGrid() once
+    for each level. 
+*/
+
+
+static int ApplicationJacobianOnAGrid(Vec,Mat,AppCtx *,GridCtx *);
+
+int ApplicationJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  AppCtx   *user = (AppCtx *) ctx;
+  GridCtx  *grid;
+  Mat      jacobian;
+  int      i;
+
+  for ( i=0; i<user->Nlevels; i++ ) {
+    grid = &user->grids[i]; 
+    ApplicationJacobianOnAGrid(x1,jacobian,user,grid); CHKERRQ(ierr);
+
+  }
+
+  /*
+     We do not set J in this application because either J == B or J is matrix free
+  */
+  *B    = jacobian;
+  *flag = DIFFERENT_NONZERO_PATTERN; 
+  return 0;
+}
+
+int ApplicationJacobianOnAGrid(Vec x1,Mat jacobian,AppCtx *ctx,GridCtx *grid)
+{
+  return 0;
+}
+
+/*
    ComputeJacobian - Computes an approximation of the Jacobian matrix using
-   finite differences. 
+                     finite differences. 
 
    Input Parameters:
 .  x1 - compute Jacobian at this point
@@ -31,34 +69,38 @@ static char vcid[] = "$Id: formjac.c,v 1.17 1996/08/02 20:11:58 curfman Exp $";
 int Jacobian_PotentialFlow(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec      localX, localF, localXbak, localFbak, jj1, jj2, x2;
-  int      i, ierr, N, start, end, j, p, q, row;
   Scalar   dx, mone = -1.0,*y,scale=0.0,*xx, wscale=0.0;
-  double   epsilon = 1.e-8, amax; /* assumes double precision */
-  AppCtx   *user = (AppCtx *) ctx;
+  double   epsilon = 1.e-8, amax; 
   double   *xxx, *x;
+  AppCtx   *user = (AppCtx *) ctx;
+  GridCtx  *grid = &user->grids[user->Nlevels - 1];
   MPI_Comm comm;
   int      nloc, *ltog, grow, current, gcol, iter;
   int      mx, my, xs, xe, ys, ye, Xs, Xm, Ys;
+  int      i, ierr, N, start, end, j, p, q, row;
 
   /* Compute Jacobian approximation: x1 = current iterate, j1 = F(x1)
                                      x2 = perturbed iterate, j2 = F(x2)
    */
-  localX    = user->localX;
-  localF    = user->localF;
-  localXbak = user->localXbak;
-  localFbak = user->localFbak;
-  jj1  = user->Fcopy; /* could alternatively use SNESGetFunction() */
-  jj2  = user->jj2;
-  x2   = user->x2;
-  Xs   = user->Xs;
-  Xm   = user->Xm;
-  Ys   = user->Ys;
-  xs   = user->xs;
-  xe   = user->xe; 
-  ys   = user->ys; 
-  ye   = user->ye;
-  mx   = user->mx; 
-  my   = user->my;
+  localX    = grid->localX;
+  localF    = grid->localF;
+  localXbak = grid->localXbak;
+  localFbak = grid->localFbak;
+
+  /* We cannot change jj1, it holds the current best function */
+  ierr = SNESGetFunction(snes,&jj1); CHKERRQ(ierr);
+
+  jj2  = grid->jj2;
+  x2   = grid->x2;
+  Xs   = grid->Xs;
+  Xm   = grid->Xm;
+  Ys   = grid->Ys;
+  xs   = grid->xs;
+  xe   = grid->xe; 
+  ys   = grid->ys; 
+  ye   = grid->ye;
+  mx   = grid->mx; 
+  my   = grid->my;
 
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
   if ((iter != 1) && (iter % user->jfreq)) { /* reuse matrix from last iteration */
@@ -76,12 +118,12 @@ int Jacobian_PotentialFlow(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
 
   /* Form ghosted local vectors for x1 and F(x1); then copy */
-  ierr = DAGlobalToLocalBegin(user->da,jj1,INSERT_VALUES,localF); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,jj1,INSERT_VALUES,localF); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(user->da,x1,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(grid->da,jj1,INSERT_VALUES,localF); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(grid->da,jj1,INSERT_VALUES,localF); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(grid->da,x1,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecCopy(localF,localFbak); CHKERRQ(ierr); CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,x1,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(grid->da,x1,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecCopy(localX,localXbak); CHKERRQ(ierr); CHKERRQ(ierr);
 
   /* Loop over columns, doing the usual approx if this column corresponds to
@@ -179,6 +221,7 @@ int Jacobian_PotentialFlow(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
+
 /* --------------------------------------------------------------- */
 /* 
    MySparseFunction - Evaluates function at the local grid point (p,q),
@@ -196,25 +239,26 @@ int Jacobian_PotentialFlow(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,voi
  */
 int MySparseFunction(Vec x2,int index,AppCtx *user,Vec jj2)
 {
-  double *f, *x;
-  Vec    localX = user->localX, localF = user->localF;
-  int    N, *gindex, current, inputflag, ja, jb, ia, ib;
-  int    xs, xe, ys, ye, Xs, Xm, Ys, ierr, p, q,  i, j;
+  double   *f, *x;
+  GridCtx  *grid = &user->grids[user->Nlevels - 1];
+  Vec      localX = grid->localX, localF = grid->localF;
+  int      N, *gindex, current, inputflag, ja, jb, ia, ib;
+  int      xs, xe, ys, ye, Xs, Xm, Ys, ierr, p, q,  i, j;
 
-  xs = user->xs;
-  xe = user->xe; 
-  ys = user->ys; 
-  ye = user->ye;
-  Ys = user->Ys;
-  Xs = user->Xs;
-  Xm = user->Xm;
+  xs = grid->xs;
+  xe = grid->xe; 
+  ys = grid->ys; 
+  ye = grid->ye;
+  Ys = grid->Ys;
+  Xs = grid->Xs;
+  Xm = grid->Xm;
 
   /* Scatter permuted iterate vector to local work vector; get pointers
      to local vector data */
-  ierr = DAGlobalToLocalBegin(user->da,x2,INSERT_VALUES,localX);
-  ierr = DAGetGlobalIndices(user->da,&N,&gindex); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(grid->da,x2,INSERT_VALUES,localX);
+  ierr = DAGetGlobalIndices(grid->da,&N,&gindex); CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,x2,INSERT_VALUES,localX);
+  ierr = DAGlobalToLocalEnd(grid->da,x2,INSERT_VALUES,localX);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   
   current = 0;
@@ -242,7 +286,7 @@ int MySparseFunction(Vec x2,int index,AppCtx *user,Vec jj2)
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
 
   /* Place newly computed local function vectors in global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,jj2); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(grid->da,localF,INSERT_VALUES,jj2); CHKERRQ(ierr);
 
   return 0;
 }
@@ -265,9 +309,10 @@ int MySparseFunction(Vec x2,int index,AppCtx *user,Vec jj2)
 */
 int InnerSparseFunction(int p,int q,Vec x2,int index,AppCtx *user,Vec jj2)
 {
-  double *f, *x;
-  Vec    localF = user->localF;
-  int    ja, jb, ia, ib, ierr, i, j;
+  double   *f, *x;
+  GridCtx  *grid = &user->grids[user->Nlevels - 1];
+  Vec      localF = grid->localF;
+  int      ja, jb, ia, ib, ierr, i, j;
 
   /* Get pointers to local vector data */
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
@@ -275,8 +320,8 @@ int InnerSparseFunction(int p,int q,Vec x2,int index,AppCtx *user,Vec jj2)
 
   /* Set grid points for sparse, 9-point stencil for point (p,q) */
   ja=q-1; jb=q+2; ia=p-1; ib=p+2;
-  if (ia<user->xs || ib>user->xe) SETERRQ(1,"InnerSparseFunction: bad p value!");
-  if (ja<user->ys || jb>user->ye) SETERRQ(1,"InnerSparseFunction: bad q value!");
+  if (ia<grid->xs || ib>grid->xe) SETERRQ(1,"InnerSparseFunction: bad p value!");
+  if (ja<grid->ys || jb>grid->ye) SETERRQ(1,"InnerSparseFunction: bad q value!");
   for (j=ja; j<jb; j++) {
     for (i=ia; i<ib; i++) {
       /* Evaluate function at grid point (i,j) */
@@ -288,7 +333,7 @@ int InnerSparseFunction(int p,int q,Vec x2,int index,AppCtx *user,Vec jj2)
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
 
   /* Place newly computed local function vectors in global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,jj2); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(grid->da,localF,INSERT_VALUES,jj2); CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,3 +1,5 @@
+
+
 #include "puser.h"
 
 /*
@@ -11,7 +13,8 @@
 
 /* 
    InitialGuess_PotentialFlow - Computes the initial guess for the 2D
-   potential flow problem in parallel.
+   potential flow problem in parallel. This is only called on the finest grid
+   for the multigrid/multilevel solvers.
 
    Input Parameter:
 .  user - user-defined application context
@@ -24,40 +27,42 @@
  */
 int InitialGuess_PotentialFlow(AppCtx *user,Vec X)
 {
-  int    i, j, ierr, row, xs, xe, ys, ye, Xs, Xm, Ys;
-  double Qinf, hx, xx0, *x;
-  Vec    localX = user->localX;
+  GridCtx *grid = &user->grids[user->Nlevels-1];
+  int     i, j, ierr, row, xs, xe, ys, ye, Xs, Xm, Ys;
+  double  Qinf, hx, xx0, *x;
+  Vec     localX = grid->localX;
 
-  hx   = user->hx;
-  Xs   = user->Xs;
-  Xm   = user->Xm;
-  Ys   = user->Ys;
-  xs   = user->xs;
-  xe   = user->xe; 
-  ys   = user->ys; 
-  ye   = user->ye;
+  hx   = grid->hx;
+  Xs   = grid->Xs;
+  Xm   = grid->Xm;
+  Ys   = grid->Ys;
+  xs   = grid->xs;
+  xe   = grid->xe; 
+  ys   = grid->ys; 
+  ye   = grid->ye;
   xx0  = user->xx0;
   Qinf = user->Qinf;
 
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   for (j=ys; j<ye; j++) {
     for (i=xs; i<xe; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
-      x[row]=Qinf*(i*hx+xx0);
+      row    = i - Xs + (j - Ys)*Xm; 
+      x[row] = Qinf*(i*hx+xx0);
      }
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
 
   /* Place local values in global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(grid->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
   return 0;
 }       
 
 static int ComputeDensity(double*,AppCtx*);
+
 /* --------------------------------------------------------------- */
 /* 
    Function_PotentialFlow - Evaluates the function for the 2D potential
-   flow problem in parallel.
+   flow problem in parallel. 
 
    Input Parameters:
 .  snes - SNES context
@@ -74,37 +79,38 @@ static int ComputeDensity(double*,AppCtx*);
 int Function_PotentialFlow(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
-  int     i, j, row, mx, my, ierr;
+  GridCtx *grid = &user->grids[user->Nlevels-1];
   double  hx, hy, xx0, xx1, yy0, yy1, Qinf, M;
   double  *x, *f, *Mach;
-  Vec     localX = user->localX, localF = user->localF;
-  Vec     localMach = user->localMach;
   double  Ux, Uy, d, Q20, Q2inf, a00;
+  Vec     localX = grid->localX, localF = grid->localF;
+  Vec     localMach = grid->localMach;
   int     xs, xe, ys, ye, Xs, Xm, Ys;
+  int     i, j, row, mx, my, ierr;
 
-  hx    = user->hx;
-  hy    = user->hy;
-  Xs    = user->Xs;
-  Xm    = user->Xm;
-  Ys    = user->Ys;
-  xs    = user->xs;
-  xe    = user->xe; 
-  ys    = user->ys; 
-  ye    = user->ye;
-  mx    = user->mx; 
-  my    = user->my;
+  hx    = grid->hx;
+  hy    = grid->hy;
+  Xs    = grid->Xs;
+  Xm    = grid->Xm;
+  Ys    = grid->Ys;
+  xs    = grid->xs;
+  xe    = grid->xe; 
+  ys    = grid->ys; 
+  ye    = grid->ye;
+  mx    = grid->mx; 
+  my    = grid->my;
   xx0   = user->xx0;
   xx1   = user->xx1;
   yy0   = user->yy0;
   yy1   = user->yy1;
-  M     = user->M;
+  M     = user->mach;
   Qinf  = user->Qinf;
   Q2inf = Qinf*Qinf;
   user->machflag = 1;
 
   /* Set ghost points for current iterate in local work vector */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
 
   /* Get pointers to local vector data */
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
@@ -123,13 +129,13 @@ int Function_PotentialFlow(SNES snes,Vec X,Vec F,void *ptr)
       if (j == 0 && i != mx-1 && i != 0) {
         /* Compute pressure for transpiration model */
         if ( user->machflag ) {
-           Ux = (x[row+1] - x[row])/hx;
-           Uy = (x[row+Xm] - x[row])/hy;
-           Q20=Ux*Ux+Uy*Uy;
-           a00=1+(gama-1)*M*M/2*(1-Q20/Q2inf); 
-           d = gama/(gama-1);
-           a00 = pr_infty*pow(a00,d);
-           ierr = VecSetValues(user->globalPressure,1,&i,&a00,INSERT_VALUES); CHKERRQ(ierr);
+           Ux   = (x[row+1] - x[row])/hx;
+           Uy   = (x[row+Xm] - x[row])/hy;
+           Q20  = Ux*Ux + Uy*Uy;
+           a00  = 1+(gama-1)*M*M/2*(1-Q20/Q2inf); 
+           d    = gama/(gama-1);
+           a00  = pr_infty*pow(a00,d);
+           ierr = VecSetValues(grid->globalPressure,1,&i,&a00,INSERT_VALUES); CHKERRQ(ierr);
          }
       }
 
@@ -139,11 +145,8 @@ int Function_PotentialFlow(SNES snes,Vec X,Vec F,void *ptr)
   }
 
   /* Place newly computed function values in global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(grid->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
 
-  /* Save a copy of the function for later use in Jacobian evaluation */
-  ierr = VecCopy(F,user->Fcopy); CHKERRQ(ierr);
- 
   /* Compute local Mach number at boundaries; interior points are handled by the
      routine EvaluateFunction(). */
   for (j=ys; j<ye; j++) {
@@ -178,18 +181,20 @@ int Function_PotentialFlow(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localMach,&Mach); CHKERRQ(ierr);
 
   /* Place newly computed local Mach number vectors in global vector */
-  ierr = DALocalToGlobal(user->da,localMach,INSERT_VALUES,user->globalMach); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(grid->da,localMach,INSERT_VALUES,grid->globalMach); CHKERRQ(ierr);
   user->machflag = 0;
 
   return 0;
 }
+
 /* --------------------------------------------------------------- */
 /*
    EvaluateFunction - Evaluates the function f(x) at the grid point (i,j)
    for the 2D potential flow problem.  This lower-level routine 
    handles the entire grid (including boundaries) and assumes that
    all necessary communication of ghost points for x is handled prior
-   to calling this routine. 
+   to calling this routine. This is only called on the finest grid
+   in the case of multigrid/multilevel solvers.
 
    Input Parameters:
 .  user - user-defined application context
@@ -210,6 +215,7 @@ int Function_PotentialFlow(SNES snes,Vec X,Vec F,void *ptr)
 */
 int EvaluateFunction(AppCtx *user,double *x,int i,int j,double *Mach,double *f)
 {
+   GridCtx *grid = &user->grids[user->Nlevels-1];
    int      ierr, row, mx, my;
    double   hx, hy;
    double   U, Ut, Ub, Ul, Ur, Utr, Utl, Ubr, Ubl;
@@ -221,22 +227,22 @@ int EvaluateFunction(AppCtx *user,double *x,int i,int j,double *Mach,double *f)
    double   *density;
    int      xs, xe, ys, ye, Xs, Xm, Ys;
 
-   hx    = user->hx;
-   hy    = user->hy;
-   Xs    = user->Xs;
-   Xm    = user->Xm;
-   Ys    = user->Ys;
-   xs    = user->xs;
-   xe    = user->xe; 
-   ys    = user->ys; 
-   ye    = user->ye;
-   mx    = user->mx; 
-   my    = user->my;
+   hx    = grid->hx;
+   hy    = grid->hy;
+   Xs    = grid->Xs;
+   Xm    = grid->Xm;
+   Ys    = grid->Ys;
+   xs    = grid->xs;
+   xe    = grid->xe; 
+   ys    = grid->ys; 
+   ye    = grid->ye;
+   mx    = grid->mx; 
+   my    = grid->my;
    xx0   = user->xx0;
    xx1   = user->xx1;
    yy0   = user->yy0;
    yy1   = user->yy1;
-   M     = user->M;
+   M     = user->mach;
    Qinf  = user->Qinf;
 
    M2c   = 0.95;
@@ -311,7 +317,7 @@ int EvaluateFunction(AppCtx *user,double *x,int i,int j,double *Mach,double *f)
       nine-point FD stencil */
 
    /* Get density from saved results in user structure */  
-   ierr = VecGetArray(user->localDensity,&density); CHKERRQ(ierr);
+   ierr = VecGetArray(grid->localDensity,&density); CHKERRQ(ierr);
 
          U   = x[row];                  /* current point */
          Ub  = x[row - Xm];             /* bottom point */
@@ -382,7 +388,7 @@ if (user->machflag && a00 != a0) printf("bad, a0=%5.10g, density[%d]=%5.10g\n", 
           fabs(hy*j-height*cos(pi/2*(hx*i+xx0))*cos(pi/2*(hx*i+xx0))) <= ((double)hy)/2. ) {
             d = gama/(gama-1);
             a00 = pr_infty*pow(a00,d);
-	    VecSetValues(user->globalPressure,1,&i,&a00,INSERT_VALUES);
+	    VecSetValues(grid->globalPressure,1,&i,&a00,INSERT_VALUES);
          }
          */
 
@@ -400,7 +406,7 @@ if (user->machflag && a00 != a0) printf("bad, a0=%5.10g, density[%d]=%5.10g\n", 
          Uy=Uy/Unorm;
 
          /* upwinding switch */
-         mu=Max(0,1-M2c/(mach_number*mach_number));
+         mu=PetscMax(0,1-M2c/(mach_number*mach_number));
          
          /* upwinding */
          if (mu == 0) {
@@ -435,14 +441,14 @@ if (user->machflag && a00 != a0) printf("bad, a0=%5.10g, density[%d]=%5.10g\n", 
                         (aehalf*(Ur-U)-awhalf*(U-Ul))/(hx*hx)
                  );
 
-   ierr = VecRestoreArray(user->localDensity,&density); CHKERRQ(ierr);
+   ierr = VecRestoreArray(grid->localDensity,&density); CHKERRQ(ierr);
 
    return 0;
 }
 /* --------------------------------------------------------------- */
 /*
    ComputeDensity - Computes central density and stores in a vector
-   vector within application context.
+                    within the application context. 
 
    Input Parameters:
 .  user - user-defined application context
@@ -453,24 +459,25 @@ if (user->machflag && a00 != a0) printf("bad, a0=%5.10g, density[%d]=%5.10g\n", 
 */
 int ComputeDensity(double *x,AppCtx *user)
 {
-  Vec    localDensity = user->localDensity; 
-  double Ux, Uy, Ut, Ub, Ul, Ur, hx, hy;
-  double Qinf, M, b, d, Q20, Q2inf, a0, *density;
-  int    i, j, ierr, row, mx, my;
-  int    xs, xe, ys, ye, Xs, Xm, Ys;
+  GridCtx *grid = &user->grids[user->Nlevels - 1];
+  Vec     localDensity = grid->localDensity; 
+  double  Ux, Uy, Ut, Ub, Ul, Ur, hx, hy;
+  double  Qinf, M, b, d, Q20, Q2inf, a0, *density;
+  int     i, j, ierr, row, mx, my;
+  int     xs, xe, ys, ye, Xs, Xm, Ys;
 
-  hx    = user->hx;
-  hy    = user->hy;
-  Xs    = user->Xs;
-  Xm    = user->Xm;
-  Ys    = user->Ys;
-  xs    = user->xs;
-  xe    = user->xe; 
-  ys    = user->ys; 
-  ye    = user->ye;
-  mx    = user->mx; 
-  my    = user->my;
-  M     = user->M;
+  hx    = grid->hx;
+  hy    = grid->hy;
+  Xs    = grid->Xs;
+  Xm    = grid->Xm;
+  Ys    = grid->Ys;
+  xs    = grid->xs;
+  xe    = grid->xe; 
+  ys    = grid->ys; 
+  ye    = grid->ye;
+  mx    = grid->mx; 
+  my    = grid->my;
+  M     = user->mach;
   Qinf  = user->Qinf;
   Q2inf = Qinf*Qinf;
 
