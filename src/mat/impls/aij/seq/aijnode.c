@@ -1633,6 +1633,21 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 #define __FUNCT__ "MatAdjustForInodes"
 int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
+  int ierr,(*f)(Mat,IS*,IS*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatAdjustForInodes_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,rperm,cperm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatAdjustForInodes_SeqAIJ"
+int MatAdjustForInodes_SeqAIJ(Mat A,IS *rperm,IS *cperm)
+{
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        ierr,m = A->m,n = A->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
   int        row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
@@ -1641,9 +1656,6 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   PetscTruth flg;
 
   PetscFunctionBegin;  
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) PetscFunctionReturn(0);
-
   if (!a->inode.size) PetscFunctionReturn(0); /* no inodes so return */
   if (a->inode.node_count == m) PetscFunctionReturn(0); /* all inodes are of size 1 */
 
@@ -1692,7 +1704,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   ierr = PetscFree(tns);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
-
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJGetInodeSizes"
