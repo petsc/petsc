@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.1 1999/01/19 16:33:06 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.2 1999/01/20 00:07:23 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -47,6 +47,7 @@ def printindex(outfilename,levels,tables):
 # Add the BOLD HTML format to Level field, and write the file
 def writeupdatedfile(filename,buf):
       outbuf = regsub.sub('\nLevel:','\n<B>Level:</B>',buf)
+      if buf == outbuf: return
       try:
             fd = open(filename[:-1],'w')
       except:

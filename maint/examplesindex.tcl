@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.33 1998/06/04 19:49:22 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.34 1998/06/04 22:26:02 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -553,10 +553,10 @@ proc main { }  {
             # New Section entry for Examples
             set buf [format "%s%s" "<P><H2>Examples</H2>" $buf]
         }
-        set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
+        set buf [format "%s%s" $buf "<B>Level:</B>" ]
 
 # This string must match what's in docs/tex/doctext/html.def
-        set temp [regsub  "<P><B>Location:</B>" $routine_file_buff $buf routine_file_buff]
+        set temp [regsub  "<B>Level:</B>" $routine_file_buff $buf routine_file_buff]
         if { $temp == 0 } { 
             puts "******* Unable to modify $routines_file"
         }
