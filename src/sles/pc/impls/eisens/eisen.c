@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.92 1999/05/04 20:34:11 balay Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.93 1999/05/06 20:45:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -93,7 +93,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
                                  SOR_BACKWARD_SWEEP),0.0,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
-  VecCopy(eis->b,b);
+  ierr = VecCopy(eis->b,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -168,7 +168,6 @@ static int PCSetUp_Eisenstat(PC pc)
 {
   int          ierr, M, N, m, n;
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
-  Vec          diag;
 
   PetscFunctionBegin;
   if (pc->setupcalled == 0) {
@@ -180,14 +179,10 @@ static int PCSetUp_Eisenstat(PC pc)
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (pc->setupcalled == 0) {
-    ierr = VecDuplicate(pc->vec,&diag);CHKERRQ(ierr);
-    PLogObjectParent(pc,diag);
-  } else {
-    diag = eis->diag;
+    ierr = VecDuplicate(pc->vec,&eis->diag);CHKERRQ(ierr);
+    PLogObjectParent(pc,eis->diag);
   }
-  ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
-  /* ierr = VecReciprocal(diag);CHKERRQ(ierr);  wrong, as pointed out by Isaac */
-  eis->diag = diag;
+  ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
