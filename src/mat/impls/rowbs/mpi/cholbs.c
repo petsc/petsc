@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.40 1996/12/18 17:35:04 balay Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.41 1996/12/18 23:56:00 balay Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -55,6 +55,10 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
+#if defined(PETSC_LOG)
+  double flop1 = BSlocal_flops();
+#endif
+
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_LU) {
     /* Copy the nonzeros */
@@ -74,6 +78,9 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   }
   mbs->factor = FACTOR_LU;
   mbs->assembled = PETSC_TRUE;
+#if defined(PETSC_LOG)
+  PLogFlops((int)(BSlocal_flops()-flop1));
+#endif
   return 0;
 }
 /* ------------------------------------------------------------------- */
