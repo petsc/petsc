@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.31 1995/07/26 02:25:01 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.32 1995/07/26 16:19:42 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -101,11 +101,14 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac;
+  int          ierr;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
+  if (!pc->setupcalled) { ierr = PCSetUp(pc); CHKERRQ(ierr);}
   jac = (PC_BJacobi *) pc->data;
   *n_local = jac->n_local;
   *first_local = jac->first_local;
+  
   *sles = jac->sles;
   return 0;
 }
@@ -149,9 +152,10 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 
 int PCCreate_BJacobi(PC pc)
 {
-  int          mytid;
+  int          mytid,numtid;
   PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
   MPI_Comm_rank(pc->comm,&mytid);
+  MPI_Comm_size(pc->comm,&numtid);
   pc->apply         = 0;
   pc->setup         = PCSetUp_BJacobi;
   pc->destroy       = PCDestroy_BJacobi;
@@ -160,7 +164,7 @@ int PCCreate_BJacobi(PC pc)
   pc->view          = PCView_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
-  jac->n            = 0;
+  jac->n            = numtid;
   jac->n_local      = 1;
   jac->first_local  = mytid;
   jac->sles         = 0;
