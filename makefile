@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.261 1999/02/01 22:35:38 balay Exp balay $ 
+# $Id: makefile,v 1.262 1999/02/01 22:37:48 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -282,7 +282,6 @@ allmanualpages: deletemanualpages
 
 alllatexpages: deletelatexpages
 	-${OMAKE} ACTION=latexpages tree
-	-cd src/fortran/custom; ${OMAKE} latexpages
 	-@chmod g+w docs/tex/rsum/*
 
 # Builds Fortran stub files
