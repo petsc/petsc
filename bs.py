@@ -117,7 +117,10 @@ class BS (install.base.Base):
       if not project is None:
         root = project.getRoot()
         repositoryDirs.append(root)
-        self.getMakeModule(root).PetscMake(sys.argv[1:]).updateRepositoryDirs(repositoryDirs)
+        try:
+          self.getMakeModule(root).PetscMake(sys.argv[1:]).updateRepositoryDirs(repositoryDirs)
+        except ImportError:
+          self.debugPrint('Invalid repository: No make module in '+root, 4, 'compile')
     return
 
   def getSIDLDefaults(self):

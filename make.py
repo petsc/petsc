@@ -30,10 +30,13 @@ class PetscMake(bs.BS):
     self.defineDirectories()
     self.defineFileSets()
 
-    sidl = self.getSIDLDefaults()
-    sidl.addServerLanguage('C++')
-    sidl.addClientLanguage('C++')
-    sidl.addClientLanguage('Python')
+    try:
+      sidl = self.getSIDLDefaults()
+      sidl.addServerLanguage('C++')
+      sidl.addClientLanguage('C++')
+      sidl.addClientLanguage('Python')
+    except ImportError, e:
+      self.debugPrint(str(e), 4, 'compile')
     return
 
 if __name__ ==  '__main__':

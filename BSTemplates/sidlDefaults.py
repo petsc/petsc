@@ -67,7 +67,7 @@ class UsingSIDL (logging.Logger):
     for project in projects:
       if project.getName() == 'sidlruntime':
         return project
-    raise RuntimeError('Could not find runtime project')
+    raise ImportError('Could not find runtime project')
 
   def setupExtraLibraries(self):
     runtimeProject = self.getRuntimeProject()
