@@ -378,6 +378,16 @@ runex10_18:
 	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
 	   else echo "Possible problem with ex10_18, diffs above"; fi; \
 	   ${RM} -f ex10_18.tmp
+LEVELS = 0 2
+runex10_19:
+	-@for levels in ${LEVELS}; do \
+	-@${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type cg -pc_type icc -pc_icc_levels $$levles >> ex10_19aij.tmp 2>&1;
+	 -@${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type cg -pc_type icc -pc_icc_levels $$levles -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1;
+	done;
+	   if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
+	   else echo "Possible problem with ex10_19, diffs above"; fi; \
+	   ${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
+
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -491,7 +501,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
-                   runex10_10 ex10.rm
+                   runex10_10 runex10_19 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
@@ -503,6 +513,6 @@ TESTEXAMPLES_MATLAB_ENGINE = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17            = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18            = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
 TESTEXAMPLES_SPAI          = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE         = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
+TESTEXAMPLES_HYPRE         = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_1 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test
