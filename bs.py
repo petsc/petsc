@@ -117,7 +117,7 @@ class BS (maker.Maker):
 
   def cleanup(self):
     if argDB.has_key('target'):  del argDB['target']
-    if argDB.has_key('restart'): argDB['restart'] = '1'
+    if argDB.has_key('restart'): argDB['restart'] = '0'
     self.saveSourceDB()
 
   def main(self):
