@@ -87,6 +87,8 @@ or matrices that generate a zero pivot.
  a char*. This should not affect any user code. Current built in choices are
  MATSNESMF_DEFAULT "default" and MATSNESMF_WP "wp"
 
+  SNESGetJacobian() now has an additional optional final argument that can return the function pointer
+
   DA
 
   added -da_noao for DACreateXXX() makes them more scalable, but cannot use the natural numbering
