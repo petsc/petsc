@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.2 2001/03/23 23:18:37 balay Exp buschelm $"
+"$Id: petscconf.h,v 1.3 2001/04/05 17:08:56 buschelm Exp buschelm $"
 "Defines the configuration for this machine"
 #endif
 
@@ -9,6 +9,7 @@
 #define PARCH_win32 
 #define PETSC_ARCH_NAME "win32"
 #define PETSC_HAVE_WIN32
+#define PETSC_HAVE_ICL
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STDLIB_H 
 #define PETSC_HAVE_STRING_H 
