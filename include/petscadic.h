@@ -9,8 +9,8 @@
 
 #if !defined(__PETSCADIC_H)
 #define __PETSCADIC_H
-
 #include "mat.h"  
+PETSC_EXTERN_CXX_BEGIN
 
 extern int ad_PetscInitialize(int *,char ***,char *,char*);
 extern int ad_PetscFinalize(void);
@@ -29,10 +29,5 @@ extern int PetscADICFunctionDestroy(PetscADICFunction);
 extern int PetscADICFunctionSetFunction(PetscADICFunction,int (*)(Vec,Vec),int (*)(void **));
 extern int PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
 
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
-
-

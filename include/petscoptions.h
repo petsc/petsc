@@ -5,6 +5,7 @@
 #if !defined(__PETSCOPTIONS_H)
 #define __PETSCOPTIONS_H
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 EXTERN int  PetscOptionsHasName(const char[],const char[],PetscTruth*);
 EXTERN int  PetscOptionsGetInt(const char[],const char [],int *,PetscTruth*);
@@ -139,6 +140,6 @@ EXTERN int PetscOptionsEList(char*,char*,char*,char**,int,char*,char *,int,Petsc
 EXTERN int PetscOptionsRealArray(char*,char*,char*,PetscReal[],int*,PetscTruth*);
 EXTERN int PetscOptionsIntArray(char*,char*,char*,int[],int*,PetscTruth*);
 EXTERN int PetscOptionsStringArray(char*,char*,char*,char**,int*,PetscTruth*);
+
+PETSC_EXTERN_CXX_END
 #endif
-
-

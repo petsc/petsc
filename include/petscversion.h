@@ -2,6 +2,7 @@
 /* $Id: petscversion.h,v 1.26 2001/06/21 21:20:02 bsmith Exp $ */
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
+PETSC_EXTERN_CXX_BEGIN
 
 /* ========================================================================== */
 /* 
@@ -24,7 +25,6 @@
 #define PetscGetVersion(version) (sprintf(*(version),"Petsc Version %d.%d.%d, Patch %d, Released ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
-#endif
 
 /*M
     PetscGetVersion - Gets the Petsc Version information in a string.
@@ -44,3 +44,6 @@
 .seealso: PetscGetProgramName()
 
 M*/
+
+PETSC_EXTERN_CXX_END
+#endif

@@ -12,6 +12,7 @@
 #if !defined(__PETSCMATH_H)
 #define __PETSCMATH_H
 #include <math.h>
+PETSC_EXTERN_CXX_BEGIN
 
 extern  MPI_Datatype        MPIU_2SCALAR;
 /*
@@ -273,4 +274,6 @@ typedef double PetscLogDouble;
 #define PETSCMAP1_a(a,b)  a ## _ ## b
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
 #define PETSCMAP1(a)      PETSCMAP1_b(a,PetscScalar)
+
+PETSC_EXTERN_CXX_END
 #endif

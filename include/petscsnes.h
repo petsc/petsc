@@ -5,6 +5,7 @@
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
 #include "petscsles.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      SNES - Abstract PETSc object that manages all nonlinear solves
@@ -287,5 +288,5 @@ EXTERN int SNESTestLocalMin(SNES snes);
 /* Should this routine be private? */
 EXTERN int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
+PETSC_EXTERN_CXX_END
 #endif
-

@@ -7,6 +7,7 @@
 #if !defined(__PETSCIS_H)
 #define __PETSCIS_H
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 extern int IS_COOKIE;
 
@@ -184,8 +185,5 @@ EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
 EXTERN int ISPartitioningToNumbering(IS,IS*);
 EXTERN int ISPartitioningCount(IS,int[]);
 
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-

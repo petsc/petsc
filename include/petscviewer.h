@@ -5,6 +5,9 @@
 
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
+#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+extern "C" {
+#endif
 
 extern int PETSC_VIEWER_COOKIE;
 
@@ -20,12 +23,17 @@ extern int PETSC_VIEWER_COOKIE;
 S*/
 typedef struct _p_PetscViewer* PetscViewer;
 
+#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+}
+#endif
+
+
 /*
     petsc.h must be included AFTER the definition of PetscViewer for ADIC to 
    process correctly.
 */
 #include "petsc.h"
-
+PETSC_EXTERN_CXX_BEGIN
 /*E
     PetscViewerType - String with the name of a PETSc PETScViewer
 
@@ -326,4 +334,5 @@ EXTERN int PetscViewersCreate(MPI_Comm,PetscViewers*);
 EXTERN int PetscViewersDestroy(PetscViewers);
 EXTERN int PetscViewersGetViewer(PetscViewers,int,PetscViewer*);
 
+PETSC_EXTERN_CXX_END
 #endif

@@ -6,6 +6,7 @@
 #if !defined(__PETSCTS_H)
 #define __PETSCTS_H
 #include "petscsnes.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
@@ -222,9 +223,5 @@ EXTERN int TSPVodeSetLinearTolerance(TS,PetscReal);
 EXTERN int TSPVodeSetExactFinalTime(TS,PetscTruth);
 EXTERN int TSPVodeGetParameters(TS,int *,long int*[],double*[]);
 
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
-

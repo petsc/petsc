@@ -5,6 +5,7 @@
 #if !defined(__PETSCMG_H)
 #define __PETSCMG_H
 #include "petscsles.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*E
     MGType - Determines the type of multigrid method that is run.
@@ -55,5 +56,5 @@ EXTERN int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN int MGDefaultResidual(Mat,Vec,Vec,Vec);
 
 
+PETSC_EXTERN_CXX_END
 #endif
-

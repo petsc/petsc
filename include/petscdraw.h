@@ -5,6 +5,7 @@
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 extern int PETSC_DRAW_COOKIE;
 
@@ -338,12 +339,5 @@ int PetscDrawMeshCreate(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,
 int PetscDrawMeshCreateSimple(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,int,int,int,int,PetscReal *,int);
 int PetscDrawMeshDestroy(PetscDrawMesh *);
 
-
-
-
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
-

@@ -2,8 +2,9 @@
 
 #if !defined(__PETSCF90_H)
 #define __PETSCF90_H
-
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
+
 #if defined PETSC_HAVE_F90_H
 #include PETSC_HAVE_F90_H
 
@@ -26,9 +27,6 @@ EXTERN int F90Array2dGetNextRecord(F90Array2d*,void**);
 EXTERN int F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
 EXTERN int F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);
 */
-#endif
-#endif
-
 
 /*
   F90Array1dCreate - Given a C pointer to a one dimensional
@@ -45,3 +43,6 @@ EXTERN int F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);
 .   ptr - Fortran 90 pointer
 */ 
 
+#endif
+PETSC_EXTERN_CXX_END
+#endif
