@@ -1,20 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/01/05 21:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1996/01/16 04:33:17 bsmith Exp bsmith $";
 #endif
 
 /*
-        Solves U_t - U_x = 0 with periodic boundary conditions.
-
-    1) with a basic F(t,u) = (u_i+1 - u_i-1)/h  (unstable for Euler)
-    2) with a stabilized F(t,u)
-
-        Solves U_t = U_xx 
+          Solves U_t = U_xx 
 
     1) F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
 
 */
 
-static char help[] = "Solves 1D wave or heat equation.\n\n";
+static char help[] = "Solves 1D heat equation.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -25,95 +20,122 @@ static char help[] = "Solves 1D wave or heat equation.\n\n";
 #include "sysio.h"
 
 
-#define PI 3.14159265
+#define PI 3.14159265358979
 typedef struct {
-  Vec    localwork;
+  Vec    localwork,solution;
   DA     da;
-  Draw   win;
+  Draw   win1,win2;
   int    M;
   double h;
+  double norm_2,norm_max;
+  int    nox;
 } AppCtx;
 
-int Monitor(TS, int, double , Vec, void *);
-int RHSFunctionWave(TS,double,Vec,Vec,void*);
-int RHSFunctionHeat(TS,double,Vec,Vec,void*);
-int RHSFunctionWaveStabilized(TS,double,Vec,Vec,void*);
+int Monitor(TS, int, Scalar , Vec, void *);
+int RHSFunctionHeat(TS,Scalar,Vec,Vec,void*);
 int Initial(Vec, void*);
-int RHSMatrixHeat(TS,double,Mat *,Mat *, MatStructure *,void *);
+int RHSMatrixHeat(TS,Scalar,Mat *,Mat *, MatStructure *,void *);
+int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
 
 int main(int argc,char **argv)
 {
-  int          rank, size, M = 60, ierr,  time_steps = 100,steps,flg1,flg2,flg;
-  AppCtx       appctx;
-  Vec          local, global;
-  double       h, dt,ftime;
-  TS           ts;
-  TSType       type;
-  Mat          A,B;
-  MatStructure A_structure;
+  int           rank, size, M = 60, ierr,  time_steps = 100,steps,flg;
+  AppCtx        appctx;
+  Vec           local, global;
+  Scalar        h, dt,ftime;
+  TS            ts;
+  TSType        type;
+  Mat           A = 0;
+  MatStructure  A_structure;
+  TSProblemType problem;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M,&flg1); appctx.M = M;
-  OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg1);
+  OptionsGetInt(PETSC_NULL,"-M",&M,&flg); appctx.M = M;
+  OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);
     
+  OptionsHasName(PETSC_NULL,"-nox",&flg); 
+  if (flg) appctx.nox = 1; else appctx.nox = 0;
+  appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
+
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&appctx.da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,1,&appctx.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
   /* Set up display to show wave graph */
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,380,400,160,&appctx.win); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(appctx.win); CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,380,400,160,&appctx.win1); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(appctx.win1); CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,0,400,160,&appctx.win2); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(appctx.win2); CHKERRA(ierr);
 
   /* make work array for evaluating right hand side function */
   ierr = VecDuplicate(local,&appctx.localwork); CHKERRA(ierr);
 
+  /* make work array for storing exact solution */
+  ierr = VecDuplicate(global,&appctx.solution); CHKERRA(ierr);
+
+  h  = 1.0/(M-1.0); appctx.h = h;
+
   /* set initial conditions */
   ierr = Initial(global,&appctx); CHKERRA(ierr);
 
+ 
+  /*
+     This example is written to allow one to easily test parts 
+    of TS, we do not expect users to generally need to use more
+    then a single TSProblemType
+  */
+  problem = TS_LINEAR_CONSTANT_MATRIX;
+  ierr = OptionsHasName(PETSC_NULL,"-linear_no_matrix",&flg); CHKERRA(ierr);
+  if (flg) problem = TS_LINEAR_NO_MATRIX;
+  ierr = OptionsHasName(PETSC_NULL,"-linear_constant_matrix",&flg); CHKERRA(ierr);
+  if (flg) problem = TS_LINEAR_CONSTANT_MATRIX;  
+  ierr = OptionsHasName(PETSC_NULL,"-linear_variable_matrix",&flg); CHKERRA(ierr);
+  if (flg) problem = TS_LINEAR_VARIABLE_MATRIX;  
+  ierr = OptionsHasName(PETSC_NULL,"-nonlinear_no_jacobian",&flg); CHKERRA(ierr);
+  if (flg) problem = TS_NONLINEAR_NO_JACOBIAN;
+  ierr = OptionsHasName(PETSC_NULL,"-nonlinear_jacobian",&flg); CHKERRA(ierr);
+  if (flg) problem = TS_NONLINEAR_JACOBIAN;
+
+    
   /* make time step context */
-  ierr = TSCreate(MPI_COMM_WORLD,&ts); CHKERRA(ierr);
+  ierr = TSCreate(MPI_COMM_WORLD,problem,&ts); CHKERRA(ierr);
   ierr = TSSetFromOptions(ts);
   ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
 
-  h  = 1.0/M; appctx.h = h;
-  OptionsHasName(PETSC_NULL,"-matrix_based",&flg);
-  OptionsHasName(PETSC_NULL,"-heat",&flg1);
-  OptionsHasName(PETSC_NULL,"-wave_unstable",&flg2);
-  if (!flg) {
+  OptionsHasName(PETSC_NULL,"-unstable",&flg);
+  if (flg) dt = h*h;
+  else     dt = h*h/2.01;
+
+  if (problem == TS_LINEAR_NO_MATRIX || problem == TS_NONLINEAR_NO_JACOBIAN) {
     /*
-         In this version the user provides the RHS as a matrix 
+         In this version the user provides the RHS as a function.
     */
-    if (flg1){
-      ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
-      dt = h*h/2.01;
-    }
-    else if (flg2 || type == TS_BEULER){
-      ierr = TSSetRHSFunction(ts,RHSFunctionWave,&appctx); CHKERRA(ierr);
-      dt = h;
-    }
-    else {
-      ierr = TSSetRHSFunction(ts,RHSFunctionWaveStabilized,&appctx); CHKERRA(ierr);
-      dt = h;
-    }
+    ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
+  } else if (problem == TS_NONLINEAR_JACOBIAN) {
+    /*
+         In this version the user provides the RHS and Jacobian
+    */
+    ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
+    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx); CHKERRA(ierr);  
   } else { 
     /*
         In this version the user provides the RHS as a matrix
     */
-    if (flg1) {
-      ierr = RHSMatrixHeat(ts,0.0,&A,&B,&A_structure,&appctx);  CHKERRA(ierr);
-      dt = h*h/2.01;
-    }
-    else if (flg2 || type == TS_BEULER) {
-    }
-    else {
-    }
-    ierr = TSSetRHSMatrix(ts,A,B,PETSC_NULL,&appctx); CHKERRA(ierr);
-  }
+    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
 
+    if (problem == TS_LINEAR_CONSTANT_MATRIX) {
+      ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
+    } else {
+      ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
+    }
+  }
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
   ierr = TSSetDuration(ts,time_steps,100.); CHKERRQ(ierr);
@@ -124,12 +146,18 @@ int main(int argc,char **argv)
 
   ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
 
+  MPIU_printf(MPI_COMM_WORLD,"Final (sum) 2 norm %g max norm %g\n",
+              appctx.norm_2/steps,appctx.norm_max/steps);
+
   ierr = TSDestroy(ts); CHKERRA(ierr);
   ierr = DADestroy(appctx.da); CHKERRA(ierr);
-  ierr = ViewerDestroy((Viewer)appctx.win); CHKERRA(ierr);
+  ierr = ViewerDestroy((Viewer)appctx.win1); CHKERRA(ierr);
+  ierr = ViewerDestroy((Viewer)appctx.win2); CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork); CHKERRA(ierr);
+  ierr = VecDestroy(appctx.solution); CHKERRQ(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
+  if (A) { ierr= MatDestroy(A); CHKERRA(ierr);}
 
   PetscFinalize();
   return 0;
@@ -138,153 +166,120 @@ int main(int argc,char **argv)
 int Initial(Vec global, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
-  Vec    local;
-  double *localptr;
-  int    i,localsize,mybase,myend,ierr,j, M = appctx->M;
+  Scalar *localptr,h = appctx->h;
+  int    i,mybase,myend,ierr;
 
   /* determine starting point of each processor */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRQ(ierr);
 
   /* Initialize the array */
-  ierr = DAGetLocalVector(appctx->da,&local); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
-  ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
-  localptr[0] = 0.0;
-  localptr[localsize-1] = 0.0;
-  for (i=1; i<localsize-1; i++) {
-    j=(i-1)+mybase; 
-    localptr[i] = sin((PI*j*6)/((double)M) + 1.2*sin((PI*j*2)/((double)M)))*2;
+  ierr = VecGetArray(global,&localptr); CHKERRQ(ierr);
+  for (i=mybase; i<myend; i++) {
+    localptr[i-mybase] = sin(PI*i*6.*h) + 3.*sin(PI*i*2.*h);
   }
-  ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
-  ierr = DALocalToGlobal(appctx->da,local,INSERT_VALUES,global); CHKERRA(ierr);
+  ierr = VecRestoreArray(global,&localptr); CHKERRQ(ierr);
+  return 0;
+}
+
+int Solution(Scalar t,Vec solution, void *ctx)
+{
+  AppCtx *appctx = (AppCtx*) ctx;
+  Scalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  int    i,mybase,myend,ierr;
+
+  /* determine starting point of each processor */
+  ierr = VecGetOwnershipRange(solution,&mybase,&myend); CHKERRQ(ierr);
+
+  ex1 = exp(-36.*PI*PI*t); ex2 = exp(-4.*PI*PI*t);
+  sc1 = PI*6.*h;           sc2 = PI*2.*h;
+  ierr = VecGetArray(solution,&localptr); CHKERRQ(ierr);
+  for (i=mybase; i<myend; i++) {
+    localptr[i-mybase] = sin(i*sc1)*ex1 + 3.*sin(i*sc2)*ex2;
+  }
+  ierr = VecRestoreArray(solution,&localptr); CHKERRQ(ierr);
   return 0;
 }
 
 int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  int    ierr;
+  AppCtx   *appctx = (AppCtx*) ctx;
+  int      ierr;
+  double   norm_2,norm_max;
+  Scalar   mone = -1.0;
+  MPI_Comm comm;
 
-  ierr = VecView(global,(Viewer) appctx->win); CHKERRA(ierr);
-  return 0;
-}
+  ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
 
-/* ------------------------------------------------------------------------*/
+  ierr = VecView(global,(Viewer) appctx->win1); CHKERRQ(ierr);
 
-int RHSFunctionWave(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
-{
-  AppCtx *appctx = (AppCtx*) ctx;
-  DA     da = appctx->da;
-  Vec    local, localwork = appctx->localwork;
-  int    ierr,i,localsize; 
-  double *copyptr, *localptr,sc,dt;
+  ierr = Solution(time,appctx->solution, ctx); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,global,appctx->solution); CHKERRQ(ierr);
+  ierr = VecNorm(appctx->solution,NORM_2,&norm_2); CHKERRQ(ierr);
+  norm_2 = sqrt(appctx->h)*norm_2;
+  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max); CHKERRQ(ierr);
 
-  /*Extract local array */ 
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
-
-  /* Extract work vector */
-  ierr = VecGetArray(localwork,&copyptr); CHKERRA(ierr);
-
-  /* Update Locally - Make array of new values */
-  /* Note: I don't do anything for the first and last entry */
-  sc = .5/appctx->h;
-  ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
-  ierr = TSGetTimeStep(ts,&dt);
-  for (i=1; i< localsize-1; i++) {
-    copyptr[i] = sc * (localptr[i+1] - localptr[i-1]);
+  if (!appctx->nox || step == 1) {
+    MPIU_printf(comm,"Time-step %d norm of error %g %g\n",step,norm_2,norm_max);
   }
-  ierr = VecRestoreArray(localwork,&copyptr); CHKERRA(ierr);
 
-  /* Local to Global */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout); CHKERRA(ierr);
+  appctx->norm_2   += norm_2;
+  appctx->norm_max += norm_max;
+
+  ierr = VecView(appctx->solution,(Viewer) appctx->win2); CHKERRQ(ierr);
+
   return 0;
 }
 
-int RHSFunctionWaveStabilized(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
+
+int RHSFunctionHeat(TS ts, Scalar t,Vec globalin, Vec globalout, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   DA     da = appctx->da;
   Vec    local, localwork = appctx->localwork;
   int    ierr,i,localsize; 
-  double *copyptr, *localptr,sc,dt;
+  Scalar *copyptr, *localptr,sc;
 
   /*Extract local array */ 
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
+  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
+  ierr = VecGetArray(local,&localptr); CHKERRQ(ierr);
 
   /* Extract work vector */
-  ierr = VecGetArray(localwork,&copyptr); CHKERRA(ierr);
-
-  /* Update Locally - Make array of new values */
-  /* Note: I don't do anything for the first and last entry */
-  sc = .5/appctx->h;
-  ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
-  ierr = TSGetTimeStep(ts,&dt);
-  for (i=1; i< localsize-1; i++) {
-    copyptr[i] = sc * (localptr[i+1] - localptr[i-1]);
-    /* add stabilizing term for Euler's method */
-    copyptr[i] += (.5*(localptr[i+1] + localptr[i-1]) - localptr[i])/dt;
-  }
-  ierr = VecRestoreArray(localwork,&copyptr); CHKERRA(ierr);
-
-  /* Local to Global */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout); CHKERRA(ierr);
-  return 0;
-}
-
-int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
-{
-  AppCtx *appctx = (AppCtx*) ctx;
-  DA     da = appctx->da;
-  Vec    local, localwork = appctx->localwork;
-  int    ierr,i,localsize; 
-  double *copyptr, *localptr,sc;
-
-  /*Extract local array */ 
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
-
-  /* Extract work vector */
-  ierr = VecGetArray(localwork,&copyptr); CHKERRA(ierr);
+  ierr = VecGetArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /* Update Locally - Make array of new values */
   /* Note: I don't do anything for the first and last entry */
   sc = 1.0/(appctx->h*appctx->h);
-  ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
+  ierr = VecGetLocalSize(local,&localsize); CHKERRQ(ierr);
+  copyptr[0] = 0.0;
   for (i=1; i<localsize-1; i++) {
     copyptr[i] = sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
   }
-  ierr = VecRestoreArray(localwork,&copyptr); CHKERRA(ierr);
+  copyptr[localsize-1] = 0.0;
+  ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /* Local to Global */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout); CHKERRQ(ierr);
   return 0;
 }
 
 /* ---------------------------------------------------------------------*/
-int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,Scalar t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
-  Mat    A;
+  Mat    A = *AA;
   AppCtx *appctx = (AppCtx*) ctx;
-  int    ierr,m = appctx->M,i,mstart,mend,rank,size, idx[3];
+  int    ierr,i,mstart,mend,rank,size, idx[3];
   Scalar v[3],stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
 
   *str = ALLMAT_SAME_NONZERO_PATTERN;
-
-  ierr = MatCreate(MPI_COMM_WORLD,m,m,&A); CHKERRQ(ierr);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   ierr = MatGetOwnershipRange(A,&mstart,&mend); CHKERRQ(ierr);
-  mstart++; mend--;
+  if (mstart == 0) mstart++;
+  if (mend == appctx->M) mend--;
 
   /*
      Construct matrice one row at a time
@@ -297,55 +292,10 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  *AA = *BB = A;
   return 0;
 }
 
-int RHSMatrixWave(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSJacobianHeat(TS ts,Scalar t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
-  Mat    A;
-  AppCtx *appctx = (AppCtx*) ctx;
-  int    ierr,m = appctx->M,i,mstart,mend,rank,size, idx[3];
-  Scalar v[3],stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
-
-  *str = ALLMAT_SAME_NONZERO_PATTERN;
-
-  ierr = MatCreate(MPI_COMM_WORLD,m,m,&A); CHKERRQ(ierr);
-
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-  ierr = MatGetOwnershipRange(A,&mstart,&mend); CHKERRQ(ierr);
-  if (!rank) {
-    /*
-       First processor does periodic conditions on left
-    */
-    idx[0] = 0; idx[1] = 1; idx[2] = m-1;
-    v[0] = stwo; v[1] = sone; v[2] = sone;
-    ierr = MatSetValues(A,1,&mstart,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
-    mstart++;
-  }
-  if (rank == size-1) {
-    /*
-       Last processor does periodic conditions on right
-    */
-    mend--;
-    idx[0] = 0; idx[1] = m-2; idx[2] = m-1;
-    v[0] = sone; v[1] = sone; v[2] = stwo; 
-    ierr = MatSetValues(A,1,&mend,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
-  }
-
-  /*
-     Construct matrice one row at a time
-  */
-  v[0] = sone; v[1] = stwo; v[2] = sone;  
-  for ( i=mstart; i<mend; i++ ) {
-    idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
-  }
-
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  *AA = *BB = A;
-  return 0;
+  return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }
