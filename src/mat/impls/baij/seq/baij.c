@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.191 1999/11/20 18:32:45 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.192 1999/11/20 18:36:47 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1655,16 +1655,17 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   *B = 0;
   PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,"Mat",A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
-  C->data         = (void *) (c = PetscNew(Mat_SeqBAIJ));CHKPTRQ(c);
-  ierr            = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  C->ops->destroy = MatDestroy_SeqBAIJ;
-  C->ops->view    = MatView_SeqBAIJ;
-  C->factor       = A->factor;
-  c->row          = 0;
-  c->col          = 0;
-  c->icol         = 0;
-  c->saved_values = 0;
-  C->assembled    = PETSC_TRUE;
+  C->data           = (void *) (c = PetscNew(Mat_SeqBAIJ));CHKPTRQ(c);
+  ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  C->ops->destroy   = MatDestroy_SeqBAIJ;
+  C->ops->view      = MatView_SeqBAIJ;
+  C->factor         = A->factor;
+  c->row            = 0;
+  c->col            = 0;
+  c->icol           = 0;
+  c->saved_values   = 0;
+  c->keepzeroedrows = a->keepzeroedrows;
+  C->assembled      = PETSC_TRUE;
 
   c->m = C->m   = a->m;
   c->n = C->n   = a->n;
