@@ -328,22 +328,22 @@ runex22_2:
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   ${RM} -f ex22_2.tmp
 runex24:
-	-@${MPIRUN} -np 1 ./ex24 -pc_type icc -mat_type seqsbaij > ex24_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex24 -pc_type icc -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_1.tmp 2>&1; \
            if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
            else echo "Possible problem with ex24_1, diffs above"; fi; \
            ${RM} -f ex24_1.tmp
 runex24_2:
-	-@${MPIRUN} -np 1 ./ex24 -pc_type icc -pc_icc_levels 2  -mat_type seqsbaij > ex24_2.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex24 -pc_type icc -pc_icc_levels 2  -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_2.tmp 2>&1; \
            if (${DIFF} output/ex24_2.out ex24_2.tmp) then true; \
            else echo "Possible problem with ex24_2, diffs above"; fi; \
            ${RM} -f ex24_2.tmp
 runex24_3:
-	-@${MPIRUN} -np 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij > ex24_3.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_3.tmp 2>&1; \
            if (${DIFF} output/ex24_3.out ex24_3.tmp) then true; \
            else echo "Possible problem with ex24_3, diffs above"; fi; \
            ${RM} -f ex24_3.tmp
 runex24_4:
-	-@${MPIRUN} -np 2 ./ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_type mpisbaij > ex24_4.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_4.tmp 2>&1; \
            if (${DIFF} output/ex24_4.out ex24_4.tmp) then true; \
            else echo "Possible problem with ex24_4, diffs above"; fi; \
            ${RM} -f ex24_4.tmp
