@@ -182,6 +182,9 @@ package:
 tree: ${ACTION}
 	-@if [ "${DIRS}" != "" ]; then \
 	  for dir in ${DIRS} foo ; do \
+            if [ "$$dir" = "fortran" -a "${C_FLINKER}foo" = "foo" ]; then \
+              continue;\
+            fi;\
             if [ -d $$dir ]; then \
 	      r=`egrep requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
