@@ -45,6 +45,9 @@ int AppCtxView(Draw idraw,void *iappctx)
 
   /* get number of vertices per cell */
   ierr = AODataSegmentGetInfo(appctx->aodata,"cell","vertex",&ncell,0);CHKERRQ(ierr);
+  if (ncell != 6) {
+    SETERRQ(1,1,"This code is only for quadratic triangular elements");
+  }
 
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
@@ -92,13 +95,16 @@ int AppCtxView(Draw idraw,void *iappctx)
        Draws only boundary edges 
   */
   if (showboundary) {
+    /* loop over all cells on this processor */
     for (i=0; i<cell_n; i++ ) {
       xp = 0.0; yp = 0.0;
       xl  = vertex_value[2*cell_vertex[ncell*i]]; yl = vertex_value[2*cell_vertex[ncell*i] + 1];
       ijp = ncell*i;
+      /* loop over all edges of the cell (in this case always 6) */      
       for (j=0; j<ncell; j++) {
         ij = ncell*i + ((j+1) % ncell);
         xr = vertex_value[2*cell_vertex[ij]]; yr = vertex_value[2*cell_vertex[ij] + 1];
+        /* are both ends of the edge on the boundary ? Note this can generate incorrect edges */
         if (BTLookup(vertex_boundary_flag,cell_vertex[ijp]) && BTLookup(vertex_boundary_flag,cell_vertex[ij])) {
           ierr = DrawLine(drawglobal,xl,yl,xr,yr,c);CHKERRQ(ierr);
           ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE);CHKERRQ(ierr);
@@ -115,8 +121,9 @@ int AppCtxView(Draw idraw,void *iappctx)
     }
   }
 
+
   /*
-      Number vertices
+      Plot the vertices with little points
   */
   if (showvertices) {
     for (i=0; i<vertex_n; i++ ) {
@@ -126,6 +133,10 @@ int AppCtxView(Draw idraw,void *iappctx)
       ierr = DrawPoint(drawlocal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
     }
   }
+
+  /*
+      Show the vertex numbering on the plot
+  */
   if (shownumbers) {
     for (i=0; i<vertex_n; i++ ) {
       xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
@@ -136,6 +147,9 @@ int AppCtxView(Draw idraw,void *iappctx)
     }
   }
 
+  /*
+      Plot the boundary vertices with little points
+  */
   if (showboundaryvertices) {
     for ( i=0; i<nverts; i++ ) {
       xm = vertex_value[2*verts[i]]; ym = vertex_value[2*verts[i] + 1];
@@ -185,6 +199,9 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   /* get number of vertices per cell */
   ierr = AODataSegmentGetInfo(appctx->aodata,"cell","vertex",&ncell,0);CHKERRQ(ierr);
+  if (ncell != 6) {
+    SETERRQ(1,1,"This code is only for quadratic triangular elements");
+  }
 
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
@@ -209,72 +226,38 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   ierr = VecGetArray(algebra->x_local,&values);CHKERRQ(ierr);
 
   /*
-      Handle linear (triangular elements)
+      Plots solution on quadratic element by chopping it into four subtriangles and 
+      doing a seperate contour plot on each
   */
-  if (ncell == 3) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
-  /*
-      Handle bilinear (quadrilateral elements)
-  */
-  } else if (ncell == 4) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+3]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
-  /*
-      Handle quadratic (triangular elements)
-  */
-  } else if (ncell == 6) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+5]]; y2 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+5]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+2]]; y1 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+1]];
-      c1 = values[cell_vertex[ncell*i+2]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+1]];
-      c1 = values[cell_vertex[ncell*i+5]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+4]]; y0 = vertex_value[2*cell_vertex[ncell*i+4] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+4]];
-      c1 = values[cell_vertex[ncell*i+5]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
+  for (i=0; i<cell_n; i++ ) {
+    x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+5]]; y2 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
+    c0 = values[cell_vertex[ncell*i]];
+    c1 = values[cell_vertex[ncell*i+1]];
+    c2 = values[cell_vertex[ncell*i+5]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+2]]; y1 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
+    c0 = values[cell_vertex[ncell*i+1]];
+    c1 = values[cell_vertex[ncell*i+2]];
+    c2 = values[cell_vertex[ncell*i+3]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
+    c0 = values[cell_vertex[ncell*i+1]];
+    c1 = values[cell_vertex[ncell*i+5]];
+    c2 = values[cell_vertex[ncell*i+3]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    x0 = vertex_value[2*cell_vertex[ncell*i+4]]; y0 = vertex_value[2*cell_vertex[ncell*i+4] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
+    c0 = values[cell_vertex[ncell*i+4]];
+    c1 = values[cell_vertex[ncell*i+5]];
+    c2 = values[cell_vertex[ncell*i+3]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
   }   
 
   ierr = DrawSynchronizedFlush(drawglobal);CHKERRQ(ierr);
