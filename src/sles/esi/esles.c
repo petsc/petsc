@@ -116,7 +116,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::
     PC  pc;
     KSP ksp;
     int ierr  = SLESGetKSP(this->sles,&ksp);if (ierr) return ierr;
-        ierr  = KSPGetPC(this->sles,&pc);if (ierr) return ierr;
+        ierr  = KSPGetPC(ksp,&pc);if (ierr) return ierr;
     this->pre = new ::esi::petsc::Preconditioner<double,int>(pc); 
   }
   ipre = this->pre;
