@@ -264,10 +264,18 @@ Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
       per 60 minutes
 Long jobs splong.tc.cornell.edu limited to 6CPU hours per day
 
+
 Scheduler use: llsubmit
 http://www.tc.cornell.edu/Resources/
 spstatus
 use kpasswd to change the password
+
+> info from Doug Elias (elias@TC.Cornell.EDU)
+> For our installation, you'll almost certainly want to use both
+> "-qtune=pwr2" and "-qtune=pwr2s" ... the "pwr2s" directs the
+> compiler to tune the executable for running on processors that have
+> smaller cache lines (64b, rather than 128 or 256, as i recall), and
+> this fits the majority of our nodes. 
 
 ---------
 
