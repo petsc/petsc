@@ -229,7 +229,7 @@ int ISView_Stride(IS is,PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -332,7 +332,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
 
-  if ((first == 0 && step == 1) || (first == max && step == -1 && min == 0)) {
+  if ((!first && step == 1) || (first == max && step == -1 && !min)) {
     Nindex->isperm  = PETSC_TRUE;
   } else {
     Nindex->isperm  = PETSC_FALSE;

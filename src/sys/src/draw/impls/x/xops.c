@@ -603,14 +603,12 @@ int PetscDrawXGetDisplaySize_Private(const char name[],int *width,int *height)
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    SETERRQ1(1,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
+    SETERRQ1(PETSC_ERR_LIB,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
     to this X server and either your DISPLAY variable\n\
     is set or you use the -display name option\n",name);
   }
-
   *width  = DisplayWidth(display,0);
   *height = DisplayHeight(display,0);
-
   XCloseDisplay(display);
   PetscFunctionReturn(0);
 }

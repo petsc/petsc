@@ -62,7 +62,7 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
     num = 0;
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
-	if (mask[i] == 0) {
+	if (!mask[i]) {
 	    goto L400;
 	}
 /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
@@ -79,7 +79,7 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
 	i__2 = ccsize;
 	for (j = 1; j <= i__2; ++j) {
 	    node = ls[j];
-	    if (mask[node] == 0) {
+	    if (!mask[node]) {
 		goto L300;
 	    }
 	    SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &

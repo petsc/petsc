@@ -61,7 +61,7 @@ int SPARSEPACKgenrcm(int *neqns,int *xadj,int *adjncy,int *perm,int *mask,int *x
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
 /*          FOR EACH MASKED CONNECTED COMPONENT ...*/
-	if (mask[i] == 0) {
+	if (!mask[i]) {
 	    goto L200;
 	}
 	root = i;

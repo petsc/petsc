@@ -172,7 +172,7 @@ int PetscSharedInitialize(MPI_Comm comm)
         SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
       }
 #else
-      if (mktemp(filename) == PETSC_NULL) {
+      if (!mktemp(filename)) {
         SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
       }
 #endif

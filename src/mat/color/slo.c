@@ -141,14 +141,14 @@ L50:
     /*        Mark the size of the largest clique */
     /*        found during the ordering. */
 
-    if (mindeg + 1 == numord && *maxclq == 0) {
+    if (mindeg + 1 == numord && !*maxclq) {
 	*maxclq = numord;
     }
 
     /*        Termination test. */
 
     --numord;
-    if (numord == 0) {
+    if (!numord) {
 	goto L80;
     }
 
@@ -193,7 +193,7 @@ L50:
 
                 /*                 Delete column ic from the numdeg list. */
 
-		if (iwa2[ic] == 0) {
+		if (!iwa2[ic]) {
 		    iwa1[numdeg] = iwa3[ic];
 		} else {
 		    iwa3[iwa2[ic]] = iwa3[ic];

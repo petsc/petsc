@@ -142,7 +142,7 @@ int establish(u_short portnum)
   uname(&utname); strncpy(myname,utname.nodename,MAXHOSTNAME);
   bzero(&sa,sizeof(struct sockaddr_in));
   hp = gethostbyname(myname);
-  if (hp == NULL) {
+  if (!hp) {
      fprintf(stdout,"RECEIVE: error from gethostbyname\n");
      return(-1);
   }

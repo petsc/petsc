@@ -424,7 +424,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   lu->nprow = size/2;               /* Default process rows.      */
-  if (lu->nprow == 0) lu->nprow = 1;
+  if (!lu->nprow) lu->nprow = 1;
   lu->npcol = size/lu->nprow;           /* Default process columns.   */
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);

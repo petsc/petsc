@@ -49,15 +49,10 @@ int MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
 
   /* Get the function pointers for the requrested method */
   if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-
   ierr =  PetscFListFind(ctx->comm,MatSNESMPetscFList,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
-
-  if (!r) SETERRQ(1,"Unknown MatSNESMF type given");
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatSNESMF type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +194,7 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
   if (j->usesnes) {
     ierr = SNESGetSolution(j->snes,&j->current_u);CHKERRQ(ierr);
     ierr = SNESGetFunction(j->snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    if (j->w == PETSC_NULL) {
+    if (!j->w) {
       ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
     }
   }
@@ -459,7 +454,7 @@ int MatSNESMFSetBase_FD(Mat J,Vec U)
   ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
   ctx->usesnes   = PETSC_FALSE;
-  if (ctx->w == PETSC_NULL) {
+  if (!ctx->w) {
     ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

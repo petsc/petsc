@@ -601,7 +601,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       for (l=0; l<coloring->ncolumns[k]; l++) {
 	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
 	dx  = xx[col];
-	if (dx == 0.0) dx = 1.0;
+	if (!dx) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
 	if (dx < umin && dx >= 0.0)      dx = umin;
 	else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -638,7 +638,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       for (l=0; l<coloring->ncolumns[k]; l++) {
 	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
 	dx  = xx[col];
-	if (dx == 0.0) dx = 1.0;
+	if (!dx) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
 	if (dx < umin && dx >= 0.0)      dx = umin;
 	else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -768,7 +768,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+      if (!dx) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -801,7 +801,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+      if (!dx) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;

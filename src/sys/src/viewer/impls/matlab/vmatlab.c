@@ -121,7 +121,7 @@ int PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,c
   if (ml->rank) PetscFunctionReturn(0);
   PetscLogInfo(0,"Getting Matlab array %s\n",name);
   mat  = matGetVariable(ml->ep,name);
-  if (!mat) SETERRQ1(1,"Unable to get array %s from matlab",name);
+  if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscLogInfo(0,"Got Matlab array %s\n",name);
   PetscFunctionReturn(0);

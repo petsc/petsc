@@ -790,7 +790,7 @@ int PCSetUp(PC pc)
   if (pc->setupcalled > 1) {
     PetscLogInfo(pc,"PCSetUp:Setting PC with identical preconditioner\n");
     PetscFunctionReturn(0);
-  } else if (pc->setupcalled == 0) {
+  } else if (!pc->setupcalled) {
     PetscLogInfo(pc,"PCSetUp:Setting up new PC\n");
   } else if (pc->flag == SAME_NONZERO_PATTERN) {
     PetscLogInfo(pc,"PCSetUp:Setting up PC with same nonzero pattern\n");

@@ -1839,16 +1839,12 @@ int SNESSetType(SNES snes,const SNESType type)
 
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-
   ierr =  PetscFListFind(snes->comm,SNESList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-
-  if (!r) SETERRQ1(1,"Unable to find requested SNES type %s",type);
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   if (snes->data) {ierr = PetscFree(snes->data);CHKERRQ(ierr);}
   snes->data = 0;
   ierr = (*r)(snes);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
-
   PetscFunctionReturn(0); 
 }
 

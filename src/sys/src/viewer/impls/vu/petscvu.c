@@ -48,7 +48,7 @@ int PetscViewerFlush_VU(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) fflush(vu->fd);
+  if (!rank) fflush(vu->fd);
   PetscFunctionReturn(0);  
 }
 
@@ -76,7 +76,7 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
   int            ierr;
 
   PetscFunctionBegin;
-  if (name == PETSC_NULL) PetscFunctionReturn(0);
+  if (!name) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
   if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
     break;
   case FILE_MODE_UPDATE:
     vu->fd = fopen(fname, "r+");
-    if (vu->fd == PETSC_NULL) {
+    if (!vu->fd) {
       vu->fd = fopen(fname, "w+");
     }
     break;
@@ -102,7 +102,7 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
        not a+, which opens at the beginning, but makes writes at the end.
     */
     vu->fd = fopen(fname, "r+");
-    if (vu->fd == PETSC_NULL) {
+    if (!vu->fd) {
       vu->fd = fopen(fname, "w+");
     } else {
       ierr = fseek(vu->fd, 0, SEEK_END);CHKERRQ(ierr);

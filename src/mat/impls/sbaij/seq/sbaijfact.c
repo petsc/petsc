@@ -1124,7 +1124,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     }
 
     /* check for zero pivot and save diagoanl element */
-    if (dk == 0.0){
+    if (dk != 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");    
       /*
     } else if (PetscRealPart(dk) < 0.0){

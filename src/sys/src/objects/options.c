@@ -65,11 +65,11 @@ int PetscOptionsAtoi(const char name[],int *a)
     *a = -1;
   } else {
     if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') {
-      SETERRQ1(1,"Input string %s has no integer value (do not include . in it)",name);
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
     }
     for (i=1; i<len; i++) {
       if (name[i] < '0' || name[i] > '9') {
-        SETERRQ1(1,"Input string %s has no integer value (do not include . in it)",name);
+        SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
     *a  = atoi(name);
@@ -103,7 +103,7 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
     *a = PETSC_DECIDE;
   } else {
     if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') {
-      SETERRQ1(1,"Input string %s has no numeric value ",name);
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
     }
     *a  = atof(name);
   }
@@ -602,7 +602,7 @@ int PetscOptionsSetValue(const char iname[],const char value[])
     }
   }
   if (N >= MAXOPTIONS) {
-    SETERRQ1(1,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
   }
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
@@ -979,7 +979,7 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
       ierr = PetscStrcmp(value,"off",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
 
-      SETERRQ1(1,"Unknown logical value: %s",value);
+      SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);
     }
   } else {
     if (flg) *flg = PETSC_FALSE;

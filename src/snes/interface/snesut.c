@@ -178,7 +178,7 @@ int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   viewer = PETSC_VIEWER_STDOUT_(snes->comm);
 
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
-  if (its == 0 || !history || its > len) {
+  if (!its || !history || its > len) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
@@ -468,7 +468,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReas
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context set");
-  if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
+  if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
   if (*reason) {

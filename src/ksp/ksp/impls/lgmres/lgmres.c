@@ -339,7 +339,7 @@ int LGMREScycle(int *itcount,KSP ksp)
   if (!ksp->reason && ksp->its < max_it && aug_dim > 0) {
 
      /*AUG_TEMP contains the new augmentation vector (assigned in  BuildLgmresSoln) */
-    if (lgmres->aug_ct == 0) {
+    if (!lgmres->aug_ct) {
         spot = 0;
         lgmres->aug_ct++;
      } else if (lgmres->aug_ct < aug_dim) {
@@ -569,7 +569,7 @@ static int BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 
   /*LGMRES_MOD - if augmenting has happened we need to form the solution 
     using the augvecs */
-  if (it_aug == 0) { /* all its are from arnoldi */
+  if (!it_aug) { /* all its are from arnoldi */
      ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&VEC_VV(0));CHKERRQ(ierr); 
   } else { /*use aug vecs */ 
      /*first do regular krylov directions */

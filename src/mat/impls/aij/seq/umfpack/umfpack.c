@@ -67,8 +67,8 @@ int MatDestroy_UMFPACK(Mat A) {
 
   PetscFunctionBegin;
   if (lu->CleanUpUMFPACK) {
-    umfpack_di_free_symbolic(&lu->Symbolic) ;
-    umfpack_di_free_numeric(&lu->Numeric) ;
+    umfpack_di_free_symbolic(&lu->Symbolic);
+    umfpack_di_free_numeric(&lu->Numeric);
     ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
     ierr = PetscFree(lu->W);CHKERRQ(ierr);
     if (lu->PetscMatOdering) {
@@ -96,8 +96,8 @@ int MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
   status = umfpack_di_wsolve(UMFPACK_At,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);  
   umfpack_di_report_info(lu->Control, lu->Info); 
   if (status < 0){
-    umfpack_di_report_status(lu->Control, status) ;
-    SETERRQ(1,"umfpack_di_wsolve failed") ;
+    umfpack_di_report_status(lu->Control, status);
+    SETERRQ(1,"umfpack_di_wsolve failed");
   }
     
   ierr = VecRestoreArray(b,&ba);
@@ -117,12 +117,12 @@ int MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) {
   /* numeric factorization of A' */
   /* ----------------------------*/
   if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
-      umfpack_di_free_numeric(&lu->Numeric) ;
+      umfpack_di_free_numeric(&lu->Numeric);
   }
-  status = umfpack_di_numeric (ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info) ;
+  status = umfpack_di_numeric (ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
   if (status < 0) SETERRQ(1,"umfpack_di_numeric failed");
   /* report numeric factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_di_report_numeric (lu->Numeric, lu->Control) ;
+  (void) umfpack_di_report_numeric (lu->Numeric, lu->Control);
 
   if (lu->flg == DIFFERENT_NONZERO_PATTERN){  /* first numeric factorization */
     /* allocate working space to be used by Solve */
@@ -165,7 +165,7 @@ int MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
   /* initializations */
   /* ------------------------------------------------*/
   /* get the default control parameters */
-  umfpack_di_defaults (lu->Control) ;
+  umfpack_di_defaults (lu->Control);
   lu->perm_c = PETSC_NULL;  /* use defaul UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0; /* max num of iterative refinement steps to attempt */
 
@@ -230,12 +230,12 @@ int MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
     status = umfpack_di_symbolic(n,m,ai,aj,av,&lu->Symbolic,lu->Control,lu->Info);
   }
   if (status < 0){
-    umfpack_di_report_info(lu->Control, lu->Info) ;
-    umfpack_di_report_status(lu->Control, status) ;
+    umfpack_di_report_info(lu->Control, lu->Info);
+    umfpack_di_report_status(lu->Control, status);
     SETERRQ(1,"umfpack_di_symbolic failed");
   }
   /* report sumbolic factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_di_report_symbolic(lu->Symbolic, lu->Control) ;
+  (void) umfpack_di_report_symbolic(lu->Symbolic, lu->Control);
 
   lu->flg = DIFFERENT_NONZERO_PATTERN;
   lu->ai  = ai; 

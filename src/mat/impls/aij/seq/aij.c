@@ -141,7 +141,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,const int im[],int n,const int in[],const Pe
       } else {
         value = v[k + l*m];
       }
-      if (value == 0.0 && ignorezeroentries) continue;
+      if (value != 0.0 && ignorezeroentries) continue;
 
       if (!sorted) low = 0; high = nrow;
       while (high-low > 5) {
@@ -575,7 +575,7 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
   } else if (isdraw) {
     ierr = MatView_SeqAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -983,7 +983,7 @@ int MatMissingDiagonal_SeqAIJ(Mat A)
   diag = a->diag;
   for (i=0; i<A->m; i++) {
     if (jj[diag[i]] != i) {
-      SETERRQ1(1,"Matrix is missing diagonal number %d",i);
+      SETERRQ1(PETSC_ERR_PLIB,"Matrix is missing diagonal number %d",i);
     }
   }
   PetscFunctionReturn(0);
@@ -1013,7 +1013,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     v        = a->a;
 
     /* this is wrong when fshift omega changes each iteration */
-    if (omega == 1.0 && fshift == 0.0) {
+    if (omega == 1.0 && !fshift) {
       for (i=0; i<m; i++) {
         mdiag[i]    = v[diag[i]];
         a->idiag[i] = 1.0/v[diag[i]];
@@ -1998,7 +1998,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+      if (dx != 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;

@@ -250,7 +250,7 @@ int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
-  if (lu->myid == 0 && lu->id.ICNTL(11)>0) {
+  if (!lu->myid && lu->id.ICNTL(11)>0) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
@@ -270,17 +270,17 @@ int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
 
   /* infomation local to each processor */
-  if (lu->myid == 0) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
+  if (!lu->myid) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(A->comm);
-  if (lu->myid == 0) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
+  if (!lu->myid) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(A->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(A->comm);
-  if (lu->myid == 0) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
+  if (!lu->myid) ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(A->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(A->comm);
 
-  if (lu->myid == 0){ /* information from the host */
+  if (!lu->myid){ /* information from the host */
     ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",lu->id.RINFOG(2));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",lu->id.RINFOG(3));CHKERRQ(ierr);
@@ -588,7 +588,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   }
 
   /* numerical factorization phase */
-  if(lu->id.ICNTL(18) == 0) { 
+  if(!lu->id.ICNTL(18)) { 
     if (!lu->myid) {
 #if defined(PETSC_USE_COMPLEX)
       lu->id.a = (mumps_double_complex*)lu->val; 

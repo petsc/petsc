@@ -83,7 +83,7 @@ int SPARSEPACKgennd(int *neqns,int *xadj,int *adjncy,int *mask,int *perm,int *xl
     for (i = 1; i <= i__1; ++i) {
 /*           FOR EACH MASKED COMPONENT ...*/
 L200:
-	if (mask[i] == 0) {
+	if (!mask[i]) {
 	    goto L300;
 	}
 	root = i;

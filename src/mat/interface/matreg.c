@@ -48,7 +48,7 @@ int MatSetType(Mat mat,const MatType matype)
     /* Get the function pointers for the matrix requested */
     if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
+    if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
     /* free the old data structure if it existed */
     if (mat->ops->destroy) {
@@ -76,7 +76,6 @@ int MatSetType(Mat mat,const MatType matype)
     }
     /* create the new data structure */
     ierr = (*r)(mat);CHKERRQ(ierr);
-
     ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);
   }
   ierr = PetscPublishAll(mat);CHKERRQ(ierr);

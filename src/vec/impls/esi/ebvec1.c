@@ -372,7 +372,7 @@ int VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
     ierr = x->evec->norm1(*norm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     ierr = x->evec->normInfinity(*norm);CHKERRQ(ierr);
-  } else SETERRQ1(1,"Unknown NormType %d",ntype);
+  } else SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown NormType %d",ntype);
   PetscFunctionReturn(0);
 }
 

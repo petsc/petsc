@@ -336,7 +336,7 @@ static int PCSetUp_MG(PC pc)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  if (pc->setupcalled == 0) {
+  if (!pc->setupcalled) {
     ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
      
     for (i=1; i<n; i++) {
@@ -393,7 +393,7 @@ static int PCSetUp_MG(PC pc)
     }
   }
 
-  if (pc->setupcalled == 0) {
+  if (!pc->setupcalled) {
     if (monitor) {
       ierr = PetscObjectGetComm((PetscObject)mg[0]->smoothd,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);

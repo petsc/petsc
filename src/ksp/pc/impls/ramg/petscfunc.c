@@ -37,7 +37,7 @@ int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
 
   sprintf(filename,"petsctol"); 
 
-  if (n == 0){
+  if (!n){
      PetscFOpen(MPI_COMM_WORLD,filename,"w",&ftol);
      /*  PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); */
      PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm); 

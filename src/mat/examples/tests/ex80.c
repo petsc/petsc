@@ -32,7 +32,7 @@ int main(int argc,char **args)
 
   ierr = PetscMalloc(5*sizeof(int),&ia);CHKERRQ(ierr);
   ierr = PetscMalloc(16*sizeof(int),&ja);CHKERRQ(ierr);
-  if (rank == 0) {
+  if (!rank) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;

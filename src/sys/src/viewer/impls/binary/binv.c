@@ -398,7 +398,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
       ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
-        SETERRQ1(1,"Cannot locate file: %s on node zero",vbinary->filename);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
       } else if (!found) {
         PetscLogInfo(viewer,"Nonzero processor did not locate readonly file");
         fname = 0;

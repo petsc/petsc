@@ -59,7 +59,7 @@ int PetscInitialize_DynamicLibraries(void)
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
+    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
@@ -453,7 +453,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void
       } else {
         PetscErrorPrintf("Unable to find function. Search path:\n");
         ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
-        SETERRQ1(1,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
+        SETERRQ1(PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
       }
 #endif
     }

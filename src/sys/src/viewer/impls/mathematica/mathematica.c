@@ -132,7 +132,7 @@ int PetscViewerMathematicaSetupConnection_Private(PetscViewer v) {
 #ifdef PETSC_HAVE_MATHEMATICA
   /* Link name */
   argv[0] = "-linkname";
-  if (vmath->linkname == PETSC_NULL) {
+  if (!vmath->linkname) {
     argv[1] = "math -mathlink";
   } else {
     argv[1] = vmath->linkname;
@@ -140,7 +140,7 @@ int PetscViewerMathematicaSetupConnection_Private(PetscViewer v) {
 
   /* Link host */
   argv[2] = "-linkhost";
-  if (vmath->linkhost == PETSC_NULL) {
+  if (!vmath->linkhost) {
     ierr = PetscGetHostName(hostname, 255);CHKERRQ(ierr);
     argv[3] = hostname;
   } else {
@@ -706,7 +706,7 @@ int PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
   PetscValidHeaderSpecific(v,      VEC_COOKIE,2);
 
   /* Determine the object name */
-  if (vmath->objName == PETSC_NULL) {
+  if (!vmath->objName) {
     name = "vec";
   } else {
     name = (char *) vmath->objName;
@@ -1220,7 +1220,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
     /* ml->colPartition[level][part] = ml[[5,level,part]] */
     ierr = PetscMalloc(ml->numLevels * sizeof(int **), &ml->colPartition);CHKERRQ(ierr);
     for(level = 0; level < ml->numLevels; level++) {
-      if (ml->numPartitions[level] == 0) continue;
+      if (!ml->numPartitions[level]) continue;
       ierr = PetscMalloc(ml->numPartitions[level] * sizeof(int *), &ml->colPartition[level]);CHKERRQ(ierr);
       for(part = 0; part < ml->numPartitions[level]; part++) {
         MLPutFunction(link, "EvaluatePacket", 1);
@@ -1384,10 +1384,10 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
        ml->factors[level][part][FACT_DINV] = Divide[1,Select[ml[[7,level,part,2]],(#>ml[[9]])&]]
        ml->factors[level][part][FACT_V]    = ml[[7,level,part,3]] */
     ierr = PetscMalloc(ml->numLevels * sizeof(double ***), &ml->factors);CHKERRQ(ierr);
-    for(level = 0; level < ml->numLevels; level++) {
-      if (ml->numPartitions[level] == 0) continue;
+    for (level = 0; level < ml->numLevels; level++) {
+      if (!ml->numPartitions[level]) continue;
       ierr = PetscMalloc(ml->numPartitions[level] * sizeof(double **), &ml->factors[level]);CHKERRQ(ierr);
-      for(part = 0; part < ml->numPartitions[level]; part++) {
+      for (part = 0; part < ml->numPartitions[level]; part++) {
         ierr = PetscMalloc(NUM_FACT_DIV * sizeof(double *), &ml->factors[level][part]);CHKERRQ(ierr);
         /* U, or U^T in LAPACK terms */
         MLPutFunction(link, "EvaluatePacket", 1);
@@ -1475,7 +1475,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
     ierr = PetscMalloc(ml->numLevels * sizeof(Vec), &ml->colReduceVecs);CHKERRQ(ierr);
     ierr = PetscMalloc(ml->numLevels * sizeof(Vec), &ml->colReduceVecs2);CHKERRQ(ierr);
     for(level = 0; level < ml->numLevels; level++) {
-      if (ml->numPartitions[level] == 0) continue;
+      if (!ml->numPartitions[level]) continue;
       /* numRows = ml[[8,level,1]] */
       MLPutFunction(link, "EvaluatePacket", 1);
         MLPutFunction(link, "Part", 4);

@@ -450,7 +450,7 @@ int PetscTokenFind(PetscToken *a,char *result[])
 
   PetscFunctionBegin;
   *result = a->current;
-  if (ptr && *ptr == 0) *result = 0;
+  if (ptr && !*ptr) *result = 0;
   while (ptr) {
     if (*ptr == a->token) {
       *ptr++ = 0; 
@@ -458,7 +458,7 @@ int PetscTokenFind(PetscToken *a,char *result[])
       a->current = ptr;
       break;
     }
-    if (*ptr == 0) {
+    if (!*ptr) {
       a->current = 0;
       break;
     }
@@ -654,7 +654,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
     epar += 1;
     ierr = PetscOptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
     if (!flag) {
-      SETERRQ1(1,"Substitution string ${%s} not found as environmental variable",par);
+      SETERRQ1(PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
     }
     ierr = PetscStrcat(work,env);CHKERRQ(ierr);
     ierr = PetscStrcat(work,epar);CHKERRQ(ierr);
@@ -662,7 +662,6 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
     ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

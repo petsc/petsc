@@ -478,7 +478,7 @@ int VecNormalize (Vec x,PetscReal *val)
   PetscValidType(x,1);
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
-  if (*val == 0.0) {
+  if (!*val) {
     PetscLogInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm");
   } else {
     PetscScalar tmp = 1.0/(*val);
@@ -2287,7 +2287,7 @@ int VecViewFromOptions(Vec vec, char *title)
     if (title != PETSC_NULL) {
       titleStr = title;
     } else {
-      ierr = PetscObjectName((PetscObject) vec);                                                          CHKERRQ(ierr) ;
+      ierr = PetscObjectName((PetscObject) vec);                                                          CHKERRQ(ierr);
       titleStr = vec->name;
     }
     ierr = PetscDrawSetTitle(draw, titleStr);CHKERRQ(ierr);
@@ -3005,7 +3005,7 @@ int VecStashView(Vec v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ1(1,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
+  if (!match) SETERRQ1(PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   s = &v->bstash;

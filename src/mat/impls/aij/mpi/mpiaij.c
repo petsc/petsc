@@ -217,7 +217,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0) continue;
+          if (ignorezeroentries && value != 0.0) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
@@ -246,7 +246,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
             }
           } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0) continue;
+          if (ignorezeroentries && value != 0.0) continue;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
@@ -254,10 +254,10 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          if (ignorezeroentries && v[i*n] == 0.0) continue;
+          if (ignorezeroentries && v[i*n] != 0.0) continue;
           ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
         } else {
-          if (ignorezeroentries && v[i] == 0.0) continue;
+          if (ignorezeroentries && v[i] != 0.0) continue;
           ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
@@ -755,7 +755,7 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   nz   = A->nz + B->nz;
-  if (rank == 0) {
+  if (!rank) {
     header[0] = MAT_FILE_COOKIE;
     header[1] = mat->M;
     header[2] = mat->N;
@@ -780,7 +780,7 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   }
 
   /* store the row lengths to the file */
-  if (rank == 0) {
+  if (!rank) {
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,row_lengths,mat->m,PETSC_INT,1);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
@@ -813,7 +813,7 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   if (cnt != A->nz + B->nz) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
 
   /* store the column indices to the file */
-  if (rank == 0) {
+  if (!rank) {
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
@@ -846,7 +846,7 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   if (cnt != A->nz + B->nz) SETERRQ2(1,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
 
   /* store the column values to the file */
-  if (rank == 0) {
+  if (!rank) {
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
     for (i=1; i<size; i++) {

@@ -888,7 +888,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
       key = row*Nbs + col + 1;
       h1  = HASH(size,key,tmp);
       for (k=0; k<size; k++){
-        if (HT[(h1+k)%size] == 0.0) {
+        if (!HT[(h1+k)%size]) {
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = a->a + j*bs2;
           break;
@@ -911,7 +911,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
       key = row*Nbs + col + 1;
       h1  = HASH(size,key,tmp);
       for (k=0; k<size; k++){
-        if (HT[(h1+k)%size] == 0.0) {
+        if (!HT[(h1+k)%size]) {
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = b->a + j*bs2;
           break;
@@ -932,7 +932,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   for (i=0,j=0; i<size; i++) {
     if (HT[i]) {j++;}
   }
-  PetscLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",(j== 0)? 0.0:((PetscReal)(ct+j))/j,max);
+  PetscLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",(!j)? 0.0:((PetscReal)(ct+j))/j,max);
 #endif
   PetscFunctionReturn(0);
 }

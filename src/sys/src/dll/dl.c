@@ -222,16 +222,16 @@ int PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 
   PetscFunctionBegin;
 
-  ierr = PetscMalloc(1024*sizeof(char),&par2);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
+  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&par2);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRetrieve(comm,libname,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    SETERRQ1(1,"Unable to locate dynamic library:\n  %s\n",libname);
+    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",libname);
   }
 
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    SETERRQ2(1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
+    SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
   }
 #endif
 
@@ -684,7 +684,7 @@ int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char
   ierr = PetscTokenFind(token1,&libname1);CHKERRQ(ierr);
   while (libname1) {
     fp    = fopen(libname1,"r"); if (!fp) continue;
-    while ((found = fgets(fbuf,1024,fp))) {
+    while ((found = fgets(fbuf,PETSC_MAX_PATH_LEN,fp))) {
       if (found[0] == '!') continue;
       ierr = PetscStrstr(found,suffix,&f2);CHKERRQ(ierr);
       if (f2) { /* found library name */

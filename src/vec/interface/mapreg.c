@@ -43,13 +43,11 @@ int PetscMapSetType(PetscMap map, const PetscMapType method)
     ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscFListFind(map->comm, PetscMapList, method, (void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown map type: %s", method);
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown map type: %s", method);
   if (map->ops->destroy != PETSC_NULL) {
     ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
   ierr = (*r)(map);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject) map, method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -61,7 +61,7 @@ int SPARSEPACKqmdrch(int *root, int *xadj, int *adjncy,
     i__1 = istop;
     for (i = istrt; i <= i__1; ++i) {
 	nabor = adjncy[i];
-	if (nabor == 0) {
+	if (!nabor) {
 	    PetscFunctionReturn(0);
 	}
 	if (marker[nabor] != 0) {
@@ -90,7 +90,7 @@ L300:
 	    nabor = -node;
 	    if (node < 0) {
 		goto L300;
-	    } else if (node == 0) {
+	    } else if (!node) {
 		goto L600;
 	    } else {
 		goto L400;

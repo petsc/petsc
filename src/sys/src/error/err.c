@@ -191,7 +191,8 @@ static const char *PetscErrorStrings[] = {
           "  ",
           "  ",
           "  ",
-  /*85 */ "Null argument, when expecting valid pointer"};
+  /*85 */ "Null argument, when expecting valid pointer",
+  /*86 */ "Unknown type. Check for miss-spelling or missing external package needed for type"};
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorMessage" 

@@ -522,7 +522,7 @@ int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
       break;
     case FILE_MODE_UPDATE:
       vascii->fd = fopen(fname,"r+");
-      if (vascii->fd == PETSC_NULL) {
+      if (!vascii->fd) {
         vascii->fd = fopen(fname,"w+");
       }
       break;
@@ -531,7 +531,7 @@ int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
          not a+, which opens at the beginning, but makes writes at the end.
       */
       vascii->fd = fopen(fname,"r+");
-      if (vascii->fd == PETSC_NULL) {
+      if (!vascii->fd) {
         vascii->fd = fopen(fname,"w+");
       } else {
         ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);

@@ -112,16 +112,13 @@ int PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
  }
 
  ierr = MPI_Comm_rank(viewer->comm,&rank);CE;
-
  ierr = PetscStrallocpy(name,&vhdf4->filename);CE;
-
- if (rank == 0) {
+ if (!rank) {
    vhdf4->sd_id = SDstart(name, acc);
    if (vhdf4->sd_id < 0) {
-     SETERRQ1(1, "SDstart failed for %s", name);
+     SETERRQ1(PETSC_ERR_LIB, "SDstart failed for %s", name);
    }
  }
-
  viewer->format = PETSC_VIEWER_NOFORMAT;
  PetscFunctionReturn(0);
 }

@@ -522,7 +522,7 @@ int MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr =  PetscFListFind(part->comm,MatPartitioningList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown partitioning type %s",type);}
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);}
 
   part->ops->destroy      = (int (*)(MatPartitioning)) 0;
   part->ops->view         = (int (*)(MatPartitioning,PetscViewer)) 0;

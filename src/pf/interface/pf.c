@@ -459,11 +459,9 @@ int PFSetType(PF pf,const PFType type,void *ctx)
 
   /* Get the function pointers for the method requested */
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
-
   /* Determine the PFCreateXXX routine for a particular function */
   ierr =  PetscFListFind(pf->comm,PPetscFList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(1,"Unable to find requested PF type %s",type);
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;
   pf->ops->apply               = 0;

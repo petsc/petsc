@@ -230,7 +230,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
     for (j=0; j<nz; j++) {pv[j] = rtmp[pj[j]];}
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
-    if (pv[diag] == 0.0) {
+    if (pv[diag] != 0.0) {
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }
     pv[diag] = 1.0/pv[diag];

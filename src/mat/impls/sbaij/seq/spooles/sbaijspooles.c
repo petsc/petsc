@@ -50,7 +50,7 @@ int MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
   int         neg,zero,pos;
 
   PetscFunctionBegin;
-  FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos) ;
+  FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
   if(nneg)  *nneg  = neg;
   if(nzero) *nzero = zero;
   if(npos)  *npos  = pos;

@@ -32,7 +32,7 @@ int main(int argc,char **args)
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* Ignore the first line */
-  /* while (getc(file) != '\n') ; */
+  /* while (getc(file) != '\n'); */
   fgets(buf,PETSC_MAX_PATH_LEN-1,file);
   printf("%s",buf);
   fscanf(file,"%d %d %d\n",&m,&n,&nnz);

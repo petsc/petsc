@@ -361,7 +361,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
         if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
         /* Handle last bin separately */
         if ((i == numBins-1) && (values[p] == binRight)) bins[i]++;
-        if (i == 0) {
+        if (!i) {
           mean += values[p];
           var  += values[p]*values[p];
         }
@@ -466,7 +466,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
         if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
         /* Handle last bin separately */
         if ((i == numBins-1) && (values[p] == binRight)) bins[i]++;
-        if (i == 0) {
+        if (!i) {
           mean += values[p];
           var  += values[p]*values[p];
         }

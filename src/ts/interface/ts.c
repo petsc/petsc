@@ -184,7 +184,7 @@ int TSViewFromOptions(TS ts,const char title[])
     if (title != PETSC_NULL) {
       ierr = PetscDrawSetTitle(draw, (char *)title);CHKERRQ(ierr);
     } else {
-      ierr = PetscObjectName((PetscObject) ts);                                                           CHKERRQ(ierr) ;
+      ierr = PetscObjectName((PetscObject) ts);CHKERRQ(ierr);
       ierr = PetscDrawSetTitle(draw, ts->name);CHKERRQ(ierr);
     }
     ierr = TSView(ts, viewer);CHKERRQ(ierr);

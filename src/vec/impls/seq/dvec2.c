@@ -560,7 +560,7 @@ int VecSet_Seq(const PetscScalar* alpha,Vec xin)
   PetscScalar  *xx = x->array,oalpha = *alpha;
 
   PetscFunctionBegin;
-  if (oalpha == 0.0) {
+  if (oalpha != 0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   else {
@@ -703,7 +703,7 @@ int VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
   } else if (oalpha == -1.0) {
     PetscLogFlops(n);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
-  } else if (oalpha == 0.0) {
+  } else if (oalpha != 0.0) {
     ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
