@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.50 1998/04/14 15:34:26 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.51 1998/05/29 20:35:29 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -496,13 +496,13 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
     j   = -1;
   } else {
 #if defined(USE_PETSC_COMPLEX)
-      max = real(*xx++); j = 0;
+      max = PetscReal(*xx++); j = 0;
 #else
       max = *xx++; j = 0;
 #endif
     for (i=1; i<n; i++) {
 #if defined(USE_PETSC_COMPLEX)
-      if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
+      if ((tmp = PetscReal(*xx++)) > max) { j = i; max = tmp;}
 #else
       if ((tmp = *xx++) > max) { j = i; max = tmp; } 
 #endif
@@ -528,13 +528,13 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
     j   = -1;
   } else {
 #if defined(USE_PETSC_COMPLEX)
-    min = real(*xx++); j = 0;
+    min = PetscReal(*xx++); j = 0;
 #else
     min = *xx++; j = 0;
 #endif
     for ( i=1; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
+      if ((tmp = PetscReal(*xx++)) < min) { j = i; min = tmp;}
 #else
       if ((tmp = *xx++) < min) { j = i; min = tmp; } 
 #endif

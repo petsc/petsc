@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.97 1998/05/29 20:35:50 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.98 1998/05/29 22:50:31 balay Exp balay $";
 #endif
 
 /*
@@ -461,9 +461,9 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
     thus obtaining the updated value of the residual
   */
 #if defined(USE_PETSC_COMPLEX)
-  tt        = sqrt( PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1) );
+  tt        = PetscSqrt( PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1) );
 #else
-  tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
+  tt        = PetscSqrt( *hh * *hh + *(hh+1) * *(hh+1) );
 #endif
   if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
   *cc       = *hh / tt;
