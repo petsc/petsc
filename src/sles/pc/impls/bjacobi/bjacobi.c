@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.37 1995/07/27 14:24:50 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.38 1995/08/03 02:24:19 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -24,13 +24,13 @@ static int PCSetUp_BJacobi(PC pc)
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
 
   if (pmat->type == MATMPIAIJ) {
-    if (!jac->usetruelocal || mat->type == MATMPIAIJ)
+    if (!jac->use_true_local || mat->type == MATMPIAIJ)
       return PCSetUp_BJacobiMPIAIJ(pc);
   } else if (pmat->type == MATMPIROW) {
-    if (!jac->usetruelocal || mat->type == MATMPIROW)
+    if (!jac->use_true_local || mat->type == MATMPIROW)
       return PCSetUp_BJacobiMPIRow(pc);
   } else if (pmat->type == MATMPIBDIAG) {
-    if (!jac->usetruelocal || mat->type == MATMPIBDIAG)
+    if (!jac->use_true_local || mat->type == MATMPIBDIAG)
       return PCSetUp_BJacobiMPIBDiag(pc);
   } 
   SETERRQ(1,"PCSetUp_BJacobi: Cannot use block Jacobi on this matrix type\n");
@@ -83,7 +83,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
   jac = (PC_BJacobi *) pc->data;
-  jac->usetruelocal = 1;
+  jac->use_true_local = 1;
   return 0;
 }
 /*@
@@ -118,6 +118,9 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   *n_local = jac->n_local;
   *first_local = jac->first_local;
   *sles = jac->sles;
+  jac->same_local_solves = 0; /* Assume that local solves are now different;
+                                 not necessarily true though!  This flag is 
+                                 used only for PCView_BJacobi */
   return 0;
 }
   
@@ -141,20 +144,29 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   FILE             *fd = ViewerFileGetPointer_Private(viewer);
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              mytid;
-  if (jac->usetruelocal) 
+  if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
        "    Block Jacobi: using true local matrix, number of blocks = %d\n",
        jac->n);
   MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
-  MPIU_fprintf(pc->comm,fd,
-     "    Local solve info for each block is in the following KSP and PC objects:\n");
   MPI_Comm_rank(pc->comm,&mytid);
-  MPIU_Seq_begin(pc->comm,1);
-  fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
+  if (jac->same_local_solves) {
+    MPIU_fprintf(pc->comm,fd,
+    "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+    if (!mytid) 
+      SLESView(jac->sles[0],STDOUT_VIEWER); /* now only 1 block per proc */
+                                            /* This shouldn't really be STDOUT */
+  } else {
+    MPIU_fprintf(pc->comm,fd,
+     "    Local solve info for each block is in the following KSP and PC objects:\n");
+    MPIU_Seq_begin(pc->comm,1);
+    fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
     mytid,jac->n_local,jac->first_local);
-  SLESView(jac->sles[0],STDOUT_VIEWER); /* currently only 1 block per proc */
-  fflush(fd);
-  MPIU_Seq_end(pc->comm,1);
+    SLESView(jac->sles[0],STDOUT_VIEWER); /* now only 1 block per proc */
+                                          /* This shouldn't really be STDOUT */
+    fflush(fd);
+    MPIU_Seq_end(pc->comm,1);
+  }
   return 0;
 }
 
@@ -176,7 +188,8 @@ int PCCreate_BJacobi(PC pc)
   jac->n_local      = 1;
   jac->first_local  = mytid;
   jac->sles         = 0;
-  jac->usetruelocal = 0;
+  jac->use_true_local = 0;
+  jac->same_local_solves = 1;
   return 0;
 }
 
