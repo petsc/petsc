@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.52 1998/10/31 22:59:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.53 1998/12/03 04:04:59 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -80,7 +80,7 @@ int ViewerDestroy_Binary(Viewer v)
   PetscFunctionBegin;
   MPI_Comm_rank(v->comm,&rank);
   if (!rank) close(vbinary->fdes);
-  if (!rank && vbinary->fdes_info) fclose(vbinary->fdes_info);
+  if (vbinary->fdes_info) fclose(vbinary->fdes_info);
   PetscFree(vbinary);
   PetscFunctionReturn(0);
 }
@@ -122,15 +122,16 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
   PetscTruth    found;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   vbinary = PetscNew(Viewer_Binary);CHKPTRQ(vbinary);
-  v->data           = (void *) vbinary;
-  v->ops->destroy   = ViewerDestroy_Binary;
-  v->ops->flush     = 0;
-  v->iformat        = 0;
-  *binv             = v;
-
+  v->data            = (void *) vbinary;
+  v->ops->destroy    = ViewerDestroy_Binary;
+  v->ops->flush      = 0;
+  v->iformat         = 0;
+  *binv              = v;
+  vbinary->fdes_info = 0;
+ 
   MPI_Comm_rank(comm,&rank);
 
   /* only first processor opens file if writeable */
