@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.debugging    = self.framework.require('PETSc.utilities.debugging', self)
     return
 
   def __str__(self):
@@ -73,31 +74,19 @@ class Configure(config.base.Configure):
           self.addArgumentSubstitution(versionName, versionName)
           # Check normal compiler flags
           self.framework.argDB['REJECTED_'+flags] = []
-          for testFlag in options.getCompilerFlags(language, self.getCompiler(), ''):
-            try:
-              self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-              self.addCompilerFlag(testFlag)
-            except RuntimeError:
-              self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
-              self.framework.argDB['REJECTED_'+flags].append(testFlag)
-          # Check special compiler flags
-          for bopt in ['g', 'O', 'g_complex', 'O_complex']:
-            flagsName = flags+'_'+bopt
-            self.framework.argDB['REJECTED_'+flagsName] = []
-            if self.framework.argDB[flagsName] == 'Unknown':
-              testFlags = []
-              for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
-                self.framework.log.write('Trying '+language+' '+bopt+' compiler flag '+testFlag+'\n')
-                if self.checkCompilerFlag(testFlag):
-                  testFlags.append(testFlag)
-                else:
-                  self.framework.log.write('Rejected '+language+' '+bopt+' compiler flag '+testFlag+'\n')
-                  self.framework.argDB['REJECTED_'+flagsName].append(testFlag)
-              self.framework.argDB[flagsName] = ' '.join(testFlags)
-            testFlags = self.framework.argDB[flagsName]
-            if not self.checkCompilerFlag(testFlags):
-              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+testFlags)
-            self.addArgumentSubstitution(flagsName, flagsName)
+          bopts = ['']
+          if self.debugging.debugging:
+            bopts.append('g')
+          if self.debugging.optimization:
+            bopts.append('O')
+          for bopt in bopts:
+            for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
+              try:
+                self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+                self.addCompilerFlag(testFlag)
+              except RuntimeError:
+                self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+                self.framework.argDB['REJECTED_'+flags].append(testFlag)
         except RuntimeError: pass
         self.popLanguage()
 
