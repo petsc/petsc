@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 1999/11/24 21:52:17 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.6 1999/12/08 22:17:00 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -39,7 +39,6 @@
 
 #define PETSC_WORDS_BIGENDIAN 1
 
-#define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define PETSC_HAVE_4ARG_SIGNAL_HANDLER
