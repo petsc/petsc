@@ -5,7 +5,7 @@
 */
 #if !defined(__PETSCPF_H)
 #define __PETSCPF_H
-#include "petscmat.h"
+#include "petscvec.h"
 
 /*
     PPetscFList contains the list of preconditioners currently registered
@@ -39,7 +39,7 @@ typedef char *PFType;
 S*/
 typedef struct _p_PF* PF;
 
-#define PF_COOKIE     PETSC_COOKIE+9
+extern int PF_COOKIE;
 
 EXTERN int PFCreate(MPI_Comm,int,int,PF*);
 EXTERN int PFSetType(PF,PFType,void*);

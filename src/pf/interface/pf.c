@@ -4,7 +4,10 @@
 */
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
-PetscFList      PPetscFList = 0; /* list of all registered PD functions */
+/* Logging support */
+int VEC_COOKIE;
+
+PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
@@ -130,7 +133,11 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
   int ierr;
 
   PetscFunctionBegin;
-  *pf          = 0;
+  PetscValidPointer(pf);
+  *pf = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
 
   PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
   PetscLogObjectCreate(newpf);
