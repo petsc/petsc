@@ -504,9 +504,11 @@ class Framework(base.Base):
 
   def cpWebsite(self, localFile, remoteFile = None):
     if remoteFile:
-      self.executeShellCommand('scp '+localFile+' '+os.path.join(self.project.getWebDirectory(), remoteFile))
+      try: self.executeShellCommand('scp '+localFile+' '+os.path.join(self.project.getWebDirectory(), remoteFile))
+      except: pass
     else:
-      self.executeShellCommand('scp '+localFile+' '+self.project.getWebDirectory())
+      try: self.executeShellCommand('scp '+localFile+' '+self.project.getWebDirectory())
+      except: pass
     return
 
   def setupProject(self):
