@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.22 1995/06/18 16:23:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.23 1995/06/20 01:46:42 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -34,12 +34,14 @@ int TrFree( void *, int, char * );
   even then is suspicious.
 */
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
+int  TrMallocUsed = 0;
 
 int PetscSetUseTrMalloc_Private()
 {
   PetscLow = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
   PetscSetMalloc(TrMalloc,TrFree);
+  TrMallocUsed = 1;
   return 0;
 }
 
@@ -224,6 +226,8 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
     TRMaxMemId = TRid;
   }
   frags     ++;
+  /* dirty the page up */
+  PETSCMEMSET(inew,111,a*sizeof(char));
   return (void *)inew;
 }
 
@@ -311,7 +315,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
   return 0;
 }
 
-/*@C
+/*@
    Trspace - Return space statistics.
    
    Output parameters:
@@ -435,6 +439,22 @@ int TrSummary(FILE* fp )
   return 0;
 }	
 #endif
+
+/*@
+    TrGetMaximumAllocated - If TrMalloc is used returns the 
+          maximum amount of space malloced.
+
+  Output Parameter:
+.   max - the maximum amount of space in bytes.
+
+.seealso TrSummary(),TrDump()
+@*/
+int TrGetMaximumAllocated(double *max)
+{
+  if (TrMallocUsed)   *max = (double) TRMaxMem;
+  else                *max = 0.0;
+  return 0;
+}
 
 /*
     TrDebugLevel - Set the level of debugging for the space management 
