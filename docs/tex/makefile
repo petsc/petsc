@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.50 1997/08/09 20:20:14 bsmith Exp bsmith $ 
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -19,8 +19,6 @@ clean:
               */*/*.dvi */*/*.aux */*/*.toc */*/*.log */*/*.bbl */*/*.blg \
               */*/*.hux */*/*.err */*/*.ilg */*/*.idx */*/*.ind */*/talk.ps */*/talk4.ps \
               */*/paper.ps */*/talk6.ps */*~ */*/*~ */*/*.stolen *.stolen
-
-
 #
 #   This rebuilds the WWW PETSc homepage and ftp site from 
 # the master copies of the documents. Since it must copy all the 
@@ -31,27 +29,19 @@ homepage:
 	-/usr/bin/cp  ../manual.ps /home/ftp/pub/petsc/manual.ps
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp  ftp_readme /home/ftp/pub/petsc/README
-	-/usr/bin/cp  ../../Installation /home/ftp/pub/petsc/Installation
-	-/usr/bin/cp  ../../Machines /home/ftp/pub/petsc
-	-/usr/bin/cp  ../../Changes /home/ftp/pub/petsc
-	-/usr/bin/cp  ../../CodeManagement /home/ftp/pub/petsc
-	-/usr/bin/cp  ../../Troubleshooting /home/ftp/pub/petsc
-	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
+	-/usr/bin/cp  ../installation.html /mcs/www/petsc/docs
+	-/usr/bin/cp  ../machines.html /mcs/www/petsc/docs
+	-/usr/bin/cp  ../changes.html /mcs/www/petsc/docs
+	-/usr/bin/cp  ../codemanagement.html /mcs/www/petsc/docs
+	-/usr/bin/cp  ../troubleshooting.html /mcs/www/petsc/docs
+	-/usr/bin/cp  ../faq.html /mcs/www/petsc/docs
 	-/usr/bin/cp petsc.html /mcs/www/petsc
 	-/usr/bin/cp petsc-patches.html /mcs/www/petsc
 	-/usr/bin/cp petscwww.gif /mcs/www/petsc
 	-/usr/bin/cp ../manual.html /mcs/www/petsc
 	-/usr/bin/cp -r ../manual /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
-	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
-	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
-	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
-	-chmod ug+w /home/ftp/pub/petsc/onepager.ps 
-	-chmod ug+w /home/ftp/pub/petsc/intro.ps
-	-chmod ug+w /home/ftp/pub/petsc/Troubleshooting
-	-chmod ug+w /home/ftp/pub/petsc/Changes
-	-chmod ug+w /home/ftp/pub/petsc/CodeManagement
-	-chmod ug+w /home/ftp/pub/petsc/Performance
+	-chmod ug+w /home/ftp/pub/petsc/* /mcs/www/petsc/*
 	-cd ..; tar cf $(HOME)/www.tar www 
 	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar 
 	-cd /mcs/www/petsc/www; /bin/rm -rf *.cit 
