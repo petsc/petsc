@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.124 1999/11/24 21:54:34 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.125 1999/12/16 19:09:52 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -210,6 +210,7 @@ static int PCDestroy_LU(PC pc)
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
   ierr = PetscFree(dir); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
