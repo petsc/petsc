@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.10 2000/07/13 19:11:26 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.11 2000/07/13 20:09:03 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -91,6 +91,8 @@ int DAMGDestroy(DAMG *damg)
     if (damg[i]->localX)  {ierr = VecDestroy(damg[i]->localX);CHKERRQ(ierr);}
     if (damg[i]->localF)  {ierr = VecDestroy(damg[i]->localF);CHKERRQ(ierr);}
     if (damg[i]->fdcoloring)  {ierr = MatFDColoringDestroy(damg[i]->fdcoloring);CHKERRQ(ierr);}
+    if (damg[i]->sles)  {ierr = SLESDestroy(damg[i]->sles);CHKERRQ(ierr);}
+    /*    if (damg[i]->snes)  {ierr = SNESDestroy(damg[i]->snes);CHKERRQ(ierr);} */
     ierr = PetscFree(damg[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(damg);CHKERRQ(ierr);
@@ -130,6 +132,7 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
   DAStencilType  st;
   char           *name;
   Vec            xyz,txyz;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
@@ -211,8 +214,43 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
       }
     }
   }
+  ierr = OptionsHasName(PETSC_NULL,"-damg_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DAMGView(damg,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSolve"></a>*/"DAMGSolve"
+int DAMGSolve(DAMG *damg)
+{
+  int        i,ierr,nlevels = damg[0]->nlevels;
+  PetscTruth gridseq;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(0,"-damg_grid_sequence",&gridseq);CHKERRQ(ierr);
+  if (gridseq) {
+    for (i=0; i<nlevels-1; i++) {
+      ierr = (*damg[i]->solve)(damg,i);CHKERRQ(ierr);
+    }
+  }
+  ierr = (*DAMGGetFine(damg)->solve)(damg,nlevels-1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSolveSLES"></a>*/"DAMGSolveSLES"
+int DAMGSolveSLES(DAMG *damg,int level)
+{
+  int        ierr,its;
+
+  PetscFunctionBegin;
+  ierr = SLESSetOperators(damg[level]->sles,damg[level]->J,damg[level]->J,DIFFERENT_NONZERO_PATTERN);
+  ierr = SLESSolve(damg[level]->sles,damg[level]->b,damg[level]->x,&its);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
@@ -223,68 +261,33 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
 
     Input Parameter:
 +   damg - the context
-.   sles - the linear solver object
--   func - function to compute linear system matrix on each grid level
+.   func - function to compute linear system matrix on each grid level
+-   rhs - function to compute right hand side on each level
 
     Level: advanced
 
 .seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
 
 @*/
-int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
+int DAMGSetSLES(DAMG *damg,int (*rhs)(DAMG,Vec),int (*func)(DAMG,Mat))
 {
-  int        ierr,i,j,nlevels = damg[0]->nlevels,flag,m,n,p,Nt,dim;
-  MPI_Comm   comm;
-  PC         pc;
-  PetscTruth flg,ismg;
-  SLES       lsles;
+  int        ierr,i,nlevels = damg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
-  PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
+
+  /* create solvers for each level */
+  for (i=0; i<nlevels; i++) {
+    ierr = SLESCreate(damg[i]->comm,&damg[i]->sles);CHKERRQ(ierr);
+    ierr = DAMGSetUpLevel(damg,damg[i]->sles,i+1);CHKERRQ(ierr);
+    damg[i]->solve = DAMGSolveSLES;
   }
 
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-  if (ismg) {
-
-    /* set solvers for each level */
-    for (i=0; i<nlevels; i++) {
-      ierr = MGGetSmoother(pc,i,&sles);CHKERRA(ierr);
-      ierr = SLESSetFromOptions(lsles);CHKERRA(ierr);
-      ierr = SLESSetOperators(lsles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-      ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
-      ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
-      ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
-      ierr = MGSetResidual(pc,i,MGDefaultResidual,damg[i]->J);CHKERRA(ierr);
-    }
-
-    /* Set interpolation/restriction between levels */
-    for (i=1; i<nlevels; i++) {
-      ierr = MGSetInterpolate(pc,i,damg[i]->R);CHKERRA(ierr); 
-      ierr = MGSetRestriction(pc,i,damg[i]->R);CHKERRA(ierr); 
-    }
-  }
-  
-  /* set matrix values for each level (only for linear problems) */
-  if (func) {
-    for (i=0; i<nlevels; i++) {
-      ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
-    }
+  for (i=0; i<nlevels; i++) {
+    ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
+    ierr = (*rhs)(damg[i],damg[i]->b);CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-damg_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DAMGView(damg,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -332,5 +335,56 @@ int DAMGView(DAMG *damg,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*
+    Sets each of the linear solvers to use multigrid 
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSetUpLevel"></a>*/"DAMGSetUpLevel"
+int DAMGSetUpLevel(DAMG *damg,SLES sles,int nlevels)
+{
+  int        ierr,i;
+  PC         pc;
+  PetscTruth ismg;
+  SLES       lsles; /* solver internal to the multigrid preconditioner */
+
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+
+  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
+  ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  if (ismg) {
+
+    /* set solvers for each level */
+    for (i=0; i<nlevels; i++) {
+      ierr = MGGetSmoother(pc,i,&lsles);CHKERRA(ierr);
+      ierr = SLESSetFromOptions(lsles);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+      ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
+      ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
+      ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
+      ierr = MGSetResidual(pc,i,MGDefaultResidual,damg[i]->J);CHKERRA(ierr);
+    }
+
+    /* Set interpolation/restriction between levels */
+    for (i=1; i<nlevels; i++) {
+      ierr = MGSetInterpolate(pc,i,damg[i]->R);CHKERRA(ierr); 
+      ierr = MGSetRestriction(pc,i,damg[i]->R);CHKERRA(ierr); 
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
+
+
 
 
