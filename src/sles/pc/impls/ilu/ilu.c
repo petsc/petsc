@@ -568,7 +568,7 @@ EXTERN_C_END
 static int PCSetFromOptions_ILU(PC pc)
 {
   int        ierr,dtmax = 3,itmp;
-  PetscTruth flg,single_prec,set;
+  PetscTruth flg,set;
   PetscReal  dt[3];
   char       tname[256];
   PC_ILU     *ilu = (PC_ILU*)pc->data;

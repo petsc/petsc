@@ -493,7 +493,7 @@ shared_irix:
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_alpha:
-	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} >/dev/null 2>&1
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME

@@ -45,10 +45,9 @@ cd $PETSC_DIR
 bk pull
 bk -r co -q
 
-# create fortran stubdocs, configure and cleanup
+# create fortran stubdocs and cleanup
 cd $PETSC_DIR
 make allfortranstubs
-make configure
 make alldoc allhtml LOC=${PETSC_DIR}
 ${PETSC_DIR}/maint/update-docs.py ${PETSC_DIR}
 make ACTION=clean tree
