@@ -1,10 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.7 1998/10/14 19:31:42 bsmith Exp balay $";
+static char vcid[] = "$Id: ams.c,v 1.8 1998/11/21 15:52:13 balay Exp bsmith $";
 #endif
 
-#include "petsc.h"
-#include "pinclude/pviewer.h"
-#include <stdarg.h>
+#include "src/viewer/viewerimpl.h"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -12,11 +10,10 @@ static char vcid[] = "$Id: ams.c,v 1.7 1998/10/14 19:31:42 bsmith Exp balay $";
 #if defined(HAVE_AMS)
 
 #include "ams.h"
-struct _p_Viewer {
-  VIEWERHEADER
+typedef struct {
   char       *ams_name;
   AMS_Comm   ams_comm;
-};
+} Viewer_AMS;
 
 Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
 
@@ -32,22 +29,24 @@ int ViewerInitializeAMSWorld_Private(void)
   PetscFunctionReturn(0);
 }
 
+extern int ViewerDestroy_WillBe(Viewer);
+
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_AMS"
 static int ViewerDestroy_AMS(Viewer viewer)
 {
-  int      ierr;
+  Viewer_AMS *vams = (Viewer_AMS*)viewer->data;
+  int        ierr;
 
   PetscFunctionBegin;
-  PLogObjectDestroy((PetscObject)viewer);
 
-  ierr = AMS_Comm_destroy(viewer->ams_comm);
+  ierr = AMS_Comm_destroy(vams->ams_comm);
   if (ierr) {
     char *err;
     AMS_Explain_error(ierr,&err);
     SETERRQ(ierr,0,err);
   }
-  PetscHeaderDestroy((PetscObject)viewer);
+  PetscFree(vams);
   PetscFunctionReturn(0);
 }
 
@@ -77,16 +76,20 @@ static int ViewerDestroy_AMS(Viewer viewer)
 @*/
 int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {
-  Viewer v;
-  int    ierr,port = -1,flag;
+  Viewer     v;
+  Viewer_AMS *vams;
+  int        ierr,port = -1,flag;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,AMS_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,AMS_VIEWER,comm,ViewerDestroy_WillBe,0);
   PLogObjectCreate(v);
-  v->destroy     = ViewerDestroy_AMS;
+  v->ops->destroy     = ViewerDestroy_AMS;
+  v->type_name        = "ams";
+  vams                = PetscNew(Viewer_AMS);CHKPTRQ(vams);
+  v->data             = (void *) vams;
 
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
-  ierr = AMS_Comm_publish((char *)name,&v->ams_comm,MPI_TYPE,comm,&port);CHKERRQ(ierr);
+  ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,comm,&port);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flag);CHKERRQ(ierr);
   if (!flag) {
@@ -120,10 +123,12 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 @*/
 int ViewerAMSGetAMSComm(Viewer lab,AMS_Comm *ams_comm)
 {
-  PetscFunctionBegin;
-  if (lab->type != AMS_VIEWER) SETERRQ(1,1,"Not an AMS viewer");
+  Viewer_AMS *vams = (Viewer_AMS *)lab->data;
 
-  *ams_comm = lab->ams_comm;
+  PetscFunctionBegin;
+  if (PetscStrcmp(lab->type_name,"ams")) SETERRQ(1,1,"Not an AMS viewer");
+
+  *ams_comm = vams->ams_comm;
   PetscFunctionReturn(0);
 }
 
