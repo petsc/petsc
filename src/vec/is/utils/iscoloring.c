@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.67 2001/03/23 23:21:16 balay Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.68 2001/04/02 18:19:13 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -116,6 +116,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
       int *colors = iscoloring->colors;
       IS  *is;
 
+      
       /* generate the lists of nodes for each color */
       ierr = PetscMalloc((nc+1)*sizeof(int),&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
@@ -128,6 +129,9 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
       for (i=1; i<nc; i++) {
 	ii[i] = ii[i-1] + mcolors[i-1];
       }
+   
+      ierr = MPI_Scan(&iscoloring->n,&base,1,MPI_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
+      base -= iscoloring->n;
       ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
       for (i=0; i<n; i++) {
 	ii[colors[i]][mcolors[colors[i]]++] = i + base;
@@ -204,7 +208,6 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   int        ierr,size,rank,base,top,tag,nc,ncwork,i;
   PetscTruth flg;
   MPI_Status status;
-  IS         *is;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
