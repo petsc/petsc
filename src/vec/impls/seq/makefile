@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${AMS_INCLUDE} ${PNETCDF_INCLUDE}
+CFLAGS   = ${AMS_INCLUDE} ${PNETCDF_INCLUDE} ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = bvec2.c bvec1.c dvec2.c vseqcr.c
 SOURCEF  =

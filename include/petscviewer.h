@@ -53,6 +53,7 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_SILO         "silo"
 #define PETSC_VIEWER_NETCDF       "netcdf"
 #define PETSC_VIEWER_HDF4         "hdf4"
+#define PETSC_VIEWER_MATLAB       "matlab"
 
 extern PetscFList PetscViewerList;
 EXTERN int PetscViewerRegisterAll(char *);
@@ -115,6 +116,8 @@ EXTERN int PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,in
 EXTERN int PetscViewerAMSSetCommName(PetscViewer,const char[]);
 EXTERN int PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 EXTERN int PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
+typedef enum {PETSC_MATLAB_RDONLY,PETSC_MATLAB_WRONLY,PETSC_MATLAB_CREATE} PetscViewerMatlabType;
+EXTERN int PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerMatlabType,PetscViewer*);
 
 EXTERN int PetscViewerGetType(PetscViewer,PetscViewerType*);
 EXTERN int PetscViewerSetType(PetscViewer,PetscViewerType);
@@ -233,6 +236,7 @@ EXTERN PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
+EXTERN PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
@@ -294,6 +298,20 @@ M*/
 M*/
 #define PETSC_VIEWER_BINARY_SELF  PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
 
+/*MC
+  PETSC_VIEWER_MATLAB_WORLD  - same as PETSC_VIEWER_MATLAB_(PETSC_COMM_WORLD)
+
+  Level: intermediate
+M*/
+#define PETSC_VIEWER_MATLAB_WORLD PETSC_VIEWER_MATLAB_(PETSC_COMM_WORLD)
+
+/*MC
+  PETSC_VIEWER_MATLAB_SELF  - same as PETSC_VIEWER_MATLAB_(PETSC_COMM_SELF)
+
+  Level: intermediate
+M*/
+#define PETSC_VIEWER_MATLAB_SELF  PETSC_VIEWER_MATLAB_(PETSC_COMM_SELF)
+
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
 /*
@@ -308,6 +326,14 @@ EXTERN PetscViewer PETSC_VIEWER_AMS_(MPI_Comm);
 EXTERN int         PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 #define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
+
+/*
+   petscViewer writes to Matlab .mat file
+*/
+EXTERN int PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN int PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN int PetscViewerMatlabSetType(PetscViewer,PetscViewerMatlabType);
+EXTERN int PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /* 
     PetscViewer utility routines used by PETSc that are not normally used

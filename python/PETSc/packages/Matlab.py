@@ -16,15 +16,19 @@ class Configure(config.base.Configure):
         matlab = self.framework.argDB['with-matlab-dir']
       else:
         raise RuntimeError('You set a value for --with-mpi-dir, but '+os.path.join(self.framework.argDB['with-matlab-dir'],'bin','matlab')+' does not exist')
-
     elif self.getExecutable('matlab', getFullPath = 1):
       matlab = os.path.dirname(os.path.dirname(self.matlab))
-    
 
     if matlab:
       (status,output) = commands.getstatusoutput(os.path.join(matlab,'bin','matlab')+' -nojvm -nodisplay -r "ver; exit"')
       if status:
         raise RuntimeError('Unable to run '+os.path.join(self.framework.argDB['with-matlab-dir'],'bin','matlab')+'\n'+output)
+
+      import re
+      r = re.compile('Version ([0-9]*.[0-9]*)').search(output).group(1)
+      r = float(r)
+      if r < 6.0:
+        raise RuntimeError('Matlab version must be at least 6; yours is '+str(r))
 
       # hope there is always only one arch installation in the location
       matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]

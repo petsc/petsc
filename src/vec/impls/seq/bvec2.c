@@ -241,11 +241,11 @@ static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Netcdf"
 int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
-#if defined(PETSC_HAVE_PNETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart=0;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *values,*xarray;
@@ -268,18 +268,51 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
-#endif
 }
+#endif
+
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#include "mat.h"   /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_Seq_Matlab"
+int VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
+{
+  int         ierr,n;
+  PetscScalar *array;
+  mxArray     *mat;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
+#else
+  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
+#endif
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscObjectName((PetscObject)vec);CHKERRQ(ierr);
+  PetscViewerMatlabPutVariable(viewer,vec->name,mat);
+  
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq"
 int VecView_Seq(Vec xin,PetscViewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   int         ierr;
-  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica,isnetcdf;
+  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica;
+#if defined(PETSC_HAVE_PNETCDF)
+  PetscTruth  isnetcdf;
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+  PetscTruth  ismatlab;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -287,7 +320,13 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
+#endif
+
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (isascii){
@@ -298,9 +337,13 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
- #if defined(PETSC_HAVE_PNETCDF_noneed)
+#if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+  } else if (ismatlab) {
+    ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
     SETERRQ1(1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);

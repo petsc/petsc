@@ -8,14 +8,14 @@ ALL: lib
 CFLAGS    = ${MATLAB_INCLUDE}
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC	  = matlab.c
+SOURCEC	  = vmatlab.c
 SOURCEF	  =
-SOURCEH	  = ../../../../include/petscmatlab.h
-OBJSC	  = matlab.o
+SOURCEH	  = 
+OBJSC	  = vmatlab.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-LOCDIR	  = src/sys/src/objects/matlabengine/
+LOCDIR	  = src/sys/src/viewer/impls/matlab
 DIRS      = 
 
 include ${PETSC_DIR}/bmake/common/base

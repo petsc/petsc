@@ -1622,8 +1622,9 @@ int VecAssemblyBegin(Vec vec)
 .  vec - the vector
 
    Options Database Keys:
-.  -vec_view - Prints vector in ASCII format
-.  -vec_view_matlab - Prints vector in Matlab format
++  -vec_view - Prints vector in ASCII format
+.  -vec_view_matlab - Prints vector in ASCII Matlab format to stdout
+.  -vec_view_matlab_file - Prints vector in Matlab format to matlaboutput.mat
 .  -vec_view_draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
@@ -1658,6 +1659,12 @@ int VecAssemblyEnd(Vec vec)
       ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+    ierr = PetscOptionsName("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(vec,PETSC_VIEWER_MATLAB_(vec->comm));CHKERRQ(ierr);
+    }
+#endif
     ierr = PetscOptionsName("-vec_view_socket","Send vector to socket (can be read from matlab)","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = VecView(vec,PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
