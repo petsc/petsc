@@ -34,7 +34,10 @@ tar cf ~/petsc.tar petsc
 # Do builds in petsc.solid
 # Remember you must set PETSC_DIR in .cshrc to 
 # point to petsc.solid
-# chmod -r g+ws petsc.solid
-# cd petsc.solid, then make etags
+#
+# For local distribution, remember to make etags in petsc.solid
+
+
+
 
 
