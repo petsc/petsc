@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.73 1996/02/23 14:58:12 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.74 1996/02/23 15:50:46 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -64,7 +64,325 @@ int PLogInfo(PetscObject obj,char *format,...)
 #if defined(HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
+static int mpeflg[] = { 1,1,1,1,1,  /* 0 - 24*/
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        0,1,1,1,1,  /* 25 -49 */
+                        1,1,1,1,1,
+                        0,0,0,0,0,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 50 - 74 */
+                        1,1,1,1,1,
+                        1,1,1,1,0,
+                        0,0,0,0,0,
+                        1,1,1,1,0,
+                        1,1,1,1,0, /* 75 - 99 */
+                        1,1,1,1,1,
+                        1,1,0,0,0,
+                        1,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0, /* 100 - 124 */ 
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0, /* 125 - 149 */
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0, /* 150 - 174 */
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0, /* 175 - 199 */
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0,
+                        0,0,0,0,0};
+
+
+static char *(color[]) = {"AliceBlue	  ",
+                          "BlueViolet	  ",
+                          "CadetBlue	  ",
+                          "CornflowerBlue ",
+                          "DarkGoldenrod  ",
+                          "DarkGreen	  ",
+                          "DarkKhaki	  ",
+                          "DarkOliveGreen ",
+                          "DarkOrange	  ",
+                          "DarkOrchid	  ",
+                          "DarkSeaGreen	  ",
+                          "DarkSlateGray  ",
+                          "DarkTurquoise  ",
+                          "DeepPink	  ",
+                          "DeepSkyBlue	  ",
+                          "DimGray	  ", 
+                          "DodgerBlue	  ",
+                          "GreenYellow	  ",
+                          "HotPink	  ",
+                          "IndianRed	  ",
+                          "LavenderBlush  ",
+                          "LawnGreen	  ",
+                          "LemonChiffon	  ", 
+                          "LightCoral	  ",
+                          "LightCyan	  ",
+                          "LightPink	  ",
+                          "LightSalmon	  ",
+                          "LightSlateGray ",
+                          "LightYellow	  ",
+                          "LimeGreen	  ",
+                          "MediumPurple	  ",
+                          "MediumSeaGreen ",
+                          "MediumSlateBlue",
+                          "MidnightBlue	  ",
+                          "MintCream	  ",
+                          "MistyRose	  ",
+                          "NavajoWhite	  ",
+                          "NavyBlue	  ",
+                          "OliveDrab	  ",
+                          "OrangeRed	  ",
+                          "PaleGoldenrod  ",
+                          "PaleVioletRed  ",
+                          "PapayaWhip	",
+                          "PeachPuff	  ",
+                          "RosyBrown	  ",
+                          "SaddleBrown	  ",
+                          "SpringGreen	  ",
+                          "SteelBlue	  ",
+                          "VioletRed	  ",
+                          "beige	  ",
+                          "chocolate	  ",
+                          "coral	  ",
+                          "gold		  ",
+                          "magenta	  ",
+                          "maroon	  ",
+                          "orchid	  ",
+                          "pink		  ",
+                          "plum		  ",
+                          "red		  ",
+                          "tan		  ",
+                          "tomato	  ",
+                          "violet	  ",
+                          "wheat	  ",
+                          "yellow	  ",
+                          "AliceBlue	  ",
+                          "BlueViolet	  ",
+                          "CadetBlue	  ",
+                          "CornflowerBlue ",
+                          "DarkGoldenrod  ",
+                          "DarkGreen	  ",
+                          "DarkKhaki	  ",
+                          "DarkOliveGreen ",
+                          "DarkOrange	  ",
+                          "DarkOrchid	  ",
+                          "DarkSeaGreen	  ",
+                          "DarkSlateGray  ",
+                          "DarkTurquoise  ",
+                          "DeepPink	  ",
+                          "DeepSkyBlue	  ",
+                          "DimGray	  ", 
+                          "DodgerBlue	  ",
+                          "GreenYellow	  ",
+                          "HotPink	  ",
+                          "IndianRed	  ",
+                          "LavenderBlush  ",
+                          "LawnGreen	  ",
+                          "LemonChiffon	  ", 
+                          "LightCoral	  ",
+                          "LightCyan	  ",
+                          "LightPink	  ",
+                          "LightSalmon	  ",
+                          "LightSlateGray ",
+                          "LightYellow	  ",
+                          "LimeGreen	  ",
+                          "MediumPurple	  ",
+                          "MediumSeaGreen ",
+                          "MediumSlateBlue",
+                          "MidnightBlue	  ",
+                          "MintCream	  ",
+                          "MistyRose	  ",
+                          "NavajoWhite	  ",
+                          "NavyBlue	  ",
+                          "OliveDrab	  ",
+                          "OrangeRed	  ",
+                          "PaleGoldenrod  ",
+                          "PaleVioletRed  ",
+                          "PapayaWhip	",
+                          "PeachPuff	  ",
+                          "RosyBrown	  ",
+                          "SaddleBrown	  ",
+                          "SpringGreen	  ",
+                          "SteelBlue	  ",
+                          "VioletRed	  ",
+                          "beige	  ",
+                          "chocolate	  ",
+                          "coral	  ",
+                          "gold		  ",
+                          "magenta	  ",
+                          "maroon	  ",
+                          "orchid	  ",
+                          "pink		  ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," ",
+                          " "," "," "," "," " };
 #endif
+
+static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
+
+static char *(oname[]) = {"Viewer           ",
+                          "Index set        ",
+                          "Vector           ",
+                          "Vector Scatter   ",
+                          "Matrix           ",
+                          "Graphic          ",
+                          "Line graph       ",
+                          "Krylov Solver    ",
+                          "Preconditioner   ",
+                          "SLES             ",
+                          "Grid             ",
+                          "Stencil          ",
+                          "SNES             ",
+                          "Distributed array",
+                          "Matrix scatter   ",
+                          "                 ",
+                          "                 ",
+			  "                 "};
+static char *(name[]) = {"MatMult         ",
+                         "MatMatFreeMult  ",
+                         "MatAssemblyBegin",
+                         "MatAssemblyEnd  ",
+                         "MatGetReordering",
+                         "MatMultTrans    ",
+                         "MatMultAdd      ",
+                         "MatMltTrnsAdd   ",
+                         "MatLUFactor     ",
+                         "MatCholeskyFctr ",
+                         "MatLUFctrSymbol ",
+                         "MatILUFctrSymbol",
+                         "MatCholeskyFctr ",
+                         "MatIncompleteCho",
+                         "MatLUFactorNumer",
+                         "MatCholeskyFact ",
+                         "MatRelax        ",
+                         "MatCopy         ",
+                         "MatConvert      ",
+                         "MatScale        ",
+                         "MatZeroEntries  ",
+                         "MatSolve        ",
+                         "MatSolveAdd     ",
+                         "MatSolveTrans   ",
+                         "MatSolveTransAdd",
+                         "MatSetValues    ",
+                         "MatForwardSolve ",
+                         "MatBackwardSolve",
+                         "MatLoad         ",
+                         "MatView         ",
+                         "MatILUFactor    ",
+                         "MatGetSubMatrix ",
+                         "MatGetSubMatrice",
+                         "MatGetValues    ",
+                         "MatIncreaseOvlap",
+                         "MatGetRow       ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "VecDot          ",
+                         "VecNorm         ",
+                         "VecMax          ",
+                         "VecMin          ",
+                         "VecTDot         ",
+                         "VecScale        ",
+                         "VecCopy         ",
+                         "VecSet          ",
+                         "VecAXPY         ",
+                         "VecAYPX         ",
+                         "VecSwap         ",
+                         "VecWAXPY        ",
+                         "VecAssemblyBegin",
+                         "VecAssemblyEnd  ",
+                         "VecMTDot        ",
+                         "VecMDot         ",
+                         "VecMAXPY        ",
+                         "VecPMult        ",
+                         "VecSetValues    ",
+                         "VecLoad         ",
+                         "VecView         ",
+                         "VecScatterBegin ",
+                         "VecScatterEnd   ",
+                         "VecSetRandom    ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         "SLESSolve       ",
+                         "SLESSetUp       ",
+                         "KSPGMRESOrthog  ",
+                         "KSPSolve        ",
+                         " ",
+                         "PCSetUp         ",
+                         "PCApply         ",
+                         "PCApplySymmLeft ",
+                         "PCApplySymmRight",
+                         " ",
+                         "SNESSolve       ",
+                         "SNESLineSearch  ",
+                         "SNESFunctionEval",
+                         "SNESJacobianEval",
+                         "SNESMinFunctnEvl",
+                         "SNESGradientEval",
+                         "SNESHessianEval ",
+                         " ",
+                         " ",
+                         " ",
+                         "TS_Step         ",
+                         " "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," "};
 
 #define CHUNCK       1000
 #define CREATE       0
@@ -340,7 +658,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   EventsType[EventsStage][event][TIME]  -= ltime;
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
 #if defined(HAVE_MPE)
-  MPE_Log_event(MPEBEGIN+2*event,0,"");
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
 #endif
   return 0;
 }
@@ -374,7 +692,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   EventsType[EventsStage][event][TIME] += ltime;
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
 #if defined(HAVE_MPE)
-  MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
 #endif
   return 0;
 }
@@ -388,7 +706,7 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
 #if defined(HAVE_MPE)
-  MPE_Log_event(MPEBEGIN+2*event,0,"");
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
 #endif
   return 0;
 }
@@ -401,7 +719,7 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
 #if defined(HAVE_MPE)
-  MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
 #endif
   return 0;
 }
@@ -446,7 +764,15 @@ int PLogAllBegin()
   PetscTime(BaseTime);
   PLogStagePush(0);
 #if defined(HAVE_MPE)
-  MPE_Init_log();
+  { 
+    int i, proc_no;
+    MPE_Init_log();
+    MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
+    if (!proc_no) {
+      for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
+       if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
+    }
+  }
 #endif
   return 0;
 }
@@ -525,7 +851,15 @@ int PLogBegin()
   PetscTime(BaseTime);
   PLogStagePush(0);
 #if defined(HAVE_MPE)
-  MPE_Init_log();
+  { 
+    int i, proc_no;
+    MPE_Init_log();
+    MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
+    if (!proc_no) {
+      for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
+       if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
+    }
+  }
 #endif
   return 0;
 }
@@ -597,141 +931,6 @@ int PLogDump(char* name)
   fclose(fd);
   return 0;
 }
-
-static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
-
-static char *(oname[]) = {"Viewer           ",
-                          "Index set        ",
-                          "Vector           ",
-                          "Vector Scatter   ",
-                          "Matrix           ",
-                          "Graphic          ",
-                          "Line graph       ",
-                          "Krylov Solver    ",
-                          "Preconditioner   ",
-                          "SLES             ",
-                          "Grid             ",
-                          "Stencil          ",
-                          "SNES             ",
-                          "Distributed array",
-                          "Matrix scatter   ",
-                          "                 ",
-                          "                 ",
-			  "                 "};
-static char *(name[]) = {"MatMult         ",
-                         "MatMatFreeMult  ",
-                         "MatAssemblyBegin",
-                         "MatAssemblyEnd  ",
-                         "MatGetReordering",
-                         "MatMultTrans    ",
-                         "MatMultAdd      ",
-                         "MatMltTrnsAdd   ",
-                         "MatLUFactor     ",
-                         "MatCholeskyFctr ",
-                         "MatLUFctrSymbol ",
-                         "MatILUFctrSymbol",
-                         "MatCholeskyFctr ",
-                         "MatIncompleteCho",
-                         "MatLUFactorNumer",
-                         "MatCholeskyFact ",
-                         "MatRelax        ",
-                         "MatCopy         ",
-                         "MatConvert      ",
-                         "MatScale        ",
-                         "MatZeroEntries  ",
-                         "MatSolve        ",
-                         "MatSolveAdd     ",
-                         "MatSolveTrans   ",
-                         "MatSolveTransAdd",
-                         "MatSetValues    ",
-                         "MatForwardSolve ",
-                         "MatBackwardSolve",
-                         "MatLoad         ",
-                         "MatView         ",
-                         "MatILUFactor    ",
-                         "MatGetSubMatrix ",
-                         "MatGetSubMatrice",
-                         "MatGetValues    ",
-                         "MatIncreaseOvlap",
-                         "MatGetRow       ",
-                         "                ",
-                         "                ",
-                         "                ",
-                         "                ",
-                         "VecDot          ",
-                         "VecNorm         ",
-                         "VecMax          ",
-                         "VecMin          ",
-                         "VecTDot         ",
-                         "VecScale        ",
-                         "VecCopy         ",
-                         "VecSet          ",
-                         "VecAXPY         ",
-                         "VecAYPX         ",
-                         "VecSwap         ",
-                         "VecWAXPY        ",
-                         "VecAssemblyBegin",
-                         "VecAssemblyEnd  ",
-                         "VecMTDot        ",
-                         "VecMDot         ",
-                         "VecMAXPY        ",
-                         "VecPMult        ",
-                         "VecSetValues    ",
-                         "VecLoad         ",
-                         "VecView         ",
-                         "VecScatterBegin ",
-                         "VecScatterEnd   ",
-                         "VecSetRandom    ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
-                         "SLESSolve       ",
-                         "SLESSetUp       ",
-                         "KSPGMRESOrthog  ",
-                         "KSPSolve        ",
-                         " ",
-                         "PCSetUp         ",
-                         "PCApply         ",
-                         " ",
-                         " ",
-                         " ",
-                         "SNESSolve       ",
-                         "SNESLineSearch  ",
-                         "SNESFunctionEval",
-                         "SNESJacobianEval",
-                         "SNESMinFunctnEvl",
-                         "SNESGradientEval",
-                         "SNESHessianEval ",
-                         " ",
-                         " ",
-                         " ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," "};
 
 /*@C
     PLogEventRegister - Registers an event name for logging operations in 
@@ -1007,7 +1206,3 @@ double PetscGetFlops()
 {
   return _TotalFlops;
 }
-
-
-
-
