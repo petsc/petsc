@@ -34,7 +34,7 @@ PetscFList MatList = 0;
 
   Level: intermediate
 
-.keywords: Mat, set, method
+.keywords: Mat, MatType, set, method
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
@@ -129,7 +129,7 @@ int MatRegisterDestroy(void)
 
    Level: intermediate
 
-.keywords: Mat, get, method, name
+.keywords: Mat, MatType, get, method, name
 
 .seealso: MatSetType()
 @*/
