@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.13 1997/07/13 19:02:00 balay Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.14 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -26,30 +26,34 @@ int PetscStrlen(char *s)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcpy"
-void PetscStrcpy(char *s,char *t)
+int PetscStrcpy(char *s,char *t)
 {
   strcpy(s,t);
+  return 0;
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncpy"
-void PetscStrncpy(char *s,char *t,int n)
+int PetscStrncpy(char *s,char *t,int n)
 {
   strncpy(s,t,n);
+  return 0;
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcat"
-void PetscStrcat(char *s,char *t)
+int PetscStrcat(char *s,char *t)
 {
   strcat(s,t);
+  return 0;
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncat"
-void PetscStrncat(char *s,char *t,int n)
+int PetscStrncat(char *s,char *t,int n)
 {
   strncat(s,t,n);
+  return 0;
 }
 
 #undef __FUNC__  
