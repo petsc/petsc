@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.32 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.33 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -17,6 +17,7 @@ static char vcid[] = "$Id: sysio.c,v 1.32 1997/10/28 14:21:45 bsmith Exp bsmith 
 #if defined (PARCH_nt)
 #include <io.h>
 #endif
+#include "src/inline/bitarray.h"
 
 #if defined(HAVE_SWAPPED_BYTES)
 #undef __FUNC__  
@@ -141,11 +142,12 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     ptmp = (void*) pp;
   }
 #else
-  if (type == PETSC_INT)         m *= sizeof(int);
+  if (type == PETSC_INT)          m *= sizeof(int);
 #endif
-  else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
-  else if (type == PETSC_SHORT)  m *= sizeof(short);
-  else if (type == PETSC_CHAR)   m *= sizeof(char);
+  else if (type == PETSC_SCALAR)  m *= sizeof(Scalar);
+  else if (type == PETSC_SHORT)   m *= sizeof(short);
+  else if (type == PETSC_CHAR)    m *= sizeof(char);
+  else if (type == PETSC_LOGICAL) m = BTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
   
   while (m) {
@@ -239,11 +241,12 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     }
   }
 #else
-  if (type == PETSC_INT)         m *= sizeof(int);
+  if (type == PETSC_INT)          m *= sizeof(int);
 #endif
-  else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
-  else if (type == PETSC_SHORT)  m *= sizeof(short);
-  else if (type == PETSC_CHAR)   m *= sizeof(char);
+  else if (type == PETSC_SCALAR)  m *= sizeof(Scalar);
+  else if (type == PETSC_SHORT)   m *= sizeof(short);
+  else if (type == PETSC_CHAR)    m *= sizeof(char);
+  else if (type == PETSC_LOGICAL) m = BTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
 
   while (m) {

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.22 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.23 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -216,6 +216,8 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 #endif
   } else if (ptype == PETSC_CHAR) {
     *mtype = MPI_CHAR;
+  } else if (ptype == PETSC_LOGICAL) {
+    *mtype = MPI_BYTE;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
@@ -239,6 +241,8 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 #endif
   } else if (ptype == PETSC_CHAR) {
     *size = PETSC_CHAR_SIZE;
+  } else if (ptype == PETSC_LOGICAL) {
+    *size = PETSC_LOGICAL_SIZE;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
@@ -262,6 +266,8 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
 #endif
   } else if (ptype == PETSC_CHAR) {
     *name = "char";
+  } else if (ptype == PETSC_LOGICAL) {
+    *name = "logical";
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }

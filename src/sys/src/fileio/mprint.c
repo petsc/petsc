@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.2 1997/11/28 16:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.3 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -355,6 +355,7 @@ int PetscErrorPrintf(char *format,...)
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
     PetscSleep(rank);
+    fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
     PetscErrorPrintfCalled = 1;
   }
 

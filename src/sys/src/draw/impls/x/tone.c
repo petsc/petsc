@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.16 1997/09/03 15:38:14 gropp Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.17 1997/10/19 03:27:52 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -69,15 +70,13 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
         XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
-    }
-    else if (rx < lx) {
+    } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
         XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
-    }
-    else {
+    } else {
       c = lc >> SHIFT_VAL;
       XiSetColor( win, c );
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);

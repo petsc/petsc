@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.9 1997/11/09 04:09:43 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.10 1997/11/28 16:22:32 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -36,6 +36,8 @@ struct _AODataOps {
   int (*keyremap)(AOData,char *,AO);
   int (*keygetadjacency)(AOData,char *,Mat*);
   int (*segmentpartition)(AOData,char*,char*);
+  int (*keyremove)(AOData,char*);
+  int (*segmentremove)(AOData,char*,char*);
 };
 
 /*

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.80 1997/10/28 14:22:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.81 1997/12/01 01:54:26 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -734,7 +734,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(PETSC_ERROR_COR,0,"Node size not yet supported");
+      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.16 1997/11/28 16:22:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.17 1997/12/01 01:57:39 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -690,6 +690,57 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist");
 
   *map = ikey->ltog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyRemove" 
+/*@C
+   AODataKeyRemove - Remove a data key from a AOData database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+
+   Collective on AOData
+
+.keywords: database removal
+
+.seealso:
+@*/
+int AODataKeyRemove(AOData aodata,char *name)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.keyremove)(aodata,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRemove" 
+/*@C
+   AODataSegmentRemove - Remove a data segment from a AOData database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segname - name of the segment
+
+   Collective on AOData
+
+.keywords: database removal
+
+.seealso:
+@*/
+int AODataSegmentRemove(AOData aodata,char *name,char *segname)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.segmentremove)(aodata,name,segname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

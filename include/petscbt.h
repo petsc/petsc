@@ -1,29 +1,22 @@
-/* $Id: bitarray.h,v 1.6 1997/10/01 22:43:45 bsmith Exp balay $ */
+/* $Id: bitarray.h,v 1.7 1997/10/06 15:34:04 balay Exp bsmith $ */
 
 /*    
-      BTSet - Expexts a charecter array -'array' as input, and 
-      treats it as  an array of bits. It Checks if a given bit location
-      ( specified by 'index') is marked, and later marks that location. 
 
-      Input:
-      array  - an array of char. Initially all bits are to be set to zero
-               by using PetscMemzero().
-      index  - specifies the index of the required bit in the bit array.
-      
-      Output:
-      return val - 0 if the bit is not found,
-                 - nonzero if found.
-        
-      Usage :
-      BT_LOOKUP(char * array,  int index) ;
+          BT - Bit array objects: used to compactly store logical arrays of variables.
 
-      Summary:
-          The bit operations are equivalent to:
-              1: retval = array[index];
-              2: array[index] = 1;
-              3: return retval;
+     BTCreate(m,bt)        - creates a bit array with enough room to hold m values
+     BTDestroy(bt)         - destroys the bit array
+     BTMemzero(bt,bt)      - zeros the entire bit array (sets all values to false)
+     BTSet(bt,index)       - sets a particular entry as true
+     BTClear(bt,index)     - sets a particular entry as false
+     BTLookup(bt,index)    - returns the value 
+     BTLookupSet(bt,index) - returns the value and then sets it true
+     BTLength(m)           - returns number of bytes in array
+     BTView(m,bt)
+
 */
 #if !defined(__BITARRAY_H)
+#define __BITARRAY_H
 
 #if !defined(BITSPERBYTE)
 #define BITSPERBYTE 8
@@ -34,7 +27,15 @@ typedef char*  BT;
 static char _mask, _BT_c;
 static int  _BT_idx;
 
-#define BTCreate(m,array) (array = (char *)PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char)),\
+#define BTView(m,bt) {\
+  int __i; \
+  for (__i=0; __i<m; __i++) { \
+    printf("%d %d\n",__i,BTLookup(bt,__i)); \
+  }}
+
+#define BTLength(m)        ((m)/BITSPERBYTE+1)*sizeof(char)
+
+#define BTCreate(m,array)  (array = (char *)PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char)),\
                            ( !array ) ? 1 : (BTMemzero(m,array),0) )
 
 #define BTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE+1)
@@ -59,7 +60,7 @@ static int  _BT_idx;
 #define BTLookup(array, index) (_BT_idx         = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _mask           = (char)1 << ((index)%BITSPERBYTE), \
-                                 _BT_c & _mask )
+                                 (_BT_c & _mask) != 0 )
 
 
 #define BTDestroy(array) (PetscFree(array),0)

@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.6 1997/11/28 16:22:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.7 1997/12/01 01:57:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/ao/aoimpl.h"

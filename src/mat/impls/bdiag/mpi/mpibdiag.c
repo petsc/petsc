@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.127 1997/11/09 03:57:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.128 1997/12/01 01:54:54 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -90,7 +90,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(PETSC_ERR_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 

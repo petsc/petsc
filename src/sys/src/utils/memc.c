@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.40 1997/11/03 04:43:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.41 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -57,6 +57,51 @@ int PetscMemcpy(void *a,void *b,int n)
             make sure your copy regions and lengths are correct");
   }
   memcpy((char*)(a),(char*)(b),n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscBitMemcpy"
+/*@C
+   PetscBitMemcpy - Copies an amount of data. This can include bit data.
+
+   Input Parameters:
+.  b - pointer to initial memory space
+.  bi - offset of initial memory space (in elementary chunk sizes)
+.  bs - length (in elementary chunk sizes) of space to copy
+.  dtype - datatype, for example, PETSC_INT, PETSC_DOUBLE, PETSC_LOGICAL
+
+.  a - pointer to result memory space
+.  ai - offset of result memory space (in elementary chunk sizes)
+
+   Note:
+   This routine is analogous to PetscMemcpy(), except when the data type is 
+   PETSC_LOGICAL.
+
+.keywords: Petsc, copy, memory
+
+.seealso: PetscMemmove(), PetscMemcpy()
+
+@*/
+int PetscBitMemcpy(void *a,int ai,void *b,int bi,int bs,PetscDataType dtype)
+{
+  char *aa = (char *)a, *bb = (char *)b;
+  int  dsize,ierr;
+
+  PetscFunctionBegin;
+  if (dtype != PETSC_LOGICAL) {
+    ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
+    ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
+  } else if (ai == 0 && bi == 0 && bs % 8) {
+    ierr = PetscMemcpy(a,b,BTLength(bs)*sizeof(char));CHKERRQ(ierr);
+  } else {
+    BT  at = (BT) a, bt = (BT) b;
+    int i;
+    for ( i=0; i<bs; i++ ) {
+      if (BTLookup(bt,bi+i)) BTSet(at,ai+i);
+      else                   BTClear(at,ai+i);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

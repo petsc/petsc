@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.6 1997/11/28 16:22:40 bsmith Exp $";
+static char vcid[] = "$Id: ex6.c,v 1.1 1997/12/02 17:30:10 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests AOData \n\n";
+static char help[] = "Tests removing entries from an AOData \n\n";
 
 #include "petsc.h"
 #include "ao.h"
@@ -13,7 +13,6 @@ int main(int argc,char **argv)
   int         n,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
   double      *gd;
   AOData      aodata;
-  Viewer      binary;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
@@ -78,13 +77,18 @@ int main(int argc,char **argv)
   PetscFree(keys);
 
   /*
-        Save the database to a file
+     View the database
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"dataoutput",BINARY_CREATE,&binary);CHKERRA(ierr);
-  ierr = AODataView(aodata,binary);CHKERRA(ierr);
   ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary); CHKERRA(ierr);
- 
+
+  /*
+       Remove a key and a single segment from the database
+  */ 
+  ierr = AODataKeyRemove(aodata,"key2");CHKERRA(ierr); 
+  ierr = AODataSegmentRemove(aodata,"key1","seg1");CHKERRA(ierr);
+
+  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+
   ierr = AODataDestroy(aodata); CHKERRA(ierr);
 
   PetscFinalize();
