@@ -142,7 +142,7 @@ int main(int Argc,char **Args)
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
   ierr = VecSet(&zero,X[levels-1]);CHKERRQ(ierr);
 
-  if (MGCheck(pcmg)) {SETERRQ(1,0);}
+  if (MGCheck(pcmg)) {SETERRQ(PETSC_ERR_PLIB, "MGCheck failed");}
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);

@@ -109,7 +109,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"MatMult not equal to MatMultAdd Norm1=%e Norm2=%e bs = \n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"MatMult not equal to MatMultAdd Norm1=%e Norm2=%e bs = %d\n",s1norm,s2norm,bs);CHKERRQ(ierr);
     }
   }
 

@@ -155,11 +155,10 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
 
 int FormFunctionLocal(DALocalInfo *info,double **t,double **f,void *ptr)
 {
-  int          ierr,i,j;
+  int          i,j;
   PetscScalar  hx,hy;
   PetscScalar  gradup,graddown,gradleft,gradright,gradx,grady;
   PetscScalar  coeffup,coeffdown,coeffleft,coeffright;
-  Vec          localT;
 
   PetscFunctionBegin;
   hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);

@@ -164,7 +164,7 @@ int AppCtxSetLocal(AppCtx *appctx)
        ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->cell_df:\n",rank);CHKERRQ(ierr); 
        PetscIntView(grid->cell_n*8,grid->cell_df,PETSC_VIEWER_STDOUT_SELF); 
        */
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->vertex_df:\n");CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->vertex_df:\n",rank);CHKERRQ(ierr);
     ierr = PetscIntView(2*grid->vertex_n_ghosted,grid->vertex_df,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } 
 
