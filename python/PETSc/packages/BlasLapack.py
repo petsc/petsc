@@ -353,6 +353,8 @@ class Configure(config.base.Configure):
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
       self.lib = self.lapackLibrary+self.blasLibrary
+      if 'FC' in self.framework.argDB:
+        self.lib.append(self.compilers.flibs)
       self.framework.packages.append(self)
       if self.f2c:
         self.addDefine('BLASLAPACK_F2C', 1)
