@@ -84,7 +84,7 @@ static int LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat            B;
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data,*b;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   int            ierr,*localtoglobal,ncol,i;
   Mat_MPIAIJ_XXT *xxt;
 
@@ -207,7 +207,7 @@ static int LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat            B;
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data,*b;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   int            ierr,*localtoglobal,ncol,i;
   Mat_MPIAIJ_XYT *xyt;
 

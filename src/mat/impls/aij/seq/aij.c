@@ -2557,7 +2557,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 {
   Mat_SeqAIJ *b;
-  int        i,len,ierr;
+  int        i,len=0,ierr;
   PetscTruth flg2,skipallocation = PETSC_FALSE;
 
   PetscFunctionBegin;
