@@ -797,9 +797,9 @@ int KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (lgmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
-    if (lgmres->cgstype == KSP_GMRES_CGS_REFINEMENT_NONE) {
+    if (lgmres->cgstype == KSP_GMRES_CGS_REFINE_NEVER) {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
-    } else if (lgmres->cgstype == KSP_GMRES_CGS_REFINEMENT_ALWAYS) {
+    } else if (lgmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS) {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
     } else {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
@@ -837,7 +837,7 @@ int KSPSetFromOptions_LGMRES(KSP ksp)
   PetscReal   haptol;
   KSP_LGMRES *lgmres = (KSP_LGMRES*) ksp->data;
   PetscTruth  flg;
-  const char  *types[] = {"none","ifneeded","always"};
+  const char  *types[] = {"never","ifneeded","always"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
@@ -987,7 +987,7 @@ int KSPCreate_LGMRES(KSP ksp)
   lgmres->sol_temp            = 0;
   lgmres->max_k               = LGMRES_DEFAULT_MAXK;
   lgmres->Rsvd                = 0;
-  lgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_NONE;
+  lgmres->cgstype             = KSP_GMRES_CGS_REFINE_NEVER;
   /*LGMRES_MOD - new defaults */
   lgmres->aug_dim             = LGMRES_DEFAULT_AUGDIM;
   lgmres->aug_ct              = 0; /* start with no aug vectors */ 

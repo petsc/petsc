@@ -21,7 +21,7 @@ int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
   int         j,ierr;
   PetscScalar *hh,*hes,shh[500],*lhh;
   PetscReal   hnrm, wnrm;
-  PetscTruth  refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINEMENT_ALWAYS);
+  PetscTruth  refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
    *  the second step classical Gram-Schmidt is only necessary
    *  when a simple test criteria is not passed
    */
-  if (gmres->cgstype == KSP_GMRES_CGS_REFINEMENT_IFNEEDED) {
+  if (gmres->cgstype == KSP_GMRES_CGS_REFINE_IFNEEDED) {
     hnrm = 0.0;
     for (j=0; j<=it; j++) {
       hnrm  +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));

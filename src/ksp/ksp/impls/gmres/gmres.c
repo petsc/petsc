@@ -472,9 +472,9 @@ int KSPView_GMRES(KSP ksp,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
-    if (gmres->cgstype == KSP_GMRES_CGS_REFINEMENT_NONE) {
+    if (gmres->cgstype == KSP_GMRES_CGS_REFINE_NEVER) {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
-    } else if (gmres->cgstype == KSP_GMRES_CGS_REFINEMENT_ALWAYS) {
+    } else if (gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS) {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
     } else {
       cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
@@ -541,7 +541,7 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   PetscReal       haptol;
   KSP_GMRES       *gmres = (KSP_GMRES*)ksp->data;
   PetscTruth      flg;
-  const char      *types[] = {"none","ifneeded","always"};
+  const char      *types[] = {"never","ifneeded","always"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
@@ -664,7 +664,7 @@ EXTERN_C_END
 -  type - the type of refinement
 
   Options Database:
-.  -ksp_gmres_cgs_refinement_type <none,ifneeded,always>
+.  -ksp_gmres_cgs_refinement_type <never,ifneeded,always>
 
    Level: intermediate
 
@@ -732,7 +732,7 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp            = 0;
   gmres->max_k               = GMRES_DEFAULT_MAXK;
   gmres->Rsvd                = 0;
-  gmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_NONE;
+  gmres->cgstype             = KSP_GMRES_CGS_REFINE_NEVER;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
