@@ -1,4 +1,4 @@
-# $Id: common,v 1.188 1997/08/19 15:46:31 bsmith Exp balay $ 
+# $Id: common,v 1.189 1997/08/19 16:06:19 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -14,6 +14,8 @@
 # PETSC_PARCH   - corresponds to the PARCH_arch in the source files, set in 
 #                 the file bmake/$(PETSC_ARCH)/base
 #
+BOPT          = none
+
 LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME	      = $(PDIR)/$(LIBBASE).a
@@ -22,7 +24,6 @@ OBJS	      = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE)
 CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
 
-BOPT          = none
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).
