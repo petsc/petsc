@@ -200,6 +200,7 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'CPP'):
           self.framework.argDB['CPP'] = self.CPP
+          self.CPPFLAGS = self.framework.argDB['CPPFLAGS']
           self.pushLanguage('C')
           if not self.checkPreprocess('#include <stdlib.h>\n'):
             raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')

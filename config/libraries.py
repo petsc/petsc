@@ -265,10 +265,10 @@ int checkInit(void) {
     if not found:
       found = self.check(['PSDK/kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
     if found:
-      suffix = 'lib'
+      self.suffix = 'lib'
     else:
-      suffix = 'a'
-    self.addSubstitution('LIB_SUFFIX', suffix)
+      self.suffix = 'a'
+    self.addSubstitution('LIB_SUFFIX', self.suffix)
     self.framework.argDB['LIBS'] = oldLibs
     return
 
