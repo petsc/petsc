@@ -5880,7 +5880,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatPtAPNumeric"
 PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) 
 {
-  PetscErrorCode ierr,(*fA)(Mat,Mat,Mat), (*fP)(Mat,Mat,Mat);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
