@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.44 1996/09/14 03:37:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.45 1996/11/01 19:17:02 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -27,10 +27,20 @@ $      Use -help for a list of available methods
 $      (for instance, jacobi or bjacobi)
 
   Notes:
-   It is best to use the SLESSetFromOptions() command and then set the PC type
-   from the options database rather than by using this routine.
-   See "petsc/include/pc.h" for available methods (for instance,
-   PCJACOBI, PCILU, or PCBJACOBI).
+  See "petsc/include/pc.h" for available methods (for instance,
+  PCJACOBI, PCILU, or PCBJACOBI).
+
+  Normally, it is best to use the SLESSetFromOptions() command and
+  then set the PC type from the options database rather than by using
+  this routine.  Using the options database provides the user with
+  maximum flexibility in evaluating the many different preconditioners. 
+  The PCSetType() routine is provided for those situations where it
+  is necessary to set the preconditioner independently of the command
+  line or options database.  This might be the case, for example, when
+  the choice of preconditioner changes during the execution of the
+  program, and the user's application is taking responsibility for
+  choosing the appropriate preconditioner.  In other words, this
+  routine is for the advanced user.
 
 .keywords: PC, set, method, type
 @*/
