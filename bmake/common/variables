@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.5 1999/03/06 22:45:52 balay Exp bsmith $ 
+# $Id: common_variables,v 1.6 1999/06/28 17:13:45 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -17,7 +17,6 @@
 LDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 PDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 LIBNAME	      = ${PDIR}/${LIBBASE}.a
-LIBBASENAME   = ${PDIR}/${LIBBASE}
 SOURCE	      = ${SOURCEC} ${SOURCEF}
 OBJS	      = ${OBJSC} ${OBJSF}
 PETSC_INCLUDE = -I${PETSC_DIR} -I${PETSC_DIR}/include ${MPI_INCLUDE} ${MPE_INCLUDE} \
