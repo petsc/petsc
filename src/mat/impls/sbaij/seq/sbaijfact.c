@@ -1252,6 +1252,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
       }
       
       /* save nonzero entries in k-th row of U ... */
+      /* printf("%d, dk: %g, 1/dk: %g\n",k,dk,1/dk); */
       ba[bi[k]] = 1.0/dk;
       jmin      = bi[k]+1; 
       nz        = bi[k+1] - jmin; 

@@ -1379,9 +1379,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity && bs==1) { 
-    if (!(*B)) {
-      ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
-    }
+    ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
     (*B)->factor    = FACTOR_CHOLESKY;
     b               = (Mat_SeqSBAIJ*)(*B)->data;  
     b->row          = perm;

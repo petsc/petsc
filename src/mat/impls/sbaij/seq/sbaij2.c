@@ -1284,8 +1284,9 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   MatScalar    *aa,*aa_j;
 
   PetscFunctionBegin;
-  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = a->bs;
+  if (A->factor && bs>1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
+  
   aa   = a->a;
   ai   = a->i;
   aj   = a->j;
@@ -1301,9 +1302,14 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
     if (aj[j] == i) {             /* if this is a diagonal element */
       row  = i*bs;      
       aa_j = aa + j*bs2;  
-      for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];       
+      if (A->factor && bs==1){
+        for (k=0; k<bs2; k+=(bs+1),row++) x[row] = 1.0/aa_j[k];
+      } else {
+        for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];  
+      }     
     }
   }
+  
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

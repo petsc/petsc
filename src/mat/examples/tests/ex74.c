@@ -303,7 +303,16 @@ int main(int argc,char **args)
     }
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */
-      
+
+    /* test MatGetDiagonal on numeric factor */
+    /*
+    if (lf == -1) {
+      ierr = MatGetDiagonal(sC,s1);CHKERRQ(ierr);  
+      printf(" in ex74.c, diag: \n");
+      ierr = VecView(s1,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    */
+
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
