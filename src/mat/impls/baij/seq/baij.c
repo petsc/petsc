@@ -8,6 +8,37 @@
 
 #include "src/inline/ilu.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"
+/*@C
+  MatSeqBAIJInvertBlockDiagonal - Inverts the block diagonal entries.
+
+  Collective on Mat
+
+  Input Parameters:
+. mat - the matrix
+
+  Level: advanced
+@*/
+PetscErrorCode MatSeqBAIJInvertBlockDiagonal(Mat mat)
+{
+  PetscErrorCode ierr,(*f)(Mat);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJInvertBlockDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Currently only implemented for SeqBAIJ.");
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A)
@@ -78,6 +109,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPBRelax_SeqBAIJ_2"
@@ -818,6 +850,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 
   ierr = PetscFree(a);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -2372,6 +2405,9 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJInvertBlockDiagonal_C",
+                                     "MatInvertBlockDiagonal_SeqBAIJ",
+                                      MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
                                       MatStoreValues_SeqBAIJ);CHKERRQ(ierr);

@@ -1310,7 +1310,7 @@ EXTERN PetscErrorCode MatNullSpaceTest(MatNullSpace,Mat);
 EXTERN PetscErrorCode MatReorderingSeqSBAIJ(Mat,IS);
 EXTERN PetscErrorCode MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat,PetscInt *);
-
+EXTERN PetscErrorCode MatSeqBAIJInvertBlockDiagonal(Mat);
 
 EXTERN PetscErrorCode MatCreateMAIJ(Mat,PetscInt,Mat*);
 EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
