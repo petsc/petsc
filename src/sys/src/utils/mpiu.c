@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.55 1996/09/05 13:59:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.56 1996/09/14 03:34:09 curfman Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -372,7 +372,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   if (!flag) {
     /* This communicator is not yet known to this system, so we dup it and set its value */
     MPI_Comm_dup( comm_in, comm_out );
-    MPI_Attr_get( PETSC_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
+    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
     tagvalp = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
