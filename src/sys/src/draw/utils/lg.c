@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.61 1999/06/30 22:49:17 bsmith Exp balay $";
+static char vcid[] = "$Id: lg.c,v 1.62 1999/06/30 23:49:21 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -169,7 +169,7 @@ int DrawLGDestroy(DrawLG lg)
     ierr = PetscObjectDestroy((PetscObject) lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  DrawAxisDestroy(lg->axis);
+  ierr = DrawAxisDestroy(lg->axis);CHKERRQ(ierr);
   ierr = PetscFree(lg->x);CHKERRQ(ierr);
   PLogObjectDestroy(lg);
   PetscHeaderDestroy(lg);
@@ -281,6 +281,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
+
     if (n > chunk) chunk = n;
     tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
     PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(double));
