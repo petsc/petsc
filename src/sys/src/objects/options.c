@@ -1,16 +1,15 @@
 
-
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.52 1995/11/01 19:09:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.53 1995/11/06 02:31:04 bsmith Exp curfman $";
 #endif
 /*
-    Routines to simplify the use of command line, file options etc.
-  These routines are used to manipulate the options database.
+  These routines simplify the use of command line, file options, etc.,
+  and are used to manipulate the options database.
 
-    This file uses regular malloc and free because it cannot know 
+  This file uses regular malloc and free because it cannot know 
   what malloc is being used until it has already processed the input.
-
 */
+
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include <stdio.h>
 #include <math.h>
@@ -54,8 +53,7 @@ MPI_Datatype  MPIU_COMPLEX;
 #endif
 
 /* 
-    Optional file where all PETSc output from MPIU_*printf() 
-  is saved in. 
+   Optional file where all PETSc output from MPIU_*printf() is saved. 
 */
 FILE *petsc_history = 0;
 
@@ -739,19 +737,25 @@ int OptionsHasName(char* pre,char *name)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!value) SETERRQ(-1,"OptionsHasName:Missing value for option");
   return 1;
 }
 
 /*@C
    OptionsGetInt - Gets the integer value for a particular option in the 
-                    database.
+                   database.
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - the string to preappend to the name
+.  pre - the string to prepend to the name
 
    Output Parameter:
 .  ivalue - the integer value to return
+
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
 
 .keywords: options, database, get, int
 
@@ -762,7 +766,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(1,"OptionsGetInt:Missing value for option");
+  if (!value) SETERRQ(-1,"OptionsGetInt:Missing value for option");
   *ivalue = atoi(value);
   return 1; 
 } 
@@ -778,6 +782,11 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
    Output Parameter:
 .  dvalue - the double value to return
 
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -787,6 +796,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!value) SETERRQ(-1,"OptionsGetDouble:Missing value for option");
   *dvalue = atof(value);
   return 1; 
 } 
@@ -803,6 +813,11 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
    Output Parameter:
 .  dvalue - the double value to return
 
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -812,6 +827,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!value) SETERRQ(-1,"OptionsGetScalar:Missing value for option");
   *dvalue = atof(value);
   return 1; 
 } 
@@ -830,6 +846,10 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 .  dvalue - the double value to return
 .  nmax - actual number of values retreived
 
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
 
 .keywords: options, database, get, double
 
@@ -866,6 +886,10 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
 .  dvalue - the integer values to return
 .  nmax - actual number of values retreived
 
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
 
 .keywords: options, database, get, double
 
@@ -900,6 +924,10 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
    Output Parameter:
 .  string - location to copy string
 
+   Returns:
+$   1 if the option is found;
+$   0 if the option is not found;
+$  -1 if an error is detected.
 
 .keywords: options, database, get, string
 
