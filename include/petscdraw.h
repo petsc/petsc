@@ -6,13 +6,19 @@
 
 typedef struct _DrawCtx* DrawCtx;
 
-int DrawOpenX(char*,int,int,int,int,DrawCtx*);
+int DrawOpenX(char*,char *,int,int,int,int,DrawCtx*);
 int DrawDestroy(DrawCtx);
 
-int Draw2dLine(DrawCtx,double,double,double,double,int,int);
-int Draw2dLineSetWidth(DrawCtx,double,double,double,double,int,int);
-int Draw2dPoint(DrawCtx,double,double,int);
+int DrawLine(DrawCtx,double,double,double,double,int,int);
+int DrawLineSetWidth(DrawCtx,double,double,double,double,int,int);
 
-int Draw2dText(DrawCtx,double,double,int,char*);
+int DrawPoint(DrawCtx,double,double,int);
+
+int DrawText(DrawCtx,double,double,int,char*);
+
+int DrawSetViewPort(DrawCtx,double,double,double,double);
+int DrawSetCoordinates(DrawCtx,double,double,double,double);
+int DrawSetDoubleBuffer(DrawCtx);
+int DrawFlush(DrawCtx);
 
 #endif

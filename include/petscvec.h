@@ -20,59 +20,63 @@
 
 typedef struct _Vec*           Vec;
 typedef struct _VecScatterCtx* VecScatterCtx;
-typedef double*                VecScalar;
 
-extern int VecCreateSequential          ANSI_ARGS((int,Vec *));  
-extern int VecCreateSequentialBLAS      ANSI_ARGS((int,Vec *)); 
-extern int VecCreateComplexSequential   ANSI_ARGS((int,Vec *));
+extern int VecCreateSequential(int,Vec *);  
+extern int VecCreateSequentialBLAS(int,Vec *); 
 
-extern int VecCreateInitialVector   ANSI_ARGS((int,int,char **,Vec *)); 
-
-#if defined(MPI_PACKAGE)
-extern int VecCreateMPI            ANSI_ARGS((void *,int,int,Vec *));  
-extern int VecCreateMPIBLAS        ANSI_ARGS((void *,int,int,Vec *));  
-extern int VecCreateComplexMPI     ANSI_ARGS((void *,int,int,Vec *));  
+#if defined(HAVE_MPI)
+#include "comm.h"
+extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
+extern int VecCreateMPIBLAS(MPI_Comm,int,int,Vec *); 
 #endif
 
-extern int VecDot           ANSI_ARGS((Vec, Vec, VecScalar));
-extern int VecTDot          ANSI_ARGS((Vec, Vec, VecScalar));  
-extern int VecMDot          ANSI_ARGS((int,      Vec ,Vec*,VecScalar));
-extern int VecMTDot         ANSI_ARGS((int,      Vec ,Vec*,VecScalar)); 
-extern int VecNorm          ANSI_ARGS((Vec, VecScalar));
-extern int VecASum          ANSI_ARGS((Vec, VecScalar));
-extern int VecMax           ANSI_ARGS((Vec, int *,    VecScalar));
-extern int VecScale         ANSI_ARGS((VecScalar, Vec));    
-extern int VecCopy          ANSI_ARGS((Vec, Vec));        
-extern int VecSet           ANSI_ARGS((VecScalar, Vec));    
-extern int VecSwap          ANSI_ARGS((Vec, Vec));
-extern int VecAXPY          ANSI_ARGS((VecScalar, Vec, Vec));  
-extern int VecMAXPY         ANSI_ARGS((int,      VecScalar, Vec ,Vec*));
-extern int VecAYPX          ANSI_ARGS((VecScalar, Vec, Vec));
-extern int VecWAXPY         ANSI_ARGS((VecScalar, Vec, Vec, Vec));
-extern int VecPMult         ANSI_ARGS((Vec, Vec, Vec));    
-extern int VecPDiv          ANSI_ARGS((Vec, Vec, Vec));    
-extern int VecCreate        ANSI_ARGS((Vec,Vec *));          
-extern int VecDestroy       ANSI_ARGS((Vec));        
-extern int VecGetVecs       ANSI_ARGS((Vec, int,Vec **));         
-extern int VecFreeVecs      ANSI_ARGS((Vec*,int)); 
+extern int VecCreateInitialVector(int,Vec *); 
 
-extern int VecAddValues     ANSI_ARGS((Vec, int, int *,VecScalar));
-extern int VecInsertValues  ANSI_ARGS((Vec, int, int *,VecScalar));
-extern int VecBeginAssembly ANSI_ARGS((Vec));
-extern int VecEndAssembly   ANSI_ARGS((Vec));
 
-extern int VecScatterBegin  ANSI_ARGS((Vec,IS,Vec,IS,VecScatterCtx *));
-extern int VecScatterEnd    ANSI_ARGS((Vec,IS,Vec,IS,VecScatterCtx *)); 
 
-extern int VecScatterAddBegin ANSI_ARGS((Vec,IS,Vec,IS,VecScatterCtx *));
-extern int VecScatterAddEnd   ANSI_ARGS((Vec,IS,Vec,IS,VecScatterCtx *));  
 
-extern int VecGetArray      ANSI_ARGS((Vec,VecScalar **));
-extern int VecValidVector   ANSI_ARGS((Vec));
-extern int VecView          ANSI_ARGS((Vec,void *));
+extern int VecDot(Vec, Vec, Scalar*);
+extern int VecTDot(Vec, Vec, Scalar*);  
+extern int VecMDot(int,      Vec ,Vec*,Scalar*);
+extern int VecMTDot(int,      Vec ,Vec*,Scalar*); 
+extern int VecNorm(Vec, double*);
+extern int VecASum(Vec, Scalar*);
+extern int VecMax(Vec, int *,    Scalar*);
+extern int VecScale(Scalar*, Vec);    
+extern int VecCopy(Vec, Vec);        
+extern int VecSet(Scalar*, Vec);    
+extern int VecSwap(Vec, Vec);
+extern int VecAXPY(Scalar*, Vec, Vec);  
+extern int VecMAXPY(int,      Scalar*, Vec ,Vec*);
+extern int VecAYPX(Scalar*, Vec, Vec);
+extern int VecWAXPY(Scalar*, Vec, Vec, Vec);
+extern int VecPMult(Vec, Vec, Vec);    
+extern int VecPDiv(Vec, Vec, Vec);    
+extern int VecCreate(Vec,Vec *);          
+extern int VecDestroy(Vec);        
+extern int VecGetVecs(Vec, int,Vec **);         
+extern int VecFreeVecs(Vec*,int); 
 
-extern int VecGetSize       ANSI_ARGS((Vec,int *));
-extern int VecGetLocalSize  ANSI_ARGS((Vec,int *));
+extern int VecAddValues(Vec, int, int *,Scalar*);
+extern int VecInsertValues(Vec, int, int *,Scalar*);
+extern int VecBeginAssembly(Vec);
+extern int VecEndAssembly(Vec);
+
+extern int VecScatterBegin(Vec,IS,Vec,IS,VecScatterCtx *);
+extern int VecScatterEnd(Vec,IS,Vec,IS,VecScatterCtx *); 
+
+extern int VecScatterAddBegin(Vec,IS,Vec,IS,VecScatterCtx *);
+extern int VecScatterAddEnd(Vec,IS,Vec,IS,VecScatterCtx *);  
+
+extern int VecGetArray(Vec,Scalar**);
+extern int VecValidVector(Vec);
+extern int VecView(Vec, Viewer);
+
+extern int VecGetSize(Vec,int *);
+extern int VecGetLocalSize(Vec,int *);
+
+/* utility routines */
+extern int VecReciprocal(Vec);
 
 #endif
 

@@ -8,19 +8,19 @@
 
 typedef struct _IS* IS;
 
-int    ISCreateSequential       ANSI_ARGS((int,int *,IS *));
-int    ISCreateStrideSequential ANSI_ARGS((int,int,int,IS *));
-int    ISCreateRangeSequential  ANSI_ARGS((int,int,int,IS *));
+int    ISCreateSequential(int,int *,IS *);
+int    ISCreateSequentialPermutation(int,int *,IS *);
+int    ISCreateStrideSequential(int,int,int,IS *);
+int    ISCreateRangeSequential(int,int,int,IS *);
 
-#if defined(MPI_COMPONENT)
-int    ISCreateMPI              ANSI_ARGS((void *,int,int *,IS *)); 
-#endif
-
-int   ISGetIndices             ANSI_ARGS((IS,int **));
-int   ISRestoreIndices         ANSI_ARGS((IS,int **));
-int   ISGetSize                ANSI_ARGS((IS,int *));
-int   ISGetLocalSize           ANSI_ARGS((IS,int *));
-int   ISGetPosition            ANSI_ARGS((IS,int,int *));
-int   ISDestroy                ANSI_ARGS((IS));
+int   ISGetIndices(IS,int **);
+int   ISRestoreIndices(IS,int **);
+int   ISGetSize(IS,int *);
+int   ISGetLocalSize(IS,int *);
+int   ISGetPosition(IS,int,int *);
+int   ISDestroy(IS);
+int   ISIsPermutation(IS); 
+int   ISInvertPermutation(IS,IS*);
+int   ISView(IS,Viewer);
 
 #endif

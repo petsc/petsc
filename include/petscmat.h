@@ -1,73 +1,99 @@
 /*
      Include file for the matrix component of PETSc
 */
-#ifndef __MAT_PACKAGE 
-#define __MAT_PACKAGE
-
-#if !defined(IS_PACKAGE)
-  is.h must be included before mat.h
-#endif
-#if !defined(VEC_COMPONENT)
-  vec.h must be included before mat.h
-#endif
+#ifndef __MAT 
+#define __MAT
+#include "vec.h"
 
 typedef struct _Mat*           Mat;
-typedef double*                MatScalar;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
-extern int MatCreateSequentialDense   ANSI_ARGS((int,int,Mat *));
-extern int MatCreateSequentialAIJ     ANSI_ARGS((int,int,Mat *));
+
+extern int MatCreateSequentialDense(int,int,Mat*);
+extern int MatCreateSequentialAIJ(int,int,int,Mat*);
   
-extern int  MatValidMatrix            ANSI_ARGS((Mat));
+/* ------------------------------------------------------------*/
+extern int  MatValidMatrix(Mat);
 
-extern int MatInsertValues      ANSI_ARGS((Mat,MatScalar,int,int*,int,int*));
-extern int MatAddValues         ANSI_ARGS((Mat,MatScalar,int,int*,int,int*));
-extern int MatBeginAssembly     ANSI_ARGS((Mat));
-extern int MatEndAssembly       ANSI_ARGS((Mat));
+extern int MatInsertValues(Mat,Scalar*,int,int*,int,int*);
+extern int MatAddValues(Mat,Scalar*,int,int*,int,int*);
+extern int MatBeginAssembly(Mat);
+extern int MatEndAssembly(Mat);
+extern int MatSetInsertOption(Mat,int);
+#define ROW_ORIENTED              1 
+#define COLUMN_ORIENTED           2
+#define ROWS_SORTED               3
+#define COLUMNS_SORTED            4
+#define NO_NEW_NONZERO_LOCATIONS  5
+#define YES_NEW_NONZERO_LOCATIONS 6
 
-extern int MatGetValues         ANSI_ARGS((Mat,MatScalar,int,int*,int,int*));
-extern int MatGetRow            ANSI_ARGS((Mat,int,int *,int **,MatScalar *));
-extern int MatRestoreRow        ANSI_ARGS((Mat,int,int *,int **,MatScalar *));
-extern int MatGetCol            ANSI_ARGS((Mat,int,int *,int **,MatScalar *));
-extern int MatRestoreCol        ANSI_ARGS((Mat,int,int *,int **,MatScalar *));
+extern int MatGetValues(Mat,Scalar*,int,int*,int,int*);
+extern int MatGetRow(Mat,int,int *,int **,Scalar**);
+extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
+extern int MatGetCol(Mat,int,int *,int **,Scalar**);
+extern int MatRestoreCol(Mat,int,int *,int **,Scalar**);
 
-extern int MatMult         ANSI_ARGS((Mat,Vec,Vec));
-extern int MatMultAdd      ANSI_ARGS((Mat,Vec,Vec,Vec));
-extern int MatMultTran     ANSI_ARGS((Mat,Vec,Vec));
-extern int MatMultTranAdd  ANSI_ARGS((Mat,Vec,Vec,Vec));
+extern int MatMult(Mat,Vec,Vec);
+extern int MatMultAdd(Mat,Vec,Vec,Vec);
+extern int MatMultTrans(Mat,Vec,Vec);
+extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
-extern int MatLUFactor           ANSI_ARGS((Mat));
-extern int MatCholeskyFactor     ANSI_ARGS((Mat));
-extern int MatSolve              ANSI_ARGS((Mat,Vec,Vec));
-extern int MatSolveAdd           ANSI_ARGS((Mat,Vec,Vec,Vec));
-extern int MatSolveTran          ANSI_ARGS((Mat,Vec,Vec));
-extern int MatSolveTranAdd       ANSI_ARGS((Mat,Vec,Vec,Vec));
+#define ORDER_NATURAL 0
+#define ORDER_ND      1
+#define ORDER_1WD     2
+#define ORDER_RCM     3
+#define ORDER_QMD     4
+extern int MatGetReordering(Mat,int,IS*,IS*);
 
-extern int MatRelax         ANSI_ARGS((Mat,Vec,double,int,Vec));
-extern int MatRelaxForward  ANSI_ARGS((Mat,Vec,double,Vec));
-extern int MatRelaxBackward ANSI_ARGS((Mat,Vec,double,Vec));
+extern int MatLUFactor(Mat,IS,IS);
+extern int MatCholeskyFactor(Mat,IS);
+extern int MatLUFactorSymbolic(Mat,IS,IS,Mat*);
+extern int MatCholeskyFactorSymbolic(Mat,IS,Mat*);
+extern int MatLUFactorNumeric(Mat,Mat);
+extern int MatCholeskyFactorNumeric(Mat,Mat);
 
-extern int MatCopy          ANSI_ARGS((Mat,Mat *));
-extern int MatView         ANSI_ARGS((Mat,void*));
-extern int MatPrintMatlab  ANSI_ARGS((Mat,FILE*,char *));
-extern int  MatNonZeros     ANSI_ARGS((Mat));
-extern int  MatMemoryUsed   ANSI_ARGS((Mat));
-extern int MatGetDiagonal  ANSI_ARGS((Mat,Vec *));
-extern int MatTranspose    ANSI_ARGS((Mat));
-extern int MatScale        ANSI_ARGS((Mat,Vec,Vec));
-extern int  MatShrink       ANSI_ARGS((Mat,int,int*,int,int*));
-extern int  MatEqual        ANSI_ARGS((Mat,Mat));
-extern int  MatGetSubMatrix ANSI_ARGS((Mat,IS,IS,Mat *));
-extern int MatSetSubMatrix ANSI_ARGS((Mat,Mat,IS,IS));
-extern int MatReOrder      ANSI_ARGS((Mat,IS,IS));
+extern int MatSolve(Mat,Vec,Vec);
+extern int MatSolveAdd(Mat,Vec,Vec,Vec);
+extern int MatSolveTran(Mat,Vec,Vec);
+extern int MatSolveTranAdd(Mat,Vec,Vec,Vec);
+
+#define SOR_FORWARD_SWEEP      1
+#define SOR_BACKWARD_SWEEP     2
+#define SOR_SYMMETRIC_SWEEP    3
+#define SOR_ZERO_INITIAL_GUESS 4
+extern int MatRelax(Mat,Vec,double,int,IS,int,Vec);
+
+extern int MatCopy(Mat,Mat*);
+extern int MatView(Mat,Viewer);
+#include <stdio.h>
+extern int MatPrintMatlab(Mat,FILE*,char *);
+extern int  MatNonZeros(Mat,int*);
+extern int  MatMemoryUsed(Mat,int*);
+extern int MatGetDiagonal(Mat,Vec);
+extern int MatTranspose(Mat);
+extern int MatScale(Mat,Vec,Vec);
+extern int MatShrink(Mat,int,int*,int,int*);
+extern int  MatEqual(Mat,Mat);
+extern int  MatGetSubMatrix(Mat,IS,IS);
+extern int MatSetSubMatrix(Mat,Mat,IS,IS);
+extern int MatReOrder(Mat,IS,IS);
 
 #define NORM_1         1
 #define NORM_2         2
 #define NORM_FROBENIUS 3
 #define NORM_INFINITY  4
-extern int MatNorm         ANSI_ARGS((Mat,int,double *));
+extern int MatNorm(Mat,int,double *);
 
-extern int MatDestroy      ANSI_ARGS((Mat));
+extern int MatZeroEntries(Mat);
+extern int MatZeroRows(Mat);
+
+extern int MatCompress(Mat);
+extern int MatDestroy(Mat);
+
+extern int MatCreateInitialMatrix(int,int,Mat*);
+
+
+
 #endif
 
 

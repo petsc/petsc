@@ -3,8 +3,10 @@
 #define _OPTIONS_H
 #include "petsc.h"
 
-int OptionsCreate(int *,char ***,char *,char*);
+int OptionsCreate(int ,char **,char *,char*);
 int OptionsDestroy();
+#include <stdio.h>
+int OptionsPrint(FILE *);
 
 /* returns -1 on error, 0 on not found and 1 on found */
 int OptionsHasName(int, char *);

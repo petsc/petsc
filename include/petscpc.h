@@ -7,18 +7,30 @@
 #include "petsc.h"
 #include "mat.h"
 
-typedef enum { PCNONE, PCJACOBI, PCSOR } PCMETHOD;
+typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT } PCMETHOD;
 
 typedef struct _PC* PC;
 
-int    PCCreate(PC*);
-int    PCSetMethod(PC,PCMETHOD);
-int    PCApply(void*,Vec,Vec);
-int    PCSetUp(PC);
-int    PCApplyRichardson(void *,Vec,Vec,Vec,int);
-int    PCApplyRichardsonExists(PC);
-int    PCRegisterAll();
-int    PCRegister(PCMETHOD,char *,int (*)(PC));
-int    PCDestroy(PC);
+extern int    PCCreate(PC*);
+extern int    PCSetMethod(PC,PCMETHOD);
+extern int    PCApply(void*,Vec,Vec);
+extern int    PCSetUp(PC);
+extern int    PCApplyRichardson(void *,Vec,Vec,Vec,int);
+extern int    PCApplyRichardsonExists(PC);
+extern int    PCRegisterAll();
+extern int    PCRegister(PCMETHOD,char *,int (*)(PC));
+extern int    PCDestroy(PC);
+extern int    PCSetFromOptions(PC);
+extern int    PCGetMethodFromOptions(int,char *,PCMETHOD *);
+extern int    PCPrintMethods(char *);
+extern int    PCGetMethodFromContext(PC,PCMETHOD*);
+extern int    PCGetMethodName(PCMETHOD,char **);
+extern int    PCSetMatrix(PC,Mat);
+extern int    PCGetMatrix(PC,Mat*);
+extern int    PCSetVector(PC,Vec);
+extern int    PCPrintHelp(PC);
+
+extern int PCSORSetSymmetric(PC, int);
+extern int PCSORSetOmega(PC, double);
 
 #endif
