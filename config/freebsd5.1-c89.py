@@ -5,7 +5,6 @@ configure_options = [
   '--with-fc=f77',
   '--download-mpich=1',
   '--download-hypre=1',
-  '--download-spooles=1',
   '--download-superlu-dist=1'
   ]
 
