@@ -1,3 +1,6 @@
+petsc/bmake/sun4
+petsc/bmake/sun4_f90
+petsc/bmake/sun4_nodebug
 petsc/src/contrib/fun3d
 petsc/src/contrib/fun3d/RCS
 petsc/src/contrib/oberman
