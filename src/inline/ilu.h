@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.22 2000/11/02 20:46:18 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.23 2000/11/28 17:27:10 bsmith Exp buschelm $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -21,6 +21,13 @@
    src/mat/impls/baij/seq
 */
 
+#ifdef PETSC_HAVE_ICL_SSE
+#include "xmmintrin.h"
+EXTERN int  Kernel_A_gets_A_times_B_4SSE(float *,float *);
+EXTERN int  Kernel_LU_Update_Row_4SSE(int,float *,float *,float *,int *);
+EXTERN int  Kernel_A_gets_inverse_A_4SSE(float *);
+#endif
+
 EXTERN int  LINPACKdgefa(MatScalar *,int,int *);
 EXTERN int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
 EXTERN int  Kernel_A_gets_inverse_A_2(MatScalar *);
@@ -28,7 +35,10 @@ EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
 
 #define PETSC_INLINE_INVERT4by4
 #if defined(PETSC_INLINE_INVERT4by4)
-#define Kernel_A_gets_inverse_A_4(mat) 0;\
+#  ifdef PETSC_HAVE_ICL_SSE
+#    define Kernel_A_gets_inverse_A_4(mat) Kernel_A_gets_inverse_A_4SSE(mat)
+#  else
+#    define Kernel_A_gets_inverse_A_4(mat) 0;\
 {\
   MatScalar d, di;\
 \
@@ -101,6 +111,7 @@ EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
   mat[9] += mat[11] * mat[13] * di;\
   mat[10] += mat[11] * mat[14] * di;\
 }
+#  endif /* PETSC_HAVE_ICL_SSE */
 #else
 EXTERN int  Kernel_A_gets_inverse_A_4(MatScalar *);
 #endif

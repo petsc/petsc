@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.4 2001/03/23 23:22:07 balay Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.5 2001/04/05 16:57:52 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -7,7 +7,6 @@
 #include "src/inline/ilu.h"
 
 #ifdef PETSC_HAVE_ICL_SSE
-#include "xmmintrin.h"
 /*
     Version that uses Intel Compiler intrinsic functions and PentiumIII SSE registers
 */
@@ -19,53 +18,56 @@
     NOTE: A and B must be allocated as 16-byte aligned data
 
 */
-#define Kernel_A_gets_A_times_B_4SSE(a,b) 0;\
-{ \
-    __m128 A0,A1,A2,A3,C0,C1,C2,C3; \
-/*    A0 = _mm_load_ps(a   ); */ \
-/*    A1 = _mm_load_ps(a+4 ); */ \
-/*    A2 = _mm_load_ps(a+8 ); */ \
-/*    A3 = _mm_load_ps(a+12); */ \
-  A0 = _mm_loadh_pi(_mm_loadl_pi(A0,(__m64 *)(a   )),(__m64 *)(a+2 )); \
-  A1 = _mm_loadh_pi(_mm_loadl_pi(A1,(__m64 *)(a+4 )),(__m64 *)(a+6 )); \
-  A2 = _mm_loadh_pi(_mm_loadl_pi(A2,(__m64 *)(a+8 )),(__m64 *)(a+10)); \
-  A3 = _mm_loadh_pi(_mm_loadl_pi(A3,(__m64 *)(a+12)),(__m64 *)(a+14)); \
-  \ 
-  C0 = _mm_mul_ps(A0,_mm_load_ps1(b)); \
-  C0 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+1)),C0); \
-  C0 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+2)),C0); \
-  C0 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+3)),C0); \
-  \
-/*    _mm_store_ps(a,C0); */ \
-  _mm_storel_pi((__m64 *)(a  ),C0); \
-  _mm_storeh_pi((__m64 *)(a+2),C0); \
-  \
-  C1 = _mm_mul_ps(A0,_mm_load_ps1(b+4)); \
-  C1 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+5)),C1); \
-  C1 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+6)),C1); \
-  C1 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+7)),C1); \
-  \
-/*    _mm_store_ps(a+4,C1); */ \
-  _mm_storel_pi((__m64 *)(a+4),C1); \
-  _mm_storeh_pi((__m64 *)(a+6),C1); \
-  \
-  C2 = _mm_mul_ps(A0,_mm_load_ps1(b+8)); \
-  C2 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+9 )),C2); \
-  C2 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+10)),C2); \
-  C2 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+11)),C2); \
-  \
-/*    _mm_store_ps(a+8,C2); */ \
-  _mm_storel_pi((__m64 *)(a+8 ),C2); \
-  _mm_storeh_pi((__m64 *)(a+10),C2); \
-  \
-  C3 = _mm_mul_ps(A0,_mm_load_ps1(b+12)); \
-  C3 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+13)),C3); \
-  C3 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+14)),C3); \
-  C3 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+15)),C3); \
-  \
-/*    _mm_store_ps(a+12,C3); */ \
-  _mm_storel_pi((__m64 *)(a+12),C3); \
-  _mm_storeh_pi((__m64 *)(a+14),C3); \
+int Kernel_A_gets_A_times_B_4SSE(float *a,float *b)
+{ 
+  __m128 A0,A1,A2,A3,C0,C1,C2,C3;
+  
+  PetscFunctionBegin;
+/*    A0 = _mm_load_ps(a   ); */ 
+/*    A1 = _mm_load_ps(a+4 ); */ 
+/*    A2 = _mm_load_ps(a+8 ); */ 
+/*    A3 = _mm_load_ps(a+12); */ 
+  A0 = _mm_loadh_pi(_mm_loadl_pi(A0,(__m64 *)(a   )),(__m64 *)(a+2 )); 
+  A1 = _mm_loadh_pi(_mm_loadl_pi(A1,(__m64 *)(a+4 )),(__m64 *)(a+6 )); 
+  A2 = _mm_loadh_pi(_mm_loadl_pi(A2,(__m64 *)(a+8 )),(__m64 *)(a+10)); 
+  A3 = _mm_loadh_pi(_mm_loadl_pi(A3,(__m64 *)(a+12)),(__m64 *)(a+14)); 
+
+  C0 = _mm_mul_ps(A0,_mm_load_ps1(b)); 
+  C0 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+1)),C0); 
+  C0 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+2)),C0); 
+  C0 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+3)),C0); 
+  
+/*    _mm_store_ps(a,C0); */ 
+  _mm_storel_pi((__m64 *)(a  ),C0); 
+  _mm_storeh_pi((__m64 *)(a+2),C0); 
+  
+  C1 = _mm_mul_ps(A0,_mm_load_ps1(b+4)); 
+  C1 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+5)),C1); 
+  C1 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+6)),C1); 
+  C1 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+7)),C1); 
+  
+/*    _mm_store_ps(a+4,C1); */ 
+  _mm_storel_pi((__m64 *)(a+4),C1); 
+  _mm_storeh_pi((__m64 *)(a+6),C1); 
+  
+  C2 = _mm_mul_ps(A0,_mm_load_ps1(b+8)); 
+  C2 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+9 )),C2); 
+  C2 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+10)),C2); 
+  C2 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+11)),C2); 
+  
+/*    _mm_store_ps(a+8,C2); */ 
+  _mm_storel_pi((__m64 *)(a+8 ),C2); 
+  _mm_storeh_pi((__m64 *)(a+10),C2); 
+  
+  C3 = _mm_mul_ps(A0,_mm_load_ps1(b+12)); 
+  C3 = _mm_add_ps(_mm_mul_ps(A1,_mm_load_ps1(b+13)),C3); 
+  C3 = _mm_add_ps(_mm_mul_ps(A2,_mm_load_ps1(b+14)),C3); 
+  C3 = _mm_add_ps(_mm_mul_ps(A3,_mm_load_ps1(b+15)),C3); 
+  
+/*    _mm_store_ps(a+12,C3); */ 
+  _mm_storel_pi((__m64 *)(a+12),C3); 
+  _mm_storeh_pi((__m64 *)(a+14),C3); 
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -91,61 +93,63 @@
      NOTE: A, B, and C must be allocated as 16-byte aligned data
     
 */ 
-#define Kernel_LU_Row_Update_4_SSE(N,a,b,cc,offset) 0; \
-{ \
-  __m128 A0,A1,A2,A3,C0,C1,C2,C3; \
-  float *c; \
-  int    i; \
-  \
-/*    A0 = _mm_load_ps(a   ); */ \
-/*    A1 = _mm_load_ps(a+4 ); */ \
-/*    A2 = _mm_load_ps(a+8 ); */ \
-/*    A3 = _mm_load_ps(a+12); */ \
-  A0 = _mm_loadh_pi(_mm_loadl_pi(A0,(__m64 *)(a   )),(__m64 *)(a+2 )); \
-  A1 = _mm_loadh_pi(_mm_loadl_pi(A1,(__m64 *)(a+4 )),(__m64 *)(a+6 )); \
-  A2 = _mm_loadh_pi(_mm_loadl_pi(A2,(__m64 *)(a+8 )),(__m64 *)(a+10)); \
-  A3 = _mm_loadh_pi(_mm_loadl_pi(A3,(__m64 *)(a+12)),(__m64 *)(a+14)); \
-  \
-  for (i=0;i<N;i++) { \
-    /* Get pointer to C(i) */ \ 
-    c = cc + 16*offset[i]; \
-    \
-    C0 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b  )),_mm_load_ps(c)); \
-    C0 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+1)),C0); \
-    C0 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+2)),C0); \
-    C0 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+3)),C0); \
-    \
-/*      _mm_store_ps(c,C0); */ \
-    _mm_storel_pi((__m64 *)(c  ),C0); \
-    _mm_storeh_pi((__m64 *)(c+2),C0); \
-    \
-    C1 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+4)),_mm_load_ps(c+4)); \
-    C1 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+5)),C1); \
-    C1 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+6)),C1); \
-    C1 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+7)),C1); \
-    \
-/*      _mm_store_ps(c+4,C1); */ \
-    _mm_storel_pi((__m64 *)(c+4),C1); \
-    _mm_storeh_pi((__m64 *)(c+6),C1); \
-    \
-    C2 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+8 )),_mm_load_ps(c+8)); \
-    C2 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+9 )),C2); \
-    C2 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+10)),C2); \
-    C2 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+11)),C2); \
-    \
-/*      _mm_store_ps(c+8,C2); */ \
-    _mm_storel_pi((__m64 *)(c+8 ),C2); \
-    _mm_storeh_pi((__m64 *)(c+10),C2); \
-    \
-    C3 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+12)),_mm_load_ps(c+12)); \
-    C3 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+13)),C3); \
-    C3 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+14)),C3); \
-    C3 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+15)),C3); \
-    \
-/*      _mm_store_ps(c+12,C3); */ \
-    _mm_storel_pi((__m64 *)(c+12),C3); \
-    _mm_storeh_pi((__m64 *)(c+14),C3); \
-  } \
+int Kernel_LU_Row_Update_4_SSE(int N,float *a,float *b,float *cc,int *offset) 
+{ 
+  __m128 A0,A1,A2,A3,C0,C1,C2,C3; 
+  float *c; 
+  int    i; 
+  
+  PetscFunctionBegin;
+/*    A0 = _mm_load_ps(a   ); */ 
+/*    A1 = _mm_load_ps(a+4 ); */ 
+/*    A2 = _mm_load_ps(a+8 ); */ 
+/*    A3 = _mm_load_ps(a+12); */ 
+  A0 = _mm_loadh_pi(_mm_loadl_pi(A0,(__m64 *)(a   )),(__m64 *)(a+2 )); 
+  A1 = _mm_loadh_pi(_mm_loadl_pi(A1,(__m64 *)(a+4 )),(__m64 *)(a+6 )); 
+  A2 = _mm_loadh_pi(_mm_loadl_pi(A2,(__m64 *)(a+8 )),(__m64 *)(a+10)); 
+  A3 = _mm_loadh_pi(_mm_loadl_pi(A3,(__m64 *)(a+12)),(__m64 *)(a+14)); 
+  
+  for (i=0;i<N;i++) { 
+    /* Get pointer to C(i) */  
+    c = cc + 16*offset[i]; 
+    
+    C0 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b  )),_mm_load_ps(c)); 
+    C0 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+1)),C0); 
+    C0 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+2)),C0); 
+    C0 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+3)),C0); 
+    
+/*      _mm_store_ps(c,C0); */ 
+    _mm_storel_pi((__m64 *)(c  ),C0); 
+    _mm_storeh_pi((__m64 *)(c+2),C0); 
+    
+    C1 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+4)),_mm_load_ps(c+4)); 
+    C1 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+5)),C1); 
+    C1 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+6)),C1); 
+    C1 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+7)),C1); 
+    
+/*      _mm_store_ps(c+4,C1); */ 
+    _mm_storel_pi((__m64 *)(c+4),C1); 
+    _mm_storeh_pi((__m64 *)(c+6),C1); 
+    
+    C2 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+8 )),_mm_load_ps(c+8)); 
+    C2 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+9 )),C2); 
+    C2 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+10)),C2); 
+    C2 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+11)),C2); 
+    
+/*      _mm_store_ps(c+8,C2); */ 
+    _mm_storel_pi((__m64 *)(c+8 ),C2); 
+    _mm_storeh_pi((__m64 *)(c+10),C2); 
+    
+    C3 = _mm_sub_ps(_mm_mul_ps(A0,_mm_load_ps1(b+12)),_mm_load_ps(c+12)); 
+    C3 = _mm_sub_ps(_mm_mul_ps(A1,_mm_load_ps1(b+13)),C3); 
+    C3 = _mm_sub_ps(_mm_mul_ps(A2,_mm_load_ps1(b+14)),C3); 
+    C3 = _mm_sub_ps(_mm_mul_ps(A3,_mm_load_ps1(b+15)),C3); 
+    
+/*      _mm_store_ps(c+12,C3); */ 
+    _mm_storel_pi((__m64 *)(c+12),C3); 
+    _mm_storeh_pi((__m64 *)(c+14),C3); 
+  } 
+  PetscFunctionReturn(0);
 }
 #endif
 /*
