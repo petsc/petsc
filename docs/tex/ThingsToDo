@@ -7,6 +7,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+What about adding a MatGetLUPermutations(Mat,IS *row,IS *col, IS *icol);
+that can be called on any factored matrix?
+  Some of the row, col, icol may be null.
+  Will put in next release if you think makes sense?
+
   MatZeroRows() use MatSetOption() to zero the entries rather than remove them.
 allows reusing with different boundary conditions.
 
