@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.26 1997/12/03 14:08:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.27 1997/12/22 23:19:09 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
+#define vecsetvalue_           VECSETVALUE
 #define vecmaxpy_              VECMAXPY
 #define vecmdot_               VECMDOT
 #define veccreateseq_          VECCREATESEQ
@@ -25,6 +26,7 @@ static char vcid[] = "$Id: zvec.c,v 1.26 1997/12/03 14:08:55 bsmith Exp bsmith $
 #define vecduplicatevecs_      VECDUPLICATEVECS
 #define vecview_               VECVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecsetvalue_           vecsetvalue
 #define vecview_               vecview
 #define vecmaxpy_              vecmaxpy
 #define vecmdot_               vecmdot
@@ -50,6 +52,11 @@ static char vcid[] = "$Id: zvec.c,v 1.26 1997/12/03 14:08:55 bsmith Exp bsmith $
 extern "C" {
 #endif
 
+void vecsetvalue_(Vec v,int *i,Scalar *va,InsertMode *mode)
+{
+  /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
+  VecSetValues((Vec)PetscToPointer( *(int*)(v) ),1,i,va,*mode);
+}
 
 void vecview_(Vec v,Viewer viewer, int *__ierr )
 {
