@@ -143,6 +143,9 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
+      # LAM
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      yield libs
       #  SGI 
       yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
