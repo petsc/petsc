@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.72 2000/01/21 19:11:45 balay Exp balay $ 
+# $Id: base.site,v 1.73 2000/01/21 19:40:28 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -96,7 +96,7 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/h
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_X11
+PCONF         = 
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
                 ${SPAI_LIB} ${AMS_LIB}
