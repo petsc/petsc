@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.13 2000/08/03 14:53:21 balay Exp balay $*/
+/*$Id: sbaij.c,v 1.14 2000/08/03 15:00:21 balay Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1782,6 +1782,7 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
+#ifdef CONTINUE
 #undef __FUNC__  
 #define __FUNC__ "MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
@@ -1846,8 +1847,9 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
     for (j=0; j<bs; j++) {
       kmax = rowlengths[rowcount];
       for (k=0; k<kmax; k++) {
-        tmp = jj[nzcount++]/bs;
+        tmp = jj[nzcount++]/bs;   /* block col. index */
         if (!mask[tmp]) {masked[nmask++] = tmp; mask[tmp] = 1;}
+        /* if (!mask[tmp] && tmp >= i) {masked[nmask++] = tmp; mask[tmp] = 1;} */
       }
       rowcount++;
     }
@@ -1869,6 +1871,156 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
   }
   a->s_nz         = 0;
   for (i=0; i<mbs; i++) a->s_nz += browlengths[i];
+
+  /* read in nonzero values */
+  aa = (Scalar*)PetscMalloc((nz+extra_rows)*sizeof(Scalar));CHKPTRQ(aa);
+  ierr = PetscBinaryRead(fd,aa,nz,PETSC_SCALAR);CHKERRQ(ierr);
+  for (i=0; i<extra_rows; i++) aa[nz+i] = 1.0;
+
+  /* set "a" and "j" values into matrix */
+  nzcount = 0; jcount = 0;
+  for (i=0; i<mbs; i++) {
+    nzcountb = nzcount;
+    nmask    = 0;
+    for (j=0; j<bs; j++) {
+      kmax = rowlengths[i*bs+j];
+      for (k=0; k<kmax; k++) {
+        tmp = jj[nzcount++]/bs; /* block col. index */
+	if (!mask[tmp]) { masked[nmask++] = tmp; mask[tmp] = 1;}
+        /* if (!mask[tmp] && tmp >= i) { masked[nmask++] = tmp; mask[tmp] = 1;} */
+      }
+      rowcount++;
+    }
+    /* sort the masked values */
+    ierr = PetscSortInt(nmask,masked);CHKERRQ(ierr);
+
+    /* set "j" values into matrix */
+    maskcount = 1;
+    for (j=0; j<nmask; j++) {
+      a->j[jcount++]  = masked[j];
+      mask[masked[j]] = maskcount++; 
+    }
+    /* set "a" values into matrix */
+    ishift = bs2*a->i[i];
+    for (j=0; j<bs; j++) {
+      kmax = rowlengths[i*bs+j];
+      for (k=0; k<kmax; k++) {
+        tmp       = jj[nzcountb]/bs ; /* block col. index */
+        /* if (tmp >= i){ */
+          block     = mask[tmp] - 1;
+          point     = jj[nzcountb] - bs*tmp;
+          idx       = ishift + bs2*block + j + bs*point;
+          a->a[idx] = aa[nzcountb++];
+          /* } */
+      }
+    }
+    /* zero out the mask elements we set */
+    for (j=0; j<nmask; j++) mask[masked[j]] = 0;
+  }
+  if (jcount != a->s_nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Bad binary matrix");
+
+  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  ierr = PetscFree(browlengths);CHKERRQ(ierr);
+  ierr = PetscFree(aa);CHKERRQ(ierr);
+  ierr = PetscFree(jj);CHKERRQ(ierr);
+  ierr = PetscFree(mask);CHKERRQ(ierr);
+
+  B->assembled = PETSC_TRUE;
+
+  ierr = MatView_Private(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#end
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatLoad_SeqSBAIJ"
+int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
+{
+  Mat_SeqBAIJ  *a;
+  Mat          B;
+  int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1;
+  int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
+  int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
+  int          *masked,nmask,tmp,bs2,ishift;
+  Scalar       *aa;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
+
+  PetscFunctionBegin;
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  bs2  = bs*bs;
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "in MatLoad_SeqSBAIJ\n"); CHKERRA(ierr);
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"view must have one processor");
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
+  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not Mat object");
+  M = header[1]; N = header[2]; nz = header[3];
+
+  if (header[3] < 0) {
+    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,1,"Matrix stored in special format, cannot load as SeqBAIJ");
+  }
+
+  if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Can only do square matrices");
+
+  /* 
+     This code adds extra rows to make sure the number of rows is 
+    divisible by the blocksize
+  */
+  mbs        = M/bs;
+  extra_rows = bs - M + bs*(mbs);
+  if (extra_rows == bs) extra_rows = 0;
+  else                  mbs++;
+  if (extra_rows) {
+    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize\n");
+  }
+
+  /* read in row lengths */
+  rowlengths = (int*)PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
+  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+  for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
+
+  /* read in column indices */
+  jj = (int*)PetscMalloc((nz+extra_rows)*sizeof(int));CHKPTRQ(jj);
+  ierr = PetscBinaryRead(fd,jj,nz,PETSC_INT);CHKERRQ(ierr);
+  for (i=0; i<extra_rows; i++) jj[nz+i] = M+i;
+
+  /* loop over row lengths determining block row lengths */
+  browlengths = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(browlengths);
+  ierr        = PetscMemzero(browlengths,mbs*sizeof(int));CHKERRQ(ierr);
+  mask        = (int*)PetscMalloc(2*mbs*sizeof(int));CHKPTRQ(mask);
+  ierr        = PetscMemzero(mask,mbs*sizeof(int));CHKERRQ(ierr);
+  masked      = mask + mbs;
+  rowcount    = 0; nzcount = 0;
+  for (i=0; i<mbs; i++) {
+    nmask = 0;
+    for (j=0; j<bs; j++) {
+      kmax = rowlengths[rowcount];
+      for (k=0; k<kmax; k++) {
+        tmp = jj[nzcount++]/bs;
+        if (!mask[tmp]) {masked[nmask++] = tmp; mask[tmp] = 1;}
+      }
+      rowcount++;
+    }
+    browlengths[i] += nmask;
+    /* zero out the mask elements we set */
+    for (j=0; j<nmask; j++) mask[masked[j]] = 0;
+  }
+
+  /* create our matrix */
+  ierr = MatCreateSeqBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,browlengths,A);CHKERRQ(ierr);
+  B = *A;
+  a = (Mat_SeqBAIJ*)B->data;
+
+  /* set matrix "i" values */
+  a->i[0] = 0;
+  for (i=1; i<= mbs; i++) {
+    a->i[i]      = a->i[i-1] + browlengths[i-1];
+    a->ilen[i-1] = browlengths[i-1];
+  }
+  a->nz         = 0;
+  for (i=0; i<mbs; i++) a->nz += browlengths[i];
 
   /* read in nonzero values */
   aa = (Scalar*)PetscMalloc((nz+extra_rows)*sizeof(Scalar));CHKPTRQ(aa);
@@ -1906,13 +2058,13 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
         block     = mask[tmp] - 1;
         point     = jj[nzcountb] - bs*tmp;
         idx       = ishift + bs2*block + j + bs*point;
-        a->a[idx] = aa[nzcountb++];
+        a->a[idx] = (MatScalar)aa[nzcountb++];
       }
     }
     /* zero out the mask elements we set */
     for (j=0; j<nmask; j++) mask[masked[j]] = 0;
   }
-  if (jcount != a->s_nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Bad binary matrix");
+  if (jcount != a->nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Bad binary matrix");
 
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(browlengths);CHKERRQ(ierr);
