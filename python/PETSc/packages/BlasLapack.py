@@ -92,6 +92,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for --with-blas-lapack-dir, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
+    yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'])
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
     # Sun locations
