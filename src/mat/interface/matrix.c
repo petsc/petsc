@@ -110,6 +110,31 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatConjugate"
+/*@C  
+   MatConjugate - replaces the matrix values with their complex conjugates
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Level: advanced
+
+.seealso:  VecConjugate()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  ierr = (*mat->ops->conjugate)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow"
 /*@C  
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().

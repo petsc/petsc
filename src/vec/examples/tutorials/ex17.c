@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscMap       map;
   PetscInt       s;
   PetscMapType   t;
+  PetscScalar    dot;
 
 #if defined(__cplusplus)
   PetscInitialize(&argc,&args);
@@ -36,6 +37,11 @@ int main(int argc,char **args)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 #if defined(__cplusplus)
   norm = VecNorm(x);
+  norm = VecNorm(x,NORM_2);CHKERRQ(ierr);
+  ierr = VecNormBegin(x,NORM_2);CHKERRQ(ierr);
+  norm = VecNormEnd(x,NORM_2);CHKERRQ(ierr);
+  ierr = VecDotBegin(x,x);CHKERRQ(ierr);
+  dot  = VecDotEnd(x,x);CHKERRQ(ierr);
 #else
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 #endif

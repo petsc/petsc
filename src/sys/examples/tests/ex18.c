@@ -7,7 +7,7 @@ static char help[] = "Tests ContainerCreate and ContainerDestroy.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode       ierr;
   PetscObjectContainer container;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

@@ -122,12 +122,22 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     /* crude, nonscalable get entire IS on each processor */
+    if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");
     ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(istmp);CHKERRQ(ierr);
     /* get the part we need */
     ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,is->comm);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+    {
+      PetscMPIInt rank;
+      ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
+      if (rank == size-1) {
+        if (nstart != sub->N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
+      }
+    }
+#endif
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISCreateGeneral(is->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    

@@ -278,6 +278,10 @@ class Package(config.base.Configure):
     if not self.found:
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
+  def alternateConfigureLibrary(self):
+    '''Called if --with-packagename=0; does nothing by default'''
+    pass
+
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
     if self.download and self.framework.argDB['download-'+self.package]:
@@ -299,5 +303,7 @@ class Package(config.base.Configure):
       if self.fc and not 'FC' in self.framework.argDB:
         raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
       self.executeTest(self.configureLibrary)
+    else:
+      self.executeTest(self.alternateConfigureLibrary)
     return
 
