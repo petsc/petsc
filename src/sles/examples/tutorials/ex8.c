@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.20 1997/04/22 14:43:02 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.21 1997/04/23 13:01:20 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
+  -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
   -user_set_subdomains:  Activate user-defined subdomains\n\n";
 
 /*
@@ -45,16 +46,16 @@ T*/
 
 int main(int argc,char **args)
 {
-  Vec     x, b, u;          /* approx solution, RHS, exact solution */
-  Mat     A;                /* linear system matrix */
-  SLES    sles;             /* linear solver context */
-  PC      pc;               /* PC context */
-  IS      *is;              /* array of index sets that define the subdomains */
-  int     overlap = 1;      /* width of subdomain overlap */
-  int     Nsub;             /* number of subdomains */
-  int     user_subdomains;  /* flag - 1 indicates user-defined subdomains */
-  int     m = 15, n = 17;   /* mesh dimensions in x- and y- directions */
-  int     M = 2, N = 1;     /* number of subdomains in x- and y- directions */
+  Vec     x, b, u;                 /* approx solution, RHS, exact solution */
+  Mat     A;                       /* linear system matrix */
+  SLES    sles;                    /* linear solver context */
+  PC      pc;                      /* PC context */
+  IS      *is;                     /* array of index sets that define the subdomains */
+  int     overlap = 1;             /* width of subdomain overlap */
+  int     Nsub;                    /* number of subdomains */
+  int     user_subdomains;         /* flag - 1 indicates user-defined subdomains */
+  int     m = 15, n = 17;          /* mesh dimensions in x- and y- directions */
+  int     M = 2, N = 1;            /* number of subdomains in x- and y- directions */
   int     i, j, its, I, J, ierr, Istart, Iend, size, flg;
   Scalar  v,  one = 1.0;
 
@@ -181,6 +182,42 @@ int main(int argc,char **args)
        for the individual blocks for the block Jacobi method (which is
        equivalent to the ASM method with zero overlap).
   */
+
+  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg); CHKERRA(ierr);
+  if (flg) {
+    SLES *subsles;       /* array of SLES contexts for local subblocks */
+    int  nlocal, first;  /* number of local subblocks, first local subblock */
+    KSP  subksp;         /* KSP context for subblock */
+    PC   subpc;          /* PC context for subblock */
+
+    PetscPrintf(MPI_COMM_WORLD,"User explicitly sets subdomain solvers.\n");
+
+    /* 
+       Call SLESSetUp() to set the block Jacobi data structures (including
+       creation of an internal SLES context for each block).
+
+       Note: SLESSetUp() MUST be called before PCASMGetSubSLES().
+    */
+    ierr = SLESSetUp(sles,x,b); CHKERRA(ierr);
+
+    /*
+       Extract the array of SLES contexts for the local blocks
+    */
+    ierr = PCASMGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);
+
+    /*
+       Loop over the local blocks, setting various SLES options
+       for each block.  
+    */
+    for (i=0; i<nlocal; i++) {
+      ierr = SLESGetPC(subsles[i],&subpc); CHKERRA(ierr);
+      ierr = SLESGetKSP(subsles[i],&subksp); CHKERRA(ierr);
+      ierr = PCSetType(subpc,PCILU); CHKERRA(ierr);
+      ierr = KSPSetType(subksp,KSPGMRES); CHKERRA(ierr);
+      ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
+             PETSC_DEFAULT); CHKERRA(ierr);
+    }
+  }
 
   /* 
      Set runtime options
