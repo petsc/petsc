@@ -19,6 +19,7 @@ typedef struct {
   int parallel;     /* use parallel partitioner for coarse problem */
   int indexing;     /* 0 indicates C indexing, 1 Fortran */
   int printout;     /* indicates if one wishes Metis to print info */
+  MPI_Comm comm_pmetis;
 } MatPartitioning_Parmetis;
 
 /*
@@ -70,7 +71,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,part->comm);
+  PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,parmetis->comm_pmetis);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);
@@ -158,6 +159,7 @@ int MatPartitioningDestroy_Parmetis(MatPartitioning part)
   int ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_free(&(parmetis->comm_pmetis));CHKERRQ(ierr);
   ierr = PetscFree(parmetis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -178,6 +180,8 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
   parmetis->parallel   = 2;   /* use parallel partitioner for coarse grid */
   parmetis->indexing   = 0;   /* index numbering starts from 0 */
   parmetis->printout   = 0;   /* print no output while running */
+
+  ierr = MPI_Comm_dup(part->comm,&(parmetis->comm_pmetis));CHKERRQ(ierr);
 
   part->ops->apply          = MatPartitioningApply_Parmetis;
   part->ops->view           = MatPartitioningView_Parmetis;

@@ -21,10 +21,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  MatType         mtype = MATSEQSBAIJ;            /* matrix format */
-  Mat             A,B;                /* matrix */
-  PetscViewer     fd;               /* viewer */
-  char            file[128];        /* input file name */
+  MatType         mtype = MATMPIAIJ; /* matrix format */
+  Mat             A,B;               /* matrix */
+  PetscViewer     fd;                /* viewer */
+  char            file[128];         /* input file name */
   PetscTruth      flg;
   int             ierr,*nlocal,rank,size;
   MatPartitioning part;
