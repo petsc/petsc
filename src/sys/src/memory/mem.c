@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.1 1997/03/20 00:03:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.2 1997/03/26 01:35:07 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -53,11 +53,10 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
-  double          foo;
   sprintf(proc,"/proc/%d", getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) SETERRQ(1,1,"Unable to access system files");
   if (ioctl(fd, PIOCPSINFO,&prusage) == -1) SETERRQ(1,1,"Unable to access system files"); 
-  foo = (double) prusage.pr_byrssize;
+  *foo = (double) prusage.pr_byrssize;
   close(fd);
 #else
   *foo = 0.0;
