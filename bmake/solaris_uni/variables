@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.3 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.4 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -23,7 +23,7 @@ O_COPTFLAGS      = -fast -xO4  -fsimple=2 -xtarget=native
 O_FOPTFLAGS      = -fast
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = CC    -KPIC
+CXX_CC           = CC   -w -features=anachronisms -KPIC
 CXX_FC           = f77   -xpp=cpp
 CXX_CLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
 CXX_FLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
