@@ -1,59 +1,60 @@
+#define PETSCMAT_DLL
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_IS(Mat);
-EXTERN PetscErrorCode MatCreate_MPIRowbs(Mat);
-EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_AIJ(Mat);
-EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_BAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_SBAIJ(Mat);
-EXTERN PetscErrorCode MatCreate_SeqBDiag(Mat);
-EXTERN PetscErrorCode MatCreate_MPIBDiag(Mat);
-EXTERN PetscErrorCode MatCreate_BDiag(Mat);
-EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
-EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
-EXTERN PetscErrorCode MatCreate_Dense(Mat);
-EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
-EXTERN PetscErrorCode MatCreate_Shell(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BDiag(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
 #if defined(PETSC_HAVE_SPOOLES)
-EXTERN PetscErrorCode MatCreate_SeqAIJSpooles(Mat);
-EXTERN PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat);
-EXTERN PetscErrorCode MatCreate_MPIAIJSpooles(Mat);
-EXTERN PetscErrorCode MatCreate_MPISBAIJSpooles(Mat);
-EXTERN PetscErrorCode MatCreate_AIJSpooles(Mat);
-EXTERN PetscErrorCode MatCreate_SBAIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-EXTERN PetscErrorCode MatCreate_SuperLU(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-EXTERN PetscErrorCode MatCreate_SuperLU_DIST(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat);
 #endif
 #if defined(PETSC_HAVE_UMFPACK)
-EXTERN PetscErrorCode MatCreate_UMFPACK(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_UMFPACK(Mat);
 #endif
 #if defined(PETSC_HAVE_ESSL)
-EXTERN PetscErrorCode MatCreate_Essl(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Essl(Mat);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-EXTERN PetscErrorCode MatCreate_LUSOL(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_LUSOL(Mat);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-EXTERN PetscErrorCode MatCreate_AIJMUMPS(Mat);
-EXTERN PetscErrorCode MatCreate_SBAIJMUMPS(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat);
 #endif
 #if defined(PETSC_HAVE_DSCPACK)
-EXTERN PetscErrorCode MatCreate_DSCPACK(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 #endif
 #if defined(PETSC_HAVE_MATLAB)
-EXTERN PetscErrorCode MatCreate_Matlab(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
 EXTERN_C_END
   
@@ -77,7 +78,7 @@ EXTERN PetscTruth MatRegisterAllCalled;
 
 .seealso:  MatRegisterDestroy()
 @*/
-PetscErrorCode MatRegisterAll(const char path[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

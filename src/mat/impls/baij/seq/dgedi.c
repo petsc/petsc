@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*  
               This file creating by running f2c 
             linpack. this version dated 08/14/78 

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
   Defines matrix-matrix product routines for pairs of MPIAIJ matrices
           C = A * B

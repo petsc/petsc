@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -833,7 +835,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIBDiag"
-PetscErrorCode MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   Mat_MPIBDiag   *matin = (Mat_MPIBDiag *)A->data;
   PetscErrorCode ierr;
@@ -857,7 +859,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBDiagSetPreallocation_MPIBDiag"
-PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,PetscInt nd,PetscInt bs,PetscInt *diag,PetscScalar **diagv)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,PetscInt nd,PetscInt bs,PetscInt *diag,PetscScalar **diagv)
 {
   Mat_MPIBDiag   *b;
   PetscErrorCode ierr;
@@ -974,7 +976,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBDiag"
-PetscErrorCode MatCreate_MPIBDiag(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat B)
 {
   Mat_MPIBDiag   *b;
   PetscErrorCode ierr;
@@ -1031,7 +1033,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BDiag"
-PetscErrorCode MatCreate_BDiag(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BDiag(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt   size;
@@ -1097,7 +1099,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-PetscErrorCode MatMPIBDiagSetPreallocation(Mat B,PetscInt nd,PetscInt bs,const PetscInt diag[],PetscScalar *diagv[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation(Mat B,PetscInt nd,PetscInt bs,const PetscInt diag[],PetscScalar *diagv[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[],PetscScalar*[]);
 
@@ -1163,7 +1165,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-PetscErrorCode MatCreateMPIBDiag(MPI_Comm comm,PetscInt m,PetscInt M,PetscInt N,PetscInt nd,PetscInt bs,const PetscInt diag[],PetscScalar *diagv[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBDiag(MPI_Comm comm,PetscInt m,PetscInt M,PetscInt N,PetscInt nd,PetscInt bs,const PetscInt diag[],PetscScalar *diagv[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1215,7 +1217,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-PetscErrorCode MatBDiagGetData(Mat mat,PetscInt *nd,PetscInt *bs,PetscInt *diag[],PetscInt *bdlen[],PetscScalar ***diagv)
+PetscErrorCode PETSCMAT_DLLEXPORT MatBDiagGetData(Mat mat,PetscInt *nd,PetscInt *bs,PetscInt *diag[],PetscInt *bdlen[],PetscScalar ***diagv)
 {
   Mat_MPIBDiag   *pdmat;
   Mat_SeqBDiag   *dmat = 0;

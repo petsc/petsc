@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
@@ -1585,7 +1586,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
-PetscErrorCode MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 {
   PetscErrorCode ierr;
 
@@ -1613,7 +1614,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIRowbs"
-PetscErrorCode MatCreate_MPIRowbs(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
 {
   Mat_MPIRowbs *a;
   BSmapping    *bsmap;
@@ -1753,7 +1754,7 @@ EXTERN_C_END
   This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
-PetscErrorCode MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,int,const int[]);
 
@@ -1782,7 +1783,7 @@ PetscErrorCode MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
   This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
-PetscErrorCode MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   PetscTruth   ismpirowbs;
@@ -2119,7 +2120,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIRowbsGetColor"
-PetscErrorCode MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
 {
   PetscErrorCode ierr;
 
@@ -2186,7 +2187,7 @@ $     MatSetOption(mat,MAT_SYMMETRY_ETERNAL)
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-PetscErrorCode MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA)
 {
   PetscErrorCode ierr;
   

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */
@@ -95,7 +97,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJSpooles"
-PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat         A;
   Mat_Spooles *lu = (Mat_Spooles*)B->spptr; 
@@ -119,7 +121,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
-PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert a MATMPISBAIJ matrix */
   /* to a MATMPISBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
@@ -209,7 +211,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJSpooles"
-PetscErrorCode MatCreate_MPISBAIJSpooles(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
 

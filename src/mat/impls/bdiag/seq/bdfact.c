@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /* Block diagonal matrix format - factorization and triangular solves */
 

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
    Support for the parallel AIJ matrix vector multiply
 */
@@ -274,7 +276,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal_MPIAIJ"
-PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*) A->data; /*access private part of matrix */
   PetscErrorCode ierr;

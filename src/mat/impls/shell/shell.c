@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create a very simple matrix class for use with KSP without coding 
@@ -38,7 +40,7 @@ typedef struct {
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode MatShellGetContext(Mat mat,void **ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -259,7 +261,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Shell"
-PetscErrorCode MatCreate_Shell(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
 {
   Mat_Shell      *b;
   PetscErrorCode ierr;
@@ -359,7 +361,7 @@ $
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext()
 @*/
-PetscErrorCode MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -388,7 +390,7 @@ PetscErrorCode MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
-PetscErrorCode MatShellSetContext(Mat mat,void *ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscErrorCode ierr;
@@ -443,7 +445,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
+PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -499,7 +501,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
+PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
   PetscErrorCode ierr;
   PetscTruth     flg;

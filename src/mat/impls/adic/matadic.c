@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /*
     ADIC matrix-free matrix implementation
@@ -343,7 +344,7 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetBase_AD"
-PetscErrorCode MatSNESMFSetBase_AD(Mat J,Vec U)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U)
 {
   PetscErrorCode ierr;
   Mat_DAAD *a = (Mat_DAAD*)J->data;
@@ -359,7 +360,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetDA_AD"
-PetscErrorCode MatDAADSetDA_AD(Mat A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
@@ -380,7 +381,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetSNES_AD"
-PetscErrorCode MatDAADSetSNES_AD(Mat A,SNES snes)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES_AD(Mat A,SNES snes)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
 
@@ -393,7 +394,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetCtx_AD"
-PetscErrorCode MatDAADSetCtx_AD(Mat A,void *ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx_AD(Mat A,void *ctx)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
 
@@ -415,7 +416,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_DAAD"
-PetscErrorCode MatCreate_DAAD(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
 {
   Mat_DAAD *b;
   PetscErrorCode ierr;
@@ -454,7 +455,7 @@ EXTERN_C_END
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD()
 
 @*/
-PetscErrorCode MatDAADSetDA(Mat A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 {
   PetscErrorCode ierr,(*f)(Mat,void*);
 
@@ -484,7 +485,7 @@ PetscErrorCode MatDAADSetDA(Mat A,DA da)
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
-PetscErrorCode MatDAADSetSNES(Mat A,SNES snes)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 {
   PetscErrorCode ierr,(*f)(Mat,void*);
 
@@ -514,7 +515,7 @@ PetscErrorCode MatDAADSetSNES(Mat A,SNES snes)
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
-PetscErrorCode MatDAADSetCtx(Mat A,void *ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 {
   PetscErrorCode ierr,(*f)(Mat,void*);
 
@@ -546,7 +547,7 @@ PetscErrorCode MatDAADSetCtx(Mat A,void *ctx)
 .seealso: MatCreate(), DASetLocalAdicMFFunction()
 
 @*/
-PetscErrorCode MatCreateDAAD(DA da,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
 {
   PetscErrorCode ierr;
   MPI_Comm comm;
@@ -561,7 +562,7 @@ PetscErrorCode MatCreateDAAD(DA da,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterDAAD"
-PetscErrorCode MatRegisterDAAD(void)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDAAD(void)
 { 
   PetscErrorCode ierr;
   PetscFunctionBegin;

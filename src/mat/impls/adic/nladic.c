@@ -1,4 +1,4 @@
-
+#define PETSCMAT_DLL
 /*
     ADIC based nonlinear operator object that can be used with FAS
 
@@ -57,7 +57,7 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_DAAD"
-PetscErrorCode NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
   int j,gtdof,nI,gI;
@@ -160,7 +160,7 @@ PetscErrorCode NLFDestroy_DAAD(NLF A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetDA_DAAD"
-PetscErrorCode NLFDAADSetDA_DAAD(NLF A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetDA_DAAD(NLF A,DA da)
 {
   PetscErrorCode ierr;
 
@@ -174,7 +174,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetNewtonIterations_DAAD"
-PetscErrorCode NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
 {
 
   PetscFunctionBegin;
@@ -186,7 +186,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetResidual_DAAD"
-PetscErrorCode NLFDAADSetResidual_DAAD(NLF A,Vec residual)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetResidual_DAAD(NLF A,Vec residual)
 {
   PetscFunctionBegin;
   A->residual = residual;
@@ -198,7 +198,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetCtx_DAAD"
-PetscErrorCode NLFDAADSetCtx_DAAD(NLF A,void *ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetCtx_DAAD(NLF A,void *ctx)
 {
   PetscFunctionBegin;
   A->ctx = ctx;
@@ -209,7 +209,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFCreate_DAAD"
-PetscErrorCode NLFCreate_DAAD(NLF *A)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFCreate_DAAD(NLF *A)
 {
   PetscErrorCode ierr;
 

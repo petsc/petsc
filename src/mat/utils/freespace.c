@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 #include "src/mat/utils/freespace.h"
 
 #undef __FUNCT__

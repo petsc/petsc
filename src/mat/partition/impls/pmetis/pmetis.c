@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -144,7 +145,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
 
@@ -207,7 +208,7 @@ EXTERN_C_BEGIN
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 @*/
-PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
   MatPartitioning_Parmetis *parmetis;

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
    Default and runtime options used by seq and MPI Spooles' interface for both aij and sbaij mat objects
 */

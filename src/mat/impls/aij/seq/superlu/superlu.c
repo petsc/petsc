@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the SuperLU 3.0 sparse solver
@@ -44,8 +45,8 @@ EXTERN PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_SuperLU_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -494,7 +495,7 @@ PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
-PetscErrorCode MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -527,7 +528,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
-PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATSUPERLU */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
@@ -595,7 +596,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU"
-PetscErrorCode MatCreate_SuperLU(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU(Mat A) 
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
       Inverts 7 by 7 matrix using partial pivoting.
 

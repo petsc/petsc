@@ -94,8 +94,8 @@ EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Ma
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
-EXTERN PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 EXTERN_C_END
 
 #endif

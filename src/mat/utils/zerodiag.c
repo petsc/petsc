@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     This file contains routines to reorder a matrix so that the diagonal
     elements are nonzero.
@@ -50,7 +52,7 @@
 
 
 @*/
-PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
+PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscReal,IS,IS);
 
@@ -68,7 +70,7 @@ EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Pet
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
-PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS ris,IS cis)
+PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
   PetscErrorCode ierr;
   PetscInt       prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;

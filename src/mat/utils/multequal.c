@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -20,7 +21,7 @@
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 {
   PetscErrorCode ierr;
   Vec            x,s1,s2;
@@ -85,7 +86,7 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;
@@ -151,7 +152,7 @@ PetscErrorCode MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 {
   PetscErrorCode ierr;
   Vec            x,s1,s2;
@@ -214,7 +215,7 @@ PetscErrorCode MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;

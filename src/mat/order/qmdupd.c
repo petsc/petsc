@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

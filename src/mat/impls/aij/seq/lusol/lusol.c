@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -181,7 +183,7 @@ typedef struct  {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
-PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -479,7 +481,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
-PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscInt       m, n;
@@ -553,7 +555,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_LUSOL"
-PetscErrorCode MatCreate_LUSOL(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_LUSOL(Mat A) 
 {
   PetscErrorCode ierr;
 

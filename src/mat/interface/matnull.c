@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     Routines to project vectors out of null spaces.
 */
@@ -5,7 +7,7 @@
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
-PetscCookie MAT_NULLSPACE_COOKIE = 0;
+PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
@@ -35,7 +37,7 @@ PetscCookie MAT_NULLSPACE_COOKIE = 0;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace
 @*/
-PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
   MatNullSpace   sp;
   PetscErrorCode ierr;
@@ -79,7 +81,7 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,c
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceRemove()
 @*/
-PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 {
   PetscErrorCode ierr;
 
@@ -115,7 +117,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
 @*/
-PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar    sum;
   PetscErrorCode ierr;
@@ -166,7 +168,7 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
 @*/
-PetscErrorCode MatNullSpaceTest(MatNullSpace sp,Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
   PetscScalar    sum;
   PetscReal      nrm;

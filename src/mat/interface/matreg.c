@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
      Mechanism for register PETSc matrix types
 */
@@ -35,7 +37,7 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-PetscErrorCode MatSetType(Mat mat,const MatType matype)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat,const MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
   PetscTruth sametype;
@@ -89,7 +91,7 @@ PetscErrorCode MatSetType(Mat mat,const MatType matype)
 
 .seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
 @*/
-PetscErrorCode MatRegisterDestroy(void)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -121,7 +123,7 @@ PetscErrorCode MatRegisterDestroy(void)
 
 .seealso: MatSetType()
 @*/
-PetscErrorCode MatGetType(Mat mat,MatType *type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,MatType *type)
 {
   PetscFunctionBegin;
   *type = mat->type_name;
@@ -136,7 +138,7 @@ PetscErrorCode MatGetType(Mat mat,MatType *type)
 
   Level: advanced
 @*/
-PetscErrorCode MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
+PetscErrorCode PETSCMAT_DLLEXPORT MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

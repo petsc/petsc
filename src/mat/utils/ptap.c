@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 #include "petscmat.h"
 
 #undef __FUNCT__

@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +9,7 @@ EXTERN_C_BEGIN
 */    
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_RCM"
-PetscErrorCode MatOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nrow,*ia,*ja,*perm;
