@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.47 1996/02/13 23:28:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.48 1996/02/15 14:54:36 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -166,7 +166,7 @@ int TrValid(int line,char *file )
     }
     head = head->next;
   }
-#if defined(PARCH_sun4)
+#if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
   malloc_verify();
 #endif
 
