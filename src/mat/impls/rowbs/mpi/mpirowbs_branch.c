@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.1 1995/04/05 20:39:52 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: $";
 #define CHUNCKSIZE_LOCAL   10
 
 /* We should/could share much of this code with other formats 
-   (i.e., stashing) */
+   (i.e., stashing, row allocation) */
 
 /* Same as MatRow format ... should share this! */
 static int MatiFreeRow(Mat matin,int n,int *i,Scalar *v)
@@ -33,48 +33,55 @@ int MatiMallocRow(Mat matin,int n,int **i,Scalar **v)
   return 0;
 }
 
-/*
- This is a simple minded stash. Do a linear search to determine if
- in stash, if not add to end. (Same as MPIRow version)
-*/
-static int StashValues(Stash3 *stash,int row,int n, int *idxn,
-                       Scalar *values,InsertMode addv)
+/* ----------------------------------------------------------------- */
+static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
 {
-  int    i,j,N = stash->n,found,*n_idx, *n_idy;
-  Scalar val,*n_array;
+  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
+  int          ierr, i, len, nzalloc = 0, m = bsif->m;
+  BSspmat      *bsmat;
+  BSsprow      *vs;
 
-  for ( i=0; i<n; i++ ) {
-    found = 0;
-    val = *values++;
-    for ( j=0; j<N; j++ ) {
-      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
-        /* found a match */
-        if (addv == AddValues) stash->array[j] += val;
-        else stash->array[j] = val;
-        found = 1;
-        break;
-      }
-    }
-    if (!found) { /* not found so add to end */
-      if ( stash->n == stash->nmax ) {
-        /* allocate a larger stash */
-        n_array = (Scalar *) MALLOC( (stash->nmax + CHUNCKSIZE)*(
-                                     2*sizeof(int) + sizeof(Scalar)));
-        CHKPTR(n_array);
-        n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
-        n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
-        MEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
-        MEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
-        MEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
-        if (stash->array) FREE(stash->array);
-        stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
-        stash->nmax += CHUNCKSIZE;
-      }
-      stash->array[stash->n]   = val;
-      stash->idx[stash->n]     = row;
-      stash->idy[stash->n++]   = idxn[i];
-    }
+  if (!nnz) {
+    if (nz <= 0) nz = 1;
+    nzalloc = 1;
+    nnz = (int *) MALLOC( m*sizeof(int) ); CHKPTR(nnz);
+    for ( i=0; i<m; i++ ) nnz[i] = nz;
+    nz = nz*m;
   }
+  else {
+    nz = 0;
+    for ( i=0; i<m; i++ ) nz += nnz[i];
+  }
+
+  /* Allocate BlockSolve matrix context */
+  bsif->A = bsmat = NEW(BSspmat); CHKPTR(bsmat);
+  len = m*(sizeof(BSsprow *) + sizeof(BSsprow));
+  bsmat->rows = (BSsprow **) MALLOC( len ); CHKPTR(bsmat->rows);
+  bsmat->num_rows = m;
+  bsmat->global_num_rows = bsif->M;
+  bsmat->map = bsif->bsmap;
+  vs = (BSsprow *) (bsmat->rows + m);
+  for (i=0; i<m; i++) {
+    bsmat->rows[i] = vs;
+    bsif->imax[i]   = nnz[i];
+    vs->length	    = 0;
+    vs->diag_ind    = -1;
+    if (nnz[i] > 0) {
+      ierr = MatiMallocRow(mat,nnz[i],&(vs->col),&(vs->nz)); CHKERR(ierr);
+    } else {
+      vs->col = 0; vs->nz = 0;
+    }
+    vs++;
+  }
+  bsif->mem = sizeof(BSspmat) + len + nz*(sizeof(int) + sizeof(Scalar));
+  bsif->nz	    = 0;
+  bsif->maxnz	    = nz;
+  bsif->sorted      = 0;
+  bsif->roworiented = 1;
+  bsif->nonew       = 0;
+  bsif->singlemalloc = 0;
+
+  if (nzalloc) FREE(nnz);
   return 0;
 }
 
@@ -98,7 +105,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
     a = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (idxn[l] < 0) SETERR(1,"Negative column index");
-      if (idxn[l] >= mat->n) SETERR(1,"Column index too large");
+      if (idxn[l] >= mat->N) SETERR(1,"Column index too large");
       col = idxn[l]; value = *v++;
       if (!sorted) a = 0; b = nrow;
       while (b-a > 5) {
@@ -165,6 +172,98 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
   return 0;
 }
 
+static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  BSspmat      *A = mrow->A;
+  BSsprow      **rs = A->rows;
+  int     i, j;
+  for ( i=0; i<A->num_rows; i++ ) {
+    printf("row %d:",i);
+    for (j=0; j<rs[i]->length; j++) {
+      printf(" %d %g ", rs[i]->col[j], rs[i]->nz[j]);
+    }
+    printf("\n");
+  }
+  return 0;
+}
+
+static int MatBeginAssembly_MPIRowbs_local(Mat mat,int mode)
+{ 
+  return 0;
+}
+
+static int MatEndAssembly_MPIRowbs_local(Mat mat,int mode)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  BSspmat      *A = mrow->A;
+  BSsprow      *vs;
+  int          i, j, rstart = mrow->rstart;
+
+  if (mode == FLUSH_ASSEMBLY) return 0;
+
+  /* No shifting needed; this is done during MatSetValues */
+  /* Mark location of diagonal */
+  for ( i=0; i<mrow->m; i++ ) {
+    vs = A->rows[i];
+    for ( j=0; j<vs->length; j++ ) {
+      if (vs->col[j] == i + rstart) {
+        vs->diag_ind = j;
+        break;
+      }
+    }
+    if (vs->diag_ind == -1) 
+       SETERR(1,"No diagonal term!  Must set diagonal entry, even if zero.");
+  }
+  return 0;
+}
+
+/* ----------------------------------------------------------------- */
+/*
+ This is a simple minded stash. Do a linear search to determine if
+ in stash, if not add to end. (Same as MPIRow version)
+*/
+static int StashValues(Stash3 *stash,int row,int n, int *idxn,
+                       Scalar *values,InsertMode addv)
+{
+  int    i,j,N = stash->n,found,*n_idx, *n_idy;
+  Scalar val,*n_array;
+
+  for ( i=0; i<n; i++ ) {
+    found = 0;
+    val = *values++;
+    for ( j=0; j<N; j++ ) {
+      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
+        /* found a match */
+        if (addv == AddValues) stash->array[j] += val;
+        else stash->array[j] = val;
+        found = 1;
+        break;
+      }
+    }
+    if (!found) { /* not found so add to end */
+      if ( stash->n == stash->nmax ) {
+        /* allocate a larger stash */
+        n_array = (Scalar *) MALLOC( (stash->nmax + CHUNCKSIZE)*(
+                                     2*sizeof(int) + sizeof(Scalar)));
+        CHKPTR(n_array);
+        n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
+        n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
+        MEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
+        MEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
+        MEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
+        if (stash->array) FREE(stash->array);
+        stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
+        stash->nmax += CHUNCKSIZE;
+      }
+      stash->array[stash->n]   = val;
+      stash->idx[stash->n]     = row;
+      stash->idy[stash->n++]   = idxn[i];
+    }
+  }
+  return 0;
+}
+
 static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
@@ -204,7 +303,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatBeginAssembly_MPIRowbs(Mat mat)
+static int MatBeginAssembly_MPIRowbs(Mat mat,int mode)
 { 
   Mat_MPIRowbs  *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -306,22 +405,6 @@ static int MatBeginAssembly_MPIRowbs(Mat mat)
   return 0;
 }
 
-static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
-{
-  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  BSspmat      *A = mrow->A;
-  BSsprow      **rs = A->rows;
-  int     i, j;
-  for ( i=0; i<A->num_rows; i++ ) {
-    printf("row %d:",i);
-    for (j=0; j<rs[i]->length; j++) {
-      printf(" %d %g ", rs[i]->col[j], rs[i]->nz[j]);
-    }
-    printf("\n");
-  }
-  return 0;
-}
-
 static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
@@ -352,33 +435,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatBeginAssembly_MPIRowbs_local(Mat mat)
-{ 
-  return 0;
-}
-
-static int MatEndAssembly_MPIRowbs_local(Mat mat)
-{
-  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  BSspmat      *A = mrow->A;
-  BSsprow      *vs;
-  int          i, j;
-
-  /* No shifting needed; this is done during MatSetValues */
-  /* Mark location of diagonal */
-  for ( i=0; i<mrow->m; i++ ) {
-    vs = A->rows[i];
-    for ( j=0; j<vs->length; j++ ) {
-      if (vs->col[j] == i) {
-        vs->diag_ind = j;
-        break;
-      }
-    }
-  }
-  return 0;
-}
-
-static int MatEndAssembly_MPIRowbs(Mat mat)
+static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
 { 
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Status   *send_status,recv_status;
@@ -418,36 +475,33 @@ static int MatEndAssembly_MPIRowbs(Mat mat)
   FREE(mrow->send_waits); FREE(mrow->svalues);
 
   mrow->insertmode = NotSetValues;
-  ierr = MatBeginAssembly_MPIRowbs_local(mat); CHKERR(ierr);
-  ierr = MatEndAssembly_MPIRowbs_local(mat); CHKERR(ierr);
+  ierr = MatBeginAssembly_MPIRowbs_local(mat,mode); CHKERR(ierr);
+  ierr = MatEndAssembly_MPIRowbs_local(mat,mode); CHKERR(ierr);
 
-  /* BlockSolve stuff */
-#if defined(PETSC_DEBUG)
-  MLOG_INIT();  /* Initialize logging */
-#endif
+  if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
+    /* Form permuted matrix for efficient parallel execution */
+    mrow->pA = pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
 
-  /* Form permuted matrix for efficient parallel execution */
-  mrow->pA = pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
+    /* Symmetrically scale the matrix by the diagonal */
+    BSscale_diag(pA,pA->diag,mrow->procinfo); CHKERRBS(0);
 
-  /* Symmetrically scale the matrix by the diagonal */
-  BSscale_diag(pA,pA->diag,mrow->procinfo); CHKERRBS(0);
+    /* Set up the communication */
+    mrow->comm_pA = BSsetup_forward(pA,mrow->procinfo); CHKERRBS(0);
 
-  /* Set up the communication */
-  mrow->comm_pA = BSsetup_forward(pA,mrow->procinfo); CHKERRBS(0);
+    /* Store inverse of square root of permuted diagonal scaling matrix */
+    VecGetLocalSize( mrow->diag, &ldim );
+    VecGetOwnershipRange( mrow->diag, &low, &high );
+    for (i=0; i<ldim; i++) {
+      loc = low + i;
+      val = 1.0/sqrt(pA->scale_diag[i]);
+      VecSetValues( mrow->diag, 1, &loc, &val, InsertValues );
+    }
+    VecBeginAssembly( mrow->diag );
+    VecEndAssembly( mrow->diag );
 
-  /* Store inverse of square root of permuted diagonal scaling matrix */
-  VecGetLocalSize( mrow->diag, &ldim );
-  VecGetOwnershipRange( mrow->diag, &low, &high );
-  for (i=0; i<ldim; i++) {
-    loc = low + i;
-    val = 1.0/sqrt(pA->scale_diag[i]);
-    VecSetValues( mrow->diag, 1, &loc, &val, InsertValues );
+    mrow->assembled = 1;
+    return 0;
   }
-  VecBeginAssembly( mrow->diag );
-  VecEndAssembly( mrow->diag );
-
-  mrow->assembled = 1;
-  return 0;
 }
 
 static int MatZeroEntries_MPIRowbs(Mat mat)
@@ -474,15 +528,19 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
   BSprocinfo   *bspinfo = bsif->procinfo;
-  Vec          xwork = bsif->xwork, diag = bsif->diag;
-  Scalar       *xworka, *yya;
+  Scalar       *xxa, *xworka, *yya;
   int          ierr;
 
   if (!bsif->assembled) 
     SETERR(1,"MatMult_MPIRowbs: Must assemble matrix first.");
+  ierr = VecGetArray(bsif->xwork,&xworka); CHKERR(ierr);
+  if (!bsif->vecs_permuted) {
+    ierr = VecGetArray(xx,&xxa); CHKERR(ierr);
+    BSperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(bsif->xwork,xx); CHKERR(ierr);
+  }
   /* Apply diagonal scaling to vector:  [ xwork = D^{1/2} * x ] */
-  ierr = VecPDiv(xx,diag,xwork); CHKERR(ierr);
-  ierr = VecGetArray(xwork,&xworka); CHKERR(ierr);
+  ierr = VecPDiv(xx,bsif->diag,bsif->xwork); CHKERR(ierr);
   ierr = VecGetArray(yy,&yya); CHKERR(ierr);
 
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
@@ -496,12 +554,10 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MM_FORWARD);
+  MLOG_ELM(bspinfo->procset);
 #endif
 
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
-#if defined(PETSC_DEBUG)
-  MLOG_ELM(bspinfo->procset);
-#endif
   if (bspinfo->single)
       BSbackward1( bsif->pA, xworka, yya, bsif->comm_pA, bspinfo );
   else
@@ -512,7 +568,11 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 #endif
 
   /* Apply diagonal scaling to vector:  [  y = D^{1/2} * y ] */
-  ierr = VecPDiv(yy,diag,yy); CHKERR(ierr);
+  ierr = VecPDiv(yy,bsif->diag,yy); CHKERR(ierr);
+  if (!bsif->vecs_permuted) {
+    BSiperm_dvec(yya,xworka,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(bsif->xwork,yy); CHKERR(ierr);
+  }
   return 0;
 }
 
@@ -538,10 +598,9 @@ static int MatGetInfo_MPIRowbs(Mat matin,int flag,int *nz,int *nzalloc,
 static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  BSspmat      *A = mrow->A;
-  BSsprow      **rs = A->rows;
+  BSsprow      **rs = mrow->A->rows;
   int          i, n;
-  Scalar       *x, zero = 0.0;
+  Scalar       *x, zero = 0.0, *scale = mrow->pA->scale_diag;
 
   if (!mrow->assembled) 
     SETERR(1,"MatGetDiag_MPIRowbs: Must assemble matrix first.");
@@ -549,7 +608,7 @@ static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != mrow->m) SETERR(1,"Nonconforming matrix and vector.");
   for ( i=0; i<mrow->m; i++ )
-      x[i] = rs[i]->nz[rs[i]->diag_ind];
+      x[i] = rs[i]->nz[rs[i]->diag_ind] * scale[i];
   return 0;
 }
 
@@ -558,12 +617,56 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   int          ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",mrow->M,mrow->N);
 #endif
-  MatDestroyInterface_MPIRowbs(mat);
   FREE(mrow->rowners); 
-  FREE(mrow); 
+  /* Destroy BlockSolve interface stuff */
+  if (mrow->ctx_filled) {
+    BSspmat   *A = mrow->A;
+    BSmapping *bsmap = mrow->bsmap;
+    BSsprow   *vs;
+    int       i, ierr;
+
+    /* already freed elsewhere
+    if (bsmap) {
+      if (bsmap->free_l2g)
+        {(*bsmap->free_l2g)(bsmap->vlocal2global); CHKERRBS(0);}
+      if (bsmap->free_g2l)
+        {(*bsmap->free_g2l)(bsmap->vglobal2local); CHKERRBS(0);}
+      if (bsmap->free_g2p)
+        {(*bsmap->free_g2p)(bsmap->vglobal2proc); CHKERRBS(0);}
+      FREE(bsmap);
+    } */
+
+    if (A) {
+      for (i=0; i<mrow->m; i++) {
+        vs = A->rows[i];
+        ierr = MatiFreeRow(mat,vs->length,vs->col,vs->nz); CHKERR(ierr);
+      }
+      if (A->map) {
+        if (A->map->free_l2g)
+           {(*A->map->free_l2g)(A->map->vlocal2global); CHKERRBS(0);}
+        if (A->map->free_g2l) 
+           {(*A->map->free_g2l)(A->map->vglobal2local); CHKERRBS(0);}
+        if (A->map->free_g2p)
+           {(*A->map->free_g2p)(A->map->vglobal2proc); CHKERRBS(0);}
+        FREE(A->map);
+      }
+      FREE(A->rows);
+      FREE(A);
+    }
+    if (mrow->procinfo) {BSfree_ctx(mrow->procinfo); CHKERRBS(0);}
+    if (mrow->diag)     FREE(mrow->diag);
+    if (mrow->xwork)    FREE(mrow->xwork);
+    if (mrow->pA)       {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
+    if (mrow->fpA)      {BSfree_copy_par_mat(mrow->fpA); CHKERRBS(0);}
+    if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
+    if (mrow->comm_fpA) {BSfree_comm(mrow->comm_fpA); CHKERRBS(0);}
+    FREE(mrow->imax);
+  }
+  FREE(mrow);  
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
@@ -653,12 +756,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        0,0 };
 
 /* ------------------------------------------------------------------- */
-int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int n,int M,int N,
-                 int nz,int *nnz,Mat *newmat)
+int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
+                           Mat *newmat)
 {
   Mat          mat;
   Mat_MPIRowbs *mrow;
-  int          ierr, i,sum[2],work[2];
+  int          ierr, i;
   *newmat       = 0;
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
   PLogObjectCreate(mat);
@@ -670,27 +773,23 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int n,int M,int N,
   mat->row	= 0;
   mat->col	= 0;
   mat->comm	= comm;
+  mrow->assembled     = 0;
+  mrow->vecs_permuted = 0;
 
   mrow->insertmode = NotSetValues;
   MPI_Comm_rank(comm,&mrow->mytid);
   MPI_Comm_size(comm,&mrow->numtids);
 
-  if (M == -1 || N == -1) {
-    work[0] = m; work[1] = n;
-    MPI_Allreduce((void *) work,(void *) sum,2,MPI_INT,MPI_SUM,comm );
-    if (M == -1) M = sum[0];
-    if (N == -1) N = sum[1];
-  }
+  if (M == -1) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
   if (m == -1) {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
-  if (n == -1) {n = N/mrow->numtids + ((N % mrow->numtids) > mrow->mytid);}
-  mrow->m       = m;
-  mrow->n       = n;
-  mrow->N       = N;
+  mrow->N       = M;
   mrow->M       = M;
+  mrow->m       = m;
+  mrow->n       = mrow->N; /* each row stores all columns */
   mrow->imax    = 0;
 
   /* build local table of row ownerships */
-  mrow->rowners = (int *) MALLOC(2*(mrow->numtids+2)*sizeof(int)); 
+  mrow->rowners = (int *) MALLOC((mrow->numtids+2)*sizeof(int)); 
   CHKPTR(mrow->rowners);
   MPI_Allgather(&m,1,MPI_INT,mrow->rowners+1,1,MPI_INT,comm);
   mrow->rowners[0] = 0;
@@ -700,65 +799,71 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int n,int M,int N,
   mrow->rstart = mrow->rowners[mrow->mytid]; 
   mrow->rend   = mrow->rowners[mrow->mytid+1]; 
 
-  mrow->assembled = 0;
-
-  /* Initialize BlockSolve interface stuff */
-  mrow->procinfo	= 0;
-  mrow->bsmap   	= 0;
-  mrow->A		= 0;
-  mrow->pA		= 0;
-  mrow->comm_pA		= 0;
-  mrow->fpA		= 0;
-  mrow->comm_fpA       	= 0;
-  mrow->alpha		= 1.0;
-  mrow->diag		= 0;
-  mrow->xwork		= 0;
-  mrow->ierr		= 0;
-  mrow->failures	= 0;
-  mrow->bs_setup_called	= 0;
-  mrow->diag        	= 0;
-
   mrow->stash.nmax  = 0;
   mrow->stash.n     = 0;
   mrow->stash.array = 0;
   mrow->stash.idx   = 0;
   mrow->stash.idy   = 0;
+  mrow->ctx_filled  = 0;
+
+  /* Initialize BlockSolve interface */
+  mrow->procinfo    = 0;
+  mrow->bsmap       = 0;
+  mrow->A	    = 0;
+  mrow->pA	    = 0;
+  mrow->comm_pA	    = 0;
+  mrow->fpA	    = 0;
+  mrow->comm_fpA    = 0;
+  mrow->alpha	    = 1.0;
+  mrow->diag	    = 0;
+  mrow->xwork	    = 0;
+  mrow->ierr	    = 0;
+  mrow->failures    = 0;
+  mrow->diag        = 0;
 
   *newmat = mat;
   return 0;
 }
 /* ------------------------------------------------------------------- /*
 /*@
+   MatCreateMPIRowbs - Creates a symmetric, sparse parallel matrix in 
+   the MPIRowbs format.  This format is currently only partially 
+   supported and is intended primarily as a BlockSolve interface.
 
-      MatCreateMPIRowbs - Creates a sparse parallel matrix 
-                                 in MPIRowbs format.
+   Input Parameters:
+.  comm - MPI communicator
+.  m - number of local rows (or -1 to have calculated)
+.  M - number of global rows (or -1 to have calculated)
+.  nz - total number nonzeros in matrix
+.  nzz - number of nonzeros per row in matrix or null. You must have at 
+         least one nonzero per row. You must leave room for the diagonal 
+         entry even if it is zero.
+.  procinfo - optional BlockSolve BSprocinfo context.  If zero, then the
+   context will be created and initialized.
 
-  Input Parameters:
-.   comm - MPI communicator
-.   m,n - number of local rows and columns (or -1 to have calculated)
-.   M,N - global rows and columns (or -1 to have calculated)
-.   nz - total number nonzeros in matrix
-.   nzz - number of nonzeros per row in matrix or null. You must have at 
-          least one nonzero per row. You must leave room for the diagonal 
-          entry even if it is zero.
-
-  Output parameters:
+   Output Parameters:
 .  newmat - the matrix 
 
-  Keywords: matrix, row, compressed row, sparse, parallel, BlockSolve
+   Notes:
+   This format is for SYMMETRIC matrices only!
+
+   Keywords: matrix, row, compressed row, sparse, parallel, BlockSolve
 @*/
-int MatCreateMPIRowbs(MPI_Comm comm,int m,int n,int M,int N,
-                 int nz,int *nnz,Mat *newmat)
+int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
+                       void *procinfo,Mat *newmat)
 {
   Mat          mat;
   Mat_MPIRowbs *mrow;
-  int          ierr;
+  BSmapping    *bsmap;
+  BSoff_map    *bsoff;
+  int          ierr, *offset, low, high;
+  BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
   *newmat = 0;
-  MatCreateShellMPIRowbs(comm,m,n,M,N,nz,nnz,&mat);
+  MatCreateShellMPIRowbs(comm,m,M,nz,nnz,&mat);
   mrow = (Mat_MPIRowbs *) mat->data;
 
-  mrow->imax    = (int *) MALLOC( m*sizeof(int) ); CHKPTR(mrow->imax);
+  mrow->imax    = (int *) MALLOC( (mrow->m)*sizeof(int) ); CHKPTR(mrow->imax);
 
   /* build cache for off array entries formed */
   mrow->stash.nmax = CHUNCKSIZE; /* completely arbitrary number */
@@ -768,13 +873,143 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int n,int M,int N,
   mrow->stash.idx = (int *) (mrow->stash.array + mrow->stash.nmax);
   mrow->stash.idy = (int *) (mrow->stash.idx + mrow->stash.nmax);
 
-  ierr = MatSetupInterface_MPIRowbs(mat); CHKERR(ierr);
+  if (!mrow->diag) {ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,
+                            &(mrow->diag)); CHKERR(ierr);}
+  if (!mrow->xwork) {ierr = VecCreate(mrow->diag,&(mrow->xwork)); 
+                            CHKERR(ierr);}
+  if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
+  mrow->procinfo = bspinfo;
+  BSctx_set_id(bspinfo,mrow->mytid); CHKERRBS(0);
+  BSctx_set_np(bspinfo,mrow->numtids); CHKERRBS(0);
+  BSctx_set_ps(bspinfo,NULL); CHKERRBS(0);
+  BSctx_set_cs(bspinfo,INT_MAX); CHKERRBS(0);
+  BSctx_set_is(bspinfo,INT_MAX); CHKERRBS(0);
+  BSctx_set_ct(bspinfo,IDO); CHKERRBS(0);
+#if defined(PETSC_DEBUG)
+  BSctx_set_err(bspinfo,1); CHKERRBS(0);  /* BS error checking */
+#else
+  BSctx_set_err(bspinfo,0); CHKERRBS(0);
+#endif
+  BSctx_set_rt(bspinfo,1); CHKERRBS(0);
+  BSctx_set_pr(bspinfo,1); CHKERRBS(0);
+  BSctx_set_si(bspinfo,0); CHKERRBS(0);
+#if defined(PETSC_DEBUG)
+    MLOG_INIT();  /* Initialize logging */
+#endif
 
+  /* Compute global offsets */
+  ierr = MatGetOwnershipRange(mat,&low,&high); CHKERR(ierr);
+  offset = &low;
+#if defined(PETSC_DEBUG)
+  printf("[%d] global offsets: %d\n ", mrow->mytid, low );
+  fflush(stdout); 
+#endif
+
+  if (!mrow->bsmap) {mrow->bsmap = (void *) NEW(BSmapping); 
+                     CHKPTR(mrow->bsmap);}
+  bsmap = mrow->bsmap;
+  bsmap->vlocal2global	= (int *) MALLOC(sizeof(int)); 
+	CHKPTR(bsmap->vlocal2global);
+	*((int *)bsmap->vlocal2global) = (*offset);
+  bsmap->flocal2global	= BSloc2glob;
+  bsmap->free_l2g	= BSfreel2g;
+  bsmap->vglobal2local	= (int *)MALLOC(sizeof(int)); 
+	CHKPTR(bsmap->vglobal2local);
+	*((int *)bsmap->vglobal2local) = (*offset);
+  bsmap->fglobal2local	= BSglob2loc;
+  bsmap->free_g2l	= BSfreeg2l;
+  bsoff = BSmake_off_map( *offset, bspinfo, mrow->M );
+  bsmap->vglobal2proc	= (void *)bsoff;
+  bsmap->fglobal2proc	= BSglob2proc;
+  bsmap->free_g2p	= BSfree_off_map;
+
+  MatCreateMPIRowbs_local(mat,nz,nnz);
+  mrow->ctx_filled = 1;
   *newmat = mat;
+  return 0;
+}
+/* --------------- extra BlockSolve-specific routines -------------- */
+int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  Scalar       *ya;
+  int          ierr;
+
+  /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
+  ierr = VecPMult(mrow->diag,x,y); CHKERR(ierr);
+  ierr = VecGetArray(y,&ya); CHKERR(ierr);
+
+#ifdef DEBUG_ALL
+  MLOG_ELM(mrow->procinfo->procset);
+#endif
+  if (mrow->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSfor_solve1( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
+  else
+    BSfor_solve( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
+  CHKERR(0);
+#ifdef DEBUG_ALL
+  MLOG_ACC(MS_FORWARD);
+#endif
+  return(0);
+}
+
+int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  Scalar       *ya;
+  int          ierr;
+
+  ierr = VecCopy(x,y); CHKERR(ierr);
+  ierr = VecGetArray(y,&ya); CHKERR(ierr);
+#ifdef DEBUG_ALL
+  MLOG_ELM(mrow->procinfo->procset);
+#endif
+  if (mrow->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSback_solve1( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
+  else
+    BSback_solve( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
+  CHKERR(0);
+#ifdef DEBUG_ALL
+  MLOG_ACC(MS_BACKWARD);
+#endif
+
+  /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
+  ierr = VecPMult(y,mrow->diag,y); CHKERR(ierr);
+  return 0;
+}
+
+/* @
+  MatGetBSProcinfo - Gets the BlockSolve BSprocinfo context, which the
+  user can then manipulate to alter the default parameters.
+
+  Input Parameter:
+  mat - matrix
+
+  Output Parameter:
+  procinfo - processor information context
+
+  Note:
+  This routine is valid only for matrices stored in the MATMPIROW_BS
+  format.
+@ */
+int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  if (mat->type != MATMPIROW_BS) 
+    SETERR(1,"Valid only for MATMPIROW_BS matrix type.");
+  procinfo = mrow->procinfo;
   return 0;
 }
 
 #else
-static int MatNull_MPIRowbs()
-{return 0;}
+int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
+                       void *bspinfo,Mat *newmat)
+{SETERR(1,"This matrix format requires BlockSolve.");}
 #endif
+
+
+
+
+

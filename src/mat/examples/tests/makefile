@@ -1,4 +1,4 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 ALL: ex1
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS)$(CONF) $(COPT)
@@ -93,6 +93,10 @@ runexamples:
 	-@$(MPIRUN)  ex20 > ex20_1.tmp 2>&1;   \
            if (diff ex20_1.out ex20_1.tmp) then true; \
            else echo "Possible problem with ex20_1, diffs above"; fi; \
+           $(RM) -f ex21_1.tmp
+	-@$(MPIRUN)  ex21 > ex21_1.tmp 2>&1;   \
+           if (diff ex21_1.out ex21_1.tmp) then true; \
+           else echo "Possible problem with ex21_1, diffs above"; fi; \
            $(RM) -f ex20_1.tmp
 	-@$(MPIRUN)  ex22 > ex22_1.tmp 2>&1;   \
            if (diff ex22_1.out ex22_1.tmp) then true; \
@@ -191,4 +195,4 @@ ex23: ex23.o
 	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex23.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
