@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.28 1998/04/20 18:14:14 curfman Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.29 1998/04/21 00:02:03 balay Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -178,7 +178,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 #define __FUNC__ "DAGetColoring3d" 
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
-  int                    ierr, xs,ys,nx,ny,*colors,i,j,i1,slot,gxs,gys,gnx,gny;           
+  int                    ierr, xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
