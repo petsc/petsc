@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.17 1999/01/04 21:54:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -19,6 +19,11 @@ static char vcid[] = "$Id: dacorn.c,v 1.17 1999/01/04 21:54:52 bsmith Exp bsmith
    Input Parameter:
 +  da - the distributed array
 -  c - coordinate vector
+
+   Note:
+    The coordinates should include those for all ghost points
+
+  Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
@@ -47,6 +52,11 @@ int DASetCoordinates(DA da,Vec c)
    Output Parameter:
 .  c - coordinate vector
 
+   Note:
+    Includes the coordinates for the the ghost nodes
+
+  Level: intermediate
+
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DAGetGhostCorners(), DASetCoordinates()
@@ -72,6 +82,8 @@ int DAGetCoordinates(DA da,Vec *c)
 +  da - the distributed array
 .  no - field number 0, 1, ... dof-1 for the DA
 -  names - the name of the field (component)
+
+  Level: intermediate
 
 .keywords: distributed array, get, component name
 
@@ -104,6 +116,8 @@ int DASetFieldName(DA da,int no,const char name[])
 
    Output Parameter:
 .  names - the name of the field (component)
+
+  Level: intermediate
 
 .keywords: distributed array, get, component name
 
@@ -142,6 +156,8 @@ int DAGetFieldName(DA da,int no,char **name)
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
+
+  Level: elementary
 
 .keywords: distributed array, get, corners, nodes, local indices
 
