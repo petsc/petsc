@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.109 1999/01/26 21:30:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.110 1999/01/26 21:32:05 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -401,9 +401,6 @@ static int slesdoublecount = 0;
 .seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
           KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm(),
           KSPSolve()
-
-Level: advanced
-
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
