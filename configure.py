@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import PETSc
-import PETSc.Configure
 import nargs
 
 import commands
@@ -98,6 +97,7 @@ class Configure:
     return self.setLanguage(self.language[-1])
 
   def setLanguage(self, language):
+    print 'Setting language to '+language
     self.language[-1] = language
     if language == 'C':
       self.compilerName = 'CC'
@@ -108,10 +108,7 @@ class Configure:
     else:
       raise RuntimeError('Unknown language: '+language)
 
-    if hasattr(self.framework, 'compilers'):
-      self.compiler = getattr(self.framework.compilers, self.compilerName)
-    else:
-      self.compiler = self.framework.argDB[self.compilerName]
+    self.compiler = self.framework.argDB[self.compilerName]
 
     if language == 'C':
       # Interaction with the preprocessor
@@ -181,6 +178,7 @@ class Configure:
 
   def outputPreprocess(self, codeStr):
     self.framework.outputHeader(self.compilerDefines)
+    self.framework.log.write('Executing: '+self.cppCmd+'\n')
     (input, output, err) = os.popen3(self.cppCmd)
     input.write(self.getCode(codeStr))
     input.close()
@@ -195,6 +193,7 @@ class Configure:
 
   def checkPreprocess(self, codeStr):
     self.framework.outputHeader(self.compilerDefines)
+    self.framework.log.write('Executing: '+self.cppCmd+'\n')
     (input, output, err) = os.popen3(self.cppCmd)
     input.write(self.getCode(codeStr))
     input.close()
@@ -209,11 +208,12 @@ class Configure:
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     return not len(out)
 
-  def checkCompile(self, includes = '', body = '', cleanup = 1):
+  def outputCompile(self, includes = '', body = '', cleanup = 1):
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body))
     f.close()
+    self.framework.log.write('Executing: '+self.compilerCmd+'\n')
     (input, output, err) = os.popen3(self.compilerCmd)
     input.close()
     out   = ''
@@ -229,10 +229,15 @@ class Configure:
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    return not len(out)
+    return out
 
-  def checkLink(self, includes, body, cleanup = 1):
-    if not self.checkCompile(includes, body, cleanup = 0): return 0
+  def checkCompile(self, includes = '', body = '', cleanup = 1):
+    return not len(self.outputCompile(includes, body, cleanup))
+
+  def outputLink(self, includes, body, cleanup = 1):
+    out = self.outputCompile(includes, body, cleanup = 0)
+    if len(out): return out
+    self.framework.log.write('Executing: '+self.linkerCmd+'\n')
     (input, output, err) = os.popen3(self.linkerCmd)
     input.write(self.getCode(includes, body))
     input.close()
@@ -243,17 +248,22 @@ class Configure:
       out = ready[0][0].read()
       if out:
         self.framework.log.write('ERR (linker): '+out)
-        self.framework.log.write(' in '+self.linkerCmd)
+        self.framework.log.write(' in '+self.linkerCmd+'\n')
     err.close()
     output.close()
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return not len(out)
+    return out
+
+  def checkLink(self, includes, body, cleanup = 1):
+    return not len(self.outputLink(includes, body, cleanup))
 
   def checkRun(self, includes, body):
     if not self.checkLink(includes, body, cleanup = 0): return 0
     success = 0
-    (status, output) = commands.getstatusoutput('./'+self.linkerObj)
+    command = './'+self.linkerObj
+    self.framework.log.write('Executing: '+command+'\n')
+    (status, output) = commands.getstatusoutput(command)
     if not status:
       success = 1
     else:
@@ -458,6 +468,19 @@ class Framework(Configure):
       self.substituteFile(pair[0], pair[1])
     return
 
+  def dumpSubstitutions(self):
+    for pair in self.subst.items():
+      print pair[0]+'  --->  '+pair[1]
+    for child in self.children:
+      if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
+      substPrefix = self.getSubstitutionPrefix(child)
+      for pair in child.subst.items():
+        if substPrefix:
+          print substPrefix+'_'+pair[0]+'  --->  '+pair[1]
+        else:
+          print pair[0]+'  --->  '+pair[1]
+    return
+
   def outputDefine(self, f, name, value = None, comment = ''):
     '''Define "name" to "value" in the configuration header'''
     name  = name.upper()
@@ -509,34 +532,45 @@ class Framework(Configure):
     return
 
   def checkCompilers(self):
-    import config.compilers
-    self.compilers = config.compilers.Configure(self)
-    # It is important to check the compilers first
-    self.children.insert(0, self.compilers)
+    if not hasattr(self, 'compilers'):
+      import config.compilers
+      self.compilers = config.compilers.Configure(self)
+      # It is important to check the compilers first
+      self.children.insert(0, self.compilers)
     return
 
   def checkTypes(self):
-    import config.types
-    self.types = config.types.Configure(self)
-    self.children.append(self.types)
+    if not hasattr(self, 'types'):
+      import config.types
+      self.types = config.types.Configure(self)
+      self.children.append(self.types)
     return
 
   def checkHeaders(self, headers = []):
-    import config.headers
-    self.headers = config.headers.Configure(self, headers)
-    self.children.append(self.headers)
+    if not hasattr(self, 'headers'):
+      import config.headers
+      self.headers = config.headers.Configure(self, headers)
+      self.children.append(self.headers)
+    else:
+      self.headers.headers.append(headers)
     return
 
   def checkFunctions(self, functions = []):
-    import config.functions
-    self.functions = config.functions.Configure(self, functions)
-    self.children.append(self.functions)
+    if not hasattr(self, 'functions'):
+      import config.functions
+      self.functions = config.functions.Configure(self, functions)
+      self.children.append(self.functions)
+    else:
+      self.functions.functions.append(functions)
     return
 
   def checkLibraries(self, libraries = []):
-    import config.libraries
-    self.libraries = config.libraries.Configure(self, libraries)
-    self.children.append(self.libraries)
+    if not hasattr(self, 'libraries'):
+      import config.libraries
+      self.libraries = config.libraries.Configure(self, libraries)
+      self.children.append(self.libraries)
+    else:
+      self.libraries.libraries.append(libraries)
     return
 
   def configure(self):
@@ -548,10 +582,12 @@ class Framework(Configure):
     return
 
 if __name__ == '__main__':
+  import PETSc.BLAS
+  import PETSc.Configure
+
   framework = Framework(sys.argv[1:])
   framework.argDB['LIBS'] = ''
-  conf      = PETSc.Configure.Configure(framework)
-  framework.children.append(conf)
+  framework.children.append(PETSc.BLAS.Configure(framework))
+  framework.children.append(PETSc.Configure.Configure(framework))
   framework.configure()
-  #framework.compilers.configure()
-  #conf.configure()
+  framework.dumpSubstitutions()
