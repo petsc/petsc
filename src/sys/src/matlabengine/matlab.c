@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.7 2000/05/10 16:39:39 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.8 2000/05/12 04:40:50 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -57,7 +57,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscMatlabEngineDestroy"
+#define __FUNC__ /*<a name="PetscMatlabEngineDestroy"></a>*/"PetscMatlabEngineDestroy"
 /*@C
    PetscMatlabEngineDestroy - Destroys a vector.
 
@@ -195,7 +195,7 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscMatlabEnginePut"></a>*/"PetscMatlabEnginePut"
 /*@C
-    PetscMatlabEnginPut - Puts a Petsc object into the Matlab space. For parallel objects,
+    PetscMatlabEnginePut - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
 
     Collective on PetscObject
@@ -208,7 +208,7 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          MATLAB_ENGINE_(), , PetscMatlabEnginePutArray(), MatlabEngineGetArray()
 @*/
 int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
 {
@@ -222,12 +222,11 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   PLogInfo(0,"Putting Matlab object\n");
   ierr = (*put)(obj,engine->ep);CHKERRQ(ierr);
   PLogInfo(0,"Put Matlab object: %s\n",obj->name);
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscMatlabEngineGet"
+#define __FUNC__ /*<a name="PetscMatlabEngineGet"></a>*/"PetscMatlabEngineGet"
 /*@C
     PetscMatlabEngineGet - Gets a variable from Matlab into a PETSc object.
 
@@ -241,7 +240,7 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray()
 @*/
 int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
 {
@@ -258,7 +257,6 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
   PLogInfo(0,"Getting Matlab object\n");
   ierr = (*get)(obj,engine->ep);CHKERRQ(ierr);
   PLogInfo(0,"Got Matlab object: %s\n",obj->name);
-
   PetscFunctionReturn(0);
 }
 
@@ -320,6 +318,78 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionReturn(engine);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscMatlabEnginePutArray"></a>*/"PetscMatlabEnginePutArray"
+/*@C
+    PetscMatlabEnginePutArray - Puts a Petsc object into the Matlab space. For parallel objects,
+      each processors part is put in a seperate  Matlab process.
+
+    Collective on PetscObject
+
+    Input Parameters:
++    engine - the Matlab engine
+.    n - the length of the array
+.    array - the array (represented in one dimension)
+-    name - the name of the array
+
+   Level: advanced
+
+.seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
+          PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
+          MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray()
+@*/
+int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int n,Scalar *array,char *name)
+{
+  int     ierr;
+  mxArray *mat;
+  
+  PetscFunctionBegin;  
+  PLogInfo(0,"Putting Matlab array %s\n",name);
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
+#else
+  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
+#endif
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
+  mxSetName(mat,name);
+  engPutArray(engine->ep,mat);
+
+  PLogInfo(0,"Put Matlab array %s\n",name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscMatlabEngineGetArray"></a>*/"PetscMatlabEngineGetArray"
+/*@C
+    PetscMatlabEngineGetArray - Gets a variable from Matlab into an array
+
+    Not Collective
+
+    Input Parameters:
++    engine - the Matlab engine
+.    n - the length of the array
+.    array - the array (represented in one dimension)
+-    name - the name of the array
+
+   Level: advanced
+
+.seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
+          PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
+          MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet()
+@*/
+int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int n,Scalar *array,char *name)
+{
+  int     ierr;
+  mxArray *mat;
+  
+  PetscFunctionBegin;  
+  PLogInfo(0,"Getting Matlab array %s\n",name);
+  mat  = engGetArray(engine->ep,name);
+  if (!mat) SETERRQ1(1,1,"Unable to get array %s from matlab",name);
+  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
+  PLogInfo(0,"Got Matlab array %s\n",name);
+  PetscFunctionReturn(0);
+}
 
 
 
