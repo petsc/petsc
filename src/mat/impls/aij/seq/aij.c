@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.189 1996/10/16 21:01:58 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.190 1996/10/16 21:04:23 balay Exp balay $";
 #endif
 
 /*
@@ -83,7 +83,7 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
   *nn     = A->n;
   if (!ia) return 0;
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(a->m,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
   } else {
     collengths = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(collengths);
     PetscMemzero(collengths,n*sizeof(int));
