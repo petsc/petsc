@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.15 1996/02/28 22:09:16 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.16 1996/07/03 16:49:22 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -14,14 +14,14 @@ static char vcid[] = "$Id: mpiaijpc.c,v 1.15 1996/02/28 22:09:16 bsmith Exp bala
 
 typedef struct {
   Vec  x, y;
-} PC_BJacobiMPIAIJ;
+} PC_BJacobi_MPIAIJ;
 
-int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
+int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
 {
-  PC               pc = (PC) obj;
-  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
-  int              ierr;
+  PC                pc = (PC) obj;
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
+  int               ierr;
 
   ierr = SLESDestroy(jac->sles[0]); CHKERRQ(ierr);
   PetscFree(jac->sles);
@@ -36,22 +36,22 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
 }
 
 
-int PCSetUpOnBlocks_BJacobiMPIAIJ(PC pc)
+int PCSetUpOnBlocks_BJacobi_MPIAIJ(PC pc)
 {
-  int              ierr;
-  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
+  int               ierr;
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
 
   ierr = SLESSetUp(jac->sles[0],bjac->x,bjac->y); CHKERRQ(ierr);
   return 0;
 }
 
-int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
+int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
 {
-  int              ierr,its;
-  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
-  Scalar           *x_array,*x_true_array, *y_array,*y_true_array;
+  int               ierr,its;
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
+  Scalar            *x_array,*x_true_array, *y_array,*y_true_array;
 
   /* 
       The VecPlaceArray() is to avoid having to copy the 
@@ -71,23 +71,23 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
   return 0;
 }
 
-int PCSetUp_BJacobiMPIAIJ(PC pc)
+int PCSetUp_BJacobi_MPIAIJ(PC pc)
 {
-  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  Mat              mat = pc->mat, pmat = pc->pmat;
-  Mat_MPIAIJ       *pmatin = (Mat_MPIAIJ *) pmat->data;
-  Mat_MPIAIJ       *matin = 0;
-  int              ierr, m;
-  SLES             sles;
-  Vec              x,y;
-  PC_BJacobiMPIAIJ *bjac;
-  KSP              subksp;
-  PC               subpc;
-  MatType          type;
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  Mat               mat = pc->mat, pmat = pc->pmat;
+  Mat_MPIAIJ        *pmatin = (Mat_MPIAIJ *) pmat->data;
+  Mat_MPIAIJ        *matin = 0;
+  int               ierr, m;
+  SLES              sles;
+  Vec               x,y;
+  PC_BJacobi_MPIAIJ *bjac;
+  KSP               subksp;
+  PC                subpc;
+  MatType           type;
 
   if (jac->use_true_local) {
     MatGetType(pc->mat,&type,PETSC_NULL);
-    if (type != MATMPIAIJ) SETERRQ(1,"PCSetUp_BJacobiMPIAIJ:Incompatible matrix type.");
+    if (type != MATMPIAIJ) SETERRQ(1,"PCSetUp_BJacobi_MPIAIJ:Incompatible matrix type.");
     matin = (Mat_MPIAIJ *) mat->data;
   }
 
@@ -111,12 +111,12 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     PLogObjectParent(pmat,x);
     PLogObjectParent(pmat,y);
 
-    pc->destroy       = PCDestroy_BJacobiMPIAIJ;
-    pc->apply         = PCApply_BJacobiMPIAIJ;
-    pc->setuponblocks = PCSetUpOnBlocks_BJacobiMPIAIJ;
+    pc->destroy       = PCDestroy_BJacobi_MPIAIJ;
+    pc->apply         = PCApply_BJacobi_MPIAIJ;
+    pc->setuponblocks = PCSetUpOnBlocks_BJacobi_MPIAIJ;
 
-    bjac         = (PC_BJacobiMPIAIJ *) PetscMalloc(sizeof(PC_BJacobiMPIAIJ));CHKPTRQ(bjac);
-    PLogObjectMemory(pc,sizeof(PC_BJacobiMPIAIJ));
+    bjac         = (PC_BJacobi_MPIAIJ *) PetscMalloc(sizeof(PC_BJacobi_MPIAIJ));CHKPTRQ(bjac);
+    PLogObjectMemory(pc,sizeof(PC_BJacobi_MPIAIJ));
     bjac->x      = x;
     bjac->y      = y;
 
@@ -126,7 +126,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   }
   else {
     sles = jac->sles[0];
-    bjac = (PC_BJacobiMPIAIJ *)jac->data;
+    bjac = (PC_BJacobi_MPIAIJ *)jac->data;
   }
   if (jac->l_true[0] == USE_TRUE_MATRIX) {
     ierr = SLESSetOperators(sles,matin->A,matin->A,pc->flag);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.78 1996/07/10 00:32:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.79 1996/07/10 22:13:44 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -9,19 +9,19 @@ static char vcid[] = "$Id: bjacobi.c,v 1.78 1996/07/10 00:32:22 curfman Exp bsmi
 #include "bjacobi.h"
 #include "pinclude/pviewer.h"
 
-extern int PCSetUp_BJacobiAIJ(PC);
-extern int PCSetUp_BJacobiBAIJ(PC);
-extern int PCSetUp_BJacobiMPIBDiag(PC);
+extern int PCSetUp_BJacobi_AIJ(PC);
+extern int PCSetUp_BJacobi_BAIJ(PC);
+extern int PCSetUp_BJacobi_MPIBDiag(PC);
 
 static int (*setups[])(PC) = {0,
-                              PCSetUp_BJacobiAIJ,
-                              PCSetUp_BJacobiAIJ,
+                              PCSetUp_BJacobi_AIJ,
+                              PCSetUp_BJacobi_AIJ,
                               0,
                               0,
                               0,   
-                              PCSetUp_BJacobiMPIBDiag,
-                              0,PCSetUp_BJacobiBAIJ,
-                              PCSetUp_BJacobiBAIJ,0};
+                              PCSetUp_BJacobi_MPIBDiag,
+                              0,PCSetUp_BJacobi_BAIJ,
+                              PCSetUp_BJacobi_BAIJ,0};
 
 static int PCSetUp_BJacobi(PC pc)
 {
