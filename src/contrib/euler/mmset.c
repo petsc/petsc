@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmset.c,v 1.3 1997/10/11 18:39:18 curfman Exp balay $";
+static char vcid[] = "$Id: mmset.c,v 1.4 1998/03/24 20:59:51 balay Exp curfman $";
 #endif
 
 /* 
@@ -12,8 +12,11 @@ static char vcid[] = "$Id: mmset.c,v 1.3 1997/10/11 18:39:18 curfman Exp balay $
 #include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__MMList = 0;
 int MMRegisterAllCalled = 0;
+/*
+   Contains the list of registered KSP routines
+*/
+DLList MMList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "MMSetType"
@@ -36,57 +39,29 @@ int MMSetType(MM ctx,MMType type)
 {
   int ierr,(*r)(MM);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,ctx->MM_COOKIE);
-  if (ctx->type == (int) type) return 0;
+  if (!PetscStrcmp(ctx->type_name,type)) PetscFunctionReturn(0);
 
   if (ctx->setupcalled) {
-    if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
+    if (ctx->destroy) ierr =  (*ctx->destroy)(ctx);
     else {if (ctx->data) PetscFree(ctx->data);}
     ctx->data        = 0;
     ctx->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
-  if (!MMRegisterAllCalled) {ierr = MMRegisterAll(); CHKERRQ(ierr);}
-  if (!__MMList) {SETERRQ(1,0,"Could not get list of methods");}
-  r =  (int (*)(MM))NRFindRoutine( __MMList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(1,0,"Unknown type");}
+  if (!MMRegisterAllCalled) {ierr = MMRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  ierr = DLRegisterFind(ctx->comm, MMList, type,(int (**)(void *))&r); CHKERRQ(ierr);
+  if (!r) SETERRQ(1,1,"Unknown MM type given");
+
   if (ctx->data) PetscFree(ctx->data);
-  ctx->destroy      = ( int (*)(PetscObject) ) 0;
-  ctx->view         = ( int (*)(PetscObject,Viewer) ) 0;
-  return (*r)(ctx);
-}
+  ctx->data    = 0;
+  ierr = (*r)(ctx); CHKERRQ(ierr);
 
-#undef __FUNC__  
-#define __FUNC__ "MMRegister"
-/*
-   MMRegister - Adds the model to the multi-model package, given a model
-   name (MMType) and a function pointer.
-
-   Input Parameters:
-.  name - either a predefined name such as MMEULER, or MMNEW
-          to indicate a new user-defined model
-.  sname -  corresponding string for name
-.  create - routine to create method context
-
-   Output Parameter:
-.  oname - type associated with this new preconditioner
-
-   Notes:
-   Multiple user-defined preconditioners can be added by calling
-   MMRegister() with the input parameter "name" set to be MMNEW; 
-   each call will return a unique preconditioner type in the output
-   parameter "oname".
-*/
-int MMRegister(MMType name,MMType *oname,char *sname,int (*create)(MM))
-{
-  int ierr;
-  static int numberregistered = 0;
-
-  if (name == MMNEW) name = (MMType) ((int) MMNEW + numberregistered++);
-
-  if (oname) *oname = name;
-  if (!__MMList) {ierr = NRCreate(&__MMList); CHKERRQ(ierr);}
-  return NRRegister( __MMList, (int) name, sname, (int (*)(void*)) create );
+  if (ctx->type_name) PetscFree(ctx->type_name);
+  ctx->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char)); CHKPTRQ(ctx->type_name);
+  PetscStrcpy(ctx->type_name,type);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -95,73 +70,42 @@ int MMRegister(MMType name,MMType *oname,char *sname,int (*create)(MM))
    MMRegisterDestroy - Frees the list of multi-models that were
    registered by MMRegister().
 
+   Not Collective
+
 .keywords: MM, register, destroy
 
 .seealso: MMRegisterAll(), MMRegisterAll()
 */
 int MMRegisterDestroy(void)
 {
-  if (__MMList) {
-    NRDestroy( __MMList );
-    __MMList = 0;
+  int ierr;
+
+  PetscFunctionBegin;
+  if (MMList) {
+    ierr = DLRegisterDestroy(MMList); CHKERRQ(ierr);
+    MMList = 0;
   }
   MMRegisterAllCalled = 0;
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MMGetTypeFromOptions_Private"
-/* 
-  MMGetTypeFromOptions_Private - Sets the selected MM type from the 
-  options database.
-
-  Input Parameter:
-. MM - the preconditioner context
-
-  Output Parameter:
-. method - MM method
-
-  Returns:
-  1 if method is found; otherwise 0.
-
-  Options Database Key:
-$ -mm_type method
-*/
-int MMGetTypeFromOptions_Private(MM mm,MMType *method)
-{
-  int  ierr,flg;
-  char sbuf[50];
-
-  ierr = OptionsGetString( mm->prefix,"-mm_type", sbuf, 50,&flg );CHKERRQ(ierr);
-  if (flg) {
-    if (!__MMList) {ierr = MMRegisterAll(); CHKERRQ(ierr);}
-    *method = (MMType)NRFindID( __MMList, sbuf );
-    return 1;
-  }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MMGetType"
 /*@C
-   MMGetType - Gets the MM method type and name (as a string) from the MM
-   context.
+   MMGetType - Gets the MM type as a string from the MM context.
 
    Input Parameter:
 .  mm - the preconditioner context
 
    Output Parameter:
-.  name - name of multi-model (or use PETSC_NULL)
-.  meth - multi-model (or use PETSC_NULL)
+.  type - name of multi-model
 
 @*/
-int MMGetType(MM mm,MMType *meth,char **name)
+int MMGetType(MM mm,MMType *type)
 {
-  int ierr;
-  if (!__MMList) {ierr = MMRegisterAll(); CHKERRQ(ierr);}
-  if (meth) *meth = (MMType) mm->type;
-  if (name)  *name = NRFindName( __MMList, (int)mm->type );
-  return 0;
+  PetscFunctionBegin;
+  *type = mm->type_name;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
