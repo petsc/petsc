@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: grpath.c,v 1.7 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -37,7 +37,7 @@ int PetscGetRealPath(char * path, char *rpath )
   char tmp3[MAXPATHLEN];
 #if defined(PARCH_sun4)
   realpath( path, rpath );
-#elif defined(PARCH_IRIX) || defined(PARCH_IRIX64)
+#elif defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined (PARCH_nt)
   PetscStrcpy( rpath, path );
 #else
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
