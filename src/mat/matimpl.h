@@ -103,7 +103,8 @@ struct _MatOps {
 /*85*/      (*load)(PetscViewer,const MatType,Mat*),
             (*issymmetric)(Mat,PetscTruth*),
             (*ishermitian)(Mat,PetscTruth*),
-            (*isstructurallysymmetric)(Mat,PetscTruth*);
+            (*isstructurallysymmetric)(Mat,PetscTruth*),
+            (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 };
 
 /*

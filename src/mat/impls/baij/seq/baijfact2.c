@@ -3376,15 +3376,17 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   PetscFunctionBegin;
 
   use_natural = PETSC_FALSE;
+  if (row && col) {
+    ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
+    ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
 
-  ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
-  ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
-
-  if (row_identity && col_identity) {
-    use_natural = PETSC_TRUE;
+    if (row_identity && col_identity) {
+      use_natural = PETSC_TRUE;
+    } 
   } else {
-    use_natural = PETSC_FALSE;
+    use_natural = PETSC_TRUE;
   }
+
   switch (a->bs) {
   case 1:
     if (use_natural) {

@@ -2353,7 +2353,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax"
 /*@
-   MatRelax - Computes one relaxation sweep.
+   MatRelax - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
    Collective on Mat and Vec
 
@@ -2426,6 +2426,49 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
 
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatPBRelax"
+/*@
+   MatPBRelax - Computes relaxation (SOR, Gauss-Seidel) sweeps.
+
+   Collective on Mat and Vec
+
+   See MatRelax() for usage
+
+   For multi-component PDEs where the Jacobian is stored in a point block format
+   (with the PETSc BAIJ matrix formats) the relaxation is done one point block at 
+   a time. That is, the small (for example, 4 by 4) blocks along the diagonal are solved
+   simultaneously (that is a 4 by 4 linear solve is done) to update all the values at a point.
+
+   Level: developer
+
+@*/
+int MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
+  PetscValidHeaderSpecific(b,VEC_COOKIE); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(mat,b);
+  PetscCheckSameComm(mat,x);
+  if (!mat->ops->pbrelax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N);
+  if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
+  if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n);
+
+  ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
+  ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
   PetscFunctionReturn(0);

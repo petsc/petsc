@@ -290,6 +290,7 @@ int MatDestroy_SeqBAIJ(Mat A)
     ierr = ISDestroy(a->col);CHKERRQ(ierr);
   }
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
   if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
   if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
   if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
@@ -2137,3 +2138,66 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,const int nnz[])
   }
   PetscFunctionReturn(0);
 }
+
+#include "src/inline/ilu.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
+int MatInvertBlockDiagonal_SeqBAIJ(Mat A)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*) A->data;
+  int         *diag_offset,i,bs = a->bs,mbs = a->mbs,ierr;
+  PetscScalar *v = a->a,*odiag,*diag;
+
+  PetscFunctionBegin;
+  ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+  diag_offset = a->diag;
+  if (!a->idiag) {
+    ierr = PetscMalloc(bs*bs*mbs*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+  }
+  diag = a->idiag;
+  /* factor and invert each block */
+  switch (a->bs){
+    case 2:
+      for (i=0; i<mbs; i++) {
+        odiag   = v + 4*diag_offset[i];
+        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
+	ierr    = Kernel_A_gets_inverse_A_2(diag);CHKERRQ(ierr);
+	diag   += 4;
+      }
+      break;
+    case 3:
+      for (i=0; i<mbs; i++) {
+  CHKMEMQ;
+        odiag   = v + 9*diag_offset[i];
+        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
+        diag[4] = odiag[4]; diag[5] = odiag[5]; diag[6] = odiag[6]; diag[7] = odiag[7];
+        diag[8] = odiag[8]; 
+	ierr    = Kernel_A_gets_inverse_A_3(diag);CHKERRQ(ierr);
+	diag   += 9;
+  CHKMEMQ;
+      }
+      break;
+    case 4:
+      for (i=0; i<mbs; i++) {
+        odiag = v + 16*diag_offset[i];
+        ierr  = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
+	ierr  = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
+	diag += 16;
+      }
+      break;
+    case 5:
+      for (i=0; i<mbs; i++) {
+        odiag = v + 25*diag_offset[i];
+        ierr  = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
+	ierr  = Kernel_A_gets_inverse_A_5(diag);CHKERRQ(ierr);
+	diag += 25;
+      }
+      break;
+    default: 
+      SETERRQ1(1,"not supported for block size %d",a->bs);
+  }
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+

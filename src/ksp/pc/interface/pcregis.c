@@ -6,6 +6,7 @@ EXTERN_C_BEGIN
 EXTERN int PCCreate_Jacobi(PC);
 EXTERN int PCCreate_BJacobi(PC);
 EXTERN int PCCreate_PBJacobi(PC);
+EXTERN int PCCreate_PBSOR(PC);
 EXTERN int PCCreate_ILU(PC);
 EXTERN int PCCreate_None(PC);
 EXTERN int PCCreate_LU(PC);
@@ -66,6 +67,7 @@ int PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCPBJACOBI     ,path,"PCCreate_PBJacobi",PCCreate_PBJacobi);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBJACOBI      ,path,"PCCreate_BJacobi",PCCreate_BJacobi);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSOR          ,path,"PCCreate_SOR",PCCreate_SOR);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCPBSOR        ,path,"PCCreate_PBSOR",PCCreate_PBSOR);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCLU           ,path,"PCCreate_LU",PCCreate_LU);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSHELL        ,path,"PCCreate_Shell",PCCreate_Shell);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCMG           ,path,"PCCreate_MG",PCCreate_MG);CHKERRQ(ierr);

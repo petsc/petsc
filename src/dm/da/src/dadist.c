@@ -69,6 +69,9 @@ int DACreateGlobalVector(DA da,Vec* g)
    The output parameter, g, is a regular PETSc vector that should be destroyed
    with a call to VecDestroy() when usage is finished.
 
+   The number of local entries in the vector on each process is the same
+   as in a vector created with DACreateGlobalVector().
+
 .keywords: distributed array, create, global, distributed, vector
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),

@@ -16,6 +16,8 @@ Vectors
    Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
    and top part of Vec object to petscvec.h
 
+   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
+
 Fortran
    Re: [PETSC #8120] Bug report F90Array1dCreate() problem with upper bounds
 

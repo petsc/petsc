@@ -42,7 +42,8 @@
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */           \
                                                                                                      \
   int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
-  Mat              XtoY;             /* used by MatAXPY() */           
+  Mat              XtoY;             /* used by MatAXPY() */                                         \
+  PetscScalar      *idiag;           /* inverse of block diagonal  */
 
 typedef struct {
   SEQBAIJHEADER
