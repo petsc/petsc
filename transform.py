@@ -180,8 +180,7 @@ class GenericTag (FileChanged):
     if self.root:
       self.root = os.path.normpath(self.root)
       if not os.path.isdir(self.root):
-        print('Invalid root directory '+self.root+' for tagging operation')
-        return self.products
+        raise RuntimeError('Invalid root directory '+self.root+' for tagging operation')
     return FileChanged.execute(self)
 
 class Update (Transform):
