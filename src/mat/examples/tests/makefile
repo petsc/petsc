@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.186 1998/03/24 16:15:07 balay Exp balay $ 
+# $Id: makefile,v 1.187 1998/04/06 20:44:53 balay Exp balay $ 
 
 ALL: ex1
 
@@ -143,7 +143,7 @@ ex16: ex16.o chkopts
 	${RM} ex16.o
 
 ex16f90: ex16f90.o chkopts
-	-${CLINKER} -o ex16f90 ex16f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex16f90 ex16f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} ex16f90.o
 
 ex17: ex17.o chkopts
