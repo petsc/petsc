@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.219 1999/10/05 19:52:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.220 1999/10/06 19:18:45 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -243,10 +243,9 @@ int OptionsInsert(int *argc,char ***args,const char file[])
       isp4           = !PetscStrcmp(eargs[0],"-p4pg");
       tisp4          = !PetscStrcmp(eargs[0],"-p4wd");
       isp4           = isp4 || tisp4;
-      tisp4          = !PetscStrcmp(eargs[0],"-p4amslave");
-      isp4           = isp4 || tisp4;
       tisp4          = !PetscStrcmp(eargs[0],"-np");
       isp4           = isp4 || tisp4;
+      tisp4          = !PetscStrcmp(eargs[0],"-p4amslave");
 
       if (eargs[0][0] != '-') {
         eargs++; left--;
@@ -258,9 +257,10 @@ int OptionsInsert(int *argc,char ***args,const char file[])
          These are "bad" options that MPICH, etc put on the command line
          we strip them out here.
       */
+      } else if (tisp4) {
+        eargs += 1; left -= 1;        
       } else if (isp4) {
         eargs += 2; left -= 2;
-
       } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
         ierr = OptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
