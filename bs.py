@@ -36,7 +36,9 @@ class BS (maker.Maker):
     parent = None
 
     if sys.modules.has_key('bs'):
-      parent = os.path.join(os.path.dirname(sys.modules['bs'].__file__), 'bsArg.db')
+      filename = os.path.join(os.path.dirname(sys.modules['bs'].__file__), 'bsArg.db')
+      if os.path.exists(filename):
+        parent = filename
     argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'), parent)
     self.setupDefaultArgs()
     argDB.input(clArgs)
