@@ -52,5 +52,7 @@
 #  define PETSC_MEMALIGN 16
 #  define PETSC_HAVE_SSE "gccsse.h"
 #endif
+
+#define PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING
  
 #endif
