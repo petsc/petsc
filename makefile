@@ -26,3 +26,8 @@ deletelibs:
 deletemanpages:
 	$(RM) -f $(PETSCLIB)/man/man*/*
 
+deletewwwpages:
+	$(RM) -f $(PETSCLIB)/www/man*/*
+
+deletelatexpages:
+	$(RM) -f $(PETSCLIB)/docs/rsum/*sum*.tex
