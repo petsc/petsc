@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.91 1999/11/05 14:47:13 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.92 2000/01/11 21:02:38 bsmith Exp balay $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -223,7 +223,7 @@ static int SNESDestroy_UM_TR(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESConverged_UM_TR"
-/*@ 
+/*@C
    SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
    routine (default). 
 

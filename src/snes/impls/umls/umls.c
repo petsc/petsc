@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.90 1999/11/05 14:47:14 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.91 2000/01/11 21:02:39 bsmith Exp balay $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
 
@@ -230,7 +230,7 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESConverged_UM_LS"
-/*@ 
+/*@C
    SNESConverged_UM_LS - Monitors the convergence of the SNESSolve_UM_LS()
    routine (default). 
 

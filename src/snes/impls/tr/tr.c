@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.111 2000/01/11 21:02:36 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.112 2000/02/02 20:10:07 bsmith Exp balay $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -290,7 +290,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESConverged_EQ_TR"
-/*@
+/*@C
    SNESConverged_EQ_TR - Monitors the convergence of the trust region
    method SNESEQTR for solving systems of nonlinear equations (default).
 
