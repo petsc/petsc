@@ -293,6 +293,12 @@ wwwpages:
 	if [ "$$?" != 1 ]; then \
 	cat trashz ; fi; $(RM) trashz;
 
+#
+#   Rule for generating ADIC derivatives from PETSc .c files
+#
+adic:
+	adiC.new -avud gradient.new $(CFLAGS) $(SOURCEC)
+
 SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts libpetscgvec
 
