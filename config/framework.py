@@ -59,15 +59,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       argDB = RDict.RDict(load = loadArgDB)
     script.LanguageProcessor.__init__(self, clArgs, argDB)
     config.base.Configure.__init__(self, self)
-    self.childGraph   = graph.DirectedGraph()
-    self.substRE      = re.compile(r'@(?P<name>[^@]+)@')
-    self.substFiles   = {}
-    self.logName      = 'configure.log'
-    self.header       = 'matt_config.h'
-    self.cHeader      = 'matt_fix.h'
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.warningRE    = re.compile('warning', re.I)
+    self.childGraph      = graph.DirectedGraph()
+    self.substRE         = re.compile(r'@(?P<name>[^@]+)@')
+    self.substFiles      = {}
+    self.logName         = 'configure.log'
+    self.header          = 'matt_config.h'
+    self.makeMacroHeader = ''
+    self.cHeader         = 'matt_fix.h'
+    self.headerPrefix    = ''
+    self.substPrefix     = ''
+    self.warningRE       = re.compile('warning', re.I)
     if not nargs.Arg.findArgument('debugSections', self.clArgs):
       self.argDB['debugSections'] = ['screen']
     self.createChildren()
