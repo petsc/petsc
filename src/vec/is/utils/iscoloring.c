@@ -366,7 +366,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
 int ISPartitioningCount(IS part,int count[])
 {
   MPI_Comm comm;
-  int      i,ierr,size,*indices,np,n,*lsizes;
+  int      i,ierr,size,*indices,np,npt,n,*lsizes;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
@@ -379,12 +379,8 @@ int ISPartitioningCount(IS part,int count[])
   for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
   }  
-
-  /*
-  if (np >= size) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Number of partitions %d larger than number of processors %d",np,size);
-  }
-  */
+  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm); CHKERRQ(ierr);
+  np = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
         lsizes - number of elements of each partition on this particular processor
