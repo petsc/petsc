@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.11 1998/06/05 20:37:52 balay Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.12 1998/08/01 14:59:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -61,6 +61,7 @@ T*/
 */
 #include "mat.h"
 #include "ao.h"
+#include "src/inline/bitarray.h"
 
 /* 
     This is the user-defined grid data context 
