@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.170 1999/12/21 17:54:56 bsmith Exp balay $ 
+# $Id: buildtest,v 1.171 1999/12/22 17:32:14 balay Exp bsmith $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -37,7 +37,7 @@ if ($day == Sun) then
   set J5=(0      10         7          8             8           8            0           0           1           10          8            )
   set J6=(0      13         8          13            12          13           13          13          13          12          0            )
   set J7=(0      15         0          14            0           0            0           14           0          14          0            )
-  set J8=(0      0          0          0             0           0            0           0            0           0          0            )
+  set J8=(0      16          0          0             0           0            0           0            0         16          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P        $SB_P       $CCST       $TMP_P      $SB_P       $CO_P        )
 endif
 if ($day == Mon) then
@@ -49,8 +49,8 @@ if ($day == Mon) then
   set J3=(0      8          3          3             3           6           3            3           3           3           3            )
   set J4=(0      13         6          6             6           7           0            6           5           5           6            )
   set J5=(0      15         8          13            13          3           0            7           10          10          8            )
-  set J6=(0      0          13         8             12          8           0            8           13          12          13           )
-  set J7=(0      0          0          14            0           0            0           14          0           0           0            )
+  set J6=(0      16          13         8             12          8           0            8           13         12          13           )
+  set J7=(0      0          0          14            0           0            0           14          0           16           0            )
   set J8=(0      0          0          0             0           0            0           0            0           0          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif  
@@ -64,8 +64,8 @@ if ($day == Tue) then
   set J4=(6      6          5          6             6           7           8            6           6           6           13           )
   set J5=(0      7          10         8             8           3           0            7           8           8           0            )
   set J6=(0      13         13         14            12          8           0            8           13          12          0            )
-  set J7=(0      14         0          0             0           0           0           14           0           0           0            )
-  set J8=(0      0          0          0             0           0           0            0           0           0           0            )
+  set J7=(0      14         0          0             0           0           0           14           0           16           0            )
+  set J8=(0      16          0          0             0           0           0            0           0           0           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif
 if ($day == Wed) then
@@ -78,8 +78,8 @@ if ($day == Wed) then
   set J4=(6      6          6          5             5           0           0            5           6           4           8            )
   set J5=(0      8          7          10            10          0           0            10          8           7           13           )
   set J6=(0      14         8          13            12          0           0            13          13          13          0            )
-  set J7=(0      15         0          0             0           0           0            0           0           0           0            )
-  set J8=(0      0          0          0             0           0            0           0            0           0          0            )
+  set J7=(0      15         0          0             0           0           0            0           0           16           0            )
+  set J8=(0      16          0          0             0           0            0           0            0           0          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif
 if ($day == Thu) then
@@ -93,7 +93,7 @@ if ($day == Thu) then
   set J5=(0      10         8          8             8           3           10           8           12          7           8            )
   set J6=(0      13         13         13            13          8           13           13          13          8           0            )
   set J7=(0      15         0          14            0           0           0            14          0           14          0            )
-  set J8=(0      0          0          0             0           0           0            0           0           0           0            )
+  set J8=(0      16          0          0             0           0           0            0           0          16           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif  
 if ($day == Fri) then
@@ -107,7 +107,7 @@ if ($day == Fri) then
   set J5=(0      8          10         10            8           0           8            10          8           13          8            )
   set J6=(0      14          13         13            0           0           13           0           0          12          0            )
   set J7=(0      15          0          0             0           0           14           0           0          14          0            )
-  set J8=(0      0          0          0             0           0            0           0            0           0          0            )
+  set J8=(0      16          0          0             0           0            0           0            0         16          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif
 if ($day == Sat) then
@@ -120,7 +120,7 @@ if ($day == Sat) then
   set J4=(6      6          6          5             6           7           10           7           5           6           8            )
   set J5=(0      7          7          10            13          3           13           8           10          8           0            )
   set J6=(0      8         13          0             0           8           0            13          4           12          0            )
-  set J7=(0      14         0          0             0           0            0           14          0           0           0            )
+  set J7=(0      14         0          0             0           0            0           14          0           16           0            )
   set J8=(0      15         0          0             0           0            0           0            0           0          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
 endif

@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.28 1999/11/05 14:46:06 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.29 2000/01/11 21:01:25 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/csr/mpi/mpicsr.h"    /*I "mat.h" I*/
 
@@ -30,33 +30,53 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   int                      ierr,*locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
-  Mat                      mat = part->adj;
+  Mat                      mat = part->adj,newmat;
   Mat_MPICSR               *adj = (Mat_MPICSR *)mat->data;
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
-  if (mat->type != MATMPICSR) SETERRQ(PETSC_ERR_SUP,1,"Only MPICSR matrix type supported");
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
+  }
+
+  if (mat->type != MATMPICSR) {
+    ierr = MatConvert(mat,MATMPICSR,&newmat);CHKERRQ(ierr);
+    adj = (Mat_MPICSR *)newmat->data;
   }
 
   vtxdist = adj->rowners;
   xadj    = adj->i;
   adjncy  = adj->j;
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
-  if (vtxdist[rank+1] - vtxdist[rank] == 0) {
+  if (!(vtxdist[rank+1] - vtxdist[rank])) {
     SETERRQ(1,1,"Does not support any processor with no entries");
   }
+#if defined(PETSC_BOPT_g)
+  /* check that matrix has no diagonal entries */
+  {
+    int j,rstart;
+    ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      for (j=xadj[i]; j<xadj[i+1]; j++) {
+        if (adjncy[j] == i+rstart) SETERRQ1(1,1,"Row %d has illigal diagonal entry",i+rstart);
+      }
+    }
+  }
+#endif
+
   locals = (int*)PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
 
   if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  PARKMETIS(vtxdist,xadj,0,adjncy,0,locals,(int*)parmetis,part->comm);
+  PARKMETIS(vtxdist,xadj,0,adjncy,adj->values,locals,(int*)parmetis,part->comm);
   if (PLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
+  if (mat->type != MATMPICSR) {
+    ierr = MatDestroy(newmat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -168,12 +188,12 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
   parmetis->indexing   = 0;   /* index numbering starts from 0 */
   parmetis->printout   = 0;   /* print no output while running */
 
-  part->apply          = MatPartitioningApply_Parmetis;
-  part->view           = MatPartitioningView_Parmetis;
-  part->destroy        = MatPartitioningDestroy_Parmetis;
-  part->printhelp      = MatPartitioningPrintHelp_Parmetis;
-  part->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  part->data           = (void*)parmetis;
+  part->ops->apply          = MatPartitioningApply_Parmetis;
+  part->ops->view           = MatPartitioningView_Parmetis;
+  part->ops->destroy        = MatPartitioningDestroy_Parmetis;
+  part->ops->printhelp      = MatPartitioningPrintHelp_Parmetis;
+  part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
+  part->data                = (void*)parmetis;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,4 +1,4 @@
-/*$Id: spartition.c,v 1.14 1999/10/24 14:02:37 bsmith Exp bsmith $*/
+/*$Id: spartition.c,v 1.15 1999/11/05 14:46:04 bsmith Exp bsmith $*/
  
 #include "petsc.h"
 #include "mat.h"
@@ -41,7 +41,6 @@ int MatPartitioningRegisterAll(char *path)
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 
