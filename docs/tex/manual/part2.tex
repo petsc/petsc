@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.326 1999/05/12 03:35:22 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.327 1999/05/27 18:57:27 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2930,7 +2930,7 @@ achieved with the {\tt PCSLES} type. \findex{PCSLES}
 \end{verbatim}
 \findex{PCSLESGetSLES()} From the command line one can use 5 iterations of 
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
-{\tt -pc\_type sles -sub\_pc\_type ilu -sub\_ksp\_max\_it 5 -sub\_ksp\_type bcgs}. 
+{\tt -pc\_type sles -sles\_pc\_type ilu -sles\_ksp\_max\_it 5 -sles\_ksp\_type bcgs}. 
 
 By default the inner SLES preconditioner uses the outter ``preconditioner matrix'', 
 as the matrix to be solved in the linear system, to use the true matrix use the 
