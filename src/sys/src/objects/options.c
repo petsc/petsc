@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.154 1997/11/28 16:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.155 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -55,6 +55,12 @@ Scalar PETSC_i;
 Scalar PETSC_i = 0.0; 
 #endif
 
+/*
+     These are needed by src/inline/bitarray.H
+*/
+char _mask, _BT_c;
+int  _BT_idx;
+
 /* 
    Optional file where all PETSc output from various prints is saved
 */
@@ -107,6 +113,12 @@ static int PLogCloseHistoryFile(FILE **fd)
   fclose(*fd);
   PetscFunctionReturn(0); 
 }
+
+/*
+       Function that is called to display all error messages
+*/
+extern int  PetscErrorPrintfDefault(char *,...);
+int (*PetscErrorPrintf)(char *,...) = PetscErrorPrintfDefault;
 
 int      PetscInitializedCalled = 0;
 int      PetscGlobalRank = -1, PetscGlobalSize = -1;
@@ -462,7 +474,7 @@ int PetscFinalize()
 
   PetscFunctionBegin;
   if (!PetscInitializedCalled) {
-    PetscErrorPrintf("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
+    (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
 
@@ -616,7 +628,7 @@ int PetscFinalize()
 void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
-  PetscErrorPrintf("MPI error %d\n",*flag);
+  (*PetscErrorPrintf)("MPI error %d\n",*flag);
   abort();
 }
 
@@ -1194,9 +1206,9 @@ int OptionsSetValue(char *name,char *value)
     }
   }
   if (N >= MAXOPTIONS) {
-    PetscErrorPrintf("No more room in option table, limit %d\n",MAXOPTIONS);
-    PetscErrorPrintf("recompile options/src/options.c with larger ");
-    PetscErrorPrintf("value for MAXOPTIONS\n");
+    (*PetscErrorPrintf)("No more room in option table, limit %d\n",MAXOPTIONS);
+    (*PetscErrorPrintf)("recompile options/src/options.c with larger ");
+    (*PetscErrorPrintf)("value for MAXOPTIONS\n");
     PetscFunctionReturn(0);
   }
   /* shift remaining values down 1 */
@@ -1606,6 +1618,66 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
   if (value) PetscStrncpy(string,value,len);
   else PetscMemzero(string,len);
   PetscFunctionReturn(0); 
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsGetStringArray"
+/*@C
+   OptionsGetStringArray - Gets an array of string values for a particular
+   option in the database. The values must be separated with commas with 
+   no intervening spaces. 
+
+   Input Parameters:
+.  name - the option one is seeking
+.  pre - string to prepend to name or PETSC_NULL
+.  nmax - maximum number of strings
+
+   Output Parameter:
+.  strings - location to copy strings
+.  flg - 1 if found, else 0
+
+   Notes: The user is responsible for deallocating the
+          strings which are returned.
+
+   Contributed by: Matthew Knepley
+
+.keywords: options, database, get, string
+
+.seealso: OptionsGetInt(), OptionsGetDouble(),  
+           OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
+@*/
+int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int *flg)
+{
+  char *value;
+  char *cpy;
+  int   len;
+  int   n;
+  int   ierr;
+
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
+  if (!*flg)  {*nmax = 0; return 0;}
+  if (!value) {*nmax = 0; return 0;}
+
+  /* make a copy of the values, otherwise we destroy the old values */
+  len = PetscStrlen(value) + 1;
+  cpy = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(cpy);
+  PetscStrcpy(cpy, value);
+  value = cpy;
+
+  value = PetscStrtok(value, ",");
+  n = 0;
+  while (n < *nmax)
+  {
+    if (!value) break;
+    len = PetscStrlen(value) + 1;
+    strings[n] = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(strings[n]);
+    PetscStrcpy(strings[n], value);
+    value = PetscStrtok(0, ",");
+    n++;
+  }
+  *nmax = n;
+  PetscFree(cpy);
+  return 0; 
 }
 
 #undef __FUNC__  
