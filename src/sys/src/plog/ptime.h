@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.12 1995/12/05 05:24:04 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.13 1995/12/07 19:32:41 bsmith Exp bsmith $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -35,7 +35,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 
 /*
     Macros for timing. In the future some of these may be 
-    machine dependent versions
+    machine dependent versions. The are not intended for PETSc users!
 */
 
 /*
