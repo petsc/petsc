@@ -28,10 +28,11 @@ class LinkSharedLibrary (action.Action):
     self.products       = [self.sharedLibs]
     self.buildProducts  = 0
     self.doLibraryCheck = 1
-
+    self.sharedext      = '.so'
+    
   def getSharedName(self, libName):
     (base, ext) = os.path.splitext(libName)
-    return base+'.so'
+    return base+self.sharedext
 
   def checkLibrary(self, source):
     if not self.doLibraryCheck: return
