@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.97 2000/08/24 22:43:08 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.98 2000/09/02 02:49:42 bsmith Exp balay $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -108,7 +108,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       snes->linear_its += qits;
       ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
       if ((int)kreason < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
-      if (kreason != KSP_CONVERGED_QCG_NEGATIVE_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
+      if (kreason != KSP_CONVERGED_QCG_NEG_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
         newton = PETSC_TRUE;
       }
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 

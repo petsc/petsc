@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.71 2000/04/09 04:38:06 bsmith Exp bsmith $*/
+/*$Id: qcg.c,v 1.72 2000/04/12 04:25:09 bsmith Exp balay $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -29,7 +29,7 @@ static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
      D is a scaling matrix.
 
    KSPConvergedReason may be 
-$  KSP_CONVERGED_QCG_NEGATIVE_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_QCG_NEG_CURVE if convergence is reached along a negative curvature direction,
 $  KSP_CONVERGED_QCG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
@@ -171,7 +171,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
        }
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
-       ksp->reason  = KSP_CONVERGED_QCG_NEGATIVE_CURVE;  /* negative curvature */
+       ksp->reason  = KSP_CONVERGED_QCG_NEG_CURVE;  /* negative curvature */
        if (!i) {
          PLogInfo(ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
        } else {

@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.96 2000/05/05 22:17:27 balay Exp bsmith $*/
+/*$Id: iterativ.c,v 1.97 2000/08/01 20:56:48 bsmith Exp balay $*/
 
 /*
    This file contains some simple default routines.  
@@ -532,7 +532,7 @@ int KSPDefaultDestroy(KSP ksp)
 +  KSP_CONVERGED_RTOL (residual norm decreased by a factor of rtol)
 .  KSP_CONVERGED_ATOL (residual norm less than atol)
 .  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration) 
-.  KSP_CONVERGED_QCG_NEGATIVE_CURVE
+.  KSP_CONVERGED_QCG_NEG_CURVE
 .  KSP_CONVERGED_QCG_CONSTRAINED
 .  KSP_CONVERGED_STEP_LENGTH
 .  KSP_DIVERGED_ITS  (required more than its to reach convergence)
