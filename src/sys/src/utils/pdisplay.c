@@ -96,7 +96,8 @@ PetscErrorCode PetscSetDisplay(void)
   char           *str,display[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
+  ierr = PetscMemzero(display,256*sizeof(char));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,256,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -107,7 +108,7 @@ PetscErrorCode PetscSetDisplay(void)
       ierr = PetscGetHostName(display,124);CHKERRQ(ierr);
       ierr = PetscStrcat(display,":0.0");CHKERRQ(ierr);
     } else {
-      ierr = PetscStrncpy(display,str,128);CHKERRQ(ierr);
+      ierr = PetscStrncpy(display,str,256);CHKERRQ(ierr);
     }
   }
   ierr = MPI_Bcast(display,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

@@ -63,7 +63,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   PetscInt       *ordcol,*iwk,*iperm,*jw;
   PetscInt       jmax,lfill,job,*o_i,*o_j;
   PetscScalar    *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
-  PetscReal      permtol,af;
+  PetscReal      af;
 
   PetscFunctionBegin;
 
@@ -73,7 +73,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   if (info->fill == PETSC_DEFAULT)    info->fill    = ((double)(n*(info->dtcount+1)))/a->nz;
   lfill   = (PetscInt)(info->dtcount/2.0);
   jmax    = (PetscInt)(info->fill*a->nz);
-  permtol = info->dtcol;
 
 
   /* ------------------------------------------------------------
@@ -144,7 +143,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   ierr = PetscMalloc(2*n*sizeof(PetscInt),&jw);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&w);CHKERRQ(ierr);
 
-  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
+  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&info->dtcol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
   if (sierr) {
     switch (sierr) {
       case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %D",info->fill,jmax);
