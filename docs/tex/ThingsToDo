@@ -346,8 +346,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
 
   - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
-  - Have PETSc put some header information in front of -log and -log_all files indicating
-    how PETSc generated, where and on what code
 
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
@@ -394,9 +392,8 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
  - Fix BS95 interface so that PCGetFactoredMatrix() really returns the
    factored matrix (not just the unfactored PC matrix).  See petsc-maint #1068.
 
- - Port to BeOS ( A Mac replacement OS) http://www.be.com
 
- - Provide a way to view suitable options for any PETSc object. I see two ways?
+ * Provide a way to view suitable options for any PETSc object. I see two ways? With AMS
     - may a file viewer option that prints the stuff in XXXPrintHelp()... or
     - add an function in the abstract base class printhelp() just like destroy() and view()
 
@@ -1236,3 +1233,12 @@ X make buildtest include list of jobs to run from indivudial files in bmake/ARCH
    X Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX
      everywhere.
 
+X  take the long list of routines out of the users manual
+
+X  MatZeroRows() use MatSetOption() to zero the entries rather than remove them.
+allows reusing with different boundary conditions.
+(waiting for Satish to do seqBAIJ)
+
+  X Have PETSc put some header information in front of -log_summary
+
+X Port to BeOS ( A Mac replacement OS) http://www.be.com
