@@ -5,16 +5,14 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
-{
+int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *newmat) {
+  Mat           mat;
   Vec           in,out;
   int           ierr,i,M,m,*rows,start,end;
   MPI_Comm      comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(oldmat,MAT_COOKIE);
-  PetscValidPointer(mat);
   comm = oldmat->comm;
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end);CHKERRQ(ierr);
@@ -25,8 +23,8 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
   ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
-  ierr = MatCreate(comm,m,M,M,M,mat);CHKERRQ(ierr);
-  ierr = MatSetType(*mat,newtype);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,M,M,M,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,newtype);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
     ierr = VecSet(&zero,in);CHKERRQ(ierr);
@@ -37,15 +35,21 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
     ierr = MatMult(oldmat,in,out);CHKERRQ(ierr);
     
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
     ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(in);CHKERRQ(ierr);
   ierr = VecDestroy(out);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (*newmat == A) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = mat;
   PetscFunctionReturn(0);
 }
 

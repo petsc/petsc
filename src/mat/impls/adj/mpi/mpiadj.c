@@ -496,8 +496,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertTo_MPIAdj"
-int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
-{
+int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat) {
+  Mat          B;
   int          i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
   PetscScalar  *ra;
   MPI_Comm     comm;
@@ -539,8 +539,13 @@ int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreateMPIAdj(comm,m,N,ia,ja,a,B);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(comm,m,N,ia,ja,a,&B);CHKERRQ(ierr);
 
+  /* Fake support for "inplace" convert. */
+  if (*newmat == A) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

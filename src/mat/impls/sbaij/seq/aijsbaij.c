@@ -6,8 +6,8 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
-int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
-{
+int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *newmat) {
+  Mat          B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ *b;
   int          ierr,*ai=a->i,*aj,m=A->M,n=A->N,i,j,
@@ -24,13 +24,13 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - a->diag[i];
   }
-  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,m,n,0,rowlengths,B);CHKERRQ(ierr);
+  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,m,n,0,rowlengths,&B);CHKERRQ(ierr);
 
-  ierr = MatSetOption(*B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(*B,MAT_ROWS_SORTED);CHKERRQ(ierr);
-  ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
-  b  = (Mat_SeqSBAIJ*)(*B)->data;
+  b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;
   bj = b->j;
   bv = b->a;
@@ -48,8 +48,15 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
   }
  
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (*newmat == A) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
