@@ -761,7 +761,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkFortranCompiler)
-    self.executeTest(self.checkFortranComments)
+    if 'FC' in self.framework.argDB:
+      self.executeTest(self.checkFortranComments)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
