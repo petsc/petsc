@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.21 2000/09/25 19:53:24 curfman Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.22 2000/09/27 20:49:04 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -16,6 +16,7 @@ extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatPrintHelp_SeqSBAIJ(Mat);
 extern int MatZeroRows_SeqSBAIJ(Mat,IS,Scalar*);
+extern int MatZeroRows_SeqBAIJ(Mat,IS,Scalar *);
 
 /*  UGLY, ugly, ugly
    When MatScalar == Scalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
