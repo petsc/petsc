@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.289 1999/03/18 00:35:56 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.290 1999/03/19 21:19:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -742,7 +742,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       int     flg;
-      MPI_Comm_rank(mat->comm,&rank);
+      ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info); 
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg); CHKERRQ(ierr);
@@ -1734,7 +1734,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   int          ierr, i,size,flag1 = 0, flag2 = 0;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpiaij",&flag1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2); CHKERRQ(ierr);
   if (!flag1 && !flag2 && size == 1) {
@@ -1758,7 +1758,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 
   B->insertmode      = NOT_SET_VALUES;
   b->size            = size;
-  MPI_Comm_rank(comm,&b->rank);
+  ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
@@ -1922,7 +1922,8 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
@@ -2104,8 +2105,8 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
   int        *ii, *jj,nlocal,*dlens,*olens,dlen,olen,jend;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);

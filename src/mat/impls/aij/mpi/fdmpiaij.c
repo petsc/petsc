@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.17 1999/01/08 21:47:51 balay Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.18 1999/02/17 21:37:40 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -52,7 +52,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
   ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
 
-  MPI_Comm_size(mat->comm,&size);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
   ncolsonproc = (int *) PetscMalloc( 2*size*sizeof(int *) ); CHKPTRQ(ncolsonproc);
   disp        = ncolsonproc + size;
 
