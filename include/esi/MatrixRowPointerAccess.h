@@ -21,9 +21,9 @@ namespace esi {
     There is no practical distinction between these pointers, but the semantics of
     the functions for obtaining them differ. This interface will grant multiple
     simultaneous read-locks, but each read-lock must ultimately be matched to a
-    call to 'release*Lock'. On the other hand, only one read-write-lock will be
+    call to 'release*Lock'. On the other hand, only one read-write lock will be
     granted at a time. Furthermore, if a read-lock is currently out, a 
-    read-write-lock will not be granted. If a lock is requested under conditions
+    read-write lock will not be granted. If a lock is requested under conditions
     where it is not granted, the function will return a non-zero error-code, and
     the pointer argument will not be referenced.
 

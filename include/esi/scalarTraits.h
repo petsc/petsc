@@ -1,6 +1,7 @@
 #ifndef __ESI_scalarTraits_h
 #define __ESI_scalarTraits_h
 
+#include <stdlib.h> //for rand(), RAND_MAX...
 #include <math.h> //for the fabs function...
 
 namespace esi {
