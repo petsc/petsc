@@ -288,8 +288,7 @@ static int PCSetFromOptions_MG(PC pc)
 static int PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
-  KSP        kspu,kspd;
-  int        itu,itd,ierr,levels = mg[0]->levels,i;
+  int        ierr,levels = mg[0]->levels,i;
   PetscReal  dtol,atol,rtol;
   char       *cstring;
   PetscTruth isascii;
@@ -297,24 +296,20 @@ static int PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = SLESGetKSP(mg[0]->smoothu,&kspu);CHKERRQ(ierr);
-    ierr = SLESGetKSP(mg[0]->smoothd,&kspd);CHKERRQ(ierr);
-    ierr = KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);CHKERRQ(ierr);
-    ierr = KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd);CHKERRQ(ierr);
     if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
     else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%d cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-                      cstring,levels,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
+                      cstring,levels,mg[0]->cycles,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Up solver same as down solver\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -691,6 +686,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
   levels = mg[0]->levels;
 
   for (i=0; i<levels; i++) {  
+    /* make sure smoother up and down are different */
+    ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothd = n;
@@ -733,6 +730,8 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   levels = mg[0]->levels;
 
   for (i=0; i<levels; i++) {  
+    /* make sure smoother up and down are different */
+    ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothu = n;

@@ -491,11 +491,12 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   steptol = neP->steptol;
 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
-  if (*ynorm < snes->atol) {
-    PetscLogInfo(snes,"SNESCubicLineSearch: Search direction and size are nearly 0\n");
+  if (*ynorm == 0.0) {
+    PetscLogInfo(snes,"SNESCubicLineSearch: Search direction and size is 0\n");
     *gnorm = fnorm;
-    ierr = VecCopy(x,y);CHKERRQ(ierr);
-    ierr = VecCopy(f,g);CHKERRQ(ierr);
+    ierr   = VecCopy(x,y);CHKERRQ(ierr);
+    ierr   = VecCopy(f,g);CHKERRQ(ierr);
+    *flag  = -1;
     goto theend1;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
@@ -676,11 +677,12 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   steptol = neP->steptol;
 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
-  if (*ynorm < snes->atol) {
+  if (*ynorm == 0.0) {
     PetscLogInfo(snes,"SNESQuadraticLineSearch: Search direction and size is 0\n");
     *gnorm = fnorm;
-    ierr = VecCopy(x,y);CHKERRQ(ierr);
-    ierr = VecCopy(f,g);CHKERRQ(ierr);
+    ierr   = VecCopy(x,y);CHKERRQ(ierr);
+    ierr   = VecCopy(f,g);CHKERRQ(ierr);
+    *flag  = -1;
     goto theend2;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */

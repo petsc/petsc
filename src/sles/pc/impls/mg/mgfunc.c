@@ -245,7 +245,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
     ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PetscLogObjectParent(pc,mg[l]->smoothu);
   }
-  *sles = mg[l]->smoothu;
+  if (sles) *sles = mg[l]->smoothu;
   PetscFunctionReturn(0);
 }
 
@@ -272,9 +272,12 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
-  MG *mg = (MG*)pc->data;
+  int ierr;
+  MG  *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  /* make sure smoother up and down are different */
+  ierr = MGGetSmootherUp(pc,l,PETSC_NULL);CHKERRQ(ierr);
   *sles = mg[l]->smoothd;  
   PetscFunctionReturn(0);
 }
