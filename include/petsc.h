@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.183 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.184 1997/10/28 14:26:00 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -122,6 +122,7 @@ extern char* PetscStrrtok(char*,char*);
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_NULL            0
 #define PETSC_DECIDE         -1
+#define PETSC_DETERMINE      PETSC_DECIDE
 #define PETSC_DEFAULT        -2
 
 /*
