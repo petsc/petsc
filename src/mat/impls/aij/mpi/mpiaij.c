@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.32 1995/04/27 20:15:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.33 1995/04/27 21:52:20 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1095,10 +1095,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 
    Input Parameters:
 .  comm - MPI communicator
-.  m - number of local rows (or PETSC_DECIDE to have calculated)
-.  n - number of local columns (or PETSC_DECIDE to have calculated)
-.  M - number of global rows (or PETSC_DECIDE to have calculated)
-.  N - number of global columns (or PETSC_DECIDE to have calculated)
+.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  n - number of local columns (or PETSC_DECIDE to have calculated 
+           if N is given)
+.  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DECIDE to have calculated 
+           if n is given)
 .  d_nz - number of nonzeros per row in diagonal portion of matrix
            (same for all local rows)
 .  d_nzz - number of nonzeros per row in diagonal portion of matrix or null
