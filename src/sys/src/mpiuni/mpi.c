@@ -1,15 +1,26 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.46 1998/05/14 15:19:14 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.47 1998/05/14 22:07:19 balay Exp bsmith $";
 #endif
 
-#include "petsc.h"               /*I   "petsc.h"   I*/
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
+/*
+      This provides a few of the MPI-uni functions that cannot be implemented
+    with C macros
+*/
+#include "mpi.h"
+
+/*
+     The system call exit() is not properly prototyped on all systems
+   hence we fake it by creating our own prototype
+*/
+
+#if defined(__cplusplus)
+extern "C" {
+  void exit(int);
+}
+#else
+  void exit(int);
 #endif
-#if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#include "pinclude/petscfix.h" 
+
 #define MPI_SUCCESS 0
 void    *MPIUNI_TMP        = 0;
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
@@ -30,7 +41,7 @@ static MPI_Attr attr[MAX_ATTR];
 static int      num_attr = 1,mpi_tag_ub = 100000000;
 
 /* 
-   To avoid any reference to libpetscsys.a memcpy is duplicated here 
+   To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
 static int MPIUNI_Memcpy(void *a,void* b,int n) {
   int  i;

@@ -1,18 +1,19 @@
-/* $Id: mpi.h,v 1.65 1998/05/14 19:24:25 balay Exp balay $ */
+/* $Id: mpi.h,v 1.66 1998/05/14 22:03:57 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
  
    NOT ALL THE MPI CALLS ARE IMPLEMENTED CORRECTLY! Only those needed in PETSc.
 
-     Does not implement send to self.
-     Does not implement attributes correctly.
+   For example,
+   * Does not implement send to self.
+   * Does not implement attributes correctly.
 */
 
-#ifndef __MPI_BINDINGS
-#define __MPI_BINDINGS
+#if !defined(__MPI_H)
+#define __MPI_H
 
-#define PETSC_USING_MPIUNI
+#define USING_MPIUNI
 extern void *MPIUNI_TMP;
 
 #define MPI_COMM_WORLD       1
@@ -68,7 +69,10 @@ extern int    MPI_Initialized(int *);
 extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 
 
-/* Routines */
+/* 
+    Routines we have replace with macros that do nothing 
+    Some return error codes others return success
+*/
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
      (MPIUNI_TMP = (void *) (long) (buf), \
       MPIUNI_TMP = (void *) (long) (count), \
