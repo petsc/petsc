@@ -1,4 +1,4 @@
-/*$Id: PETScOptions.java,v 1.3 2001/02/08 21:20:20 bsmith Exp bsmith $*/
+/*$Id: PETScOptions.java,v 1.4 2001/02/08 21:31:09 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published database options and allows the user to change them via a GUI
 */
@@ -31,13 +31,12 @@ import java.awt.print.*;
 */
 public class PETScOptions extends JApplet {
 
-  Thread tupdate = null;
+  boolean checking;
 
   /*  top panel that shows options title */
   JPanel tpanel;
   /*  middle panel shows selections */
   JPanel panel;
-  Container japplet;
     
   /*  AMSBean Object - this is where all the AMS "global" functions and 
                        "enum" types are stored                            */
@@ -55,7 +54,8 @@ public class PETScOptions extends JApplet {
   boolean    waiting = false; /* indicates choices have been presented on screen, waiting for user input */
 
   java.applet.AppletContext appletcontext;
-  PETScOptions applet;
+  PETScOptions              applet;
+  Container                 japplet;
 
   JTextField inputport;
   JTextField inputserver;
@@ -64,32 +64,39 @@ public class PETScOptions extends JApplet {
     This is the destructor;
   */
   public void destroy(){
-    /*    if (tupdate != null) tupdate.stop(); */
         System.out.println("destroy called");
   }
 
   public void init(){
     applet = this;
     System.out.println("PETScOptions: codebase:"+this.getDocumentBase()+":");
-    try { 
-      new PutAMSACC();
+    System.out.println("PETScOptions: about to load amsacc library ");
+
+    /* make sure applet can find and load amsacc dynamic library */
+    try {
+      System.loadLibrary("amsacc");
+    } catch (UnsatisfiedLinkError e) {
+      try {
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-amsacc.html"));
+      } catch (java.net.MalformedURLException ex) {;}
     } catch (java.lang.SecurityException oops) {
       try {
         this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
       } catch (java.net.MalformedURLException ex) {;}
     }
-    System.out.println("done checking on amsacc");
+
+    System.out.println("PETScOptions: done loading amsacc library ");
+    System.out.println("PETScOptions: about to create AMSBean ");
     amsbean = new AMSBean() {
-      public void print_error(String mess){  /* overwrite the error message output*/
+      public void print_error(String mess) {  /* overwrite the error message output*/
         System.out.println("AMS Error Message: "+mess);
-        if (mess.substring(0,17).equals("Unable To Connect")) {
-	    ; /* throw new RuntimeException("Stack traceback");  */
-        }
       }
     };
+    System.out.println("PETScOptions: done creating AMSBean ");
     appletcontext = this.getAppletContext();
+    japplet       = this.getContentPane();
   }
-
+ 
   public String getAppletInfo() {
     return "Set PETSc obtions via the AMS";
   }
@@ -103,7 +110,6 @@ public class PETScOptions extends JApplet {
     if other threads exist the applet does not end when this routine ends.
   */
   public void start() { /* ------------------------------------------*/
-     japplet  = this.getContentPane();
      getserver();
   }
     
@@ -116,7 +122,7 @@ public class PETScOptions extends JApplet {
   }
 
   public void getserver() { /* ------------------------------------------*/
-
+    checking = false;
     japplet.removeAll();
     japplet.setVisible(false);
     /*
@@ -213,8 +219,34 @@ public class PETScOptions extends JApplet {
     */
     System.out.println("About to remove panels");    
     japplet.removeAll();
+    japplet.setVisible(false);
     System.out.println("Removed panel; trying to get options");    
 
+    JButton done = new JButton("Done");
+    japplet.add(done);
+    done.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        japplet.removeAll();
+        System.out.println("User selected done");
+        getserver();
+      }
+    });
+    japplet.setVisible(true);
+    japplet.validate(); 
+    japplet.repaint(); 
+        
+    String options = "Options_"+count++;
+    /* Get the options memory (we ignore the rest) */
+    mem = ams.get_memory(options);
+    checking = true;
+    while (mem == null) {
+      try {Thread.sleep(300);} catch (InterruptedException ex) {;} finally {;} 
+      if (!checking) return;
+      mem = ams.get_memory(options);
+    }
+
+    System.out.println("Got next set of options");    
+    japplet.removeAll();
     japplet.setVisible(false);
 
     japplet.setLayout(new FlowLayout());
@@ -244,16 +276,7 @@ public class PETScOptions extends JApplet {
         
     /* Add the Panel in the bottom of the Frame */
     japplet.add(bpanel, BorderLayout.SOUTH);
-        
-    String options = "Options_"+count++;
-    /* Get the options memory (we ignore the rest) */
-    mem = ams.get_memory(options);
-    while (mem == null) {
-      try {Thread.sleep(300);} catch (InterruptedException ex) {;} finally {;} 
-      mem = ams.get_memory(options);
-    }
 
-    System.out.println("Got next set of options");    
 
     /* first field is always the name of the options being set */
     String flist[] = mem.get_field_list();
@@ -372,7 +395,7 @@ public class PETScOptions extends JApplet {
     public void actionPerformed(ActionEvent e) {
        panel.removeAll();
       System.out.println("User selected continue");
-      (tupdate = new ThreadOptionUpdate()).start();
+      (new ThreadOptionUpdate()).start();
     }
   }
 
@@ -410,7 +433,7 @@ public class PETScOptions extends JApplet {
         mem.get_field("ChangedMethod").setData(true,0);
         panel.removeAll();
         System.out.println("User selected choice");
-        (tupdate = new ThreadOptionUpdate()).start();
+        (new ThreadOptionUpdate()).start();
       }
     }
   }
@@ -556,7 +579,6 @@ public class PETScOptions extends JApplet {
 
       displayoptionsupdate(); /* update options on PETSc program */
       displayoptionsset(); /* wait for next set of options from PETSc program */
-      tupdate = null;
     }
   }
 
