@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.1 1996/01/06 16:45:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.2 1996/01/31 03:59:25 bsmith Exp bsmith $";
 #endif
 
 #include "tsimpl.h"      /*I "ts.h"  I*/
@@ -20,6 +20,8 @@ static NRList *__TSList = 0;
    Notes:
    See "petsc/include/ts.h" for available methods (for instance)
 $   TS_EULER
+$   TS_BEULER
+$   TS_PSEUDO
 
   Options Database Command:
 $ -ts_type  <method>
