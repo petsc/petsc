@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.107 1999/03/18 01:26:02 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.108 1999/03/19 21:23:07 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -342,14 +342,6 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-
-  {
-    int flag,time;
-    ierr = OptionsGetInt(0,"-sleep",&time,&flag);CHKERRQ(ierr);
-    if (flag) {
-      PetscSleep(time);
-    }
-  }
 
   /*
      Get pointers to vector data
