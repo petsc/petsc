@@ -24,20 +24,12 @@ foreach file ($allfiles)
   set short=`echo $file | sed s%$petscdir/%$shadowdir/%` 
   if (! -e $short && -f $file ) then
     set omit=0
-    foreach bad ("\.a" "\.o" "^PI" "\.ln" "l\.outa" "mputil.mp_" "core"\
-                 "\.map" "\.log" "gmon\.out" "trashz" "\.tmp" "\.b" "\~"\
-                  "\#")
-      set dummy=`echo $file | grep $bad` 
-      if ($dummy == $file) then
-        set dummy=`echo $file | grep -v "\.out"` 
-        if ($dummy == $file) then
-#         echo "rejecting $file due to" $bad
-          set omit=1
-        endif
-      endif
-    end
-    if ($omit) continue
-#   echo "ln -s $file $short"
-    ln -s $file $short
+    set dummy=`echo $file |egrep '(\.a|\.o|^PI|\.ln|l\.outa|mputil.mp_|core|\.map|\.log|gmon\.out|trashz|\.tmp|\.b|\~|\#)'`
+    if ($dummy != $file) then
+#       echo "ln -s $file $short"
+       ln -s $file $short
+#    else      
+#       echo "rejecting $file"
+    endif
   endif
 end
