@@ -1,28 +1,29 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.5 1995/03/06 04:19:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.6 1995/04/12 23:50:59 curfman Exp curfman $";
 #endif
-
 
 #include "petsc.h"
 #include "kspimpl.h"   /*I "ksp.h" I*/
 /*@
-    KSPResidual - Computes the residual without making any assumptions
-    about the solution.  Uses the general iterative structure.
+   KSPResidual - Computes the residual without making any assumptions
+   about the solution.  Uses the general iterative structure.
 
-    Input parameters:
-.    vsoln - solution to use in computing residual
-.    vt1,2 - temps that are needed
-.    vres  - calculated residual
-.    vbinvf- the result of binv^{-1} b.  If null, don't do it
-.    vb    - right-hand-side to use
+   Input Parameters:
+.  vsoln    - solution to use in computing residual
+.  vt1, vt2 - temporary work vectors
+.  vres     - calculated residual
+.  vbinvf   - the result of binv^{-1} b.  If null, don't do it.
+.  vb       - right-hand-side vector
 
-    Notes:
-    This routine assumes that an iterative method, designed for
-$            A x = b
-    will be used with a preconditioner, C, such that the actual problem is
-$            M u = f    
-    where M = AC (right preconditioning) or CA (left preconditioning).
- @*/
+   Notes:
+   This routine assumes that an iterative method, designed for
+$     A x = b
+   will be used with a preconditioner, C, such that the actual problem is
+$     M u = f    
+   where M = AC (right preconditioning) or CA (left preconditioning).
+
+   Keywords:  KSP, residual
+@*/
 int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
   Scalar one = -1.0;
@@ -66,15 +67,17 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 }
 
 /*@
-  KSPUnwindPre - Unwinds the preconditioning in the solution.
+   KSPUnwindPre - Unwinds the preconditioning in the solution.
 
-  Input Parameters:
-. itP  - iterative context
-. vsoln - solution vector 
-. vt1   - temporary vector
+   Input Parameters:
+.  itP  - iterative context
+.  vsoln - solution vector 
+.  vt1   - temporary vector
 
-  Output Parameter:
-. vsoln - contains solution on output  
+   Output Parameter:
+.  vsoln - contains solution on output  
+
+   Keywords:  KSP, unwind, preconditioner
 @*/
 int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
 {
