@@ -83,8 +83,6 @@ class Linker(config.compile.processor.Processor):
     import sys
 
     base, ext = os.path.splitext(source)
-    if shared:
-      return base+'.so'
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       return base+'.exe'
     return base
