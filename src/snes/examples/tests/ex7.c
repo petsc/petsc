@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.11 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.13 1995/10/29 18:43:14 curfman Exp $";
 #endif
 
-static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\
- Matrix free with user provided explicit preconditioner matrix\n\n";
+static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
+ matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
 
 #include "draw.h"
 #include "snes.h"
@@ -91,31 +91,31 @@ int main( int argc, char **argv )
 
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-   Scalar *xx, *ff,*FF,d;
-   int    i, ierr, n;
-   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-   ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
-   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
-   d = (double) (n - 1); d = d*d;
-   ff[0]   = -xx[0];
-   for ( i=1; i<n-1; i++ ) {
-     ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
-   }
-   ff[n-1] = -xx[n-1] + 1.0;
-   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
-   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
-   return 0;
+  Scalar *xx, *ff,*FF,d;
+  int    i, ierr, n;
+  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
+  ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
+  d = (double) (n - 1); d = d*d;
+  ff[0]   = -xx[0];
+  for ( i=1; i<n-1; i++ ) {
+    ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
+  }
+  ff[n-1] = -xx[n-1] + 1.0;
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
+  ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
+  return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
 
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
-   int    ierr;
-   Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
-   return 0;
+  int    ierr;
+  Scalar pfive = .50;
+  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+  return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
@@ -125,31 +125,27 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  Scalar *xx, A, d;
-  int    i, n, j, ierr;
+  Scalar *xx, A[3], d;
+  int    i, n, j[3], ierr;
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  ierr =  VecGetSize(x,&n); CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
-  i = 0; A = 1.0; 
 
   /* do nothing with Jac since it is Matrix-free */
-  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+  i = 0; A[0] = 1.0; 
+  ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
   for ( i=1; i<n-1; i++ ) {
-    A = d; 
-    j = i - 1; 
-    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
-    j = i + 1; 
-    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
-    A = -2.0*d + 2.0*xx[i];
-    j = i + 1; 
-    ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+    ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
   }
-  i = n-1; A = 1.0; 
-  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+  i = n-1; A[0] = 1.0; 
+  ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
+
   return 0;
 }
 /* --------------------  User-defined monitor ----------------------- */
