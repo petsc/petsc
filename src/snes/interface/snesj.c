@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.35 1996/09/25 02:47:13 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.36 1996/10/30 18:04:19 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -30,7 +30,7 @@ $  -snes_fd
 
 .keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian(), SNESTestJacobian()
+.seealso: SNESSetJacobian()
 @*/
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
@@ -132,7 +132,7 @@ $  -snes_fd
 
 .keywords: SNES, finite differences, Hessian
 
-.seealso: SNESSetHessian(), SNESTestHessian()
+.seealso: SNESSetHessian()
 @*/
 int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
