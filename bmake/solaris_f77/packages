@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1998/07/01 20:22:32 balay Exp balay $ 
+# $Id: base.site,v 1.3 1998/07/02 21:41:28 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -6,11 +6,6 @@
 #  The following naming convention is used:
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
-#
-# FC_LIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes).  
-#
-FC_LIB         = -L/opt/SUNWspro/SC4.2/lib -lf90 -lF77 -lM77 -lsunmath 
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
