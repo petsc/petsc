@@ -1,20 +1,19 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.15 1996/01/23 00:20:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.16 1996/01/24 17:53:26 curfman Exp curfman $";
 #endif
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations in parallel.  This example uses matrix free Krylov\n\
-Newton methods with no preconditioner.\n\
-The Bratu (SFI - solid fuel ignition) test problem\n\
-is solved.  The command line options are:\n\
+nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
+Newton methods with no preconditioner to solve the Bratu (SFI - solid fuel\n\
+ignition) test problem. The command line options are:\n\
    -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
    -mx <xg>, where <xg> = number of grid points in the x-direction\n\
    -my <yg>, where <yg> = number of grid points in the y-direction\n\
-   -mz <zg>, where <zg> = number of grid points in the y-direction\n\n";
+   -mz <zg>, where <zg> = number of grid points in the z-direction\n\n";
 
 /*  
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
