@@ -323,28 +323,49 @@ class Configure:
     return self.framework.filterCompileOutput(output)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1):
+    '''KNOWN BUG: The wait() can hang if the error list is too long for the buffer. I need to get a better control structure here
+       - Rusty says put select in a loop, and you know the process closed its pipe when you get an empty result,
+         then wait on the pid with NOHANG to prevent zombies
+       - It sounds like I could just take some code from MPD here, but that will have to wait I guess'''
     command = self.getCompilerCmd()
     self.framework.outputHeader(self.compilerDefines)
-    f = file(self.compilerSource, 'w')
+    ret = None
+    out = ''
+    f   = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
     input.close()
-    ret = None
+
+    while 1:
+      ready = select.select([err], [], [], 0.1)
+      if len(ready[0]):
+        error = ready[0][0].read()
+        if error:
+          # Log failure of compiler
+          out += error
+        else:
+          break
+    err.close()
+    output.close()
     if pipe:
+      # We would like the NOHANG argument here
       ret = pipe.wait()
-    out   = ''
-    ready = select.select([err], [], [], 0.1)
-    if len(ready[0]):
-      # Log failure of compiler
-      out = ready[0][0].read()
+
+##    if pipe:
+##      ret = pipe.wait()
+##    ready = select.select([err], [], [], 0.1)
+##    if len(ready[0]):
+##      # Log failure of compiler
+##      out = ready[0][0].read()
+##    err.close()
+##    output.close()
+
     if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
-    err.close()
-    output.close()
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
