@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.14 1995/08/07 18:54:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.15 1995/08/07 22:01:23 bsmith Exp curfman $";
 #endif
 
 
@@ -151,8 +151,10 @@ int ViewerFileOpenSync(char *name,MPI_Comm comm,Viewer *lab)
 $    FILE_FORMAT_DEFAULT - default
 $    FILE_FORMAT_MATLAB - Matlab format
 $    FILE_FORMAT_IMPL - implementation-specific format
+$    FILE_FORMAT_INFO - basic information about object
 $      (which is in many cases the same as the default)
-
+ 
+   These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
 .keywords: Viewer, file, set, format
