@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.181 1997/01/09 19:27:37 gropp Exp curfman $ 
+% $Id: part2.tex,v 1.182 1997/01/11 19:54:01 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4139,10 +4139,10 @@ The Fortran interface for several routines is as follows:
    IS  s
    DA  d
 
-   call VecGetArray(x,vxx,ixx,ierr)
-   call MatGetArray(A,vaa,iaa,ierr)
-   call ISGetIndices(s,vss,iss,ierr)
-   call DAGetGlobalIndices(d,nloc,vdd,idd,ierr)
+   call VecGetArray(x,xx_v,xx_i,ierr)
+   call MatGetArray(A,aa_v,aa_i,ierr)
+   call ISGetIndices(s,ss_v,ss_i,ierr)
+   call DAGetGlobalIndices(d,nloc,dd_v,dd_i,ierr)
 \end{verbatim}
 
 To access array elements directly, both the user-specified array and
