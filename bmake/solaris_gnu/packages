@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/09/14 18:31:09 balay Exp bsmith $ 
+# $Id: base.site,v 1.24 1999/11/05 14:42:55 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -86,5 +86,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-C_DYLIBPATH     =  ${CLINKER_SLFLAG}/home/alice/software/egcs/solaris/lib
-F_DYLIBPATH     =  ${FLINKER_SLFLAG}/home/alice/software/egcs/solaris/lib
+C_DYLIBPATH     =  ${CLINKER_SLFLAG}/home/alice/software/gcc-2.95.2/solaris/lib
+F_DYLIBPATH     =  ${FLINKER_SLFLAG}/home/alice/software/gcc-2.95.2/solaris/lib
