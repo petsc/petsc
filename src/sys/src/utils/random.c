@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.39 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.40 1998/05/18 19:25:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -274,8 +274,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
     if (r->iset == PETSC_TRUE) *val = (PetscImaginary(r->width)*rand()/(double)RAND_MAX+PetscImaginary(r->low))*PETSC_i;
     else                       *val = rand()/(double)RAND_MAX*PETSC_i;
-  }
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid random number type");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid random number type");
 #else
   if (r->iset == PETSC_TRUE) *val = r->width * rand()/(double)RAND_MAX + r->low;
   else                       *val = rand()/(double)RAND_MAX;
