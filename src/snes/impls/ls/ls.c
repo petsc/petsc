@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.70 1996/08/12 03:42:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.71 1996/08/23 20:36:09 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -518,7 +518,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   double  tmp;
   int     ierr,flg;
 
-  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_alpa",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_alpha",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ls->alpha = tmp;
   }
