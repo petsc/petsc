@@ -1,12 +1,13 @@
 
-C    "$Id: ex1f90.F,v 1.1 1997/01/17 03:00:20 bsmith Exp bsmith $"
+C    "$Id: ex1f90.F,v 1.2 1997/01/22 18:41:37 bsmith Exp curfman $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
+C   Concepts: Fortran90;
 C   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
 C   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
 C   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-C   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecsF90();VecDuplicateVecsF90();
+C   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecsF90(); VecDuplicateVecsF90();
 C   Processors: n
 CT*/
 C
@@ -23,7 +24,7 @@ C  The following include statements are required for Fortran programs
 C  that use PETSc vectors:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
-C     vec.h90  - to allow access to Fortran 90 features of PETSc
+C     vec.h90  - to allow access to Fortran90 features of vectors
 C
 C  Additional include statements may be needed if using additional
 C  PETSc routines in a Fortran program, e.g.,
