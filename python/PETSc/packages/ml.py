@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-3.1-pre.tar.gz']
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['ML_Set_PrintLevel']
     self.includes     = ['ml_include.h']
@@ -74,7 +74,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+' new args '+args+'\n')
       try:
         self.logPrint("Configuring ml; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo --disable-ml-examples', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML

@@ -48,9 +48,10 @@ typedef struct {
   PetscErrorCode (*PCSetUp)(PC);
   PetscErrorCode (*PCDestroy)(PC);
 } PC_ML;
-extern int PetscML_getrow(void *ML_data,int N_requested_rows,int requested_rows[],
-            int allocated_space,int columns[],double values[],int row_lengths[]);
-extern int PetscML_matvec(void *ML_data, int in_length, double p[], int out_length,double ap[]);
+
+extern int PetscML_getrow(ML_Operator *ML_data,int N_requested_rows,int requested_rows[],
+   int allocated_space,int columns[],double values[],int row_lengths[]);
+extern int PetscML_matvec(ML_Operator *ML_data, int in_length, double p[], int out_length,double ap[]);
 extern int PetscML_comm(double x[], void *ML_data);
 extern PetscErrorCode MatMult_ML(Mat,Vec,Vec);
 extern PetscErrorCode MatMultAdd_ML(Mat,Vec,Vec,Vec);
@@ -436,7 +437,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 }
 EXTERN_C_END
 
-int PetscML_getrow(void *ML_data, int N_requested_rows, int requested_rows[],
+int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int requested_rows[],
    int allocated_space, int columns[], double values[], int row_lengths[])
 {
   PetscErrorCode ierr;
@@ -444,7 +445,7 @@ int PetscML_getrow(void *ML_data, int N_requested_rows, int requested_rows[],
   Mat_SeqAIJ     *a;
   PetscInt       m,i,j,k=0,row,*aj;
   PetscScalar    *aa;
-  FineGridCtx    *ml=(FineGridCtx*)ML_data;
+  FineGridCtx    *ml=(FineGridCtx*)ML_Get_MyGetrowData(ML_data);
 
   Aloc = ml->Aloc;
   a    = (Mat_SeqAIJ*)Aloc->data;
@@ -466,10 +467,10 @@ int PetscML_getrow(void *ML_data, int N_requested_rows, int requested_rows[],
   return(1);
 }
 
-int PetscML_matvec(void *ML_data,int in_length,double p[],int out_length,double ap[])
+int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_length,double ap[])
 {
   PetscErrorCode ierr;
-  FineGridCtx    *ml=(FineGridCtx*)ML_data;
+  FineGridCtx    *ml=(FineGridCtx*)ML_Get_MyMatvecData(ML_data);
   Mat            A=ml->A, Aloc=ml->Aloc; 
   PetscMPIInt    size;
   PetscScalar    *pwork=ml->pwork; 
