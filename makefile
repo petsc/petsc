@@ -327,11 +327,12 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
-	-maint/update-docs.py ${LOC}
 
 # Builds .html versions of the source
+# html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
-	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
+	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC
+	-maint/update-docs.py ${LOC}
 
 alldocclean: deletemanualpages allcleanhtml
 
