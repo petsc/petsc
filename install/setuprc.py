@@ -24,7 +24,7 @@ def setupRC(path):
   f.write(contents)
   f.close()
 
-  sys.path.append(path)
+  sys.path.insert(0, path)
   
 if __name__ ==  '__main__':
   setupRC('hi')

@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-
 import os
 import sys
 
-
 if __name__ == '__main__':
   import setuprc
-  setuprc.setupRC(os.path.split(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__)))[0])
+  setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__))))
 
   import installerclass
   installer   = installerclass.Installer(sys.argv[1:])
