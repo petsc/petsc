@@ -22,3 +22,6 @@ Nightly build:
      uses at to start itself up again 24 hours later.
 
   The password is in petsc/maint/autoftp
+
+Location of email sent to petsc-maint
+/mcs/adm/request/petsc-maint/ active and resolved.
