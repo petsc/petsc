@@ -16,25 +16,25 @@ Satish - Make sure one can run block Jacobi on several matrices with number of r
 
  - Test mpiuni on DEC alpha, document any changes needed for it to work.
 
-Lois - Add info about which library components do what.  Mention SLES_LIB.
-
- - Add table of all preconditioners and options to PETSc manual.
-
-Lois  - add info about help message printout to section 12.1 (version 2.0.15)
-    of users manual.
-
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
        Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
 
-Lois - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
+Satish NT stuff
 
 Lois  - Add SLES example showing multiple linear solves with same matrices but
     difference RHS.
 
-Satish NT stuff
+Lois - Add table of all preconditioners and options to PETSc manual.
+
+Lois - Add info about which library components do what.  Mention SLES_LIB.
+
+Lois  - add info about help message printout to section 12.1 (version 2.0.15)
+    of users manual.
+
+Lois - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
@@ -50,7 +50,7 @@ Satish NT stuff
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
 
- - investigate Said's ILUDT
+ - investigate Saad's ILUDT
 
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
