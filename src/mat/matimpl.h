@@ -15,7 +15,7 @@ struct _MatOps {
             (*lufactor)(Mat,IS,IS),(*chfactor)(Mat,IS),
             (*relax)(Mat,Vec,double,int,double,int,Vec),
             (*trans)(Mat),
-            (*NZ)(Mat,int*),(*memory)(Mat,int*),(*equal)(Mat,Mat),
+            (*NZ)(Mat,int*,int*),(*memory)(Mat,int*),(*equal)(Mat,Mat),
             (*copy)(Mat,Mat*),
             (*getdiag)(Mat,Vec),(*scale)(Mat,Vec,Vec),(*norm)(Mat,int,double*),
             (*bassembly)(Mat),(*eassembly)(Mat),(*compress)(Mat),
