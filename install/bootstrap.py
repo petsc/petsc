@@ -83,16 +83,63 @@ class BootstrapInstall (object):
         return 0
     return 1
 
+  def cleanup(self):
+    '''Kill all remaining RDict servers and cleanup aborted attempts'''
+    import signal
+    import time
+
+    if not os.path.isdir('/proc'):
+      sys.stdout.write('WARNING: Cannot kill rouge RDict servers\n')
+      return
+    # Kill RDict servers
+    pids = []
+    for f in os.listdir('/proc'):
+      try:
+        cmdline = os.path.join('/proc', str(int(f)), 'cmdline')
+        if os.path.isfile(cmdline) and 'RDict' in file(cmdline).read():
+          pids.append(int(f))
+          sys.stdout.write('Killing RDict server '+str(pids[-1])+'\n')
+          os.kill(pids[-1], signal.SIGTERM)
+          time.sleep(1)
+      except ValueError:
+        pass
+    for f in os.listdir('/proc'):
+      try:
+        if 'RDict' in file(os.path.join('/proc', str(int(f)), 'cmdline')).read():
+          raise RuntimeError('Unable to kill RDict server: '+str(int(f)))
+      except ValueError:
+        pass
+    # Remove old PLY, Runtime and Compiler downloads
+    import shutil
+
+    plyDir = os.path.join(self.installPath, 'ply', 'ply-dev')
+    if os.path.isdir(plyDir):
+      shutil.rmtree(plyDir, 1)
+    runtimeDir = os.path.join(self.installPath, 'sidl', 'Runtime')
+    if os.path.isdir(runtimeDir):
+      shutil.rmtree(runtimeDir, 1)
+    compilerDir = os.path.join(self.installPath, 'sidl', 'Compiler')
+    if os.path.isdir(compilerDir):
+      shutil.rmtree(compilerDir, 1)
+    return
+
   def installBuildSystem(self):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
     # Should really check that it is functioning here
-    if not os.path.isdir('sidl/BuildSystem'):
+    bsDir = os.path.join('sidl', 'BuildSystem')
+    if not os.path.isdir(bsDir):
       if not os.path.isdir('sidl'): os.makedirs('sidl')
       (status, self.errorString) = commands.getstatusoutput(self.bkPath+'/bk clone bk://sidl.bkbits.net/BuildSystem sidl/BuildSystem')
       if status:
         # TODO: Log error
         return 0
+    else:
+      # Remove any existing RDict.loc
+      lockFile = os.path.join(bsDir, 'RDict.loc')
+      if os.path.isfile(lockFile):
+        sys.stdout.write('Removing old RDict lock file '+lockFile+'\n')
+        os.remove(lockFile)
     return 1
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -368,6 +415,7 @@ if __name__ ==  '__main__':
     sys.exit('Could not locate Bitkeeper')
   if not installer.createInstallDirectory():
     sys.exit('Could not create installation directory '+installer.installPath)
+  installer.cleanup()
   if not installer.installBuildSystem():
     sys.exit('Could not install BuildSystem')
   # Handoff to installer

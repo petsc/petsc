@@ -32,6 +32,7 @@ def setupASESection(lines, path):
     if line == aseMarker:
       foundASE = 1
       skipASE  = not skipASE
+      continue
     if skipASE:
       continue
     if foundASE:

@@ -550,11 +550,13 @@ class Framework(base.Base):
       if 'activate' in target:
         self.executeTarget('activate')
         target.remove('activate')
+        if not len(target): return
       self.setupDependencies()
       self.setupSourceDB(self.project)
       if 'configure' in target:
         self.executeTarget('configure')
         target.remove('configure')
+        if not len(target): return
       self.setupBuild()
       self.stampBuild()
       map(self.executeTarget, target)
