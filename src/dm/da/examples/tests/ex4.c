@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.18 1996/03/10 17:29:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.19 1996/03/19 21:29:46 bsmith Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -24,28 +24,32 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
  
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);CHKERRA(ierr);
-  OptionsHasName(PETSC_NULL,"-xwrap",&flg); if (flg) wrap = DA_XPERIODIC;
-  OptionsHasName(PETSC_NULL,"-ywrap",&flg); if(flg)  wrap = DA_YPERIODIC;
-  OptionsHasName(PETSC_NULL,"-xywrap",&flg); if(flg) wrap = DA_XYPERIODIC;
-  OptionsHasName(PETSC_NULL,"-star",&flg); if(flg)   st = DA_STENCIL_STAR;
+  /* Read options */
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-xwrap",&flg); CHKERRA(ierr); if (flg)  wrap = DA_XPERIODIC;
+  ierr = OptionsHasName(PETSC_NULL,"-ywrap",&flg); CHKERRA(ierr); if (flg)  wrap = DA_YPERIODIC;
+  ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg); CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
+  ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
 
+  /* Create distributed array */
   ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
+  ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  /* Set global vector; send ghost points to local vectors */
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
-
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
+  /* Scale local vectors according to processor rank; pass to global vector */
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   value = rank;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
@@ -54,16 +58,24 @@ int main(int argc,char **argv)
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   PetscPrintf (MPI_COMM_WORLD,"\n\n");
 
+  /* Send ghost points to local vectors */
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  PetscPrintf (MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",rank);
+  flg = 0;
+  ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg); CHKERRA(ierr);
+  if (flg) {
+    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+    printf("\nLocal Vector: processor %d\n",rank);
+    ierr = VecView(local,STDOUT_VIEWER_SELF); CHKERRA(ierr); 
+    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+  }
 
-  ierr = DAView(da,viewer); CHKERRA(ierr);
-  ierr = DADestroy(da); CHKERRA(ierr);
+  /* Free memory */
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
