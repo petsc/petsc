@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: utils.c,v 1.8 1997/05/07 16:25:49 curfman Exp $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.1 1997/07/04 03:35:30 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -68,6 +67,9 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   return 0;
 }
 
+extern int VecDot_Seq(Vec,Vec,Scalar *);
+extern int VecNorm_Seq(Vec,NormType,double *);
+
 #undef __FUNC__  
 #define __FUNC__ "SNESMatrixFreeMult2_Private"
 /*
@@ -82,21 +84,24 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin, noise;
+  double        norm, sum, umin, noise, ovalues[3],values[3];
   Scalar        h, dot, mone = -1.0;
   Vec           w,U,F;
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
+  MPI_Comm      comm;
 
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
-  snes = ctx->snes;
-  w    = ctx->w;
-  umin = ctx->umin;
 
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
   PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
+
+  PetscObjectGetComm((PetscObject)mat,&comm);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  snes = ctx->snes;
+  w    = ctx->w;
+  umin = ctx->umin;
 
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -127,9 +132,46 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
         ctx->need_err = 0;
       }
+
+      /*
       ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
       ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
       ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+      */
+
+     /*
+        Call the Seq Vector routines and then do a single reduction 
+        to reduce the number of communications required
+     */
+   
+#if !defined(PETSC_COMPLEX)
+     PLogEventBegin(VEC_Dot,U,a,0,0);
+     ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
+     PLogEventEnd(VEC_Dot,U,a,0,0);
+     PLogEventBegin(VEC_Norm,a,0,0,0);
+     ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
+     ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
+     ovalues[2] = ovalues[2]*ovalues[2];
+     MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );
+     dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
+     PLogEventEnd(VEC_Norm,a,0,0,0);
+#else
+     {
+       Scalar cvalues[3],covalues[3];
+   
+       PLogEventBegin(VEC_Dot,U,a,0,0);
+       ierr = VecDot_Seq(U,a,covalues); CHKERRQ(ierr);
+       PLogEventEnd(VEC_Dot,U,a,0,0);
+       PLogEventBegin(VEC_Norm,a,0,0,0);
+       ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
+       ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
+       covalues[1] = ovalues[1];
+       covalues[2] = ovalues[2]*ovalues[2];
+       MPI_Allreduce(covalues,cvalues,6,MPI_DOUBLE,MPI_SUM,comm );
+       dot = cvalues[0]; sum = PetscReal(cvalues[1]); norm = sqrt(PetscReal(cvalues[2]));
+       PLogEventEnd(VEC_Norm,a,0,0,0);
+     }
+#endif
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
@@ -187,9 +229,8 @@ $        error_rel = square root of relative error in
 $                    function evaluation
 $        umin = minimum iterate parameter
 $   Alternatively, the differencing parameter, h, can be set using
-$   Jorge's nifty new strategy if the option 
-$          -matrix_free_jorge
-#   is used.
+$   Jorge's nifty new strategy if one specifies the option 
+$          -snes_mf_jorge
 
    The user can set these parameters via SNESSetMatrixFreeParameters().
    See the nonlinear solvers chapter of the users manual for details.
@@ -198,9 +239,10 @@ $          -matrix_free_jorge
    matrix context.
 
    Options Database Keys:
+$  -snes_mf_compute_err
 $  -snes_mf_err <error_rel>
 $  -snes_mf_unim <umin>
-$  -matrix_free_jorge
+$  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
 
@@ -224,8 +266,8 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
   mfctx->need_err  = 0;
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-matrix_free_jorge",&mfctx->jorge); CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-compute_err",&mfctx->need_err); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->need_err); CHKERRQ(ierr);
   if (mfctx->jorge || mfctx->need_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data); CHKERRQ(ierr);
   } else mfctx->data = 0;
@@ -234,7 +276,8 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
   PetscStrcpy(p,"-");
   if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
-    PetscPrintf(snes->comm,"   -matrix_free_jorge: use Jorge More's method\n");
+    PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt rel error in function\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
     PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin>: see users manual (default %g)\n",p,mfctx->umin);
   }
