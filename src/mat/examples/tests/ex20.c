@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex20.c,v 1.12 2000/02/16 16:25:42 balay Exp balay $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 int main(int argc,char **args)
 {
   Mat        C,A; 
-  int        i,j,m = 5,n = 4,I,J,ierr,rank;
+  int        i,j,m = 5,n = 4,I,J,ierr,rank,size;
   PetscTruth set;
   Scalar     v;
   MatType    mtype;
