@@ -41,6 +41,44 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESVecViewResidualMonitor"
+/*@C
+   SNESVecViewResidualMonitor - Monitors progress of the SNES solvers by calling 
+   VecView() for the residual at each iteration.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, vector, monitor, view
+
+.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
+@*/
+int SNESVecViewResidualMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+{
+  int         ierr;
+  Vec         x;
+  PetscViewer viewer = (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes,&x,0,0);CHKERRQ(ierr);
+  if (!viewer) {
+    MPI_Comm comm;
+    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    viewer = PETSC_VIEWER_DRAW_(comm);
+  }
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESVecViewUpdateMonitor"
 /*@C
    SNESVecViewUpdateMonitor - Monitors progress of the SNES solvers by calling 

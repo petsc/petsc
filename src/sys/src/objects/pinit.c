@@ -122,6 +122,64 @@ void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 }
 EXTERN_C_END
 
+/* ----------------------------------------------------------------------------*/
+MPI_Op PetscADMax_Op = 0;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PetscADMax_Local"
+void PetscADMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+{
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  int         i,count = *cnt;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+
+  for (i=0; i<count/2; i++) {
+    if (xout[2*i] < xin[2*i]) {
+      xout[2*i]   = xin[2*i];
+      xout[2*i+1] = xin[2*i+1];
+    }
+  }
+
+  PetscStackPop;
+  return;
+}
+EXTERN_C_END
+
+MPI_Op PetscADMin_Op = 0;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PetscADMin_Local"
+void PetscADMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+{
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  int         i,count = *cnt;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+
+  for (i=0; i<count/2; i++) {
+    if (xout[2*i] > xin[2*i]) {
+      xout[2*i]   = xin[2*i];
+      xout[2*i+1] = xin[2*i+1];
+    }
+  }
+
+  PetscStackPop;
+  return;
+}
+EXTERN_C_END
+/* ---------------------------------------------------------------------------------------*/
+
 #if defined(PETSC_USE_COMPLEX)
 MPI_Op PetscSum_Op = 0;
 
@@ -325,6 +383,10 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
      half of the entries and maxes the second half.
   */
   ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
+
+  ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
+
   /*
      Build the options database and check for user setup requests
   */

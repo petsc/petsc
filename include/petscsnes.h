@@ -132,6 +132,7 @@ EXTERN int SNESDefaultMonitor(SNES,int,PetscReal,void *);
 EXTERN int SNESRatioMonitor(SNES,int,PetscReal,void *);
 EXTERN int SNESSetRatioMonitor(SNES);
 EXTERN int SNESVecViewMonitor(SNES,int,PetscReal,void *);
+EXTERN int SNESVecViewResidualMonitor(SNES,int,PetscReal,void *);
 EXTERN int SNESVecViewUpdateMonitor(SNES,int,PetscReal,void *);
 EXTERN int SNESDefaultSMonitor(SNES,int,PetscReal,void *);
 EXTERN int SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,int,int);

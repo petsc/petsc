@@ -77,7 +77,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
 }
 
 /*
-     Checks if J^T(F - AX) = 0 
+     Checks if J^T(F - J*X) = 0 
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLSCheckResidual_Private"
@@ -223,11 +223,19 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
+    PetscLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
+
+
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    snes->iter = i+1;
+    snes->norm = fnorm;
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    SNESLogConvHistory(snes,fnorm,lits);
+    SNESMonitor(snes,i+1,fnorm);
 
     if (lsfail) {
       PetscTruth ismin;
@@ -239,13 +247,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
         break;
       }
     } 
-
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-    snes->iter = i+1;
-    snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,fnorm,lits);
-    SNESMonitor(snes,i+1,fnorm);
 
     /* Test for convergence */
     if (snes->converged) {
@@ -580,9 +581,9 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
 #endif
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
+  if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%g\n",lambda);
+    PetscLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%18.16e\n",lambda);
     goto theend1;
   }
 
@@ -591,7 +592,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
-      PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
+      PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
@@ -621,12 +622,12 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
 #endif
     ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
+    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
-      PetscLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%g\n",lambda);
+      PetscLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%18.16e\n",lambda);
       goto theend1;
     } else {
-      PetscLogInfo(snes,"SNESCubicLineSearch: Cubic step no good, shrinking lambda,  lambda=%g\n",lambda);
+      PetscLogInfo(snes,"SNESCubicLineSearch: Cubic step no good, shrinking lambda,  lambda=%18.16e\n",lambda);
     }
     count++;
   }
@@ -763,7 +764,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
+    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
       break;

@@ -152,6 +152,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
+        SNESMonitor(snes,i+1,fnorm);
         breakout = 1;
         break;
       }

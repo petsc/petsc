@@ -251,12 +251,16 @@ int PCSORSetOmega(PC pc,PetscReal omega)
 
    Input Parameters:
 +  pc - the preconditioner context
--  its - number of iterations to use
+.  lits - number of local iterations, smoothings over just variables on processor
+-  its - number of parallel iterations to use; each parallel iteration has lits local iterations
 
    Options Database Key:
-.  -pc_sor_its <its> - Sets number of iterations
++  -pc_sor_its <its> - Sets number of iterations
+-  -pc_sor_lits <lits> - Sets number of local iterations
 
    Level: intermediate
+
+   Notes: When run on one processor the number of smoothings is lits*its
 
 .keywords: PC, SOR, SSOR, set, iterations
 

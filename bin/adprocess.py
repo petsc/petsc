@@ -32,13 +32,15 @@ from parseargs import *
 def setupfunctionC(filename):
         import re
         regtypedef = re.compile('typedef [ ]*struct')
+        regdefine = re.compile('#define')
+        regdefine__ = re.compile('#define [ ]*__FUNCT__')
 	newfile = filename + ".tmp"
 	f = open(filename)
 	g = open(newfile,"w")
         g.write("#include <math.h>\n")
 	line = f.readline()
 	while line:
-                line = lstrip(line)+" "
+#                line = lstrip(line)+" "
                 fl = regtypedef.search(line)
                 if fl:
                         struct = line
@@ -69,6 +71,12 @@ def setupfunctionC(filename):
                                 line = reg.sub('',line)
                                 print "Extracting structure "+line
                         g.write(struct)
+                fl = regdefine.search(line)
+                if fl:
+		        fl = regdefine__.search(line)
+			if not fl:
+                                g.write(line)
+
 		line = f.readline()
 	f.close()
         return g

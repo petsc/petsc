@@ -571,7 +571,7 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
 
    Input Parameters:
 +  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
--  flg - PETSC_TRUE or PETSC_FALSE
+-  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
 
    Level: beginner
 

@@ -278,6 +278,8 @@ int SNESSetFromOptions(SNES snes)
     if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_vecmonitor_update","Plot correction at each iteration","SNESVecViewUpdateMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewUpdateMonitor,0,0);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_vecmonitor_residual","Plot residual at each iteration","SNESVecViewResidualMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewResidualMonitor,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_xmonitor","Plot function norm at each iteration","SNESLGMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
