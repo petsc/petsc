@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.29 1997/02/20 00:39:50 balay Exp balay $ */
+/* $Id: ptime.h,v 1.30 1997/02/21 17:29:46 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -137,7 +137,7 @@ extern rs6000_time(struct timestruc_t *);
 
 #elif defined(PARCH_nt_gnu)
 #include <time.h>
-extern double nt_gnu_time()
+extern double nt_gnu_time();
 #define PetscTime(v)         (v)=nt_gnu_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_gnu_time();
