@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.10 1996/01/01 01:03:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.11 1996/01/12 03:53:14 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mpiaijpc.c,v 1.10 1996/01/01 01:03:18 bsmith Exp bsmi
 #include "sles.h"
 
 typedef struct {
-  Vec  x;
+  Vec  x, y;
 } PC_BJacobiMPIAIJ;
 
 int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
@@ -26,6 +26,7 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
   ierr = SLESDestroy(jac->sles[0]); CHKERRQ(ierr);
   PetscFree(jac->sles);
   ierr = VecDestroy(bjac->x); CHKERRQ(ierr);
+  ierr = VecDestroy(bjac->y); CHKERRQ(ierr);
   if (jac->l_lens) PetscFree(jac->l_lens);
   if (jac->g_lens) PetscFree(jac->g_lens);
   if (jac->l_true) PetscFree(jac->l_true);
@@ -39,7 +40,7 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
   int              ierr,its;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
-  Scalar           *array,*true_array;
+  Scalar           *x_array,*x_true_array, *y_array,*y_true_array;
 
   /* 
       The VecPlaceArray() is to avoid having to copy the 
@@ -47,11 +48,15 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(y,&array); CHKERRQ(ierr);
-  ierr = VecGetArray(bjac->x,&true_array); CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->x,array); CHKERRQ(ierr);
-  ierr = SLESSolve(jac->sles[0],x,bjac->x,&its); CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->x,true_array); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&x_array); CHKERRQ(ierr);
+  ierr = VecGetArray(y,&y_array); CHKERRQ(ierr);
+  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr);
+  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr);
+  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->y,y_true_array); CHKERRQ(ierr);
 
   return 0;
 }
@@ -64,7 +69,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   Mat_MPIAIJ       *matin = 0;
   int              ierr, m;
   SLES             sles;
-  Vec              x;
+  Vec              x,y;
   PC_BJacobiMPIAIJ *bjac;
   KSP              subksp;
   PC               subpc;
@@ -92,7 +97,9 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
 */
     ierr = MatGetSize(pmatin->A,&m,&m); CHKERRQ(ierr);
     ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,m,&y); CHKERRQ(ierr);
     PLogObjectParent(pmat,x);
+    PLogObjectParent(pmat,y);
 
     pc->destroy  = PCDestroy_BJacobiMPIAIJ;
     pc->apply    = PCApply_BJacobiMPIAIJ;
@@ -100,6 +107,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     bjac         = (PC_BJacobiMPIAIJ *) PetscMalloc(sizeof(PC_BJacobiMPIAIJ));CHKPTRQ(bjac);
     PLogObjectMemory(pc,sizeof(PC_BJacobiMPIAIJ));
     bjac->x      = x;
+    bjac->y      = y;
 
     jac->sles    = (SLES*) PetscMalloc( sizeof(SLES) ); CHKPTRQ(jac->sles);
     jac->sles[0] = sles;
@@ -116,7 +124,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   else
     ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag);
   CHKERRQ(ierr);
-
+  ierr = SLESSetUp(sles,bjac->x,bjac->y); CHKERRQ(ierr);
   return 0;
 }
 
