@@ -6,7 +6,7 @@ package PETSc {
     void setType(in string typeName);
 
     // Get the object name
-    void getName(out string name);
+    string getName();
     // Set the object name
     void setName(in string name);
 
@@ -45,17 +45,17 @@ package PETSc {
 
   class PetscMap implements PetscObject {
     // Get the size of the locally-owned portion
-    void getLocalSize(out int localSize);
+    int getLocalSize();
     // Set the size of the locally-owned portion
     void setLocalSize(in int localSize);
     // Get the total size
-    void getSize(out int size);
+    int getSize();
     // Set the total size
     void setSize(in int size);
     // Get the half-open interval of local indices
     void getLocalRange(out int start, out int end);
     // Get the ranges for all processors (range[rank] <= local index < range[rank+1])
-    void getGlobalRange(out array<int> range);
+    array<int>:range getGlobalRange();
   }
 
   enum NormType {NORM_1, NORM_2, NORM_FROBENIUS, NORM_INFINITY, NORM_1_AND_2};
@@ -66,15 +66,15 @@ package PETSc {
     // Set the local and global storage sizes
     void setSizes(in int n, in int N);
     // result = y^H self
-    void dot(in Vec y, out double result);
+    double dot(in Vec y);
     // result = y^T self
-    void tDot(in Vec y, out double result);
+    double tDot(in Vec y);
     // result = ||self||
-    void norm(in NormType normType, out double result);
+    double norm(in NormType normType);
     // result = ||self|| and vector is normalized
-    void normalize(out double result);
+    double normalize();
     // result = \sum_i self_i
-    void sum(out double result);
+    double sum();
     // Returns the maximum "value", which is found at index "position"
     void max(out int position, out double value);
     // Returns the minimum "value", which is found at index "position"
@@ -110,7 +110,7 @@ package PETSc {
     // self_i = x_i / y_i
     void pointwiseDivide(in Vec x, in Vec y);
     // result = max_i |x_i / y_i|
-    void maxPointwiseDivide(in Vec y, out double result);
+    double maxPointwiseDivide(in Vec y);
     // self_i = self_i + value
     void shift(in double value);
     // self_i = 1 / self_i
@@ -120,9 +120,9 @@ package PETSc {
     // self_i = |self_i|
     void abs();
     // Duplicates the vector (does not copy values)
-    void duplicate(out Vec dup);          
+    Vec duplicate();          
     // Return the layout of the vector
-    void getPetscMap(out PetscMap map);
+    PetscMap getPetscMap();
     // Set values into the vector
     void setValues(in array<int> indices, in array<double> values, in InsertMode mode);
     // Start parallel assembly
@@ -130,17 +130,17 @@ package PETSc {
     // Finish parallel assembly
     void assemblyEnd();
     // Get the block size
-    void getBlockSize(out int size);
+    int getBlockSize();
     // Set the block size
     void setBlockSize(in int size);
     // Set values into the vector
     void setValuesBlocked(in array<int> indices, in array<double> values, in InsertMode mode);
     // Get the local storage
-    void getArray(out array<double> values);
+    array<double>:values getArray();
     // Return the local storage
     void restoreArray(inout array<double> values);
     // result = (self == y)
-    void equal(in Vec y, out bool result);
+    bool equal(in Vec y);
   }
 
   enum MatAssemblyType {MAT_FINAL_ASSEMBLY, MAT_FLUSH_ASSEMBLY};
@@ -190,7 +190,7 @@ package PETSc {
     // Set values into the matrix
     void setValuesBlockedStencil(in array<int> rowIndices, in array<int> colIndices, in array<double> values, in InsertMode mode);
     // Get the local storage
-    void getArray(out array<double> values);
+    array<double>:values getArray();
     // Return the local storage
     void restoreArray(inout array<double> values);
     // Begin the assembly phase
@@ -217,18 +217,18 @@ package PETSc {
     void getOwnershipRange(out int startRow, out int endRow);
     // Get the row and column layouts
     void getPetscMaps(out PetscMap rowLayout, out PetscMap colLayout);
-    // Getthe diagonal entires as a Vec
+    // Get the diagonal entires as a Vec
     void getDiagonal(in Vec diag);
     // Test for equality A = B
-    void equal(in Mat B, out bool isEqual);
+    bool equal(in Mat B);
     // Test for transpose identity A^T = B
-    void isTranspose(in Mat B, in double tol, out bool isTranpose);
+    bool isTranspose(in Mat B, in double tol);
     // Test for symmetry
-    void isSymmetric(in double tol, out bool isSymmetric);
+    bool isSymmetric(in double tol);
     // Test for structural symmetry
-    void isStructurallySymmetric(out bool isSymmetric);
+    bool isStructurallySymmetric();
     // Test for complex symmetry
-    void isHermitian(out bool isHermitian);
+    bool isHermitian();
 
     // Customize the matrix
     void setOption(in MatOption option);
@@ -270,7 +270,7 @@ package PETSc {
     // Apply the preconditioner M^{-T} x = y
     void applyTranspose(in Vec x, in Vec y);
     // Determine whether M^{-T} is available
-    void hasApplyTranspose(out bool hasTranspose);
+    bool hasApplyTranspose();
     // Apply M^{-T} to x and store the result in y
     void applyBAorABTranspose(in PCSide side, in Vec x, in Vec y, in Vec work);
     // Apply Richardson exstrapolation
@@ -308,11 +308,11 @@ package PETSc {
     // Set the matrix A and preconditioning matrix M
     void setOperators(in Mat A, in Mat M, in MatStructure flag);
     // Get the preconditioner
-    void getPC(out PC preconditioner);
+    PC getPC();
     // Set the preconditioner
     void setPC(in PC preconditioner);
     // Get the preconditioner application type
-    void getPreconditionerSide(out PCSide side);
+    PCSide getPreconditionerSide();
     // Set the preconditioner application type
     void setPreconditionerSide(in PCSide side);
     // Get the solution tolerances
@@ -320,30 +320,30 @@ package PETSc {
     // Set the solution tolerances
     void setTolerances(in double relativeTol, in double absoluteTol, in double divergenceTol, in int maxIterations);
     // Get the flag for a nonzero initial guess
-    void getInitialGuessNonzero(out bool nonzeroGuess);
+    bool getInitialGuessNonzero();
     // Set the flag for a nonzero initial guess
     void setInitialGuessNonzero(in bool nonzeroGuess);
     // Get the flag for computing eigenvalues of the reduced matrix
-    void getComputeEigenvalues(out bool computeEigenvalues);
+    bool getComputeEigenvalues();
     // Set the flag for computing eigenvalues of the reduced matrix
     void setComputeEigenvalues(in bool computeEigenvalues);
     // Get the flag for computing singular values of the reduced matrix
-    void getComputeSingularValues(out bool computeSingularvalues);
+    bool getComputeSingularValues();
     // Set the flag for computing singular values of the reduced matrix
     void setComputeSingularValues(in bool computeSingularValues);
 
     void setNormType(in KSPNormType normType);
 
     // Get the rhs
-    void getRhs(out Vec b);
+    Vec getRhs();
     // Get the solution
-    void getSolution(out Vec x);
+    Vec getSolution();
     // Get the norm of the residual b - A x
-    void getResidualNorm(out double residualNorm);
+    double getResidualNorm();
     // Get the number of iterates performed
-    void getIterationNumber(out int numIterates);
+    int getIterationNumber();
     // Get the reason for solver termination
-    void getConvergedReason(out KSPConvergedReason convergedReason);
+    KSPConvergedReason getConvergedReason();
   }
 
   // Convergence
@@ -405,6 +405,8 @@ package PETSc {
     SNESConvergedReason getConvergedReason();
     // Get the number of solver iterates
     int getIterationNumber();
+    // Get the number of linear solver iterates
+    int getNumberLinearIterations();
     // Get the residual norm
     double getFunctionNorm();
   }
