@@ -512,7 +512,7 @@ proc main { }  {
         if { $temp  != -1 } {
             set routine_name [string range  $routine 0 [expr $temp -1 ] ]
         } else {
-            set mesg "incorrect Routine: $routine "
+            set mesg "incorrect Routine: $routine from files  $RoutinesFile($routine)"
             puts stderr $mesg
             return 0
         }
