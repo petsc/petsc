@@ -94,7 +94,7 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
 int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
   int ierr;
   char funct[80];
-  int (*f)(Mat,Mat,Mat);
+  int (*f)(Mat,Mat,Mat*);
 
   PetscFunctionBegin;
 
@@ -123,7 +123,7 @@ int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
   if (!f) SETERRQ1(1,"MatSeqAIJPtAPSymbolic is not supported for A of type %s",A->type_name);
 
-  ierr = (*f)(A,P,*C);CHKERRQ(ierr);
+  ierr = (*f)(A,P,C);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
