@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.42 1999/10/01 21:20:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.43 1999/10/04 18:49:25 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -354,6 +354,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   char         *newpath;
 #endif
+  int          flag,f1,f2,f3;
  
   PetscFunctionBegin;
   *r = 0;
@@ -369,10 +370,19 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 #endif
 
   while (entry) {
-    if ((path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->rname)) ||
-        (path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->name)) ||
-        (!path &&  !PetscStrcmp(function,entry->name)) || 
-        (!path &&  !PetscStrcmp(function,entry->rname))) {
+    flag = 0;
+    if (path && entry->path) {
+      f1 = !PetscStrcmp(path,entry->path);
+      f2 = !PetscStrcmp(function,entry->rname);
+      f3 = !PetscStrcmp(function,entry->name);
+      flag =  (f1 && f2) || (f1 && f3);
+    } else if (!path) {
+      f1 = !PetscStrcmp(function,entry->name);
+      f2 = !PetscStrcmp(function,entry->rname);
+      flag =  f1 || f2;
+    }
+
+    if (flag) {
 
       if (entry->routine) {
         *r = entry->routine; 
