@@ -1,4 +1,4 @@
-# $Id: base,v 1.16 1998/04/26 00:48:10 balay Exp balay $ 
+# $Id: base,v 1.17 1998/04/26 00:54:09 balay Exp bsmith $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -26,7 +26,11 @@ SHELL    = /bin/sh
 # if you are running on plain IBM RS6000 workstations and replace it
 # with one of the above.
 #
-CLINKER  = mpcc ${COPTFLAGS} 
+#
+#   The IBM linker only allows memory usage up to 256 meg by default,
+# the flag -bmaxdata:0x70000000 is used to allow larger memory usage.
+#
+CLINKER  = mpcc ${COPTFLAGS} -bmaxdata:0x70000000
 #
 # Fortran programs MUST be linked statically (no shared libraries) for them
 # to run on systems that haven't licensed a Fortran runtime or compiler.
@@ -38,7 +42,7 @@ CLINKER  = mpcc ${COPTFLAGS}
 # if you are running on plain IBM RS6000 workstations and replace it
 # with the above.
 #
-FLINKER = mpxlf ${FOPTFLAGS}
+FLINKER = mpxlf ${FOPTFLAGS} -bmaxdata:0x70000000
 
 SHELL   = /bin/sh
 SYS_LIB = -lisode
