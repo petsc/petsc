@@ -22,8 +22,8 @@ class Configure(config.base.Configure):
   def configureFortranCPP(self):
     '''Handle case where Fortran cannot preprocess properly'''
     if 'FC' in self.framework.argDB:
-      self.addMakeRule('.f.o .f90.o','',['${FC} -c ${FFLAGS} ${FOPTFLAGS} $<'])
-      self.addMakeRule('.f.a',       '',['${FC} -c ${FOPTFLAGS} ${FFLAGS} $<', \
+      self.addMakeRule('.f.o .f90.o','',['${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<'])
+      self.addMakeRule('.f.a',       '',['${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FC_FLAGS} $<', \
                                          '${AR} ${AR_FLAGS} ${LIBNAME} $*.o', \
                                          '${RM} $*.o'])
 
@@ -35,19 +35,19 @@ class Configure(config.base.Configure):
         # Fortran does NOT handle CPP macros 
         self.addMakeRule('.F.o .F90.o','',['${RM} __$*.F __$*.c',\
                                            '${CP} $*.F __$*.c',\
-                                           '${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+'  __$*.c | grep -v \'^ *#\' > __$*.F',\
-                                           '${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.F -o $*.o',\
+                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+'  __$*.c | grep -v \'^ *#\' > __$*.F',\
+                                           '${FC} -c ${FC_INCLUDES} ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
                                            '${RM} __$*.F __$*.c'])
         self.addMakeRule('.F.a',       '',['${RM} __$*.F __$*.c',\
                                            '${CP} $*.F __$*.c',\
-                                           '${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+'  __$*.c | grep -v \'^ *#\' > __$*.F',\
-                                           '${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.F -o $*.o',\
+                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+'  __$*.c | grep -v \'^ *#\' > __$*.F',\
+                                           '${FC} -c ${FC_INCLUDES} ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
                                            '${AR} cr ${LIBNAME} $*.o',\
                                            '${RM} __$*.F __$*.c'])
       else:
         # Fortran handles CPP macros correctly
-        self.addMakeRule('.F.o .F90.o','',['${FC} -c ${FFLAGS} ${FOPTFLAGS} ${FCCPFLAGS} $<'])
-        self.addMakeRule('.F.a','',       ['${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $<',\
+        self.addMakeRule('.F.o .F90.o','',['${FC} -c ${FFLAGS} ${FC_FLAGS} ${FC_INCLUDES} ${FPP_FLAGS} $<'])
+        self.addMakeRule('.F.a','',       ['${FC} -c ${FC_INCLUDES} ${FFLAGS} ${FC_FLAGS} ${FPP_FLAGS} $<',\
                                            '${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '${RM} $*.o'])
 

@@ -276,7 +276,7 @@ static PetscErrorCode PCSetFromOptions_MG(PC pc)
     ierr = PetscOptionsName("-pc_mg_log","Log times for each multigrid level","None",&flg);CHKERRQ(ierr);
     if (flg) {
       MG   *mg = (MG*)pc->data;
-      int  i;
+      PetscInt i;
       char eventname[128];
       if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
       levels = mg[0]->levels;

@@ -21,6 +21,8 @@ class Configure(config.base.Configure):
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',      self)
     self.framework.require('PETSc.utilities.arch', self.setCompilers)
+    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self.setCompilers)
+    self.debugging    = self.framework.require('PETSc.utilities.debugging',self.setCompilers)        
     self.compilers    = self.framework.require('config.compilers',         self)
     self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
     self.types        = self.framework.require('config.types',             self)
@@ -79,15 +81,15 @@ class Configure(config.base.Configure):
     # eventually this will be gone
     
     # archive management tools
-    self.addMakeMacro('AR_FLAGS  ',      self.setCompilers.AR_FLAGS)
-    self.addMakeMacro('AR_LIB_SUFFIX ',    self.libraries.suffix)
-    self.addMakeMacro('RANLIB ',         self.setCompilers.RANLIB)
+    self.addMakeMacro('AR_FLAGS',      self.setCompilers.AR_FLAGS)
+    self.addMakeMacro('AR_LIB_SUFFIX',    self.libraries.suffix)
+    self.addMakeMacro('RANLIB',         self.setCompilers.RANLIB)
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
     
     # compiler values
-    self.setCompilers.pushLanguage('C')
+    self.setCompilers.pushLanguage(self.clanguage.language)
     self.addMakeMacro('CC',self.setCompilers.getCompiler())
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
@@ -95,8 +97,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_SUFFIX','o')
 
     # executable linker values
-    self.setCompilers.pushLanguage('C')
-    self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
+    self.setCompilers.pushLanguage(self.clanguage.language)
     self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
@@ -108,8 +109,35 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_LINKER_SUFFIX','')
     self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
 
+    if 'FC' in self.framework.argDB:
+
+      # need FPPFLAGS in config/setCompilers
+      self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
+    
+      # compiler values
+      self.setCompilers.pushLanguage('F77')
+      self.addMakeMacro('FC',self.setCompilers.getCompiler())
+      self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())    
+      self.setCompilers.popLanguage()
+      # .o or .obj 
+      self.addMakeMacro('FC_SUFFIX','o')
+
+      # executable linker values
+      self.setCompilers.pushLanguage('F77')
+      self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
+      self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+      self.setCompilers.popLanguage()
+      # -rpath or -R or -L etc
+      if not self.setCompilers.F77SharedLinkerFlag: value = '-L'
+      else: value = self.setCompilers.F77SharedLinkerFlag
+      self.addMakeMacro('FC_LINKER_SLFLAG',value)    
+      # '' for Unix, .exe for Windows
+      self.addMakeMacro('FC_LINKER_SUFFIX','')
+      self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+
+
     # shared library linker values
-    self.setCompilers.pushLanguage('C')
+    self.setCompilers.pushLanguage(self.clanguage.language)
     # need to fix BuildSystem to collect these seperately
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
@@ -118,12 +146,15 @@ class Configure(config.base.Configure):
     self.addMakeMacro('SL_LINKER_SUFFIX','.so')
     self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
     
-    # CONLY or CPP
-    self.addMakeMacro('PETSC_LANGUAGE','CONLY')
+    # CONLY or CPP. We should change the PETSc makefiles to do this better
+    if self.clanguage.language == 'C': lang = 'CONLY'
+    else: lang = 'CPP'
+    self.addMakeMacro('PETSC_LANGUAGE',lang)
+    
     # real or complex
-    self.addMakeMacro('PETSC_SCALAR','real')
+    self.addMakeMacro('PETSC_SCALAR',self.clanguage.scalartype)
     # double or float
-    self.addMakeMacro('PETSC_PRECISION','double')
+    self.addMakeMacro('PETSC_PRECISION',self.clanguage.precision)
 
     # print include and lib for external packages
     for i in self.framework.packages:

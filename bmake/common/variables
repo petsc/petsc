@@ -11,6 +11,9 @@
 PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/${PETSC_ARCH}
 PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
 			${TAU_DEFS} ${TAU_INCLUDE} ${MPI_INCLUDE} ${MPE_INCLUDE}  ${PETSC_BLASLAPACK_FLAGS}
+CC_INCLUDES = ${PETSC_INCLUDE}
+FC_INCLUDES = ${PETSC_INCLUDE}
+FLINKER = ${FC_LINKER}
 PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 PETSC_FCPPFLAGS	    = ${PETSC_INCLUDE} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
 PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
@@ -47,6 +50,7 @@ SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 
 CLINKER = ${CC_LINKER}
+FLINKER = ${FC_LINKER}
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).

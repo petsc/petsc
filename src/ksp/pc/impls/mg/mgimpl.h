@@ -16,23 +16,23 @@ typedef struct _MG* MG;
 */
 struct _MG
 {
-  MGType    am;                           /* Multiplicative, additive or full */
-  int       cycles;                       /* Number cycles to run */
-  int       level;                        /* level = 0 coarsest level */
-  int       levels;                       /* number of active levels used */
-  int       maxlevels;                    /* total number of levels allocated */
-  Vec       b;                            /* Right hand side */ 
-  Vec       x;                            /* Solution */
-  Vec       r;                            /* Residual */
+  MGType     am;                           /* Multiplicative, additive or full */
+  int        cycles;                       /* Number cycles to run */
+  int        level;                        /* level = 0 coarsest level */
+  int        levels;                       /* number of active levels used */
+  int        maxlevels;                    /* total number of levels allocated */
+  Vec        b;                            /* Right hand side */ 
+  Vec        x;                            /* Solution */
+  Vec        r;                            /* Residual */
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
-  Mat       A;                            /* matrix used in forming residual*/ 
-  KSP      smoothd;                      /* pre smoother */
-  KSP      smoothu;                      /* post smoother */
-  Mat       interpolate; 
-  Mat       restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
-  int       default_smoothu;              /* number of smooths per level if not over-ridden */
-  int       default_smoothd;              /*  with calls to KSPSetTolerances() */
-  PetscReal rtol,abstol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
+  Mat        A;                            /* matrix used in forming residual*/ 
+  KSP        smoothd;                      /* pre smoother */
+  KSP        smoothu;                      /* post smoother */
+  Mat        interpolate; 
+  Mat        restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
+  int        default_smoothu;              /* number of smooths per level if not over-ridden */
+  int        default_smoothd;              /*  with calls to KSPSetTolerances() */
+  PetscReal  rtol,abstol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
   PetscEvent eventsetup;                   /* if logging times for each level */
   PetscEvent eventsolve;      
 };
