@@ -195,12 +195,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const I
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
   ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree((void*)coloring);CHKERRQ(ierr);
+  ierr = PetscFree(newcolor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
 

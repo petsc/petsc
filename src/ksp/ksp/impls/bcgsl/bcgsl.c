@@ -420,7 +420,7 @@ static int  KSPSolve_BCGSL(KSP ksp)
       if ( mxres<zeta ) mxres = zeta;
       if ( myres<zeta ) myres = zeta;
       
-      bUpdateX = (PetscTruth) (zeta<bcgsl->delta*zeta0 && zeta0<=mxres);
+      bUpdateX = (PetscTruth)(zeta<bcgsl->delta*zeta0 && zeta0<=mxres);
       if ( (zeta<bcgsl->delta*myres && zeta0<=myres) || bUpdateX ){
 	/* r0 <- b-inv(K)*A*X */
 	ierr = KSP_PCApplyBAorAB( ksp,VX, VVR[0], VTM);CHKERRQ(ierr); 

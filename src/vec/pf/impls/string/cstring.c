@@ -28,7 +28,7 @@ PetscErrorCode PFDestroy_String(void *value)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree((char*)value);CHKERRQ(ierr);
+  ierr = PetscStrfree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +61,7 @@ PetscErrorCode PFStringCreateFunction(PF pf,char *string,void **f)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscStrfree((char*)pf->data);CHKERRQ(ierr);
+  ierr = PetscStrfree(pf->data);CHKERRQ(ierr);
   ierr = PetscStrallocpy(string,(char**)&pf->data);CHKERRQ(ierr);
 
   /* create the new C function and compile it */

@@ -77,14 +77,10 @@ EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,int,int,Mat
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode    ierr;
-  Mat               AP,AP_seq,P_seq,A_loc,C_seq;
-  /* Mat_MPIAIJ        *p = (Mat_MPIAIJ*)P->data; */
+  Mat               AP,P_seq,A_loc,C_seq;
   Mat_MatMatMultMPI *mult;
-
   int               prstart,prend,m=P->m;
   int               rank,prid=10;
-  IS  isrow,iscol;
-  Mat P_subseq,*psubseq;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
@@ -93,44 +89,22 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   ierr = MatMatMult_MPIAIJ_MPIAIJ(A,P,scall,fill,&AP);CHKERRQ(ierr);
   mult = (Mat_MatMatMultMPI*)AP->spptr;
   P_seq = mult->bseq[0]; /* = submatrix of P by taking rows of P that equal to nonzero col of A */
-  A_loc = mult->aseq[0]; /* = submatrix of A by taking all local rows of A */
-  AP_seq  = mult->C_seq;
   
   if (rank == prid){
     ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A_loc: %d, %d\n",rank,A_loc->m,A_loc->n);CHKERRQ(ierr);
     ierr = MatView(A_loc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P_seq: %d, %d\n",rank,P_seq->m,P_seq->n);CHKERRQ(ierr);
     ierr = MatView(P_seq,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d]  AP_seq: %d, %d\n",rank,AP_seq->m,AP_seq->n);
-    ierr = MatView(AP_seq,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF," [%d]  AP_seq: %d, %d\n",rank,AP->m,AP->n);
+    ierr = MatView(AP,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   prstart = mult->brstart;
   prend   = prstart + m;
-  /*
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] prstart: %d, prend: %d, dim of P_seq: %d, %d\n",rank,prstart,prend,P_seq->m,P_seq->n);
-  */
+ 
+  A_loc = mult->aseq[0]; /* = submatrix of A by taking all local rows of A */
+  ierr = MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(A_loc,P_seq,scall,fill,prstart,prend,&C_seq);CHKERRQ(ierr);
 
-    /* get seq matrix P_subseq by taking local rows of P */
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,P_seq->n,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(P_seq,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psubseq);CHKERRQ(ierr); 
-  P_subseq = psubseq[0];
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-
-  /* compute P_subseq^T*AP_seq */
-  ierr = MatMatMultTranspose_SeqAIJ_SeqAIJ(P_subseq,AP_seq,scall,fill,&C_seq);CHKERRQ(ierr); 
-  if (rank == prid){
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] dim of P_subseq: %d, %d; AP_seq: %d, %d\n",rank,P_subseq->m,P_subseq->n,AP_seq->m,AP_seq->n);
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] C_seq: %d, %d\n",rank,C_seq->m,C_seq->n);CHKERRQ(ierr);
-    ierr = MatView(C_seq,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
-  ierr = MatDestroyMatrices(1,&psubseq);CHKERRQ(ierr);
-
-  /* ierr = MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(A_loc,P_seq,scall,fill,prstart,prend,&C_seq);CHKERRQ(ierr); */
-  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] C_seq dim: %d, %d\n",rank,C_seq->m,C_seq->n); */
-  
   /* add C_seq into C */
   ierr = MatMerge_SeqsToMPI(A->comm,C_seq,P->n,P->n,scall,C);CHKERRQ(ierr); 
 
@@ -666,7 +640,8 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,int prstart,in
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
-  int            *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
+  int            *ai=a->i,*aj=a->j,*apj,*apjdense;
+  int            *pi=p->i,*pj=p->j,*pJ=p->j+pi[prstart],*pjj;
   int            *ci=c->i,*cj=c->j,*cjj;
   int            am=A->M,cn=C->N,cm=C->M;
   int            i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
