@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
+  
+  - PetscSortIntAndPermute()/PetscSortIntAndGetPermutation()
 
   - petsc-maint #1067:  Fix MatTranspose for parallel cases according
     to Matt's suggestion.
