@@ -10,9 +10,14 @@ petsc/include/finclude/RCS
 petsc/src/contrib/RCS
 petsc/src/contrib/ysmp
 petsc/src/contrib/dfvec/RCS
-petsc/src/contrib/dfvec/src/RCS
-petsc/src/contrib/dfvec/src/seq/RCS
-petsc/src/contrib/dfvec/src/mpi/RCS
+petsc/src/contrib/dfvec/interface/RCS
+petsc/src/contrib/dfvec/impls/RCS
+petsc/src/contrib/dfvec/impls/regular/RCS
+petsc/src/contrib/dfvec/impls/general/RCS
+petsc/src/contrib/dfvec/impls/regular/seq/RCS
+petsc/src/contrib/dfvec/impls/regular/mpi/RCS
+petsc/src/contrib/dfvec/impls/general/seq/RCS
+petsc/src/contrib/dfvec/impls/general/mpi/RCS
 petsc/src/contrib/dfvec/examples/RCS
 petsc/src/contrib/dfvec/examples/ex6.c
 petsc/src/contrib/dfvec/examples/ex3.c
