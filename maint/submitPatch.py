@@ -101,9 +101,9 @@ class Patch (object):
     if not os.path.isdir(patchDir): patchDir = None
     self.help.addOption('Variables', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
     # Variables necessary when some actions are excluded
-    self.help.addOption('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
-    self.help.addOption('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
-    self.help.addOption('Variables for missing actions', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched (defined in updateVersion), e.g. 2.1.0', isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number (defined in updateVersion), e.g. 1', min = 1, isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed (defined in pushChange), e.g. 1.1052', isTemporary = 1))
 
     self.argDB.insertArgs(clArgs)
     return
@@ -216,7 +216,7 @@ class Patch (object):
       m = setRE.match(line)
       if m:
         changeSets.append(m.group('changeSet'))
-    if not len(changSets): raise RuntimeError('No change sets to be submitted')
+    if not len(changeSets): raise RuntimeError('No change sets to be submitted')
     changeSets.sort()
     output = self.executeShellCommand('bk push')
     self.writeLogLine('Pushed change sets '+str(changeSets))
