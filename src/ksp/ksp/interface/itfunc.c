@@ -520,7 +520,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   if (flg) {
     Mat         A;
     Vec         t;
-    PetscScalar mone = -1.0,norm;
+    PetscScalar mone = -1.0;
+    PetscReal   norm;
     if (ksp->dscale && !ksp->dscalefix) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
     ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
     ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
