@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.113 1999/01/22 20:13:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.114 1999/01/22 21:54:03 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -609,7 +609,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   IS         isicol;
   int        *r,*ic, ierr, prow, n = a->m, *ai = a->i, *aj = a->j;
   int        *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
-  int        *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
+  int        *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0, dcount = 0;
   int        incrlev,nnz,i,shift = a->indexshift,levels,diagonal_fill;
   PetscTruth col_identity, row_identity;
   double     f;
@@ -690,6 +690,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
       fill[fm]   = prow;
       im[prow]   = 0;
       nzf++;
+      dcount++;
     }
 
     nzi = 0;
@@ -775,6 +776,9 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
+    if (diagonal_fill) {
+      PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replace %d missing diagonals",dcount);
+    }
   }
 
   /* put together the new matrix */

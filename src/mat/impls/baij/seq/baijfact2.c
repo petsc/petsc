@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.21 1998/12/21 19:37:51 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.22 1999/01/22 20:13:59 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -695,7 +695,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   IS          isicol;
   int         *r,*ic, ierr, prow, n = a->mbs, *ai = a->i, *aj = a->j;
   int         *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
-  int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
+  int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0, dcount = 0;
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2, levels, diagonal_fill;
   PetscTruth  col_identity, row_identity;
   double      f;
@@ -703,8 +703,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   PetscFunctionBegin;
   if (info) {
     f             = info->fill;
-    levels        = info->levels;
-    diagonal_fill = info->diagonal_fill;
+    levels        = (int) info->levels;
+    diagonal_fill = (int) info->diagonal_fill;
   } else {
     f             = 1.0;
     levels        = 0;
@@ -791,6 +791,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
       fill[fm]   = prow;
       im[prow]   = 0;
       nzf++;
+      dcount++;
     }
 
     nzi = 0;
@@ -876,6 +877,9 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
+    if (diagonal_fill) {
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
+    }
   }
 
   /* put together the new matrix */
