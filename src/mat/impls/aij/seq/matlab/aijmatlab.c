@@ -6,13 +6,57 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 
+typedef struct {
+  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  int (*MatILUDTFactor)(Mat,MatFactorInfo*,IS,IS,Mat*);
+  int (*MatDestroy)(Mat);
+} Mat_Matlab;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
+int MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+  int        ierr;
+  Mat        B=*newmat;
+  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+  A->ops->duplicate        = lu->MatDuplicate;
+  A->ops->view             = lu->MatView;
+  A->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  A->ops->iludtfactor      = lu->MatILUDTFactor;
+  A->ops->destroy          = lu->MatDestroy;
+    
+  ierr = PetscFree(lu);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_Matlab"
-int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatDestroy_Matlab"
+int MatDestroy_Matlab(Mat A) {
+  int         ierr;
+  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+
+  PetscFunctionBegin;
+  ierr = MatConvert_Matlab_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_Matlab"
+int MatSolve_Matlab(Mat A,Vec b,Vec x)
 {
   int             ierr;
   char            *_A,*_b,*_x;
@@ -34,8 +78,8 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Matlab"
-int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
+#define __FUNCT__ "MatLUFactorNumeric_Matlab"
+int MatLUFactorNumeric_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
   int             ierr,len;
@@ -55,8 +99,8 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
-int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_Matlab"
+int MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   int        ierr;
   Mat_SeqAIJ *f;
@@ -66,8 +110,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
   ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
-  (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
-  (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab;
+  (*F)->ops->solve           = MatSolve_Matlab;
+  (*F)->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
   (*F)->factor               = FACTOR_LU;
   f                          = (Mat_SeqAIJ*)(*F)->data;
   f->lu_dtcol = info->dtcol;
@@ -76,8 +120,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
 
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_Matlab_QR"
-int MatSolve_SeqAIJ_Matlab_QR(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_Matlab_QR"
+int MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 {
   int             ierr;
   char            *_A,*_b,*_x;
@@ -99,8 +143,8 @@ int MatSolve_SeqAIJ_Matlab_QR(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Matlab_QR"
-int MatLUFactorNumeric_SeqAIJ_Matlab_QR(Mat A,Mat *F)
+#define __FUNCT__ "MatLUFactorNumeric_Matlab_QR"
+int MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
 {
   int             ierr,len;
   char            *_A,*name;
@@ -118,8 +162,8 @@ int MatLUFactorNumeric_SeqAIJ_Matlab_QR(Mat A,Mat *F)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab_QR"
-int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_Matlab_QR"
+int MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   int  ierr;
 
@@ -128,8 +172,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat
   ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
-  (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab_QR;
-  (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab_QR;
+  (*F)->ops->solve           = MatSolve_Matlab_QR;
+  (*F)->ops->lufactornumeric = MatLUFactorNumeric_Matlab_QR;
   (*F)->factor               = FACTOR_LU;
   (*F)->assembled            = PETSC_TRUE;  /* required by -ksp_view */
 
@@ -138,8 +182,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat
 
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatILUDTFactor_SeqAIJ_Matlab"
-int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
+#define __FUNCT__ "MatILUDTFactor_Matlab"
+int MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
 {
   int        ierr,len;
   char       *_A,*name;
@@ -167,49 +211,130 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat
   PetscFunctionReturn(0);
 }
 
-int MatSeqAIJFactorInfo_Matlab(Mat A,PetscViewer viewer)
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorInfo_Matlab"
+int MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 {
   int ierr;
   
   PetscFunctionBegin; 
-  /* check if matrix is matlab type */
-  if (A->ops->solve != MatSolve_SeqAIJ_Matlab) PetscFunctionReturn(0); 
-
   ierr = PetscViewerASCIIPrintf(viewer,"Matlab run parameters:  -- not written yet!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatUseMatlab_SeqAIJ"
-int MatUseMatlab_SeqAIJ(Mat A)
-{
-  PetscTruth qr;
-  int        ierr;
+#define __FUNCT__ "MatView_Matlab"
+int MatView_Matlab(Mat A,PetscViewer viewer) {
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
+  Mat_Matlab        *lu=(Mat_Matlab*)(A->spptr);
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_matlab_qr",&qr);CHKERRQ(ierr);
-  if (qr) {
-    A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Matlab_QR;
-    PetscLogInfo(0,"Using Matlab QR with iterative refinement for SeqAIJ LU factorization and solves");
-  } else {
-    A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Matlab;
-    PetscLogInfo(0,"Using Matlab for SeqAIJ LU factorization and solves");
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatFactorInfo_Matlab(A,viewer);
+    }
   }
-  A->ops->iludtfactor      = MatILUDTFactor_SeqAIJ_Matlab;
-  PetscLogInfo(0,"Using Matlab for SeqAIJ ILUDT factorization and solves");
   PetscFunctionReturn(0);
 }
 
-#else
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
+int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
+  /* This routine is only called to convert to MATMATLAB */
+  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
+  int        ierr;
+  Mat        B=*newmat;
+  Mat_Matlab *lu;
+  PetscTruth qr;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseMatlab_SeqAIJ"
-int MatUseMatlab_SeqAIJ(Mat A)
-{
   PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscNew(Mat_Matlab,&lu);CHKERRQ(ierr);
+  lu->MatDuplicate         = A->ops->duplicate;
+  lu->MatView              = A->ops->view;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  lu->MatILUDTFactor       = A->ops->iludtfactor;
+  lu->MatDestroy           = A->ops->destroy;
+
+  B->spptr                 = (void*)lu;
+  B->ops->duplicate        = MatDuplicate_Matlab;
+  B->ops->view             = MatView_Matlab;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab;
+  B->ops->iludtfactor      = MatILUDTFactor_Matlab;
+  B->ops->destroy          = MatDestroy_Matlab;
+
+  ierr = PetscOptionsHasName(A->prefix,"-mat_matlab_qr",&qr);CHKERRQ(ierr);
+  if (qr) {
+    B->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab_QR;
+    PetscLogInfo(0,"Using Matlab QR with iterative refinement for LU factorization and solves");
+  } else {
+    PetscLogInfo(0,"Using Matlab for LU factorizations and solves.");
+  }
+  PetscLogInfo(0,"Using Matlab for ILUDT factorizations and solves.");
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_matlab_C",
+                                           "MatConvert_SeqAIJ_Matlab",MatConvert_SeqAIJ_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_matlab_seqaij_C",
+                                           "MatConvert_Matlab_SeqAIJ",MatConvert_Matlab_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMATLAB);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_Matlab"
+int MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
+  int        ierr;
+  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Matlab));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#endif
+/*MC
+  MATMATLAB - MATMATLAB = "matlab" - A matrix type providing direct solvers (LU and QR) and drop tolerance
+  based ILU factorization (ILUDT) for sequential matrices via the external package Matlab.
 
+  If Matlab is instaled (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes Matlab solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMATLAB).
+  This matrix type is only supported for double precision real.
 
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATSEQAIJ type without data copy.
+
+  Options Database Keys:
++ -mat_type matlab - sets the matrix type to "matlab" during a call to MatSetFromOptions()
+- -mat_matlab_qr   - sets the direct solver to be QR instead of LU
+
+  Level: beginner
+
+.seealso: PCLU
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_Matlab"
+int MarCreate_Matlab(Mat A) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMATLAB);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_Matlab(A,MATMATLAB,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
