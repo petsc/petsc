@@ -10,7 +10,7 @@ SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src include pinclude docs
+DIRS     = src include pinclude docs c2f77
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
