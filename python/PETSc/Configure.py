@@ -405,6 +405,7 @@ class Configure(config.base.Configure):
       os.environ['with_x']      = 'yes'
       os.environ['x_includes']  = 'NONE'
       os.environ['x_libraries'] = 'NONE'
+      os.environ['CC']          = self.getCompiler()
 ##      results = self.executeShellCode(self.macroToShell(self.xMacro))
       results = self.executeShellCode(self.xShell)
       # LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
