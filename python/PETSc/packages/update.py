@@ -121,7 +121,7 @@ class Configure(config.base.Configure):
 
     self.framework.log.write('Downloading latest source with bk\n')
     try:
-      output1 = self.executeShellCommand('bk pull')[0]
+      output1 = self.executeShellCommand('bk pull')[1]
       if output1.find('error') >= 0:
         raise RuntimeError('Error pulling latest source code from PETSc BK website\nRun with --enable-update=0 to configure without updating')
       if output1.find('Nothing to pull') >= 0:
@@ -158,7 +158,7 @@ class Configure(config.base.Configure):
 
     self.framework.log.write('Downloading latest BuildSystem source with bk\n')
     try:
-      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')[0]
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')[1]
       if output2.find('error') >= 0:
         raise RuntimeError('Error pulling latest source code from BuildSystem  BK website\nRun with --enable-update=0 to configure anyways')
       if output2.find('Nothing to pull') >= 0:
