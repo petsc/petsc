@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.148 1998/07/27 15:20:16 balay Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.149 1998/08/16 22:07:06 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1323,6 +1322,7 @@ int VecGetArray(Vec x,Scalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidPointer(a);
+  PetscAMSTakeAccess(x)
   ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1443,8 +1443,9 @@ int VecRestoreArray(Vec x,Scalar **a)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidPointer(a);
   if (x->ops->restorearray) {
-    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
+  PetscAMSGrantAccess(x) 
   PetscFunctionReturn(0);
 }
 

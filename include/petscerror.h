@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.23 1998/09/23 00:53:21 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.24 1998/09/23 00:54:17 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -121,10 +121,16 @@ extern int        petscstacksize_max;
 extern int        petscstacksize;
 extern PetscStack *petscstack;
 
+#if defined(USE_PETSC_BOPT_g)
+#define PetscCheckHeap PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);
+#else
+#define PetscCheckHeap 
+#endif
+
 #if !defined(HAVE_AMS)
 
 #define PetscFunctionBegin \
-  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);\
+  {PetscCheckHeap\
    if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = __FUNC__; \
     petscstack->file[petscstacksize]      = __FILE__; \
@@ -152,7 +158,7 @@ extern PetscStack *petscstack;
   }};
 
 #define PetscFunctionReturn(a) \
-  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);\
+  {PetscCheckHeap\
   PetscStackPop; \
   return(a);}
 
@@ -172,7 +178,7 @@ extern AMS_Memory stack_mem;
 extern int        stack_err;
 
 #define PetscFunctionBegin \
-  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);\
+  {PetscCheckHeap\
    if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
     petscstack->function[petscstacksize]  = __FUNC__; \
@@ -206,7 +212,7 @@ extern int        stack_err;
   }};
 
 #define PetscFunctionReturn(a) \
-  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);\
+  {PetscCheckHeap\
   PetscStackPop; \
   return(a);}
 
