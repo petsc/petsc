@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.11 1995/08/07 18:50:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.12 1995/09/06 03:04:14 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
@@ -46,6 +46,7 @@ int VecSum(Vec v,Scalar *sum)
 {
   int    ierr, i,n;
   Scalar *x,lsum = 0.0;
+
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
@@ -77,6 +78,7 @@ int VecShift(Scalar *shift,Vec v)
 {
   int    ierr, i,n;
   Scalar *x,lsum = *shift;
+
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
@@ -97,6 +99,7 @@ int VecAbs(Vec v)
 {
   int    ierr, i,n;
   Scalar *x;
+
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);

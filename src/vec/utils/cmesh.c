@@ -20,8 +20,7 @@
 @*/
 int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 {
-  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, mytid;
-  int           ierr;
+  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, mytid, ierr;
   double        h,x1,x2,x3,x4,y1,y2,y3,y4,*v,min,max;
   Scalar        scale;
   Vec           W;
@@ -48,8 +47,7 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
   ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
   PLogObjectParent(win,ctx);
-  ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_ALL,ctx); 
-  CHKERRQ(ierr);
+  ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
   ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
 
