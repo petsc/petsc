@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.41 1999/03/22 21:44:49 balay Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.42 1999/05/04 20:32:27 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -1303,6 +1303,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
         } 
       }  
     }
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
   }
   
   if (rr) {
@@ -1320,6 +1321,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
         } 
       }  
     }
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
