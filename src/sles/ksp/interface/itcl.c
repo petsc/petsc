@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.24 1995/05/16 00:33:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.25 1995/05/18 22:44:02 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -71,10 +71,10 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
-  if (OptionsHasName("-ksp_gmres_unmodifiedgrammschmidt")) {
+  if (OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgrammschmidt")) {
     KSPGMRESSetUseUnmodifiedGrammSchmidt(ctx);
   }
-  if (OptionsHasName("-ksp_eigen")) {
+  if (OptionsHasName(ctx->prefix,"-ksp_eigen")) {
     KSPSetCalculateEigenvalues(ctx);
   }
   return 0;
