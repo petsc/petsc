@@ -540,8 +540,8 @@ getexlist:
 #   Rules for generating html code from C and Fortran 
 #
 html:
-	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/tmpmap
-	-@cat /home/MPI/www/www.index >> /tmp/tmpmap
+	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
+	-@cat /home/MPI/www/www.index >> /tmp/$$USER.htmlmap
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} foo ; do\
@@ -559,7 +559,7 @@ html:
               -e "s/ierr = //g"   | /home/gropp/bin/linux/c2html -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
               grep -v PetscValid | grep -v PetscFunctionBegin | grep -v PetscCheck | grep -v "int ierr;" |\
               grep -v '#if !defined(__' | grep -v '#define __' | \
-              /home/gropp/bin/linux/mapnames -map /tmp/tmpmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+              /home/gropp/bin/linux/mapnames -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
@@ -590,8 +590,8 @@ html:
             echo " " >> $${loc}/index.html; \
             echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-	   cat makefile | /home/gropp/bin/linux/c2html  | /home/gropp/bin/linux/mapnames -map /tmp/tmpmap -inhtml > $${loc}/makefile.html
-	-@${RM} /tmp/tmpmap tmp
+	   cat makefile | /home/gropp/bin/linux/c2html  | /home/gropp/bin/linux/mapnames -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
+	-@${RM} /tmp/$$USER.htmlmap tmp
 
 cleanhtml:
 	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html
