@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.181 2000/01/11 21:00:34 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.182 2000/02/02 20:08:54 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -196,7 +196,7 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   if (info) SETERRQ(PETSC_ERR_LIB,0,"MBad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(mat->n*mat->n - mat->n);
+  PLogFlops(2*mat->n*mat->n - mat->n);
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +222,7 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   if (info) SETERRQ(PETSC_ERR_LIB,0,"Bad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(mat->n*mat->n - mat->n);
+  PLogFlops(2*mat->n*mat->n - mat->n);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(mat->n*mat->n - mat->n);
+  PLogFlops(2*mat->n*mat->n);
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +294,7 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(mat->n*mat->n - mat->n);
+  PLogFlops(2*mat->n*mat->n);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------*/
