@@ -297,7 +297,7 @@ class Configure(config.base.Configure):
   def setEmptyOutput(self):
     self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
     self.addSubstitution(self.PACKAGE+'_LIB', '')
-    returnx
+    return
 
   def configure(self):
     if self.framework.argDB['download-'+self.package]: self.framework.argDB['with-'+self.package] = 1
