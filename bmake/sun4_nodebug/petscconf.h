@@ -25,6 +25,7 @@
 #define HAVE_SLOW_NRM2
 
 #define HAVE_DOUBLE_ALIGN
+#define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define HAVE_MEMALIGN
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.285 1998/04/13 17:35:25 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.286 1998/04/15 18:03:53 balay Exp bsmith $";
 #endif
 
 /*
@@ -1117,8 +1117,9 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PetscValidPointer(fact);
   PetscValidHeaderSpecific(*fact,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
-  if (mat->M != (*fact)->M || mat->N != (*fact)->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Mat *fact: global dim");
+  if (mat->M != (*fact)->M || mat->N != (*fact)->N) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Mat *fact: global dimensions are different");
+  }
   if (!(*fact)->ops->lufactornumeric) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.32 1998/04/15 21:37:09 balay Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.33 1998/04/16 16:11:35 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -30,7 +30,7 @@ void *PetscMallocAlign(int mem)
   if ((mem % sizeof(Scalar))) {
     return malloc(mem);
   }
-#if defined(HAVE_DOUBLE_ALIGN) && !defined(USE_PETSC_COMPLEX)
+#if defined(HAVE_DOUBLE_ALIGN_MALLOC) && !defined(USE_PETSC_COMPLEX)
   return malloc(mem);
 #elif defined(HAVE_MEMALIGN)
   return memalign(sizeof(Scalar),mem);
@@ -55,7 +55,7 @@ void *PetscMallocAlign(int mem)
 
 int PetscFreeAlign(void *ptr)
 {
-#if defined(HAVE_DOUBLE_ALIGN) && !defined(USE_PETSC_COMPLEX)
+#if defined(HAVE_DOUBLE_ALIGN_MALLOC) && !defined(USE_PETSC_COMPLEX)
   free(ptr);
   return 0;
 #elif defined(HAVE_MEMALIGN)

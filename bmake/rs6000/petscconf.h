@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.4 1998/04/14 14:41:19 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.5 1998/04/16 16:07:59 bsmith Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -23,7 +23,7 @@
 #define HAVE_UNAME 
 #define _XOPEN_SOURCE_EXTENDED 1
 #define _ALL_SOURCE
-#define HAVE_DOUBLE_ALIGN
+#define HAVE_DOUBLE_ALIGN_MALLOC
 
 #if !defined(HAVE_XLF90)
 #define HAVE_XLF90

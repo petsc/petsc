@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.9 1998/04/09 04:15:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.10 1998/04/13 17:41:25 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -31,7 +32,7 @@ typedef struct {
 #define __FUNC__ "PartitioningApply_Parmetis" 
 static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
 {
-  int                   ierr,*locals,size;
+  int                   ierr,*locals,size,rank;
   int                   *vtxdist, *xadj,*adjncy,itmp = 0;
   Mat                   mat = part->adj;
   Mat_MPIAdj            *adj = (Mat_MPIAdj *)mat->data;
@@ -44,13 +45,16 @@ static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
     SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
   }
 
-  locals = (int *) PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
-
   vtxdist = adj->rowners;
   xadj    = adj->i;
   adjncy  = adj->j;
+  MPI_Comm_rank(part->comm,&rank);
+  if (vtxdist[rank+1] - vtxdist[rank] == 0) {
+    SETERRQ(1,1,"Does not support any processor with no entries");
+  }
+  locals = (int *) PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
 
-  if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 1;}
+  if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   PARKMETIS(vtxdist,xadj,0,adjncy,0,locals,(int*)parmetis,part->comm);
   if (PLogPrintInfo) {parmetis->printout = itmp;}
 
@@ -110,7 +114,6 @@ int PartitioningParmetisSetCoarseSequential(Partitioning part)
   parmetis->parallel = 1;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "PartitioningPrintHelp_Parmetis" 

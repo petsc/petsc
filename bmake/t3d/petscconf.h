@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.4 1998/04/13 16:20:43 bsmith Exp bsmith $ */
+/* $Id: petscconf.h,v 1.5 1998/04/15 14:41:51 bsmith Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -25,6 +25,7 @@
 #define CANNOT_START_DEBUGGER
 
 #define HAVE_DOUBLE_ALIGN
+#define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define HAVE_FAST_MPI_WTIME
 

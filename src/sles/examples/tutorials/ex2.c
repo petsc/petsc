@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.68 1997/11/28 16:20:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.69 1998/04/16 04:14:49 curfman Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */
@@ -40,6 +40,7 @@ int main(int argc,char **args)
   double      norm;     /* norm of solution error */
   int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar      v, one = 1.0, neg_one = -1.0;
+  KSP         ksp;
 
   /* These variables are currently unused */
   /* PC          pc; */      /* preconditioner context */
@@ -154,16 +155,10 @@ int main(int argc,char **args)
        SLESSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  /* 
-     We comment out this section of code since the Jacobi method 
-     is not a good general default preconditioner.
 
-     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-     ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-     ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-            PETSC_DEFAULT); CHKERRA(ierr);
-  */
+  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
+                          PETSC_DEFAULT); CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
@@ -189,6 +184,9 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&neg_one,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+
+  /* Scale the norm */
+  /*  norm *= sqrt(1.0/((m+1)*(n+1))); */
 
   /*
      Print convergence information.  PetscPrintf() produces a single 

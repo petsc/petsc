@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.24 1998/04/13 17:25:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.25 1998/04/16 16:10:17 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -183,7 +183,8 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
 
     Output Parameter:
 .     is - on each processor the index set that defines the global numbers 
-           (in the new numbering) for all the nodes on that processor
+           (in the new numbering) for all the nodes currently (before the partitioning) 
+           on that processor
 
     Collective over IS
 

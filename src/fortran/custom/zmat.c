@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.46 1998/04/16 03:56:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.47 1998/04/16 15:02:03 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -194,7 +194,7 @@ void matgettypefromoptions_(MPI_Comm *comm,CHAR prefix,MatType *type,
 void matgetarray_(Mat mat,Scalar *fa,long *ia, int *__ierr)
 {
   Scalar *mm;
-  int    shift,m,n;
+  int    m,n;
   Mat    A = (Mat)PetscToPointer(mat);
 
   *__ierr = MatGetArray(A,&mm); if (*__ierr) return;
