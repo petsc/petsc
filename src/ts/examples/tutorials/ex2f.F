@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.2 1997/04/11 18:16:48 balay Exp balay $";
+C "$Id: ex2f.F,v 1.1 1997/04/17 03:29:46 curfman Exp curfman $";
 
 C/*
 C   Concepts: TS^timestepping^nonlinear problems
@@ -458,9 +458,9 @@ C     globalin - global input vector
 C     dummy - optional user-defined context, as set by TSetRHSJacobian()
 C
 C  Output Parameters:
-C     AA - Jacobian matrix
-C     BB - optionally different preconditioning matrix
-C     flag - flag indicating matrix structure
+C     A - Jacobian matrix
+C     B - optionally different preconditioning matrix
+C     str - flag indicating matrix structure
 C
 C  Notes:
 C  RHSJacobian computes entries for the locally owned part of the Jacobian.
@@ -476,7 +476,7 @@ C   - Here, we set all entries for a particular row at once.
 C   - Note that MatSetValues() uses 0-based row and column numbers
 C     in Fortran as well as in C.
 
-      subroutine RHSJacobian(ts,t,globalin,AA,BB,str,dummy)
+      subroutine RHSJacobian(ts,t,globalin,A,B,str,dummy)
 
 #include "ex2f.h"
 
@@ -484,7 +484,7 @@ C  Input/output parameters:
       TS           ts
       Double       t
       Vec          globalin
-      Mat          AA, BB
+      Mat          A, B
       MatStructure str
       integer      dummy
 
@@ -510,8 +510,9 @@ C  Set matrix sparsity info
 
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
       mstart = mstarts
-      mend = mends
+      mend   = mends
 
+C  Set matrix rows corresponding to boundary data
       if (mstart .eq. 0) then
         v(1) = 0.0
         call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr)
@@ -523,7 +524,8 @@ C  Set matrix sparsity info
         call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr)
       endif
 
-C  Construct matrix one row at a time
+C  Set matrix rows corresponding to interior data.
+C  We construct the matrix one row at a time
       sc = 1.0/(h*h*2.0*(1.0+t)*(1.0+t))
       do 10, i=mstart, mend-1
          idx(1) = i-1
