@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.233 2000/04/12 04:21:43 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.234 2000/04/17 04:24:23 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -446,7 +446,7 @@ static PLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.
 #define LENGTHS    4
 #define REDUCTIONS 5
 static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
-
+static int         EventsStagePrevious = 0;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PLogStageRegister"
@@ -465,12 +465,11 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 
     Level: intermediate
 
-.seealso: PLogStagePush(), PLogStagePop()
+.seealso: PLogStagePush(), PLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
 int PLogStageRegister(int stage,const char sname[])
 {
-  int  n,ierr;
-  char *str;
+  int ierr;
 
   PetscFunctionBegin;
   if (stage == PETSC_DETERMINE) stage = EventsStage;
@@ -506,17 +505,23 @@ int PLogStageRegister(int stage,const char sname[])
 .ve
  
    Notes:  
-   Use PLogStageRegister() to register a stage.
+   Use PETSC_DETERMINE to increase the previous stage number (which was poped) by one
+   Use PLogStageRegister() to register a name with a stage.
 
    Level: intermediate
 
 .keywords: log, push, stage
 
-.seealso: PLogStagePop(), PLogStageRegister(), PetscBarrier()
+.seealso: PLogStagePop(), PLogStageRegister(), PetscBarrier(), PreLoadBegin(), PreLoadEnd(),
+          PreLoadStage()
 @*/
 int PLogStagePush(int stage)
 {
   PetscFunctionBegin;
+  if (stage == PETSC_DETERMINE) {
+    stage = EventsStagePrevious + 1;
+  }
+
   if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 < 10: Instead %d",stage);
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
@@ -573,6 +578,7 @@ int PLogStagePush(int stage)
 int PLogStagePop(void)
 {
   PetscFunctionBegin;
+  EventsStagePrevious = EventsStage; /* keep a record of too be poped stage */
   PetscTimeAdd(EventsStageTime[EventsStage]);
   EventsStageFlops[EventsStage]          += _TotalFlops;
   EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct + recv_ct + send_ct;
