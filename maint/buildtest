@@ -1,23 +1,24 @@
 #! /bin/csh
-# $Id: buildtest,v 1.125 1998/04/01 15:58:11 balay Exp balay $ 
+# $Id: buildtest,v 1.126 1998/04/02 16:02:16 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
 #
 # Define some variables so that the table is concise.
+# First names used for abbrivations
 #
 #set TMP=/tmp/petsc
 set SP=/sphome/petsc/petsc
 set CCST=/ccsthome/petsc/petsc
 set PETSC=/home/petsc/petsc
 set LOIS=/home/curfman/petsc
-set BALAY=/home/balay/petsc
+set SATISH=/home/balay/petsc
 set TMP=/tmp/petsc
 set TMP_S=/tmp/balay/petsc
 set TMP_P=/tmp/petsc/petsc
 set TMP_B=/tmp/bsmith/petsc
-set TMP_C=/tmp/curfman/petsc
+set TMP_L=/tmp/curfman/petsc
 set SB_P=/sandbox/petsc/petsc
 set SB_S=/sandbox/balay/petsc
 #
@@ -35,7 +36,7 @@ if ($day == Sun) then
   set J4=(0      5          6          6             6           7            0           0           7           5           6            )
   set J5=(0      10         7          8             8           8            0           0           8           10          7            )
   set J6=(0      0          8          0             0           0            0           0           1           0           8            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS        $SB_P       $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS        $SB_P       $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Mon) then
   set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -48,7 +49,7 @@ if ($day == Mon) then
   set J4=(0      0          6          6             6           7           7            6           5           5           6            )
   set J5=(0      0          8          7             8           3           8            7           10          10          8            )
   set J6=(0      0          0          8             0           8           0            8           0           0           0            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif  
 if ($day == Tue) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -61,7 +62,7 @@ if ($day == Tue) then
   set J4=(6      6          5          6             6           7           8            6           6           6           6            )
   set J5=(0      7          10         7             8           3           0            7           8           8           7            )
   set J6=(0      8          0          8             0           8           0            8           0           0           8            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Wed) then
   set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -74,7 +75,7 @@ if ($day == Wed) then
   set J4=(6      6          6          5             5           0           0            5           6           4           6            )
   set J5=(0      8          7          10            10          0           0            10          7           7           7            )
   set J6=(0      0          8          0             0           0           0            0           8           8           8            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Thu) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -87,7 +88,7 @@ if ($day == Thu) then
   set J4=(6      5          6          6             6           7           5            6           6           6           6            )
   set J5=(0      10         8          8             8           3           10           8           7           7           8            )
   set J6=(0      0          0          0             0           8           0            0           8           8           0            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif  
 if ($day == Fri) then
   set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -100,7 +101,7 @@ if ($day == Fri) then
   set J4=(6      6          5          5             5           0           7            5           6           6           6            )
   set J5=(0      8          10         10            10          0           8            10          8           7           7            )
   set J6=(0      0          0          0             0           0           0            0           0           8           8            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Sat) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
@@ -113,7 +114,7 @@ if ($day == Sat) then
   set J4=(6      6          6          5             6           7           10           7           5           6           7            )
   set J5=(0      7          7          10            8           3           0            8           10          8           3            )
   set J6=(0      8          8          0             0           8           0            0           4           0           8            )
-  set H=($PETSC  $SB_S      $TMP_P     $BALAY       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
+  set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 #
 #  test for each machine
