@@ -12,12 +12,8 @@ class Base(logging.Logger):
   def __init__(self, clArgs = None, argDB = None):
     '''Setup the argument database'''
     self.argDB = self.createArgDB(argDB)
-    self.log   = self.createLog(None)
-    # SHOULD BE JUST self.setupArgDB(self.argDB, clArgs) here, but this way preserves logging.Logger for now
-    # needed to remove this, otherwise ignores installer command line arguments
-    #    logging.Logger.__init__(self, self.argDB, self.log)
     self.setupArgDB(self.argDB, clArgs)
-
+    logging.Logger.__init__(self, self.argDB, self.createLog(None))
     self.getRoot()
     return
 
@@ -39,16 +35,6 @@ class Base(logging.Logger):
     self.__dict__.update(d)
     return
 
-  def createLog(self, initLog):
-    '''Create a default log stream, unless initLog is given, which accepts all messages'''
-    if not initLog is None:
-      log = initLog
-    else:
-      if Base.defaultLog is None:
-        Base.defaultLog = file('make.log', 'w')
-      log = Base.defaultLog
-    return log
-
   def createArgDB(self, initDB):
     '''Create an argument database unless initDB is provided, and insert the command line arguments'''
     if not initDB is None:
@@ -63,9 +49,24 @@ class Base(logging.Logger):
 
   def setupArgDB(self, argDB, clArgs):
     '''Setup types in the argument database'''
-    logging.Logger.setFromArgs(self, argDB)
+    if Base.defaultLog is None:
+      import nargs
+
+      argDB.setType('debugLevel',    nargs.ArgInt(None, None, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
+      argDB.setType('debugSections', nargs.Arg(None, None, 'Message types to print, e.g. [compile,link,bk,install]'))
+
     argDB.insertArgs(clArgs)
     return argDB
+
+  def createLog(self, initLog):
+    '''Create a default log stream, unless initLog is given, which accepts all messages'''
+    if not initLog is None:
+      log = initLog
+    else:
+      if Base.defaultLog is None:
+        Base.defaultLog = file('make.log', 'w')
+      log = Base.defaultLog
+    return log
 
   def getRoot(self):
     '''Return the directory containing this module
