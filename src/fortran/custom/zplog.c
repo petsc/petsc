@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.6 1996/10/10 23:07:59 bsmith Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.7 1996/10/10 23:19:18 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -72,7 +72,7 @@ void plogbegin_(int *__ierr){
 #endif
 }
 
-void plogeventbegin_(int *e,int o1,int o2,int o3,int o4){
+void plogeventbegin_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
 #if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
@@ -87,7 +87,7 @@ void plogeventbegin_(int *e,int o1,int o2,int o3,int o4){
 #endif
 }
 
-void plogeventend_(int *e,int o1,int o2,int o3,int o4){
+void plogeventend_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
 #if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
