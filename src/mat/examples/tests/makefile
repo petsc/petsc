@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../..
+#PETSC_DIR = ../../../..
 ALL: ex1
 
 CFLAGS 	        =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
@@ -9,7 +9,7 @@ SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscmat
-LOCDIR          = src/mat/examples/
+LOCDIR          = src/mat/examples/tests/
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		  runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		  runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
