@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.12 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.13 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&is1);CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,(n*(rank+1))%N,1,&is2);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&is1);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,(n*(rank+1))%N,1,&is2);CHKERRA(ierr);
 
   value = (Scalar)(rank+1); 
   ierr = VecSet(&value,x);CHKERRA(ierr);

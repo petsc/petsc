@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1999/05/12 03:24:58 bsmith Exp balay $ 
+# $Id: base.site,v 1.18 1999/09/14 18:30:39 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -41,7 +41,7 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DPETSC_HAVE_BLOCKSOLVE is not listed below
 #
-PCONF         =   
+PCONF         =    -DPETSC_HAVE_X11
 #
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.

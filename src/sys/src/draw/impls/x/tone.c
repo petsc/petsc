@@ -1,12 +1,8 @@
-/*$Id: tone.c,v 1.26 1999/05/12 03:26:40 bsmith Exp bsmith $*/
-
-/* Include petsc in case it is including petscconf.h */
-#include "petsc.h"
+/*$Id: tone.c,v 1.27 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
 /*
     Code for drawing color interpolated triangles using X-windows.
 */
-#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 #define SHIFT_VAL 6
@@ -134,9 +130,3 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y_1, int t1,
   }
   PetscFunctionReturn(0);
 }
-#else
-int dummy_tone(void)
-{
-  PetscFunctionReturn(0);
-}
-#endif

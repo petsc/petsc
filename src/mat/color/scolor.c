@@ -1,7 +1,7 @@
-/*$Id: scolor.c,v 1.15 1999/04/16 16:07:07 bsmith Exp bsmith $*/
+/*$Id: scolor.c,v 1.16 1999/10/24 14:02:33 bsmith Exp bsmith $*/
  
 #include "mat.h"
-#include "src/mat/impls/color/color.h"
+#include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN
 extern int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
@@ -21,7 +21,7 @@ EXTERN_C_END
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatColoringRegister() for 
+  modify it to incorporate a call to MatColoringRegisterDynamic() for 
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -32,7 +32,7 @@ EXTERN_C_END
 
 .keywords: matrix, coloring, register, all
 
-.seealso: MatColoringRegister(), MatColoringRegisterDestroy()
+.seealso: MatColoringRegisterDynamic(), MatColoringRegisterDestroy()
 @*/
 int MatColoringRegisterAll(char *path)
 {
@@ -40,10 +40,10 @@ int MatColoringRegisterAll(char *path)
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = 1;  
-  ierr = MatColoringRegister(MATCOLORING_NATURAL,path,"MatColoring_Natural",    MatColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORING_SL,     path,"MatFDColoringSL_Minpack",MatFDColoringSL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORING_LF,     path,"MatFDColoringLF_Minpack",MatFDColoringLF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORING_ID,     path,"MatFDColoringID_Minpack",MatFDColoringID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_NATURAL,path,"MatColoring_Natural",    MatColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_SL,     path,"MatFDColoringSL_Minpack",MatFDColoringSL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_LF,     path,"MatFDColoringLF_Minpack",MatFDColoringLF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_ID,     path,"MatFDColoringID_Minpack",MatFDColoringID_Minpack);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

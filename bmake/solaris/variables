@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.13 1999/09/08 17:38:54 bsmith Exp balay $ 
+# $Id: base_variables,v 1.14 1999/09/28 21:53:03 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -49,15 +49,15 @@ OCOMP_COPTFLAGS	   = -fast -O2 -fsimple=2
 OCOMP_FOPTFLAGS	   = -fast
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK 
+                     -DPETSC_USE_STACK 
 O_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE_LOG
 GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK
+                     -DPETSC_USE_STACK
 OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
 GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_COMPLEX  -DUSE_FORTRAN_KERNELS -DPETSC_USE_STACK
+                     -DPETSC_USE_COMPLEX  -DUSE_FORTRAN_KERNELS -DPETSC_USE_STACK
 OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
-                   -DPETSC_USE_COMPLEX  -DUSE_FORTRAN_KERNELS
+                     -DPETSC_USE_COMPLEX  -DUSE_FORTRAN_KERNELS
 # ############################ Notes ############################################
 #
 #  1) use the Solaris command fpversion to get detailed compiler optimization

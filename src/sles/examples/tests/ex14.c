@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.17 1999/09/27 21:31:30 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.19 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -97,20 +97,20 @@ int main( int argc, char **argv )
   int      Nx, Ny;              /* number of preocessors in x- and y- directions */
   int      size;                /* number of processors */
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  int      m, flg, N, ierr;
+  int      m, N, ierr;
 
   /* --------------- Data to define nonlinear solver -------------- */
-  double   rtol = 1.e-8;        /* relative convergence tolerance */
-  double   xtol = 1.e-8;        /* step convergence tolerance */
-  double   ttol;                /* convergence tolerance */
-  double   fnorm, ynorm, xnorm; /* various vector norms */
-  int      max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
-  int      max_functions = 50;  /* maximum number of function evaluations */
-  int      lin_its;             /* number of linear solver iterations for each step */
+  double       rtol = 1.e-8;        /* relative convergence tolerance */
+  double       xtol = 1.e-8;        /* step convergence tolerance */
+  double       ttol;                /* convergence tolerance */
+  double       fnorm, ynorm, xnorm; /* various vector norms */
+  int          max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
+  int          max_functions = 50;  /* maximum number of function evaluations */
+  int          lin_its;             /* number of linear solver iterations for each step */
+  int          i;                   /* nonlinear solve iteration number */
   MatStructure mat_flag;        /* flag indicating structure of preconditioner matrix */
-  int      i;                   /* nonlinear solve iteration number */
-  int      no_output;           /* flag indicating whether to surpress output */
-  Scalar   mone = -1.0;       
+  PetscTruth   no_output;           /* flag indicating whether to surpress output */
+  Scalar       mone = -1.0;       
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   comm = PETSC_COMM_WORLD;
@@ -121,9 +121,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -144,8 +144,8 @@ int main( int argc, char **argv )
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,

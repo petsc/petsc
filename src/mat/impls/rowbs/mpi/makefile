@@ -1,4 +1,7 @@
-# $Id: makefile,v 1.30 1999/01/26 18:29:38 bsmith Exp balay $ 
+# $Id: makefile,v 1.31 1999/02/02 21:26:38 balay Exp bsmith $ 
+
+#requirespackage  '-DPETSC_HAVE_BLOCKSOLVE'
+#requiresscalar real 
 
 ALL: lib
 

@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.12 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: bitarray.h,v 1.13 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 
 /*    
 
@@ -9,8 +9,8 @@
      PetscBTMemzero(m,bt)       - zeros the entire bit array (sets all values to false)
      PetscBTSet(bt,index)       - sets a particular entry as true
      PetscBTClear(bt,index)     - sets a particular entry as false
-     PetscBTLoopup(bt,index)    - returns the value 
-     PetscBTLoopupSet(bt,index) - returns the value and then sets it true
+     PetscBTLookup(bt,index)    - returns the value 
+     PetscBTLookupSet(bt,index) - returns the value and then sets it true
      PetscBTLength(m)           - returns number of bytes in array with m bits
      PetscBTView(m,bt,viewer)   - prints all the entries in a bit array
 
@@ -32,7 +32,7 @@
 #define BITSPERBYTE 8
 #endif
 
-typedef char* BTPetsc;
+typedef char* PetscBT;
 
 extern char _BT_mask, _BT_c;
 extern int  _BT_idx;
@@ -42,7 +42,7 @@ extern int  _BT_idx;
   Viewer __viewer = viewer; \
   if (!__viewer) __viewer = VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
-    __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLoopup(bt,__i)); CHKERRQ(__ierr);\
+    __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i)); CHKERRQ(__ierr);\
   }}
 
 #define PetscBTLength(m)        ((m)/BITSPERBYTE+1)*sizeof(char)
@@ -52,7 +52,7 @@ extern int  _BT_idx;
 
 #define PetscBTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE+1)
 
-#define PetscBTLoopupSet(array, index)    (_BT_idx           = (index)/BITSPERBYTE, \
+#define PetscBTLookupSet(array, index)    (_BT_idx           = (index)/BITSPERBYTE, \
                                         _BT_c           = array[_BT_idx], \
                                         _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                         array[_BT_idx]  = _BT_c | _BT_mask, \
@@ -69,7 +69,7 @@ extern int  _BT_idx;
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                  array[_BT_idx]  = _BT_c & (~_BT_mask),0)
 
-#define PetscBTLoopup(array, index) (_BT_idx          = (index)/BITSPERBYTE, \
+#define PetscBTLookup(array, index) (_BT_idx          = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                  (_BT_c & _BT_mask) != 0 )

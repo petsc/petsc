@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.175 1999/10/13 20:37:25 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.177 1999/10/24 14:02:22 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -630,7 +630,8 @@ int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
 
   PetscFunctionBegin;
-  *m = mbd->M; *n = mbd->N;
+  if (m) *m = mbd->M; 
+  if (n) *n = mbd->N;
   PetscFunctionReturn(0);
 }
 
@@ -909,20 +910,21 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
 {
   Mat          B;
   Mat_MPIBDiag *b;
-  int          ierr, i, k, *ldiag, len, dset = 0, nd2,flg1,flg2;
+  int          ierr, i, k, *ldiag, len, dset = 0, nd2;
+  PetscTruth   flg1,flg2;
   Scalar       **ldiagv = 0;
 
   PetscFunctionBegin;
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_diags",&flg2);CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
     diag = (int *)PetscMalloc(nd * sizeof(int));CHKPTRQ(diag);
     nd2 = nd; dset = 1;
-    ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
+    ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,PETSC_NULL);CHKERRQ(ierr);
     if (nd2 != nd) {
       SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible number of diags and diagonal vals");
     }
@@ -1028,7 +1030,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = MatPrintHelp(B);CHKERRQ(ierr);}
   if (dset) {ierr = PetscFree(diag);CHKERRQ(ierr);}
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIBDiag",
                                      (void*)MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
   *A = B;
@@ -1103,7 +1105,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   int          bs, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
   int          header[4], rank, size, *rowlengths = 0, M, N, m,Mbs;
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
-  int          tag = ((PetscObject)viewer)->tag,flg,extra_rows;
+  int          tag = ((PetscObject)viewer)->tag,extra_rows;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1120,7 +1122,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   M = header[1]; N = header[2];
 
   bs = 1;   /* uses a block size of 1 by default; */
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      This code adds extra rows to make sure the number of rows is 

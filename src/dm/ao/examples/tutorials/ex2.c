@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.21 1999/09/02 14:54:19 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.23 1999/10/24 14:04:02 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -584,7 +584,7 @@ int DataPartitionVertices(GridData *gdata)
 {
   int        n_vert = gdata->n_vert,ierr,*localvert;
   int        rank,size,mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
-  BTPetsc    mask;
+  PetscBT    mask;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -615,7 +615,7 @@ int DataPartitionVertices(GridData *gdata)
   if (rank == size-1) {
     /* last processor gets all the rest */
     for ( i=0; i<n_vert; i++ ) {
-      if (!PetscBTLoopup(mask,i)) {
+      if (!PetscBTLookup(mask,i)) {
         nlocal++;
       }
     }
@@ -633,7 +633,7 @@ int DataPartitionVertices(GridData *gdata)
     /* count my vertices */
     for ( i=0; i<mlocal_ele; i++ ) {
       for ( j=0; j<3; j++ ) {
-        if (!PetscBTLoopupSet(mask,ele[3*i+j])) {
+        if (!PetscBTLookupSet(mask,ele[3*i+j])) {
           localvert[nlocal++] = ele[3*i+j];
           if (nlocal >= nmax) goto foundenough2;
         }
@@ -643,7 +643,7 @@ int DataPartitionVertices(GridData *gdata)
   } else {
     /* last processor gets all the rest */
     for ( i=0; i<n_vert; i++ ) {
-      if (!PetscBTLoopup(mask,i)) {
+      if (!PetscBTLookup(mask,i)) {
         localvert[nlocal++] = i;
       }
     }

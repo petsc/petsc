@@ -1,4 +1,4 @@
-# $Id: common_g_complex,v 1.7 1999/08/19 17:58:51 balay Exp balay $ 
+# $Id: common_g_complex,v 1.8 1999/09/14 18:30:01 balay Exp bsmith $ 
 
 CC	       = ${CXX_CC}
 FC	       = ${CXX_FC}
@@ -13,3 +13,7 @@ COPTFLAGS      = ${GCOMP_COPTFLAGS}
 FOPTFLAGS      = ${GCOMP_FOPTFLAGS}
 
 BBOPT	       = ${GCOMP_BBOPT}
+
+PETSC_LANGUAGE = CPP
+PETSC_SCALAR   = complex
+

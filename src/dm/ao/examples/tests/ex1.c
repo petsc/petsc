@@ -1,4 +1,4 @@
-/* $Id: ex1.c,v 1.11 1999/05/04 20:37:15 balay Exp bsmith $ */
+/* $Id: ex1.c,v 1.13 1999/10/24 14:04:01 bsmith Exp bsmith $ */
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -9,13 +9,13 @@ static char help[] = "Demonstrates constructing an application ordering\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      n = 5, ierr,flg,rank,size,getpetsc[] = {0,3,4};
+  int      n = 5, ierr,rank,size,getpetsc[] = {0,3,4};
   int      getapp[] = {2,1,3,4};
   IS       ispetsc,isapp;
   AO       ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 

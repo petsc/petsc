@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1999/03/25 23:41:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.36 1999/06/30 22:50:14 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,8 +9,9 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/vec/examples/tutorials/
 
-TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
-		   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
+TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm \
+		   ex1e.PETSc runex1e runex1e_2 ex1e.rm ex2.PETSc \
+                   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                    ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
                    ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm \
                    ex9.PETSc runex9 runex9_2 ex9.rm clean 
@@ -40,6 +41,10 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 ex1: ex1.o  chkopts 
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
+
+ex1e: ex1e.o  chkopts 
+	-${CLINKER} -o ex1e ex1e.o ${PETSC_VEC_LIB}
+	${RM} -f ex1e.o
 
 ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
@@ -134,6 +139,16 @@ runex1_2:
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
+runex1e:
+	-@${MPIRUN} -np 1 ex1e > ex1_1.tmp 2>&1;   \
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1e_1, diffs above"; fi; \
+	   ${RM} -f ex1_1.tmp
+runex1e_2:
+	-@${MPIRUN}  -np 2 ex1e > ex1_2.tmp 2>&1;\
+	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
+	   else echo "Possible problem with ex1e_2, diffs above"; fi ;\
+	   ${RM} -f ex1_2.tmp
 runex1f:
 	-@${MPIRUN} -np 1  ex1f > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
@@ -180,25 +195,29 @@ runex4f90:
 	   else echo "Possible problem with ex4f90_1, diffs above"; fi;\
 	   ${RM} -f ex4f90_1.tmp
 runex5:
+	-@${RM} -f vector.dat.info vector.dat
 	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;\
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
-	   else echo "Possible problem with ex5_1, diffs above"; fi;\
-	   ${RM} -f ex5_1.tmp vector.dat
+	   else echo "Possible problem with ex5_1, diffs above"; fi
+	-@${RM} -f ex5_1.tmp vector.dat vector.dat.info
 runex5_2:
+	-@${RM} -f vector.dat.info vector.dat
 	-@${MPIRUN} -np 2 ex5 > ex5_2.tmp 2>&1;\
 	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
-	   else echo "Possible problem with ex5_2, diffs above"; fi;\
-	   ${RM} -f ex5_2.tmp vector.dat
+	   else echo "Possible problem with ex5_2, diffs above"; fi
+	-@${RM} -f ex5_2.tmp vector.dat vector.dat.info
 runex6:
+	-@${RM} -f input.dat input.dat.info
 	-@${MPIRUN} -np 1 ex6 > ex6_1.tmp 2>&1;\
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
-	   else echo "Possible problem with ex6_1, diffs above"; fi;\
-	   ${RM} -f ex6_1.tmp input.dat
+	   else echo "Possible problem with ex6_1, diffs above"; fi
+	-@${RM} -f ex6_1.tmp input.dat input.dat.info
 runex7:
-	-@${MPIRUN} -np 3 ex7 |sort > ex7_1.tmp 2>&1;\
+	-@${RM} -f input.dat input.dat.info
+	-@${MPIRUN} -np 3 ex7 | sort > ex7_1.tmp 2>&1;\
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
-	   else echo "Possible problem with ex7_1, diffs above"; fi;\
-	   ${RM} -f ex7_1.tmp input.dat
+	   else echo "Possible problem with ex7_1, diffs above"; fi
+	-@${RM} -f ex7_1.tmp input.dat input.dat.info
 runex8:
 	-@${MPIRUN} -np 4 ex8 > ex8_1.tmp 2>&1;\
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
@@ -239,9 +258,3 @@ runex12:
 	   if (diff output/ex12_1.out ex12_1.tmp) then true ;  \
 	   else echo "Possible problem with ex12_1, diffs above"; fi ;\
 	   ${RM} -f ex12_1.tmp
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.128 1999/10/13 20:37:17 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.130 1999/10/24 14:02:12 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -527,28 +527,38 @@ static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIDense_ASCII"
-static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
+#define __FUNC__ "MatView_MPIDense_ASCIIorDraworSocket"
+static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr, format, size = mdn->size, rank = mdn->rank; 
-  FILE         *fd;
   ViewerType   vtype;
+  PetscTruth   isascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-    MatInfo info;
-    ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
-         (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);       
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
-    PetscFunctionReturn(0); 
-  } else if (format == VIEWER_FORMAT_ASCII_INFO) {
-    PetscFunctionReturn(0);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
+      MatInfo info;
+      ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
+                   (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);       
+      ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
+      PetscFunctionReturn(0); 
+    } else if (format == VIEWER_FORMAT_ASCII_INFO) {
+      PetscFunctionReturn(0);
+    }
+  } else if (isdraw) {
+    Draw       draw;
+    PetscTruth isnull;
+
+    ierr = ViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+    ierr = DrawIsNull(draw, &isnull);CHKERRQ(ierr);
+    if (isnull) PetscFunctionReturn(0);
   }
 
   if (size == 1) { 
@@ -561,9 +571,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
     if (!rank) {
-      ierr = MatCreateMPIDense(mat->comm,M,mdn->nvec,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIDense(mat->comm,0,mdn->nvec,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(mat->comm,0,0,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
     }
     PLogObjectParent(mat,A);
 
@@ -596,15 +606,17 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 int MatView_MPIDense(Mat mat,Viewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,isbinary;
+  PetscTruth isascii,isbinary,isdraw,issocket;
  
   PetscFunctionBegin;
   
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
 
-  if (isascii) {
-    ierr = MatView_MPIDense_ASCII(mat,viewer);CHKERRQ(ierr);
+  if (isascii || issocket || isdraw) {
+    ierr = MatView_MPIDense_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
@@ -709,7 +721,8 @@ int MatGetSize_MPIDense(Mat A,int *m,int *n)
   Mat_MPIDense *mat = (Mat_MPIDense *) A->data;
 
   PetscFunctionBegin;
-  *m = mat->M; *n = mat->N;
+  if (m) *m = mat->M; 
+  if (n) *n = mat->N;
   PetscFunctionReturn(0);
 }
 
@@ -1037,7 +1050,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 {
   Mat          mat;
   Mat_MPIDense *a;
-  int          ierr, i,flg;
+  int          ierr, i;
+  PetscTruth   flg;
 
   PetscFunctionBegin;
   /* Note:  For now, when data is specified above, this assumes the user correctly
@@ -1060,7 +1074,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
 
-  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   a->nvec = n;
 
   /* each row stores all columns */
@@ -1103,7 +1117,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   a->Mvctx       = 0;
   a->roworiented = 1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIDense",
                                      (void*)MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
 

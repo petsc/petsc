@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.46 1999/09/14 18:30:41 balay Exp balay $ 
+# $Id: base.site,v 1.47 1999/10/04 22:25:01 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -98,7 +98,7 @@ BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_BLOCKSOLVE
+PCONF         = -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

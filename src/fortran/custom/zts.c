@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.20 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zts.c,v 1.21 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -143,7 +143,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name,int *__ierr,int len)
   char *tname;
 
   *__ierr = TSGetType(*ts,(TSType *)&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
     *__ierr = PetscStrncpy(t,tname,len1);
@@ -184,7 +184,7 @@ void PETSC_STDCALL tsgetoptionsprefix_(TS *ts, CHAR prefix,int *__ierr,int len)
   char *tname;
 
   *__ierr = TSGetOptionsPrefix(*ts,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
     *__ierr = PetscStrncpy(t,tname,len1);

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.38 1999/05/04 20:31:12 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.39 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Displays a vector visually.\n\n";
 
@@ -22,13 +22,13 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, istart, iend, n = 50, ierr, flg;
+  int        i, istart, iend, n = 50, ierr;
   Scalar     v;
   Vec        x;
   Viewer     viewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.

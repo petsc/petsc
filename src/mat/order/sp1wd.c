@@ -1,7 +1,7 @@
-/*$Id: sp1wd.c,v 1.29 1999/06/30 23:51:38 balay Exp bsmith $*/
+/*$Id: sp1wd.c,v 1.30 1999/10/24 14:02:23 bsmith Exp bsmith $*/
 
 #include "mat.h"
-#include "src/mat/impls/order/order.h"
+#include "src/mat/order/order.h"
 
 EXTERN_C_BEGIN
 /*

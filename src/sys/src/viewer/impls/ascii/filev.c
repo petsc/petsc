@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.97 1999/10/22 23:57:54 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.98 1999/10/24 02:35:10 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "pinclude/petscfix.h"
@@ -188,7 +188,7 @@ int ViewerASCIIPopTab(Viewer viewer)
 
     Input Parameters:
 +    viewer - optained with ViewerASCIIOpen()
--    flag - PETSC_YES or PETSC_NO
+-    flg - PETSC_YES or PETSC_NO
 
     Level: developer
 
@@ -200,7 +200,7 @@ int ViewerASCIIPopTab(Viewer viewer)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
           ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPushTab()
 @*/
-int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flag)
+int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flg)
 {
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
   PetscTruth   isascii;
@@ -210,7 +210,7 @@ int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flag)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (flag) {
+    if (flg) {
       ascii->tab       = ascii->tab_store;
     } else {
       ascii->tab_store = ascii->tab;
@@ -463,7 +463,7 @@ int ViewerCreate_ASCII(Viewer viewer)
   vascii->tab            = 0;
   vascii->tab_store      = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"ViewerSetFilename_C","ViewerSetFilename_ASCII",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"ViewerSetFilename_C","ViewerSetFilename_ASCII",
                                      (void*)ViewerSetFilename_ASCII);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

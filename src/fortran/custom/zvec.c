@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.55 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zvec.c,v 1.56 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
@@ -165,7 +165,7 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)
 {
   char *tname;
   *__ierr = VecGetType(*vv,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
   *__ierr = PetscStrncpy(t,tname,len1);

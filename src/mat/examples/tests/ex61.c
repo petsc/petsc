@@ -1,4 +1,4 @@
-/*$Id: ex61.c,v 1.4 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex61.c,v 1.5 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
 
@@ -17,12 +17,13 @@ int main(int argc,char **args)
 {
   Mat         A;
   Scalar      v;
-  int         ierr,i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2},flag;
+  int         ierr,i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-baij",&flag);CHKERRA(ierr);
-  if (flag) {
+  ierr = OptionsHasName(PETSC_NULL,"-baij",&flg);CHKERRA(ierr);
+  if (flg) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,PETSC_NULL,rowlens,&A);CHKERRA(ierr);
     ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRA(ierr);
   } else {

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.182 1999/10/13 20:37:50 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.184 1999/10/24 14:02:56 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -344,8 +344,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 
    Input Parameters:
 +  pc - the preconditioner context
-.  side - indicates the preconditioner side, one of
-$   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
+.  side - indicates the preconditioner side, one of PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
 -  work - work vector
 
@@ -404,14 +403,14 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 #define __FUNC__ "PCApplyBAorABTrans"
 /*@ 
    PCApplyBAorABTrans - Applies the transpose of the preconditioner
-   and operator to a vector.
+   and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
+   not tr(B*A) = tr(A)*tr(B).
 
    Collective on PC and Vec
 
    Input Parameters:
 +  pc - the preconditioner context
-.  side - indicates the preconditioner side, one of
-$   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
+.  side - indicates the preconditioner side, one of PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
 -  work - work vector
 
@@ -447,11 +446,11 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   }
 
   if (side == PC_RIGHT) {
-    ierr = MatMultTrans(pc->mat,x,work);CHKERRQ(ierr);
-    ierr = PCApplyTrans(pc,work,y);CHKERRQ(ierr);
-  } else if (side == PC_LEFT) {
     ierr = PCApplyTrans(pc,x,work);CHKERRQ(ierr);
     ierr = MatMultTrans(pc->mat,work,y);CHKERRQ(ierr);
+  } else if (side == PC_LEFT) {
+    ierr = MatMultTrans(pc->mat,x,work);CHKERRQ(ierr);
+    ierr = PCApplyTrans(pc,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
   PetscFunctionReturn(0); /* actually will never get here */
@@ -1256,10 +1255,10 @@ int PCView(PC pc,Viewer viewer)
 }
 
 /*MC
-   PCRegister - Adds a method to the preconditioner package.
+   PCRegisterDynamic - Adds a method to the preconditioner package.
 
    Synopsis:
-   PCRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+   PCRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
 
    Not collective
 
@@ -1270,14 +1269,14 @@ int PCView(PC pc,Viewer viewer)
 -  routine_create - routine to create method context
 
    Notes:
-   PCRegister() may be called multiple times to add several user-defined preconditioners.
+   PCRegisterDynamic() may be called multiple times to add several user-defined preconditioners.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   PCRegister("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
+   PCRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
               "MySolverCreate",MySolverCreate);
 .ve
 
@@ -1296,15 +1295,15 @@ $     -pc_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegister_Private"
-int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
+#define __FUNC__ "PCRegister"
+int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
 
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

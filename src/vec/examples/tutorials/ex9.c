@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.17 1999/10/13 20:37:12 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.18 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -30,7 +30,8 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend,flag;
+  int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend;
+  PetscTruth flg;
   Scalar     value,*array,*tarray=0;
   Vec        lx,gx,gxs;
 
@@ -71,8 +72,8 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same 
      array for storing vector values.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flag);CHKERRA(ierr);
-  if (flag) {
+  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
+  if (flg) {
     tarray = (Scalar *) PetscMalloc( (nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
   } else {
@@ -116,7 +117,7 @@ int main(int argc,char **argv)
 
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRA(ierr); 
   ierr = VecDestroy(gx);CHKERRA(ierr);
-  if (flag) {ierr = PetscFree(tarray);CHKERRA(ierr);}
+  if (flg) {ierr = PetscFree(tarray);CHKERRA(ierr);}
   PetscFinalize();
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.199 1999/10/13 20:38:25 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.201 1999/10/24 14:03:31 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -147,8 +147,9 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 @*/
 int SNESSetTypeFromOptions(SNES snes)
 {
-  char     type[256];
-  int      ierr, flg;
+  char       type[256];
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -222,16 +223,17 @@ int SNESSetTypeFromOptions(SNES snes)
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  double   tmp;
-  SLES     sles;
-  int      ierr, flg,i,loc[4],nmax = 4;
-  int      version   = PETSC_DEFAULT;
-  double   rtol_0    = PETSC_DEFAULT;
-  double   rtol_max  = PETSC_DEFAULT;
-  double   gamma2    = PETSC_DEFAULT;
-  double   alpha     = PETSC_DEFAULT;
-  double   alpha2    = PETSC_DEFAULT;
-  double   threshold = PETSC_DEFAULT;
+  double     tmp;
+  SLES       sles;
+  PetscTruth flg;
+  int        ierr,i,loc[4],nmax = 4;
+  int        version   = PETSC_DEFAULT;
+  double     rtol_0    = PETSC_DEFAULT;
+  double     rtol_max  = PETSC_DEFAULT;
+  double     gamma2    = PETSC_DEFAULT;
+  double     alpha     = PETSC_DEFAULT;
+  double     alpha2    = PETSC_DEFAULT;
+  double     threshold = PETSC_DEFAULT;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -250,21 +252,21 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) { ierr = SNESSetTrustRegionTolerance(snes,tmp);CHKERRQ(ierr); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);CHKERRQ(ierr);
   if (flg) { ierr = SNESSetMinimizationFunctionTolerance(snes,tmp);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);CHKERRQ(ierr);
   if (flg) { snes->ksp_ewconv = 1; }
-  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = OptionsHasName(snes->prefix,"-snes_no_convergence_test",&flg);CHKERRQ(ierr);
   if (flg) {snes->converged = 0;}
@@ -1371,7 +1373,8 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 @*/
 int SNESSetUp(SNES snes,Vec x)
 {
-  int ierr, flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -2013,7 +2016,8 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 @*/
 int SNESSolve(SNES snes,Vec x,int *its)
 {
-  int ierr, flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -2115,7 +2119,7 @@ int SNESSetType(SNES snes,SNESType type)
 #define __FUNC__ "SNESRegisterDestroy"
 /*@C
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegister().
+   registered by SNESRegisterDynamic().
 
    Not Collective
 
@@ -2528,10 +2532,10 @@ int SNESPrintHelp(SNES snes)
 }
 
 /*MC
-   SNESRegister - Adds a method to the nonlinear solver package.
+   SNESRegisterDynamic - Adds a method to the nonlinear solver package.
 
    Synopsis:
-   SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
+   SNESRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
 
    Not collective
 
@@ -2542,14 +2546,14 @@ int SNESPrintHelp(SNES snes)
 -  routine_create - routine to create method context
 
    Notes:
-   SNESRegister() may be called multiple times to add several user-defined solvers.
+   SNESRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   SNESRegister("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
+   SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
                 "MySolverCreate",MySolverCreate);
 .ve
 
@@ -2568,14 +2572,14 @@ $     -snes_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "SNESRegister_Private"
-int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES))
+#define __FUNC__ "SNESRegister"
+int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
 {
   char fullname[256];
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

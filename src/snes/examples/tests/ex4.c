@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.47 1999/05/04 20:36:07 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.49 1999/10/24 14:03:39 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -54,27 +54,28 @@ extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES     snes;                 /* SNES context */
-  SNESType method = SNESEQLS;    /* default nonlinear solution method */
-  Vec      x, r;                 /* solution, residual vectors */
-  Mat      J;                    /* Jacobian matrix */
-  AppCtx   user;                 /* user-defined application context */
-  Draw     draw;                 /* drawing context */
-  int      ierr, its, N, nfails,flg,cavity; 
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Scalar   *xvalues;
+  SNES       snes;                 /* SNES context */
+  SNESType   method = SNESEQLS;    /* default nonlinear solution method */
+  Vec        x, r;                 /* solution, residual vectors */
+  Mat        J;                    /* Jacobian matrix */
+  AppCtx     user;                 /* user-defined application context */
+  Draw       draw;                 /* drawing context */
+  int        ierr, its, N, nfails;
+  PetscTruth flg,cavity; 
+  double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  Scalar     *xvalues;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRA(ierr);
   if (cavity) user.param = 100.0;
   else        user.param = 6.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -90,13 +91,11 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method);CHKERRA(ierr);
 
   /* Set various routines and compute initial guess for nonlinear solver */
-  ierr = OptionsHasName(PETSC_NULL,"-cavity",&flg);CHKERRA(ierr);
-  if (flg){
+  if (cavity){
     ierr = FormInitialGuess2(&user,x);CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user);CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user);CHKERRA(ierr);
-  }
-  else {
+  } else {
     ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);

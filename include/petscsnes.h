@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.93 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.94 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -34,11 +34,11 @@ extern FList SNESList;
 extern int SNESRegisterDestroy(void);
 extern int SNESRegisterAll(char *);
 
-extern int SNESRegister_Private(char*,char*,char*,int(*)(SNES));
+extern int SNESRegister(char*,char*,char*,int(*)(SNES));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,0)
+#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,0)
 #else
-#define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,d)
+#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
 #endif
 
 extern int SNESGetSLES(SNES,SLES*);
@@ -66,11 +66,11 @@ extern int MatSNESMFKSPMonitor(KSP,int,double,void *);
 extern int MatSNESMFSetFromOptions(Mat);
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 extern int MatSNESMFSetType(Mat,char*);
-extern int MatSNESMFRegister_Private(char *,char *,char *,int (*)(MatSNESMFCtx));
+extern int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,0)
+#define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,0)
 #else
-#define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,d)
+#define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,d)
 #endif
 extern int MatSNESMFRegisterAll(char *);
 extern int MatSNESMFRegisterDestroy(void);

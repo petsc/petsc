@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.42 1999/10/13 20:36:26 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.44 1999/10/24 14:01:07 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
@@ -218,8 +218,9 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
 +  comm - communicator that will share window
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar, or null for no title
-.  x, y - the screen coordinates of the upper left corner of window
--  w, h - the screen width and height in pixels
+.  x, y - the screen coordinates of the upper left corner of window, or use PETSC_DECIDE
+-  w, h - window width and height in pixels, or may use PETSC_DECIDE or DRAW_FULL_SIZE, DRAW_HALF_SIZE,
+          DRAW_THIRD_SIZE, DRAW_QUARTER_SIZE
 
    Output Parameters:
 .  viewer - the viewer
@@ -389,12 +390,12 @@ Viewer VIEWER_DRAW_SELF_PRIVATE = 0, VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
 #define __FUNC__ "ViewerInitializeDrawSelf_Private" 
 int ViewerInitializeDrawSelf_Private(void)
 {
-  int ierr,xywh[4],size = 4,flg;
+  int ierr,xywh[4],size = 4;
 
   PetscFunctionBegin;
   if (VIEWER_DRAW_SELF_PRIVATE) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAW_SELF_PRIVATE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -404,12 +405,12 @@ int ViewerInitializeDrawSelf_Private(void)
 #define __FUNC__ "ViewerInitializeDrawWorld_Private_0" 
 int ViewerInitializeDrawWorld_Private_0(void)
 {
-  int ierr,xywh[4],size = 4,flg;
+  int ierr,xywh[4],size = 4;
 
   PetscFunctionBegin;
   if (VIEWER_DRAW_WORLD_PRIVATE_0) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAW_WORLD_PRIVATE_0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -419,12 +420,12 @@ int ViewerInitializeDrawWorld_Private_0(void)
 #define __FUNC__ "ViewerInitializeDrawWorld_Private_1" 
 int ViewerInitializeDrawWorld_Private_1(void)
 {
-  int ierr,xywh[4],size = 4,flg;
+  int ierr,xywh[4],size = 4;
 
   PetscFunctionBegin;
   if (VIEWER_DRAW_WORLD_PRIVATE_1) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAW_WORLD_PRIVATE_1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -434,12 +435,12 @@ int ViewerInitializeDrawWorld_Private_1(void)
 #define __FUNC__ "ViewerInitializeDrawWorld_Private_2" 
 int ViewerInitializeDrawWorld_Private_2(void)
 {
-  int ierr,xywh[4],size = 4,flg;
+  int ierr,xywh[4],size = 4;
 
   PetscFunctionBegin;
   if (VIEWER_DRAW_WORLD_PRIVATE_2) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAW_WORLD_PRIVATE_2);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: isdiff.c,v 1.12 1999/09/27 21:29:05 bsmith Exp bsmith $*/
+/*$Id: isdiff.c,v 1.14 1999/10/24 14:01:49 bsmith Exp bsmith $*/
 
 #include "is.h"                    /*I "is.h"  I*/
 #include "petsc.h"
@@ -32,7 +32,7 @@
 int ISDifference(IS is1,IS is2, IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
-  BTPetsc  mask;
+  PetscBT  mask;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -74,14 +74,14 @@ int ISDifference(IS is1,IS is2, IS *isout)
   /* Count the number in the difference */
   nout = 0;
   for ( i=0; i<imax-imin+1; i++ ) {
-    if (PetscBTLoopup(mask,i)) nout++;
+    if (PetscBTLookup(mask,i)) nout++;
   }
 
   /* create the new IS containing the difference */
   iout = (int *) PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
   for ( i=0; i<imax-imin+1; i++ ) {
-    if (PetscBTLoopup(mask,i)) iout[nout++] = i + imin;
+    if (PetscBTLookup(mask,i)) iout[nout++] = i + imin;
   }
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
 int ISSum(IS is1,IS is2, IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
-  BTPetsc  mask;
+  PetscBT  mask;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -155,7 +155,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   /* Put the values from is1 */
   for ( i=0; i<n1; i++ ) {
     if (i1[i] < 0) continue;
-    if (!PetscBTLoopupSet(mask,i1[i] - imin)) {
+    if (!PetscBTLookupSet(mask,i1[i] - imin)) {
       iout[nout++] = i1[i];
     }
   }
@@ -163,7 +163,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   /* Put the values from is2 */
   for ( i=0; i<n2; i++ ) {
     if (i2[i] < 0) continue;
-    if (!PetscBTLoopupSet(mask,i2[i] - imin)) {
+    if (!PetscBTLookupSet(mask,i2[i] - imin)) {
       iout[nout++] = i2[i];
     }
   }

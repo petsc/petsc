@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.36 1999/06/30 23:54:44 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.37 1999/10/24 14:03:53 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -320,8 +320,9 @@ int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 #define __FUNC__ "TSSetFromOptions_Pseudo"
 static int TSSetFromOptions_Pseudo(TS ts)
 {
-  int    ierr,flg;
-  double inc;
+  int        ierr;
+  PetscTruth flg;
+  double     inc;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
@@ -631,16 +632,16 @@ int TSCreate_Pseudo(TS ts )
   pseudo->increment_dt_from_initial_dt = 0;
   pseudo->dt                           = TSPseudoDefaultTimeStep;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",
                     "TSPseudoSetVerifyTimeStep_Pseudo",
                     (void*)TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
                     "TSPseudoSetTimeStepIncrement_Pseudo",
                     (void*)TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
                     "TSPseudoIncrementDtFromInitialDt_Pseudo",
                     (void*)TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",
                     (void*)TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

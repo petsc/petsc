@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.329 1999/10/13 20:37:19 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.331 1999/10/24 14:02:14 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -811,13 +811,13 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  Scalar     *x, *y, *v, alpha;
+  Scalar     *x, *y, *v, alpha, zero = 0.0;
   int        ierr,m = a->m, n, i, *idx, shift = a->indexshift;
 
   PetscFunctionBegin; 
+  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemzero(y,a->n*sizeof(Scalar));CHKERRQ(ierr);
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
     idx   = a->j + a->i[i] + shift;
@@ -1718,7 +1718,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        shift, row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val;
   int        start, end, *ai, *aj;
-  BTPetsc    table;
+  PetscBT    table;
 
   PetscFunctionBegin;
   shift = a->indexshift;
@@ -1742,7 +1742,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     
     /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
-      if(!PetscBTLoopupSet(table, idx[j])) { nidx[isz++] = idx[j];}
+      if(!PetscBTLookupSet(table, idx[j])) { nidx[isz++] = idx[j];}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -1756,7 +1756,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if (!PetscBTLoopupSet(table,val)) {nidx[isz++] = val;}
+          if (!PetscBTLookupSet(table,val)) {nidx[isz++] = val;}
         }
       }
     }
@@ -2192,7 +2192,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat        B;
   Mat_SeqAIJ *b;
-  int        i, len, ierr, flg,size;
+  int        i, len, ierr, size;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2216,9 +2217,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,&flg);CHKERRQ(ierr);
-  b->ilu_preserve_row_sums = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",(int*)&b->ilu_preserve_row_sums);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",&b->ilu_preserve_row_sums);CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;
@@ -2296,13 +2296,13 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqAIJ",
                                      (void*)MatStoreValues_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      (void*)MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);

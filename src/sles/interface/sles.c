@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.126 1999/10/13 20:37:48 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.128 1999/10/24 14:02:54 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -261,7 +261,8 @@ int SLESSetTypesFromOptions(SLES sles)
 @*/
 int SLESSetFromOptions(SLES sles)
 {
-  int ierr,flag;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
@@ -512,7 +513,8 @@ static int slesdoublecount = 0;
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
-  int        ierr, flg;
+  int        ierr;
+  PetscTruth flg;
   KSP        ksp;
   PC         pc;
 
@@ -629,7 +631,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 @*/
 int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
 {
-  int        ierr, flg;
+  int        ierr;
+  PetscTruth flg;
   KSP        ksp;
   PC         pc;
 

@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.57 1999/10/01 21:20:56 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.59 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -60,14 +60,14 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(Viewer viewer,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,flag;
+  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs;
   Vec         vec;
   Scalar      *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
   Map         map;
-  PetscTruth  isbinary;
+  PetscTruth  isbinary,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -136,13 +136,13 @@ int VecLoad(Viewer viewer,Vec *newvec)
 #define __FUNC__ "VecLoadIntoVector_Default"
 int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,flag,(*f)(Viewer,Vec);
+  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,(*f)(Viewer,Vec);
   Scalar      *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
   Map         map;
-  PetscTruth  isbinary;
+  PetscTruth  isbinary,flag;
 
   PetscFunctionBegin;
 

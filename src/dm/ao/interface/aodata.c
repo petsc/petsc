@@ -1,8 +1,9 @@
-/*$Id: aodata.c,v 1.38 1999/10/13 20:38:51 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.40 1999/10/24 14:03:58 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
 #include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
+
 
 #undef __FUNC__  
 #define __FUNC__ "AODataGetInfo" 
@@ -55,31 +56,45 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 .  keyname - string name of key
 
    Output Parameter:
-+  flag - 1 if found, 0 if not found
++  flag - PETSC_TRUE if found, PETSC_FALSE if not found
 -  key - the associated key
 
    Level: advanced
 
 */
-int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key)
+int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKey **key)
 {
-  int match;
+  int         match;
+  AODataAlias *t = aodata->aliases;
+  char        *name = keyname;
+  AODataKey   *nkey;
 
   PetscFunctionBegin;
-  *key   = aodata->keys;
-  *flag  = 0;
-  while (*key) {
-    match = !PetscStrcmp((*key)->name,keyname);
-    if (match) {
-       /* found the key */
-       *flag  = 1;
-       PetscFunctionReturn(0);
+  *key   = PETSC_NULL;
+  *flag  = PETSC_FALSE;
+  while (name) {
+    nkey  = aodata->keys;
+    while (nkey) {
+      match = !PetscStrcmp(nkey->name,name);
+      if (match) {
+        /* found the key */
+        *key   = nkey;
+        *flag  = PETSC_TRUE;
+        PetscFunctionReturn(0);
+      }
+      *key = nkey;
+      nkey = nkey->next;
     }
-    if (!(*key)->next) {
-       *flag  = 0;
-       PetscFunctionReturn(0);
+    name = 0;
+    while (t) {
+      match = !PetscStrcmp(keyname,t->alias);
+      if (match) {
+        name = t->name;
+        t    = t->next;
+        break;
+      }
+      t = t->next;
     }
-    *key = (*key)->next;
   } 
   PetscFunctionReturn(0);
 }
@@ -102,8 +117,9 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key
 @*/
 int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 {
-  int       ierr,iflag;
-  AODataKey *ikey;
+  int        ierr;
+  PetscTruth iflag;
+  AODataKey  *ikey;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -127,40 +143,55 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 -  segname - string name of segment
 
    Output Parameter:
-+  flag - 1 if found, 0 if key but no segment, -1 if no key no segment
++  flag - PETSC_TRUE if found, PETSC_FALSE if not
 .  key - integer of keyname
 -  segment - integer of segment
+
+   If it doesn't find it, it returns the last seg in the key (if the key exists)
 
    Level: advanced
 
 */
-int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *flag,AODataKey **key,
-                              AODataSegment **seg)
+int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscTruth *flag,AODataKey **key,AODataSegment **seg)
 {
-  int  ierr,keyflag;
-  int  match;
+  int           ierr;
+  PetscTruth    keyflag;
+  int           match;
+  AODataAlias   *t = aodata->aliases;
+  char          *name;
+  AODataSegment *nseg;
 
   PetscFunctionBegin;
-  ierr = AODataKeyFind_Private(aodata,keyname,&keyflag,key);CHKERRQ(ierr);
-  if (keyflag) { /* found key now look for flag */
-    *seg = (*key)->segments;
-    while(*seg) {
-      match = !PetscStrcmp((*seg)->name,segname);
-      if (match) {
-        /* found the segment */
-        *flag  = 1;
-        PetscFunctionReturn(0);
+  *seg  = PETSC_NULL;
+  *flag = PETSC_FALSE;
+  ierr  = AODataKeyFind_Private(aodata,keyname,&keyflag,key);CHKERRQ(ierr);
+  if (keyflag) { /* found key now look for segment */
+    name = segname;
+    while (name) {
+      nseg = (*key)->segments;
+      while (nseg) {
+        match = !PetscStrcmp(nseg->name,name);
+        if (match) {
+          /* found the segment */
+          *seg   = nseg;
+          *flag  = PETSC_TRUE;
+          PetscFunctionReturn(0);
+        }
+        *seg = nseg;
+        nseg = nseg->next;
       }
-      if (!(*seg)->next) {
-         *flag  = 0;
-         PetscFunctionReturn(0);
+      name = 0;
+      while (t) {
+        match = !PetscStrcmp(segname,t->alias); CHKERRQ(ierr);
+        if (match) {
+          name = t->name;
+          t    = t->next;
+          break;
+        }
+        t = t->next;
       }
-      *seg = (*seg)->next;
     }
-    *flag = 0;
-    PetscFunctionReturn(0);
   } 
-  *flag = -1;
   PetscFunctionReturn(0);
 }
 
@@ -183,15 +214,16 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
 @*/
 int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
 {
-  int           ierr,iflag;
+  int           ierr;
+  PetscTruth    iflag;
   AODataKey     *ikey;
   AODataSegment *iseg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&iflag,&ikey,&iseg);CHKERRQ(ierr);
-  if (iflag == 1) *flag = PETSC_TRUE;
-  else            *flag = PETSC_FALSE;
+  if (iflag) *flag = PETSC_TRUE;
+  else       *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -837,9 +869,10 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataKeySetLocalToGlobalMapping" 
+#define __FUNC__ "AODataKeySetLocalTolGobalMapping" 
 /*@C
-   AODataKeySetLocalToGlobalMapping - Add another data key to a AOData database.
+   AODataKeySetLocalToGlobalMapping - Add a local to global mapping for a key in the 
+     in the database
 
    Not collective
 
@@ -852,12 +885,13 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 
 .keywords: database additions
 
-.seealso:
+.seealso: AODataKeyGetLocalToGlobalMapping()
 @*/
 int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
 {
-  int       ierr,flag;
-  AODataKey *ikey;
+  int        ierr;
+  PetscTruth flag;
+  AODataKey  *ikey;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -865,8 +899,12 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
   if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist");
 
+  if (ikey->ltog) {
+    SETERRQ1(1,1,"Database key %s already has local to global mapping",name);
+  }
+
   ikey->ltog = map;
-  PetscObjectReference((PetscObject) map);
+  ierr = PetscObjectReference((PetscObject) map);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
@@ -875,7 +913,7 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 #undef __FUNC__  
 #define __FUNC__ "AODataKeyGetLocalToGlobalMapping" 
 /*@C
-   AODataKeyGetLocalToGlobalMapping - Add another data key to a AOData database.
+   AODataKeyGetLocalToGlobalMapping - gets a local to global mapping from a database
 
    Not collective
 
@@ -890,12 +928,13 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 
 .keywords: database additions
 
-.seealso:
+.seealso: AODataKeySetLocalToGlobalMapping()
 @*/
 int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping *map)
 {
-  int       ierr,flag;
-  AODataKey *ikey;
+  int        ierr;
+  PetscTruth flag;
+  AODataKey  *ikey;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -931,8 +970,9 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 @*/
 int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 {
-  int       ierr,flag;
-  AODataKey *key;
+  int        ierr;
+  PetscTruth flag;
+  AODataKey  *key;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -971,9 +1011,10 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 @*/
 int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,char ***segnames)
 {
-  int           ierr,flag,i,n=0;
+  int           ierr,i,n=0;
   AODataKey     *key;
   AODataSegment *seg;
+  PetscTruth    flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -1021,7 +1062,8 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 @*/
 int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, PetscDataType *dtype)
 {
-  int           ierr,flag;
+  int           ierr;
+  PetscTruth    flag;
   AODataKey     *key;
   AODataSegment *seg;
 
@@ -1029,8 +1071,7 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&seg);CHKERRQ(ierr);
-  if (flag == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Segment never created: %s",segname);
-  if (flag == -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",keyname);
+  if (flag == PETSC_FALSE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Segment never created: %s",segname);
   if (bs)        *bs        = seg->bs;
   if (dtype)     *dtype     = seg->datatype;
 
@@ -1078,7 +1119,7 @@ int AODataView(AOData aodata, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAliasDestroy" 
+#define __FUNC__ "AODataAliasDestroy_Private" 
 static int AODataAliasDestroy_Private(AODataAlias *aliases)
 {
   AODataAlias *t = aliases;
@@ -1087,13 +1128,38 @@ static int AODataAliasDestroy_Private(AODataAlias *aliases)
   PetscFunctionBegin;
   if (t) {
     t = aliases->next;
+    ierr = PetscFree(aliases->name);CHKERRQ(ierr);
+    ierr = PetscFree(aliases->alias);CHKERRQ(ierr);
     ierr = PetscFree(aliases);CHKERRQ(ierr);
     while (t) {
       aliases = t;
       t       = t->next;
+      ierr = PetscFree(aliases->name);CHKERRQ(ierr);
+      ierr = PetscFree(aliases->alias);CHKERRQ(ierr);
       ierr    = PetscFree(aliases);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataAliasAdd" 
+int AODataAliasAdd(AOData aodata,char *alias,char *name)
+{
+  AODataAlias *t = aodata->aliases;
+  int         ierr;
+
+  PetscFunctionBegin;
+  if (t) {
+    while (t->next) t = t->next;
+    t->next = PetscNew(AODataAlias);CHKPTRQ(t->next);
+    t       = t->next;
+  } else {
+    aodata->aliases = t = PetscNew(AODataAlias);CHKPTRQ(t);
+  }
+  ierr    = PetscStrallocpy(alias,&t->alias);CHKERRQ(ierr);
+  ierr    = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
+  t->next = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1242,8 +1308,8 @@ int AODataPublish_Petsc(PetscObject obj)
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   /* Loop over keys publishing info on each */
   for ( keys=0; keys<ao->nkeys; keys++ ) {
-    if (keys == 0) key = ao->keys;
-    else           key = key->next;
+    if (!keys) key = ao->keys;
+    else       key = key->next;
 
     ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
     ierr = PetscStrcat(tmp,"_N");CHKERRQ(ierr);
@@ -1256,8 +1322,8 @@ int AODataPublish_Petsc(PetscObject obj)
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
     for (segments=0; segments<key->nsegments; segments++) {
-      if (segments == 0) segment = key->segments;
-      else               segment = segment->next;
+      if (!segments) segment = key->segments;
+      else           segment = segment->next;
    
       ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
       ierr = PetscStrcat(tmp,"_");CHKERRQ(ierr);
@@ -1350,15 +1416,16 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 @*/
 int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 {
-  int       ierr,flag,size,rank,i,len;
-  AODataKey *key,*oldkey;
-  MPI_Comm  comm = aodata->comm;
+  int        ierr,size,rank,i,len;
+  AODataKey  *key,*oldkey;
+  MPI_Comm   comm = aodata->comm;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
-  if (flag == 1)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
+  if (flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
 
   key                = PetscNew(AODataKey);CHKPTRQ(key);
   if (oldkey) { oldkey->next = key;} 
@@ -1473,8 +1540,7 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 
 .seealso: AODataSegmentAdd()
 @*/
-int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
-                       PetscDataType dtype)
+int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,PetscDataType dtype)
 {
   int n,*keys,ierr;
 
@@ -1488,3 +1554,9 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
   ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.51 1999/10/04 18:49:25 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.52 1999/10/24 14:01:23 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -128,8 +128,8 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,*par3,arch[10],buff[10],*en,*gz,*tpar2;
-  int        ierr,flag,len1,len2,len;
-  PetscTruth tflg;
+  int        ierr,len1,len2,len;
+  PetscTruth tflg,flg;
 
   PetscFunctionBegin;
 
@@ -215,11 +215,11 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   if (en) {
     ierr = PetscStrlen(en,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(PETSC_SLSUFFIX,&len2);CHKERRQ(ierr); 
-    flag = (len1 != 1 + len2);
+    flg = (PetscTruth) (len1 != 1 + len2);
   } else {
-    flag = 1;
+    flg = PETSC_TRUE;
   }
-  if (flag) {
+  if (flg) {
     ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
     ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
   }
@@ -304,7 +304,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
              libname,par2,dlerror());
   }
 
-  /* run the function FListAdd() if it is in the library */
+  /* run the function FListAddDynamic() if it is in the library */
   func  = (int (*)(const char *)) dlsym(*handle,"DLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.51 1999/10/13 20:38:08 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.52 1999/10/24 14:03:11 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -49,7 +49,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   bbotold = 1.0; /* a hack */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,R);CHKERRQ(ierr);    /*   r <- b - Ax       */
+    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);    /*   r <- b - Ax       */
     ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);         /*    r <- b (x is 0)  */
@@ -57,7 +57,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = VecSet(&zero,Pm1);CHKERRQ(ierr);      /*    pm1 <- 0         */
   ierr = VecSet(&zero,Sm1);CHKERRQ(ierr);      /*    sm1 <- 0         */
   ierr = VecSet(&zero,Qm1);CHKERRQ(ierr);      /*    Qm1 <- 0         */
-  ierr = PCApply(ksp->B,R,P);CHKERRQ(ierr);    /*     p <- Br         */
+  ierr = KSP_PCApply(ksp,ksp->B,R,P);CHKERRQ(ierr);    /*     p <- Br         */
   if (!ksp->avoidnorms) {
     if (pres) {
       ierr = VecNorm(P,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- z'*z       */
@@ -72,11 +72,11 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
-  ierr = MatMult(Amat,P,Q);CHKERRQ(ierr);      /*    q <- A p          */
+  ierr = KSP_MatMult(ksp,Amat,P,Q);CHKERRQ(ierr);      /*    q <- A p          */
 
   for ( i=0; i<maxit; i++) {
 
-    ierr   = PCApply(ksp->B,Q,S);CHKERRQ(ierr);  /*     s <- Bq          */
+    ierr   = KSP_PCApply(ksp,ksp->B,Q,S);CHKERRQ(ierr);  /*     s <- Bq          */
     ierr   = VecDot(R,S,&btop);CHKERRQ(ierr);    /*                      */
     ierr   = VecDot(Q,S,&bbot);CHKERRQ(ierr);    /*     lambda =         */
     lambda = btop/bbot;
@@ -94,7 +94,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     KSPMonitor(ksp,i+1,dp);
     cerr   = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
-    ierr   = MatMult(Amat,S,T);CHKERRQ(ierr);    /*   T <-   As          */
+    ierr   = KSP_MatMult(ksp,Amat,S,T);CHKERRQ(ierr);    /*   T <-   As          */
     ierr   = VecDot(T,S,&btop);CHKERRQ(ierr);
     alpha0 = btop/bbot;
     ierr   = VecDot(T,Sm1,&btop);CHKERRQ(ierr);       

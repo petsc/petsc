@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.60 1999/10/13 20:36:43 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.62 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -152,23 +152,25 @@ int PetscByteSwapDouble(double *buff,int n)
 @*/
 int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
-  int        maxblock = 65536, wsize, err, m = n, ierr,flag;
-  static int longintfile = -1;
-  char       *pp = (char *) p;
+  int               maxblock = 65536, wsize, err, m = n, ierr;
+  static PetscTruth longintset = PETSC_FALSE,longintfile = PETSC_FALSE;
+  PetscTruth        flg;
+  char              *pp = (char *) p;
 #if (PETSC_SIZEOF_SHORT != 8)
-  void       *ptmp = p; 
+  void              *ptmp = p; 
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  if (longintfile == -1) {
+  if (!longintset) {
     ierr = OptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
-    if (flag) {
+    ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+    if (flg) {
       ierr = (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
    on a Cray vector machine (not T3E/T3D)\n");CHKERRQ(ierr);
     }
+    longintset = PETSC_TRUE;
   }
 
 #if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
@@ -239,17 +241,18 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   }
 #elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
 #else
-  if (type == PETSC_INT)
+  if (type == PETSC_INT){
     if (longintfile) {
     /* 
        take the longs (treated as pair of ints) and convert them to ints
     */
-    int   *p_int  = (int *) p,i;
-    int   *p_intl = (int *)ptmp;
-    for ( i=0; i<n; i++ ) {
-      p_int[i] = (int) p_intl[2*i+1];
+      int   *p_int  = (int *) p,i;
+      int   *p_intl = (int *)ptmp;
+      for ( i=0; i<n; i++ ) {
+        p_int[i] = (int) p_intl[2*i+1];
+      }
+      ierr = PetscFree(ptmp);CHKERRQ(ierr);
     }
-    ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.44 1999/05/04 20:36:01 balay Exp bsmith $*/
+/*$Id: snestest.c,v 1.45 1999/10/24 14:03:36 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -86,8 +86,9 @@ static int SNESPrintHelp_Test(SNES snes,char *p)
 #define __FUNC__ "SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
-  SNES_Test *ls = (SNES_Test *)snes->data;
-  int       ierr,flg;
+  SNES_Test  *ls = (SNES_Test *)snes->data;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg);CHKERRQ(ierr);

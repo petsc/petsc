@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.9 1999/06/30 23:55:02 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.11 1999/10/24 14:04:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests application ordering\n\n";
 
@@ -9,11 +9,11 @@ static char help[] = "Tests application ordering\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n, ierr,flg,rank,size,*ispetsc,*isapp,start,N,i;
+  int         n, ierr,rank,size,*ispetsc,*isapp,start,N,i;
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 

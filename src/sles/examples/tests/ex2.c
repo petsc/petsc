@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.12 1999/05/04 20:35:14 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.14 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -49,14 +49,14 @@ int slesex(int argc,char **args)
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
+  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
   Scalar  v, one = 1.0, none = -1.0;
 
   ierr = PetscSetCommWorld(PETSC_COMM_SELF);CHKERRA(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

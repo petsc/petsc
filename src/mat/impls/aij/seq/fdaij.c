@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.23 1999/10/01 21:21:14 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.24 1999/10/24 14:02:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -10,10 +10,10 @@ extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTr
 #define __FUNC__ "MatFDColoringCreate_SeqAIJ"
 int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
-  int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col,flg;
+  int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
   int        nis = iscoloring->n,*rowhit,*columnsforrow;
   IS         *isa = iscoloring->is;
-  PetscTruth done;
+  PetscTruth done,flg;
 
   PetscFunctionBegin;
   if (!mat->assembled) {

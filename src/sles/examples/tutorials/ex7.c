@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.43 1999/10/13 20:38:22 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.45 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -47,12 +47,12 @@ int main(int argc,char **args)
   KSP        subksp;       /* KSP context for subdomain */
   double     norm;         /* norm of solution error */
   int        i, j, I, J, ierr, *blks, m = 8, n;
-  int        rank, size, its, nlocal, first, Istart, Iend, flg;
+  int        rank, size, its, nlocal, first, Istart, Iend;
   Scalar     v, one = 1.0, none = -1.0;
-  PetscTruth isbjacobi;
+  PetscTruth isbjacobi, flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = m+2;

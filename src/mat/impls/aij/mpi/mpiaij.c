@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.304 1999/10/13 20:37:20 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.306 1999/10/24 14:02:16 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -575,7 +575,7 @@ int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != a->n) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible partition of A and xx");
+    SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Incompatible partition of A (%d) and xx (%d)",a->n,nt);
   }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
@@ -739,7 +739,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
   int         ierr, format,shift = C->indexshift,rank = aij->rank,size = aij->size;
-  PetscTruth  isdraw,isascii;
+  PetscTruth  isdraw,isascii,flg;
 
   PetscFunctionBegin;
   ierr  = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
@@ -748,7 +748,6 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
-      int     flg;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
@@ -1761,7 +1760,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 {
   Mat          B;
   Mat_MPIAIJ   *b;
-  int          ierr, i,size,flag1 = 0, flag2 = 0;
+  int          ierr, i,size;
+  PetscTruth   flag1, flag2;
 
   PetscFunctionBegin;
 
@@ -1862,13 +1862,13 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
                                      (void*)MatStoreValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_MPIAIJ",
                                      (void*)MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIAIJ",
                                      (void*)MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
   *A = B;
@@ -1881,7 +1881,8 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
-  int        ierr, len=0, flg;
+  int        ierr, len = 0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   *newmat       = 0;

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.31 1999/05/11 19:16:12 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.33 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -9,7 +9,8 @@ performance monitoring can be done with the larger one (that actually\n\
 is the system of interest).  See the 'Performance Hints' chapter of the\n\
 users manual for a discussion of preloading.  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
-  -f1 <input_file> : second file to load (larger system)\n\n";
+  -f1 <input_file> : second file to load (larger system)\n\n\
+  -trans  : solve transpose system instead\n\n";
 
 /*T
    Concepts: SLES^Solving a linear system - loading a binary matrix and vector;
@@ -44,16 +45,16 @@ int main(int argc,char **args)
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
   char       stagename[6][16]; /* names of profiling stages */
-  PetscTruth table = PETSC_FALSE,set;
-  int        ierr, its, flg, i,loops  = 2;
+  PetscTruth table,set,flg,trans;
+  int        ierr, its, i,loops  = 2;
   double     norm;
   PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   Scalar     zero = 0.0, none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
-  if (flg) table = PETSC_TRUE;
+  ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trans",&trans);;CHKERRA(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -93,8 +94,7 @@ int main(int argc,char **args)
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
-          CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
@@ -195,7 +195,11 @@ int main(int argc,char **args)
        Solve linear system; we also explicitly time this stage.
     */
     ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);
-    ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+    if (trans) {
+      ierr = SLESSolveTrans(sles,b,x,&its);CHKERRA(ierr);
+    } else {
+      ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+    }
     ierr = PetscGetTime(&tsolve2);CHKERRA(ierr);
     tsolve = tsolve2 - tsolve1;
 
@@ -212,7 +216,11 @@ int main(int argc,char **args)
     /* 
        Check error
     */
-    ierr = MatMult(A,x,u);
+    if (trans) {
+      ierr = MatMultTrans(A,x,u);CHKERRA(ierr);
+    } else {
+      ierr = MatMult(A,x,u);CHKERRA(ierr);
+    }
     ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
 
@@ -241,7 +249,7 @@ int main(int argc,char **args)
       ierr = ViewerDestroy(viewer);CHKERRA(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
     }
     /* 
        Free work space.  All PETSc objects should be destroyed when they

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.8 1999/09/27 21:32:16 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.10 1999/10/24 14:03:55 bsmith Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -68,12 +68,12 @@ Input parameters include:\n\
    application-provided call-back routines.
 */
 typedef struct {
-  Vec      solution;          /* global exact solution vector */
-  int      m;                 /* total number of grid points */
-  double   h;                 /* mesh width h = 1/(m-1) */
-  int      debug;             /* flag (1 indicates activation of debugging printouts) */
-  Viewer   viewer1, viewer2;  /* viewers for the solution and error */
-  double   norm_2, norm_max;  /* error norms */
+  Vec        solution;          /* global exact solution vector */
+  int        m;                 /* total number of grid points */
+  double     h;                 /* mesh width h = 1/(m-1) */
+  PetscTruth debug;             /* flag (1 indicates activation of debugging printouts) */
+  Viewer     viewer1, viewer2;  /* viewers for the solution and error */
+  double     norm_2, norm_max;  /* error norms */
 } AppCtx;
 
 /* 
@@ -95,7 +95,8 @@ int main(int argc,char **argv)
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
   Draw          draw;                   /* drawing context */
-  int           ierr,  steps, flg, size, m;
+  int           ierr,  steps, size, m;
+  PetscTruth    flg;
   double        dt, ftime;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,7 +108,7 @@ int main(int argc,char **argv)
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);

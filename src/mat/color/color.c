@@ -1,11 +1,11 @@
-/*$Id: color.c,v 1.40 1999/10/06 23:41:34 balay Exp bsmith $*/
+/*$Id: color.c,v 1.41 1999/10/24 14:02:33 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
 */
 
 #include "src/mat/matimpl.h"
-#include "src/mat/impls/color/color.h"
+#include "src/mat/color/color.h"
 
 /*
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
@@ -211,11 +211,11 @@ FList MatColoringList = 0;
 int   MatColoringRegisterAllCalled = 0;
 
 /*MC
-   MatColoringRegister - Adds a new sparse matrix coloring to the 
+   MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
                                matrix package. 
 
    Synopsis:
-   MatColoringRegister(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
+   MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
 
    Not Collective
 
@@ -232,7 +232,7 @@ int   MatColoringRegisterAllCalled = 0;
 
    Sample usage:
 .vb
-   MatColoringRegister("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   MatColoringRegisterDynamic("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyColor",MyColor);
 .ve
 
@@ -249,15 +249,15 @@ $     -mat_coloring_type my_color
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegister_Private" 
-int MatColoringRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))
+#define __FUNC__ "MatColoringRegister" 
+int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -272,7 +272,7 @@ int MatColoringRegister_Private(char *sname,char *path,char *name,int (*function
 
 .keywords: matrix, register, destroy
 
-.seealso: MatColoringRegister(), MatColoringRegisterAll()
+.seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
 @*/
 int MatColoringRegisterDestroy(void)
 {
@@ -317,17 +317,17 @@ $    -mat_coloring_view
 
    Level: intermediate
 
-   The user can define additional colorings; see MatColoringRegister().
+   The user can define additional colorings; see MatColoringRegisterDynamic().
 
 .keywords: matrix, get, coloring
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister()
+.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic()
 @*/
 int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
-  int         ierr,flag;
-  int         (*r)(Mat,MatColoringType,ISColoring *);
-  char        tname[256];
+  PetscTruth flag;
+  int        ierr,(*r)(Mat,MatColoringType,ISColoring *);
+  char       tname[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.16 1999/07/08 14:42:20 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.18 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -11,13 +11,13 @@ int main(int argc,char **args)
   Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* SLES context */
-  int     ierr, i, n = 10, col[3], its,i1,i2,flg;
+  int     ierr, i, n = 10, col[3], its,i1,i2;
   Scalar  none = -1.0, value[3],avalue;
   double  norm;
   PC      pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* Create vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = dense aij shell rowbs bdiag order baij color adj partition
+DIRS     = dense aij shell rowbs bdiag  baij adj maij
 LOCDIR   = src/mat/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

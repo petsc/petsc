@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.10 1999/10/01 21:22:40 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.12 1999/10/24 14:03:48 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -109,7 +109,7 @@ int main( int argc, char **argv )
   int      *verticesmask, *svertices;
   int      *tmp;
   int      i, j, jstart, inode, nb, nbrs, Nvneighborstotal = 0;
-  int      ierr, its, N, flg;
+  int      ierr, its, N;
   Scalar   *xx;
   char     str[256], form[256], part_name[256];
   FILE     *fptr, *fptr1;
@@ -136,14 +136,12 @@ int main( int argc, char **argv )
   */
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
-  ierr = OptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRA(ierr);
   user.non_lin_param = 0.06;
-  ierr = OptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,&flg); 
- CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRA(ierr);
   user.lin_param = -1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,&flg); 
- CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRA(ierr);
   user.Nvlocal = 0;
   user.Nelocal = 0;
 

@@ -1,4 +1,4 @@
-/*$Id: viewregall.c,v 1.8 1999/05/12 03:26:24 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.9 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -30,13 +30,13 @@ int ViewerRegisterAll(char *path)
 
   PetscFunctionBegin;
   
-  ierr = ViewerRegister(ASCII_VIEWER,    path,"ViewerCreate_ASCII",      ViewerCreate_ASCII);CHKERRQ(ierr);
-  ierr = ViewerRegister(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);
-  ierr = ViewerRegister(STRING_VIEWER,   path,"ViewerCreate_String",     ViewerCreate_String);CHKERRQ(ierr);
-  ierr = ViewerRegister(DRAW_VIEWER,     path,"ViewerCreate_Draw",       ViewerCreate_Draw);CHKERRQ(ierr);
-  ierr = ViewerRegister(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
+  ierr = ViewerRegisterDynamic(ASCII_VIEWER,    path,"ViewerCreate_ASCII",      ViewerCreate_ASCII);CHKERRQ(ierr);
+  ierr = ViewerRegisterDynamic(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);
+  ierr = ViewerRegisterDynamic(STRING_VIEWER,   path,"ViewerCreate_String",     ViewerCreate_String);CHKERRQ(ierr);
+  ierr = ViewerRegisterDynamic(DRAW_VIEWER,     path,"ViewerCreate_Draw",       ViewerCreate_Draw);CHKERRQ(ierr);
+  ierr = ViewerRegisterDynamic(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
-  ierr = ViewerRegister(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); 
+  ierr = ViewerRegisterDynamic(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
 }

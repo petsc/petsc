@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.35 1999/03/17 23:25:44 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.36 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -80,11 +80,11 @@ extern int TSRegisterAll(char*);
 extern int TSRegisterDestroy(void);
 extern int TSRegisterAllCalled;
 
-extern int TSRegister_Private(char*,char*,char*,int(*)(TS));
+extern int TSRegister(char*,char*,char*,int(*)(TS));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define TSRegister(a,b,c,d) TSRegister_Private(a,b,c,0)
+#define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
 #else
-#define TSRegister(a,b,c,d) TSRegister_Private(a,b,c,d)
+#define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
 #endif
 
 extern int TSGetSNES(TS,SNES*);

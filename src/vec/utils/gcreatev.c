@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.66 1999/10/13 20:37:01 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.68 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -43,7 +43,7 @@ int    VecRegisterAllCalled = 0;
 #define __FUNC__ "VecRegisterDestroy"
 /*@C
    VecRegisterDestroy - Frees the list of Vec methods that were
-   registered by VecRegister().
+   registered by VecRegisterDynamic().
 
    Not Collective
 
@@ -51,7 +51,7 @@ int    VecRegisterAllCalled = 0;
 
 .keywords: Vec, register, destroy
 
-.seealso: VecRegister(), VecRegisterAll()
+.seealso: VecRegisterDynamic(), VecRegisterAll()
 @*/
 int VecRegisterDestroy(void)
 {
@@ -67,10 +67,10 @@ int VecRegisterDestroy(void)
 }
 
 /*MC
-   VecRegister - Adds a new vector component implementation
+   VecRegisterDynamic - Adds a new vector component implementation
 
    Synopsis:
-   VecRegister(char *name_solver,char *path,char *name_create,
+   VecRegisterDynamic(char *name_solver,char *path,char *name_create,
                int (*routine_create)(MPI_Comm,int,int,Vec*))
 
    Not Collective
@@ -82,14 +82,14 @@ int VecRegisterDestroy(void)
 -  routine_create - routine to create vector
 
    Notes:
-   VecRegister() may be called multiple times to add several user-defined vectors
+   VecRegisterDynamic() may be called multiple times to add several user-defined vectors
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   VecRegister("my_solver","/home/username/my_lib/lib/libO/solaris/libmine",
+   VecRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/libmine",
                "MyVectorCreate",MyVectorCreate);
 .ve
 
@@ -113,19 +113,17 @@ int VecRegisterDestroy(void)
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecRegister_Private"
-int VecRegister_Private(const char sname[],const char path[],const char name[],
-                        int (*function)(Vec))
+#define __FUNC__ "VecRegister"
+int VecRegister(const char sname[],const char path[],const char name[],int (*function)(Vec))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetType"

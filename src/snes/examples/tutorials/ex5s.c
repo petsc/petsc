@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.10 1999/06/30 23:54:27 balay Exp bsmith $*/
+/*$Id: ex5s.c,v 1.12 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -107,13 +107,14 @@ int main( int argc, char **argv )
   Vec            x, r;                /* solution, residual vectors */
   AppCtx         user;                /* user-defined work context */
   int            its;                 /* iterations for convergence */
-  int            flg, N, ierr, rstart, rend, *colors, i,ii,ri,rj;
+  int            N, ierr, rstart, rend, *colors, i,ii,ri,rj;
+  int            (*fnc)(SNES,Vec,Vec,void*);
   double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   MatFDColoring  fdcoloring;           
   ISColoring     iscoloring;
   Mat            J;
-  int            (*fnc)(SNES,Vec,Vec,void*);
   Scalar         zero = 0.0;
+  PetscTruth     flg;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
@@ -122,9 +123,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.10 1999/05/04 20:30:16 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.11 1999/10/24 14:01:46 bsmith Exp bsmith $*/
 
 /*
        Formatted test for ISStride routines.
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 {
   int        i, n, ierr,*ii,start,stride;
   IS         is;
-  PetscTruth flag;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
@@ -27,8 +27,8 @@ int main(int argc,char **argv)
   ierr = ISStrideGetInfo(is,&start,&stride);CHKERRA(ierr);
   if (start != 0) SETERRA(1,0,0);
   if (stride != 2) SETERRA(1,0,0);
-  ierr = ISStride(is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISStride(is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISGetIndices(is,&ii);CHKERRA(ierr);
   ierr = ISRestoreIndices(is,&ii);CHKERRA(ierr);
   ierr = ISDestroy(is);CHKERRA(ierr);

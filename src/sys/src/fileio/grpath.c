@@ -1,4 +1,4 @@
-/*$Id: grpath.c,v 1.30 1999/10/04 18:49:26 bsmith Exp bsmith $*/
+/*$Id: grpath.c,v 1.31 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -67,7 +67,7 @@ int PetscGetRealPath(char path[], char rpath[])
 {
   int        ierr;
   char       tmp3[MAXPATHLEN];
-  PetscTruth flag;
+  PetscTruth flg;
 #if defined(PETSC_HAVE_READLINK)
   char       tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
   int        n, m, N, len,len1,len2;
@@ -126,8 +126,8 @@ int PetscGetRealPath(char path[], char rpath[])
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  ierr = PetscStrncmp( "/tmp_mnt/", rpath, 9,&flag);CHKERRQ(ierr); 
-  if (flag) {
+  ierr = PetscStrncmp( "/tmp_mnt/", rpath, 9,&flg);CHKERRQ(ierr); 
+  if (flg) {
     ierr = PetscStrcpy( tmp3, rpath + 8 );CHKERRQ(ierr);
     ierr = PetscStrcpy( rpath, tmp3 );CHKERRQ(ierr);
   }

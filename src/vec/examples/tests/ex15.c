@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.6 1999/05/04 20:30:57 balay Exp bsmith $*&/
+/*$Id: ex15.c,v 1.7 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 

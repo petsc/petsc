@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.43 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.45 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
 
@@ -9,14 +9,14 @@ static char help[] = "Scatters from a parallel vector into seqential vectors.\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},rank,flg;
+  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},rank;
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* create two vectors */

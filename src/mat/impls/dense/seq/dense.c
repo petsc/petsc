@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.175 1999/10/13 20:37:16 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.177 1999/10/24 14:02:11 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -77,11 +77,11 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
     mat->pivots = (int *) PetscMalloc((mat->m+1)*sizeof(int));CHKPTRQ(mat->pivots);
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
+  A->factor = FACTOR_LU;
   if (!mat->m || !mat->n) PetscFunctionReturn(0);
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,0,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Bad LU factorization");
-  A->factor = FACTOR_LU;
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
   PetscFunctionReturn(0);
 }
@@ -775,17 +775,113 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "MatView_SeqDense_Draw_Zoom"
+int MatView_SeqDense_Draw_Zoom(Draw draw, void *Aa)
+{
+  Mat           A = (Mat) Aa;
+  Mat_SeqDense  *a = (Mat_SeqDense *) A->data;
+  int           m = a->m,n = a->n,format, color,i, j,ierr;
+  Scalar        *v = a->v;
+  Viewer        viewer;
+  Draw          popup;
+  double        xl, yl, xr, yr, x_l, x_r, y_l, y_r, scale, maxv = 0.0;
+
+  PetscFunctionBegin; 
+
+  ierr = PetscObjectQuery((PetscObject) A, "Zoomviewer", (PetscObject*) &viewer);CHKERRQ(ierr); 
+  ierr = ViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = DrawGetCoordinates(draw, &xl, &yl, &xr, &yr);CHKERRQ(ierr);
+
+  /* Loop over matrix elements drawing boxes */
+  if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
+    /* Blue for negative and Red for positive */
+    color = DRAW_BLUE;
+    for(j = 0; j < n; j++) {
+      x_l = j;
+      x_r = x_l + 1.0;
+      for(i = 0; i < m; i++) {
+        y_l = m - i - 1.0;
+        y_r = y_l + 1.0;
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscReal(v[j*m+i]) >  0.) {
+          color = DRAW_RED;
+        } else if (PetscReal(v[j*m+i]) <  0.) {
+          color = DRAW_BLUE;
+        } else {
+          continue;
+        }
+#else
+        if (v[j*m+i] >  0.) {
+          color = DRAW_RED;
+        } else if (v[j*m+i] <  0.) {
+          color = DRAW_BLUE;
+        } else {
+          continue;
+        }
+#endif
+        ierr = DrawRectangle(draw, x_l, y_l, x_r, y_r, color, color, color, color);CHKERRQ(ierr);
+      } 
+    }
+  } else {
+    /* use contour shading to indicate magnitude of values */
+    /* first determine max of all nonzero values */
+    for(i = 0; i < m*n; i++) {
+      if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
+    }
+    scale = (245.0 - DRAW_BASIC_COLORS)/maxv; 
+    ierr  = DrawGetPopup(draw, &popup);CHKERRQ(ierr);
+    ierr  = DrawScalePopup(popup, 0.0, maxv);CHKERRQ(ierr);
+    for(j = 0; j < n; j++) {
+      x_l = j;
+      x_r = x_l + 1.0;
+      for(i = 0; i < m; i++) {
+        y_l   = m - i - 1.0;
+        y_r   = y_l + 1.0;
+        color = DRAW_BASIC_COLORS + (int) (scale*PetscAbsScalar(v[j*m+i]));
+        ierr  = DrawRectangle(draw, x_l, y_l, x_r, y_r, color, color, color, color);CHKERRQ(ierr);
+      } 
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatView_SeqDense_Draw"
+int MatView_SeqDense_Draw(Mat A, Viewer viewer)
+{
+  Mat_SeqDense *a = (Mat_SeqDense *) A->data;
+  Draw       draw;
+  PetscTruth isnull;
+  double     xr, yr, xl, yl, h, w;
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = ViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = DrawIsNull(draw, &isnull);CHKERRQ(ierr);
+  if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
+
+  ierr = PetscObjectCompose((PetscObject) A, "Zoomviewer", (PetscObject) viewer);CHKERRQ(ierr);
+  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw, xl, yl, xr, yr);CHKERRQ(ierr);
+  ierr = DrawZoom(draw, MatView_SeqDense_Draw_Zoom, A);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) A, "Zoomviewer", PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatView_SeqDense"
 int MatView_SeqDense(Mat A,Viewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
   int          ierr;
-  PetscTruth   issocket,isascii,isbinary;
+  PetscTruth   issocket,isascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
 
   if (issocket) {
     ierr = ViewerSocketPutScalar_Private(viewer,a->m,a->n,a->v);CHKERRQ(ierr);
@@ -793,6 +889,8 @@ int MatView_SeqDense(Mat A,Viewer viewer)
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
+  } else if (isdraw) {
+    ierr = MatView_SeqDense_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported by dense matrix",((PetscObject)viewer)->type_name);
   }
@@ -1084,7 +1182,8 @@ int MatGetSize_SeqDense(Mat A,int *m,int *n)
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
 
   PetscFunctionBegin;
-  *m = mat->m; *n = mat->n;
+  if (m) *m = mat->m;
+  if (n) *n = mat->n;
   PetscFunctionReturn(0);
 }
 
@@ -1302,7 +1401,8 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 {
   Mat          B;
   Mat_SeqDense *b;
-  int          ierr,flg,size;
+  int          ierr,size;
+  PetscTruth   flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.7 1999/06/30 23:55:02 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.9 1999/10/24 14:04:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
@@ -8,12 +8,12 @@ static char help[] = "Tests AODataRemap \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n,nglobal, bs = 1, *keys, *data,ierr,flg,rank,size,i,start,*news;
+  int         n,nglobal, bs = 1, *keys, *data,ierr,rank,size,i,start,*news;
   AOData      aodata;
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.35 1999/05/04 20:35:25 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.37 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -38,20 +38,21 @@ extern int MyKSPMonitor(KSP,int,double,void*);
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec    x1, b1, x2, b2; /* solution and RHS vectors for systems #1 and #2 */
-  Vec    u;              /* exact solution vector */
-  Mat    C1, C2;         /* matrices for systems #1 and #2 */
-  SLES   sles1, sles2;   /* SLES contexts for systems #1 and #2 */
-  KSP    ksp1;           /* KSP context for system #1 */
-  int    ntimes = 3;     /* number of times to solve the linear systems */
-  int    CHECK_ERROR;    /* event number for error checking */
-  int    ldim, ierr, low, high, iglobal, Istart, Iend, Istart2, Iend2;
-  int    I, J, i, j, m = 3, n = 2, rank, size, its, flg, t;
-  Scalar v;
+  Vec        x1, b1, x2, b2; /* solution and RHS vectors for systems #1 and #2 */
+  Vec        u;              /* exact solution vector */
+  Mat        C1, C2;         /* matrices for systems #1 and #2 */
+  SLES       sles1, sles2;   /* SLES contexts for systems #1 and #2 */
+  KSP        ksp1;           /* KSP context for system #1 */
+  int        ntimes = 3;     /* number of times to solve the linear systems */
+  int        CHECK_ERROR;    /* event number for error checking */
+  int        ldim, ierr, low, high, iglobal, Istart, Iend, Istart2, Iend2;
+  int        I, J, i, j, m = 3, n = 2, rank, size, its, t;
+  PetscTruth flg;
+  Scalar     v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-t",&ntimes,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;

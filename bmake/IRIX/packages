@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.26 1999/09/14 18:30:30 balay Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -90,7 +90,7 @@ BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS9
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

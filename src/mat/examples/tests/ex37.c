@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex37.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -9,12 +9,12 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i,  n = 10, midx[3], ierr,flg;
+  int         i,  n = 10, midx[3], ierr;
   Scalar      v[3];
-  PetscTruth  flag;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRA(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
@@ -45,8 +45,8 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
-  if (flag) {
+  ierr = MatEqual(A,C,&flg);CHKERRA(ierr);
+  if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRA(ierr);
   } else {
     SETERRA(1,1,"Matrices are NOT equal");
@@ -55,8 +55,8 @@ int main(int argc,char **args)
   ierr = MatStoreValues(A);CHKERRA(ierr);
   ierr = MatZeroEntries(A);CHKERRA(ierr);
   ierr = MatRetrieveValues(A);CHKERRA(ierr);
-  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
-  if (flag) {
+  ierr = MatEqual(A,C,&flg);CHKERRA(ierr);
+  if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRA(ierr);
   } else {
     SETERRA(1,1,"Matrices are NOT equal");

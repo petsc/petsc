@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.27 1999/06/30 23:53:21 balay Exp bsmith $*/
+/*$Id: iguess.c,v 1.28 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 /* 
@@ -98,13 +98,13 @@ int  KSPGuessUpdate( KSP ksp, Vec x, KSPIGUESS *itg )
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
-    ierr = MatMult(Amat,x,itg->btilde[0] );CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0] );CHKERRQ(ierr);
     ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);
     tmp = 1.0/normax; ierr = VecScale(&tmp,itg->btilde[0]);CHKERRQ(ierr);
     /* VCOPY(ksp->vc,x,itg->xtilde[0]); */
     ierr = VecScale(&tmp,itg->xtilde[0]);CHKERRQ(ierr);
   } else {
-    ierr = MatMult( Amat, itg->xtilde[curl], itg->btilde[curl] );CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat, itg->xtilde[curl], itg->btilde[curl] );CHKERRQ(ierr);
     for (i=1; i<=curl; i++) {
       ierr = VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);CHKERRQ(ierr);
     }

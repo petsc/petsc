@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.128 1999/10/13 20:38:12 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.130 1999/10/24 14:03:14 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -137,10 +137,10 @@ static int GMRESResidual(  KSP ksp,int restart )
   if (ksp->pc_side == PC_RIGHT) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
-    ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP );CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,VEC_SOLN,VEC_TEMP );CHKERRQ(ierr);
   } else {
     /* else we do binv * a * x */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
   ierr = VecCopy( VEC_BINVF, VEC_VV(gmres->nprestart) );CHKERRQ(ierr);
@@ -242,7 +242,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(ierr);
     }
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     ierr = (*gmres->orthog)(  ksp, it );CHKERRQ(ierr);
@@ -325,7 +325,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   /* Save binv*f */
   if (ksp->pc_side == PC_LEFT) {
     /* inv(b)*f */
-    ierr = PCApply(ksp->B, VEC_RHS, VEC_BINVF );CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,ksp->B, VEC_RHS, VEC_BINVF );CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_RIGHT) {
     ierr = VecCopy( VEC_RHS, VEC_BINVF );CHKERRQ(ierr);
   }
@@ -426,10 +426,10 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
      the unpreconditioned problem */
   if (ksp->pc_side == PC_RIGHT) {
     if (vdest != vs) {
-      ierr = PCApply(ksp->B, VEC_TEMP, vdest );CHKERRQ(ierr);
+      ierr = KSP_PCApply(ksp,ksp->B, VEC_TEMP, vdest );CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest );CHKERRQ(ierr);
     } else {
-      ierr = PCApply(ksp->B,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
+      ierr = KSP_PCApply(ksp,ksp->B,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
       ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest);CHKERRQ(ierr);
     }
   } else if (ksp->pc_side == PC_LEFT) {
@@ -645,7 +645,8 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,double fgnorm,void *dummy)
 #define __FUNC__ "KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
-  int       ierr,flg,restart,prestart;
+  int        ierr,restart,prestart;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg);CHKERRQ(ierr);
@@ -757,16 +758,16 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
                                      (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
                                     "KSPGMRESSetOrthogonalization_GMRES",
                                      (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
                                     (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESPrestartSet_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESPrestartSet_C",
                                      "KSPGMRESPrestartSet_GMRES",
                                     (void*)KSPGMRESPrestartSet_GMRES);CHKERRQ(ierr);
 

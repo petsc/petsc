@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1999/09/27 22:31:43 balay Exp balay $ 
+# $Id: base.site,v 1.3 1999/10/04 22:25:04 balay Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -83,7 +83,7 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =
+PCONF         = -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

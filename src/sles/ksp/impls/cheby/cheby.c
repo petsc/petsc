@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.78 1999/10/13 20:38:13 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.80 1999/10/24 14:03:16 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -103,13 +103,13 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   c[k]   = mu;
 
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
+    ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
                   
-  ierr = PCApply(ksp->B,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
+  ierr = KSP_PCApply(ksp,ksp->B,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
   ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
@@ -119,9 +119,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    ierr = MatMult(Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
+    ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);                       
-    ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
+    ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (ksp->calc_res) {
@@ -149,11 +149,11 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     kp1  = ktmp;
   }
   if (!cerr && ksp->calc_res) {
-    ierr = MatMult(Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
+    ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
     if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
     else {
-      ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
+      ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
     }
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = KSPView_Chebychev;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
                                     "KSPChebychevSetEigenvalues_Chebychev",
                                     (void*)KSPChebychevSetEigenvalues_Chebychev);CHKERRQ(ierr);
   PetscFunctionReturn(0);

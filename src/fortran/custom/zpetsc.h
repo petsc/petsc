@@ -97,7 +97,7 @@ Fortran.
     This defines the mappings from Fortran charactor strings 
   to C charactor strings on the Cray T3D.
 */
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 #include <fortran.h>
 
 #define CHAR _fcd

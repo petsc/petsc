@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.3 1999/09/14 18:30:58 balay Exp balay $ 
+# $Id: base.site,v 1.4 1999/10/04 22:24:52 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -81,6 +81,7 @@ MCC             = gcc
 #
 #PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_BLOCKSOLVE
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
+PCONF         =  -DPETSC_HAVE_X11
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------

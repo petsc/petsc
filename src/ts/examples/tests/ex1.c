@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.32 1999/10/13 20:38:47 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.34 1999/10/24 14:03:54 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -42,8 +42,9 @@ extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,  time_steps = 100, steps, flg, size, m;
+  int           ierr,  time_steps = 100, steps, size, m;
   int           problem = linear_no_matrix;
+  PetscTruth    flg;
   AppCtx        appctx;
   double        dt,ftime;
   TS            ts;
@@ -58,8 +59,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   appctx.M = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRA(ierr); 
   if (flg) appctx.nox = 1; else appctx.nox = 0;

@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.35 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dtri.c,v 1.37 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -83,10 +83,10 @@ int DrawScalePopup(Draw popup,double min,double max)
 }
 
 typedef struct {
-  int    m,n;
-  double *x,*y,min,max;
-  Scalar *v;
-  int    showgrid;
+  int        m,n;
+  double     *x,*y,min,max;
+  Scalar     *v;
+  PetscTruth showgrid;
 } ZoomCtx;
 
 #undef __FUNC__  

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.53 1999/10/01 21:22:35 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.55 1999/10/24 14:03:41 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -61,19 +61,20 @@ int main(int argc,char **argv)
   AppCtx     user;                 /* application context */
   int        mx=10;   /* discretization of problem in x-direction */
   int        my=10;   /* discretization of problem in y-direction */
+  int        ierr, its, nfails, ldim;
   double     one = 1.0;
-  int        ierr, its, nfails, flg, ldim;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /* Set up user-defined work space */
   user.problem = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,PETSC_NULL);CHKERRA(ierr);
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,0,"Invalid problem number");
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
   if (user.problem == 2) {

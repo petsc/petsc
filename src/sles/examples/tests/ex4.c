@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.50 1999/06/30 23:53:50 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.52 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -29,7 +29,7 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 2, N, M,its, ierr, idx[4], count, *rows, flg;
+  int         i, m = 2, N, M,its, ierr, idx[4], count, *rows;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x, y, h, norm;
   Vec         u, ustar, b;
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */

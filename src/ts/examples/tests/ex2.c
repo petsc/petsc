@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.20 1999/07/15 14:52:53 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.22 1999/10/24 14:03:54 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -32,7 +32,7 @@ extern double solz(double);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,  time_steps = 100, steps, flg, size;
+  int           ierr,  time_steps = 100, steps, size;
   Vec           global;
   double        dt,ftime;
   TS            ts;
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRA(ierr);
  
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRA(ierr);

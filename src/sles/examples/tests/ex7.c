@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.5 1999/05/04 20:35:14 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.7 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -36,7 +36,8 @@ int main(int argc,char **args)
   Vec        x, b, u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
-  int        ierr, its, flg;
+  int        ierr, its;
+  PetscTruth flg;
   double     norm;
   Scalar     zero = 0.0, none = -1.0;
 

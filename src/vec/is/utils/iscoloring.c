@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.48 1999/10/13 20:37:00 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.50 1999/10/24 14:01:49 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -132,7 +132,8 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
 @*/
 int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
 {
-  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i,flg;
+  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i;
+  PetscTruth flg;
   MPI_Status status;
   IS         *is;
 

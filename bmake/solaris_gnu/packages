@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.23 1999/09/14 18:31:09 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -77,7 +77,7 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_MPE
+PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

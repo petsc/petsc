@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.31 1999/10/04 18:55:07 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.33 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -9,12 +9,13 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int    rank, M = 13, ierr, w=1, s=1, wrap=1, flg;
-  DA     da;
-  Viewer viewer;
-  Vec    local, global;
-  Scalar value;
-  Draw   draw;
+  int        rank, M = 13, ierr, w=1, s=1, wrap=1;
+  DA         da;
+  Viewer     viewer;
+  Vec        local, global;
+  Scalar     value;
+  Draw       draw;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
@@ -24,9 +25,9 @@ int main(int argc,char **argv)
   ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL); CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);
@@ -55,13 +56,14 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
-  flg = 0;
   ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
-    printf("\nLocal Vector: processor %d\n",rank);
-    ierr = VecView(local,VIEWER_STDOUT_SELF);CHKERRA(ierr); 
-    ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+    Viewer sviewer;
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRA(ierr);
+    ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+    ierr = VecView(local,sviewer);CHKERRA(ierr); 
+    ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
   }
 
   /* Free memory */

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.17 1999/10/01 21:22:50 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.18 1999/10/24 14:03:55 bsmith Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -61,7 +61,7 @@ int main( int argc, char **argv )
   Mat    J;                  /* Jacobian matrix */
   AppCtx user;               /* user-defined work context */
   int    its;                /* iterations for convergence */
-  int    ierr, N, flg; 
+  int    ierr, N; 
   double param_max = 6.81, param_min = 0., dt;
   double ftime;
 
@@ -73,14 +73,14 @@ int main( int argc, char **argv )
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
-  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);
-  OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);
-  OptionsGetDouble(PETSC_NULL,"-param",&user.param,&flg);
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);
+  OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);
+  OptionsGetDouble(PETSC_NULL,"-param",&user.param,PETSC_NULL);
   if (user.param >= param_max || user.param <= param_min) {
     SETERRQ(1,0,"Parameter is out of range");
   }
   dt = .5/PetscMax(user.mx,user.my);
-  ierr = OptionsGetDouble(PETSC_NULL,"-dt",&dt,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRA(ierr);
   N          = user.mx*user.my;
   
   /* 

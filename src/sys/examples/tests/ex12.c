@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.6 1999/06/30 23:49:56 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.7 1999/10/24 14:01:38 bsmith Exp bsmith $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -9,12 +9,12 @@ static char help[] = "Tests timing PetscSortInt().\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr,i,n = 1000,*values,event,flag;
+  int         ierr,i,n = 1000,*values,event;
   PetscRandom rand;
   Scalar      value;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flag);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 

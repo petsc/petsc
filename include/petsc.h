@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.258 1999/10/06 23:41:16 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.259 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -161,7 +161,7 @@ extern int PetscSleep(int);
 extern int  PetscInitialize(int*,char***,char[],const char[]);
 extern int  PetscInitializeNoArguments(void);
 extern int  PetscFinalize(void);
-extern void PetscInitializeFortran(void);
+extern int  PetscInitializeFortran(void);
 
 /*
     Functions that can act on any PETSc object.
@@ -183,11 +183,11 @@ extern int PetscCommRestoreNewTag(MPI_Comm,int *);
 extern int PetscObjectView(PetscObject,Viewer);
 extern int PetscObjectCompose(PetscObject,const char[],PetscObject);
 extern int PetscObjectQuery(PetscObject,const char[],PetscObject *);
-extern int PetscObjectComposeFunction_Private(PetscObject,const char[],const char[],void *);
+extern int PetscObjectComposeFunction(PetscObject,const char[],const char[],void *);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,0)
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,d)
 #endif
 extern int PetscObjectQueryFunction(PetscObject,const char[],void **);
 extern int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
@@ -218,18 +218,18 @@ extern int OListDuplicate(OList,OList *);
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-extern int FListAdd_Private(FList*,const char[],const char[],int (*)(void *));
+extern int FListAdd(FList*,const char[],const char[],int (*)(void *));
 extern int FListDestroy(FList);
 extern int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
 extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,0)
+#define    FListAddDynamic(a,b,p,c) FListAdd(a,b,p,0)
 #else
-#define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,(int (*)(void *))c)
+#define    FListAddDynamic(a,b,p,c) FListAdd(a,b,p,(int (*)(void *))c)
 #endif
 extern int FListDuplicate(FList,FList *);
 extern int FListView(FList,Viewer);
-extern int FListConcat_Private(const char [],const char [], char []);
+extern int FListConcat(const char [],const char [], char []);
 
 /*
    Routines for handling dynamic libraries. PETSc uses dynamic libraries

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.64 1999/09/27 21:31:55 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.66 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -91,16 +91,16 @@ int main( int argc, char **argv )
   Vec            x, r, U, F;           /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
-  int            step_check;           /* flag indicating whether we're checking
+  PetscTruth     step_check;           /* flag indicating whether we're checking
                                           candidate iterates */
   Scalar         xp, *FF, *UU, none = -1.0;
-  int            ierr, its, N = 5, i, flg, maxit, maxf, xs, xm;
+  int            ierr, its, N = 5, i, maxit, maxf, xs, xm;
   double         atol, rtol, stol, norm;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,7 +186,7 @@ int main( int argc, char **argv )
     ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRA(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRA(ierr); 
     checkP.tolerance = 1.0;
-    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg);CHKERRA(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRA(ierr);
   }
 
 
@@ -509,10 +509,10 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
 
    Output Parameters:
    x    - current iterate (possibly modified)
-   flag - flag indicating whether x has been modified (either
+   flg - flag indicating whether x has been modified (either
           PETSC_TRUE of PETSC_FALSE)
  */
-int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
+int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
 {
   int            ierr, i, iter, ldim;
   ApplicationCtx *user;
@@ -520,7 +520,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
   Scalar         *xa, *xa_last, tmp;
   double         rdiff;
 
-  *flag = PETSC_FALSE;
+  *flg = PETSC_FALSE;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
   if (iter > 1) {
@@ -544,7 +544,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
       if (rdiff > check->tolerance) {
         tmp = xa[i];
         xa[i] = (xa[i] + xa_last[i])/2.0;
-        *flag = PETSC_TRUE;
+        *flg = PETSC_TRUE;
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",
                     i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }

@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.103 1999/10/13 20:38:58 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.105 1999/10/24 14:04:04 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -128,7 +128,8 @@ extern int DAPublish_Petsc(PetscObject);
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int        i,*idx,nn,j,left,flg1,flg2,gdim;
+  int        i,*idx,nn,j,left,gdim;
+  PetscTruth flg1,flg2;
   DA         da;
   Vec        local,global;
   VecScatter ltog,gtol;
@@ -292,7 +293,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     ISLocalToGlobalMapping isltog;
     ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog);CHKERRQ(ierr);
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog);CHKERRQ(ierr);
-    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    da->ltogmap = isltog; 
+    ierr        = PetscObjectReference((PetscObject)isltog);CHKERRQ(ierr);
     PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog);CHKERRQ(ierr);
   }
@@ -352,17 +354,17 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   *inra = da;
   PetscPublishAll(da);  
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   if (((PetscObject)global)->amem > -1) {
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecView_C",
          "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecLoadIntoVector_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecLoadIntoVector_C",
          "VecLoadIntoVector_Binary_DA",(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

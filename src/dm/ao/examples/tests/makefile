@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 1999/01/31 16:11:18 bsmith Exp balay $ 
+# $Id: makefile,v 1.29 1999/04/01 17:11:54 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -60,12 +60,12 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN}  -np 2 ex1 | sort > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex1 > ex1_2.tmp 2>&1;\
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIRUN}  -np 3 ex1 | sort  > ex1_3.tmp 2>&1;\
+	-@${MPIRUN}  -np 3 ex1 > ex1_3.tmp 2>&1;\
 	   if (diff output/ex1_3.out ex1_3.tmp) then true ;  \
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   ${RM} -f ex1_3.tmp
@@ -86,10 +86,11 @@ runex2_3:
 	   ${RM} -f ex2_3.tmp
 
 runex3:
+	-@${RM} -f ex3_1.tmp dataoutput dataoutput.info
 	-@${MPIRUN} -np 2 ex3 > ex3_1.tmp 2>&1;   \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo "Possible problem with ex3_1, diffs above"; fi; \
-	   ${RM} -f ex3_1.tmp dataoutput
+	   else echo "Possible problem with ex3_1, diffs above"; fi
+	-@${RM} -f ex3_1.tmp dataoutput dataoutput.info
 
 runex5:
 	-@${MPIRUN} -np 2 ex5 > ex5_1.tmp 2>&1;   \

@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.141 1999/10/13 20:37:07 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.143 1999/10/24 14:01:56 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -196,7 +196,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
       ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectComposeFunction((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
                                      (void *)VecView_MPI_Draw);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
   PetscPublishAll(v);
@@ -317,7 +317,7 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
   } else {
     SETERRQ1(1,1,"Vector type %s does not have local representation",g->type_name);
   }
-  PetscObjectReference((PetscObject)*l);
+  ierr = PetscObjectReference((PetscObject)*l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -606,7 +606,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;
-    PetscObjectReference((PetscObject)vw->localupdate);
+    ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
   }    
 
   /* New vector should inherit stashing property of parent */
@@ -616,11 +616,11 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
   if (win->mapping) {
     (*v)->mapping = win->mapping;
-    PetscObjectReference((PetscObject)win->mapping);
+    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
   }
   if (win->bmapping) {
     (*v)->bmapping = win->bmapping;
-    PetscObjectReference((PetscObject)win->bmapping);
+    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
   }
   (*v)->bs = win->bs;
 

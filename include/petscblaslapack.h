@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.35 1998/12/09 19:59:31 bsmith Exp bsmith $ */
+/* $Id: blaslapack.h,v 1.36 1999/05/12 03:35:13 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -18,7 +18,7 @@ Cray T3D/T3E.
    This include file on the Cray T3D/T3E defines the interface between 
   Fortran and C representations of charactor strings.
 */
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 #include <fortran.h>
 #endif
 
@@ -28,7 +28,7 @@ Cray T3D/T3E.
     These are real case with no character string arguments
 */
 
-#if defined(USES_FORTRAN_SINGLE) 
+#if defined(PETSC_USES_FORTRAN_SINGLE) 
 /*
    For these machines we must call the single precision Fortran version
 */
@@ -93,7 +93,7 @@ Cray T3D/T3E.
 /*
    Real with character string arguments.
 */
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 /*
    Note that this assumes that machines which use cptofcd() use 
   the PETSC_HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
@@ -165,7 +165,7 @@ Cray T3D/T3E.
 /*
    Complex with no character string arguments
 */
-#if defined(USES_FORTRAN_SINGLE)
+#if defined(PETSC_USES_FORTRAN_SINGLE)
 #define ZGEQRF  CGEQRF
 #define ZDOTC   CDOTC
 #define DZNRM2  SCNRM2
@@ -220,7 +220,7 @@ Cray T3D/T3E.
 #define BLasum_  dzasum
 #endif
 
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 #define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                               _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e)       ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
@@ -298,7 +298,7 @@ extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 
 #if defined(PETSC_USE_COMPLEX)
 extern void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);

@@ -577,7 +577,7 @@ runex42:
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
 	-@${MPIRUN} -np 1  ex42 -f ../matrices/arco1 -mat_aij_oneindex  \
-	   -nd 5 -ov 2 | sort -n > ex42_2.tmp 2>&1; \
+	   -nd 5 -ov 2  -n > ex42_2.tmp 2>&1; \
 	   if (diff output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   ${RM} -f ex42_2.tmp
@@ -627,6 +627,10 @@ runex53:
 	${MPIRUN} -np 3 ex53 -matload_block_size 2 -f ../matrices/small >> ex53_1.tmp 2>&1;\
 	${MPIRUN} -np 4 ex53 -matload_block_size 3 -f ../matrices/small >> ex53_1.tmp 2>&1;\
 	${MPIRUN} -np 3 ex53 -matload_block_size 4 -f ../matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 5 -f ../matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 6 -f ../matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 7 -f ../matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 8 -f ../matrices/small >> ex53_1.tmp 2>&1;\
 	if (diff output/ex53_1.out ex53_1.tmp) then true; \
 	else echo "Possible problem with ex53_1, diffs above"; fi; \
 	${RM} -f ex53_1.tmp

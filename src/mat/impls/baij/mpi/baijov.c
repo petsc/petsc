@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.38 1999/10/13 20:37:30 bsmith Exp bsmith $*/
+/*$Id: baijov.c,v 1.40 1999/10/24 14:02:31 bsmith Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -19,7 +19,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
   int          ierr,isz,bs = baij->bs,Nbs,n,i,j,*idx,*nidx,ival;
-  BTPetsc      table;
+  PetscBT      table;
 
   PetscFunctionBegin;
   Nbs   = baij->Nbs;
@@ -34,7 +34,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
     for (j=0; j<n ; j++) {
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
-      if(!PetscBTLoopupSet(table, ival)) { nidx[isz++] = ival;}
+      if(!PetscBTLookupSet(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is_out+i));CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   int         **idx, *n, *w1, *w2, *w3, *w4, *rtable,**data,len,*idx_i;
   int         size,rank,Mbs,i,j,k,ierr,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
   int         *ctr,*pa,tag,*tmp,bsz,nrqr,*isz,*isz1,**xdata,bsz1,**rbuf2;
-  BTPetsc     *table;
+  PetscBT     *table;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status  *s_status,*recv_status;
@@ -291,9 +291,9 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     int  *d_p;
     char *t_p;
 
-    len   = (imax)*(sizeof(BTPetsc) + sizeof(int *) + sizeof(int)) + 
+    len   = (imax)*(sizeof(PetscBT) + sizeof(int *) + sizeof(int)) + 
       (Mbs)*imax*sizeof(int)  + (Mbs/BITSPERBYTE+1)*imax*sizeof(char) + 1;
-    table = (BTPetsc *)PetscMalloc(len);CHKPTRQ(table);
+    table = (PetscBT *)PetscMalloc(len);CHKPTRQ(table);
     ierr  = PetscMemzero(table,len);CHKERRQ(ierr);
     data  = (int **)(table + imax);
     isz   = (int  *)(data  + imax);
@@ -308,7 +308,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   /* Parse the IS and update local tables and the outgoing buf with the data*/
   {
     int     n_i,*data_i,isz_i,*outdat_j,ctr_j;
-    BTPetsc table_i;
+    PetscBT table_i;
 
     for (i=0; i<imax; i++) {
       ierr    = PetscMemzero(ctr,size*sizeof(int));CHKERRQ(ierr);
@@ -326,7 +326,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
           ptr[proc]++;
         }
         else { /* Update the local table */
-          if (!PetscBTLoopupSet(table_i,row)) { data_i[isz_i++] = row;}
+          if (!PetscBTLookupSet(table_i,row)) { data_i[isz_i++] = row;}
         }
       }
       /* Update the headers for the current IS */
@@ -342,8 +342,6 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     }
   }
   
-
-
   /*  Now  post the sends */
   s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(s_waits1);
   for (i=0; i<nrqs; ++i) {
@@ -384,7 +382,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   xdata = (int **)PetscMalloc((nrqr+1)*sizeof(int *));CHKPTRQ(xdata);
   isz1  = (int *)PetscMalloc((nrqr+1)*sizeof(int));CHKPTRQ(isz1);
   ierr  = MatIncreaseOverlap_MPIBAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
-  ierr = PetscFree(rbuf);CHKERRQ(ierr);
+  ierr  = PetscFree(rbuf);CHKERRQ(ierr);
 
   /* Send the data back*/
   /* Do a global reduction to know the buffer space req for incoming messages*/
@@ -428,7 +426,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   /* receive work done on other processors*/
   {
     int         index, is_no, ct1, max,*rbuf2_i,isz_i,*data_i,jmax;
-    BTPetsc     table_i;
+    PetscBT     table_i;
     MPI_Status  *status2;
      
     status2 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(status2);
@@ -447,7 +445,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
         table_i = table[is_no];
         for (k=0; k<max; k++,ct1++) {
           row = rbuf2_i[ct1];
-          if (!PetscBTLoopupSet(table_i,row)) { data_i[isz_i++] = row;}   
+          if (!PetscBTLookupSet(table_i,row)) { data_i[isz_i++] = row;}   
         }
         isz[is_no] = isz_i;
       }
@@ -491,14 +489,14 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
                to each index set;
       data   - pointer to the solutions
 */
-static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BTPetsc *table,int *isz,int **data)
+static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
 {
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
   Mat         A = c->A, B = c->B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)B->data;
   int         start, end, val, max, rstart,cstart,*ai, *aj;
   int         *bi, *bj, *garray, i, j, k, row,*data_i,isz_i;
-  BTPetsc     table_i;
+  PetscBT     table_i;
 
   PetscFunctionBegin;
   rstart = c->rstart;
@@ -520,13 +518,13 @@ static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BTPetsc *table,int *i
       end   = ai[row+1];
       for (k=start; k<end; k++) { /* Amat */
         val = aj[k] + cstart;
-        if (!PetscBTLoopupSet(table_i,val)) { data_i[isz_i++] = val;}  
+        if (!PetscBTLookupSet(table_i,val)) { data_i[isz_i++] = val;}  
       }
       start = bi[row];
       end   = bi[row+1];
       for (k=start; k<end; k++) { /* Bmat */
         val = garray[bj[k]]; 
-        if (!PetscBTLoopupSet(table_i,val)) { data_i[isz_i++] = val;}  
+        if (!PetscBTLookupSet(table_i,val)) { data_i[isz_i++] = val;}  
       } 
     }
     isz[i] = isz_i;
@@ -563,7 +561,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
   int         row,total_sz,ct, ct1, ct2, ct3,mem_estimate, oct2, l, start, end;
   int         val, max1, max2, rank, Mbs, no_malloc =0, *tmp, new_estimate, ctr;
   int         *rbuf_i,kmax,rbuf_0,ierr;
-  BTPetsc     xtable;
+  PetscBT     xtable;
 
   PetscFunctionBegin;
   rank   = c->rank;
@@ -605,7 +603,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
       kmax = rbuf_i[2*j];
       for (k=0; k<kmax; k++, ct1++) { 
         row = rbuf_i[ct1];
-        if (!PetscBTLoopupSet(xtable,row)) { 
+        if (!PetscBTLookupSet(xtable,row)) { 
           if (!(ct3 < mem_estimate)) {
             new_estimate = (int)(1.5*mem_estimate)+1;
             tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
@@ -625,7 +623,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
         end   = ai[row+1];
         for (l=start; l<end; l++) {
           val = aj[l] + cstart;
-          if (!PetscBTLoopupSet(xtable,val)) {
+          if (!PetscBTLookupSet(xtable,val)) {
             if (!(ct3 < mem_estimate)) {
               new_estimate = (int)(1.5*mem_estimate)+1;
               tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
@@ -643,7 +641,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
         end   = bi[row+1];
         for (l=start; l<end; l++) {
           val = garray[bj[l]];
-          if (!PetscBTLoopupSet(xtable,val)) { 
+          if (!PetscBTLookupSet(xtable,val)) { 
             if (!(ct3 < mem_estimate)) { 
               new_estimate = (int)(1.5*mem_estimate)+1;
               tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
@@ -675,8 +673,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatReuse,Mat *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIBAIJ"
-int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
 { 
   IS          *isrow_new,*iscol_new;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;

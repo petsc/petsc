@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.87 1999/10/13 20:38:32 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.89 1999/10/24 14:03:37 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
 
@@ -165,7 +165,8 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 {
   SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
   double     tmp;
-  int        itmp,ierr,flg;
+  int        itmp,ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg);CHKERRQ(ierr);
@@ -591,7 +592,7 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
                                     "SNESLineSearchGetDampingParameter_UM_LS",
                                     (void*)SNESLineSearchGetDampingParameter_UM_LS);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: PLogEvent.c,v 1.14 1999/05/04 20:38:02 balay Exp bsmith $*/
+/*$Id: PLogEvent.c,v 1.15 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -7,7 +7,8 @@
 int main( int argc, char **argv)
 {
   PLogDouble x, y;
-  int        e1, flg,ierr;
+  int        e1, ierr;
+  PetscTruth flg;
 
   PetscInitialize(&argc, &argv,0,0);
   PLogEventRegister(&e1,"*DummyEvent", "red:");

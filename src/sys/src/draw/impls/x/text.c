@@ -1,9 +1,5 @@
-/*$Id: text.c,v 1.31 1999/10/01 21:20:25 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.32 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
-/* Include petsc in case it is including petscconf.h */
-#include "petsc.h"
-
-#if defined(PETSC_HAVE_X11)
 /*
    This file contains simple code to manage access to fonts, insuring that
    library routines access/load fonts only once
@@ -158,9 +154,3 @@ int XiMatchFontSize( XiFont *font, int w, int h )
   font->font_descent  = nfonts[imax].descent;
   PetscFunctionReturn(0);
 }
-#else
-int dummy_text(void)
-{
-  PetscFunctionReturn(0);
-}
-#endif

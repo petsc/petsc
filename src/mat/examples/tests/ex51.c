@@ -1,4 +1,4 @@
-/*$Id: ex51.c,v 1.8 1999/06/30 23:52:15 balay Exp bsmith $*/
+/*$Id: ex51.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -10,20 +10,21 @@ static char help[] =
 int main(int argc,char **args)
 {
   Mat         A,B,*submatA, *submatB;
-  int         bs=1,m=43,ov=1,i,j,k,*rows,*cols,ierr,flg,M,nd=5,*idx,size,mm,nn;
+  int         bs=1,m=43,ov=1,i,j,k,*rows,*cols,ierr,M,nd=5,*idx,size,mm,nn;
   Scalar      *vals,rval;
   IS          *is1,*is2;
   PetscRandom rand;
   Vec         xx,s1,s2;
   double      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
  
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
   M    = m*bs;
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRA(ierr);
@@ -79,7 +80,7 @@ int main(int argc,char **args)
   ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRA(ierr);
 
   for (i=0; i<nd; ++i) { 
-    ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg);CHKERRA(ierr);
+    ierr = ISEqual(is1[i],is2[i],&flg);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"i=%d, flg =%d\n",i,flg);CHKERRA(ierr);
   }
 

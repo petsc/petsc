@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.68 1999/09/27 21:31:55 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.70 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -48,14 +48,14 @@ int main( int argc, char **argv )
   Vec        x, r, F, U;             /* vectors */
   Mat        J;                      /* Jacobian matrix */
   MonitorCtx monP;                   /* monitoring context */
-  int        ierr, its, n = 5, i, flg, maxit, maxf, size;
+  int        ierr, its, n = 5, i, maxit, maxf, size;
   Scalar     h, xp, v, none = -1.0;
   double     atol, rtol, stol, norm;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

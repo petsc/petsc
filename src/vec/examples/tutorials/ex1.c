@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.55 1999/05/12 03:28:40 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.57 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -26,14 +26,15 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Vec      x, y, w;               /* vectors */
-  Vec      *z;                    /* array of vectors */
-  double   norm, v, v1, v2;
-  int      n = 20, ierr, flg;
-  Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
+  Vec        x, y, w;               /* vectors */
+  Vec        *z;                    /* array of vectors */
+  double     norm, v, v1, v2;
+  int        n = 20, ierr;
+  PetscTruth flg;
+  Scalar     one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -163,7 +164,7 @@ int main(int argc,char **argv)
      Test whether vector has been corrupted (just to demonstrate this
      routine) not needed in most application codes.
   */
-  ierr = VecValid(x,(PetscTruth*)&flg);CHKERRA(ierr);
+  ierr = VecValid(x,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Corrupted vector.");
 
   /* 

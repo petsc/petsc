@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.52 1999/10/13 20:37:47 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.54 1999/10/24 14:02:53 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -311,16 +311,17 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
-  int    ierr,flag,freq = 1;
-  double error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
+  int        ierr,freq = 1;
+  double     error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
-  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,&flag);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_umin",&umin,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_umin",&umin,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatFDColoringSetParameters(matfd,error,umin);CHKERRQ(ierr);
-  ierr = OptionsGetInt(matfd->prefix,"-mat_fd_coloring_freq",&freq,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetInt(matfd->prefix,"-mat_fd_coloring_freq",&freq,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatFDColoringSetFrequency(matfd,freq);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
   if (flag) {
@@ -364,7 +365,8 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 #define __FUNC__ "MatFDColoringView_Private"
 int MatFDColoringView_Private(MatFDColoring fd)
 {
-  int ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
@@ -512,13 +514,14 @@ int MatFDColoringDestroy(MatFDColoring c)
 @*/
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           k,fg,ierr,N,start,end,l,row,col,srow;
+  int           k,ierr,N,start,end,l,row,col,srow;
   Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
   int           (*f)(void *,Vec,Vec,void *) = ( int (*)(void *,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
+  PetscTruth    flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
@@ -536,8 +539,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg);CHKERRQ(ierr);
-  if (fg) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  if (flg) {
     PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
   } else {
     ierr = MatZeroEntries(J);CHKERRQ(ierr);
@@ -626,13 +629,14 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 @*/
 int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           k,fg,ierr,N,start,end,l,row,col,srow;
+  int           k,ierr,N,start,end,l,row,col,srow;
+  int           (*f)(void *,double,Vec,Vec,void *) = ( int (*)(void *,double,Vec,Vec,void *))coloring->f;
   Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
-  int           (*f)(void *,double,Vec,Vec,void *) = ( int (*)(void *,double,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
+  PetscTruth    flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
@@ -649,8 +653,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg);CHKERRQ(ierr);
-  if (fg) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  if (flg) {
     PLogInfo(coloring,"MatFDColoringApplyTS: Not calling MatZeroEntries()\n");
   } else {
     ierr = MatZeroEntries(J);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.49 1999/10/13 20:36:45 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.51 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -291,12 +291,27 @@ int PetscCompareInitialize(double tol)
 */
 
 #undef __FUNC__  
-#define __FUNC__ "Petsc_MPI_Abort_Function"
-void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag) 
+#define __FUNC__ "Petsc_MPI_AbortOnError"
+void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
   abort();
+}
+
+#undef __FUNC__  
+#define __FUNC__ "Petsc_MPI_DebuggerOnError"
+void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  (*PetscErrorPrintf)("MPI error %d\n",*flag);
+  ierr = PetscAttachDebugger();
+  if (ierr) { /* hopeless so get out */
+    MPI_Finalize();
+    exit(*flag);
+  }
 }
 
 #if defined(PETSC_HAVE_MALLOC_VERIFY)
@@ -305,16 +320,18 @@ extern int malloc_debug(int);
 EXTERN_C_END
 #endif
 
-extern int PLogInfoAllow(PetscTruth,char *);
-extern int PetscSetUseTrMalloc_Private(void);
+extern int        PLogInfoAllow(PetscTruth,char *);
+extern int        PetscSetUseTrMalloc_Private(void);
+extern PetscTruth petscsetmallocvisited;
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsCheckInitial"
 int OptionsCheckInitial(void)
 {
-  char     string[64];
-  MPI_Comm comm = PETSC_COMM_WORLD;
-  int      flg1,flg2,flg3,ierr,*nodes,flag,i,rank;
+  char       string[64];
+  MPI_Comm   comm = PETSC_COMM_WORLD;
+  PetscTruth flg1,flg2,flg3,flag;
+  int        ierr,*nodes,i,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -327,7 +344,9 @@ int OptionsCheckInitial(void)
   /* always does trmalloc with BOPT=g, just check so does not reported never checked */
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1);CHKERRQ(ierr);
-  if (!flg1) { ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); }
+  if (!flg1 && !petscsetmallocvisited) {
+    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
+  }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2);CHKERRQ(ierr);
@@ -399,8 +418,9 @@ int OptionsCheckInitial(void)
 #endif
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char *debugger = 0, *f;
-    int  xterm     = 1;
+    char           *debugger = 0, *f;
+    int            xterm     = 1;
+    MPI_Errhandler err_handler;
 
     ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
     if (f) xterm = 0;
@@ -418,6 +438,8 @@ int OptionsCheckInitial(void)
     if (f)     debugger = "ups";
 
     ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+    ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
+    ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
   }
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
@@ -425,7 +447,7 @@ int OptionsCheckInitial(void)
   if (flg1 || flg2) {
     char           *debugger = 0;
     int            xterm     = 1,size;
-    MPI_Errhandler abort_handler;
+    MPI_Errhandler err_handler;
     /*
        we have to make sure that all processors have opened 
        connections to all other processors, otherwise once the 
@@ -448,7 +470,7 @@ int OptionsCheckInitial(void)
     ierr  = OptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&size,&flag);CHKERRQ(ierr);
     if (flag) {
       for (i=0; i<size; i++) {
-        if (nodes[i] == rank) { flag = 0; break; }
+        if (nodes[i] == rank) { flag = PETSC_FALSE; break; }
       }
     }
     if (!flag) {        
@@ -476,8 +498,8 @@ int OptionsCheckInitial(void)
       } else {
         ierr = PetscStopForDebugger();CHKERRQ(ierr);
       }
-      ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_Abort_Function,&abort_handler);CHKERRQ(ierr);
-      ierr = MPI_Errhandler_set(comm,abort_handler);CHKERRQ(ierr);
+      ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
+      ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
     }
     ierr = PetscFree(nodes);CHKERRQ(ierr);
   }

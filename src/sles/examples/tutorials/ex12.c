@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.10 1999/10/06 21:25:29 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.12 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -13,7 +13,7 @@ Input parameters include:\n\
    Concepts: PC^Registering preconditioners
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: PCRegister(); PCSetType();
+   Routines: PCRegisterDynamic(); PCSetType(); PCRegister()
    Processors: n
 T*/
 
@@ -21,9 +21,7 @@ T*/
    Demonstrates registering a new preconditioner (PC) type.
 
    To register a PC type whose code is linked into the executable,
-   put the TWO lines below in your code BEFORE any PETSc include files. 
-   #include "petsc.h"
-   #undef PETSC_USE_DYNAMIC_LIBRARIES
+   use PCRegister(). To register a PC type in a shared library use PCRegister()
 
    Also provide the prototype for your PCCreate_XXX() function. In 
    this example we use the PETSc implementation of the Jacobi method,
@@ -32,10 +30,8 @@ T*/
    See the file src/sles/pc/impls/jacobi/jacobi.c for details on how to 
    write a new PC component.
 
-   See the manual page PCRegister() for details on how to register a method.
+   See the manual page PCRegisterDynamic() for details on how to register a method.
 */
-#include "petsc.h"
-#undef PETSC_USE_DYNAMIC_LIBRARIES
 
 /* 
   Include "sles.h" so that we can use SLES solvers.  Note that this file
@@ -59,13 +55,13 @@ int main(int argc,char **args)
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   double      norm;     /* norm of solution error */
-  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
+  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
   Scalar      v, one = 1.0, neg_one = -1.0;
   PC          pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

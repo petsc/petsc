@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.5 1999/05/04 20:37:40 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.7 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests saving DA vectors to files\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr,flg;
+  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
   int      dof = 1;
   DA       da;
   Vec      local, global, natural;
@@ -19,11 +19,11 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,

@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.12 1999/05/12 03:35:15 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.13 1999/06/30 22:53:04 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -71,7 +71,7 @@
 #define PetscReal(a) dreal(a)
 #define PetscConj(a) dconjg(a)
 #endif
-#define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
+#define MPIU_SCALAR  MPI_DOUBLE_COMPLEX
 #else
 #define Scalar       PetscFortranDouble
 #define PetscReal(a) a

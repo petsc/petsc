@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.17 1999/10/13 20:38:27 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.19 1999/10/24 14:03:33 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -138,8 +138,8 @@ static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
 */
 static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 {
-  int        flag, ierr;
-  PetscTruth set;
+  int        ierr;
+  PetscTruth flag, set;
   char       *p;
 
   PetscFunctionBegin;
@@ -315,10 +315,10 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
   ctx->ops->printhelp      = MatSNESMFPrintHelp_WP;  
   ctx->ops->setfromoptions = MatSNESMFSetFromOptions_WP;  
 
-  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormA_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormA_C",
                             "MatSNESMFWPSetComputeNormA_P",
                             (void *) MatSNESMFWPSetComputeNormA_P);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormU_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormU_C",
                             "MatSNESMFWPSetComputeNormU_P",
                             (void *) MatSNESMFWPSetComputeNormU_P);CHKERRQ(ierr);
 

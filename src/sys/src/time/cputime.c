@@ -1,8 +1,8 @@
-/*$Id: cputime.c,v 1.28 1999/09/21 15:10:18 bsmith Exp bsmith $*/
+/*$Id: cputime.c,v 1.29 1999/10/24 14:01:31 bsmith Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
-  NOT real time usage.
-
+  NOT real time usage. Do not use this for reported timings, speedup etc.
+*/
 
 #include "sys.h"                       /*I "petsc.h" I*/
 #include "pinclude/ptime.h"

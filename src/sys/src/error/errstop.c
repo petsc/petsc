@@ -1,4 +1,4 @@
-/*$Id: errstop.c,v 1.5 1999/04/20 14:58:55 bsmith Exp bsmith $*/
+/*$Id: errstop.c,v 1.6 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -39,7 +39,8 @@ $     SETERRQ(n,p,mess)
  @*/
 int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  int        rank, flg1, flg2;
+  int        rank;
+  PetscTruth flg1, flg2;
   PLogDouble mem,rss;
 
   PetscFunctionBegin;

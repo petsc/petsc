@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.11 1999/06/30 23:53:54 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.13 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -60,12 +60,12 @@ int main(int argc,char **args)
   double        norm;      /* norm of solution error */
   SampleShellPC *shell;    /* user-defined preconditioner context */
   Scalar        v, one = 1.0, none = -1.0;
-  int           i, j, I, J, Istart, Iend, ierr, m = 8, n = 7;
-  int           user_defined_pc, its, flg;
+  int           i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
+  PetscTruth    user_defined_pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.63 1999/05/11 19:16:12 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.64 1999/05/14 14:43:17 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -15,9 +15,9 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
-                   ex16.PETSc runex16 ex16.rm clean	
+                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm clean	
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
-	           runex5_5 ex5.rm ex8.rm clean
+	           runex5_5 ex5.rm ex8.rm ex10.PETSc runex10_7 runex10_8 runex10_9 ex10.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
                    ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -51,7 +51,7 @@ BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm clean
 BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                  ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c
+                  ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -163,6 +163,10 @@ ex16: ex16.o  chkopts
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_SLES_LIB}
 	${RM} ex17.o
+
+ex18: ex18.o  chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_SLES_LIB}
+	${RM} ex18.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
@@ -328,6 +332,21 @@ runex10_8:
 	   if (diff output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
+runex10_9:
+	-@echo > ex10_9.tmp
+	-@for type in gmres bicg bcgs tcqmr tfqmr; do \
+          for bs in 1 2 3 4 5 6 7; do \
+          for np in 1 2 3; do \
+	 ${MPIRUN} -np $$np ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_baij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
+                    1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; \
+	 ${MPIRUN} -np $$np ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_baij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
+                    1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; \
+         done; done; done; 
+	-@if (diff output/ex10_9.out ex10_9.tmp) then true; \
+	   else echo "Possible problem with ex10_9, diffs above"; fi;
+	-@${RM} -f ex10_9.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
@@ -383,5 +402,10 @@ runex16:
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   ${RM} -f ex16_1.tmp
+runex18:
+	-@${MPIRUN} -np 2 ex18 -ksp_smonitor > ex18_1.tmp 2>&1; \
+	   if (diff output/ex18_1.out ex18_1.tmp) then true; \
+	   else echo "Possible problem with ex18_1, diffs above"; fi; \
+	   ${RM} -f ex18_1.tmp
 
 

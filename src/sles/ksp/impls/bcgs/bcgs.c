@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.64 1999/10/13 20:38:09 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.65 1999/10/24 14:03:12 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -77,12 +77,11 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
-                         P,V,T);CHKERRQ(ierr);    /*   v <- K p           */
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(&tmp,V,R,S);CHKERRQ(ierr);    /*   s <- r - a v       */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {

@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $*/
+/*$Id: ex40.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -12,7 +12,8 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int         ierr, flg, nd = 2, ov=1, i, size, start, m, n, end, rank;
+  int         ierr, nd = 2, ov=1, i, size, start, m, n, end, rank;
+  PetscTruth  flg;
   Mat         A, B;
   char        file[128]; 
   Viewer      fd;
@@ -25,9 +26,9 @@ int main(int argc,char **args)
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
 
   /* Read matrix and RHS */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
@@ -61,7 +62,7 @@ int main(int argc,char **args)
 
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
-    ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg);CHKERRA(ierr);
+    ierr = ISEqual(is1[i],is2[i],&flg);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRA(ierr);
   }
 

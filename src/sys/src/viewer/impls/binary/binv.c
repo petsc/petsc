@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.73 1999/10/04 18:48:27 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.75 1999/10/24 14:01:05 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -191,9 +191,10 @@ EXTERN_C_END
 */
 int ViewerBinaryLoadInfo(Viewer viewer)
 {
-  FILE *file;
-  char string[128],*first,*second,*final;
-  int  len,ierr,flg;
+  FILE       *file;
+  char       string[128],*first,*second,*final;
+  int        len,ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
@@ -369,10 +370,10 @@ int ViewerCreate_Binary(Viewer v)
   vbinary->fdes      = 0;
   vbinary->btype     = (ViewerBinaryType) -1; 
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerSetFilename_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerSetFilename_C",
                                     "ViewerSetFilename_Binary",
                                      (void*)ViewerSetFilename_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerBinarySetType_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerBinarySetType_C",
                                     "ViewerBinarySetType_Binary",
                                      (void*)ViewerBinarySetType_Binary);CHKERRQ(ierr);
   PetscFunctionReturn(0);

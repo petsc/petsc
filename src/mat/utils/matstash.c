@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.35 1999/06/30 23:52:35 balay Exp bsmith $*/
+/*$Id: matstash.c,v 1.37 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -22,7 +22,8 @@
 #define __FUNC__ "MatStashCreate_Private"
 int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
 {
-  int ierr,flg,max,*opt,nopt;
+  int        ierr,max,*opt,nopt;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */

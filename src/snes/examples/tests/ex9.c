@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.35 1999/09/27 21:31:50 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.37 1999/10/24 14:03:39 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -49,7 +49,8 @@ int main( int argc, char **argv )
   AppCtx        user;                 /* user-defined application context */
   Vec           x,r;                  /* vectors */
   DAStencilType stencil = DA_STENCIL_BOX;
-  int           ierr, its, flg;
+  int           ierr, its;
+  PetscTruth    flg;
   int           Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
@@ -61,13 +62,13 @@ int main( int argc, char **argv )
   user.my    = 4; 
   user.mz    = 4; 
   user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }

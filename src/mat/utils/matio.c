@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.60 1999/10/01 21:21:43 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.62 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -152,8 +152,8 @@ and PetscWriteBinary() to see how this may be done.
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
-  int         ierr,flg;
-  PetscTruth  set,isbinary;
+  int         ierr;
+  PetscTruth  set,isbinary,flg;
   MatType     type;
   MPI_Comm    comm;
 

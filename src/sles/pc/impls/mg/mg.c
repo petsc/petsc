@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.97 1999/10/13 20:37:56 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.99 1999/10/24 14:03:01 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -206,8 +206,9 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 #define __FUNC__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
-  int    ierr, m,levels = 1,flg;
-  char   buff[16];
+  int        ierr, m,levels = 1;
+  PetscTruth flg;
+  char       buff[16];
 
   PetscFunctionBegin;
   if (!pc->data) {

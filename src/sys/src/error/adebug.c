@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.94 1999/10/13 20:36:40 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.96 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */
@@ -74,7 +74,7 @@ int PetscSetDebugger(const char debugger[], int xterm)
 @*/
 int PetscAttachDebugger(void)
 {
-  int   child=0,sleeptime=0,flg=0,ierr=0;
+  int   child=0,sleeptime=0,ierr=0;
   char  program[256],display[256];
 
   PetscFunctionBegin;
@@ -86,7 +86,7 @@ int PetscAttachDebugger(void)
     PetscFunctionReturn(1);
   }
 
-#if defined(CANNOT_START_DEBUGGER) 
+#if defined(PETSC_CANNOT_START_DEBUGGER) 
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
@@ -105,12 +105,12 @@ int PetscAttachDebugger(void)
 
   /*
       Swap role the parent and child. This is (I think) so that control c typed
-    in the debugger go to the correct process.
+    in the debugger goes to the correct process.
   */
   if (child) { child = 0; }
   else       { child = (int) getppid(); }
 
-  if (child) { /* I am the parent will run the debugger */
+  if (child) { /* I am the parent, will run the debugger */
     char  *args[9],pid[9];
     int   isdbx,isxldb,isxxgdb,isups,isxdb;
 
@@ -259,7 +259,7 @@ int PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);CHKERRQ(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PARCH_hpux)
     /*
@@ -370,7 +370,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int   sleeptime=0,flg=0,ierr=0,ppid,rank;
+  int   sleeptime=0,ierr=0,ppid,rank;
   char  program[256],hostname[256];
   int   isdbx,isxldb,isxxgdb,isups,isxdb;
 
@@ -389,7 +389,7 @@ int PetscStopForDebugger(void)
     PetscFunctionReturn(0);
   }
 
-#if defined(CANNOT_START_DEBUGGER) 
+#if defined(PETSC_CANNOT_START_DEBUGGER) 
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
@@ -441,7 +441,7 @@ int PetscStopForDebugger(void)
   fflush(stdout);
 
   sleeptime = 25; /* default to sleep waiting for debugger */
-  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PARCH_hpux)
   /*

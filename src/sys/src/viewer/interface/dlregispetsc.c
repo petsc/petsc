@@ -1,4 +1,4 @@
-/*$Id: dlregispetsc.c,v 1.6 1999/10/13 20:36:28 bsmith Exp bsmith $*/
+/*$Id: dlregispetsc.c,v 1.8 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -45,7 +45,8 @@ int DLLibraryRegister_Petsc(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = DLLibraryRegister(path);CHKERRQ(ierr);
+  ierr = DrawRegisterAll(path);CHKERRQ(ierr);
+  ierr = ViewerRegisterAll(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

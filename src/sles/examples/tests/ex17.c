@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.29 1999/07/08 14:40:20 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.31 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -15,16 +15,16 @@ int main(int argc,char **args)
   Vec         x, b, u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* SLES context */
-  int         ierr, n = 10, its, flg, dim, p = 1, use_random;
+  int         ierr, n = 10, its,  dim, p = 1, use_random;
   Scalar      none = -1.0, pfive = 0.5;
   double      norm;
   PetscRandom rctx;
   TestType    type;
-
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
   switch (p) {
     case 1:  type = TEST_1;      dim = n;   break;
     case 2:  type = TEST_2;      dim = n;   break;
@@ -92,7 +92,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
 #else
 
   Scalar val[5], h;
-  int    flg, i, j, I, J, ierr, col[5], Istart, Iend;
+  int    i, j, I, J, ierr, col[5], Istart, Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   if (type == TEST_1) {
@@ -145,7 +145,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     PetscRandom rctx;
     double      h2, sigma1 = 5.0;
     Scalar      sigma2;
-    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg);CHKERRA(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for ( I=Istart; I<Iend; I++ ) { 
@@ -174,7 +174,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
      */
     double  h2, sigma1 = 200.0;
     Scalar alpha_h;
-    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg);CHKERRA(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
     for ( I=Istart; I<Iend; I++ ) { 

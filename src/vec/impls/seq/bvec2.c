@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.169 1999/10/13 20:37:05 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.171 1999/10/24 14:01:55 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -518,11 +518,11 @@ int VecDuplicate_Seq(Vec win,Vec *V)
   ierr = VecCreateSeq(win->comm,win->n,V);CHKERRQ(ierr);
   if (win->mapping) {
     (*V)->mapping = win->mapping;
-    PetscObjectReference((PetscObject)win->mapping);
+    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
   }
   if (win->bmapping) {
     (*V)->bmapping = win->bmapping;
-    PetscObjectReference((PetscObject)win->bmapping);
+    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
   }
   (*V)->bs = win->bs;
   ierr = OListDuplicate(win->olist,&(*V)->olist);CHKERRQ(ierr);

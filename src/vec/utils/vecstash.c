@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.12 1999/06/30 23:50:17 balay Exp bsmith $*/
+/*$Id: vecstash.c,v 1.14 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -22,7 +22,8 @@
 #define __FUNC__ "VecStashCreate_Private"
 int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
 {
-  int ierr,flg,max,*opt,nopt;
+  int        ierr,max,*opt,nopt;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */

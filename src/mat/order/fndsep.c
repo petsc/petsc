@@ -2,7 +2,7 @@
 */
 
 #include "petsc.h"
-#include "src/mat/impls/order/order.h"
+#include "src/mat/order/order.h"
 
 /*****************************************************************/
 /*************     FNDSEP ..... FIND SEPARATOR       *************/

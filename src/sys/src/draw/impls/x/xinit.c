@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.60 1999/10/01 21:20:25 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.62 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -12,9 +12,6 @@
    call to XiCreateWindow .  Similarly for the Display.
 */
 
-#include "petsc.h"
-
-#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 extern int XiUniformHues(Draw_X *,int);
@@ -271,7 +268,6 @@ int XiSetToBackground(Draw_X* XiWin )
   PetscFunctionReturn(0);
 }
 
-#endif
 
 
 

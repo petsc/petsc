@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.7 1999/10/13 20:37:10 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.8 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -13,7 +13,7 @@ uses block index sets\n\n";
 int main(int argc,char **argv)
 {
   int           bs = 1, n = 5, ierr, ix0[3] = {5, 7, 9}, ix1[3] = {2,3,4};
-  int           size,rank,i, iy0[3] = {1,2,4}, iy1[3] = {0,1,3},flg;
+  int           size,rank,i, iy0[3] = {1,2,4}, iy1[3] = {0,1,3};
   Scalar        value;
   Vec           x,y;
   IS            isx,isy;
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   if (size != 2) SETERRQ(1,1,"Must run with 2 processors");
 
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
   n = bs*n;
 
   /* create two vectors */

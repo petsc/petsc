@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.53 1999/09/02 14:52:56 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.54 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -243,7 +243,7 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],
   int ierr;
 
   PetscFunctionBegin;
-  ierr = FListAdd(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
+  ierr = FListAddDynamic(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -396,8 +396,8 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectComposeFunction_Private"
-int PetscObjectComposeFunction_Private(PetscObject obj,const char name[],
+#define __FUNC__ "PetscObjectComposeFunction"
+int PetscObjectComposeFunction(PetscObject obj,const char name[],
                                        const char fname[],void *ptr)
 {
   int ierr;
@@ -426,7 +426,7 @@ int PetscObjectComposeFunction_Private(PetscObject obj,const char name[],
 
 .keywords: object, composition
 
-.seealso: PetscObjectComposeFunction()
+.seealso: PetscObjectComposeFunctionDynamic()
 @*/
 int PetscObjectQueryFunction(PetscObject obj,const char name[],void **ptr)
 {
@@ -633,10 +633,10 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
    Level: advanced
 
     Synopsis:
-    PetscObjectComposeFunction(PetscObject obj,char *name,char *fname,void *ptr)
+    PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
 
    Notes:
-   PetscObjectComposeFunction() can be used with any PETSc object (such as
+   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
    The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to

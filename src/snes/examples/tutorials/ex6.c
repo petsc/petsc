@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.56 1999/06/30 23:54:27 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.58 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -39,21 +39,22 @@ int MatrixFreePreconditioner(void*,Vec,Vec);
 
 int main( int argc, char **argv )
 {
-  SNES     snes;                 /* SNES context */
-  SLES     sles;                 /* SLES context */
-  PC       pc;                   /* PC context */
-  KSP      ksp;                  /* KSP context */
-  Vec      x, r, F;              /* vectors */
-  Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
-  int      ierr, its, n = 5, i, size, flg;
-  int      *sres_hist_its = 0, res_hist_len = 200, sres_hist_len = 10;
-  double   h, xp = 0.0, *res_hist = 0, *sres_hist = 0;
-  Scalar   v, pfive = .5;
+  SNES       snes;                 /* SNES context */
+  SLES       sles;                 /* SLES context */
+  PC         pc;                   /* PC context */
+  KSP        ksp;                  /* KSP context */
+  Vec        x, r, F;              /* vectors */
+  Mat        J, JPrec;             /* Jacobian, preconditioner matrices */
+  int        ierr, its, n = 5, i, size;
+  int        *sres_hist_its = 0, res_hist_len = 200, sres_hist_len = 10;
+  double     h, xp = 0.0, *res_hist = 0, *sres_hist = 0;
+  Scalar     v, pfive = .5;
+  PetscTruth flg;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

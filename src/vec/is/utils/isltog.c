@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.32 1999/10/13 20:37:00 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.34 1999/10/24 14:01:49 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "is.h"  I*/
@@ -22,7 +22,7 @@
 @*/
 int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 {
-  int        i,ierr;
+  int        i,ierr,rank;
   PetscTruth isascii;
 
   PetscFunctionBegin;
@@ -31,10 +31,11 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(mapping,viewer);
 
+  ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     for ( i=0; i<mapping->n; i++ ) {
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,mapping->indices[i]);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {

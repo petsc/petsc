@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.14 1999/09/27 21:32:24 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.16 1999/10/24 14:04:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AOData \n\n";
 
@@ -9,14 +9,14 @@ static char help[] = "Tests AOData \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     n = 2,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  int     n = 2,nglobal, bs = 2, *keys, *data,ierr,rank,size,i,start;
   double  *gd;
   AOData  aodata;
   Viewer  binary;
-  BTPetsc ld;
+  PetscBT ld;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = n + rank;CHKERRA(ierr);
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);

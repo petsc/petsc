@@ -1,4 +1,4 @@
-/ * $Id: send.c,v 1.102 1999/10/04 18:48:11 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.104 1999/10/24 14:01:01 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
@@ -84,8 +84,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
-  int                s = 0,flag = 1,ierr;
-  
+  int                s = 0,ierr;
+  PetscTruth         flg = PETSC_TRUE;
+
   PetscFunctionBegin;
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
@@ -96,7 +97,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
-  while (flag) {
+  while (flg) {
     if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
       perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,0,"system error");
     }
@@ -119,9 +120,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
       } else {
         perror(NULL); SETERRQ(PETSC_ERR_LIB,0,"system error");
       }
-      flag = 1; close(s);
+      flg = PETSC_TRUE; close(s);
     } 
-    else flag = 0;
+    else flg = PETSC_FALSE;
   }
   *t = s;
   PetscFunctionReturn(0);
@@ -207,18 +208,18 @@ EXTERN_C_END
 #define __FUNC__ "ViewerSocketSetConnection"
 int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 {
-  int           ierr,rank,flag;
+  int           ierr,rank;
   char          mach[256];
-  PetscTruth    tflag;
+  PetscTruth    tflg,flg;
   Viewer_Socket *vmatlab = (Viewer_Socket *)v->data;
 
   PetscFunctionBegin;
    if (port <= 0) {
-    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag);CHKERRQ(ierr);
-    if (!flag) {
+    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flg);CHKERRQ(ierr);
+    if (!flg) {
       char portn[16];
-      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
-      if (tflag) {
+      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+      if (tflg) {
         ierr = OptionsAtoi(portn,&port);CHKERRQ(ierr);
       } else {
         port = DEFAULTPORT;
@@ -226,10 +227,10 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
     }
   }
   if (!machine) {
-    ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flag);CHKERRQ(ierr);
-    if (!flag) {
-      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,128,&tflag);CHKERRQ(ierr);
-      if (!tflag) {
+    ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,128,&tflg);CHKERRQ(ierr);
+      if (!tflg) {
         ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
       }
     }
@@ -310,17 +311,18 @@ $       XXXView(XXX object,VIEWER_SOCKET_(comm));
 @*/
 Viewer VIEWER_SOCKET_(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg );
   if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (!flag) { /* viewer not yet created */
+  if (!flg) { /* viewer not yet created */
     ierr = ViewerSocketOpen(comm,0,0,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put( comm, Petsc_Viewer_Socket_keyval, (void *) viewer );
@@ -336,15 +338,16 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
 #define __FUNC__ "VIEWER_SOCKET_Destroy" 
 int VIEWER_SOCKET_Destroy(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
-  if (flag) { 
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer,(int*)&flg);CHKERRQ(ierr);
+  if (flg) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
   } 

@@ -1,4 +1,4 @@
-/*$Id: ex46.c,v 1.6 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex46.c,v 1.8 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
@@ -10,13 +10,13 @@ int main(int argc,char **args)
 {
   Mat     C,A;
   Scalar  v;
-  int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size,flg;
+  int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size;
 
   PetscInitialize(&argc,&args,0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   N = m*n;
 
   /* Generate matrix */

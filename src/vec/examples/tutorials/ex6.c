@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.20 1999/06/30 23:50:45 balay Exp bsmith $////////
+/*$Id: ex6.c,v 1.21 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
@@ -9,7 +9,7 @@ a file, then forms a vector.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int     i, ierr, m = 10, flg, fd, size,sz;
+  int     i, ierr, m = 10, fd, size,sz;
   Scalar  *avec, *array;
   Vec     vec;
   Viewer  view_out, view_in;
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRA(ierr);
   if (sz != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
 
   /* ---------------------------------------------------------------------- */
   /*          PART 1: Write some data to a file in binary format            */
@@ -31,8 +31,7 @@ int main(int argc,char **args)
   }
 
   /* Open viewer for binary output */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);
-        CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_out,&fd);CHKERRA(ierr);
 
   /* Write binary output */
@@ -48,8 +47,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
-        CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_in,&fd);CHKERRA(ierr);
 
   /* Create vector and get pointer to data space */
@@ -61,7 +59,7 @@ int main(int argc,char **args)
   ierr = PetscBinaryRead(fd,&size,1,PETSC_INT);CHKERRQ(ierr);
   if (size <=0) SETERRA(1,0,"Error: Must have array length > 0");
 
-  printf("reading data in binary from input.dat, size =%d ...\n",size); 
+  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, size =%d ...\n",size);CHKERRA(ierr); 
   ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR);CHKERRA(ierr);
 
   /* View vector */

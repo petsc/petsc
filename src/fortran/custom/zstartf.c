@@ -43,7 +43,7 @@ EXTERN_C_END
 .keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/
 
-void PetscInitializeFortran(void)
+int PetscInitializeFortran(void)
 {
   int c1=0,c2=0;
 
@@ -54,16 +54,17 @@ void PetscInitializeFortran(void)
     c2 = PetscFromPointerComm(PETSC_COMM_SELF);
   }
   petscsetcommonblock_(&VIEWER_STDOUT_SELF,&VIEWER_STDERR_SELF,&VIEWER_STDOUT_WORLD,&c1,&c2);
+  return 0;
 }
   
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscinitializefortran_(void)
+void PETSC_STDCALL petscinitializefortran_(int *__ierr)
 {
-  PetscInitializeFortran();
+  *__ierr = PetscInitializeFortran();
 }
 
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
                                   void *fnull_scalar,void * fnull_double,
                                   void *fnull_function)

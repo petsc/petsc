@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.35 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.36 1999/09/14 18:30:33 balay Exp bsmith $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -80,7 +80,7 @@ BS_LIB        = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE  -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

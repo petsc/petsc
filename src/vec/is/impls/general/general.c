@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.88 1999/10/24 14:01:44 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -212,9 +212,10 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 {
-  int        i, sorted = 1, min, max, flg, ierr;
+  int        i, sorted = 1, min, max, ierr;
   IS         Nindex;
   IS_General *sub;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidPointer(is);

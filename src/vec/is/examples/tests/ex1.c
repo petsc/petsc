@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.28 1999/06/30 23:50:10 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.29 1999/10/24 14:01:46 bsmith Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
 {
   int        i, n, ierr,*indices,rank,size,*ii;
   IS         is,newis;
-  PetscTruth flag;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -45,37 +45,37 @@ int main(int argc,char **argv)
   /* 
      Check identity and permutation 
   */
-  ierr = ISPermutation(is,&flag);CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0,0);
-  ierr = ISIdentity(is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISPermutation(is,&flg);CHKERRA(ierr);
+  if (flg == PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISIdentity(is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISSetPermutation(is);CHKERRA(ierr);
   ierr = ISSetIdentity(is); CHKERRA(ierr);
-  ierr = ISPermutation(is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
-  ierr = ISIdentity(is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISPermutation(is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISIdentity(is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Check equality of index sets 
   */
-  ierr = ISEqual(is,is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISEqual(is,is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Sorting 
   */
   ierr = ISSort(is);CHKERRA(ierr);
-  ierr = ISSorted(is,&flag);CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISSorted(is,&flg);CHKERRA(ierr);
+  if (flg != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Thinks it is a different type?
   */
-  ierr = ISStride(is,&flag);CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0,0);
-  ierr = ISBlock(is,&flag);CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISStride(is,&flg);CHKERRA(ierr);
+  if (flg == PETSC_TRUE) SETERRA(1,0,0);
+  ierr = ISBlock(is,&flg);CHKERRA(ierr);
+  if (flg == PETSC_TRUE) SETERRA(1,0,0);
 
   ierr = ISDestroy(is);CHKERRA(ierr);
 

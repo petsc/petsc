@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.57 1999/05/12 03:32:04 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.59 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -13,8 +13,7 @@ Input arguments are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr, its, flg;
-  PetscTruth set;
+  int        ierr, its;
   double     norm;
   PLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   Scalar     zero = 0.0, none = -1.0;
@@ -24,12 +23,11 @@ int main(int argc,char **args)
   SLES       sles;
   char       file[128];
   Viewer     fd;
-  PetscTruth table = PETSC_FALSE;
+  PetscTruth table,flg,set;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
-  if (flg) table = PETSC_TRUE;
+  ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");

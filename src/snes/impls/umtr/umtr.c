@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.88 1999/10/13 20:38:31 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.90 1999/10/24 14:03:37 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -303,7 +303,8 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
   double     tmp;
-  int        ierr, flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg);CHKERRQ(ierr);

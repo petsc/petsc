@@ -1,9 +1,14 @@
 !
-!  $Id: petsc.h,v 1.85 1999/03/24 18:28:36 balay Exp balay $;
+!  $Id: petsc.h,v 1.86 1999/09/14 15:58:35 balay Exp bsmith $;
 !
 !  Base include file for Fortran use of the PETSc package.
-!  
+!
+#include "petscconf.h"
+
+#if !defined(PETSC_AVOID_MPIF_H)  
 #include "mpif.h"
+#endif
+
 #include "finclude/petscdef.h"
 
 #if !defined (PETSC_AVOID_DECLARATIONS)

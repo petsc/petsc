@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.78 1999/05/04 20:35:25 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.80 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -31,16 +31,17 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  SLES    sles;             /* linear solver context */
-  Mat     C;                /* matrix */
-  Vec     x, u, b;          /* approx solution, RHS, exact solution */
-  double  norm;             /* norm of solution error */
-  Scalar  v, none = -1.0;
-  int     I, J, ldim, ierr, low, high, iglobal, flg, Istart, Iend;
-  int     i, j, m = 3, n = 2, rank, size, its, mat_nonsymmetric = 0;
+  SLES       sles;             /* linear solver context */
+  Mat        C;                /* matrix */
+  Vec        x, u, b;          /* approx solution, RHS, exact solution */
+  double     norm;             /* norm of solution error */
+  Scalar     v, none = -1.0;
+  int        I, J, ldim, ierr, low, high, iglobal, Istart, Iend;
+  int        i, j, m = 3, n = 2, rank, size, its;
+  PetscTruth mat_nonsymmetric;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.18 1999/05/12 03:24:58 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.19 1999/09/16 19:03:26 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -13,19 +13,19 @@
 #define PETSC_HAVE_STRING_H 
 #define PETSC_HAVE_MALLOC_H
 #define PETSC_HAVE_DRAND48
-#define USES_CPTOFCD  
+#define PETSC_USES_CPTOFCD  
 #define PETSC_HAVE_UNISTD_H
 #define PETSC_HAVE_STDLIB_H
 #define PETSC_HAVE_SYS_TIME_H 
 #define PETSC_HAVE_UNAME
 
 #define PETSC_HAVE_FORTRAN_CAPS 
-#define USES_FORTRAN_SINGLE
+#define PETSC_USES_FORTRAN_SINGLE
 
 #define PETSC_HAVE_READLINK
 #define PETSC_HAVE_MEMMOVE
 
-#define CANNOT_START_DEBUGGER
+#define PETSC_CANNOT_START_DEBUGGER
 
 #define PETSC_HAVE_DOUBLE_ALIGN
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC

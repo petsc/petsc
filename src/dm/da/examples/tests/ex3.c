@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.36 1999/06/30 23:55:20 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.38 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -9,21 +9,22 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 60, ierr,  time_steps = 100,flg;
-  DA        da;
-  Viewer    viewer,viewer_private;
-  Draw      draw;
-  Vec       local, global, copy;
-  Scalar    *localptr, *copyptr;
-  double    a, h, k;
-  int       localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
+  int        rank, size, M = 60, ierr,  time_steps = 100;
+  int        localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
+  DA         da;
+  Viewer     viewer,viewer_private;
+  Draw       draw;
+  Vec        local, global, copy;
+  Scalar     *localptr, *copyptr;
+  double     a, h, k;
+  PetscTruth flg;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */

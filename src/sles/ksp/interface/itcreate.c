@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.173 1999/10/13 20:38:06 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.175 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -208,7 +208,6 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->B               = 0;
 
   ksp->ops->solve      = 0;
-  ksp->ops->solvetrans = 0;
   ksp->ops->setup      = 0;
   ksp->ops->destroy    = 0;
 
@@ -297,7 +296,7 @@ int KSPSetType(KSP ksp,KSPType type)
 #define __FUNC__ "KSPRegisterDestroy"
 /*@C
    KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegister().
+   registered by KSPRegisterDynamic().
 
    Not Collective
 
@@ -305,7 +304,7 @@ int KSPSetType(KSP ksp,KSPType type)
 
 .keywords: KSP, register, destroy
 
-.seealso: KSPRegister(), KSPRegisterAll()
+.seealso: KSPRegisterDynamic(), KSPRegisterAll()
 @*/
 int KSPRegisterDestroy(void)
 {
@@ -442,8 +441,9 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 @*/
 int KSPSetTypeFromOptions(KSP ksp)
 {
-  int       flg, ierr;
-  char      type[256];
+  PetscTruth flg;
+  int        ierr;
+  char       type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -501,7 +501,8 @@ int KSPSetTypeFromOptions(KSP ksp)
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  int       flg, ierr,loc[4], nmax = 4,i;
+  int        ierr,loc[4], nmax = 4,i;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -509,10 +510,10 @@ int KSPSetFromOptions(KSP ksp)
   ierr = KSPSetTypeFromOptions(ksp);CHKERRQ(ierr);
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_avoid_norms", &flg);CHKERRQ(ierr);
   if (flg) {
@@ -633,10 +634,10 @@ int KSPSetFromOptions(KSP ksp)
 }
 
 /*MC
-   KSPRegister - Adds a method to the Krylov subspace solver package.
+   KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   KSPRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
+   KSPRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
 
    Not Collective
 
@@ -647,14 +648,14 @@ int KSPSetFromOptions(KSP ksp)
 -  routine_create - routine to create method context
 
    Notes:
-   KSPRegister() may be called multiple times to add several user-defined solvers.
+   KSPRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   KSPRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   KSPRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MySolverCreate",MySolverCreate);
 .ve
 
@@ -674,14 +675,14 @@ $     -ksp_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegister_Private"
-int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
+#define __FUNC__ "KSPRegister"
+int KSPRegister(char *sname,char *path,char *name,int (*function)(KSP))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

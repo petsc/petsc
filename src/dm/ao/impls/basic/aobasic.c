@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.48 1999/10/13 20:38:53 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.50 1999/10/24 14:03:59 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -129,10 +129,11 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
 @*/
 int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 {
-  AO_Basic  *aodebug;
-  AO        ao;
-  int       *lens,size,rank,N,i,flg1,ierr,*petsc,start;
-  int       *allpetsc,*allapp,*disp,ip,ia;
+  AO_Basic   *aodebug;
+  AO         ao;
+  int        *lens,size,rank,N,i,ierr,*petsc,start;
+  int        *allpetsc,*allapp,*disp,ip,ia;
+  PetscTruth flg1;
 
   PetscFunctionBegin;
   *aoout = 0;

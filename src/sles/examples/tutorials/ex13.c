@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.15 1999/09/27 21:31:30 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.17 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -44,7 +44,7 @@ extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
 int main(int argc,char **args)
 {
   UserCtx userctx;
-  int     ierr, m = 6, n = 7, t, tmax = 2,flg,i,I,j,N;
+  int     ierr, m = 6, n = 7, t, tmax = 2,i,I,j,N;
   Scalar  *userx,*rho, *solution, *userb,hx,hy,x,y;
   double  enorm;
 
@@ -57,8 +57,8 @@ int main(int argc,char **args)
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /*
      Create the empty sparse matrix and linear solver data structures

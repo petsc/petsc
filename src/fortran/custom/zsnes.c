@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.38 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zsnes.c,v 1.39 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
@@ -336,7 +336,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
   char *tname;
 
   *__ierr = SNESGetType(*snes,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
     *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
@@ -352,7 +352,7 @@ void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes, CHAR prefix PETSC_MIXED_LEN
   char *tname;
 
   *__ierr = SNESGetOptionsPrefix(*snes,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
     *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;

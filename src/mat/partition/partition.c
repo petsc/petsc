@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.36 1999/10/13 20:37:35 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.38 1999/10/24 14:02:37 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -44,11 +44,11 @@ FList MatPartitioningList = 0;
 int   MatPartitioningRegisterAllCalled = 0;
 
 /*MC
-   MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
+   MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the 
    matrix package. 
 
    Synopsis:
-   MatPartitioningRegister(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
+   MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
 
    Not Collective
 
@@ -65,7 +65,7 @@ int   MatPartitioningRegisterAllCalled = 0;
 
    Sample usage:
 .vb
-   MatPartitioningRegister("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   MatPartitioningRegisterDynamic("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyPartCreate",MyPartCreate);
 .ve
 
@@ -82,15 +82,15 @@ $     -mat_partitioning_type my_part
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegister_Private" 
-int MatPartitioningRegister_Private(char *sname,char *path,char *name,int (*function)(MatPartitioning))
+#define __FUNC__ "MatPartitioningRegister" 
+int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(MatPartitioning))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ int MatPartitioningRegister_Private(char *sname,char *path,char *name,int (*func
 
 .keywords: matrix, register, destroy
 
-.seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
+.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterAll()
 @*/
 int MatPartitioningRegisterDestroy(void)
 {
@@ -169,15 +169,16 @@ $    -mat_partitioning_view
 
    Level: beginner
 
-   The user can define additional partitionings; see MatPartitioningRegister().
+   The user can define additional partitionings; see MatPartitioningRegisterDynamic().
 
 .keywords: matrix, get, partitioning
 
-.seealso:  MatPartitioningGetTypeFromOptions(), MatPartitioningRegister()
+.seealso:  MatPartitioningGetTypeFromOptions(), MatPartitioningRegisterDynamic()
 @*/
 int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
-  int         ierr,flag;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MATPARTITIONING_COOKIE);
@@ -463,8 +464,9 @@ $      (for instance, parmetis)
 @*/
 int MatPartitioningSetFromOptions(MatPartitioning part)
 {
-  int  ierr,flag;
-  char type[256];
+  int        ierr;
+  PetscTruth flag;
+  char       type[256];
 
   PetscFunctionBegin;
 

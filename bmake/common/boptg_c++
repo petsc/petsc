@@ -1,4 +1,4 @@
-# $Id: common_g_c++,v 1.8 1999/08/19 17:57:58 balay Exp balay $ 
+# $Id: common_g_c++,v 1.9 1999/09/14 18:29:59 balay Exp bsmith $ 
 
 CC	       = ${CXX_CC}
 FC	       = ${CXX_FC}
@@ -16,3 +16,6 @@ COPTFLAGS      = ${GCXX_COPTFLAGS}
 FOPTFLAGS      = ${GCXX_FOPTFLAGS}
 
 BBOPT	       = ${GCXX_BBOPT}
+
+PETSC_LANGUAGE = CPP
+PETSC_SCALAR   = real

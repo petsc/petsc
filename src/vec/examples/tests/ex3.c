@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.42 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.43 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -10,13 +10,14 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int          n = 5, ierr, size,rank,flg;
+  int          n = 5, ierr, size,rank;
   Scalar       one = 1.0, two = 2.0, three = 3.0;
   Vec          x,y;
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  if (n < 5) n = 5;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.26 1999/10/01 21:20:34 bsmith Exp bsmith $*/
+/*$Id: ffpath.c,v 1.27 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -65,7 +65,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 #if !defined(PARCH_win32)
   char       *p, *cdir, trial[MAXPATHLEN],*senv, *env;
   int        ln,ierr;
-  PetscTruth flag;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   /* Setup default */
@@ -73,8 +73,8 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
-    ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
-    if (flag) {
+    ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+    if (flg) {
       ierr = PetscStrcpy( fname, path );CHKERRQ(ierr);
       PetscFunctionReturn(1);
     }
@@ -99,8 +99,8 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 	
       ierr = PetscStrcpy( trial + ln, name );;CHKERRQ(ierr);
 
-      ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
-      if (flag) {
+      ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+      if (flg) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
 	ierr = PetscGetFullPath( trial,  fname, MAXPATHLEN );CHKERRQ(ierr);
 	ierr = PetscFree(senv);CHKERRQ(ierr);
@@ -110,8 +110,8 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     ierr = PetscFree(senv);CHKERRQ(ierr);
   }
 
-  ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
-  if (flag) PetscFunctionReturn(1);
+  ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(1);
 #endif
   PetscFunctionReturn(0);
 }

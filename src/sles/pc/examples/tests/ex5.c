@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.58 1999/06/30 23:53:18 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.60 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -31,29 +31,30 @@ int  amult(Mat,Vec,Vec);
 int main(int Argc, char **Args)
 {
   int         x_mesh = 15,levels = 3,cycles = 1, use_jacobi = 0;
-  int         i, smooths = 1, flg, *N;
+  int         i, smooths = 1, *N;
+  int         ierr,its;
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
   double      e[3]; /* l_2 error, max error, residual */
   char        *shellname;
-  int         ierr,its;
   Vec         x,solution,X[20],R[20],B[20];
   Scalar      zero = 0.0;
   KSP         ksp,kspmg;
   PC          pcmg,pc;
+  PetscTruth  flg;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-x",&x_mesh,&flg);  
-  OptionsGetInt(PETSC_NULL,"-l",&levels,&flg);  
-  OptionsGetInt(PETSC_NULL,"-c",&cycles,&flg);  
-  OptionsGetInt(PETSC_NULL,"-smooths",&smooths,&flg);  
-  OptionsHasName(PETSC_NULL,"-a",&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-a",&flg);CHKERRA(ierr);
   if (flg) {am = MGADDITIVE;}
-  OptionsHasName(PETSC_NULL,"-f",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-f",&flg);CHKERRA(ierr);
   if (flg) {am = MGFULL;}
-  OptionsHasName(PETSC_NULL,"-j",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
   if (flg) {use_jacobi = 1;}
          
   N = (int *) PetscMalloc(levels*sizeof(int));CHKPTRA(N);

@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.66 1999/09/27 21:28:52 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.67 1999/10/04 18:50:03 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -148,10 +148,11 @@ typedef struct {
        vector are the same, so one only needs copy components that truly 
        copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
   */
-  int            nonmatching_computed;
+  PetscTruth     nonmatching_computed;
   int            n_nonmatching;        /* number of "from"s  != "to"s */
   int            *slots_nonmatching;   /* locations of "from"s  != "to"s */
-  int            is_copy,copy_start;   /* local scatter is a copy starting at copy_start */
+  PetscTruth     is_copy;
+  int            copy_start;   /* local scatter is a copy starting at copy_start */
   int            copy_length;
 } VecScatter_Seq_General;
 
@@ -185,23 +186,25 @@ typedef struct {
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
-  int                    use_readyreceiver,bs,sendfirst;
+  PetscTruth             use_readyreceiver;
+  int                    bs;
+  PetscTruth             sendfirst;
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {
   PETSCHEADER(int)
-  int     to_n,from_n;
-  int     inuse;   /* prevents corruption from mixing two scatters */
-  int     beginandendtogether;         /* indicates that the scatter begin and end
+  int        to_n,from_n;
+  PetscTruth inuse;   /* prevents corruption from mixing two scatters */
+  PetscTruth beginandendtogether;         /* indicates that the scatter begin and end
                                           function are called together, VecScatterEnd()
                                           is then treated as a nop */
-  int     (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int     (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int     (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int     (*copy)(VecScatter,VecScatter);
-  int     (*destroy)(VecScatter);
-  int     (*view)(VecScatter,Viewer);
-  void    *fromdata,*todata;
+  int        (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  int        (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  int        (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  int        (*copy)(VecScatter,VecScatter);
+  int        (*destroy)(VecScatter);
+  int        (*view)(VecScatter,Viewer);
+  void       *fromdata,*todata;
 };
 
 extern int VecStashCreate_Private(MPI_Comm,int,VecStash*);

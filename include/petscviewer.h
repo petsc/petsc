@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.69 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.70 1999/10/19 20:14:26 balay Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -28,11 +28,11 @@ extern FList ViewerList;
 extern int ViewerRegisterAll(char *);
 extern int ViewerRegisterDestroy(void);
 
-extern int ViewerRegister_Private(char*,char*,char*,int(*)(Viewer));
+extern int ViewerRegister(char*,char*,char*,int(*)(Viewer));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,0)
+#define ViewerRegisterDynamic(a,b,c,d) ViewerRegister(a,b,c,0)
 #else
-#define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,d)
+#define ViewerRegisterDynamic(a,b,c,d) ViewerRegister(a,b,c,d)
 #endif
 extern int ViewerCreate(MPI_Comm,Viewer*);
 extern int ViewerSetFromOptions(Viewer);

@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.7 1999/06/08 22:54:23 balay Exp bsmith $*/
+/*$Id: errtrace.c,v 1.8 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -41,7 +41,8 @@ $     SETERRQ(number,p,mess)
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   PLogDouble mem, rss;
-  int        rank, ierr, flg1, flg2;
+  int        rank, ierr;
+  PetscTruth flg1, flg2;
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

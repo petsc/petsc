@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.22 1999/09/27 21:28:26 bsmith Exp bsmith $*/
+/*$Id: ftest.c,v 1.23 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -41,26 +41,26 @@
 - mode  - mode.  One of 'r', 'w', 'x'
 
   Output Parameter:
-  flag - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
+  flg - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
 
 +*/
-int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
+int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
 {
   int m;
   
   PetscFunctionBegin;
-  *flag = PETSC_FALSE;
+  *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
   
   if (mode == 'r') m = 4;
   if (mode == 'w') m = 2;
-  if(!_access(fname,4))  *flag = PETSC_TRUE;
+  if(!_access(fname,4))  *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 #else 
 #undef __FUNC__  
 #define __FUNC__ "PetscTestFile"
-int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
+int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
 {
   struct stat statbuf;
   int         err,stmode, rbit, wbit, ebit;
@@ -68,7 +68,7 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
   gid_t       gid;
 
   PetscFunctionBegin;
-  *flag = PETSC_FALSE;
+  *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
   /* Get the (effective) user and group of the caller */
@@ -104,11 +104,11 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
     ebit = S_IXOTH;
   }
   if (mode == 'r') {
-    if ((stmode & rbit))   *flag = PETSC_TRUE;
+    if ((stmode & rbit))   *flg = PETSC_TRUE;
   } else if (mode == 'w') {
-    if ((stmode & wbit))   *flag = PETSC_TRUE;
+    if ((stmode & wbit))   *flg = PETSC_TRUE;
   } else if (mode == 'x') {
-    if ((stmode & ebit))   *flag = PETSC_TRUE;
+    if ((stmode & ebit))   *flg = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

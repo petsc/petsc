@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.120 1999/10/13 20:37:54 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.122 1999/10/24 14:02:59 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -49,8 +49,9 @@ EXTERN_C_END
 #define __FUNC__ "PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
-  int    ierr,flg;
-  double fill;
+  int        ierr;
+  PetscTruth flg;
+  double     fill;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg);CHKERRQ(ierr);
@@ -83,7 +84,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");CHKERRQ(ierr);
@@ -140,8 +141,9 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 #define __FUNC__ "PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
-  int         ierr,flg;
-  PC_LU       *dir = (PC_LU *) pc->data;
+  int        ierr;
+  PetscTruth flg;
+  PC_LU      *dir = (PC_LU *) pc->data;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) dir->fill = dir->actualfill;
@@ -160,7 +162,7 @@ static int PCSetUp_LU(PC pc)
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         double tol = 1.e-10;
-        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
+        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
@@ -176,7 +178,7 @@ static int PCSetUp_LU(PC pc)
         ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           double tol = 1.e-10;
-          ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
+          ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
         }
         if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
@@ -497,15 +499,15 @@ int PCCreate_LU(PC pc)
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
                     (void*)PCLUSetFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
                     (void*)PCLUSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
                     (void*)PCLUSetMatOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetReuseOrdering_C","PCLUSetReuseOrdering_LU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseOrdering_C","PCLUSetReuseOrdering_LU",
                     (void*)PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
                     (void*)PCLUSetReuseFill_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.64 1999/10/06 23:41:36 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.66 1999/10/24 14:02:23 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -115,11 +115,11 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 EXTERN_C_END
 
 /*MC
-   MatOrderingRegister - Adds a new sparse matrix ordering to the 
+   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
                                matrix package. 
 
    Synopsis:
-   MatOrderingRegister(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
+   MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
 
    Not Collective
 
@@ -136,7 +136,7 @@ EXTERN_C_END
 
    Sample usage:
 .vb
-   MatOrderingRegister("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   MatOrderingRegisterDynamic("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyOrder",MyOrder);
 .ve
 
@@ -153,15 +153,15 @@ $     -mat_ordering_type my_order
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrderingRegister_Private" 
-int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
+#define __FUNC__ "MatOrderingRegister" 
+int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -176,7 +176,7 @@ int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function
    
 .keywords: matrix, register, destroy
 
-.seealso: MatOrderingRegister(), MatOrderingRegisterAll()
+.seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
 @*/
 int MatOrderingRegisterDestroy(void)
 {
@@ -222,20 +222,21 @@ $    -mat_ordering_type rcm, -mat_ordering_type qmd
 
    Level: intermediate
 
-   The user can define additional orderings; see MatOrderingRegister().
+   The user can define additional orderings; see MatOrderingRegisterDynamic().
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegister()
+.seealso:   MatOrderingRegisterDynamic()
 @*/
 int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
-  int         ierr,flg,mmat,nmat,mis;
+  int         ierr,mmat,nmat,mis;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);
   char        tname[256];
+  PetscTruth  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

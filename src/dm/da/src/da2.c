@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.129 1999/10/13 20:38:58 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.131 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -233,10 +233,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg1,flg2;
+  int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0, *fly = 0;
   int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
+  PetscTruth    flg1,flg2;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -731,7 +732,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ISLocalToGlobalMapping isltog;
     ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog);CHKERRQ(ierr);
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog);CHKERRQ(ierr);
-    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    da->ltogmap = isltog; 
+    ierr = PetscObjectReference((PetscObject)isltog);CHKERRQ(ierr);
     PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog);CHKERRQ(ierr);
   }
@@ -968,17 +970,17 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   PetscPublishAll(da);  
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   if (((PetscObject)global)->amem > -1) {
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecView_C",
          "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecLoadIntoVector_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecLoadIntoVector_C",
          "VecLoadIntoVector_Binary_DA",(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }

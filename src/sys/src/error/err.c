@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.104 1999/10/13 20:36:40 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.106 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -133,7 +133,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 {
   va_list     Argp;
   int         ierr;
-  char        buf[1024],*lbuf = 0;
+  char        buf[2048],*lbuf = 0;
 
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */

@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.185 1999/10/13 20:37:04 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.187 1999/10/24 13:47:11 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -845,6 +845,9 @@ int VecDestroy(Vec v)
   if (v->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->mapping);CHKERRQ(ierr);
   }
+  if (v->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
+  }
   if (v->map) {
     ierr = MapDestroy(v->map);CHKERRQ(ierr);
   }
@@ -1090,6 +1093,7 @@ seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLoca
 @*/
 int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 {
+  int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -1099,7 +1103,7 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
   }
 
   x->mapping = mapping;
-  PetscObjectReference((PetscObject)mapping);
+  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1128,6 +1132,7 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 @*/
 int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
 {
+  int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -1136,7 +1141,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
   }
   x->bmapping = mapping;
-  PetscObjectReference((PetscObject)mapping);
+  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1326,7 +1331,8 @@ int VecAssemblyBegin(Vec vec)
 @*/
 int VecAssemblyEnd(Vec vec)
 {
-  int ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.96 1999/10/13 20:38:27 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.98 1999/10/24 14:03:33 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
@@ -26,7 +26,7 @@ int   MatSNESMFRegisterAllCalled = 0;
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatSNESMFRegister()
+.seealso: MatCreateSNESMF(), MatSNESMFRegisterDynamic)
 @*/
 int MatSNESMFSetType(Mat mat,char *ftype)
 {
@@ -64,10 +64,10 @@ int MatSNESMFSetType(Mat mat,char *ftype)
 }
 
 /*MC
-   MatSNESMFRegister - Adds a method to the MatSNESMF registry.
+   MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
 
    Synopsis:
-   MatSNESMFRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
+   MatSNESMFRegisterDynamicchar *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
 
    Not Collective
 
@@ -80,14 +80,14 @@ int MatSNESMFSetType(Mat mat,char *ftype)
    Level: developer
 
    Notes:
-   MatSNESMFRegister() may be called multiple times to add several user-defined solvers.
+   MatSNESMFRegisterDynamic) may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   MatSNESMFRegister("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   MatSNESMFRegisterDynamic"my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyHCreate",MyHCreate);
 .ve
 
@@ -102,15 +102,15 @@ $     -snes_mf_type my_h
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESMFRegister_Private"
-int MatSNESMFRegister_Private(char *sname,char *path,char *name,int (*function)(MatSNESMFCtx))
+#define __FUNC__ "MatSNESMFRegister"
+int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESMFCtx))
 {
   int ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&MatSNESMFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&MatSNESMFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -119,7 +119,7 @@ int MatSNESMFRegister_Private(char *sname,char *path,char *name,int (*function)(
 #define __FUNC__ "MatSNESMFRegisterDestroy"
 /*@C
    MatSNESMFRegisterDestroy - Frees the list of MatSNESMF methods that were
-   registered by MatSNESMFRegister().
+   registered by MatSNESMFRegisterDynamic).
 
    Not Collective
 
@@ -127,7 +127,7 @@ int MatSNESMFRegister_Private(char *sname,char *path,char *name,int (*function)(
 
 .keywords: MatSNESMF, register, destroy
 
-.seealso: MatSNESMFRegister(), MatSNESMFRegisterAll()
+.seealso: MatSNESMFRegisterDynamic), MatSNESMFRegisterAll()
 @*/
 int MatSNESMFRegisterDestroy(void)
 {
@@ -339,7 +339,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 
 .seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin()
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
-          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegister()
+          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic)
  
 @*/
 int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
@@ -420,7 +420,8 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
 int MatSNESMFSetFromOptions(Mat mat)
 {
   MatSNESMFCtx mfctx;
-  int          ierr,flg;
+  int          ierr;
+  PetscTruth   flg;
   char         ftype[256],p[64];
 
   PetscFunctionBegin;
@@ -432,7 +433,7 @@ int MatSNESMFSetFromOptions(Mat mat)
       ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
     }
 
-    ierr = OptionsGetDouble(mfctx->snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg);CHKERRQ(ierr);
+    ierr = OptionsGetDouble(mfctx->snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
     if (mfctx->ops->setfromoptions) {
       ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
     }

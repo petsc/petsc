@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.15 1999/09/16 14:29:23 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.16 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -68,18 +68,19 @@ EXTERN_C_END
 
 .keywords: object, get, new, tag
 
-.seealso: PetscObjectRestoreNewTag()
+.seealso: PetscObjectRestoreNewTag(), PetscCommGetNewTag(), PetscObjectRestoreNewTag()
 @*/
 int PetscObjectGetNewTag(PetscObject obj,int *tag)
 {
-  int ierr,*tagvalp=0,flag;
+  int        ierr,*tagvalp=0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
+  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
 
   if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for object");
   *tag = tagvalp[0]--;
@@ -110,14 +111,15 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 @*/
 int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 {
-  int ierr,*tagvalp=0,flag;
+  int        ierr,*tagvalp=0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
+  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
@@ -149,13 +151,14 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 @*/
 int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 {
-  int ierr,*tagvalp=0,flag;
+  int        ierr,*tagvalp=0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
+  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
 
   if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for communicator");
   *tag = tagvalp[0]--;
@@ -185,13 +188,14 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 @*/
 int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 {
-  int ierr,*tagvalp=0,flag;
+  int        ierr,*tagvalp=0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
+  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
@@ -218,7 +222,8 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 */
 int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
-  int ierr = MPI_SUCCESS,*tagvalp, flag,*maxval;
+  int        ierr = MPI_SUCCESS,*tagvalp, *maxval;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -232,12 +237,12 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
 
-  if (!flag) {
+  if (!flg) {
     /* This communicator is not yet known to this system, so we duplicate it and set its value */
     ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
-    ierr       = MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );CHKERRQ(ierr);
+    ierr       = MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     tagvalp    = (int *) PetscMalloc( 2*sizeof(int) );CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
@@ -273,11 +278,12 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
 */
 int PetscCommDestroy_Private(MPI_Comm *comm)
 {
-  int ierr,*tagvalp,flag;
+  int        ierr,*tagvalp;
+  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) {
+  ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) {
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error freeing MPI_Comm, problem with corrupted memory");
   }
   tagvalp[1]--;

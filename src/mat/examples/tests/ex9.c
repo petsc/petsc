@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.10 1999/07/08 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -12,8 +12,8 @@ int main(int argc,char **args)
   MatType    type;
   MatInfo    info;
   int        i, j, m = 3, n = 2, rank, size, low, high, iglobal;
-  int        I, J, ierr, ldim, flg;
-  PetscTruth set;
+  int        I, J, ierr, ldim;
+  PetscTruth set, flg;
   Scalar     v,  one = 1.0;
   Vec        u, b;
 

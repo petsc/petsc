@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.75 1999/05/04 20:35:25 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.77 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -32,13 +32,13 @@ int main(int argc,char **args)
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     ierr, i, n = 10, col[3], its, flg, size;
+  int     ierr, i, n = 10, col[3], its, size;
   Scalar  neg_one = -1.0, one = 1.0, value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.6 1999/06/30 23:50:05 balay Exp bsmith $*/
+/*$Id: strgen.c,v 1.7 1999/10/24 14:01:44 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
@@ -41,9 +41,9 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISStrideToGeneral(IS inis)
 {
-  int        flg, ierr;
+  int        ierr;
   IS_General *sub;
-  PetscTruth stride;
+  PetscTruth stride,flg;
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);

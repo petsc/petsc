@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.222 1999/10/13 20:36:45 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.224 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -571,7 +571,7 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsFindPair_Private"
-static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],int *flg)
+static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
   int  i, N,ierr,len,match;
   char **names,tmp[256];
@@ -593,13 +593,13 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
   }
 
   /* slow search */
-  *flg = 0;
+  *flg = PETSC_FALSE;
   for ( i=0; i<N; i++ ) {
     match = !PetscStrcmp(names[i],tmp);
     if (match) {
        *value = options->values[i];
        options->used[i]++;
-       *flg = 1;
+       *flg = PETSC_TRUE;
        break;
      }
   }
@@ -627,7 +627,8 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 @*/
 int OptionsReject(const char name[],const char mess[])
 {
-  int ierr,flag;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
@@ -653,7 +654,7 @@ int OptionsReject(const char name[],const char mess[])
 -  pre - string to prepend to the name or PETSC_NULL
 
    Output Parameters:
-.  flg - 1 if found else 0.
+.  flg - PETSC_TRUE if found else PETSC_FALSE.
 
    Level: beginner
 
@@ -662,7 +663,7 @@ int OptionsReject(const char name[],const char mess[])
 .seealso: OptionsGetInt(), OptionsGetDouble(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsHasName(const char pre[],const char name[],int *flg)
+int OptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 {
   char *value;
   int  ierr;
@@ -685,7 +686,7 @@ int OptionsHasName(const char pre[],const char name[],int *flg)
 
    Output Parameter:
 +  ivalue - the integer value to return
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -694,21 +695,22 @@ int OptionsHasName(const char pre[],const char name[],int *flg)
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
+int OptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg)
 {
-  char *value;
-  int  flag,ierr;
+  char       *value;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = 0; *ivalue = 0;}
+    if (!value) {if (flg) *flg = PETSC_FALSE; *ivalue = 0;}
     else {
-      if (flg) *flg = 1; 
+      if (flg) *flg = PETSC_TRUE; 
       ierr = OptionsAtoi(value,ivalue);CHKERRQ(ierr);
     }
   } else {
-    if (flg) *flg = 0;
+    if (flg) *flg = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -727,7 +729,7 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
 
    Output Parameter:
 +  ivalue - the logical value to return
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE  if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -740,15 +742,16 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray(), OptionsGetInt()
 @*/
-int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int *flg)
+int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
 {
-  char *value;
-  int  flag,ierr,istrue,isfalse;
+  char       *value;
+  PetscTruth flag;
+  int        ierr,istrue,isfalse;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (flg) *flg = 1;
+    if (flg) *flg = PETSC_TRUE;
     if (!value) {
       *ivalue = PETSC_TRUE;
     }
@@ -782,7 +785,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
       SETERRQ1(1,1,"Unknown logical value: %s",value);
     }
   } else {
-    if (flg) *flg = 0;
+    if (flg) *flg = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -801,7 +804,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
 
    Output Parameter:
 +  dvalue - the double value to return
--  flg - 1 if found, 0 if not found
+-  flg - PETSC_TRUE if found, PETSC_FALSE if not found
 
    Level: beginner
 
@@ -810,18 +813,19 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
+int OptionsGetDouble(const char pre[],const char name[],double *dvalue,PetscTruth *flg)
 {
-  char *value;
-  int  flag,ierr;
+  char       *value;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = 0; *dvalue = 0.0;}
-    else        {if (flg) *flg = 1; *dvalue = atof(value);}
+    if (!value) {if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;}
+    else        {if (flg) *flg = PETSC_TRUE; *dvalue = atof(value);}
   } else {
-    if (flg) *flg = 0;
+    if (flg) *flg = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -840,7 +844,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
 
    Output Parameter:
 +  dvalue - the double value to return
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -853,16 +857,17 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
+int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTruth *flg)
 {
-  char *value;
-  int  flag,ierr;
+  char       *value;
+  PetscTruth flag;
+  int        ierr;
   
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {
-      if (flg) *flg = 0; *dvalue = 0.0;
+      if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;
     } else { 
 #if !defined(PETSC_USE_COMPLEX)
       *dvalue = atof(value);
@@ -881,10 +886,10 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
         *dvalue = re + PETSC_i*im;
       } 
 #endif
-      if (flg) *flg    = 1;
+      if (flg) *flg    = PETSC_TRUE;
     } 
   } else { /* flag */
-    if (flg) *flg = 0;
+    if (flg) *flg = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -906,7 +911,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
    Output Parameters:
 +  dvalue - the double value to return
 .  nmax - actual number of values retreived
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -915,17 +920,18 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], int *nmax,int *flg)
+int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], int *nmax,PetscTruth *flg)
 {
-  char *value,*cpy;
-  int  flag,n = 0,ierr;
+  char       *value,*cpy;
+  int        n = 0,ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = 1; *nmax = 0; PetscFunctionReturn(0);}
+  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
-  if (flg) *flg = 1;
+  if (flg) *flg = PETSC_TRUE;
   /* make a copy of the values, otherwise we destroy the old values */
   ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
   value = cpy;
@@ -959,7 +965,7 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
    Output Parameter:
 +  dvalue - the integer values to return
 .  nmax - actual number of values retreived
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -968,17 +974,18 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
 @*/
-int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,int *flg)
+int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,PetscTruth *flg)
 {
-  char *value,*cpy;
-  int  flag,n = 0,ierr;
+  char       *value,*cpy;
+  int        n = 0,ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = 1; *nmax = 0; PetscFunctionReturn(0);}
+  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
-  if (flg) *flg = 1;
+  if (flg) *flg = PETSC_TRUE;
   /* make a copy of the values, otherwise we destroy the old values */
   ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
   value = cpy;
@@ -1011,7 +1018,7 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 
    Output Parameters:
 +  string - location to copy string
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1029,16 +1036,24 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetString(const char pre[],const char name[],char string[],int len, int *flg)
+int OptionsGetString(const char pre[],const char name[],char string[],int len, PetscTruth *flg)
 {
-  char *value;
-  int  ierr;
+  char       *value;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg);CHKERRQ(ierr); 
-  if (!*flg) {PetscFunctionReturn(0);}
-  if (value) {ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);}
-  else {ierr = PetscMemzero(string,len);CHKERRQ(ierr);}
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
+  if (!flag) {
+    if (flg) *flg = PETSC_FALSE;
+  } else {
+    if (flg) *flg = PETSC_TRUE;
+    if (value) {
+      ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);
+    } else {
+      ierr = PetscMemzero(string,len);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -1058,7 +1073,7 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, i
 
    Output Parameter:
 +  strings - location to copy strings
--  flg - 1 if found, else 0
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1076,16 +1091,18 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, i
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,int *flg)
+int OptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,PetscTruth *flg)
 {
-  char *value, *cpy;
-  int   len, n, ierr;
+  char       *value, *cpy;
+  int        len, n, ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg);CHKERRQ(ierr); 
-  if (!*flg)  {*nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {*nmax = 0; PetscFunctionReturn(0);}
-  if (*nmax == 0) PetscFunctionReturn(0);
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
+  if (!flag)  {*nmax = 0; if (flg) *flg = PETSC_FALSE; PetscFunctionReturn(0);}
+  if (!value) {*nmax = 0; if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
+  if (*nmax == 0) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
+  if (flg) *flg = PETSC_TRUE;
 
   /* make a copy of the values, otherwise we destroy the old values */
   ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1999/09/14 18:30:43 balay Exp balay $ 
+# $Id: base.site,v 1.10 1999/10/04 22:24:59 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -88,7 +88,7 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = 
+PCONF         =  -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

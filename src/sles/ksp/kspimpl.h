@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.40 1999/04/21 18:17:50 bsmith Exp balay $ */
+/* $Id: kspimpl.h,v 1.41 1999/05/04 20:34:34 balay Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -15,7 +15,6 @@ struct _KSPOps {
 				                calculates the residual in a 
 				                user-provided area.  */
   int  (*solve)(KSP,int*);                   /* actual solver */
-  int  (*solvetrans)(KSP,int*);              /* actual solver */
   int  (*setup)(KSP);
   int  (*setfromoptions)(KSP);
   int  (*printhelp)(KSP,char*);
@@ -81,6 +80,8 @@ struct _p_KSP {
 
   int        its;       /* number of iterations so far computed */
   PetscTruth avoidnorms; /* does not compute residual norms when possible */
+
+  PetscTruth transpose_solve;    /* solve transpose system instead */
 };
 
 #define KSPLogResidualHistory(ksp,norm) \
@@ -101,5 +102,16 @@ extern int KSPDefaultGetWork(KSP,int);
 extern int KSPDefaultFreeWork(KSP);
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
+
+/*
+       These allow the various Krylov methods to apply to either the linear system
+    or its transpose.
+*/
+#define KSP_MatMult(ksp,A,x,y) (!ksp->transpose_solve) ?  MatMult(A,x,y) : MatMultTrans(A,x,y) 
+#define KSP_MatMultTrans(ksp,A,x,y) (!ksp->transpose_solve) ?  MatMultTrans(A,x,y) : MatMult(A,x,y) 
+#define KSP_PCApply(ksp,A,x,y) (!ksp->transpose_solve) ?  PCApply(A,x,y) : PCApplyTrans(A,x,y) 
+#define KSP_PCApplyTrans(ksp,A,x,y) (!ksp->transpose_solve) ?  PCApplyTrans(A,x,y) : PCApply(A,x,y) 
+#define KSP_PCApplyBAorAB(ksp,pc,side,x,y,work) (!ksp->transpose_solve) ? \
+         PCApplyBAorAB(pc,side,x,y,work) : PCApplyBAorABTrans(pc,side,x,y,work)
 
 #endif

@@ -1,9 +1,5 @@
-/*$Id: frame.c,v 1.21 1999/09/27 21:28:14 bsmith Exp bsmith $*/
+/*$Id: frame.c,v 1.22 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
-/* Include petsc in case it is including petscconf.h */
-#include "petsc.h"
-
-#if defined(PETSC_HAVE_X11)
 /*
    This file contains routines to draw a 3-d like frame about a given 
    box with a given width.  Note that we might like to use a high/low
@@ -121,14 +117,3 @@ int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
   }
   PetscFunctionReturn(0);
 }
-
-#else
-
-#undef __FUNC__  
-#define __FUNC__ "dummy_frame"
-int dummy_frame(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif

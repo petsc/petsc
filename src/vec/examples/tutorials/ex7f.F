@@ -1,5 +1,5 @@
 !
-!    "$Id: ex7f.F,v 1.14 1998/09/24 13:41:33 bsmith Exp balay $";
+!    "$Id: ex7f.F,v 1.15 1998/09/25 15:10:34 balay Exp bsmith $";
 !
        subroutine ex7f(vec,comm)
 
@@ -36,7 +36,7 @@
  100   format ('[',i1,']',' Calling VecView from Fortran')
        write(6,100) rank
 !
-!  Now Call a Petsc Routine form Fortran
+!  Now Call a Petsc Routine from Fortran
 !
        call VecView(vec,VIEWER_STDOUT_WORLD,ierr)
        return 

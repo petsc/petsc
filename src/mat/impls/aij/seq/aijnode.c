@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.103 1999/10/13 20:37:19 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.105 1999/10/24 14:02:14 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -764,8 +764,8 @@ extern int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
 int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, flg, i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
-  PetscTruth flag;
+  int        ierr, i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
+  PetscTruth flag,flg;
 
   PetscFunctionBegin;  
   /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
@@ -773,7 +773,7 @@ int Mat_AIJ_CheckInode(Mat A)
   if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines\n"); PetscFunctionReturn(0);}
   ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
   if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not unrolling\n"); PetscFunctionReturn(0);}
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;    
   if (a->inode.size) {ns = a->inode.size;}

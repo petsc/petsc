@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.29 1999/10/13 20:37:34 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.31 1999/10/24 14:02:36 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -334,7 +334,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
 {
   Mat        B;
   Mat_MPIAdj *b;
-  int        ii,ierr, flg,size,rank;
+  int        ii,ierr, size,rank;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

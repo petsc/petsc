@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.7 1999/10/04 18:50:35 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.9 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -10,23 +10,23 @@ Tests where the local part of the scatter is a copy.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, size,rank,i,*blks, bs = 1,flg,m = 2;
+  int           n = 5, ierr, size,rank,i,*blks, bs = 1,m = 2;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
+  Viewer        sviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* create two vectors */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*bs*n,&x);CHKERRA(ierr);
-
 
   /* create two index sets */
   if (rank < size-1) {
@@ -59,10 +59,11 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
 
-  
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
-    printf("----\n"); ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr); fflush(stdout);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"----\n");CHKERRA(ierr); 
+  ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = VecView(y,sviewer);CHKERRA(ierr); fflush(stdout);
+  ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
 

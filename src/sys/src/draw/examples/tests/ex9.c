@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.4 1999/05/04 20:28:42 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.5 1999/10/24 14:01:18 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram\n";
 
@@ -8,22 +8,23 @@ static char help[] = "Makes a simple histogram\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Draw     draw;
-  DrawHist hist;
-  DrawAxis axis;
-  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,flg,bins = 8;
-  char     *xlabel, *ylabel, *toplabel;
-  double   xd;
-  int      color = DRAW_GREEN;
+  Draw       draw;
+  DrawHist   hist;
+  DrawAxis   axis;
+  int        n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,bins = 8;
+  int        color = DRAW_GREEN;
+  char       *xlabel, *ylabel, *toplabel;
+  double     xd;
+  PetscTruth flg;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
-  OptionsGetInt(PETSC_NULL,"-height",&height,&flg);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  OptionsGetInt(PETSC_NULL,"-bins",&bins,&flg); 
-  OptionsGetInt(PETSC_NULL,"-color",&color,&flg); 
+  OptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL); 
+  OptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);
+  OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);
+  OptionsGetInt(PETSC_NULL,"-bins",&bins,PETSC_NULL); 
+  OptionsGetInt(PETSC_NULL,"-color",&color,PETSC_NULL); 
   OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;

@@ -1,4 +1,4 @@
-/*$Id: daload.c,v 1.12 1999/10/01 21:23:00 bsmith Exp bsmith $*/
+/*$Id: daload.c,v 1.14 1999/10/24 14:04:04 bsmith Exp bsmith $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
 
@@ -22,10 +22,10 @@
 @*/
 int DALoad(Viewer viewer,int M,int N, int P,DA *da)
 {
-  int        ierr,info[8],nmax = 8,flag,fd,i;
+  int        ierr,info[8],nmax = 8,fd,i;
   MPI_Comm   comm;
   char       fieldnametag[32],fieldname[64];
-  PetscTruth isbinary;
+  PetscTruth isbinary,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: PetscVecNorm.c,v 1.7 1999/05/04 20:38:02 balay Exp bsmith $*/
+/*$Id: PetscVecNorm.c,v 1.8 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "vec.h"
 
@@ -9,10 +9,10 @@ int main( int argc, char **argv)
   Vec        x;
   double     norm;
   PLogDouble t1,t2;
-  int        ierr,n = 10000,flg;
+  int        ierr,n = 10000;
 
   PetscInitialize(&argc, &argv,0,0);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
 

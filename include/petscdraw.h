@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.66 1999/10/13 20:39:18 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.67 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -19,11 +19,11 @@ extern FList DrawList;
 extern int DrawRegisterAll(char *);
 extern int DrawRegisterDestroy(void);
 
-extern int DrawRegister_Private(char*,char*,char*,int(*)(Draw));
+extern int DrawRegister(char*,char*,char*,int(*)(Draw));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,0)
+#define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,0)
 #else
-#define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,d)
+#define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,d)
 #endif
 extern int DrawGetType(Draw,DrawType*);
 extern int DrawSetType(Draw,DrawType);
@@ -73,6 +73,10 @@ extern int DrawSetFromOptions(Draw);
 
 
 extern int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+#define DRAW_FULL_SIZE    -3
+#define DRAW_HALF_SIZE    -4
+#define DRAW_THIRD_SIZE   -5
+#define DRAW_QUARTER_SIZE -6
 
 extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);

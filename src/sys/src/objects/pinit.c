@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.20 1999/09/23 19:30:36 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.22 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -23,6 +23,9 @@ extern int PLogCloseHistoryFile(FILE **);
 
 #include "snes.h" /* so that cookies are defined */
 
+/* this is used by the _, __, and ___ macros (see include/petscerror.h) */
+int __gierr = 0;
+
 /*
        Checks the options database for initializations related to the 
     PETSc components
@@ -31,9 +34,10 @@ extern int PLogCloseHistoryFile(FILE **);
 #define __FUNC__ "OptionsCheckInitial_Components"
 int OptionsCheckInitial_Components(void)
 {
-  MPI_Comm comm = PETSC_COMM_WORLD;
-  int      flg1,ierr;
-  char     *f,mname[256];
+  MPI_Comm   comm = PETSC_COMM_WORLD;
+  PetscTruth flg1;
+  int        ierr;
+  char       *f,mname[256];
 
   PetscFunctionBegin;
   /*
@@ -271,7 +275,8 @@ $       call PetscInitialize(file,ierr)
 @*/
 int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
-  int        ierr,flag,flg,dummy_tag;
+  int        ierr,flag,dummy_tag;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   if (PetscInitializedCalled) PetscFunctionReturn(0);
@@ -415,8 +420,9 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 @*/
 int PetscFinalize(void)
 {
-  int        ierr,rank = 0,flg1,flg2,flg3,nopt;
+  int        ierr,rank = 0,nopt;
   PLogDouble rss;
+  PetscTruth flg1,flg2,flg3;
   
   PetscFunctionBegin;
 
@@ -510,7 +516,7 @@ int PetscFinalize(void)
   }
 
 #if defined(PETSC_USE_BOPT_g)
-  flg2 = 0;
+  flg2 = PETSC_FALSE;
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2);CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.123 1999/09/27 21:29:41 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.124 1999/10/24 14:02:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -32,7 +32,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
-  
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+
   ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -501,8 +502,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz,shift = a->indexshift,*rout,*cout;
-  Scalar     *x,*b,*tmp, *aa = a->a, *v;
+  int        nz,shift = a->indexshift,*rout,*cout, *diag = a->diag;
+  Scalar     *x,*b,*tmp, *aa = a->a, *v, s1;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -517,22 +518,23 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
 
   /* forward solve the U^T */
   for ( i=0; i<n; i++ ) {
-    v   = aa + a->diag[i] + shift;
-    vi  = aj + a->diag[i] + (!shift);
-    nz  = ai[i+1] - a->diag[i] - 1;
-    tmp[i] *= *v++;
+    v   = aa + diag[i] + shift;
+    vi  = aj + diag[i] + (!shift);
+    nz  = ai[i+1] - diag[i] - 1;
+    s1  = tmp[i] *= *(v++);  /* multiply by inverse of diagonal entry */
     while (nz--) {
-      tmp[*vi++ + shift] -= (*v++)*tmp[i];
+      tmp[*vi++ + shift] -= (*v++)*s1;
     }
   }
 
   /* backward solve the L^T */
   for ( i=n-1; i>=0; i-- ){
-    v   = aa + a->diag[i] - 1 + shift;
-    vi  = aj + a->diag[i] - 1 + shift;
-    nz  = a->diag[i] - ai[i];
+    v   = aa + diag[i] - 1 + shift;
+    vi  = aj + diag[i] - 1 + shift;
+    nz  = diag[i] - ai[i];
+    s1  = tmp[i];
     while (nz--) {
-      tmp[*vi-- + shift] -= (*v--)*tmp[i];
+      tmp[*vi-- + shift] -= (*v--)*s1;
     }
   }
 
@@ -555,7 +557,7 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz,shift = a->indexshift, *rout, *cout;
+  int        nz,shift = a->indexshift, *rout, *cout, *diag = a->diag;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
   PetscFunctionBegin;
@@ -573,9 +575,9 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 
   /* forward solve the U^T */
   for ( i=0; i<n; i++ ) {
-    v   = aa + a->diag[i] + shift;
-    vi  = aj + a->diag[i] + (!shift);
-    nz  = ai[i+1] - a->diag[i] - 1;
+    v   = aa + diag[i] + shift;
+    vi  = aj + diag[i] + (!shift);
+    nz  = ai[i+1] - diag[i] - 1;
     tmp[i] *= *v++;
     while (nz--) {
       tmp[*vi++ + shift] -= (*v++)*tmp[i];
@@ -584,9 +586,9 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 
   /* backward solve the L^T */
   for ( i=n-1; i>=0; i-- ){
-    v   = aa + a->diag[i] - 1 + shift;
-    vi  = aj + a->diag[i] - 1 + shift;
-    nz  = a->diag[i] - ai[i];
+    v   = aa + diag[i] - 1 + shift;
+    vi  = aj + diag[i] - 1 + shift;
+    nz  = diag[i] - ai[i];
     while (nz--) {
       tmp[*vi-- + shift] -= (*v--)*tmp[i];
     }

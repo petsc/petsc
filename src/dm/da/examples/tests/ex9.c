@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.7 1999/06/30 23:55:20 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.8 1999/10/24 14:04:09 bsmith Exp bsmith $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -9,10 +9,11 @@ static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            i,test_order,M = 3, N = 5, P=3, s=1, w=2, flg;
+  int            i,M = 3, N = 5, P=3, s=1, w=2;
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
   DA             da;
+  PetscTruth     flg,test_order;
   ISColoring     coloring;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
@@ -22,18 +23,17 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */  
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
   ierr = OptionsHasName(PETSC_NULL,"-test_order",&test_order);CHKERRA(ierr);
-
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");

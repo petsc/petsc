@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.36 1999/10/13 20:38:22 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.38 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -45,26 +45,27 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;                 /* approx solution, RHS, exact solution */
-  Mat     A;                       /* linear system matrix */
-  SLES    sles;                    /* linear solver context */
-  PC      pc;                      /* PC context */
-  IS      *is;                     /* array of index sets that define the subdomains */
-  int     overlap = 1;             /* width of subdomain overlap */
-  int     Nsub;                    /* number of subdomains */
-  int     user_subdomains;         /* flag - 1 indicates user-defined subdomains */
-  int     m = 15, n = 17;          /* mesh dimensions in x- and y- directions */
-  int     M = 2, N = 1;            /* number of subdomains in x- and y- directions */
-  int     i, j, its, I, J, ierr, Istart, Iend, size, flg;
-  Scalar  v,  one = 1.0;
+  Vec        x, b, u;                 /* approx solution, RHS, exact solution */
+  Mat        A;                       /* linear system matrix */
+  SLES       sles;                    /* linear solver context */
+  PC         pc;                      /* PC context */
+  IS         *is;                     /* array of index sets that define the subdomains */
+  int        overlap = 1;             /* width of subdomain overlap */
+  int        Nsub;                    /* number of subdomains */
+  int        m = 15, n = 17;          /* mesh dimensions in x- and y- directions */
+  int        M = 2, N = 1;            /* number of subdomains in x- and y- directions */
+  int        i, j, its, I, J, ierr, Istart, Iend, size;
+  PetscTruth flg;
+  PetscTruth user_subdomains;         /* flag - 1 indicates user-defined subdomains */
+  Scalar     v,  one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains);CHKERRA(ierr);
 
   /* -------------------------------------------------------------------

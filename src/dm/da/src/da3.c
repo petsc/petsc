@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.106 1999/10/13 20:38:58 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.108 1999/10/24 14:04:04 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -193,7 +193,7 @@ extern int DAPublish_Petsc(PetscObject);
 int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                int N,int P,int m,int n,int p,int dof,int s,int *lx,int *ly,int *lz,DA *inra)
 {
-  int           rank,size,ierr,start,end,pm,flg1,flg2;
+  int           rank,size,ierr,start,end,pm;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
   int           left,up,down,bottom,top,i,j,k,*idx,nn,*flx = 0,*fly = 0,*flz = 0;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
@@ -203,6 +203,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           sn0 = 0, sn1 = 0, sn2 = 0, sn3 = 0, sn5 = 0, sn6 = 0, sn7 = 0;
   int           sn8 = 0, sn9 = 0, sn11 = 0, sn15 = 0, sn24 = 0, sn25 = 0, sn26 = 0;
   int           sn17 = 0,sn18 = 0, sn19 = 0, sn20 = 0, sn21 = 0, sn23 = 0;
+  PetscTruth    flg1,flg2;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -1268,7 +1269,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ISLocalToGlobalMapping isltog;
     ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog);CHKERRQ(ierr);
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog);CHKERRQ(ierr);
-    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    da->ltogmap = isltog; 
+    ierr        = PetscObjectReference((PetscObject)isltog);CHKERRQ(ierr);
     PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog);CHKERRQ(ierr);
   }
@@ -1830,17 +1832,17 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   PetscPublishAll(da);
 
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   if (((PetscObject)global)->amem > -1) {
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecView_C",
          "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecLoadIntoVector_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecLoadIntoVector_C",
          "VecLoadIntoVector_Binary_DA",(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

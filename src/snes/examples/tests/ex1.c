@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.69 1999/10/12 20:58:15 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.71 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -79,10 +79,11 @@ int main( int argc, char **argv )
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   Draw           draw;                 /* drawing context */
-  int            i, ierr, its, N, flg, matrix_free, size, fd_coloring, hist_its[50]; 
+  int            i, ierr, its, N, size, hist_its[50]; 
   double         bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring  fdcoloring;           
   Scalar         *array;
+  PetscTruth     matrix_free,flg, fd_coloring;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -92,9 +93,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }

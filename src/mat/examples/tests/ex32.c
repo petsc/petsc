@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.16 1999/10/13 20:37:41 bsmith Exp bsmith $*/
+/*$Id: ex32.c,v 1.18 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -15,7 +15,6 @@ int main(int argc,char **args)
   Vec    b;
   char   filein[128],fileout[128];
   int    i, j, m, n, nnz, ierr, rank, size, start, end, *col, *row, *brow, length;
-  int    flg;
   Scalar *val, *bval;
   FILE*  file;
   Viewer view;
@@ -23,7 +22,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -82,7 +81,7 @@ int main(int argc,char **args)
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
   ierr = VecView(b,view);CHKERRA(ierr);

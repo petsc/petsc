@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.178 1999/09/02 14:53:25 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.179 1999/10/24 14:02:21 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -279,7 +279,8 @@ int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
   PetscFunctionBegin;
-  *m = a->m; *n = a->n;
+  if (m) *m = a->m;
+  if (n) *n = a->n;
   PetscFunctionReturn(0);
 }
 
@@ -548,7 +549,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 {
   Mat          B;
   Mat_SeqBDiag *b;
-  int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128],size;
+  int          i, nda, sizetot, ierr,  nd2 = 128,idiag[128],size;
+  PetscTruth   flg1;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -557,7 +559,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_diags",idiag,&nd2,&flg1);CHKERRQ(ierr);
   if (flg1) {
     diag = idiag;
@@ -717,12 +719,13 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 #define __FUNC__ "MatLoad_SeqBDiag"
 int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 {
-  Mat          B;
-  int          *scols, i, nz, ierr, fd, header[4], size,nd = 128;
-  int          bs, *rowlengths = 0,M,N,*cols,flg,extra_rows,*diag = 0;
-  int          idiag[128];
-  Scalar       *vals, *svals;
-  MPI_Comm     comm;
+  Mat        B;
+  int        *scols, i, nz, ierr, fd, header[4], size,nd = 128;
+  int        bs, *rowlengths = 0,M,N,*cols,extra_rows,*diag = 0;
+  int        idiag[128];
+  Scalar     *vals, *svals;
+  MPI_Comm   comm;
+  PetscTruth flg;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -742,7 +745,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
     divisible by the blocksize
   */
   bs = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   extra_rows = bs - M + bs*(M/bs);
   if (extra_rows == bs) extra_rows = 0;
   if (extra_rows) {

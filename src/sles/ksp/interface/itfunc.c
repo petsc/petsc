@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.132 1999/10/14 19:24:54 balay Exp bsmith $*/
+/*$Id: itfunc.c,v 1.133 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -196,7 +196,8 @@ int KSPSetUp(KSP ksp)
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
-  int        ierr,flag1,flag2,rank;
+  int        ierr,rank;
+  PetscTruth flag1,flag2;
   Scalar     zero = 0.0;
 
   PetscFunctionBegin;
@@ -206,7 +207,9 @@ int KSPSolve(KSP ksp, int *its)
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   /* reset the residual history list if requested */
-  if (ksp->res_hist_reset == PETSC_TRUE) ksp->res_hist_len = 0;
+  if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+
+  ksp->transpose_solve = PETSC_FALSE;
   ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
@@ -321,8 +324,8 @@ int KSPSolveTrans(KSP ksp, int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
-  if (!ksp->ops->solvetrans) SETERRQ(1,1,"No transpose solver for this Krylov method");
-  ierr = (*ksp->ops->solvetrans)(ksp,its);CHKERRQ(ierr);
+  ksp->transpose_solve = PETSC_TRUE;
+  ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

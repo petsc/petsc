@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.3 1999/06/14 20:49:02 balay Exp bsmith $*/
+/*$Id: ex20.c,v 1.5 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -25,10 +25,11 @@ int FormElementStiffness(double H,Scalar *Ke)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 5, rank, size, N, start, end, M, its, flg;
+  int         i, m = 5, rank, size, N, start, end, M, its;
+  int         ierr, idx[4];
+  PetscTruth  flg;
   Scalar      zero = 0.0,Ke[16];
   double      h;
-  int         ierr, idx[4];
   Vec         u, b;
   SLES        sles;
   KSP         ksp;
@@ -37,7 +38,7 @@ int main(int argc,char **args)
   PetscRandom rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.180 1999/06/15 13:48:08 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.181 1999/09/02 14:52:11 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -198,11 +198,11 @@ typedef char* MatOrderingType;
 #define MATORDERING_ROWLENGTH "rowlength"
 
 extern int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrderingRegister_Private(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
+extern int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,0)
+#define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,0)
 #else
-#define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,d)
+#define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,d)
 #endif
 extern int MatOrderingRegisterDestroy(void);
 extern int MatOrderingRegisterAll(char*);
@@ -264,11 +264,11 @@ typedef char* MatColoringType;
 #define MATCOLORING_ID      "id"
 
 extern int MatGetColoring(Mat,MatColoringType,ISColoring*);
-extern int MatColoringRegister_Private(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
+extern int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,0)
+#define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,0)
 #else
-#define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,d)
+#define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
 #endif
 extern int MatColoringRegisterAll(char *);
 extern int MatColoringRegisterAllCalled;
@@ -313,11 +313,11 @@ extern int MatPartitioningSetVertexWeights(MatPartitioning,double*);
 extern int MatPartitioningApply(MatPartitioning,IS*);
 extern int MatPartitioningDestroy(MatPartitioning);
 
-extern int MatPartitioningRegister_Private(char*,char*,char*,int(*)(MatPartitioning));
+extern int MatPartitioningRegister(char*,char*,char*,int(*)(MatPartitioning));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,0)
+#define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,0)
 #else
-#define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,d)
+#define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,d)
 #endif
 
 extern int MatPartitioningRegisterAll(char *);

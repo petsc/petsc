@@ -1,4 +1,4 @@
-/*$Id: vecreg.c,v 1.9 1999/09/02 14:53:08 bsmith Exp bsmith $*/
+/*$Id: vecreg.c,v 1.10 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
@@ -36,9 +36,9 @@ int VecRegisterAll(const char path[])
   PetscFunctionBegin;
   VecRegisterAllCalled = 1;
 
-  ierr = VecRegister(VEC_MPI,           path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegister(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
-  ierr = VecRegister(VEC_SEQ,           path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VEC_MPI,           path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VEC_SEQ,           path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

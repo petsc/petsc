@@ -1,4 +1,4 @@
-static char vcid[] = "$Id: milu.c,v 1.15 1999/10/13 20:39:10 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.17 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998

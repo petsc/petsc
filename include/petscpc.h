@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.93 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.94 1999/06/30 22:52:56 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -9,7 +9,7 @@
 
 /*
     PCList contains the list of preconditioners currently registered
-   These are added with the PCRegister() macro
+   These are added with the PCRegisterDynamic() macro
 */
 extern FList PCList;
 typedef char *PCType;
@@ -60,11 +60,11 @@ extern int PCRegisterDestroy(void);
 extern int PCRegisterAll(char*);
 extern int PCRegisterAllCalled;
 
-extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
+extern int PCRegister(char*,char*,char*,int(*)(PC));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,0)
+#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,0)
 #else
-#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,d)
+#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,d)
 #endif
 
 extern int PCDestroy(PC);

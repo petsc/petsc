@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.29 1999/05/04 20:35:04 balay Exp bsmith $*/
+/*$Id: preonly.c,v 1.30 1999/10/24 14:03:18 bsmith Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -26,23 +26,7 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   ksp->its = 0;
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
-  ierr     = PCApply(ksp->B,B,X);CHKERRQ(ierr);
-  *its     = 1;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPSolveTrans_PREONLY"
-static int  KSPSolveTrans_PREONLY(KSP ksp,int *its)
-{
-  int ierr;
-  Vec X,B;
-
-  PetscFunctionBegin;
-  ksp->its = 0;
-  X        = ksp->vec_sol;
-  B        = ksp->vec_rhs;
-  ierr     = PCApplyTrans(ksp->B,B,X);CHKERRQ(ierr);
+  ierr     = KSP_PCApply(ksp,ksp->B,B,X);CHKERRQ(ierr);
   *its     = 1;
   PetscFunctionReturn(0);
 }
@@ -56,7 +40,6 @@ int KSPCreate_PREONLY(KSP ksp)
   ksp->data                      = (void *) 0;
   ksp->ops->setup                = KSPSetUp_PREONLY;
   ksp->ops->solve                = KSPSolve_PREONLY;
-  ksp->ops->solvetrans           = KSPSolveTrans_PREONLY;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;

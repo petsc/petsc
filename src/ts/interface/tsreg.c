@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.52 1999/10/13 20:38:40 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.54 1999/10/24 14:03:48 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 
@@ -77,7 +77,7 @@ int TSSetType(TS ts,TSType type)
 #define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
-   registered by FListAdd().
+   registered by FListAddDynamic().
 
    Not Collective
 
@@ -189,8 +189,9 @@ int TSPrintHelp(TS ts)
 @*/
 int TSSetTypeFromOptions(TS ts)
 {
-  int  ierr,flg;
-  char type[256];
+  int        ierr;
+  PetscTruth flg;
+  char       type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -230,7 +231,8 @@ int TSSetTypeFromOptions(TS ts)
 @*/
 int TSSetFromOptions(TS ts)
 {
-  int    ierr,flg,loc[4],nmax;
+  int        ierr,loc[4],nmax;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
@@ -238,8 +240,8 @@ int TSSetFromOptions(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetMonitor(ts,TSDefaultMonitor,0);CHKERRQ(ierr);

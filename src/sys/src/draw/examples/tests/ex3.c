@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.31 1999/05/04 20:28:42 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.32 1999/10/24 14:01:18 bsmith Exp bsmith $*/
 
 static char help[] = "Plots a simple line graph\n";
 
@@ -8,19 +8,20 @@ static char help[] = "Plots a simple line graph\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Draw     draw;
-  DrawLG   lg;
-  DrawAxis axis;
-  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,flg;
-  char     *xlabel, *ylabel, *toplabel;
-  double   xd, yd;
+  Draw       draw;
+  DrawLG     lg;
+  DrawAxis   axis;
+  int        n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300;
+  PetscTruth flg;
+  char       *xlabel, *ylabel, *toplabel;
+  double     xd, yd;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-width",&width,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-height",&height,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRA(ierr); 
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;

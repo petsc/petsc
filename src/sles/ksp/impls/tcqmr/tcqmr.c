@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.47 1999/05/12 03:31:57 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.48 1999/10/24 14:03:18 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -59,7 +59,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
     ksp->its++;
 
     KSPMonitor( ksp, it, rnorm);
-    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
+    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11);CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2);CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
@@ -74,7 +74,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
 					         (z-2*beta*p) + f*beta*
 					         beta*um1 */
     tmp    = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,utmp,up1,vtmp);CHKERRQ(ierr);
+    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,utmp,up1,vtmp);CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,utmp,up1);CHKERRQ(ierr);
     tmp    = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1);CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
     ierr   = VecCopy(up1,u);CHKERRQ(ierr);
     beta   = beta/Gamma;
     eptmp  = beta;
-    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,v,vp1,vtmp);CHKERRQ(ierr);
+    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,v,vp1,vtmp);CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,v,vp1);CHKERRQ(ierr);
     tmp    = -beta; ierr = VecAXPY(&tmp,vm1,vp1);CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma);CHKERRQ(ierr);

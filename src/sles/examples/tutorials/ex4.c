@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.41 1999/05/04 20:35:25 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.42 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
@@ -32,12 +32,12 @@ int main(int argc,char **args)
   Vec         x, b, u;   /* approx solution, RHS, exact solution */
   Vec         tmp;       /* work vector */
   Scalar      v,  one = 1.0, scale = 0.0;
-  int         i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend, flg;
+  int         i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetScalar(PETSC_NULL,"-scale",&scale,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetScalar(PETSC_NULL,"-scale",&scale,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

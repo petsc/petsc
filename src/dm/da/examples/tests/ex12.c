@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.27 1999/09/12 16:05:22 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.29 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -14,7 +14,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 20, w=1, s=1, flg;
+  int       rank, size, M = 14, ierr, time_steps = 20, w=1, s=1;
   DA        da;
   Viewer    viewer;
   Vec       local, global, copy;
@@ -24,8 +24,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: vnake.c,v 1.11 1999/09/02 14:53:09 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.12 1999/10/24 13:47:11 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
@@ -80,8 +80,9 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 @*/
 int VecSetFromOptions(Vec vec)
 {
-  int     ierr,size,flg;
-  char    vtype[256];
+  int        ierr,size;
+  PetscTruth flg;
+  char       vtype[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.20 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zsles.c,v 1.21 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -70,7 +70,7 @@ void PETSC_STDCALL slesgetoptionsprefix_(SLES *sles, CHAR prefix PETSC_MIXED_LEN
   char *tname;
 
   *__ierr = SLESGetOptionsPrefix(*sles,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
     *__ierr = PetscStrncpy(t,tname,len1);

@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.61 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zoptions.c,v 1.62 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -71,7 +71,7 @@ void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *__ierr
 }
 
 void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    PetscTruth *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -83,7 +83,7 @@ void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETS
 }
 
 void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    int *ivalue,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    int *ivalue,PetscTruth *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -95,7 +95,7 @@ void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC
 }
 
 void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    double *dvalue,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    double *dvalue,PetscTruth *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -107,7 +107,7 @@ void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
 }
 
 void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                double *dvalue,int *nmax,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                double *dvalue,int *nmax,PetscTruth *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -119,7 +119,7 @@ void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
 }
 
 void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                   int *dvalue,int *nmax,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                   int *dvalue,int *nmax,PetscTruth *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -131,7 +131,7 @@ void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
 }
 
 void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    CHAR string PETSC_MIXED_LEN(len),int *flg,
+                    CHAR string PETSC_MIXED_LEN(len),PetscTruth *flg,
                     int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len) )
 {
   char *c1,*c2,*c3;
@@ -139,7 +139,7 @@ void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
     c3   = _fcdtocp(string);
     len3 = _fcdlen(string) - 1;
 #else
@@ -154,7 +154,7 @@ void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
 
 void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   char *tstr = _fcdtocp(str); 
   int  len1 = _fcdlen(str);
   *__ierr = PetscGetArchType(tstr,len1);
@@ -168,7 +168,7 @@ void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),
 {
   char *tmp;
   int  len;
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   tmp = _fcdtocp(name);
   len = _fcdlen(name) - 1;
 #else

@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.103 1999/10/13 20:38:30 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.105 1999/10/24 14:03:36 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -227,7 +227,8 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
   double     tmp;
-  int        ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_mu",&tmp, &flg);CHKERRQ(ierr);

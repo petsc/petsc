@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.42 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.44 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
@@ -15,13 +15,13 @@ int main(int argc,char **args)
   Vec     b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
   PC      pc;           /* PC context */
   KSP     ksp;          /* KSP context */
-  int     ierr, n = 10, i, its, col[3],flg;
+  int     ierr, n = 10, i, its, col[3];
   Scalar  value[3], one = 1.0, zero = 0.0;
   KSPType kspname;
   PCType  pcname;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);    CHKERRA(ierr);

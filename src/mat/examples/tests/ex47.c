@@ -1,4 +1,4 @@
-/*$Id: ex47.c,v 1.11 1999/09/15 18:43:52 curfman Exp bsmith $*/
+/*$Id: ex47.c,v 1.13 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the various routines in MatBAIJ format.\n\
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Mat         A,B,C;
   Viewer      va,vb,vc;
   Vec         x,y;
-  int         ierr,i,j,row,flg,m,n,ncols1,ncols2,*cols1,*cols2,ct,m2,n2;
+  int         ierr,i,j,row,m,n,ncols1,ncols2,*cols1,*cols2,ct,m2,n2;
   char        file[128];
   PetscTruth  tflg;
   Scalar      rval,*vals1,*vals2;
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
 
   /* Load the matrix as AIJ format */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&va);CHKERRA(ierr);

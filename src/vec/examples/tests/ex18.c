@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.18 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex18.c,v 1.20 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 /* np = 1 */
 
@@ -13,12 +13,13 @@ arguments are\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int          n = 15,ierr,i,flg;
+  int          n = 15,ierr,i;
   Scalar       v;
   Vec          x,y;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  if (n < 5) n = 5;
 
 
   /* create two vectors */

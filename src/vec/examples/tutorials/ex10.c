@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.7 1999/05/04 20:31:12 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.9 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -27,11 +27,11 @@ T*/
 int main(int argc,char **argv)
 {
   Vec      x, y;
-  int      n = 20, ierr, flg,i,row;
+  int      n = 20, ierr, i,row;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.

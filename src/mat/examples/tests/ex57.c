@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $*/
+/*$Id: ex57.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -20,8 +20,9 @@ int main(int argc,char **args)
   Vec        b;   
   MatType    mtype = MATSEQBAIJ;            
   Mat        A,*B;             
-  int        flg,ierr,start=0,size;
+  int        ierr,start=0,size;
   IS         isrow,iscol;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -39,8 +40,8 @@ int main(int argc,char **args)
   
   ierr = MatGetSize(A,&size,&size); CHKERRA(ierr);
   size /= 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,PETSC_NULL);CHKERRA(ierr);
   
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRA(ierr);

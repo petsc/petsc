@@ -1,4 +1,4 @@
-/*$Id: ex55.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex55.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 int main(int argc,char **args)
 {
   Mat     C, A, B; 
-  int     ierr, i, j, flg, ntypes = 9,size;
+  int     ierr, i, j,ntypes = 9,size;
   MatType type[9] = {MATMPIAIJ,  MATMPIROWBS,  MATMPIBDIAG, MATMPIDENSE,
                      MATMPIBAIJ, MATSEQDENSE, MATSEQAIJ,   MATSEQBDIAG, MATSEQBAIJ};
   char    file[128];
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Viewer  fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) ntypes = 5;
 

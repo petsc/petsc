@@ -166,6 +166,10 @@ ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex29.o 
 
+main: main.o chkopts
+	-${CLINKER} -o main main.o  ${PETSC_VEC_LIB} 
+	${RM} -f main.o 
+
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \
 	   ${RM} -f ex1_1.tmp
@@ -295,7 +299,7 @@ runex23:
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
 	   ${RM} -f ex23_1.tmp input.dat
 runex24:
-	-@${MPIRUN} -np 3 ex24 | sort > ex24_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ex24 > ex24_1.tmp 2>&1;\
 	   if (diff output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1, diffs above"; fi;\
 	   ${RM} -f ex24_1.tmp input.dat
@@ -305,7 +309,7 @@ runex25:
 	   else echo "Possible problem with ex25_1, diffs above"; fi;\
 	   ${RM} -f ex25_1.tmp
 runex26:
-	-@${MPIRUN} -np 4 ex26 | sort > ex26_1.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ex26 > ex26_1.tmp 2>&1;\
 	   if (diff output/ex26_1.out ex26_1.tmp) then true; \
 	   else echo "Possible problem with ex26_1, diffs above"; fi;\
 	   ${RM} -f ex26_1.tmp

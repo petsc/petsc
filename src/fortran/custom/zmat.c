@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.73 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zmat.c,v 1.74 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
@@ -271,6 +271,7 @@ void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *
                                PETSC_NULL,newmat);
 }
 
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 /*  Fortran cannot pass in procinfo, hence ignored */
 void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
                        void *procinfo,Mat *newmat, int *__ierr )
@@ -279,6 +280,7 @@ void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *
   *__ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm( *comm ),
                                *m,*M,*nz,nnz,PETSC_NULL,newmat);
 }
+#endif
 
 void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm, 
                        int *__ierr PETSC_END_LEN(len) )
@@ -301,7 +303,7 @@ void PETSC_STDCALL matgettype_(Mat *mm,MatType *type,CHAR name PETSC_MIXED_LEN(l
 
   if (FORTRANNULLINTEGER(type)) type = PETSC_NULL;
   *__ierr = MatGetType(*mm,type,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
     if (t != PETSC_NULL_CHARACTER_Fortran) {

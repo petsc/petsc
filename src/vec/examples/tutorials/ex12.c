@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.6 1999/05/04 20:31:12 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.7 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -24,11 +24,11 @@ T*/
 int main(int argc,char **argv)
 {
   Vec      v,s;               /* vectors */
-  int      n = 20, ierr, flg;
+  int      n = 20, ierr;
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
       Create multi-component vector with 2 components

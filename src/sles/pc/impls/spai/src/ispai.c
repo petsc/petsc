@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ispai.c,v 1.5 1999/04/05 22:23:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ispai.c,v 1.6 1999/04/05 22:24:25 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -156,23 +156,21 @@ static int PCDestroy_SPAI(PC pc)
 static int PCView_SPAI(PC pc,Viewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI *) pc->data;
-  FILE       *fd;
   int        ierr;
-  ViewerType vtype;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {  
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(pc->comm,fd,"    SPAI preconditioner\n");
-    PetscFPrintf(pc->comm,fd,"    epsilon %g\n",   ispai->epsilon);
-    PetscFPrintf(pc->comm,fd,"    nbsteps %d\n",   ispai->nbsteps);
-    PetscFPrintf(pc->comm,fd,"    max %d\n",       ispai->max);
-    PetscFPrintf(pc->comm,fd,"    maxnew %d\n",    ispai->maxnew);
-    PetscFPrintf(pc->comm,fd,"    block_size %d\n",ispai->block_size);
-    PetscFPrintf(pc->comm,fd,"    cache_size %d\n",ispai->cache_size);
-    PetscFPrintf(pc->comm,fd,"    verbose %d\n",   ispai->verbose);
-    PetscFPrintf(pc->comm,fd,"    sp %d\n",        ispai->sp);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  if (isascii) {  
+    ierr = ViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    epsilon %g\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    block_size %d\n",ispai->block_size);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    cache_size %d\n",ispai->cache_size);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    verbose %d\n",   ispai->verbose);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    sp %d\n",        ispai->sp);CHKERRQ(ierr);
 
   }
   PetscFunctionReturn(0);
@@ -418,9 +416,11 @@ int PCSPAISetSp(PC pc,int sp)
 #define __FUNC__ "PCSetFromOptions_SPAI"
 static int PCSetFromOptions_SPAI(PC pc)
 {
-  int    ierr,flg,nbsteps,max,maxnew,block_size,cache_size,verbose,sp;
-  double epsilon;
+  int        ierr,nbsteps,max,maxnew,block_size,cache_size,verbose,sp;
+  double     epsilon;
+  PetscTruth flg;
 
+  PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_spai_epsilon",&epsilon,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCSPAISetEpsilon(pc,epsilon); CHKERRQ(ierr);
@@ -463,6 +463,7 @@ static int PCSetFromOptions_SPAI(PC pc)
 #define __FUNC__ "PCPrintHelp_SPAI"
 static int PCPrintHelp_SPAI(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCSPAI preconditioner:\n");
   PetscPrintf(pc->comm," %spc_spai_epsilon <epsilon> : (default .4)\n",p);
   PetscPrintf(pc->comm," %spc_spai_nbsteps <nbsteps> : (default 5)\n",p);
@@ -491,18 +492,18 @@ int PCCreate_SPAI(PC pc)
   int     ierr;
 
   PetscFunctionBegin;
-  pc->destroy        = PCDestroy_SPAI;
   ispai              = PetscNew(PC_SPAI); CHKPTRQ(ispai);
   pc->data           = (void *) ispai;
-  pc->apply          = PCApply_SPAI;
-  pc->applyrich      = 0;
-  pc->setup          = PCSetUp_SPAI;
-  pc->type           = -1;
-  pc->view           = PCView_SPAI;
-  pc->setfromoptions = PCSetFromOptions_SPAI;
-  pc->name           = 0;
-  pc->printhelp      = PCPrintHelp_SPAI;
 
+  pc->ops->destroy         = PCDestroy_SPAI;
+  pc->ops->apply           = PCApply_SPAI;
+  pc->ops->applyrichardson = 0;
+  pc->ops->setup           = PCSetUp_SPAI;
+  pc->ops->view            = PCView_SPAI;
+  pc->ops->setfromoptions  = PCSetFromOptions_SPAI;
+  pc->ops->printhelp       = PCPrintHelp_SPAI;
+
+  pc->name          = 0;
   ispai->epsilon    = .4;  
   ispai->nbsteps    = 5;        
   ispai->max        = 5000;            

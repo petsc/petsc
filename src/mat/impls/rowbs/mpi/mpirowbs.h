@@ -1,7 +1,6 @@
-/* $Id: mpirowbs.h,v 1.42 1999/05/04 20:32:01 balay Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.43 1999/05/12 03:29:19 bsmith Exp bsmith $ */
 
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && \
-    !defined(__MPIROWBS_H)
+#if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
 
 #include "src/mat/matimpl.h"

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.82 1999/10/13 20:38:14 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.84 1999/10/24 14:03:16 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -43,7 +43,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
-  if (exists && !ksp->numbermonitors) {
+  if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     *its = maxit;
     ierr = PCApplyRichardson(ksp->B,b,x,r,maxit);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -54,7 +54,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   pres    = ksp->use_pres;
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
-    ierr = MatMult(Amat,x,r);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(b,r);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
      ksp->its++;
      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-     ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
+     ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
        if (!ksp->avoidnorms) {
          if (!pres) {
@@ -84,7 +84,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
      }
    
      ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
-     ierr = MatMult(Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
+     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
      ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
   if (ksp->calc_res && !brokeout) {
@@ -92,7 +92,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
       if (!pres) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
-        ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);   /*   z <- B r          */
+        ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);   /*   z <- B r          */
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }
@@ -142,8 +142,9 @@ static int KSPPrintHelp_Richardson(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_Richardson"
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
-  int       ierr,flg;
-  double    tmp;
+  int        ierr;
+  double     tmp;
+  PetscTruth flg;
 
   PetscFunctionBegin;
 
@@ -191,7 +192,7 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->ops->printhelp              = KSPPrintHelp_Richardson;
   ksp->ops->setfromoptions         = KSPSetFromOptions_Richardson;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C",
                                     "KSPRichardsonSetScale_Richardson",
                                     (void*)KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
   PetscFunctionReturn(0);

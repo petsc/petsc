@@ -1,4 +1,4 @@
-/*$Id: iccbs.c,v 1.36 1999/05/12 03:29:19 bsmith Exp bsmith $*/
+/*$Id: iccbs.c,v 1.37 1999/10/24 14:02:19 bsmith Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 
@@ -21,7 +21,6 @@
 
 #include "petsc.h"
 
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #undef __FUNC__  
@@ -95,14 +94,4 @@ int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
   bsif->vecs_permscale = scale;
   PetscFunctionReturn(0);
 }
-
-#else
-#undef __FUNC__  
-#define __FUNC__ "MatNull_MPIRowbs"
-int MatNull_MPIRowbs(void)
-{
-  PetscFunctionBegin;  
-  PetscFunctionReturn(0);
-}
-#endif
 

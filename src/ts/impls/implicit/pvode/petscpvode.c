@@ -1,12 +1,10 @@
-/*$Id: petscpvode.c,v 1.46 1999/10/13 20:38:46 bsmith Exp bsmith $*/!
+/*$Id: petscpvode.c,v 1.48 1999/10/24 14:03:52 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE
    solver.
 */
-
-#if defined(PETSC_HAVE_PVODE)  && !defined(__cplusplus) 
 
 #include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "ts.h" I*/    
 
@@ -290,10 +288,11 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 #define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int      ierr, flag,restart;
-  char     method[128];
-  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol;
+  TS_PVode   *cvode = (TS_PVode*) ts->data;
+  int        ierr, restart;
+  char       method[128];
+  double     aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol;
+  PetscTruth flag;
 
   PetscFunctionBegin;
 
@@ -325,8 +324,8 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
     }
   }
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,&flag);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSPVodeSetTolerance(ts,aabs,rel);CHKERRQ(ierr);
 
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_linear_tolerance",&ltol,&flag);CHKERRQ(ierr);
@@ -854,41 +853,25 @@ int TSCreate_PVode(TS ts )
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetType_C","TSPVodeSetType_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetType_C","TSPVodeSetType_PVode",
                     (void*)TSPVodeSetType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGMRESRestart_C","TSPVodeSetGMRESRestart_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetGMRESRestart_C","TSPVodeSetGMRESRestart_PVode",
                     (void*)TSPVodeSetGMRESRestart_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetLinearTolerance_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetLinearTolerance_C",
                     "TSPVodeSetLinearTolerance_PVode",
                     (void*)TSPVodeSetLinearTolerance_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",
                     "TSPVodeSetGramSchmidtType_PVode",
                     (void*)TSPVodeSetGramSchmidtType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetTolerance_C","TSPVodeSetTolerance_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetTolerance_C","TSPVodeSetTolerance_PVode",
                     (void*)TSPVodeSetTolerance_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetPC_C","TSPVodeGetPC_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetPC_C","TSPVodeGetPC_PVode",
                     (void*)TSPVodeGetPC_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetIterations_C","TSPVodeGetIterations_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetIterations_C","TSPVodeGetIterations_PVode",
                     (void*)TSPVodeGetIterations_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetExactFinalTime_C","TSPVodeSetExactFinalTime_PVode",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetExactFinalTime_C","TSPVodeSetExactFinalTime_PVode",
                     (void*)TSPVodeSetExactFinalTime_PVode);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-#else
-
-/* 
-     A dummy function for compilers that dislike empty files.
-*/
-#undef __FUNC__  
-#define __FUNC__ "adummyfunction"
-int adummyfunction()
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif

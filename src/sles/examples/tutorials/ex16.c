@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.11 1999/09/02 14:53:59 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.13 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -38,12 +38,13 @@ int main(int argc,char **args)
   SLES        sles;     /* linear solver context */
   double      norm;     /* norm of solution error */
   int         ntimes, i, j, k, I, J, Istart, Iend, ierr;
-  int         m = 8, n = 7, its, flg;
+  int         m = 8, n = 7, its;
+  PetscTruth  flg;
   Scalar      v, one = 1.0, neg_one = -1.0, rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix for use in solving a series of
@@ -140,7 +141,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ntimes = 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,PETSC_NULL);CHKERRA(ierr);
   for (k=1; k<ntimes+1; k++) {
 
     /* 

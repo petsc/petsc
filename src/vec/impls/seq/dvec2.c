@@ -1,4 +1,4 @@
-static char vcid[] =  "$Id: dvec2.c,v 1.74 1999/10/13 20:37:05 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.75 1999/10/24 14:01:55 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 

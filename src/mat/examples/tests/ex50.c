@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.14 1999/10/13 20:37:41 bsmith Exp bsmith $*/
+/*$Id: ex50.c,v 1.16 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -11,14 +11,15 @@ them using the PETSc sparse format. Input parameters are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat    A;
-  Vec    b;
-  char   filein[256],finname[256],fileout[256];
-  int    n,ierr,col,row;
-  int    flg,rowin;
-  Scalar val,*array;
-  FILE*  file;
-  Viewer view;
+  Mat        A;
+  Vec        b;
+  char       filein[256],finname[256],fileout[256];
+  int        n,ierr,col,row;
+  int        rowin;
+  PetscTruth flg;
+  Scalar     val,*array;
+  FILE*      file;
+  Viewer     view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

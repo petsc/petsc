@@ -1,4 +1,4 @@
-/*$Id: tsregall.c,v 1.23 1999/05/12 03:33:16 bsmith Exp bsmith $*/
+/*$Id: tsregall.c,v 1.24 1999/10/24 14:03:48 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
 EXTERN_C_BEGIN
@@ -27,12 +27,12 @@ int TSRegisterAll(char *path)
   PetscFunctionBegin;
   TSRegisterAllCalled = 1;
 
-  TSRegister(TS_EULER,               path,"TSCreate_Euler", TSCreate_Euler);
-  TSRegister(TS_BEULER,              path,"TSCreate_BEuler",TSCreate_BEuler);
-  TSRegister(TS_CRANK_NICHOLSON,     path,"TSCreate_CN",TSCreate_CN);
-  TSRegister(TS_PSEUDO,              path,"TSCreate_Pseudo",TSCreate_Pseudo);
+  TSRegisterDynamic(TS_EULER,               path,"TSCreate_Euler", TSCreate_Euler);
+  TSRegisterDynamic(TS_BEULER,              path,"TSCreate_BEuler",TSCreate_BEuler);
+  TSRegisterDynamic(TS_CRANK_NICHOLSON,     path,"TSCreate_CN",TSCreate_CN);
+  TSRegisterDynamic(TS_PSEUDO,              path,"TSCreate_Pseudo",TSCreate_Pseudo);
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
-  TSRegister(TS_PVODE,               path,"TSCreate_PVode", TSCreate_PVode); 
+  TSRegisterDynamic(TS_PVODE,               path,"TSCreate_PVode", TSCreate_PVode); 
 #endif
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.57 1999/10/04 22:25:08 balay Exp balay $ 
+# $Id: base.site,v 1.58 1999/10/20 16:25:53 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -103,7 +103,7 @@ AMS_LIB     = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
 # comment out the locations indicated for that package above.
 #
 #PCONF         = -DPETSC_HAVE_BLOCKSOLVE 
-PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE  -DPETSC_HAVE_AMS
+PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE  -DPETSC_HAVE_AMS -DPETSC_HAVE_X11
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}  ${AMS_LIB}
 #

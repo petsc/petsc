@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
@@ -10,13 +10,13 @@ int main(int argc,char **args)
 {
   Mat         C; 
   Vec         u, x, b, e;
-  int         i,  n = 10, midx[3], ierr,flg;
+  int         i,  n = 10, midx[3], ierr;
   Scalar      v[3], one = 1.0, zero = 0.0, mone = -1.0;
   double      omega = 1.0, norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetDouble(PETSC_NULL,"-omega",&omega,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-omega",&omega,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&C);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);

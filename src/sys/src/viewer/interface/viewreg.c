@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.16 1999/10/13 20:36:28 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.18 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -100,7 +100,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 #define __FUNC__ "ViewerRegisterDestroy"
 /*@C
    ViewerRegisterDestroy - Frees the list of Viewer methods that were
-   registered by ViewerRegister().
+   registered by ViewerRegisterDynamic().
 
    Not Collective
 
@@ -108,7 +108,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 
 .keywords: Viewer, register, destroy
 
-.seealso: ViewerRegister(), ViewerRegisterAll()
+.seealso: ViewerRegisterDynamic(), ViewerRegisterAll()
 @*/
 int ViewerRegisterDestroy(void)
 {
@@ -123,10 +123,10 @@ int ViewerRegisterDestroy(void)
 }
 
 /*MC
-   ViewerRegister - Adds a method to the Krylov subspace solver package.
+   ViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   ViewerRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(Viewer))
+   ViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(Viewer))
 
    Not Collective
 
@@ -139,14 +139,14 @@ int ViewerRegisterDestroy(void)
    Level: developer
 
    Notes:
-   ViewerRegister() may be called multiple times to add several user-defined solvers.
+   ViewerRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   ViewerRegister("my_viewer_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   ViewerRegisterDynamic("my_viewer_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyViewerCreate",MyViewerCreate);
 .ve
 
@@ -161,15 +161,15 @@ $     -viewer_type my_viewer_type
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerRegister_Private"
-int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Viewer))
+#define __FUNC__ "ViewerRegister"
+int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
 {
   int ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -196,8 +196,9 @@ int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Vie
 @*/
 int ViewerSetFromOptions(Viewer viewer)
 {
-  int     ierr,flg;
-  char    vtype[256];
+  int        ierr;
+  char       vtype[256];
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);

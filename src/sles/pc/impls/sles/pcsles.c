@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.23 1999/10/13 20:38:01 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.25 1999/10/24 14:03:04 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -21,6 +21,19 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr      = SLESSolve(jac->sles,x,y,&its);CHKERRQ(ierr);
+  jac->its += its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCApplyTrans_SLES"
+static int PCApplyTrans_SLES(PC pc,Vec x,Vec y)
+{
+  int     ierr,its;
+  PC_SLES *jac = (PC_SLES *) pc->data;
+
+  PetscFunctionBegin;
+  ierr      = SLESSolveTrans(jac->sles,x,y,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -104,7 +117,8 @@ static int PCView_SLES(PC pc,Viewer viewer)
 static int PCSetFromOptions_SLES(PC pc)
 {
   PC_SLES    *jac = (PC_SLES *) pc->data;
-  int        ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg);CHKERRQ(ierr);
@@ -231,6 +245,7 @@ int PCCreate_SLES(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SLES));
   pc->ops->apply              = PCApply_SLES;
+  pc->ops->applytrans         = PCApplyTrans_SLES;
   pc->ops->setup              = PCSetUp_SLES;
   pc->ops->destroy            = PCDestroy_SLES;
   pc->ops->setfromoptions     = PCSetFromOptions_SLES;
@@ -247,9 +262,9 @@ int PCCreate_SLES(PC pc)
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESSetUseTrue_C","PCSLESSetUseTrue_SLES",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESSetUseTrue_C","PCSLESSetUseTrue_SLES",
                     (void*)PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESGetSLES_C","PCSLESGetSLES_SLES",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESGetSLES_C","PCSLESGetSLES_SLES",
                     (void*)PCSLESGetSLES_SLES);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

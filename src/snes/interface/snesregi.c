@@ -1,4 +1,4 @@
-/*$Id: snesregi.c,v 1.29 1999/02/01 03:23:53 curfman Exp bsmith $*/
+/*$Id: snesregi.c,v 1.30 1999/10/24 14:03:31 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
 
@@ -37,11 +37,11 @@ int SNESRegisterAll(char *path)
   PetscFunctionBegin;
   SNESRegisterAllCalled = 1;
 
-  ierr = SNESRegister("ls",   path,"SNESCreate_EQ_LS",SNESCreate_EQ_LS);CHKERRQ(ierr);
-  ierr = SNESRegister("tr",   path,"SNESCreate_EQ_TR",SNESCreate_EQ_TR);CHKERRQ(ierr);
-  ierr = SNESRegister("test", path,"SNESCreate_Test", SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegister("umtr", path,"SNESCreate_UM_TR",SNESCreate_UM_TR);CHKERRQ(ierr);
-  ierr = SNESRegister("umls", path,"SNESCreate_UM_LS",SNESCreate_UM_LS);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("ls",   path,"SNESCreate_EQ_LS",SNESCreate_EQ_LS);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("tr",   path,"SNESCreate_EQ_TR",SNESCreate_EQ_TR);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("test", path,"SNESCreate_Test", SNESCreate_Test);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("umtr", path,"SNESCreate_UM_TR",SNESCreate_UM_TR);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("umls", path,"SNESCreate_UM_LS",SNESCreate_UM_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.44 1999/05/12 03:27:27 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.45 1999/10/24 14:01:36 bsmith Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -313,7 +313,8 @@ extern char *PLogEventName[];
 @*/
 int PLogMPEBegin(void)
 {
-  int i, rank,ierr,flg=0;
+  int        i, rank,ierr;
+  PetscTruth flg;
     
   PetscFunctionBegin;
   /* Do MPE initialization */

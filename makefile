@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.290 1999/09/04 19:11:43 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.291 1999/09/04 19:20:20 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -66,7 +66,7 @@ info:
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast tree 
 	-@cd ${PETSC_DIR}/src/sys/src/time ; \
 	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} rs6000_asmtime
 	${RANLIB} ${PDIR}/*.a

@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.15 1999/06/30 23:55:37 balay Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.16 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -10,8 +10,9 @@ int main( int argc, char **argv)
   PLogDouble  x, y;
   double      value;
   void        *arr[1000], *dummy;
-  int         ierr, i, flg, rand1[1000], rand2[1000];
+  int         ierr, i, rand1[1000], rand2[1000];
   PetscRandom r;
+  PetscTruth  flg;
   
   PetscInitialize(&argc, &argv,0,0);
   

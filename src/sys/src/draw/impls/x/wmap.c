@@ -1,9 +1,5 @@
-/*$Id: wmap.c,v 1.22 1999/05/12 03:26:40 bsmith Exp bsmith $*/
+/*$Id: wmap.c,v 1.23 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
-/* Include petsc in case it is including petscconf.h */
-#include "petsc.h"
-
-#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 /*
@@ -49,10 +45,3 @@ int Xi_wait_map( Draw_X *XiWin)
   }
   PetscFunctionReturn(0);
 }
-#else
-int dummy_wmap(void)
-{
-  PetscFunctionReturn(0);
-}
-
-#endif

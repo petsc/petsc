@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.20 1999/06/30 23:53:21 balay Exp bsmith $*/
+/*$Id: eige.c,v 1.21 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
@@ -68,8 +68,8 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
-    ierr = MatMult(A,in,out);CHKERRQ(ierr);
-    ierr = PCApply(ksp->B,out,in);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,A,in,out);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,ksp->B,out,in);CHKERRQ(ierr);
     
     ierr = VecGetArray(in,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 

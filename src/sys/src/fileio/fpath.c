@@ -1,4 +1,4 @@
-/*$Id: fpath.c,v 1.28 1999/10/04 18:49:26 bsmith Exp bsmith $*/
+/*$Id: fpath.c,v 1.29 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -61,12 +61,12 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 {
   struct passwd *pwde;
   int           ierr,ln;
-  PetscTruth    flag;
+  PetscTruth    flg;
 
   PetscFunctionBegin;
   if (path[0] == '/') {
-    ierr = PetscStrncmp("/tmp_mnt/",path,9,&flag);CHKERRQ(ierr);
-    if (flag) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
+    ierr = PetscStrncmp("/tmp_mnt/",path,9,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
     else      {ierr = PetscStrncpy( fullpath, path, flen);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
@@ -111,8 +111,8 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
     }
   }
   /* Remove the automounter part of the path */
-  ierr = PetscStrncmp( fullpath, "/tmp_mnt/", 9,&flag );CHKERRQ(ierr);
-  if (flag) {
+  ierr = PetscStrncmp( fullpath, "/tmp_mnt/", 9,&flg );CHKERRQ(ierr);
+  if (flg) {
     char tmppath[MAXPATHLEN];
     ierr = PetscStrcpy( tmppath, fullpath + 8 );CHKERRQ(ierr);
     ierr = PetscStrcpy( fullpath, tmppath );CHKERRQ(ierr);

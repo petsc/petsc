@@ -1,4 +1,4 @@
-/* $Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.14 1999/10/24 14:03:48 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -940,7 +940,8 @@ int TSDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 @*/
 int TSStep(TS ts,int *steps,double *time)
 {
-  int ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -1317,11 +1318,11 @@ int TSGetRHSJacobian(TS ts, Mat *J, Mat *M, void **ctx)
 }
 
 /*MC
-   TSRegister - Adds a method to the timestepping solver package.
+   TSRegisterDynamic - Adds a method to the timestepping solver package.
 
    Synopsis:
 
-   TSRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(TS))
+   TSRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(TS))
 
    Not collective
 
@@ -1332,14 +1333,14 @@ int TSGetRHSJacobian(TS ts, Mat *J, Mat *M, void **ctx)
 -  routine_create - routine to create method context
 
    Notes:
-   TSRegister() may be called multiple times to add several user-defined solvers.
+   TSRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   TSRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   TSRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
               "MySolverCreate",MySolverCreate);
 .ve
 
@@ -1358,14 +1359,14 @@ $     -ts_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "TSRegister_Private"
-int TSRegister_Private(char *sname,char *path,char *name,int (*function)(TS))
+#define __FUNC__ "TSRegister"
+int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
 {
   char fullname[256];
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  FListAdd_Private(&TSList,sname,fullname,        (int (*)(void*))function);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&TSList,sname,fullname,        (int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

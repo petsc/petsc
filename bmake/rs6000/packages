@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.34 1999/10/04 22:24:37 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -70,7 +70,7 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #    Make sure that -DPETSC_HAVE_BLOCKSOLVE and -DPETSC_HAVE_SUPERLU are not listed below
 # 
 #PCONF          =    -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
-PCONF          =    -DPETSC_HAVE_ESSL -DPETSC_HAVE_MPE
+PCONF          =    -DPETSC_HAVE_ESSL -DPETSC_HAVE_MPE -DPETSC_HAVE_X11
 #
 EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
 

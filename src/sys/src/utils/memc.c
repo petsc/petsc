@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.52 1999/10/13 20:36:48 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.54 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just don't use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -103,10 +103,10 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
   } else {
-    BTPetsc at = (BTPetsc) a, bt = (BTPetsc) b;
+    PetscBT at = (PetscBT) a, bt = (PetscBT) b;
     int i;
     for ( i=0; i<bs; i++ ) {
-      if (PetscBTLoopup(bt,bi+i)) PetscBTSet(at,ai+i);
+      if (PetscBTLookup(bt,bi+i)) PetscBTSet(at,ai+i);
       else                        PetscBTClear(at,ai+i);
     }
   }
@@ -133,11 +133,14 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 int PetscMemzero(void *a,int n)
 {
   PetscFunctionBegin;
+  if (n < 0) SETERRQ(1,1,"Memory length must be >= 0");
+  if (n > 0) {
 #if defined(PETSC_PREFER_BZERO)
-  bzero((char *)a,n);
+    bzero((char *)a,n);
 #else
-  memset((char*)a,0,n);
+    memset((char*)a,0,n);
 #endif
+  }
   PetscFunctionReturn(0);
 }
 

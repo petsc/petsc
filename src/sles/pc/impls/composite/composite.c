@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.27 1999/10/13 20:38:02 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.29 1999/10/24 14:03:05 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -117,11 +117,11 @@ static int PCDestroy_Composite(PC pc)
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite *) pc->data;
-  int              ierr,flg,nmax = 8,i;
+  int              ierr,nmax = 8,i;
   PCCompositeType  type=PC_COMPOSITE_ADDITIVE;
   PC_CompositeLink next;
-  char             *pcs[8];
-  char             stype[16];
+  char             *pcs[8],stype[16];
+  PetscTruth       flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetString(pc->prefix,"-pc_composite_type",stype,16,&flg);CHKERRQ(ierr);
@@ -465,13 +465,13 @@ int PCCreate_Composite(PC pc)
   jac->work2             = 0;
   jac->head              = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",
                     (void*)PCCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",
                     (void*)PCCompositeAddPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",
                     (void*)PCCompositeGetPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",
                     (void*)PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.17 1999/10/01 21:22:34 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.19 1999/10/24 14:03:39 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -53,7 +53,8 @@ int main( int argc, char **argv )
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
   int           i,ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           matrix_free, size, flg; 
+  PetscTruth    matrix_free;
+  int           size; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -63,9 +64,9 @@ int main( int argc, char **argv )
     user.mx = 4; user.my = 4; user.param = 6.0;
     
     if (i!=0) {
-      ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-      ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-      ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+      ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+      ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+      ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
         SETERRA(1,0,"Lambda is out of range");
       }
@@ -73,8 +74,8 @@ int main( int argc, char **argv )
     N = user.mx*user.my;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-    ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
-    ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
       SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
     

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.6 1999/06/30 23:53:54 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.8 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -37,12 +37,13 @@ int main(int argc,char **args)
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i, I, Istart, Iend, ierr, m = 5, n = 5, its, flg, *cols;
+  int         i, I, Istart, Iend, ierr, m = 5, n = 5, its,  *cols;
   Scalar      neg_one = -1.0, *ua;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);CHKERRA(ierr);
   if (m < n) SETERRA(1,0,"Supports m >= n only!");
 

@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.62 1999/05/04 20:33:40 balay Exp bsmith $*/
+/*$Id: convert.c,v 1.63 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -11,23 +11,25 @@
 int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 {
   Scalar *vwork;
-  int    ierr, i, nz, m, n, *cwork, rstart, rend,flg;
+  int    ierr, i, nz, m, n, *cwork, rstart, rend,lm,ln;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
   if (newtype == MATSAME) newtype = (MatType)mat->type;
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(mat->comm,m,n,0,PETSC_NULL,M);CHKERRQ(ierr); 
       break;
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
     case MATMPIROWBS:
       if (m != n) SETERRQ(PETSC_ERR_SUP,0,"MATMPIROWBS matrix must be square");
-      ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,
-             PETSC_NULL,M);CHKERRQ(ierr);
+      ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,PETSC_NULL,M);CHKERRQ(ierr);
       break;
+#endif
     case MATMPIAIJ:
-      ierr = MatCreateMPIAIJ(mat->comm,PETSC_DECIDE,PETSC_DECIDE,
-             m,n,0,PETSC_NULL,0,PETSC_NULL,M);CHKERRQ(ierr);
+      if (ln == n) ln = PETSC_DECIDE;
+      ierr = MatCreateMPIAIJ(mat->comm,lm,ln,m,n,0,PETSC_NULL,0,PETSC_NULL,M);CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
       ierr = MatCreateSeqDense(mat->comm,m,n,PETSC_NULL,M);CHKERRQ(ierr);
@@ -39,14 +41,14 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     case MATSEQBDIAG:
       {
       int bs = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);    
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);    
       ierr = MatCreateSeqBDiag(mat->comm,m,n,0,bs,PETSC_NULL,PETSC_NULL,M);CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int bs = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);   
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);   
       ierr = MatCreateMPIBDiag(mat->comm,PETSC_DECIDE,m,n,0,bs,PETSC_NULL,
              PETSC_NULL,M);CHKERRQ(ierr); 
       break;
@@ -61,7 +63,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     default:
       SETERRQ(PETSC_ERR_SUP,0,"Matrix type is not currently supported");
   }
-  ierr = MatGetOwnershipRange(*M,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(mat,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     ierr = MatSetValues(*M,1,&i,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);

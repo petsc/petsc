@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.8 1999/09/27 21:32:37 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.9 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int    M = 13, ierr, dof=1, s=1, wrap=0, flg, i, n, j;
+  int    M = 13, ierr, dof=1, s=1, wrap=0, i, n, j;
   DA     da;
   Viewer viewer;
   Vec    local, locala, global,coors;
@@ -24,10 +24,10 @@ int main(int argc,char **argv)
   ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL); CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,dof,s,PETSC_NULL,&da);CHKERRA(ierr);

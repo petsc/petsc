@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.112 1999/09/27 21:31:55 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.114 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -80,17 +80,17 @@ extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES     snes;                 /* nonlinear solver */
-  Vec      x, r;                 /* solution, residual vectors */
-  Mat      J;                    /* Jacobian matrix */
-  AppCtx   user;                 /* user-defined work context */
-  ISLocalToGlobalMapping isltog; /* mapping from local-to-global indices */
-  int      its;                  /* iterations for convergence */
-  int      Nx, Ny;               /* number of preocessors in x- and y- directions */
-  int      matrix_free;          /* flag - 1 indicates matrix-free version */
-  int      size;                 /* number of processors */
-  int      m, flg, N, ierr;
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
+  SNES                   snes;                  /* nonlinear solver */
+  Vec                    x, r;                 /* solution, residual vectors */
+  Mat                    J;                    /* Jacobian matrix */
+  AppCtx                 user;                 /* user-defined work context */
+  ISLocalToGlobalMapping isltog;                /* mapping from local-to-global indices */
+  int                    its;                  /* iterations for convergence */
+  int                    Nx, Ny;               /* number of preocessors in x- and y- directions */
+  PetscTruth             matrix_free;          /* flag - 1 indicates matrix-free version */
+  int                    size;                 /* number of processors */
+  int                    m, N, ierr;
+  double                 bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -103,9 +103,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -126,8 +126,8 @@ int main( int argc, char **argv )
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
@@ -181,7 +181,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
-    int usegenericmatcreate;
+    PetscTruth usegenericmatcreate;
 
     ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
 

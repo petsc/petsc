@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.349 1999/10/13 20:37:14 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.351 1999/10/24 14:02:09 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -41,7 +41,11 @@
    must use MatSetValues().
 
    You can only have one call to MatGetRow() outstanding for a particular
-   matrix at a time.
+   matrix at a time, per processor. MatGetRow() can only obtained rows
+   associated with the given processor, it cannot get rows from the 
+   other processors; for that we suggest using MatGetSubMatrices(), then
+   MatGetRow() on the submatrix. The row indix passed to MatGetRows() 
+   is in the global number of rows.
 
    Fortran Notes:
    The calling sequence from Fortran is 
@@ -306,7 +310,7 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE);PetscCheckSameComm(mat,x);}
-  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);PetscCheckSameComm(mat,x);}
+  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);PetscCheckSameComm(mat,b);}
   if (mat->ops->unscalesystem) {
     ierr = (*mat->ops->unscalesystem)(mat,x,b);CHKERRQ(ierr);
   }
@@ -662,6 +666,7 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 @*/
 int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 {
+  int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -670,7 +675,7 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
   }
 
   x->mapping = mapping;
-  PetscObjectReference((PetscObject)mapping);
+  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -697,6 +702,7 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 @*/
 int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 {
+  int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -705,7 +711,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
   }
  
   x->bmapping = mapping;
-  PetscObjectReference((PetscObject)mapping);
+  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1200,7 +1206,6 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops->lufactor) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -1298,7 +1303,6 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
@@ -1342,7 +1346,8 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 @*/
 int MatLUFactorNumeric(Mat mat,Mat *fact)
 {
-  int ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -2501,7 +2506,8 @@ int MatAssembled(Mat mat,PetscTruth *assembled)
 */
 int MatView_Private(Mat mat)
 {
-  int ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);

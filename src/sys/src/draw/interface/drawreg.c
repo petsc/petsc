@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.19 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.21 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -17,7 +17,12 @@ FList DrawList              = 0;
    Collective on MPI_Comm
 
    Input Parameter:
-.  comm - MPI communicator
++  comm - MPI communicator
+.  display - X display when using X windows
+.  title - optional title added to top of window
+.  x,y - coordinates of lower left corner of window or PETSC_DECIDE
+-  w, h - width and height of window or PETSC_DECIDE or DRAW_HALF_SIZE, DRAW_FULL_SIZE,
+          or DRAW_THIRD_SIZE or DRAW_QUARTER_SIZE
 
    Output Parameter:
 .  draw - location to put the Draw context
@@ -76,8 +81,8 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
 @*/
 int DrawSetType(Draw draw,DrawType type)
 {
-  int        ierr,(*r)(Draw),flg;
-  PetscTruth match;
+  int        ierr,(*r)(Draw);
+  PetscTruth match,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
@@ -117,7 +122,7 @@ int DrawSetType(Draw draw,DrawType type)
 #define __FUNC__ "DrawRegisterDestroy"
 /*@C
    DrawRegisterDestroy - Frees the list of Draw methods that were
-   registered by DrawRegister().
+   registered by DrawRegisterDynamic().
 
    Not Collective
 
@@ -125,7 +130,7 @@ int DrawSetType(Draw draw,DrawType type)
 
 .keywords: Draw, register, destroy
 
-.seealso: DrawRegister(), DrawRegisterAll()
+.seealso: DrawRegisterDynamic(), DrawRegisterAll()
 @*/
 int DrawRegisterDestroy(void)
 {
@@ -164,10 +169,10 @@ int DrawGetType(Draw draw,DrawType *type)
 }
 
 /*MC
-   DrawRegister - Adds a method to the Krylov subspace solver package.
+   DrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   DrawRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(Draw))
+   DrawRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(Draw))
 
    Not Collective
 
@@ -180,14 +185,14 @@ int DrawGetType(Draw draw,DrawType *type)
    Level: developer
 
    Notes:
-   DrawRegister() may be called multiple times to add several user-defined solvers.
+   DrawRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   DrawRegister("my_draw_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   DrawRegisterDynamic("my_draw_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyDrawCreate",MyDrawCreate);
 .ve
 
@@ -202,15 +207,15 @@ $     -draw_type my_draw_type
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawRegister_Private"
-int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw))
+#define __FUNC__ "DrawRegister"
+int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 {
   int ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
-  ierr = FListAdd_Private(&DrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListAdd(&DrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -237,8 +242,9 @@ int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw)
 @*/
 int DrawSetFromOptions(Draw draw)
 {
-  int     ierr,flg;
-  char    vtype[256];
+  int        ierr;
+  PetscTruth flg;
+  char       vtype[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.12 1999/09/16 18:04:45 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
 MatMultTransAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -9,15 +9,16 @@ MatMultTransAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat    C; 
-  Vec    s, u, w, x, y, z;
-  int    ierr, flg, i, j, m = 8, n, rstart, rend, vstart, vend;
-  Scalar one = 1.0, negone = -1.0, v, alpha=0.1;
-  double norm;
+  Mat        C; 
+  Vec        s, u, w, x, y, z;
+  int        ierr, i, j, m = 8, n, rstart, rend, vstart, vend;
+  Scalar     one = 1.0, negone = -1.0, v, alpha=0.1;
+  double     norm;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   n = m;
   ierr = OptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
   if (flg) n += 2;

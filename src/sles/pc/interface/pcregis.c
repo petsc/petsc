@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.50 1999/03/31 18:42:13 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.51 1999/10/24 14:02:56 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
@@ -33,7 +33,7 @@ EXTERN_C_END
 
 .keywords: PC, register, all
 
-.seealso: PCRegister(), PCRegisterDestroy()
+.seealso: PCRegisterDynamic(), PCRegisterDestroy()
 @*/
 int PCRegisterAll(char *path)
 {
@@ -42,20 +42,20 @@ int PCRegisterAll(char *path)
   PetscFunctionBegin;
   PCRegisterAllCalled = 1;
 
-  ierr = PCRegister(PCNONE         ,path,"PCCreate_None",PCCreate_None);CHKERRQ(ierr);
-  ierr = PCRegister(PCJACOBI       ,path,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCBJACOBI      ,path,"PCCreate_BJacobi",PCCreate_BJacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCSOR          ,path,"PCCreate_SOR",PCCreate_SOR);CHKERRQ(ierr);
-  ierr = PCRegister(PCLU           ,path,"PCCreate_LU",PCCreate_LU);CHKERRQ(ierr);
-  ierr = PCRegister(PCSHELL        ,path,"PCCreate_Shell",PCCreate_Shell);CHKERRQ(ierr);
-  ierr = PCRegister(PCMG           ,path,"PCCreate_MG",PCCreate_MG);CHKERRQ(ierr);
-  ierr = PCRegister(PCEISENSTAT    ,path,"PCCreate_Eisenstat",PCCreate_Eisenstat);CHKERRQ(ierr);
-  ierr = PCRegister(PCILU          ,path,"PCCreate_ILU",PCCreate_ILU);CHKERRQ(ierr);
-  ierr = PCRegister(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
-  ierr = PCRegister(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
-  ierr = PCRegister(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
-  ierr = PCRegister(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
-  ierr = PCRegister(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCNONE         ,path,"PCCreate_None",PCCreate_None);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCJACOBI       ,path,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCBJACOBI      ,path,"PCCreate_BJacobi",PCCreate_BJacobi);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSOR          ,path,"PCCreate_SOR",PCCreate_SOR);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCLU           ,path,"PCCreate_LU",PCCreate_LU);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSHELL        ,path,"PCCreate_Shell",PCCreate_Shell);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCMG           ,path,"PCCreate_MG",PCCreate_MG);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCEISENSTAT    ,path,"PCCreate_Eisenstat",PCCreate_Eisenstat);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCILU          ,path,"PCCreate_ILU",PCCreate_ILU);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

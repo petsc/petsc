@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.57 1999/06/30 23:53:50 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.59 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -34,7 +34,7 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 5, rank, size, N, start, end, M, its, flg;
+  int         i, m = 5, rank, size, N, start, end, M, its;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h,norm;
   int         ierr, idx[4], count, *rows;
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */

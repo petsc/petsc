@@ -1,4 +1,4 @@
-/*$Id: ex71.c,v 1.33 1999/09/02 14:53:37 bsmith Exp bsmith $*/
+/*$Id: ex71.c,v 1.35 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
@@ -8,15 +8,15 @@ static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int     ierr,m = 4,n = 5,i,j,I,J,flg;
+  int     ierr,m = 4,n = 5,i,j,I,J;
   Scalar  one = 1.0,v;
   Vec     x;
   Mat     A;
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = ViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer);CHKERRA(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.65 1999/10/13 20:38:18 bsmith Exp bsmith $*/
+/*$Id: qcg.c,v 1.67 1999/10/24 14:03:20 bsmith Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -69,6 +69,11 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
 
   PetscFunctionBegin;
+
+  if (ksp->transpose_solve) {
+    SETERRQ(1,1,"Currently does not support transpose solve");
+  }
+
   ksp->its = 0;
   maxit    = ksp->max_it;
   WA       = ksp->work[0];

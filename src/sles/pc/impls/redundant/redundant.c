@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.11 1999/10/13 20:38:02 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.13 1999/10/24 14:03:05 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -190,12 +190,14 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCRedundantSetScatter_Redundant"
 int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
-  PC_Redundant *red;
+  PC_Redundant *red = (PC_Redundant *) pc->data;
+  int          ierr;
 
   PetscFunctionBegin;
-  red                 = (PC_Redundant *) pc->data;
-  red->scatterin  = in; PetscObjectReference((PetscObject)in);
-  red->scatterout = out;PetscObjectReference((PetscObject)out);
+  red->scatterin  = in; 
+  red->scatterout = out;
+  ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)out);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -265,7 +267,7 @@ int PCCreate_Redundant(PC pc)
 
   pc->data              = (void *) red;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     (void*)PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

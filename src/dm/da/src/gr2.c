@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.29 1999/10/13 20:38:58 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.31 1999/10/24 14:04:04 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -186,7 +186,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",(int *)&zctx.showgrid);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid);CHKERRQ(ierr);
 
   /*
      Loop over each field; drawing each in a different window

@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.103 1999/10/13 20:38:00 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.105 1999/10/24 14:03:04 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -374,8 +374,9 @@ static int PCPrintHelp_ASM(PC pc,char *p)
 #define __FUNC__ "PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
-  int       blocks,flg, ovl,ierr;
-  char      buff[16];
+  int        blocks,ovl,ierr;
+  PetscTruth flg;
+  char       buff[16];
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg);CHKERRQ(ierr);
@@ -833,17 +834,17 @@ int PCCreate_ASM(PC pc)
   pc->ops->view              = PCView_ASM;
   pc->ops->applyrichardson   = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",
                     (void*)PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",
                     (void*)PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",
                     (void*)PCASMSetOverlap_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
                     (void*)PCASMSetType_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubSLES_C","PCASMGetSubSLES_ASM",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubSLES_C","PCASMGetSubSLES_ASM",
                     (void*)PCASMGetSubSLES_ASM);CHKERRQ(ierr);
-ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetUseInPlace_C","PCASMSetUseInPlace_ASM",
+ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetUseInPlace_C","PCASMSetUseInPlace_ASM",
                     (void*)PCASMSetUseInPlace_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

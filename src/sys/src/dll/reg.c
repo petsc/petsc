@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.46 1999/10/13 20:36:42 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.48 1999/10/24 14:01:23 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -41,13 +41,13 @@ DLLibraryList DLLibrariesLoaded = 0;
 int PetscInitialize_DynamicLibraries(void)
 {
   char       *libname[32],libs[256],dlib[1024];
-  int        nmax,i,ierr,flg;
+  int        nmax,i,ierr;
   PetscTruth found;
 
   PetscFunctionBegin;
 
   nmax = 32;
-  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
     ierr = DLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int PetscInitialize_DynamicLibraries(void)
   }
 
   nmax = 32;
-  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -169,11 +169,11 @@ struct _FList {
 static FList   dlallhead = 0;
 
 /*
-   FListAdd - Given a routine and a string id, saves that routine in the
+   FListAddDynamic - Given a routine and a string id, saves that routine in the
    specified registry.
 
    Synopsis:
-   int FListAdd(FList *fl, char *name, char *rname,int (*fnc)(void *))
+   int FListAddDynamic(FList *fl, char *name, char *rname,int (*fnc)(void *))
 
    Input Parameters:
 +  fl    - pointer registry
@@ -184,18 +184,18 @@ static FList   dlallhead = 0;
    Notes:
    Users who wish to register new methods for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
-   for that particular component (e.g., SNESRegister()) instead of
-   calling FListAdd() directly.
+   for that particular component (e.g., SNESRegisterDynamic()) instead of
+   calling FListAddDynamic() directly.
 
    $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
-.seealso: FListDestroy(), SNESRegister(), KSPRegister(),
-          PCRegister(), TSRegister()
+.seealso: FListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
+          PCRegisterDynamic(), TSRegisterDynamic()
 */
 
 #undef __FUNC__  
-#define __FUNC__ "FListAdd_Private"
-int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
+#define __FUNC__ "FListAdd"
+int FListAdd( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   FList   entry,ne;
   int      ierr;
@@ -262,7 +262,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     Input Parameter:
 .   fl  - pointer to list
 
-.seealso: FListAdd()
+.seealso: FListAddDynamic()
 */
 int FListDestroy(FList fl)
 {
@@ -340,19 +340,20 @@ int FListDestroyAll(void)
 
     Notes:
     The routine's id or name MUST have been registered with the FList via
-    FListAdd() before FListFind() can be called.
+    FListAddDynamic() before FListFind() can be called.
 
-.seealso: FListAdd()
+.seealso: FListAddDynamic()
 */
 int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 {
   FList        entry = fl;
   int          ierr;
+  int          f1,f2,f3;
   char         *function, *path;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   char         *newpath;
 #endif
-  int          flag,f1,f2,f3;
+  PetscTruth   flg;
  
   PetscFunctionBegin;
   *r = 0;
@@ -368,19 +369,19 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 #endif
 
   while (entry) {
-    flag = 0;
+    flg = PETSC_FALSE;
     if (path && entry->path) {
       f1 = !PetscStrcmp(path,entry->path);
       f2 = !PetscStrcmp(function,entry->rname);
       f3 = !PetscStrcmp(function,entry->name);
-      flag =  (f1 && f2) || (f1 && f3);
+      flg =  (PetscTruth) ((f1 && f2) || (f1 && f3));
     } else if (!path) {
       f1 = !PetscStrcmp(function,entry->name);
       f2 = !PetscStrcmp(function,entry->rname);
-      flag =  f1 || f2;
+      flg =  (PetscTruth) (f1 || f2);
     }
 
-    if (flag) {
+    if (flg) {
 
       if (entry->routine) {
         *r = entry->routine; 
@@ -414,7 +415,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
   if (*r) {
-    ierr = FListAdd(&fl,name,name,r);CHKERRQ(ierr);
+    ierr = FListAddDynamic(&fl,name,name,r);CHKERRQ(ierr);
     ierr = PetscFree(function);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -442,7 +443,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 +  flist - the list of functions
 -  viewer - currently ignored
 
-.seealso: FListAdd(), FListPrintTypes()
+.seealso: FListAddDynamic(), FListPrintTypes()
 */
 int FListView(FList list,Viewer viewer)
 {
@@ -484,7 +485,7 @@ int FListView(FList list,Viewer viewer)
 .  name   - option string
 -  list   - list of types
 
-.seealso: FListAdd()
+.seealso: FListAddDynamic()
 */
 int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],FList list)
 {
@@ -536,7 +537,7 @@ int FListDuplicate(FList fl, FList *nl)
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }       
-    ierr = FListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = FListAddDynamic(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl = fl->next;
   }
   PetscFunctionReturn(0);
@@ -546,7 +547,7 @@ int FListDuplicate(FList fl, FList *nl)
 #undef __FUNC__  
 #define __FUNC__ "FListDuplicate"
 /*
-    FListConcat_Private - joins name of a libary, and the path where it is located
+    FListConcat - joins name of a libary, and the path where it is located
     into a single string.
 
     Input Parameters:
@@ -562,7 +563,7 @@ int FListDuplicate(FList fl, FList *nl)
     the path as path:name
 
 */
-int FListConcat_Private(const char path[],const char name[], char fullname[])
+int FListConcat(const char path[],const char name[], char fullname[])
 {
   int ierr;
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.78 1999/06/30 23:53:50 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.80 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -26,7 +26,7 @@ extern int paulintegrate20(double K[60][60]);
 int main(int argc,char **args)
 {
   Mat     mat;
-  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size,flg;
+  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size;
   Scalar  v, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 

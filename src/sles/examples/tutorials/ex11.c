@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.22 1999/05/12 03:32:11 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.24 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -49,18 +49,19 @@ int main(int argc,char **args)
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
-  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, flg, use_random;
+  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, use_random;
   Scalar      v, none = -1.0, sigma2, pfive = 0.5, *xa;
   PetscRandom rctx;
   double      h2, sigma1 = 100.0;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example requires complex numbers");
 #endif
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   dim = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

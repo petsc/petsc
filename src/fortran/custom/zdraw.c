@@ -1,4 +1,4 @@
-/*$Id: zdraw.c,v 1.31 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zdraw.c,v 1.32 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 
@@ -157,7 +157,7 @@ void PETSC_STDCALL drawgettitle_(Draw *draw,CHAR title PETSC_MIXED_LEN(len),
 {
   char *c3,*t;
   int  len3;
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
     c3   = _fcdtocp(title);
     len3 = _fcdlen(title) - 1;
 #else

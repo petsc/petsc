@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.57 1999/10/13 20:38:15 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.58 1999/10/24 14:03:17 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -81,7 +81,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
+    ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
     ierr = VecAYPX(&mone,B,U);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
@@ -100,7 +100,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   ierr = VecCopy(B,U);CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
   tmp = 1.0/beta; ierr = VecScale(&tmp,U);CHKERRQ(ierr);
-  ierr = MatMultTrans(Amat,U,V);CHKERRQ(ierr);
+  ierr = KSP_MatMultTrans(ksp,Amat,U,V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   tmp = 1.0/alpha; ierr = VecScale(&tmp,V);CHKERRQ(ierr);
 
@@ -111,12 +111,12 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   rhobar = alpha;
   for (i=0; i<maxit; i++) {
 
-    ierr = MatMult(Amat,V,U1);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
     tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     tmp  = 1.0/beta; ierr = VecScale(&tmp,U1);CHKERRQ(ierr);
 
-    ierr = MatMultTrans(Amat,U1,V1);CHKERRQ(ierr);
+    ierr = KSP_MatMultTrans(ksp,Amat,U1,V1);CHKERRQ(ierr);
     tmp  = -beta; ierr = VecAXPY(&tmp,V,V1);CHKERRQ(ierr);
     ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
     tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1);CHKERRQ(ierr);

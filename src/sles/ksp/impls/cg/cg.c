@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.95 1999/10/13 20:38:10 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.97 1999/10/24 14:03:12 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -138,12 +138,12 @@ int  KSPSolve_CG(KSP ksp,int *its)
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,R);CHKERRQ(ierr);         /*   r <- b - Ax       */
+    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);         /*   r <- b - Ax       */
     ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-  ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);         /*     z <- Br         */
+  ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);         /*     z <- Br         */
   if (!ksp->avoidnorms) {
     if (pres) {
         ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
@@ -174,7 +174,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
          ierr = VecAYPX(&b,Z,P);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      betaold = beta;
-     ierr = MatMult(Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
+     ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      if (eigs) {
@@ -183,7 +183,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      ierr = VecAXPY(&a,P,X);CHKERRQ(ierr);          /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
      if (pres) {
-       ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);    /*     z <- Br         */
+       ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);    /*     z <- Br         */
        if (!ksp->avoidnorms) {
          ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- z'*z       */
        }
@@ -196,7 +196,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
-     if (!pres) {ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);} /* z <- Br  */
+     if (!pres) {ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);} /* z <- Br  */
   }
   if (i == maxit) {i--; ksp->its--;}
   if (cerr <= 0) *its = -(i+1);
@@ -293,7 +293,8 @@ static int KSPPrintHelp_CG(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_CG"
 int KSPSetFromOptions_CG(KSP ksp)
 {
-  int       ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
@@ -371,7 +372,7 @@ int KSPCreate_CG(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
                                      (void*)KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: drawopenx.c,v 1.9 1999/10/01 21:20:25 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.10 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -19,7 +19,8 @@
 .  x, y - the screen coordinates of the upper left corner of window
           may use PETSC_DECIDE for these two arguments, then PETSc places the 
           window
--  w, h - the screen width and height in pixels
+-  w, h - the screen width and height in pixels,  or DRAW_HALF_SIZE, DRAW_FULL_SIZE,
+          or DRAW_THIRD_SIZE or DRAW_QUARTER_SIZE
 
    Output Parameters:
 .  draw - the drawing context.
@@ -58,16 +59,16 @@
 @*/
 int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* draw)
 {
-  int  ierr;
+  int        ierr;
 #if !defined(PETSC_HAVE_X11)
-  int  flag;
+  PetscTruth flg;
 #endif
 
   PetscFunctionBegin;
   ierr = DrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_X11)
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flag);CHKERRQ(ierr);
-  if (!flag) {
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
+  if (!flg) {
     (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
   }
   ierr = DrawSetType(*draw,DRAW_NULL);CHKERRQ(ierr);

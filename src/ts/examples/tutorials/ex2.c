@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.25 1999/10/13 20:38:48 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.27 1999/10/24 14:03:55 bsmith Exp bsmith $*/
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -52,14 +52,14 @@ timestepping.  Runtime options include:\n\
    application-provided callback routines.
 */
 typedef struct {
-  MPI_Comm comm;          /* communicator */
-  DA       da;            /* distributed array data structure */
-  Vec      localwork;     /* local ghosted work vector */
-  Vec      u_local;       /* local ghosted approximate solution vector */
-  Vec      solution;      /* global exact solution vector */
-  int      m;             /* total number of grid points */
-  double   h;             /* mesh width: h = 1/(m-1) */
-  int      debug;         /* flag (1 indicates activation of debugging printouts) */
+  MPI_Comm   comm;          /* communicator */
+  DA         da;            /* distributed array data structure */
+  Vec        localwork;     /* local ghosted work vector */
+  Vec        u_local;       /* local ghosted approximate solution vector */
+  Vec        solution;      /* global exact solution vector */
+  int        m;             /* total number of grid points */
+  double     h;             /* mesh width: h = 1/(m-1) */
+  PetscTruth debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 /* 
@@ -80,15 +80,16 @@ extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx        appctx;                 /* user-defined application context */
-  TS            ts;                     /* timestepping context */
-  Mat           A;                      /* Jacobian matrix data structure */
-  Vec           u;                      /* approximate solution vector */
-  double        time_total_max = 100.0; /* default max total time */
-  int           time_steps_max = 1000;  /* default max timesteps */
-  double        ftime;                  /* final time */
-  double        dt;
-  int           ierr, steps, flg;
+  AppCtx     appctx;                 /* user-defined application context */
+  TS         ts;                     /* timestepping context */
+  Mat        A;                      /* Jacobian matrix data structure */
+  Vec        u;                      /* approximate solution vector */
+  int        time_steps_max = 1000;  /* default max timesteps */
+  int        ierr, steps;
+  double     ftime;                  /* final time */
+  double     dt;
+  double     time_total_max = 100.0; /* default max total time */
+  PetscTruth flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -98,7 +99,7 @@ int main(int argc,char **argv)
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 

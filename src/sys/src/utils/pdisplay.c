@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.10 1999/10/01 21:20:41 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.11 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -35,8 +35,9 @@
 @*/
 int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
 {
-  int  rank,ierr;
-  char *str;
+  int        rank,ierr;
+  char       *str;
+  PetscTruth flg = PETSC_FALSE;
    
   PetscFunctionBegin;
   ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
@@ -44,14 +45,14 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     str = getenv(name);
-    if (str) PetscStrncpy(env,str,len);
+    if (str) flg = PETSC_TRUE;
+    if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
   }
+  ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
-  if (flag && env[0]) {
-    *flag = PETSC_TRUE;
-  } else if (flag) {
-    *flag = PETSC_FALSE;
-  }
+  if (flag) {
+    *flag = flg;
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -66,8 +67,9 @@ static char PetscDisplay[128];
 #define __FUNC__ "PetscSetDisplay" 
 int PetscSetDisplay(void)
 {
-  int  size,rank,len,ierr,flag;
-  char *str;
+  int        size,rank,len,ierr;
+  PetscTruth flag;
+  char       *str;
 
   PetscFunctionBegin;
   ierr = OptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.15 1999/09/20 19:56:40 bsmith Exp bsmith $*/
+/*$Id: pipeline.c,v 1.16 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -73,7 +73,7 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
 
   PetscFunctionBegin;
   ctx       = (VecPipeline) PetscMalloc(sizeof(struct _p_VecPipeline));CHKPTRQ(ctx);
-  PetscMemzero(ctx,sizeof(struct _p_VecPipeline));
+  ierr      = PetscMemzero(ctx,sizeof(struct _p_VecPipeline));CHKERRQ(ierr);
   ctx->comm = comm;
   ierr      = VecScatterCreate(xin,ix,yin,iy,&(ctx->scatter)); CHKERRQ(ierr);
   ierr      = VecPipelineSetType(ctx,PIPELINE_SEQUENTIAL,PETSC_NULL); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex30.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -16,15 +16,16 @@ directly.\n\n";
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i, j, bs, m = 5, n = 5, I, J, ierr, lf = 0,flg1,flg2;
+  int         i, j, bs, m = 5, n = 5, I, J, ierr, lf = 0;
+  PetscTruth  flg1,flg2;
   Scalar      v;
   IS          row,col;
   Viewer      viewer1,viewer2;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg1);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg1);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-lf",&lf,&flg1);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-lf",&lf,PETSC_NULL);CHKERRA(ierr);
 
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1);CHKERRA(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2);CHKERRA(ierr);
@@ -32,9 +33,8 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag",&flg2);CHKERRA(ierr);
   if (flg2) {
     bs = 1;
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1);CHKERRA(ierr);
-    ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,m*n,m*n,0,bs,PETSC_NULL,PETSC_NULL,&C);
-          CHKERRA(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+    ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,m*n,m*n,0,bs,PETSC_NULL,PETSC_NULL,&C);CHKERRA(ierr);
   } else {
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
   }
@@ -86,8 +86,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = ISDestroy(row);CHKERRA(ierr);
   ierr = ISDestroy(col);CHKERRA(ierr);
-  ViewerDestroy(viewer1);
-  ViewerDestroy(viewer2);
+  ierr = ViewerDestroy(viewer1);CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer2);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

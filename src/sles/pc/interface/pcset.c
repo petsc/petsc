@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.93 1999/10/13 20:37:50 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.95 1999/10/24 14:02:56 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -105,7 +105,7 @@ int PCSetType(PC pc,PCType type)
 #define __FUNC__ "PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegister().
+   registered by PCRegisterDynamic().
 
    Not Collective
 
@@ -222,8 +222,9 @@ int PCGetType(PC pc,PCType *meth)
 @*/
 int PCSetTypeFromOptions(PC pc)
 {
-  char   type[256];
-  int    ierr,flg;
+  char       type[256];
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -265,7 +266,8 @@ int PCSetTypeFromOptions(PC pc)
 @*/
 int PCSetFromOptions(PC pc)
 {
-  int    ierr,flg;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

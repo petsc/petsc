@@ -1,4 +1,4 @@
-/*$Id: ex52.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex52.c,v 1.7 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatMPIBAIJ format.\n";
@@ -11,15 +11,15 @@ static char help[] =
 int main(int argc,char **args)
 {
   Mat        A;
-  int        m=2,ierr,flg,bs=1,M,row,col,rank,size,start,end;
+  int        m=2,ierr,bs=1,M,row,col,rank,size,start,end;
   Scalar     data=100;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   /* Test MatSetValues() and MatGetValues() */
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
 
   M    = m*bs*size;
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRA(ierr);

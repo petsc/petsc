@@ -1,9 +1,9 @@
-/*$Id: slo.c,v 1.8 1997/10/19 03:26:23 bsmith Exp bsmith $*/
+/*$Id: slo.c,v 1.9 1999/10/24 14:02:33 bsmith Exp bsmith $*/
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
 #include "petsc.h"
-#include "src/mat/impls/color/color.h"
+#include "src/mat/color/color.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MINPACKslo" 

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.130 1999/10/13 20:37:59 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.132 1999/10/24 14:03:02 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -413,8 +413,9 @@ int PCILUSetUseInPlace(PC pc)
 #define __FUNC__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int         levels,ierr,flg,dtmax = 2;
-  double      dt[2],fill;
+  int        levels,ierr,dtmax = 2;
+  PetscTruth flg;
+  double     dt[2],fill;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg);CHKERRQ(ierr);
@@ -459,7 +460,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
@@ -508,9 +509,10 @@ static int PCView_ILU(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
-  int         ierr,flg;
-  PC_ILU      *ilu = (PC_ILU *) pc->data;
-  MatILUInfo  info;
+  int        ierr;
+  PetscTruth flg;
+  PC_ILU     *ilu = (PC_ILU *) pc->data;
+  MatILUInfo info;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -567,7 +569,7 @@ static int PCSetUp_ILU(PC pc)
       ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         double ntol = 1.e-10;
-        ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
+        ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
 
@@ -588,7 +590,7 @@ static int PCSetUp_ILU(PC pc)
         ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           double ntol = 1.e-10;
-          ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
+          ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
       }
@@ -691,21 +693,21 @@ int PCCreate_ILU(PC pc)
   pc->ops->view              = PCView_ILU;
   pc->ops->applyrichardson   = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     (void*)PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
                     (void*)PCILUSetFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
                     (void*)PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
                     (void*)PCILUSetReuseOrdering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseFill_C","PCILUSetReuseFill_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseFill_C","PCILUSetReuseFill_ILU",
                     (void*)PCILUSetReuseFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
                     (void*)PCILUSetLevels_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
                     (void*)PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
                     (void*)PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

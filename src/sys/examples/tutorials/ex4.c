@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.7 1999/10/13 20:36:53 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.8 1999/10/24 14:01:41 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -13,9 +13,10 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int  ierr,flag;
-  char *string,filename[256];
-  void *handle;
+  int        ierr;
+  PetscTruth flg;
+  char       *string,filename[256];
+  void       *handle;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -28,8 +29,8 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
 
-  ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flag);CHKERRA(ierr);
-  if (!flag) {
+  ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRA(ierr);
+  if (!flg) {
     SETERRA(1,1,"Must indicate library name with -library");
   }
 
@@ -46,8 +47,8 @@ int main(int argc,char **argv)
   string = "No dynamic libraries used";
   handle = (void *) string;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRA(ierr);
-  flag = !PetscStrcmp(string,"Never will happen");
-  if (flag) {
+  flg = (PetscTruth)!PetscStrcmp(string,"Never will happen");
+  if (flg) {
     ierr = PetscObjectDestroy((PetscObject)handle);CHKERRA(ierr);
   }
 #endif

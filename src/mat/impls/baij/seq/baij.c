@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.185 1999/10/13 20:37:28 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.187 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1105,6 +1105,13 @@ extern int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_7(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_6(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_5(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_4(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_3(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_2(Mat,Vec,Vec);
+extern int MatSolveTrans_SeqBAIJ_1(Mat,Vec,Vec);
 
 extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
@@ -1171,33 +1178,42 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
       for ILU(0) factorization with natural ordering
   */
   switch (a->bs) {
-    case 2:
+  case 1:
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
+  case 2:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
     break;
   case 3:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_3_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
     break; 
   case 4:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_4_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
     break;
   case 5:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_5_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
     break;
   case 6: 
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_6_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
     break; 
   case 7:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
+    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_7_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
     break; 
@@ -1444,7 +1460,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat         B;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr,flg,mbs,nbs,bs2,size;
+  int         i,len,ierr,mbs,nbs,bs2,size;
+  PetscTruth  flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1478,42 +1495,49 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
     case 1:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
       B->ops->solve           = MatSolve_SeqBAIJ_1;
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_1;
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
       break;
     case 2:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
       B->ops->solve           = MatSolve_SeqBAIJ_2;
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2;
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
       break;
     case 3:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
       B->ops->solve           = MatSolve_SeqBAIJ_3;
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_3;
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
       break;
     case 4:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
       B->ops->solve           = MatSolve_SeqBAIJ_4;
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_4;
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
       break;
     case 5:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
       B->ops->solve           = MatSolve_SeqBAIJ_5; 
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_5;
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
       break;
     case 6:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
       B->ops->solve           = MatSolve_SeqBAIJ_6; 
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_6;
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->solve           = MatSolve_SeqBAIJ_7;
+      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_7;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       break;
     }
@@ -1585,13 +1609,13 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
                                      (void*)MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqBAIJ",
                                      (void*)MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
                                      (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1683,7 +1707,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqBAIJ  *a;
   Mat          B;
-  int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1,flg;
+  int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1;
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
   int          *masked, nmask,tmp,bs2,ishift;
@@ -1691,7 +1715,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   MPI_Comm     comm = ((PetscObject) viewer)->comm;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

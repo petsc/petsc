@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.71 1999/10/05 15:13:27 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.73 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -116,7 +116,7 @@ void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *__ierr,int len1, 
   char *t1,*t2;
   int  m;
 
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   t1 = _fcdtocp(s1); 
   t2 = _fcdtocp(s2); 
   m = *n; if (_fcdlen(s1) < m) m = _fcdlen(s1); if (_fcdlen(s2) < m) m = _fcdlen(s2);
@@ -133,7 +133,7 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *__ierr,int l
   int  i,n;
   char *in,*out;
 
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   in  = _fcdtocp(filein); 
   out = _fcdtocp(fileout); 
   n   = _fcdlen (filein); 
@@ -214,7 +214,7 @@ void PETSC_STDCALL petsctrlog_(int *__ierr)
         This version does not do a malloc 
 */
 static char FIXCHARSTRING[1024];
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
 #include <fortran.h>
 
 #define CHAR _fcd
@@ -276,7 +276,7 @@ void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *__ierr,
 {
   char *tmp;
   *__ierr = PetscObjectGetName(*obj,&tmp);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
   char *t = _fcdtocp(name);
   int  len1 = _fcdlen(name);

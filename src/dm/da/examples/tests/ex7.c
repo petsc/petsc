@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.17 1999/05/04 20:37:40 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.19 1999/10/24 14:04:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
@@ -9,8 +9,9 @@ static char help[] = "Tests DALocalToLocal().\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank,M=8,ierr,dof=1,stencil_width=1,flg=0,i,start,end,P=5;
-  int            flg2,flg3,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE;
+  int            rank,M=8,ierr,dof=1,stencil_width=1,i,start,end,P=5;
+  PetscTruth     flg,flg2,flg3;
+  int            N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE;
   DAPeriodicType periodic;
   DAStencilType  stencil_type;
   DA             da;
@@ -24,12 +25,12 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,&flg); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL); CHKERRA(ierr); 
 
   ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);

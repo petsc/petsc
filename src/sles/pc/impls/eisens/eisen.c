@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.97 1999/10/13 20:37:58 bsmith Exp bsmith $*/
+/*$Id: eisen.c,v 1.99 1999/10/24 14:03:02 bsmith Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -114,8 +114,9 @@ static int PCDestroy_Eisenstat(PC pc)
 #define __FUNC__ "PCSetFromOptions_Eisenstat"
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
-  double  omega;
-  int     ierr,flg;
+  double     omega;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg);CHKERRQ(ierr);
@@ -326,9 +327,9 @@ int PCCreate_Eisenstat(PC pc)
   eis->diag          = 0;
   eis->usediag       = 1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
                     (void*)PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
                     "PCEisenstatNoDiagonalScaling_Eisenstat",
                     (void*)PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
  PetscFunctionReturn(0);

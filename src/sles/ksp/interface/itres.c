@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.40 1999/05/04 20:34:35 balay Exp bsmith $*/
+/*$Id: itres.c,v 1.41 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
@@ -43,7 +43,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (vbinvf) {ierr = VecCopy(vb,vbinvf);CHKERRQ(ierr);}
     vbinvf = vb;
   } else if (ksp->pc_side == PC_LEFT) {
-    ierr = PCApply(ksp->B,vb,vbinvf);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,ksp->B,vb,vbinvf);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported");
   }
@@ -53,10 +53,10 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (ksp->pc_side == PC_RIGHT) {
       /* we want a * binv * b * x, or just a * x for the first step */
       /* a*x into temp */
-      ierr = MatMult(Amat,vsoln,vt1);CHKERRQ(ierr);
+      ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     } else {
       /* else we do binv * a * x */
-      ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,vsoln,vt1,vt2);CHKERRQ(ierr);
+      ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,vsoln,vt1,vt2);CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->pc_side == PC_RIGHT) {
-    ierr = PCApply(ksp->B,vsoln,vt1);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,ksp->B,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1);CHKERRQ(ierr);

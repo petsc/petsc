@@ -1,7 +1,5 @@
-/*$Id: pmetis.c,v 1.25 1999/10/13 20:37:35 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.27 1999/10/24 14:02:37 bsmith Exp bsmith $*/
  
-#include "petsc.h"
-#if defined(PETSC_HAVE_PARMETIS)
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
 
 /* 
@@ -129,7 +127,8 @@ int MatPartitioningPrintHelp_Parmetis(MatPartitioning part)
 #define __FUNC__ "MatPartitioningSetFromOptions_Parmetis" 
 int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
-  int                   ierr,flag;
+  int        ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(part->prefix,"-mat_partitioning_parmetis_coarse_sequential",&flag);CHKERRQ(ierr);
@@ -179,17 +178,3 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
 }
 EXTERN_C_END
 
-#else
-
-/*
-   Dummy function for compilers that don't like empty files.
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply_Parmetis" 
-int MatPartitioningApply_Parmetis(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif

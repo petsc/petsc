@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.7 1999/05/12 03:26:28 bsmith Exp bsmith $*/
+/*$Id: drawregall.c,v 1.8 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -29,9 +29,9 @@ int DrawRegisterAll(char *path)
   PetscFunctionBegin;
   
 #if defined(PETSC_HAVE_X11)
-  ierr = DrawRegister(DRAW_X,     path,"DrawCreate_X",     DrawCreate_X);CHKERRQ(ierr);
+  ierr = DrawRegisterDynamic(DRAW_X,     path,"DrawCreate_X",     DrawCreate_X);CHKERRQ(ierr);
 #endif
-  ierr = DrawRegister(DRAW_NULL,  path,"DrawCreate_Null",  DrawCreate_Null);CHKERRQ(ierr);
+  ierr = DrawRegisterDynamic(DRAW_NULL,  path,"DrawCreate_Null",  DrawCreate_Null);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

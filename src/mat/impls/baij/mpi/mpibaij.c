@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.180 1999/10/13 20:37:30 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.182 1999/10/24 14:02:31 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1974,8 +1974,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 {
   Mat          B;
   Mat_MPIBAIJ  *b;
-  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size,flg;
-  int          flag1 = 0,flag2 = 0;
+  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size;
+  PetscTruth   flag1,flag2,flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2142,18 +2142,18 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   if (flg) { 
     double fact = 1.39;
     ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
-    ierr = OptionsGetDouble(PETSC_NULL,"-mat_use_hash_table",&fact,&flg);CHKERRQ(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
     ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
     PLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
   }
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
                                      (void*)MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_MPIBAIJ",
                                      (void*)MatRetrieveValues_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIBAIJ",
                                      (void*)MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2165,7 +2165,8 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
 {
   Mat         mat;
   Mat_MPIBAIJ *a,*oldmat = (Mat_MPIBAIJ *) matin->data;
-  int         ierr, len=0, flg;
+  int         ierr, len=0;
+  PetscTruth  flg;
 
   PetscFunctionBegin;
   *newmat       = 0;
@@ -2271,12 +2272,12 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
   int          *locrowlens,*sndcounts = 0,*procsnz = 0, jj,*mycols,*ibuf;
-  int          flg,tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
+  int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
  
   PetscFunctionBegin;
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.32 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zda.c,v 1.33 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
@@ -54,7 +54,7 @@ void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
   char *tname;
 
   *__ierr = DAGetFieldName(*da,*nf,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
     *__ierr = PetscStrncpy(t,tname,len1);

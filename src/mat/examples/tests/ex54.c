@@ -1,4 +1,4 @@
-/*$Id: ex54.c,v 1.8 1999/06/30 23:52:15 balay Exp bsmith $*/
+/*$Id: ex54.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -10,22 +10,23 @@ static char help[] =
 int main(int argc,char **args)
 {
   Mat         A,B,*submatA, *submatB;
-  int         bs=1,m=11,ov=1,i,j,k,*rows,*cols,ierr,flg,nd=5,*idx,size;
+  int         bs=1,m=11,ov=1,i,j,k,*rows,*cols,ierr,nd=5,*idx,size;
   int         rank,rstart,rend,sz,mm,nn,M,N,Mbs;
   Scalar      *vals,rval;
   IS          *is1,*is2;
   PetscRandom rand;
   Vec         xx,s1,s2;
   double      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
                           PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A); CHKERRA(ierr);
@@ -86,7 +87,7 @@ int main(int argc,char **args)
   ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRA(ierr);
 
   for (i=0; i<nd; ++i) { 
-    ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg);CHKERRA(ierr);
+    ierr = ISEqual(is1[i],is2[i],&flg);CHKERRA(ierr);
 
     if (!flg) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"i=%d, flg=%d :bs=%d m=%d ov=%d nd=%d np=%d\n",i,flg,bs,m,ov,nd,size);CHKERRA(ierr);

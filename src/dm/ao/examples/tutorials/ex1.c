@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.8 1999/10/01 21:22:58 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.9 1999/10/24 14:04:02 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -29,11 +29,11 @@ T*/
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  int            ierr,flag,bs,zero = 0,edited = 0;
+  int            ierr,bs,zero = 0,edited = 0;
   char           filename[256],string[256],*segname,*value,keyname[256],*ikeyname;
   Viewer         binary;
   AOData         aodata;
-  PetscTruth     keyexists;
+  PetscTruth     keyexists,flag;
 
   /* ---------------------------------------------------------------------
        Initialize PETSc

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.12 1999/05/12 03:32:04 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.14 1999/10/24 14:03:21 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -15,7 +15,7 @@ Input arguments are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr, its, flg,m,n,mvec;
+  int        ierr, its, m,n,mvec;
   PetscTruth set;
   PLogDouble time1,time2,time;
   double     norm;
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);

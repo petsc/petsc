@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.88 1999/10/24 14:01:45 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -130,7 +130,7 @@ int ISStride(IS is,PetscTruth *flag)
   PetscValidIntPointer(flag);
 
   if (is->type != IS_STRIDE) *flag = PETSC_FALSE;
-  else                           *flag = PETSC_TRUE;
+  else                       *flag = PETSC_TRUE;
 
   PetscFunctionReturn(0);
 }
@@ -290,9 +290,10 @@ static struct _ISOps myops = { ISGetSize_Stride,
 @*/
 int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int       min, max,flg,ierr;
-  IS        Nindex;
-  IS_Stride *sub;
+  int        min, max,ierr;
+  IS         Nindex;
+  IS_Stride  *sub;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   *is = 0;

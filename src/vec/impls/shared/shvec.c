@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.31 1999/10/13 20:37:08 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.32 1999/10/24 14:01:58 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -38,7 +38,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
 
   if (win->mapping) {
     (*v)->mapping = win->mapping;
-    PetscObjectReference((PetscObject)win->mapping);
+    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
   }
   (*v)->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.21 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zviewer.c,v 1.22 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -103,7 +103,7 @@ void PETSC_STDCALL viewerdestroy_(Viewer *v, int *__ierr )
 
 void PETSC_STDCALL viewerstringopen_(MPI_Comm *comm,CHAR name,int *len, Viewer *str,int *__ierr,int len1)
 {
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),_fcdtocp(name),*len,str);
 #else
   *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),name,*len,str);

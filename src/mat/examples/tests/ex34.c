@@ -1,4 +1,4 @@
-/*$Id: ex34.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex34.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a matrix and vector from a file and writes to another. Input options:\n\
@@ -12,7 +12,8 @@ static char help[] =
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr,flg;
+  int        ierr;
+  PetscTruth flg;
   Vec        x;
   Mat        A;
   char       file[256];

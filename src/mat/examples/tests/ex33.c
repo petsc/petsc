@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.9 1999/06/10 16:08:22 balay Exp bsmith $*/
+/*$Id: ex33.c,v 1.11 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
@@ -10,12 +10,13 @@ static char help[] =
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat    A;
-  Vec    b;
-  char   fileout[128];
-  int    i, j, m = 6, n = 6, N = 36, ierr, I, J,flg;
-  Scalar val, v;
-  Viewer view;
+  Mat        A;
+  Vec        b;
+  char       fileout[128];
+  int        i, j, m = 6, n = 6, N = 36, ierr, I, J;
+  PetscTruth flg;
+  Scalar     val, v;
+  Viewer     view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -23,9 +24,11 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,
                            PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRA(ierr);
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
   } else {
     ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
                              PETSC_NULL,&A);CHKERRA(ierr);
+#endif
   }
 
   for ( i=0; i<m; i++ ) {
@@ -49,7 +52,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b);CHKERRA(ierr);
   ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
   ierr = VecView(b,view);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.25 1999/10/13 20:37:20 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.27 1999/10/24 14:02:16 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -12,12 +12,12 @@ extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTr
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        i,*is,n,nrows,j,k,m,*rows = 0,ierr,*A_ci,*A_cj,ncols,col,flg;
+  int        i,*is,n,nrows,j,k,m,*rows = 0,ierr,*A_ci,*A_cj,ncols,col;
   int        nis = iscoloring->n,*ncolsonproc,size,nctot,*cols,*disp,*B_ci,*B_cj;
   int        *rowhit, M = mat->m,cstart = aij->cstart, cend = aij->cend,colb;
   int        *columnsforrow;
   IS         *isa = iscoloring->is;
-  PetscTruth done;
+  PetscTruth done,flg;
 
   PetscFunctionBegin;
   if (!mat->assembled) {

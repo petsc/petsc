@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.9 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.11 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -9,7 +9,8 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, j, m = 3, n = 3, I, J, ierr, flg;
+  int         i, j, m = 3, n = 3, I, J, ierr;
+  PetscTruth  flg;
   Scalar      v, mone = -1.0, one = 1.0, alpha = 2.0;
   IS          perm, iperm;
   Vec         x, u, b, y;

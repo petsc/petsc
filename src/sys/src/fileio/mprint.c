@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.38 1999/10/01 21:20:34 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.40 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -192,7 +192,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 @*/
 int PetscSynchronizedFlush(MPI_Comm comm)
 {
-  int        rank,size,i,j,n, tag = 12341,ierr;
+  int        rank,size,i,j,n, tag,ierr;
   char       message[256];
   MPI_Status status;
   FILE       *fd;
@@ -200,7 +200,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  
+
+  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
   /* First processor waits for messages from all other processors */
   if (!rank) {
     if (queuefile != PETSC_NULL) {
@@ -234,6 +235,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     queue       = 0;
     queuelength = 0;
   }
+  ierr = PetscCommRestoreNewTag(comm,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

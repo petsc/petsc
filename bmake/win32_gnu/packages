@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.24 1999/06/30 22:48:03 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -15,8 +15,7 @@ LAPACK_LIB     = c:/home/blaslapack/lapack.a
 # Location of X-windows software
 # http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
 # You can also install PETSc without X, just comment out the 
-# two lines below and remove the #define PETSC_HAVE_X11 from the file
-# ../petscconf.h
+# two lines below and remove the -DPETSC_HAVE_X11 from the end of this file
 #
 X11_INCLUDE	= -I/usr/X11r6.3/include
 X11_LIB 	= -L/usr/X11r6.3/lib -lX11

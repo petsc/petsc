@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1998/06/15 15:45:47 balay Exp bsmith $ 
+# $Id: makefile,v 1.26 1999/03/17 23:22:41 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = matimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = interface impls examples utils matfd
+DIRS     = interface impls examples utils matfd partition order color
 LOCDIR   = src/mat/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.43 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.45 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -10,14 +10,14 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},flg;
+  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4};
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);

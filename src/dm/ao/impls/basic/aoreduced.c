@@ -1,4 +1,4 @@
-/*$Id: aoreduced.c,v 1.16 1999/09/27 21:32:22 bsmith Exp bsmith $*/
+/*$Id: aoreduced.c,v 1.18 1999/10/24 14:03:59 bsmith Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
 #include "sys.h"
@@ -10,14 +10,15 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
 {
   AODataSegment *segment; 
   AODataKey     *key;
-  int           ierr,dsize,i,bs,flag,*found,count,imin,imax,*out;
+  int           ierr,dsize,i,bs,*found,count,imin,imax,*out;
   char          *idata, *odata;
-  BTPetsc       mask;
+  PetscBT       mask;
+  PetscTruth    flag;
 
   PetscFunctionBegin;
   /* find the correct segment */
   ierr = AODataSegmentFind_Private(ao,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (flag != 1) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Cannot locate segment");
 
   if (segment->datatype != PETSC_INT) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Only for PETSC_INT data");
 
@@ -53,14 +54,14 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   count = 0;
   for ( i=0; i<n; i++ ) {
     if (found[i] < 0) continue;
-    if (!PetscBTLoopupSet(mask,found[i] - imin)) count++;
+    if (!PetscBTLookupSet(mask,found[i] - imin)) count++;
   }
   ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
   out = (int *) PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
   count = 0;
   for ( i=0; i<n; i++ ) {
     if (found[i] < 0) continue;
-    if (!PetscBTLoopupSet(mask,found[i] - imin)) {out[count++] = found[i];}
+    if (!PetscBTLookupSet(mask,found[i] - imin)) {out[count++] = found[i];}
   }
   ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   ierr = PetscFree(found);CHKERRQ(ierr);

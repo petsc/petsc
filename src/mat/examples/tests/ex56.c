@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.20 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex56.c,v 1.22 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
 
@@ -9,10 +9,12 @@ rectangular MatBAIJ matrix";
 int main(int argc,char **args)
 {
   Mat         A;
-  int         bs=3,m=4,n=6,i,j,val = 10,ierr,flg,size,rank,rstart;
+  int         bs=3,m=4,n=6,i,j,val = 10,ierr,size,rank,rstart;
   Scalar      x[6][9],y[3][3],one=1.0;
   int         row[2],col[3],eval;
   IS          is;
+  PetscTruth  flg;
+
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);

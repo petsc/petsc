@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.46 1999/10/01 21:22:34 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.48 1999/10/24 14:03:39 bsmith Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -29,10 +29,10 @@ int main( int argc, char **argv )
   MonitorCtx   monP;                 /* monitoring context */
   AppCtx       user;                 /* user-defined work context */
   Scalar       h, xp = 0.0, v;
-  int          ierr, its, n = 5, i, flg;
+  int          ierr, its, n = 5, i;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.80 1999/05/04 20:35:25 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.82 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -39,13 +39,14 @@ int main(int argc,char **args)
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
+  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
+  PetscTruth  flg;
   Scalar      v, one = 1.0, neg_one = -1.0;
   KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -176,8 +177,7 @@ int main(int argc,char **args)
   */
 
   ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
-                          PETSC_DEFAULT);CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,

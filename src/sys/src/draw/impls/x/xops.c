@@ -1,12 +1,10 @@
-/* $Id: xops.c,v 1.139 1999/10/13 20:36:35 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.141 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X Draw implementation.
 */
 
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
-
-#if defined(PETSC_HAVE_X11)
 
 /*
      These macros transform from the users coordinates to the 
@@ -595,23 +593,15 @@ EXTERN_C_BEGIN
 int DrawCreate_X(Draw draw)
 {
   Draw_X     *Xwin;
-  int        ierr,size,rank,flg,xywh[4],osize = 4;
+  int        ierr,size,rank,xywh[4],osize = 4;
   int        x = draw->x, y = draw->y, w = draw->w, h = draw->h;
   static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
-
-  if (w <= 0) w = draw->w = 300;
-  if (h <= 0) h = draw->h = 300; 
-
-  /* allow user to set location and size of window */
-  xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,&flg);CHKERRQ(ierr);
-  x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
-
   if (!draw->display) {
     draw->display = (char *) PetscMalloc(128*sizeof(char));CHKPTRQ(draw->display);
-    ierr         = PetscGetDisplay(draw->display,128);CHKERRQ(ierr);
+    ierr          = PetscGetDisplay(draw->display,128);CHKERRQ(ierr);
   }
 
   /*
@@ -619,7 +609,6 @@ int DrawCreate_X(Draw draw)
   */
   if (xmax == 0) {
     ierr = DrawXGetDisplaySize_Private(draw->display,&xmax,&ymax);
-
     /* if some processors fail on this and others succed then this is a problem ! */
     if (ierr) {
        (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
@@ -627,6 +616,35 @@ int DrawCreate_X(Draw draw)
        PetscFunctionReturn(0);
     }
   }
+
+  if (w == PETSC_DECIDE) w = draw->w = 300;
+  if (h == PETSC_DECIDE) h = draw->h = 300; 
+  switch (w) {
+    case DRAW_FULL_SIZE: w = draw->w = xmax - 10;
+                         break;
+    case DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
+                         break;
+    case DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
+                         break;
+    case DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
+                         break;
+  }
+  switch (h) {
+    case DRAW_FULL_SIZE: h = draw->h = ymax - 10;
+                         break;
+    case DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
+                         break;
+    case DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
+                         break;
+    case DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
+                         break;
+  }
+
+  /* allow user to set location and size of window */
+  xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
+  ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
+  x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
+
 
   if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
     /*
@@ -681,8 +699,7 @@ int DrawCreate_X(Draw draw)
   draw->port_yr = 1.0;
   draw->popup   = 0;
 
-
-  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&draw->pause,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&draw->pause,PETSC_NULL);CHKERRQ(ierr);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) );CHKPTRQ(Xwin);
@@ -723,18 +740,6 @@ int DrawCreate_X(Draw draw)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#else
-
-#undef __FUNC__  
-#define __FUNC__ "dummy9" 
-int dummy9(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif
 
 
 

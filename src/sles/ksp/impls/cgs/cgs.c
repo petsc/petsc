@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.53 1999/10/13 20:38:11 bsmith Exp bsmith $*/
+/*$Id: cgs.c,v 1.54 1999/10/24 14:03:13 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -68,7 +68,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);        /* rhoold = (r,rp)      */
   ierr = VecCopy(R,U);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
-  ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
+  ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
 
@@ -78,7 +78,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);      /* q <- u - a v         */
     ierr = VecWAXPY(&one,U,Q,T);CHKERRQ(ierr);      /* t <- u + q           */
     ierr = VecAXPY(&a,T,X);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,T,AUQ,U);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     if (!ksp->avoidnorms) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -98,8 +98,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
-                         P,V,Q);CHKERRQ(ierr);      /* v <- K p             */
+    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
   }
   if (i == maxit) i--;

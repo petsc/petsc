@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.38 1999/10/04 18:55:07 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.40 1999/10/24 14:04:09 bsmith Exp bsmith $*/
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
@@ -9,10 +9,11 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;
+  int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr;
   int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
-  int            Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog, testorder = 0;
+  int            Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL;
+  PetscTruth     testorder,flg;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
   Viewer         viewer;
@@ -25,12 +26,12 @@ int main(int argc,char **argv)
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
  
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-xwrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_XPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-ywrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_YPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg);CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
@@ -87,13 +88,13 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
-  flg = 0;
   ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
-    printf("\nLocal Vector: processor %d\n",rank);
-    ierr = VecView(local,VIEWER_STDOUT_SELF);CHKERRA(ierr); 
-    ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+    Viewer sviewer;
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRA(ierr);
+    ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+    ierr = VecView(local,sviewer);CHKERRA(ierr); 
+    ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
   }
 
   /* Tests mappings betweeen application/PETSc orderings */

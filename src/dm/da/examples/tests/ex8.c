@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.16 1999/06/30 23:55:20 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.18 1999/10/24 14:04:09 bsmith Exp bsmith $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -84,9 +84,10 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 3, N = 5, P=3, s=1, flg;
+  int            rank, M = 3, N = 5, P=3, s=1;
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
+  PetscTruth     flg;
   DA             da;
   Vec            local, global,vslice;
   Scalar         value;
@@ -98,13 +99,13 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* Read options */  
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
 

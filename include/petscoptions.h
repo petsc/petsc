@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.32 1998/11/20 15:31:26 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.33 1999/10/04 18:55:42 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -6,15 +6,15 @@
 #define __OPTIONS_H
 #include "petsc.h"
 
-extern int  OptionsHasName(const char[],const char[],int*);
-extern int  OptionsGetInt(const char[],const char [],int *,int*);
-extern int  OptionsGetLogical(const char[],const char [],PetscTruth *,int*);
-extern int  OptionsGetDouble(const char[],const char[],double *,int*);
-extern int  OptionsGetScalar(const char[],const char[],Scalar *,int*);
-extern int  OptionsGetIntArray(const char[],const char[],int[],int *,int*);
-extern int  OptionsGetDoubleArray(const char[],const char[],double[],int *,int*);
-extern int  OptionsGetString(const char[],const char[],char[],int,int*);
-extern int  OptionsGetStringArray(const char[],const char[],char**,int*,int*);
+extern int  OptionsHasName(const char[],const char[],PetscTruth*);
+extern int  OptionsGetInt(const char[],const char [],int *,PetscTruth*);
+extern int  OptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
+extern int  OptionsGetDouble(const char[],const char[],double *,PetscTruth*);
+extern int  OptionsGetScalar(const char[],const char[],Scalar *,PetscTruth*);
+extern int  OptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
+extern int  OptionsGetDoubleArray(const char[],const char[],double[],int *,PetscTruth*);
+extern int  OptionsGetString(const char[],const char[],char[],int,PetscTruth*);
+extern int  OptionsGetStringArray(const char[],const char[],char**,int*,PetscTruth*);
 
 extern int  OptionsSetAlias(const char[],const char[]);
 extern int  OptionsSetValue(const char[],const char[]);

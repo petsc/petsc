@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.6 1999/06/30 23:55:02 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.8 1999/10/24 14:04:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests removing entries from an AOData \n\n";
 
@@ -8,12 +8,12 @@ static char help[] = "Tests removing entries from an AOData \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  int         n,nglobal, bs = 2, *keys, *data,ierr,rank,size,i,start;
   double      *gd;
   AOData      aodata;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.6 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.8 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
 test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
@@ -30,21 +30,21 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 2,  N,M, ierr,idx[4], flg, Nsub1, Nsub2, ol=1, x1, x2;
+  int         i, m = 2,  N,M, ierr,idx[4],  Nsub1, Nsub2, ol=1, x1, x2;
   Scalar      Ke[16];
   double      x,y,h;
   IS          *is1, *is2;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-/*  OptionsGetInt(PETSC_NULL,"-ol",&ol,&flg);*/
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
   x1= (m+1)/2;
   x2= x1;
-  ierr = OptionsGetInt(PETSC_NULL,"-x1",&x1,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-x2",&x2,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-x1",&x1,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-x2",&x2,PETSC_NULL);CHKERRA(ierr);
   /* create stiffness matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRA(ierr);
 
@@ -74,7 +74,7 @@ int main(int argc,char **args)
     }
     
     for (i=0; i<Nsub1; ++i) {
-      ierr = ISEqual(is1[i], is2[i], (PetscTruth*)&flg);CHKERRA(ierr);
+      ierr = ISEqual(is1[i], is2[i], &flg);CHKERRA(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %d, flg = %d \n",i, flg);CHKERRA(ierr);
       
     }

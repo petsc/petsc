@@ -1,4 +1,4 @@
-/*$Id: spartition.c,v 1.13 1999/05/12 03:30:10 bsmith Exp bsmith $*/
+/*$Id: spartition.c,v 1.14 1999/10/24 14:02:37 bsmith Exp bsmith $*/
  
 #include "petsc.h"
 #include "mat.h"
@@ -19,7 +19,7 @@ EXTERN_C_END
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatPartitioningRegister() for 
+  modify it to incorporate a call to MatPartitioningRegisterDynamic() for 
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -30,16 +30,16 @@ EXTERN_C_END
 
 .keywords: matrix, Partitioning, register, all
 
-.seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
+.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterDestroy()
 @*/
 int MatPartitioningRegisterAll(char *path)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = MatPartitioningRegister(MATPARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
-  ierr = MatPartitioningRegister(MATPARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

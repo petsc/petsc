@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -8,14 +8,15 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Mat     mat, tmat = 0;
-  int     m = 7, n, i, j, ierr, size, rank, rstart, rend, rect = 0, flg;
-  Scalar  v;
-  double  normf, normi, norm1;
+  Mat        mat, tmat = 0;
+  int        m = 7, n, i, j, ierr, size, rank, rstart, rend, rect = 0;
+  PetscTruth flg;
+  Scalar     v;
+  double     normf, normi, norm1;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = m;
@@ -75,7 +76,7 @@ int main(int argc,char **argv)
 
   if (mat && !rect) {
     Scalar alpha = 1.0;
-    ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,&flg);CHKERRA(ierr);
+    ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRA(ierr);
     ierr = MatAXPY(&alpha,mat,tmat);CHKERRA(ierr); 
     ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex43.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -10,14 +10,14 @@ int main(int argc,char **args)
 {
   Mat     C;
   Scalar  v;
-  int     i, j, ierr, m = 4, n = 4, rank, size,flg;
+  int     i, j, ierr, m = 4, n = 4, rank, size;
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* PART 1:  Generate matrix, then write it in binary format */
 

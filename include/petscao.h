@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.17 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.18 1999/09/27 21:33:07 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -87,6 +87,7 @@ extern int AODataSegmentGetExtrema(AOData,char*,char*,void *,void *);
 extern int AODataSegmentPartition(AOData,char *,char *);
 
 extern int AODataPartitionAndSetupLocal(AOData,char*,char*, IS*, IS*, ISLocalToGlobalMapping*);
+extern int AODataAliasAdd(AOData,char *,char *);
 #endif
 
 

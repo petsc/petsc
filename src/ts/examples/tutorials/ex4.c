@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.13 1999/09/27 21:32:16 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.15 1999/10/24 14:03:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -70,16 +70,16 @@ Input parameters include:\n\
    application-provided call-back routines.
 */
 typedef struct {
-  MPI_Comm comm;              /* communicator */
-  DA       da;                /* distributed array data structure */
-  Vec      localwork;         /* local ghosted work vector */
-  Vec      u_local;           /* local ghosted approximate solution vector */
-  Vec      solution;          /* global exact solution vector */
-  int      m;                 /* total number of grid points */
-  double   h;                 /* mesh width h = 1/(m-1) */
-  int      debug;             /* flag (1 indicates activation of debugging printouts) */
-  Viewer   viewer1, viewer2;  /* viewers for the solution and error */
-  double   norm_2, norm_max;  /* error norms */
+  MPI_Comm   comm;              /* communicator */
+  DA         da;                /* distributed array data structure */
+  Vec        localwork;         /* local ghosted work vector */
+  Vec        u_local;           /* local ghosted approximate solution vector */
+  Vec        solution;          /* global exact solution vector */
+  int        m;                 /* total number of grid points */
+  double     h;                 /* mesh width h = 1/(m-1) */
+  PetscTruth debug;             /* flag (1 indicates activation of debugging printouts) */
+  Viewer     viewer1, viewer2;  /* viewers for the solution and error */
+  double     norm_2, norm_max;  /* error norms */
 } AppCtx;
 
 /* 
@@ -101,8 +101,9 @@ int main(int argc,char **argv)
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
   Draw          draw;                   /* drawing context */
-  int           ierr,  steps, flg, size, m;
+  int           ierr,  steps, size, m;
   double        dt, ftime;
+  PetscTruth    flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -112,7 +113,7 @@ int main(int argc,char **argv)
   appctx.comm = PETSC_COMM_WORLD;
 
   m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTrans().\n\n";
 
@@ -9,15 +9,15 @@ static char help[] = "Tests the use of MatSolveTrans().\n\n";
 int main(int argc,char **args)
 {
   Mat     C, A;
-  int     i, j, m = 5, n = 5, I, J, ierr, flg;
+  int     i, j, m = 5, n = 5, I, J, ierr;
   Scalar  v, five = 5.0, one = 1.0, mone = -1.0;
   IS      isrow,row,col;
   Vec     x, u, b;
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.53 1999/10/01 21:20:25 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.54 1999/10/24 14:01:15 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -8,8 +8,6 @@
   plot we only use from DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
 
 */
-#include "petsc.h"
-#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 #include <X11/Xatom.h>
 
@@ -80,7 +78,8 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
 {
   XColor        colordef,ecolordef;
   unsigned char *red, *green, *blue;
-  int           i,ierr,fast,ncolors;
+  int           i,ierr,ncolors;
+  PetscTruth    fast;
 
   PetscFunctionBegin;
   if (colormap) {
@@ -101,8 +100,6 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
   green = red   + ncolors;
   blue  = green + ncolors;
   ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
-
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
@@ -132,11 +129,11 @@ static int      cmap_base = 0;
 #define __FUNC__ "DrawSetUpColormap_Private"
 int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  Colormap defaultmap = DefaultColormap( display, screen ); 
-  int      ierr,found,i,ncolors,fast;
-  XColor   colordef;
+  Colormap      defaultmap = DefaultColormap( display, screen ); 
+  int           ierr,found,i,ncolors;
+  XColor        colordef;
   unsigned char *red, *green, *blue;
-
+  PetscTruth    fast;
 
   PetscFunctionBegin;
 
@@ -174,8 +171,6 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   blue  = green + ncolors;
   ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
-
-  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -206,7 +201,8 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
 #define __FUNC__ "DrawSetUpColormap_X"
 int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  int         ierr, sharedcolormap = 0;
+  int         ierr;
+  PetscTruth  sharedcolormap;
   XVisualInfo vinfo;
 
   PetscFunctionBegin;
@@ -225,7 +221,7 @@ int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colo
       XMatchVisualInfo(display, screen, 24, TrueColor, &vinfo) ||
       XMatchVisualInfo(display, screen, 16, StaticColor, &vinfo) ||
       XMatchVisualInfo(display, screen, 16, TrueColor, &vinfo)) {
-    sharedcolormap = 1;
+    sharedcolormap = PETSC_TRUE;
   }
 
   /* generate the X color map object */
@@ -531,13 +527,3 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue,
   red[mapsize-1] = green[mapsize-1] = blue[mapsize-1] = 255;
   PetscFunctionReturn(0);
 }
-
-#else
-#undef __FUNC__  
-#define __FUNC__ "dummy_xcolor"
-int dummy_xcolor(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif

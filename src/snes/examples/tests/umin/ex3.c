@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.55 1999/10/01 21:22:35 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.57 1999/10/24 14:03:41 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -51,23 +51,24 @@ int main(int argc,char **argv)
   int        my=10;                /* discretization in y-direction */
   int        Nx=PETSC_DECIDE;      /* processors in x-direction */
   int        Ny=PETSC_DECIDE;      /* processors in y-direction */
-  int        ierr, its, ldim, nfails, size,flg;
+  int        ierr, its, ldim, nfails, size;
+  PetscTruth flg;
   double     one = 1.0;
   SLES       sles;
   PC         pc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
@@ -264,8 +265,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 
 #undef __FUNC__
 #define __FUNC__ "EvalFunctionGradient"
-int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
-                         AppCtx *user)
+int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   Scalar hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
   Scalar zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;

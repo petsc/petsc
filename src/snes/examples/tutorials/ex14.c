@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.5 1999/09/12 17:19:16 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.7 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -75,7 +75,7 @@ typedef struct {
    DA          da;             /* distributed array data structure */
    int         rank;           /* processor rank */
    int         size;           /* number of processors */
-   int         debug;          /* debugging flag: 1 means debugging is activated */
+   PetscTruth  debug;          /* debugging flag: 1 means debugging is activated */
 } AppCtx;
 
 /* 
@@ -88,15 +88,15 @@ int ApplicationInitialGuess(AppCtx*,Scalar*);
 
 int main( int argc, char **argv )
 {
-  SNES     snes;                /* nonlinear solver */
-  Vec      x, r;                /* solution, residual vectors */
-  Mat      J;                   /* Jacobian matrix */
-  AppCtx   user;                /* user-defined work context */
-  int      its;                 /* iterations for convergence */
-  int      Nx, Ny, Nz;          /* number of preocessors in x-, y- and z- directions */
-  int      matrix_free;         /* flag - 1 indicates matrix-free version */
-  int      m, flg, N, ierr, nloc, *ltog;
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  SNES       snes;                /* nonlinear solver */
+  Vec        x, r;                /* solution, residual vectors */
+  Mat        J;                   /* Jacobian matrix */
+  AppCtx     user;                /* user-defined work context */
+  int        its;                 /* iterations for convergence */
+  int        Nx, Ny, Nz;          /* number of preocessors in x-, y- and z- directions */
+  PetscTruth matrix_free;         /* flag - 1 indicates matrix-free version */
+  int        m, N, ierr, nloc, *ltog;
+  double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
@@ -106,10 +106,10 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.mz = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&user.debug); CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
@@ -133,9 +133,9 @@ int main( int argc, char **argv )
   */
 
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE; Nz = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL); CHKERRA(ierr);
   if (Nx*Ny*Nz != user.size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE
                         || Nz != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx*Ny*Nz != user.size");

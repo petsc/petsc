@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.30 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.31 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -211,7 +211,7 @@ void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *__ierr 
   char *tname;
 
   *__ierr = PCGetType(*pc,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
   *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
@@ -227,7 +227,7 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc, CHAR prefix PETSC_MIXED_LEN(len),
   char *tname;
 
   *__ierr = PCGetOptionsPrefix(*pc,&tname);
-#if defined(USES_CPTOFCD)
+#if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
     *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;

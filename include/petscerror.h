@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.38 1999/10/13 20:39:18 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.39 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -89,6 +89,13 @@
 #define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRQ(__ierr);}
 #define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRA(__ierr);}
 
+#if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
+extern  int __gierr;
+#define _   __gierr = 
+#define ___  CHKERRA(__gierr);
+#define ____ CHKERRQ(__gierr);
+#endif
+
 #else
 #define SETERRQ(n,p,s) ;
 #define SETERRQ1(n,p,s,a1) ;
@@ -104,6 +111,12 @@
 
 #define CHKMEMQ        ;
 #define CHKMEMA        ;
+
+#if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
+#define _   
+#define ___  
+#define ____
+#endif 
 
 #endif
 

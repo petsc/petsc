@@ -1,8 +1,6 @@
-/*$Id: cholbs.c,v 1.54 1999/05/12 03:29:19 bsmith Exp bsmith $*/
+/*$Id: cholbs.c,v 1.55 1999/10/24 14:02:19 bsmith Exp bsmith $*/
 
 #include "petsc.h"
-
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 
 /* We must define MLOG for BlockSolve logging */ 
 #if defined(PETSC_USE_LOG)
@@ -219,15 +217,6 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#else
-#undef __FUNC__  
-#define __FUNC__ "MatNullMPIRowbs"
-int MatNullMPIRowbs(void)
-{
-  PetscFunctionBegin;  
-  PetscFunctionReturn(0);
-}
-#endif
 
 /* 
     The logging variables required by BlockSolve, 

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.15 1999/10/04 18:51:56 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.17 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -24,15 +24,16 @@ int FormElementStiffness(double H,Scalar *Ke)
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat    C; 
-  Vec    u, b;
-  int    i, m = 5, rank, size, N, start, end, M, ierr, idx[4];
-  int    j, nrsub, ncsub, *rsub, *csub, mystart, myend,flg;
-  Scalar one = 1.0, Ke[16], *vals;
-  double h, norm;
+  Mat        C; 
+  Vec        u, b;
+  int        i, m = 5, rank, size, N, start, end, M, ierr, idx[4];
+  int        j, nrsub, ncsub, *rsub, *csub, mystart, myend;
+  PetscTruth flg;
+  Scalar     one = 1.0, Ke[16], *vals;
+  double     h, norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
 
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m;         /* number of elements */

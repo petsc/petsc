@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.88 1999/10/13 20:37:53 bsmith Exp bsmith $*/
+/*$Id: sor.c,v 1.90 1999/10/24 14:02:58 bsmith Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -51,8 +51,9 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 #define __FUNC__ "PCSetFromOptions_SOR"
 static int PCSetFromOptions_SOR(PC pc)
 {
-  int    its,ierr,flg;
-  double omega;
+  int        its,ierr;
+  PetscTruth flg;
+  double     omega;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
@@ -311,11 +312,11 @@ int PCCreate_SOR(PC pc)
   jac->omega         = 1.0;
   jac->its           = 1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
                     (void*)PCSORSetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",
                     (void*)PCSORSetOmega_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
                     (void*)PCSORSetIterations_SOR);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

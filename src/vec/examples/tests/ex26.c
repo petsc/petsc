@@ -59,19 +59,21 @@ int main(int Argc,char **Args)
   /* The actual pipe:
      receive accumulated value from previous processor,
      add the square of your own value, and send on. */
-  ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,
-			  PIPELINE_UP,pipe);CHKERRA(ierr);
+  ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
   ierr = VecGetArray(tar_v,&vec_values);CHKERRA(ierr);
   my_value = vec_values[0] + (double)((rank+1)*(rank+1));
-  printf("[%d] value=%d\n",rank,(int)PetscReal(my_value));
-  ierr = VecRestoreArray(tar_v,&vec_values);CHKERRA(ierr);
+
+  ierr = VecRestoreArray(tar_v,&vec_values);CHKERRA(ierr);CHKERRA(ierr)
   /* -- little trick: we have to be able to call VecAssembly, 
      but since this code executed sequentially (critical section!),
      we have a local vector with data aliased to the distributed one */
-  ierr = VecSetValues(loc_v,1,&zero_loc,&my_value,INSERT_VALUES); 
+  ierr = VecSetValues(loc_v,1,&zero_loc,&my_value,INSERT_VALUES);
   ierr = VecAssemblyBegin(loc_v);CHKERRA(ierr);
   ierr = VecAssemblyEnd(loc_v);CHKERRA(ierr);
   ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
+
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] value=%d\n",rank,(int)PetscReal(my_value));CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   /* Clean up */
   ierr = VecPipelineDestroy(pipe);CHKERRA(ierr);

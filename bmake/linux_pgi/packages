@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1999/06/16 21:38:16 balay Exp balay $ 
+# $Id: base.site,v 1.3 1999/09/14 18:30:56 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -80,7 +80,7 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #
 #PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #PCONF        = -DHAVE_BLOCKSOLVE -DHAVE_MPE -DHAVE_PVODE
-PCONF        = -DHAVE_MPE_INITIALIZED_LOGGING -DHAVE_MPE
+PCONF        = -DHAVE_MPE_INITIALIZED_LOGGING -DHAVE_MPE  -DPETSC_HAVE_X11
 #EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 PGI_LIB = -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl
 EXTERNAL_LIB  = ${MPE_LIB} ${PGI_LIB}

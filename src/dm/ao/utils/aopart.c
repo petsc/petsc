@@ -1,4 +1,4 @@
-/*$Id: aopart.c,v 1.8 1999/05/04 20:37:22 balay Exp bsmith $*/
+/*$Id: aopart.c,v 1.9 1999/10/24 14:04:03 bsmith Exp bsmith $*/
 
 #include "ao.h"       /*I  "ao.h"  I*/
 
@@ -22,7 +22,7 @@ int AODataKeyPartition(AOData aodata,char *key)
 {
   AO              ao;
   Mat             adj;
-  MatPartitioning    part;
+  MatPartitioning part;
   IS              is,isg;
   int             ierr;
   MPI_Comm        comm;

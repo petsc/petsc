@@ -1,8 +1,6 @@
-/*$Id: vcreatea.c,v 1.10 1999/09/20 18:28:26 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.11 1999/10/24 02:35:10 bsmith Exp bsmith $*/
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
-#include "pinclude/petscfix.h"
-#include <stdarg.h>
+#include "petsc.h"  /*I     "petsc.h"   I*/
 
 Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDERR_WORLD;
 
@@ -76,17 +74,18 @@ $      XXXView(XXX object,VIEWER_STDOUT_(comm));
 @*/
 Viewer VIEWER_STDOUT_(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (!flag) { /* viewer not yet created */
+  if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stdout",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put( comm, Petsc_Viewer_Stdout_keyval, (void *) viewer );
@@ -102,15 +101,16 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
 #define __FUNC__ "VIEWER_STDOUT_Destroy"
 int VIEWER_STDOUT_Destroy(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
-  if (flag) { 
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(int*)&flg);CHKERRQ(ierr);
+  if (flg) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
   } 
@@ -147,17 +147,18 @@ $      XXXView(XXX object,VIEWER_STDERR_(comm));
 @*/
 Viewer VIEWER_STDERR_(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (!flag) { /* viewer not yet created */
+  if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stderr",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put( comm, Petsc_Viewer_Stderr_keyval, (void *) viewer );
@@ -173,15 +174,16 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
 #define __FUNC__ "VIEWER_STDERR_Destroy"
 int VIEWER_STDERR_Destroy(MPI_Comm comm)
 {
-  int    ierr,flag;
-  Viewer viewer;
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
-  if (flag) { 
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(int *)&flg);CHKERRQ(ierr);
+  if (flg) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
   } 

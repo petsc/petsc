@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.27 1999/04/16 16:06:37 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.28 1999/10/24 14:02:23 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
@@ -33,7 +33,7 @@ EXTERN_C_END
 
 .keywords: matrix, reordering, register, all
 
-.seealso: MatOrderingRegister(), MatOrderingRegisterDestroy()
+.seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterDestroy()
 @*/
 int MatOrderingRegisterAll(char *path)
 {
@@ -42,12 +42,12 @@ int MatOrderingRegisterAll(char *path)
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = 1;
 
-  ierr = MatOrderingRegister(MATORDERING_NATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING_ND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING_1WD,      path,"MatOrdering_1WD"      ,MatOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_NATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_ND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_1WD,      path,"MatOrdering_1WD"      ,MatOrdering_1WD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

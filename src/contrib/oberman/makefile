@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.15 1998/10/28 20:51:11 curfman Exp bsmith $ 
+# $Id: makefile,v 1.1 1999/11/04 02:54:40 bsmith Exp bsmith $ 
 
-DIRS     = sda pc oberman
-LOCDIR   = src/contrib/
+DIRS     = laplacian_q1 burgers_vertex_based_q1
+LOCDIR   = src/contrib/oberman
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

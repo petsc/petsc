@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.4 1999/05/04 20:37:46 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.6 1999/10/24 14:04:12 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
@@ -9,7 +9,8 @@ static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 10, N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr,flg;
+  int            rank, M = 10, N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  PetscTruth     flg;
   DA             da;
   Viewer         viewer;
   Vec            local, global;
@@ -21,10 +22,10 @@ int main(int argc,char **argv)
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-star_stencil",&flg);CHKERRA(ierr);
   if (flg) stype = DA_STENCIL_STAR;
 

@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.24 1999/10/01 21:20:14 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.25 1999/10/24 14:01:06 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -19,14 +19,15 @@ EXTERN_C_BEGIN
 int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 {
   Viewer_AMS *vams = (Viewer_AMS*) v->data;
-  int        ierr,port = -1,flag;
+  int        ierr,port = -1;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,v->comm,&port);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flag);CHKERRQ(ierr);
-  if (!flag) {
+  ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flg);CHKERRQ(ierr);
+  if (!flg) {
     ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -253,10 +254,10 @@ int ViewerCreate_AMS(Viewer v)
   vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
   v->data         = (void *) vams;
   vams->ams_comm  = -1;
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSSetCommName_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerAMSSetCommName_C",
                                     "ViewerAMSSetCommName_AMS",
                                      (void*)ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerAMSGetAMSComm_C",
                                     "ViewerAMSGetAMSComm_AMS",
                                      (void*)ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);

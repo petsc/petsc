@@ -1,5 +1,5 @@
-
-!    "$Id: ex2f.F,v 1.54 1999/04/21 18:18:11 bsmith Exp bsmith $";
+!
+!    "$Id: ex2f.F,v 1.55 1999/04/23 15:10:13 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -156,22 +156,22 @@
         j = II - i*n  
         if ( i.gt.0 ) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
         if ( i.lt.m-1 ) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
         if ( j.gt.0 ) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
         if ( j.lt.n-1 ) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,1,II,1,II,v,INSERT_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.73 1999/06/30 23:51:46 balay Exp bsmith $*/
+/*$Id: baijfact.c,v 1.74 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -24,8 +24,10 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
-  ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr =  ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
   ainew = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);

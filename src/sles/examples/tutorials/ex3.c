@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.16 1999/06/30 23:53:54 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.18 1999/10/24 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -50,10 +50,10 @@ int main(int argc,char **args)
   double  norm;        /* norm of solution error */
   double  x,y;
   Scalar  val, zero = 0.0, one = 1.0, none = -1.0;
-  int     ierr, idx[4], count, *rows, i, m = 5, start, end, its, flg;
+  int     ierr, idx[4], count, *rows, i, m = 5, start, end, its;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1);
   M = m*m;
   h = 1.0/m;
