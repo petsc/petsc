@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.23 2000/05/05 18:28:31 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.24 2000/11/28 17:26:31 bsmith Exp buschelm $"
 "Defines the configuration for this machine"
 #endif
 
@@ -45,4 +45,9 @@
 
 #define PETSC_MISSING_SIGSYS
 
+#ifdef PETSC_USE_MAT_SINGLE
+#  define PETSC_MEMALIGN 16
+#  define PETSC_HAVE_SSE "gccsse.h"
+#endif
+ 
 #endif
