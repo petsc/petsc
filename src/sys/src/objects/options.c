@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.9 1995/05/25 22:47:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.10 1995/05/28 17:37:27 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -19,7 +19,9 @@ static char vcid[] = "$Id: options.c,v 1.9 1995/05/25 22:47:05 bsmith Exp bsmith
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
+#if defined(HAVE_MALLOC_H)
 #include <malloc.h>
+#endif
 #include "pviewer.h"
 #include "petscfix.h"
 
