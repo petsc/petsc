@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.179 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.180 1997/10/01 22:47:58 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -9,12 +9,12 @@
 /* 
    Current PETSc Version 
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.19, Released August 13, 1997."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.20, Released October 8, 1997."
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
-#define PETSC_VERSION_SUBMINOR 19
-#define PETSC_VERSION_DATE     "August 13, 1997"
+#define PETSC_VERSION_SUBMINOR 20
+#define PETSC_VERSION_DATE     "October 8, 1997"
 
 /* Before anything else, include the PETSc configuration file.  This 
    contains various definitions that handle portability issues and the 
