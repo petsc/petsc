@@ -5272,8 +5272,13 @@ int MatIsSymmetric(Mat A,PetscTruth *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   if (!A->symmetric_set) {
-    if (!A->ops->issymmetric) SETERRQ(1,"Matrix does not support checking for symmetric");
-    ierr = (*A->ops->issymmetric)(A,&A->symmetric);CHKERRQ(ierr);
+    if (!A->ops->issymmetric) {
+      MatType mattype;
+      ierr = MatGetType(A,&mattype); CHKERRQ(ierr);
+      SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",
+	       mattype);
+    }
+    ierr = (*A->ops->issymmetric)(A,&A->symmetric); CHKERRQ(ierr);
     A->symmetric_set = PETSC_TRUE;
     if (A->symmetric) {
       A->structurally_symmetric_set = PETSC_TRUE;
