@@ -18,6 +18,8 @@
 #define STDC_HEADERS 1
 #define TIME_WITH_SYS_TIME 1
 #define WORDS_BIGENDIAN 1
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #define SIZEOF_INT 4
 #define SIZEOF_VOID_P 4

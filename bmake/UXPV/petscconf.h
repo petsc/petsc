@@ -16,6 +16,8 @@
 #define HAVE_LIMITS_H
 #define HAVE_GETCWD
 #define HAVE_SLEEP
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #define HAVE_DRAND48  
 #define HAVE_UNISTD_H 

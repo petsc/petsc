@@ -15,6 +15,8 @@
 #define HAVE_SEARCH_H
 #define HAVE_IO_H
 
+#define HAVE_SYS_STAT_H
+
 #define PETSC_HAVE_STD_COMPLEX
 
 #define PETSC_STDCALL __stdcall

@@ -21,6 +21,8 @@
 #define HAVE_SYS_TIME_H
 #define HAVE_GETCWD
 #define HAVE_SLEEP
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #define BITS_PER_BYTE 8
 

@@ -25,6 +25,8 @@
 #define HAVE_UNISTD_H 
 #define HAVE_UNAME
 #define HAVE_GETCWD
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #if defined(USING_ACC_FOR_CXX)
 #define PETSC_HAVE_NONSTANDARD_COMPLEX_H "complex"

@@ -35,6 +35,8 @@
 #define HAVE_SWAPPED_BYTES
 #define HAVE_SYS_RESOURCE_H
 #define HAVE_SLEEP
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #define BITS_PER_BYTE 8
 

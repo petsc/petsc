@@ -39,6 +39,8 @@
 #define HAVE_SYS_RESOURCE_H
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNISTD_H
+#define HAVE_PARAM_H
+#define HAVE_SYS_STAT_H
 
 #define BITS_PER_BYTE 8
 
