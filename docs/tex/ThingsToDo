@@ -14,6 +14,19 @@ Additional Capabilities that PETSc Needs:
 
  - Remove Unix man pages from next PETSc release. 
 
+ - Aim for more exhaustive PETSc testing.  See
+         /home/MPI/mpich/examples/test/rlist.srt:
+
+ - Features in TS wanted by Carl:
+      - Crank-Nicholson
+      - Multi-stage explicit methods
+
+ - Suggestion by Carl - provide SNES example showing user computing most
+   of Jacobian in function eval routine.
+
+ - Fix VRML vector viewer interface; add documentation about VRML.
+    
+ - Finish converting examples to tutorials/tests formats
 
 
 -----------------------------------------------------------------------
@@ -31,18 +44,6 @@ Additional Capabilities that PETSc Needs:
  * Make all systems use shared libraries if possible, and document how to
            use these variants.
 
- - Finish converting examples to tutorials/tests formats
-
- - Aim for more exhaustive PETSc testing.  See
-         /home/MPI/mpich/examples/test/rlist.srt:
-
- - Features in TS wanted by Carl:
-      - Crank-Nicholson
-      - Multi-stage explicit methods
-
- - Suggestion by Carl - provide SNES example showing user computing most
-   of Jacobian in function eval routine.
-
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
    parameter (similar to matrix-free stuff)
 
@@ -50,8 +51,6 @@ Additional Capabilities that PETSc Needs:
    potentially different solvers on each
      - Send info to 1 proc, then print from it.
 
-  - Fix VRML vector viewer interface; add documentation about VRML.
-    
   - Add optional scrolling stackframe window to PetscView    
 
   * Finish "Performance" chapter: section "System Related Problems"
