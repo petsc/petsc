@@ -74,8 +74,6 @@ extern int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
 
-extern int MatReorderingSeqSBAIJ(Mat,IS);
-
 extern int MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
 
