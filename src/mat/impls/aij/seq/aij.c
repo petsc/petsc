@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.212 1997/03/26 01:35:45 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.213 1997/04/03 17:07:50 balay Exp balay $";
 #endif
 
 /*
@@ -1121,7 +1121,7 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
   else if (type == NORM_1) {
     double *tmp;
     int    *jj = a->j;
-    tmp = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp);
+    tmp = (double *) PetscMalloc( (a->n+1)*sizeof(double) ); CHKPTRQ(tmp);
     PetscMemzero(tmp,a->n*sizeof(double));
     *norm = 0.0;
     for ( j=0; j<a->nz; j++ ) {

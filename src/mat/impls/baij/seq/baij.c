@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.95 1997/03/26 01:36:13 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.96 1997/04/03 17:07:34 balay Exp balay $";
 #endif
 
 /*
@@ -116,7 +116,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   PetscFree(col_lens);
 
   /* store column indices (zero start index) */
-  jj = (int *) PetscMalloc( a->nz*bs2*sizeof(int) ); CHKPTRQ(jj);
+  jj = (int *) PetscMalloc( (a->nz+1)*bs2*sizeof(int) ); CHKPTRQ(jj);
   count = 0;
   for ( i=0; i<a->mbs; i++ ) {
     for ( j=0; j<bs; j++ ) {
@@ -131,7 +131,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   PetscFree(jj);
 
   /* store nonzero values */
-  aa = (Scalar *) PetscMalloc(a->nz*bs2*sizeof(Scalar)); CHKPTRQ(aa);
+  aa = (Scalar *) PetscMalloc((a->nz+1)*bs2*sizeof(Scalar)); CHKPTRQ(aa);
   count = 0;
   for ( i=0; i<a->mbs; i++ ) {
     for ( j=0; j<bs; j++ ) {

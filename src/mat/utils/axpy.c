@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.23 1997/01/01 03:38:57 bsmith Exp balay $";
+static char vcid[] = "$Id: axpy.c,v 1.24 1997/01/06 20:26:03 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -30,7 +30,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
     ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
   }
   else {
-    vals = (Scalar *) PetscMalloc( n1*sizeof(Scalar) ); CHKPTRQ(vals);
+    vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) ); CHKPTRQ(vals);
     ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
       ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
