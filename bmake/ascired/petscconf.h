@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.6 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.7 2000/11/02 21:52:51 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -44,6 +44,7 @@
 
 #define PETSC_HAVE_STAT_NO_CONST
 #define PETSC_USE_KBYTES_FOR_SIZE
-#define PETSC_MISSING_UNIX_SYS_FUNCS
+
+#define PETSC_CANNOT_START_DEBUGGER
 
 #endif
