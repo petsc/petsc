@@ -78,7 +78,7 @@ chkopts:
 	@if [ ! -d $(LDIR) ]; then \
           echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
-# Compiles examples
+# Compiles examples_1: primary group for installation testing
 examples_1: chkopts
 	@-if [ "$(EXAMPLES_1)" != "" ] ; then \
           (for ex in $(EXAMPLES_1) foo ; do \
@@ -97,6 +97,7 @@ runexamples_1:
           $(OMAKE) -f makefile $$ex; \
           done;) fi
 
+# Compiles examples_2: secondary examples, many have x-displays
 examples_2: chkopts
 	@-if [ "$(EXAMPLES_2)" != "" ] ; then \
           (for ex in $(EXAMPLES_2) foo ; do \
@@ -112,9 +113,8 @@ runexamples_2:
           (for ex in $(RUNEXAMPLES_2) foo ; do \
           $(OMAKE) -f makefile $$ex; \
           done;) fi
-#
-#  examples_3 are Fortran examples
-#
+
+# Compiles examples_3: Fortran examples
 examples_3: chkopts
 	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
           (for ex in $(EXAMPLES_3) foo ; do \
