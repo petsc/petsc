@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.14 1997/02/05 22:01:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.15 1997/02/22 02:26:05 bsmith Exp curfman $";
 #endif
  
 /*
@@ -263,8 +263,8 @@ int MatColoringRegisterDestroy()
    Options Database Keys:
    To specify the coloringing through the options database, use one of
    the following 
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring ld, 
-$    -mat_coloring if
+$    -mat_coloring natural, -mat_coloring sl, -mat_coloring id, 
+$    -mat_coloring lf
 
 .keywords: matrix, coloring, 
 
@@ -294,7 +294,7 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
    Output Parameter:
 .  name - name of coloring
 
-.keywords: PC, get, method, name, type
+.keywords: matrix, get, coloring, name
 @*/
 int MatColoringGetName(MatColoring meth,char **name)
 {
@@ -316,23 +316,23 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
    Input Parameters:
 .  mat - the matrix
 .  type - type of coloring, one of the following:
-$      COLORING_NATURAL - Natural
-$      COLORING_LD
-$      COLORING_SL
-$      COLORING_IF
+$      COLORING_NATURAL - natural
+$      COLORING_SL - smallest last
+$      COLORING_LF - largest-first
+$      COLORING_ID - incidence-degree
 
    Output Parameters:
 .   iscoloring - the coloring
 
    Options Database Keys:
-   To specify the coloringing through the options database, use one of
+   To specify the coloring through the options database, use one of
    the following 
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring ld,
-$    -mat_coloring if
+$    -mat_coloring natural, -mat_coloring sl, -mat_coloring lf,
+$    -mat_coloring id
 
-   The user can define additional coloringings; see MatColoringRegister().
+   The user can define additional colorings; see MatColoringRegister().
 
-.keywords: matrix, coloring
+.keywords: matrix, get, coloring
 
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister()
 @*/
