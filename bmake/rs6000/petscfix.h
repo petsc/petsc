@@ -85,6 +85,7 @@ extern void   perror(const char *);
 extern double atof(const char *);
 extern void   free(void *);
 extern void   *malloc(long unsigned int );
+extern int    readlink(const char *,char *,int);
 }
 
 #else
