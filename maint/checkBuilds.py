@@ -44,7 +44,7 @@ class BuildChecker(script.Script):
                'linux-gnu-gcc-pgf90':  ['gcc', 'pgF90'],
                'linux-gnu-ia64':       ['gcc'],
                'linux-gnu-ia64-intel': ['intel', 'intelF90'],
-               'linux-rhAS3-intel81'   ['intel', 'intelF90'],
+               'linux-rhAS3-intel81' : ['intel', 'intelF90'],
                'linux-gnu-uni':        ['gcc'],
                'linux-gnu-valgrind':   ['gcc'],
                'linux-gnu-alpha':      ['gcc'],
