@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.25 2000/04/12 04:22:08 bsmith Exp balay $*/
+/*$Id: iscomp.c,v 1.26 2000/05/05 22:14:51 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -43,8 +43,8 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
   ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
   
   sz   = sz1*sizeof(int);
-  a1   = (int*)PetscMalloc((sz1+1)* sizeof(int));
-  a2   = (int*)PetscMalloc((sz2+1)* sizeof(int));
+  a1   = (int*)PetscMalloc((sz1+1)*sizeof(int));
+  a2   = (int*)PetscMalloc((sz2+1)*sizeof(int));
 
   ierr = PetscMemcpy(a1,ptr1,sz);CHKERRQ(ierr);
   ierr = PetscMemcpy(a2,ptr2,sz);CHKERRQ(ierr);
