@@ -2514,7 +2514,7 @@ EXTERN_C_END
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 @*/
-int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
+int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,const int nnz[],Mat *A)
 {
   int ierr;
 
@@ -2576,9 +2576,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 @*/
-int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
+int MatSeqAIJSetPreallocation(Mat B,int nz,const int nnz[])
 {
-  int ierr,(*f)(Mat,int,int*);
+  int ierr,(*f)(Mat,int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);

@@ -2372,9 +2372,9 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
-int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+int MatMPIAIJSetPreallocation(Mat B,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[])
 {
-  int ierr,(*f)(Mat,int,int*,int,int*);
+  int ierr,(*f)(Mat,int,const int[],int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -2540,7 +2540,7 @@ int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
-int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
+int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[],Mat *A)
 {
   int ierr,size;
 

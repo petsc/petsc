@@ -1525,9 +1525,9 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,PetscScalar *data,Mat *A)
 
 .seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
 @*/
-int MatSeqDenseSetPreallocation(Mat B,PetscScalar *data)
+int MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 {
-  int ierr,(*f)(Mat,PetscScalar*);
+  int ierr,(*f)(Mat,PetscScalar[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqDenseSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);

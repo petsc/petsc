@@ -495,7 +495,7 @@ int ISAllGather(IS is,IS *isout)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-int ISAllGatherIndices(MPI_Comm comm,int n,int *lindices,int *outN,int **outindices)
+int ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *outN,int *outindices[])
 {
   int *indices,*sizes,size,*offsets,i,N,ierr;
 
@@ -511,7 +511,7 @@ int ISAllGatherIndices(MPI_Comm comm,int n,int *lindices,int *outN,int **outindi
   ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,n,MPI_INT,indices,sizes,offsets,MPI_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv((void*)lindices,n,MPI_INT,indices,sizes,offsets,MPI_INT,comm);CHKERRQ(ierr); 
 
   *outindices = indices;
   if (outN) *outN = N;
@@ -549,7 +549,7 @@ int ISAllGatherIndices(MPI_Comm comm,int n,int *lindices,int *outN,int **outindi
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISAllGatherIndices()
 @*/
-int ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue **outindices)
+int ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
   int             *sizes,size,*offsets,i,N,ierr;

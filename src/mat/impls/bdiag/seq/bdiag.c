@@ -530,9 +530,9 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateMPIBDiag(), MatSetValues()
 @*/
-int MatSeqBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
+int MatSeqBDiagSetPreallocation(Mat B,int nd,int bs,const int diag[],PetscScalar *diagv[])
 {
-  int ierr,(*f)(Mat,int,int,int*,PetscScalar**);
+  int ierr,(*f)(Mat,int,int,const int[],PetscScalar*[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqBDiagSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -858,7 +858,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateMPIBDiag(), MatSetValues()
 @*/
-int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,PetscScalar **diagv,Mat *A)
+int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,const int diag[],PetscScalar *diagv[],Mat *A)
 {
   int ierr;
 
