@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1999/04/23 19:55:17 balay Exp balay $ 
+# $Id: base.site,v 1.15 1999/05/10 16:27:43 balay Exp balay $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -70,8 +70,8 @@ PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/sun4/libpvode.a
 #
 # Optional location of ParMetis
 #
-PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis.v1.0
+PARMETIS_LIB     = /home/petsc/software/ParMetis.v1.0/libparmetis_sun4.a 
 #
 # ---------------------------------------------------------------------------------------
 #
