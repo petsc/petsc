@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.124 1997/03/06 21:37:21 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.125 1997/03/26 01:35:07 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -602,12 +602,15 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-on_error_stop",&flg1); CHKERRQ(ierr);
   if (flg1) { PetscPushErrorHandler(PetscStopErrorHandler,0); }
   /*
-     Set default debugger on solaris and rs6000 to dbx because gdb doesn't
-    work with the native compilers.
+     Set default debugger on solaris and rs6000 to dbx and hpux to xdb
+     because gdb doesn't work with the native compilers.
   */
 #if defined(PARCH_solaris) || defined(PARCH_rs6000)
   ierr = PetscSetDebugger("dbx",1,0); CHKERRQ(ierr);
+#elif defined(PARCH_hpux) 
+  ierr = PetscSetDebugger("xdb",1,0); CHKERRQ(ierr);
 #endif
+
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, 
                           &flg1); CHKERRQ(ierr);
   if (flg1) {
