@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.22 1996/05/03 02:38:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.23 1996/05/03 19:27:07 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -160,7 +160,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
   rtmp  = (Scalar *) PetscMalloc(bs2*(n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
-
+  PetscMemzero(rtmp,bs2*(n+1)*sizeof(Scalar));
   /* generate work space needed by dense LU factorization */
   v_work     = (Scalar *) PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(Scalar));
                CHKPTRQ(v_work);

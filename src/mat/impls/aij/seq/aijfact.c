@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.60 1996/03/23 20:42:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.61 1996/05/03 19:26:39 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -162,6 +162,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
   rtmp  = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
+  PetscMemzero(rtmp,(n+1)*sizeof(Scalar));
   rtmps = rtmp + shift; ics = ic + shift;
 
   /* precalcuate row sums */

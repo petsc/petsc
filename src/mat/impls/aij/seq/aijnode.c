@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.44 1996/05/07 19:26:19 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.45 1996/05/07 20:56:07 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1039,6 +1039,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr   = ISGetIndices(iscol,&c); CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
   rtmp1  = (Scalar *) PetscMalloc( (3*n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp1);
+  PetscMemzero(rtmp1,(3*n+1)*sizeof(Scalar));
   ics    = ic + shift; rtmps1 = rtmp1 + shift; 
   rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 + shift; 
   rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 + shift; 
