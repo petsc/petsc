@@ -1,6 +1,6 @@
 
 
-C    "$Id: ex1f.F,v 1.3 1996/12/09 15:54:18 balay Exp bsmith $";
+C    "$Id: ex1f.F,v 1.4 1997/02/03 06:02:45 bsmith Exp balay $";
 C
 C   Description: Demonstrates how users can augment the PETSc profiling by
 C                nserting their own event logging.
@@ -63,55 +63,55 @@ C
       call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT2,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT2,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT3,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT3,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT4,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT4,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT5,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT5,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT6,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT6,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT7,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT7,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT8,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT8,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogEventBegin(USER_EVENT9,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT9,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 C
@@ -125,7 +125,7 @@ C
       call PLogEventDeactivate(USER_EVENT1,ierr)
       call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 C
@@ -135,7 +135,7 @@ C
       call PLogEventActivate(USER_EVENT1,ierr)
       call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
-      call PetscSleep(1)
+      call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 

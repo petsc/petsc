@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.16 1997/04/10 00:05:05 bsmith Exp balay $";
+C    "$Id: ex5.F,v 1.17 1997/07/10 15:42:39 balay Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/draw.h"
@@ -43,7 +43,7 @@ C
       call DrawLGDraw(lg,ierr)
       call DrawFlush(draw,ierr)
 
-      call PetscSleep(10)
+      call PetscSleep(10,ierr)
 
       call DrawLGDestroy(lg,ierr)
       call DrawDestroy(draw,ierr)
