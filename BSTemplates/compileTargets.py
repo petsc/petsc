@@ -76,12 +76,15 @@ class Defaults:
       raise RuntimeError('Unknown executable language: '+lang)
     return compiler+linker+[transform.Update()]
 
-  def getExecutableTarget(self, lang, sources, executable):
+  def getExecutableTarget(self, lang, sources, executable, noClient = 0):
     # TODO: Of course this should be determined from configure
     libraries = fileset.FileSet(['libdl.so'])
 
     # It is the repsonsibility of the user to make sure the implementation is built prior to use
-    t = self.getClientCompileTargets(lang)+self.getExecutableDriverTargets(sources, lang, executable)
+    t = []
+    if not noClient:
+      t += self.getClientCompileTargets(lang)
+    t += self.getExecutableDriverTargets(sources, lang, executable)
     if not lang == 'Java':
       t += [link.TagShared(), link.LinkExecutable(executable, extraLibraries = libraries)]
     return target.Target(sources, t)

@@ -80,7 +80,10 @@ class Maker (logging.Logger):
     oldDir = os.getcwd()
     os.chdir(dir)
     map(self.forceRemove, os.listdir(dir))
-    os.chdir(oldDir)
+    try:
+      os.chdir(oldDir)
+    except OSError, e:
+      print 'ERROR: '+str(e)
     if remove: os.rmdir(dir)
 
   def checkChecksumCall(self, command, status, output):

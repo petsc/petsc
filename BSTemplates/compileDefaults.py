@@ -87,7 +87,9 @@ class UsingCompiler:
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     compiler = self.getCompiler(library)
-    compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
+    # Might be all internal clients
+    if os.path.isdir(self.usingSIDL.getClientRootDir(self.getLanguage())):
+      compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs['executable'])
     for dir in self.usingSIDL.repositoryDirs:
@@ -98,7 +100,9 @@ class UsingCompiler:
 
   def getExecutableLinkTarget(self, project):
     libraries = fileset.FileSet()
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
+    # Might be all internal clients
+    if os.path.isfile(self.getClientLibrary(project, self.getLanguage())[0]):
+      libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries['executable'])
     libraries.extend(self.usingSIDL.extraLibraries['executable'])
     for dir in self.usingSIDL.repositoryDirs:
