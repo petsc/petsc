@@ -103,12 +103,21 @@ clean:
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus
 
-# Builds and runs examples; then cleans directory.
+#
+#   testexamples - runs various PETSc test suites
+#  1 basic C suite used in installation tests
+#  2 additional C suite including graphics
+#  3 basic Fortran .F suite
+#  4 subset of 1 and 2 that runs on only a single processor
+#  5 examples that require complex
+#  6 examples that don't work with complex 
+#
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
 testexamples_3: $(TESTEXAMPLES_3)
 testexamples_4: $(TESTEXAMPLES_4)
 testexamples_5: $(TESTEXAMPLES_5)
+testexamples_6: $(TESTEXAMPLES_6)
 buildexamples_1: $(BUILDEXAMPLES_1)
 buildexamples_2: $(BUILDEXAMPLES_2)
 buildexamples_3: $(BUILDEXAMPLES_3)

@@ -32,6 +32,7 @@ if ($day == Sun) then
   set J1=(1         1          1         1         1         1         3         )
   set J2=(0         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(0         0          6         6         6         0         0         )
 endif
 if ($day == Mon) then
   set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
@@ -40,6 +41,7 @@ if ($day == Mon) then
   set J1=(0         1          1         1         1         1         3         )
   set J2=(1         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(0         6          6         6         6         6         6         )
 endif
 if ($day == Tue) then
   set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
@@ -48,6 +50,7 @@ if ($day == Tue) then
   set J1=(0         1          1         1         1         1         3         )
   set J2=(2         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(6         6          0         6         6         6         6         )
 endif
 if ($day == Wed) then
   set M =(snake     eagle      ryan      elvis      doc       ptera     merlin    )
@@ -56,6 +59,7 @@ if ($day == Wed) then
   set J1=(3         1          1         1         1         1         3         )
   set J2=(0         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(6         6          6         0         0         6         6         )
 endif
 if ($day == Thu) then
   set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
@@ -64,6 +68,7 @@ if ($day == Thu) then
   set J1=(0         1          1         1         1         1         3         )
   set J2=(0         2          2         2         2         2         4         )
   set J3=(3         3          3         3         3         3         5         )
+  set J4=(6         0          6         6         6         6         0         )
 endif
 if ($day == Fri) then
   set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
@@ -72,6 +77,7 @@ if ($day == Fri) then
   set J1=(0         1          1         1         1         1         3         )
   set J2=(2         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(6         6          0         0         6         0         6         )
 endif
 if ($day == Sat) then
   set M =(snake     eagle      ryan      elvis      doc       ptera     merlin    )
@@ -80,6 +86,7 @@ if ($day == Sat) then
   set J1=(1         1          1         1         1         1         3         )
   set J2=(0         2          2         2         2         2         4         )
   set J3=(0         3          3         3         3         3         5         )
+  set J4=(6         6          6         0         0         6         0         )
 endif
 #
 #  test for each machine
@@ -91,6 +98,7 @@ foreach i ($job)
   set job1    = $J1[$i]
   set job2    = $J2[$i]
   set job3    = $J3[$i]
+  set job4    = $J4[$i]
   if ($mach == ptera) then
      set E = -e
   else
