@@ -23,17 +23,21 @@ class CompileSIDL (compile.Process):
     return baseFlags
 
   def constructIncludes(self, source, baseFlags):
-    if self.repositoryDirs:
-      baseFlags += ' -includes=['
-      for i in range(len(self.repositoryDirs)):
-        dir = os.path.join(self.repositoryDirs[i], 'sidl')
-        if not os.path.exists(dir): raise RuntimeError('Invalid SIDL include directory: '+dir)
-        for source in os.listdir(dir):
-          source  = os.path.join(dir, source)
-          if not os.path.exists(source): raise RuntimeError('Invalid SIDL include: '+source)
-        baseFlags += source
-        if i < len(self.repositoryDirs)-1: baseFlags += ','
-      baseFlags += ']'
+    if not self.repositoryDirs: return baseFlags
+    sources = []
+    for dir in self.repositoryDirs:
+      dir = os.path.join(dir, 'sidl')
+      if not os.path.exists(dir): raise RuntimeError('Invalid SIDL include directory: '+dir)
+      for source in os.listdir(dir):
+        if not os.path.splitext(source)[1] == '.sidl': continue
+        source = os.path.join(dir, source)
+        if not os.path.exists(source): raise RuntimeError('Invalid SIDL include: '+source)
+        sources.append(source)
+    baseFlags += ' -includes=['
+    for i in range(len(sources)):
+      baseFlags += sources[i]
+      if i < len(sources)-1: baseFlags += ','
+    baseFlags += ']'
     return baseFlags
 
   def constructFlags(self, source, baseFlags):
@@ -83,3 +87,17 @@ class CompileSIDLClient (CompileSIDL):
     else:
       raise RuntimeError('No language specified for SIDL client compilation')
     return baseFlags
+
+class CompileSIDLPrint (CompileSIDL):
+  def __init__(self, generatedSources = None, sources = None, compiler = 'scandal.py', compilerFlags = ''):
+    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags, 1)
+    self.printer   = 'ANL.SIDLVisitorI.PrettyPrinterHTML'
+    self.outputDir = None
+
+  def constructOutputDir(self, source, baseFlags):
+    if self.outputDir:
+      return baseFlags+' -outputDir='+self.outputDir
+    return baseFlags
+
+  def constructAction(self, source, baseFlags):
+    return baseFlags+' -resolve=1 -dependency=1 -print='+self.printer
