@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.8 2000/07/10 19:14:47 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.9 2000/07/12 18:56:27 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
   int     n = 16,bs=1,nz=3,prob=1;
-  Scalar  neg_one = -1.0,four=4.0,value[3]; 
+  Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;; 
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
   PetscRandom rand;
@@ -25,9 +25,9 @@ int main(int argc,char **args)
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
+  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk,r1,r2;
   int      *cols1,*cols2,mbs;
-  double   r1,r2,tol=1.e-10;
+  double   norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -143,14 +143,14 @@ int main(int argc,char **args)
   */
 
   /* Test MatNorm() */
-  ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRA(ierr); 
-  ierr = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRA(ierr);
-  r1 -= r2;
-  if (r1<-tol || r1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n,r1");
+  ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRA(ierr); 
+  ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
+  norm1 -= norm2;
+  if (norm1<-tol || norm1>tol){ 
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n,norm1");
   }
-  ierr = MatNorm(A,NORM_INFINITY,&r1); CHKERRA(ierr);
-  ierr = MatNorm(sA,NORM_INFINITY,&r2); CHKERRA(ierr);
+  ierr = MatNorm(A,NORM_INFINITY,&norm1); CHKERRA(ierr);
+  ierr = MatNorm(sA,NORM_INFINITY,&norm2); CHKERRA(ierr);
   r1 -= r2;
   if (r1<-tol || r1>tol){ 
     PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n,r1");
@@ -243,15 +243,15 @@ int main(int argc,char **args)
 
   ierr = MatGetDiagonal(A,s1); CHKERRA(ierr);  
   ierr = MatGetDiagonal(sA,s2); CHKERRA(ierr);
-  ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
-  ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
-  r1 -= r2;
-  if (r1<-tol || r1>tol) { 
+  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
+  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
+  norm1 -= norm2;
+  if (norm1<-tol || norm1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRA(ierr);
   } 
 
-  ierr = MatScale(&r2,A);CHKERRA(ierr);
-  ierr = MatScale(&r2,sA);CHKERRA(ierr);
+  ierr = MatScale(&alpha,A);CHKERRA(ierr);
+  ierr = MatScale(&alpha,sA);CHKERRA(ierr);
 
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) { 
