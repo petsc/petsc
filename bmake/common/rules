@@ -81,7 +81,7 @@ foo:
 
 # Builds library
 lib: chklib_dir  ${SOURCE}
-	@{OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
 	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} speciallib;  \
 	  else \
