@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.10 2000/07/31 16:47:25 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.11 2000/08/01 14:14:52 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -152,9 +152,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   b->ilen       = 0;
   b->imax       = 0;
   b->row        = perm;
-  b->col        = perm;
   ierr          = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
-  ierr          = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   b->icol       = iperm;
   b->solve_work = (Scalar*)PetscMalloc((bs*mbs+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
@@ -175,7 +173,6 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   PetscFunctionReturn(0); 
 }
 
-/* ----------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
 int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
@@ -254,7 +251,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------*/
+
 /*
       Version for when blocks are 7 by 7
 */
@@ -1249,7 +1246,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------*/
 /*
       Version for when blocks are 5 by 5
 */
@@ -1595,7 +1591,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------*/
 /*
       Version for when blocks are 4 by 4
 */
@@ -1875,8 +1870,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-
-/* ------------------------------------------------------------*/
 /*
       Version for when blocks are 3 by 3
 */
@@ -2091,7 +2084,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------*/
 /*
       Version for when blocks are 2 by 2
 */
@@ -2264,7 +2256,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------- */
 /*
      Version for when blocks are 1 by 1.
 */
