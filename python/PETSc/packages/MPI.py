@@ -262,10 +262,12 @@ int checkInit(void) {
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
       yield ('User specified library and includes', [libs], includes)
+      raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+      raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used\n')
     # Try compiler defaults
     yield ('Default compiler locations', self.libraryGuesses(), [[]])
     # Try SUSE location

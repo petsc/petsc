@@ -64,13 +64,16 @@ class Configure(config.base.Configure):
     # Try specified BLASLAPACK library
     if 'with-blas-lapack' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack'])
+      raise RuntimeError('You set a value for --with-blas-lapack, but '+self.framework.argDB['with-blas-lapack']+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
     if 'with-blas' in self.framework.argDB and 'with-lapack' in self.framework.argDB:
       yield ('User specified BLAS and LAPACK libraries', self.framework.argDB['with-blas'], self.framework.argDB['with-lapack'])
+      raise RuntimeError('You set a value for --with-blas and --with-lapack, but '+self.framework.argDB['with-blas']+' and '+self.framework.argDB['-with-lapack']+' cannot be used\n')
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
+      raise RuntimeError('You set a value for --with-blas-lapack-dir, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
     # Try MacOSX location
