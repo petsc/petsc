@@ -29,20 +29,17 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Parmetis" 
 static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
   int                      ierr,*locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
+  int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
   Mat                      mat = part->adj,newmat;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
-  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
   PetscTruth               flg;
+  float                    *tpwgts,*ubvec;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
-  /*
-  if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,"Supports exactly one domain per processor");
-  }
-  */
 
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -64,7 +61,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(1,"Row %d has illigal diagonal entry",i+rstart);
+        if (adjncy[j] == i+rstart) SETERRQ1(1,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
     }
   }
@@ -73,34 +70,26 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  if (part->n == size) {
-    /* just for now, keep the old behaviour around as explicit call */
-    PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,parmetis->comm_pmetis);
-  } else {
-    int wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
-    float *tpwgts,*ubvec;
-    ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts); CHKERRQ(ierr);
-    for (i=0; i<ncon; i++) {
-      for (j=0; j<nparts; j++) {
-        if (part->part_weights) {
-          tpwgts[i*nparts+j] = part->part_weights[i*nparts+j];
-        } else {
-          tpwgts[i*nparts+j] = 1./nparts;
-        }
+  ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts); CHKERRQ(ierr);
+  for (i=0; i<ncon; i++) {
+    for (j=0; j<nparts; j++) {
+      if (part->part_weights) {
+	tpwgts[i*nparts+j] = part->part_weights[i*nparts+j];
+      } else {
+	tpwgts[i*nparts+j] = 1./nparts;
       }
     }
-    ierr = PetscMalloc(ncon*sizeof(float),&ubvec); CHKERRQ(ierr);
-    for (i=0; i<ncon; i++) {
-      ubvec[i] = 1.05;
-    }
-    options[0] = 0;
-    ParMETIS_V3_PartKway
-      (vtxdist,xadj,adjncy,part->vertex_weights,adj->values,
-       &wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
-       options,&edgecut,locals,&parmetis->comm_pmetis);
-    ierr = PetscFree(tpwgts); CHKERRQ(ierr);
-    ierr = PetscFree(ubvec); CHKERRQ(ierr);
   }
+  ierr = PetscMalloc(ncon*sizeof(float),&ubvec); CHKERRQ(ierr);
+  for (i=0; i<ncon; i++) {
+    ubvec[i] = 1.05;
+  }
+  options[0] = 0;
+  /* ParMETIS has no error conditions ??? */
+  ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
+                       options,&edgecut,locals,&parmetis->comm_pmetis);
+  ierr = PetscFree(tpwgts); CHKERRQ(ierr);
+  ierr = PetscFree(ubvec); CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);
