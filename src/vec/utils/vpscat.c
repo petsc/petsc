@@ -2413,6 +2413,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
       SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
     }
   } else {
+    PetscLogInfo(0,"VecScatterCreate_PtoS:Using nonblocked scatter\n");
     ctx->postrecvs = 0;
     ctx->destroy   = VecScatterDestroy_PtoP;
     ctx->begin     = VecScatterBegin_PtoP;
@@ -2425,7 +2426,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   if (nprocslocal) { 
     ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local,bs);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
