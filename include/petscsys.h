@@ -85,7 +85,6 @@ EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
 EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
 
 EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
-#endif      
 
 /* ParameterDict objects encapsulate arguments to generic functions, like mechanisms over interfaces */
 EXTERN int ParameterDictCreate(MPI_Comm, ParameterDict *);
@@ -120,4 +119,4 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
 EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 
-#endif      
+#endif /* __PETSCSYS_H */
