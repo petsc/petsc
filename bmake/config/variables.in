@@ -29,10 +29,6 @@ C_FLINKER	  = @FC@ @LDFLAGS@
 C_CCV		  = @CC@ --version | head -1
 C_FCV		  = @FC@ --version | head -1
 C_SYS_LIB	  = @LIBS@
-CLINKER		  = ${C_CLINKER} @LDFLAGS@ ${COPTFLAGS} ${C_CLINKER_SL_PATH}
-FLINKER		  = ${C_FLINKER} @LDFLAGS@ ${FOPTFLAGS} ${C_FLINKER_SL_PATH}
-C_CLINKER_SL_PATH = ${C_CLINKER_SLFLAG}${LDIR}:${C_DYLIBPATH}
-C_FLINKER_SL_PATH = ${C_FLINKER_SLFLAG}${LDIR}:${F_DYLIBPATH}
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g
 G_FOPTFLAGS      = -g
@@ -41,13 +37,12 @@ O_COPTFLAGS      = -O -Wall -Wshadow -fomit-frame-pointer
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = @CXX@
-CXX_FC		   = @FC@  
+CXX_CC		   = @LT_CC@ @CXX@ @CC_SHARED_OPT@
+CXX_FC		   = @FC@  @FC_SHARED_OPT@
 CXX_CLINKER_SLFLAG = -rdynamic -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -rdynamic -Wl,-rpath,
 CXX_CLINKER	   = @CXX@ @LDFLAGS@
 CXX_FLINKER	   = @CXX@ @LDFLAGS@
-# What is CXX_CCV?
 CXX_CCV		   = @CXX@ --version | head -1
 CXX_SYS_LIB	   = @LIBS@
 # ------------------------- BOPT=g_c++ options ------------------------------
