@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: comsort.c,v 1.4 1995/03/17 04:56:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comsort.c,v 1.5 1995/05/14 16:32:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: comsort.c,v 1.4 1995/03/17 04:56:14 bsmith Exp bsmith
 int SYiIqsort(int *,int), SYiDqsort(double*,int), SYiIqsortPerm(int*,int*,int);
 
 /*@
-  SYIsort - sort an array of integer inplace in increasing order
+  SYIsort - Sort an array of integer inplace in increasing order
 
   Input Parameters:
 . n  - number of values
@@ -75,7 +75,7 @@ int SYiIqsort(int *v,int right)
 }
 
 /*@
-  SYDsort - sort an array of doubles inplace in increasing order
+  SYDsort - Sort an array of doubles inplace in increasing order
 
   Input Parameters:
 . n  - number of values

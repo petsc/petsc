@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.4 1995/07/23 18:20:24 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -42,7 +42,7 @@ int main( int argc, char **argv )
   MPI_Comm_size(MPI_COMM_WORLD,&ctx.numtid);
 
   /* Set up data structures */
-  ierr = DACreate1d(MPI_COMM_WORLD,N,1,1,DA_NONPERIODIC,&ctx.da);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);
   CHKERRA(ierr);
   ierr = DAGetDistributedVector(ctx.da,&x); CHKERRA(ierr);
   ierr = DAGetLocalVector(ctx.da,&ctx.xl); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.37 1995/06/18 16:22:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.38 1995/07/05 17:23:02 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -427,7 +427,7 @@ int VecDestroy(Vec v)
   return (*v->destroy)((PetscObject )v);
 }
 
-/*@
+/*@C
    VecGetVecs - Creates several vectors of the same type as an existing vector.
 
    Input Parameters:
@@ -451,7 +451,7 @@ int VecGetVecs(Vec v,int m,Vec **V)
   return (*v->ops->getvecs)( v, m,V );
 }
 
-/*@
+/*@C
    VecFreeVecs - Frees a block of vectors obtained with VecGetVecs().
 
    Input Parameters:
@@ -623,7 +623,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
   return 0;
 } 
 
-/*@
+/*@C
    VecGetArray - Returns a pointer to vector data. For default seqential 
    vectors, VecGetArray() returns a pointer to the data array. Otherwise,
    this routine is implementation dependent. You MUST call VecRestoreArray() 
@@ -645,7 +645,7 @@ int VecGetArray(Vec x,Scalar **a)
   return (*x->ops->getarray)(x,a);
 }
 
-/*@
+/*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors.
        You MUST call VecRestoreArrays() when you no longer need access
        to the array. x must have been obtained by a call to VecGetVecs().
@@ -674,7 +674,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   return 0;
 }
 
-/*@
+/*@C
    VecRestoreArrays - Restores a vector after VecGetArrays() has been called.
 
    Input Parameters:
@@ -698,7 +698,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
   return 0;
 }
 
-/*@
+/*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
    Input Parameters:

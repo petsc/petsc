@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
-  printf ("\nView Local Array - Processor [%d]\n",mytid);
+  MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
   ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
 
   DAView(da,(Viewer) win2);

@@ -36,9 +36,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
-  /* ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); */
-
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   value = mytid+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERRA(ierr);

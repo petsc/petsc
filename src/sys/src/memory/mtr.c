@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.26 1995/07/07 17:15:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.27 1995/07/17 03:54:14 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -382,7 +382,7 @@ static int  PrintSum(TRINFO ** a, VISIT order, int level )
   return 0;
 }
 
-/*@
+/*@C
   TrSummary - Summarize the allocate memory blocks by id.
 
   Input Parameter:

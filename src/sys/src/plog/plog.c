@@ -1,10 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.21 1995/07/20 03:58:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.22 1995/07/23 20:34:52 curfman Exp bsmith $";
 #endif
 
-#include "petsc.h"
-#include "ptscimpl.h"
+#include "ptscimpl.h"    /*I "petsc.h"  I*/
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -12,7 +11,7 @@ static char vcid[] = "$Id: plog.c,v 1.21 1995/07/20 03:58:36 bsmith Exp curfman 
 #include "petscfix.h"
 #include "ptime.h"
 
-/*@ 
+/*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
    Input Parameters:
@@ -30,7 +29,7 @@ int PetscObjectSetName(PetscObject obj,char *name)
   return 0;
 }
 
-/*@ 
+/*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
 
    Input Parameters:
@@ -51,7 +50,7 @@ int PetscObjectGetName(PetscObject obj,char **name)
 
 static int PrintInfo = 0;
 
-/*@
+/*@C
     PLogAllowInfo - Causes PLogInfo messages to be printed to standard output.
 
     Input Parameter:
@@ -492,7 +491,7 @@ int PLogEventRegister(int e,char *string)
   return 0;
 }
   
-/*@
+/*@C
    PLogPrint - Prints a summary of the logging.
 
    Input Parameter:
@@ -547,7 +546,9 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   MPIU_fprintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
                                                  maxf,minf,avef,totf);
 
-  fmin = minf/mint; fmax = maxf/maxt; ftot = totf/maxt;
+  if (mint) fmin = minf/mint; else fmin = 0;
+  if (maxt) fmax = maxf/maxt; else fmax = 0;
+  if (maxt) ftot = totf/maxt; else ftot = 0;
   MPIU_fprintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
                                                fmin,fmax,ftot);
   TrGetMaximumAllocated(&mem);
@@ -583,7 +584,8 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
     MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsType[i][COUNT]) {
-    MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
+      if (!tott) tott = 1.e-5;
+      MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
                    name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
                    100.*totts/tott,100.*totff/totf);
     }

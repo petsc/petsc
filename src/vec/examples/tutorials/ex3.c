@@ -11,7 +11,7 @@ static char help[] = "This example displays a vector visually.\n\n";
 
 int main(int argc,char **argv)
 {
-  int           i,n = 5, ierr;
+  int           i,n = 50, ierr;
   Scalar        v;
   Vec           x;
   DrawCtx       win;
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
     v = (double) i;
     ierr = VecSetValues(x,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
   }
+
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 

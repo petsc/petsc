@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   DrawCtx   win;
   Vec       local,global,copy;
   Scalar    value, *localptr, *copyptr;
-  int       time_steps, mysize;
+  int       time_steps = 1000, mysize;
   double    a,h,k;
   int       localsize, j, i, mybase,myend;
   DrawLGCtx ctx;
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
   OptionsGetInt(0,"-M",&M);
+  OptionsGetInt(0,"-time",&time_steps);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);
@@ -66,7 +67,6 @@ int main(int argc,char **argv)
   a= 1.0;
   h= 1.0/M;
   k= h;
-  time_steps = 100000;
 
   for (j=0; j<time_steps; j++) {  
 

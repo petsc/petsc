@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.28 1995/07/20 04:24:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.29 1995/07/28 04:19:40 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: options.c,v 1.28 1995/07/20 04:24:24 bsmith Exp bsmit
 */
 #include <stdio.h>
 #include <math.h>
-#include "ptscimpl.h"
+#include "ptscimpl.h"            /*I "petsc.h"  I*/
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -43,18 +43,18 @@ typedef struct {
 } OptionsTable;
 
 static OptionsTable *options = 0;
-static int          PetscBeganMPI = 0;
+       int          PetscBeganMPI = 0;
 
-static int OptionsCheckInitial_Private(),
-           OptionsCreate_Private(int*,char***,char*,char*),
-           OptionsDestroy_Private(),
-           OptionsSetAlias_Private(char *,char *);
+int OptionsCheckInitial_Private(),
+    OptionsCreate_Private(int*,char***,char*,char*),
+    OptionsSetAlias_Private(char *,char *);
+static int OptionsDestroy_Private();
 
 #if defined(PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
 #endif
 
-/*@
+/*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
    so this routine should always be called near the beginning of 
@@ -70,6 +70,8 @@ MPI_Datatype  MPIU_COMPLEX;
    Notes:
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
+
+   In FORTRAN this takes one integer argument!
 
 .keywords: initialize, options, database, startup
 
@@ -203,7 +205,7 @@ extern "C" {
 extern int PLogAllowInfo(PetscTruth);
 extern int PetscSetUseTrMalloc_Private();
 
-static int OptionsCheckInitial_Private()
+int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
@@ -370,7 +372,7 @@ char *OptionsGetProgramName()
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
-static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
+int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
 {
   int  ierr;
   char pfile[128];
@@ -460,7 +462,7 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   return 0;
 }
 
-/*@
+/*@C
    OptionsPrint - Prints the options that have been loaded. This is
    mainly useful for debugging purposes.
 
@@ -591,7 +593,7 @@ int OptionsSetValue(char *name,char *value)
   return 0;
 }
 
-static int OptionsSetAlias_Private(char *newname,char *oldname)
+int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 

@@ -5,7 +5,7 @@
 echo "Have you rebuilt: manpages, wwwpages, latexpages,"
 echo "by running make allmanpages"
 echo "and the users manual (and intro) in .ps and .html"
-echo "Have you built the f77 wrappers?"
+echo "Deleted TAGS?"
 #
 pushd ~/petsc; make ACTION=clean tree; popd
 #

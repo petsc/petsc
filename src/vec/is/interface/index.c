@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.12 1995/06/18 16:22:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.13 1995/07/07 17:14:47 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -112,7 +112,7 @@ int ISGetLocalSize(IS is,int *size)
   return (*is->ops->getlocalsize)(is,size);
 }
 
-/*@ 
+/*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 
    ISRestoreIndices() after having looked at the indices.  The user should 
    NOT change the indices.
@@ -137,7 +137,7 @@ int ISGetIndices(IS is,int **ptr)
   return (*is->ops->getindices)(is,ptr);
 } 
 
-/*@ 
+/*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
    to ISGetIndices().
 

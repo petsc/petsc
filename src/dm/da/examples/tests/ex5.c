@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   DrawCtx   win;
   Vec       local,global,copy;
   Scalar    value, *localptr, *copyptr;
-  int       time_steps, mysize;
+  int       time_steps = 1000, mysize;
   double    h,k;
   int       localsize, j, i, mybase,myend;
   DrawLGCtx ctx;
@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   OptionsGetInt(0,"-M",&M);
+  OptionsGetInt(0,"-time",&time_steps);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); 
@@ -64,15 +65,11 @@ int main(int argc,char **argv)
 
   VecRestoreArray(local,&localptr);
   ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRQ(ierr);
-  printf ("\nInitial Local Array [%d]\n",mytid);
-  for (i=0; i< localsize; i++) { printf (" %f",localptr[i]); }
-  printf ("\n\n");
 
   /* Assign Parameters */
   a=1;
   h= 1.0/M; 
   k= h*h/2.2;
-  time_steps = 100000;
 
   for (j=0; j<time_steps; j++) {  
 

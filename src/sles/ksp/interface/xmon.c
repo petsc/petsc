@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.9 1995/04/16 00:49:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.10 1995/06/08 03:07:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "../../draw/drawimpl.h"
-#include "kspimpl.h"
+#include "../../draw/drawimpl.h"  /*I  "draw.h"  I*/
+#include "kspimpl.h"              /*I  "ksp.h"   I*/
 #include <math.h>
 
 

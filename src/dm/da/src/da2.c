@@ -6,9 +6,9 @@
     Code for manipulating distributed regular arrays in parallel.
 
 */
-#include "daimpl.h"
+#include "daimpl.h"  /*I  "da.h"  I*/
 #include "pviewer.h"
-#include "draw.h"
+#include "draw.h"    /*I  "draw.h"  I*/
 #include <math.h>
 
 static int DAView_2d(PetscObject dain,Viewer ptr)
@@ -612,7 +612,7 @@ int DAView(DA da, Viewer v)
   return (*da->view)((PetscObject)da,v);
 }  
 
-/*@
+/*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
 

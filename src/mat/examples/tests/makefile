@@ -219,6 +219,17 @@ runex16:
            if (diff output/ex16_1.out ex16_1.tmp) then true; \
            else echo "Possible problem with ex16_1, diffs above"; fi; \
            $(RM) -f ex16_1.tmp
+runex17:
+	-@$(MPIRUN)  ex17 > ex17_1.tmp 2>&1;   \
+           if (diff output/ex17_1.out ex17_1.tmp) then true; \
+           else echo "Possible problem with ex17_1, diffs above"; fi; \
+           $(RM) -f ex17_1.tmp
+runex18:
+	-@$(MPIRUN)  ex18 > ex18_1.tmp 2>&1;   \
+           if (diff output/ex18_1.out ex18_1.tmp) then true; \
+           else echo "Possible problem with ex18_1, diffs above"; fi; \
+           $(RM) -f ex18_1.tmp
+
 runex19:
 	-@$(MPIRUN)  -np 4 ex19 > ex19_1.tmp 2>&1;   \
            if (diff output/ex19_1.out ex19_1.tmp) then true; \

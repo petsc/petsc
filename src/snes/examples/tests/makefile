@@ -13,6 +13,7 @@ LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
 EXAMPLES_2    = ex1 ex2 ex7 ex8
+RUNEXAMPLES_2 = runex1 runex2 runex7 runex8
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
 DIRS          = umin
 
@@ -47,6 +48,18 @@ ex7: ex7.o  chkopts
 ex8: ex8.o  chkopts
 	-$(CLINKER) -o ex8 ex8.o $(PETSC_LIB)
 	$(RM) ex8.o
+
+runex1:
+	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
+           if (diff output/ex1_1.out ex1_1.tmp) then true; \
+           else echo "Possible problem with ex1_1, diffs above"; fi; \
+           $(RM) -f ex1_1.tmp
+
+runex2:
+	-@$(MPIRUN) ex2  > ex2_1.tmp 2>&1;   \
+           if (diff output/ex2_1.out ex2_1.tmp) then true; \
+           else echo "Possible problem with ex2_1, diffs above"; fi; \
+           $(RM) -f ex2_1.tmp
 
 runex3:
 	-@$(MPIRUN) ex3 -nox -snes_smonitor > ex3_1.tmp 2>&1;   \
@@ -83,5 +96,17 @@ runex6:
            if (diff output/ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
+
+runex7:
+	-@$(MPIRUN) ex7 -snes_smonitor  > ex7_1.tmp 2>&1;   \
+           if (diff output/ex7_1.out ex7_1.tmp) then true; \
+           else echo "Possible problem with ex7_1, diffs above"; fi; \
+           $(RM) -f ex7_1.tmp
+
+runex8:
+	-@$(MPIRUN) -np 2 ex8 -snes_smonitor  > ex8_1.tmp 2>&1;   \
+           if (diff output/ex8_1.out ex8_1.tmp) then true; \
+           else echo "Possible problem with ex8_1, diffs above"; fi; \
+           $(RM) -f ex8_1.tmp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

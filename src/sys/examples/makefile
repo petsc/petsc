@@ -3,6 +3,7 @@ ALL: ex1
 
 CFLAGS        = $(OPT) $(INCLUDEDIRS) $(COPT) $(CONF) \
                  -D__DIR__='"sys/examples/"'
+FFLAGS        = $(MPI_INCLUDE)
 SOURCEC       = 
 SOURCEF       =
 WSOURCE       = 
@@ -12,8 +13,9 @@ WOBJS         =
 OBJSF         =
 LIBBASE       = libpetscsys
 RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex1 ex2 ex3 ex4
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF     = ex5.f
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
@@ -22,7 +24,7 @@ runex1:
            $(RM) -f ex1_1.tmp ex1_1.tmpz
 
 runex2:
-	-@$(MPIRUN) ex2  > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;   \
+	-@$(MPIRUN) ex2  > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
            if (diff output/ex2_1.out ex2_1.tmpz) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp ex2_1.tmpz
@@ -52,5 +54,9 @@ ex3: ex3.o
 ex4: ex4.o 
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
 	$(RM) -f ex4.o
+
+ex5: ex5.o 
+	-$(FLINKER) -o ex5 ex5.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) -f ex5.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.23 1995/07/23 18:20:51 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -77,7 +77,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES); CHKERRQ(ierr);
-  *flag = 0;
+  *flag = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   return 0;
 }/* --------------------  User-defined monitor ----------------------- */
 int Monitor(SNES snes,int its,double fnorm,void *dummy)

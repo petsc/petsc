@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.3 1995/07/08 14:42:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.4 1995/07/17 20:41:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: zerodiag.c,v 1.3 1995/07/08 14:42:58 bsmith Exp bsmit
     elements are nonzero.
  */
 
-#include "matimpl.h"
+#include "matimpl.h"       /*I  "mat.h"  I*/
 #include <math.h>
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }

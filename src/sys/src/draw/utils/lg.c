@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.15 1995/07/28 04:23:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.16 1995/07/28 17:50:59 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -151,7 +151,7 @@ int DrawLGIndicateDataPoints(DrawLGCtx lg)
   return 0;
 }
 
-/*@
+/*@C
     DrawLGAddPoints - Adds several points to each of the 
                       line graphs. The new point must have a
                       X coordinate larger than the old points.

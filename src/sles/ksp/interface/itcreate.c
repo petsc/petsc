@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.45 1995/07/18 13:39:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.46 1995/07/20 04:23:22 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/
 #include <stdio.h>
-#include "sys/nreg.h"     /*I "sys/nreg.h I*/
+#include "sys/nreg.h"     /*I "sys/nreg.h" I*/
 #include "sys.h"
 #include "viewer.h"       /*I "viewer.h" I*/
 #include "pviewer.h"
