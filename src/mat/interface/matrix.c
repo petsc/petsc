@@ -4258,6 +4258,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat mat,PetscScalar *v[])
    This routine creates the matrices in submat; you should NOT create them before
    calling it. It also allocates the array of matrix pointers submat.
 
+   For BAIJ matrices the index sets must respect the block structure, that is if they
+   request one row/column in a block, they must request all rows/columns that are in
+   that block. For example, if the block size is 2 you cannot request just row 0 and 
+   column 0.
+
    Fortran Note:
    The Fortran interface is slightly different from that given below; it 
    requires one to pass in  as submat a Mat (integer) array of size at least m.
