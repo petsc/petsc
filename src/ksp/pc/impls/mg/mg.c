@@ -378,7 +378,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mg[0]->levels;
   PC             cpc;
-  PetscTruth     preonly,lu,redundant,monitor = PETSC_FALSE,dump;
+  PetscTruth     preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump;
   PetscViewer    ascii;
   MPI_Comm       comm;
   Mat            dA,dB;
@@ -505,7 +505,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
-    if (!lu && !redundant) {
+    ierr = PetscTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
+    if (!lu && !redundant && !cholesky) {
       ierr = KSPSetType(mg[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
@@ -847,6 +848,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
 .  -pc_mg_monitor - print information on the multigrid convergence
+.  -pc_mg_galerkin - use Galerkin process to compute coarser operators
 -  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
                         to the Socket viewer for reading from Matlab.
 

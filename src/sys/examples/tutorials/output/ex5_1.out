@@ -1,4 +1,5 @@
 PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
+  filename = myfile; Name of secret file
   rho = 44; Density, kg/m^3
   W = 5; Vertical velocity, m/sec
   modes_x = 2; Number of modes in x-direction
@@ -6,6 +7,7 @@ PetscBag Object:  ParameterBag contains parameters for simulations of top-secret
   x1 = 1; x position
   x2 = 1.9; y position
 PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
+  filename = myfile; Name of secret file
   rho = 44; Density, kg/m^3
   W = 5; Vertical velocity, m/sec
   modes_x = 2; Number of modes in x-direction
