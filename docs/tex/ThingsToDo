@@ -25,6 +25,7 @@ Additional Capabilities that PETSc Needs:
     make it obviously private.
 
   - Fix Machines file info for IRIX64.
+  X Debugger info? fixed. 
 
   - Fix binary I/O for complex numbers.
 
