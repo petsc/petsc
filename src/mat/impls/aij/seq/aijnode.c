@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.14 1995/11/27 19:19:47 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.15 1995/11/27 23:32:13 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -11,16 +11,23 @@ extern int Mat_AIJ_CheckInode(Mat);
 extern int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
-int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
+static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 {
-  int *work,*ia,*ja,*j, nz, m , row, col, shift = A->indexshift;
-  int *tns, *ns = A->inode.size, i1, i2, *ai= A->i, *aj = A->j;
+  int *work,*ia,*ja,*j, nz, m ,n, row, col, shift = A->indexshift;
+  int *tns, *tvc, *ns = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
 
   m = A->inode.node_count;
+  n = A->m;
   /* allocate space for reformated inode structure */
   tns = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
+  tvc = (int *) PetscMalloc((n +1 )*sizeof(int)); CHKPTRQ(tvc);
   for(i1 = 0, tns[0] =0; i1 < m; ++i1) tns[i1+1] = tns[i1]+ ns[i1];
 
+  for(i1 = 0, row = 0; i1 < m ; ++i1){
+    nsz = ns[i1];
+    for( i2 = 0; i2 < nsz; ++i2, ++row)
+      tvc[row] = i1;
+  }
   /* allocate space for row pointers */
   *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
   PetscMemzero(ia,(m+1)*sizeof(int));
@@ -33,14 +40,15 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     j   = aj + ai[row] + shift;
     i2  = 0;
     col = *j + shift;
-    while (i2 <= i1) {
-      while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
-      if(i2 >i1 ) break;
-      if(i2 <i1 ) ia[i1+1]++;
+    i2  = tvc[col];
+    while (i2 < i1) {           /* off-diagonal elemets */
+      ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
       while((col = *j + shift)< tns[i2]) ++j; /* goto the first col of this node*/
+      i2 = tvc[col];
     }
+    if(i2 == i1) ia[i2+1]++;    /* now the diagonal element */
   }
 
   /* shift ia[i] to point to next row */
@@ -60,17 +68,20 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     j   = aj + ai[row] + shift;
     i2  = 0;                     /* Col inode index */
     col = *j + shift;
-    while (i2 <= i1) {
-      while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
-      if(i2 >i1 ) break;
-      if(i2 <i1 ) {ja[work[i2]++] = i1 +1;}
+    i2  = tvc[col];
+    while (i2 < i1) {
+      ja[work[i2]++] = i1 + 1;
       ja[work[i1]++] = i2 + 1;
       ++i2;
       while((col = *j + shift)< tns[i2]) ++j; /* Skip all the col indices in this node */
+      i2 = tvc[col];
     }
+    if(i2 == i1) ja[work[i1]++] = i2 + 1;
+
   }
   PetscFree(work);
   PetscFree(tns);
+  PetscFree(tvc);
   return 0;
 }
 
@@ -97,10 +108,7 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   }
   ns = a->inode.size;
   m  = a->inode.node_count;
-  PLogEventRegister(125,"MatToSymIJ");
-  PLogEventBegin(125,0,0,0,0);
   ierr  = MatToSymmetricIJ_SeqAIJ_Inode( a, &ia, &ja ); CHKERRQ(ierr);
-  PLogEventEnd(125,0,0,0,0);
   ierr  = MatGetReordering_IJ(m,ia,ja,type,&ris,&cis); CHKERRQ(ierr);
 
   tns   = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
@@ -144,7 +152,7 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
 
 /* ----------------------------------------------------------- */
 
-int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
+static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
@@ -175,9 +183,9 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       for( n = 0; n< sz-1; n+=2) {
         i1   = idx[0];          /* The instructions are ordered to */
         i2   = idx[1];          /* make the compiler's job easy */
+        idx += 2;
         tmp0 = x[i1];
         tmp1 = x[i2]; 
-        idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
        }
      
@@ -195,9 +203,9 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       for( n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
+        idx += 2;
         tmp0 = x[i1];
         tmp1 = x[i2];
-        idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
       }
@@ -221,9 +229,9 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       for (n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
+        idx += 2;
         tmp0 = x[i1];
         tmp1 = x[i2]; 
-        idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
         sum3 += v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
@@ -252,9 +260,9 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       for (n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
+        idx += 2;
         tmp0 = x[i1];
         tmp1 = x[i2]; 
-        idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
         sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
         sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
@@ -288,9 +296,9 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       for (n = 0; n<sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
+        idx += 2;
         tmp0 = x[i1];
         tmp1 = x[i2]; 
-        idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
         sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
         sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
@@ -355,22 +363,19 @@ int Mat_AIJ_CheckInode(Mat A)
     idx +=blk_size*nzx;
     i    = j;
   }
-  if (OptionsHasName(0, "-mat_aij_reorder_inode")){
-    A->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
-    if (OptionsHasName(0, "-mat_aij_lufactornumeric_inode"))
-      A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-  }
-  /* Update  Mat with new info. Later make ops default? */
-  A->ops.mult          = MatMult_SeqAIJ_Inode;
-  A->ops.solve         = MatSolve_SeqAIJ_Inode;
-  a->inode.node_count  = node_count;
-  a->inode.size        = ns;
+
+  A->ops.mult            = MatMult_SeqAIJ_Inode;
+  A->ops.solve           = MatSolve_SeqAIJ_Inode;
+  A->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
+  A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+  a->inode.node_count    = node_count;
+  a->inode.size          = ns;
   PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode:Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
   return 0;
 }
 
 /* ----------------------------------------------------------- */
-int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
+static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   IS          iscol = a->col, isrow = a->row;
@@ -411,9 +416,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];
+        vi  +=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  +=2;
         sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
       }
       if( j == nz-1){
@@ -430,9 +435,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];
+        vi  +=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  +=2;
         sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
       } 
@@ -455,9 +460,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];
+        vi  +=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];  
-        vi  +=2;
         sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
         sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
@@ -488,9 +493,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];
+        vi  +=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];   
-        vi  +=2;
         sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
         sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
@@ -529,9 +534,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];
+        vi  +=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];   
-        vi  +=2;
         sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
         sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
@@ -583,9 +588,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=nz ; j>1; j-=2){
         i0   = vi[0];
         i1   = vi[-1];
+        vi  -=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  -=2;
         sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
       }
       if (j==1){
@@ -601,9 +606,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=nz ; j>1; j-=2){
         i0   = vi[0];
         i1   = vi[-1];
+        vi  -=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  -=2;
         sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
         sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
       }
@@ -616,7 +621,6 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
       sum2   -= *v2-- * tmp0;
       x[*c--] = tmp[row] = sum2*a_a[ad[row]+shift]; row--;
-      
       break;
     case 3 :
       sum1 = tmp[row];
@@ -627,9 +631,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=nz ; j>1; j-=2){
         i0   = vi[0];
         i1   = vi[-1];
+        vi  -=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  -=2;
         sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
         sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
         sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
@@ -660,9 +664,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=nz ; j>1; j-=2){
         i0   = vi[0];
         i1   = vi[-1];
+        vi  -=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  -=2;
         sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
         sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
         sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
@@ -699,9 +703,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       for( j=nz ; j>1; j-=2){
         i0   = vi[0];
         i1   = vi[-1];
+        vi  -=2;
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        vi  -=2;
         sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
         sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
         sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
@@ -745,7 +749,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 }
 
 
-int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
+static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
@@ -831,7 +835,11 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           *pc1 = mul1;
           nz   = bi[prow+1] - bd[prow] - 1;
           PLogFlops(2*nz);
-          for (j=0; j<nz; j++) rtmps1[pj[j]] -= mul1 * pv[j];
+          for (j=0; j<nz; j++) {
+            tmp = pv[j];
+            idx = pj[j];
+            rtmps1[idx] -= mul1 * tmp;
+          }
         }
         prow = *bjtmp++ + shift;
       }
@@ -880,8 +888,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           nz   = bi[prow+1] - bd[prow] - 1;
           PLogFlops(2*2*nz);
           for (j=0; j<nz; j++) {
-            idx = pj[j];
             tmp = pv[j];
+            idx = pj[j];
             rtmps1[idx] -= mul1 * tmp;
             rtmps2[idx] -= mul2 * tmp;
           }
@@ -955,8 +963,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           nz   = bi[prow+1] - bd[prow] - 1;
           PLogFlops(3*2*nz);
           for (j=0; j<nz; j++) {
-            idx = pj[j];
             tmp = pv[j];
+            idx = pj[j];
             rtmps1[idx] -= mul1 * tmp;
             rtmps2[idx] -= mul2 * tmp;
             rtmps3[idx] -= mul3 * tmp;
