@@ -2,8 +2,10 @@
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
-PetscFList TSList              = PETSC_NULL;
-PetscTruth TSRegisterAllCalled = PETSC_FALSE;
+PetscFList TSList                       = PETSC_NULL;
+PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
+PetscFList TSSerializeList              = PETSC_NULL;
+PetscTruth TSSerializeRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetType"
