@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.293 1998/05/20 13:41:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.294 1998/05/20 13:42:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2721,8 +2721,9 @@ $    PetscOffset i_mat
 $    int         ierr
 $       call MatGetArray(mat,mat_array,i_mat,ierr)
 $
-$   Access first local entry in vector with
+$   Access first local entry in matrix with
 $      value = mat_array(i_mat + 1)
+$   (note here the array is treated as one dimensional)
 $
 $      ...... other code
 $       call MatRestoreArray(mat,mat_array,i_mat,ierr)
