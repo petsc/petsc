@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.36 1996/08/14 01:45:46 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.37 1996/08/30 18:52:05 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -44,7 +44,7 @@ int Monitor(SNES,int,double,void *);
 typedef struct {
    DA     da;     /* distributed array */
    Vec    F;      /* right-hand-side of PDE */
-   Vec    xl;     /* local work vector */
+   Vec    xlocal;     /* local work vector */
    int    rank;   /* rank of processor */
    int    size;   /* size of communicator */
    double h;      /* mesh spacing */
@@ -65,8 +65,7 @@ int main( int argc, char **argv )
   Vec            x, r, U, F;           /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   Scalar         xp, *FF, *UU, none = -1.0;
-  int            ierr, its, N = 5, i, set, flg, maxit, maxf, xs, xm;
-  MatType        mtype=MATMPIAIJ;     
+  int            ierr, its, N = 5, i, flg, maxit, maxf, xs, xm;
   double         atol, rtol, stol, norm;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -95,7 +94,7 @@ int main( int argc, char **argv )
      vectors that are the same types
   */
   ierr = DAGetDistributedVector(ctx.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(ctx.da,&ctx.xl); CHKERRQ(ierr);
+  ierr = DAGetLocalVector(ctx.da,&ctx.xlocal); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
@@ -110,6 +109,8 @@ int main( int argc, char **argv )
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  ierr = MatCreate(MPI_COMM_WORLD,N,N,&J);CHKERRA(ierr);
+
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
@@ -119,27 +120,7 @@ int main( int argc, char **argv )
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
-
-     Note:  For the parallel case, vectors and matrices MUST be partitioned
-     accordingly.  When using distributed arrays (DAs) to create vectors,
-     the DAs determine the problem partitioning.  We must explicitly
-     specify the local matrix dimensions upon its creation for compatibility
-     with the vector distribution.  Thus, the generic MatCreate() routine
-     is NOT sufficient when working with distributed arrays.
   */
-
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
-  if (mtype == MATMPIBDIAG) {
-    int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
-    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,
-           PETSC_NULL,&J); CHKERRA(ierr);
-  } else if (mtype == MATSEQAIJ) {
-    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,PETSC_NULL,&J);CHKERRA(ierr);
-  } else {
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,
-           PETSC_NULL,0,PETSC_NULL,&J); CHKERRA(ierr);
-  }
-
 
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
 
@@ -157,10 +138,13 @@ int main( int argc, char **argv )
   /*
      Set names for some vectors to facilitate monitoring (optional)
   */
-
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   PetscObjectSetName((PetscObject)U,"Exact Solution");
 
+  /* 
+     Set SNES/SLES/KSP/PC runtime options, e.g.,
+         -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
+  */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* 
@@ -179,8 +163,7 @@ int main( int argc, char **argv )
 
   /*
      Get local grid boundaries (for 1-dimensional DA):
-       xs  - starting grid index (no ghost points)
-       xm  - width of local grid (no ghost points)
+       xs, xm - starting grid index, width of local grid (no ghost points)
   */
   ierr = DAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 
@@ -239,7 +222,7 @@ int main( int argc, char **argv )
      are no longer needed.
   */
   ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(ctx.xl); CHKERRA(ierr);
+  ierr = VecDestroy(ctx.xlocal); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = VecDestroy(U); CHKERRA(ierr);
   ierr = VecDestroy(F); CHKERRA(ierr);
@@ -285,8 +268,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
   Scalar         *xx, *ff, *FF, d;
-  int            i, ierr, N, Nlocal, xs, xm, gxs, gxm, xsi, xei, shift, ilg, ilr;
-  Vec            xl = user->xl;
+  int            i, ierr, N, xs, xm, gxs, gxm, xsi, xei, ilg, ilr;
+  Vec            xlocal = user->xlocal;
 
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -294,8 +277,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      By placing code between these two statements, computations can
      be done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xl); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xl); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal); CHKERRQ(ierr);
 
   /*
      Get pointers to vector data.
@@ -303,24 +286,28 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
          the data array.  Otherwise, the routine is implementation dependent.
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
+       - The vector xlocal includes ghost point; the vectors x and f do
+         NOT include ghost points.
   */
-  ierr = VecGetArray(xl,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
   ierr = VecGetArray(user->F,&FF); CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 1-dimensional DA):
-       xs  - starting grid index (no ghost points)
-       xm  - width of local grid (no ghost points)
-       gxs - starting grid index (including ghost points)
-       gxm  - width of local grid (including ghost points)
+       xs, xm  - starting grid index, width of local grid (no ghost points)
+       gxs, gxm - starting grid index, width of local grid (including ghost points)
   */
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,
          PETSC_NULL); CHKERRQ(ierr);
   ierr = VecGetSize(f,&N); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xl,&Nlocal); CHKERRQ(ierr);
 
+  /*
+     Set function values for boundary points; define local interior grid point range:
+        xsi - starting interior grid index
+        xei - ending interior grid index
+  */
   if (xs == 0) { /* left boundary */
     ff[0] = xx[0];
     xsi = 1;
@@ -347,11 +334,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(xl,&xx); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xlocal,&xx); CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
   ierr = VecRestoreArray(user->F,&FF); CHKERRQ(ierr);
-
-  ierr = VecView(f,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -372,7 +357,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   Scalar         *xx, d, A[3];
-  int            i, j[3], ierr, start, end, N, istart, iend;
+  int            i, j[3], ierr, start, end, M, N, istart, iend;
 
   /*
      Get pointer to vector data
@@ -380,10 +365,10 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
 
   /*
-    Get range of locally owned vector
+    Get range of locally owned matrix
   */
-  ierr = VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*jac,&start,&end); CHKERRQ(ierr);
+  ierr = MatGetSize(*jac,&M,&N); CHKERRQ(ierr);
 
   /*
      Determine starting and ending local indices for interior grid points.
@@ -397,7 +382,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   } else {
     istart = start;
   }
-  if (end == N) { /* right boundary */
+  if (end == M) { /* right boundary */
     i = N-1; A[0] = 1.0; 
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES); CHKERRQ(ierr);
     iend = N-1;
