@@ -347,11 +347,16 @@ chk_concepts_dir: chk_loc
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 # Builds Fortran stub files
 allfortranstubs:
-	-@${RM} -f src/fortran/auto/*.c
-	-@touch src/fortran/auto/makefile.src
-	-${OMAKE} ACTION=fortranstubs tree_basic
-	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = ` ls *.c | tr -s '\n' ' '` > makefile.src
-	-@cd src/fortran/auto; ${OMAKE} fixfortran
+	-@which ${BFORT} > /dev/null 2>1;  \
+        if [ "$$?" != "0" ]; then \
+          echo "No bfort available, skipping building Fortran stubs";\
+        else \
+          ${RM} -f ${PETSC_DIR}/src/fortran/auto/*.c ;\
+	  touch ${PETSC_DIR}/src/fortran/auto/makefile.src ;\
+	  ${OMAKE} ACTION=fortranstubs tree_basic ;\
+	  cd ${PETSC_DIR}/src/fortran/auto; ${RM} makefile.src; echo SOURCEC = ` ls *.c | tr -s '\n' ' '` > makefile.src ;\
+	  cd ${PETSC_DIR}/src/fortran/auto; ${OMAKE} fixfortran ;\
+        fi
 
 allci: 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 

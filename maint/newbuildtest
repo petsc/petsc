@@ -6,13 +6,19 @@
 #
 # Example usage: buildtest solaris
 #
-set DATAFILESPATH=/home/petsc/datafiles
-set NICE=''
 set maintdir=`dirname $0`
 set PETSC_DIR=`dirname $maintdir`
+
+set DATAFILESPATH=/home/petsc/datafiles
+set NICE=''
 set TEST='testexamples_'
 set MACH=`hostname`
 set BOPT=g
+# possibly overwrite the values above
+if (${#argv} >= 1 && -f ${PETSC_DIR}/maint/buildtests/${1}) then
+  source ${PETSC_DIR}/maint/buildtests/${1}
+endif
+
 setenv PETSC_DIR $PETSC_DIR
 if (${#argv} >= 1 && -f ${PETSC_DIR}/config/${1}.py) then
   set PETSC_ARCH=$1
