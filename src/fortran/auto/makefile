@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.40 1997/10/17 14:14:25 balay Exp bsmith $ 
+# $Id: makefile,v 1.41 1997/10/28 13:58:06 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -15,12 +15,12 @@ SOURCEC	 = aodataf.c aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c 
         histsf.c iluf.c indexf.c inheritf.c iscoloringf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
         luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c \
-        mpiuf.c mtrf.c pbvecf.c pcnullf.c pcsetf.c \
-        petscpvodef.c plogf.c plogmpef.c posindepf.c preconf.c psleepf.c \
+        mpiuf.c mtrf.c partitionf.c pbvecf.c pcnullf.c pcsetf.c \
+        petscpvodef.c plogf.c plogmpef.c pmetisf.c posindepf.c preconf.c psleepf.c \
         richscalef.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c \
         snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
         trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c \
-        viewf.c vinvf.c vrmlmeshf.c vscatf.c zerodiagf.c
+        viewf.c vinvf.c vrmlmeshf.c vscatf.c xopsf.c zerodiagf.c
 
 
 SOURCEF	 = 
@@ -36,12 +36,12 @@ OBJSC	 = aodataf.o aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
         histsf.o iluf.o indexf.o inheritf.o iscoloringf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
         luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o \
-        mpiuf.o mtrf.o pbvecf.o pcnullf.o pcsetf.o \
-        petscpvodef.o plogf.o plogmpef.o posindepf.o preconf.o psleepf.o \
+        mpiuf.o mtrf.o partitionf.o pbvecf.o pcnullf.o pcsetf.o \
+        petscpvodef.o plogf.o plogmpef.o pmetisf.o posindepf.o preconf.o psleepf.o \
         richscalef.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o \
         snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
         trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o \
-        viewf.o vinvf.o vrmlmeshf.o vscatf.o zerodiagf.o
+        viewf.o vinvf.o vrmlmeshf.o vscatf.o xopsf.o zerodiagf.o
 
 
 OBJSF	 =
