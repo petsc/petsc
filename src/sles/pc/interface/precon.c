@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.145 1998/04/21 23:48:00 curfman Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.146 1998/04/22 13:47:56 balay Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -13,10 +13,10 @@ static char vcid[] = "$Id: precon.c,v 1.145 1998/04/21 23:48:00 curfman Exp bala
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
+   Collective on PC
+
    Input Parameter:
 .  pc - the preconditioner context
-
-   Collective on PC
 
 .keywords: PC, destroy
 
@@ -42,13 +42,13 @@ int PCDestroy(PC pc)
 /*@C
    PCCreate - Creates a preconditioner context.
 
+   Collective on MPI_Comm
+
    Input Parameter:
-.   comm - MPI communicator 
+.  comm - MPI communicator 
 
    Output Parameter:
 .  pc - location to put the preconditioner context
-
-   Collective on MPI_Comm
 
    Notes:
    The default preconditioner on one processor is PCILU with 0 fill on more 
@@ -140,19 +140,19 @@ int PCApply(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
+   Collective on PC and Vec
+
    Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
++  pc - the preconditioner context
+-  x - input vector
 
    Output Parameter:
 .  y - output vector
 
-   Collective on PC and Vec
-
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
 
-.keywords: PC, apply
+.keywords: PC, apply, symmetric, left
 
 .seealso: PCApply(), PCApplySymmetricRight()
 @*/
@@ -180,19 +180,19 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
+   Collective on PC and Vec
+
    Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
++  pc - the preconditioner context
+-  x - input vector
 
    Output Parameter:
 .  y - output vector
 
-   Collective on PC and Vec
-
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
 
-.keywords: PC, apply
+.keywords: PC, apply, symmetric, right
 
 .seealso: PCApply(), PCApplySymmetricLeft()
 @*/
@@ -220,14 +220,14 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 /*@
    PCApplyTrans - Applies the transpose of preconditioner to a vector.
 
+   Collective on PC and Vec
+
    Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
++  pc - the preconditioner context
+-  x - input vector
 
    Output Parameter:
 .  y - output vector
-
-   Collective on PC and Vec
 
 .keywords: PC, apply, transpose
 
@@ -259,17 +259,17 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. 
 
+   Collective on PC and Vec
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  side - indicates the preconditioner side, one of
 $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
-.  work - work vector
+-  work - work vector
 
    Output Parameter:
 .  y - output vector
-
-   Collective on PC and Vec
 
 .keywords: PC, apply, operator
 
@@ -323,17 +323,17 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
    PCApplyBAorABTrans - Applies the transpose of the preconditioner
    and operator to a vector.
 
+   Collective on PC and Vec
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  side - indicates the preconditioner side, one of
 $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
-.  work - work vector
+-  work - work vector
 
    Output Parameter:
 .  y - output vector
-
-   Collective on PC and Vec
 
 .keywords: PC, apply, operator, transpose
 
@@ -380,13 +380,13 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
    PCApplyRichardsonExists - Determines whether a particular preconditioner has a 
    built-in fast application of Richardson's method.
 
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner
 
    Output Parameter:
 .  exists - PETSC_TRUE or PETSC_FALSE
-
-   Not Collective
 
 .keywords: PC, apply, Richardson, exists
 
@@ -409,16 +409,16 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
    the particular preconditioner. This routine is usually used by the 
    Krylov solvers and not the application code directly.
 
+   Collective on PC
+
    Input Parameters:
-.  pc  - the preconditioner context
++  pc  - the preconditioner context
 .  x   - the initial guess 
 .  w   - one work vector
-.  its - the number of iterations to apply.
+-  its - the number of iterations to apply.
 
    Output Parameter:
 .  y - the solution
-
-  Collective on PC
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -457,10 +457,10 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
 
+   Collective on PC
+
    Input Parameter:
 .  pc - the preconditioner context
-
-   Collective on PC
 
 .keywords: PC, setup
 
@@ -499,10 +499,10 @@ int PCSetUp(PC pc)
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
    methods.
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
-
-   Collective on PC
 
 .keywords: PC, setup, blocks
 
@@ -531,22 +531,24 @@ int PCSetUpOnBlocks(PC pc)
    conditions for each submatrix) before they are used for the local solves.
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  func - routine for modifying the submatrices
-.  ctx - optional user-defined context (may be null)
+-  ctx - optional user-defined context (may be null)
 
    Collective on PC
 
    Calling sequence of func:
-.  func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
+.vb
+   func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
+.ve
 
-.  nsub - the number of local submatrices
++  nsub - the number of local submatrices
 .  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
 .  submat - array of local submatrices
-.  ctx - optional user-defined context for private data for the 
+-  ctx - optional user-defined context for private data for the 
          user-defined func routine (may be null)
 
    Notes:
@@ -577,22 +579,22 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
    PCModifySubMatrices - Calls an optional user-defined routine within 
    certain preconditioners if one has been set with PCSetModifySubMarices().
 
+   Collective on PC
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  nsub - the number of local submatrices
 .  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
 .  submat - array of local submatrices
-.  ctx - optional user-defined context for private data for the 
+-  ctx - optional user-defined context for private data for the 
          user-defined routine (may be null)
 
    Output Parameter:
 .  submat - array of local submatrices (the entries of which may
             have been modified)
-
-   Collective on PC
 
    Notes:
    The user should NOT generally call this routine, as it will
@@ -626,34 +628,34 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    PCSetOperators - Sets the matrix associated with the linear system and 
    a (possibly) different one associated with the preconditioner.
 
+   Collective on PC and Mat
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  Amat - the matrix associated with the linear system
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
           as Amat. 
-.  flag - flag indicating information about the preconditioner matrix structure
+-  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Collective on PC and Mat
-
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
-   during the repeated solution of linear systems of the same size.  The
+   during the repeated solution of linear systems of the same size.  The 
    available options are
-$    SAME_PRECONDITIONER -
-$      Pmat is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and wish to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Pmat has the same nonzero structure during
-$      successive linear solves. 
-$    DIFFERENT_NONZERO_PATTERN -
-$      Pmat does not have the same nonzero structure.
++    SAME_PRECONDITIONER -
+       Pmat is identical during successive linear solves.
+       This option is intended for folks who are using
+       different Amat and Pmat matrices and wish to reuse the
+       same preconditioner matrix.  For example, this option
+       saves work by not recomputing incomplete factorization
+       for ILU/ICC preconditioners.
+.     SAME_NONZERO_PATTERN -
+       Pmat has the same nonzero structure during
+       successive linear solves. 
+-     DIFFERENT_NONZERO_PATTERN -
+       Pmat does not have the same nonzero structure.
 
    Caution:
    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
@@ -720,17 +722,17 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
 
+   Not Collective though parallel Mats are returned if the PC is parallel
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-.  mat - the matrix associated with the linear system
++  mat - the matrix associated with the linear system
 .  pmat - matrix associated with the preconditioner, usually the same
           as mat. 
-.  flag - flag indicating information about the preconditioner
+-  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
-
-   Not Collective though parallel Mats are returned if the PC is parallel
 
 .keywords: PC, get, operators, matrix, linear system
 
@@ -751,11 +753,11 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 /*@
    PCSetVector - Sets a vector associated with the preconditioner.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  vec - the vector
-
    Collective on PC and Vec
+
+   Input Parameters:
++  pc - the preconditioner context
+-  vec - the vector
 
    Notes:
    The vector must be set so that the preconditioner knows what type
@@ -779,13 +781,13 @@ int PCSetVector(PC pc,Vec vec)
    preconditioner context.  This routine is valid only for the LU, 
    incomplete LU, Cholesky, and incomplete Cholesky methods.
 
+   Not Collective on PC though Mat is parallel if PC is parallel
+
    Input Parameters:
 .  pc - the preconditioner context
 
    Output parameters:
 .  mat - the factored matrix
-
-   Not Collective on PC though Mat is parallel if PC is parallel
 
 .keywords: PC, get, factored, matrix
 @*/
@@ -807,11 +809,11 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  prefix - the prefix string to prepend to all PC option requests
-
    Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  prefix - the prefix string to prepend to all PC option requests
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -838,11 +840,11 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  prefix - the prefix string to prepend to all PC option requests
-
    Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  prefix - the prefix string to prepend to all PC option requests
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -869,13 +871,13 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
 
+   Not Collective
+
    Input Parameters:
 .  pc - the preconditioner context
 
    Output Parameters:
 .  prefix - pointer to the prefix string used, is returned
-
-   Not Collective
 
 .keywords: PC, get, options, prefix, database
 
@@ -898,16 +900,18 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
    preconditioner-specific actions that must be performed before 
    the iterative solve itself.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  ksp - the Krylov subspace context
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  ksp - the Krylov subspace context
+
    Sample of Usage:
-$    PCPreSolve(pc,ksp);
-$    KSPSolve(ksp,its);
-$    PCPostSolve(pc,ksp);
+.vb
+    PCPreSolve(pc,ksp);
+    KSPSolve(ksp,its);
+    PCPostSolve(pc,ksp);
+.ve
 
    Note:
    The pre-solve phase is distinct from the PCSetUp() phase.
@@ -936,15 +940,17 @@ int PCPreSolve(PC pc,KSP ksp)
    the iterative solve itself.
 
    Input Parameters:
-.  pc - the preconditioner context
-.  ksp - the Krylov subspace context
++  pc - the preconditioner context
+-  ksp - the Krylov subspace context
 
    Collective on PC
 
    Sample of Usage:
-$    PCPreSolve(pc,ksp);
-$    KSPSolve(ksp,its);
-$    PCPostSolve(pc,ksp);
+.vb
+    PCPreSolve(pc,ksp);
+    KSPSolve(ksp,its);
+    PCPostSolve(pc,ksp);
+.ve
 
 .keywords: PC, post-solve
 
@@ -968,21 +974,21 @@ int PCPostSolve(PC pc,KSP ksp)
    PCView - Prints the PC data structure.
 
    Input Parameters:
-.  PC - the PC context
-.  viewer - optional visualization context
++  PC - the PC context
+-  viewer - optional visualization context
 
    Collective on PC unless Viewer is VIEWER_STDOUT_SELF  
 
    Note:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open an alternative visualization contexts with
+   ViewerFileOpenASCII() (output to a specified file).
 
 .keywords: PC, view
 
@@ -1041,10 +1047,10 @@ int PCView(PC pc,Viewer viewer)
    PCRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
 
    Input Parameters:
-.  name_solver - name of a new user-defined solver
++  name_solver - name of a new user-defined solver
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
-.  routine_create - routine to create method context
+-  routine_create - routine to create method context
 
    Notes:
    PCRegister() may be called multiple times to add several user-defined preconditioners.
@@ -1053,8 +1059,10 @@ int PCView(PC pc,Viewer viewer)
    is ignored.
 
    Sample usage:
+.vb
    PCRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
+              "MySolverCreate",MySolverCreate);
+.ve
 
    Then, your solver can be chosen with the procedural interface via
 $     PCSetType(pc,"my_solver")
