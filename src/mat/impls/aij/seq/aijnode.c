@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.48 1996/08/08 14:42:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.49 1996/08/15 12:47:21 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -14,8 +14,8 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 /*
       This builds symmetric version of nonzero structure, 
 */
-static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
-                                          int ishift,int oshift)
+static int MatGetIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
+                                            int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, m ,n, row, col, *jmax;
   int *tns, *tvc, *ns = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
@@ -38,7 +38,7 @@ static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
   work = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
-  ia[0] = -oshift;
+  ia[0] = oshift;
   for (i1=0 ; i1<m; ++i1) {
     row  = tns[i1];
     j    = aj + ai[row] + ishift;
@@ -76,13 +76,13 @@ static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
     col  = *j + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) {
-      ja[work[i2]++] = i1 - oshift;
-      ja[work[i1]++] = i2 - oshift;
+      ja[work[i2]++] = i1 + oshift;
+      ja[work[i1]++] = i2 + oshift;
       ++i2;
       while(((col=*j+ishift)< tns[i2])&&(j<jmax)) ++j; /* Skip rest col indices in this node */
       i2 = tvc[col];
     }
-    if (i2 == i1) ja[work[i1]++] = i2 - oshift;
+    if (i2 == i1) ja[work[i1]++] = i2 + oshift;
 
   }
   PetscFree(work);
@@ -94,8 +94,8 @@ static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
 /*
       This builds nonsymmetric version of nonzero structure, 
 */
-static int MatToIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
-                                          int ishift,int oshift)
+static int MatGetIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
+                                               int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, m ,n, row, col;
   int *tns, *tvc, *ns = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
@@ -118,7 +118,7 @@ static int MatToIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
   work = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
-  ia[0] = -oshift;
+  ia[0] = oshift;
   for (i1=0; i1<m; ++i1) {
     row = tns[i1];
     j   = aj + ai[row] + ishift;
@@ -153,7 +153,7 @@ static int MatToIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
     i2  = tvc[col];
     nz  = ai[row+1] - ai[row]; 
     while (nz-- > 0) {
-      ja[work[i1]++] = i2 - oshift;
+      ja[work[i1]++] = i2 + oshift;
       ++i2;
       while(((col = *j + ishift)< tns[i2]) && nz > 0) {nz--; ++j;}
       i2 = tvc[col];
@@ -165,78 +165,31 @@ static int MatToIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
   return 0;
 }
 
-static int MatGetReordering_SeqAIJ_Inode(Mat A,MatReordering type,IS *rperm, IS *cperm)
+static int MatGetIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                                 PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, *ia, *ja,n = a->n,*idx,i,j,*ridx,*cidx,ishift,oshift;
-  int        row,*permr, *permc,m ,*ns, *tns, start_val, end_val, indx;
-  IS         ris= 0, cis = 0;
+  int        ierr,ishift;
 
-  if (type  == ORDER_NATURAL) {
-    idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
-    for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
-    PetscFree(idx);
-    ISSetPermutation(*rperm);
-    ISSetPermutation(*cperm);
-    ISSetIdentity(*rperm);
-    ISSetIdentity(*cperm);
-    return 0;
-  }
-  ns = a->inode.size;
-  m  = a->inode.node_count;
+  *n     = a->inode.node_count;
+  if (!ia) return 0;
 
-  MatReorderingRegisterAll();
   ishift = a->indexshift;
-  oshift = -MatReorderingIndexShift[(int)type];
-  if (MatReorderingRequiresSymmetric[(int)type]) {
-    ierr = MatToSymmetricIJ_SeqAIJ_Inode(a,&ia,&ja,ishift,oshift);CHKERRQ(ierr);
+  if (symmetric) {
+    ierr = MatGetIJ_SeqAIJ_Inode_Symmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatToIJ_SeqAIJ_Inode(a,&ia,&ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetIJ_SeqAIJ_Inode_Nonsymmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
   }
-  ierr = MatGetReordering_IJ(m,ia,ja,type,&ris,&cis); CHKERRQ(ierr);
-  if (ris) {PLogObjectParent(A,ris);} if (cis) {PLogObjectParent(A,cis);}
-  PetscFree(ia); PetscFree(ja);
-  tns   = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
-  permr = (int *) PetscMalloc( (2*a->n+1)*sizeof(int) ); CHKPTRQ(permr);
-  permc = permr + n;
+  return 0;
+}
 
-  ierr  = ISGetIndices(ris,&ridx); CHKERRQ(ierr);
-  ierr  = ISGetIndices(cis,&cidx); CHKERRQ(ierr);
-
-  /* Form the inode structure for the rows of permuted matric using inv perm*/
-  for ( i=0, tns[0]=0; i<m; ++i) tns[i+1] = tns[i] + ns[i];
-
-  /* Construct the permutations for rows*/
-  for ( i=0,row = 0; i<m; ++i){
-    indx      = ridx[i];
-    start_val = tns[indx];
-    end_val   = tns[indx + 1];
-    for ( j=start_val; j<end_val; ++j, ++row) permr[row]= j;
-  }
-
- /*Construct permutations for columns*/
-  for (i=0,row=0; i<m; ++i){
-    indx      = cidx[i];
-    start_val = tns[indx];
-    end_val   = tns[indx + 1];
-    for (j = start_val; j<end_val; ++j, ++row)
-      permc[row]= j;
-  }
-
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
-  ISSetPermutation(*rperm);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
-  ISSetPermutation(*cperm);
- 
-  ierr  = ISRestoreIndices(ris,&ridx); CHKERRQ(ierr);
-  ierr  = ISRestoreIndices(cis,&cidx); CHKERRQ(ierr);
-
-  PetscFree(permr);
-  ISDestroy(cis); ISDestroy(ris); 
-  PetscFree(tns);
-  return 0; 
+static int MatRestoreIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                                     PetscTruth *done)
+{
+  if (!ia) return 0;
+  PetscFree(*ia);
+  PetscFree(*ja);
+  return 0;
 }
 
 
@@ -639,8 +592,9 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.mult            = MatMult_SeqAIJ_Inode;
   A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
   A->ops.solve           = MatSolve_SeqAIJ_Inode;
-  A->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
   A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+  A->ops.getij           = MatGetIJ_SeqAIJ_Inode;
+  A->ops.restoreij       = MatRestoreIJ_SeqAIJ_Inode;
   a->inode.node_count    = node_count;
   a->inode.size          = ns;
   PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
@@ -653,7 +607,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   IS          iscol = a->col, isrow = a->row;
   int         *r,*c, ierr, i, j, n = a->m, *ai = a->i, nz,shift = a->indexshift, *a_j = a->j;
-  int         node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
+  int         node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1,*rout,*cout;
   Scalar      *x,*b, *a_a = a->a,*tmp, *tmps, *aa, tmp0, tmp1;
   Scalar      sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
 
@@ -666,8 +620,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
   
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr); c = c + (n-1);
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
   
   /* forward solve the lower triangular */
   tmps = tmp + shift;
@@ -1014,8 +968,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   return 0;
 }
@@ -1057,8 +1011,9 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     C->ops.mult            = MatMult_SeqAIJ_Inode;
     C->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
     C->ops.solve           = MatSolve_SeqAIJ_Inode;
-    C->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
     C->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+    C->ops.getij           = MatGetIJ_SeqAIJ_Inode;
+    C->ops.restoreij       = MatRestoreIJ_SeqAIJ_Inode;
     for(i = 0, row = 0; i< node_max; ++i){
       nsz = nsa[i];
       for( j = 0; j < nsz; ++j, ++row)
@@ -1320,9 +1275,60 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   return 0;
 }
 
+/*
+     This is really ugly. if inodes are used this replaces the 
+  permutations with ones that correspond to rows/cols of the matrix
+  rather then inode blocks
+*/
+int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        ierr, n = a->n,i,j,*ridx,*cidx,m = a->inode.node_count;
+  int        row,*permr, *permc, *ns =  a->inode.size, *tns, start_val, end_val, indx;
+  IS         ris = *rperm, cis = *cperm;
 
+  if (A->ops.mult != MatMult_SeqAIJ_Inode) return 0;
 
+  tns   = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
+  permr = (int *) PetscMalloc( (2*a->n+1)*sizeof(int) ); CHKPTRQ(permr);
+  permc = permr + n;
 
+  ierr  = ISGetIndices(ris,&ridx); CHKERRQ(ierr);
+  ierr  = ISGetIndices(cis,&cidx); CHKERRQ(ierr);
+
+  /* Form the inode structure for the rows of permuted matric using inv perm*/
+  for ( i=0, tns[0]=0; i<m; ++i) tns[i+1] = tns[i] + ns[i];
+
+  /* Construct the permutations for rows*/
+  for ( i=0,row = 0; i<m; ++i){
+    indx      = ridx[i];
+    start_val = tns[indx];
+    end_val   = tns[indx + 1];
+    for ( j=start_val; j<end_val; ++j, ++row) permr[row]= j;
+  }
+
+ /*Construct permutations for columns*/
+  for (i=0,row=0; i<m; ++i){
+    indx      = cidx[i];
+    start_val = tns[indx];
+    end_val   = tns[indx + 1];
+    for (j = start_val; j<end_val; ++j, ++row)
+      permc[row]= j;
+  }
+
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ISSetPermutation(*rperm);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ISSetPermutation(*cperm);
+ 
+  ierr  = ISRestoreIndices(ris,&ridx); CHKERRQ(ierr);
+  ierr  = ISRestoreIndices(cis,&cidx); CHKERRQ(ierr);
+
+  PetscFree(permr);
+  ISDestroy(cis); ISDestroy(ris); 
+  PetscFree(tns);
+  return 0; 
+}
 
 
 
