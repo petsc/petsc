@@ -175,10 +175,53 @@ EXTERN int KSPLGMRESSetConstant(KSP);
    Level: advanced
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
-          KSPGMRESSetCGSRefinementType()
+          KSPGMRESSetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
+
+/*M
+    KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
+
+   Level: advanced
+
+   Note: Possible unstable, but the fastest to compute
+
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESModifiedGramSchmidtOrthogonalization()
+M*/
+
+/*M
+    KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of 
+          iterative refinement if an estimate of the orthogonality of the resulting vectors indicates
+          poor orthogonality.
+
+   Level: advanced
+
+   Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to 
+     estimate the orthogonality but is more stable.
+
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESModifiedGramSchmidtOrthogonalization()
+M*/
+
+/*M
+    KSP_GMRES_CGS_REFINE_NEVER - Do two steps of the classical (unmodified) Gram-Schmidt process.
+
+   Level: advanced
+
+   Note: This is roughly twice the cost of KSP_GMRES_CGS_REFINE_NEVER because it performs the process twice
+     but it saves the extra norm calculation needed by KSP_GMRES_CGS_REFINE_IFNEEDED.
+
+        You should only use this if you absolutely know that the iterative refinement is needed.
+
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESModifiedGramSchmidtOrthogonalization()
+M*/
+
 EXTERN int KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
 
 EXTERN int KSPFGMRESModifyPCNoChange(KSP,int,int,PetscReal,void*);
@@ -230,6 +273,46 @@ typedef enum {KSP_NO_NORM               = 0,
               KSP_PRECONDITIONED_NORM   = 1,
               KSP_UNPRECONDITIONED_NORM = 2,
               KSP_NATURAL_NORM          = 3} KSPNormType;
+
+/*M
+    KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
+          possibly save some computation but means the convergence test cannot
+          be based on a norm of a residual etc.
+
+   Level: advanced
+
+    Note: Some Krylov methods need to compute a residual norm and then this is ignored
+
+.seealso: KSPNormType, KSPSetNormType(), KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM
+M*/
+
+/*M
+    KSP_PRECONDITIONED_NORM - Compute the norm of the preconditioned residual and pass that to the 
+       convergence test routine.
+
+   Level: advanced
+
+.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+M*/
+
+/*M
+    KSP_UNPRECONDITIONED_NORM - Compute the norm of the true residual (b - A*x) and pass that to the 
+       convergence test routine.
+
+   Level: advanced
+
+.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+M*/
+
+/*M
+    KSP_NATURAL_NORM - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
+       convergence test routine.
+
+   Level: advanced
+
+.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSPSetConvergenceTest()
+M*/
+
 EXTERN int KSPSetNormType(KSP,KSPNormType);
 
 /*E

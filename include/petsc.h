@@ -84,6 +84,46 @@ E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
 
 /*M
+    PETSC_FALSE - False value of PetscTruth
+
+    Level: beginner
+
+    Note: Zero integer
+
+.seealso: PetscTruth
+M*/
+
+/*M
+    PETSC_TRUE - True value of PetscTruth
+
+    Level: beginner
+
+    Note: Nonzero integer
+
+.seealso: PetscTruth
+M*/
+
+/*M
+    PETSC_YES - Alias for PETSC_TRUE
+
+    Level: beginner
+
+    Note: Zero integer
+
+.seealso: PetscTruth
+M*/
+
+/*M
+    PETSC_NO - Alias for PETSC_FALSE
+
+    Level: beginner
+
+    Note: Nonzero integer
+
+.seealso: PetscTruth
+M*/
+
+/*M
     PETSC_NULL - standard way of passing in a null or array or pointer
 
    Level: beginner
