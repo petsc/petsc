@@ -1,24 +1,27 @@
 #ifndef lint
-static char vcid[] = "$Id: iscomp.c,v 1.2 1996/01/30 20:42:30 balay Exp balay $";
+static char vcid[] = "$Id: iscomp.c,v 1.3 1996/02/15 14:59:48 balay Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 /*@
-  ISEqual  - Compares if two index sets have the
-             same set of indices.
+  ISEqual  - Compares if two index sets have the same set of indices.
 
-  Input Parameters:
+   Input Parameters:
 .  is1, is2 - The index sets being compared
 
-  Output Parameters:
-.  flg - 1 if both index sets have the same indices 
-         0 if either the index sets differ by size or 
-           by the set of indices.
-  Note: 
+   Output Parameters:
+.  flg - output flag, either
+$     1 if both index sets have the same indices;
+$     0 if either the index sets differ by size or 
+$          by the set of indices.
+
+   Note: 
    This routine sorts the contents of the index sets before
-   the comparision is made, so the order of the indices is immaterial
+   the comparision is made, so the order of the indices is immaterial.
+
+.keywords: IS, index set, equal
 @*/
 int ISEqual(IS is1, IS is2, int *flg)
 {

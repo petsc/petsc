@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.23 1995/11/29 22:40:05 curfman Exp balay $";
+static char vcid[] = "$Id: index.c,v 1.24 1996/02/16 19:30:53 balay Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -236,15 +236,15 @@ int ISSort(IS is)
 }
 
 /*@
-   ISSorted - Checks the indices to be sorted 
-
+   ISSorted - Checks the indices to determine if they have been sorted.
 
    Input Parameters:
 .  is - the index set
 
-   Output parameters:
-.  flg - 1 if the index set is sorted
-.      - 0 if not
+   Output Parameters:
+.  flg - output flag, either
+$     1 if the index set is sorted;
+$     0 otherwise.
 
 .keywords: IS, index set, sort, indices
 
