@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.212 1999/04/01 23:49:53 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.213 1999/04/19 22:10:08 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -69,7 +69,7 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
     ierr = PetscFixFilename(filename,fname); CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(tname,".%d",rank);
-    PetscStrcat(fname,tname);
+    ierr = PetscStrcat(fname,tname);CHKERRQ(ierr);
     PLogInfoFile = fopen(fname,"w");
     if (!PLogInfoFile) SETERRQ1(1,1,"Cannot open requested file for writing: %s",fname);
   } else if (flag) {
@@ -466,14 +466,14 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 @*/
 int PLogStageRegister(int stage, const char sname[])
 {
-  int n;
+  int  n,ierr;
   char *str;
 
   PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10: Instead %d",stage);
-  n = PetscStrlen(sname);
-  str = (char *) PetscMalloc((n+1)*sizeof(char)); CHKPTRQ(str);
-  PetscStrcpy(str,sname);
+  n    = PetscStrlen(sname);
+  str  = (char *) PetscMalloc((n+1)*sizeof(char)); CHKPTRQ(str);
+  ierr = PetscStrcpy(str,sname);CHKERRQ(ierr);
   EventsStageName[stage] = str;
   PetscFunctionReturn(0);
 }
@@ -702,7 +702,7 @@ int PLogDefaultPHD(PetscObject obj)
   } else {
     objects[obj->id].parent   = -1;
   }
-  if (obj->name) { PetscStrncpy(objects[obj->id].name,obj->name,16);}
+  if (obj->name) { ierr = PetscStrncpy(objects[obj->id].name,obj->name,16);CHKERRQ(ierr);}
   objects[obj->id].obj      = 0;
   objects[obj->id].mem      = obj->mem;
   ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][1]++;
@@ -1245,7 +1245,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
     SETERRQ(PETSC_ERR_PLIB,0,"Out of event IDs");
   }
   cstring = (char *) PetscMalloc( PetscStrlen(string)+1 );CHKPTRQ(cstring);
-  PetscStrcpy(cstring,string);
+  ierr = PetscStrcpy(cstring,string);CHKERRQ(ierr);
   PLogEventName[*e] = cstring;
 #if defined(HAVE_MPE)
   if (UseMPE) {
@@ -1255,7 +1255,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
     PLogEventMPEFlags[*e]       = 1;
     if (color != PETSC_NULL) {
       ccolor = (char *) PetscMalloc( PetscStrlen(color)+1 );CHKPTRQ(ccolor);
-      PetscStrcpy(ccolor,color);
+      ierr = PetscStrcpy(ccolor,color);CHKERRQ(ierr);
       PLogEventColor[*e]         = ccolor;
       PLogEventColorMalloced[*e] = 1;
     }

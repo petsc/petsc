@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.29 1999/03/31 18:40:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.30 1999/04/19 22:09:39 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -416,7 +416,6 @@ int PetscErrorPrintfDefault(const char format[],...)
 {
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;
-  int         ierr;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -432,7 +431,7 @@ int PetscErrorPrintfDefault(const char format[],...)
       different processors, the messages are printed all jumbled up; to try to 
       prevent this we have each processor wait based on their rank
     */
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
 #if defined(CAN_SLEEP_AFTER_ERROR)
     PetscSleep(rank);

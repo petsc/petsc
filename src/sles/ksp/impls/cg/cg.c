@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.85 1999/04/08 21:12:20 balay Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.86 1999/04/19 22:14:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -274,7 +274,9 @@ int KSPView_CG(KSP ksp,Viewer viewer)
 #define __FUNC__ "KSPPrintHelp_CG"
 static int KSPPrintHelp_CG(KSP ksp,char *p)
 {
+#if defined(USE_PETSC_COMPLEX)
   int ierr;
+#endif
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_COMPLEX)

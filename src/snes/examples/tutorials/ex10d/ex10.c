@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.4 1999/03/30 17:24:52 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.5 1999/04/18 17:12:35 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -377,7 +377,7 @@ int main( int argc, char **argv )
      preallocation of memory for the matrix. In real application code with big matrices,
      preallocation should always be done to expedite the matrix creation. 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PDETSC_DECIDE,N,N,&Jac); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac); CHKERRA(ierr);
 
   /* 
     The following routine allows us to set the matrix values in local ordering 
