@@ -574,7 +574,7 @@ runex56:
 
 runex56_2:
 	-@$(MPIRUN) -np 1  ex56 -mat_view  -column_oriented > ex56_2.tmp 2>&1;   \
-	   if (diff output/ex56_1.out ex56_2.tmp) then true; \
+	   if (diff output/ex56_2.out ex56_2.tmp) then true; \
 	   else echo "Possible problem with ex56_2, diffs above"; fi; \
 	   $(RM) -f ex56_2.tmp
 
