@@ -3,7 +3,7 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(PETSC_INCLUDE) -I..  $(PCONF) \
-           $(CONF) -D__DIR__='"sles/interface/"'
+           $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = sles.c 
 SOURCEF  = 
 SOURCEH  = 
