@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.40 1995/09/30 19:28:44 bsmith Exp gropp $";
+static char vcid[] = "$Id: aijfact.c,v 1.41 1995/10/11 15:19:32 bsmith Exp bsmith $";
 #endif
 
 
@@ -145,14 +145,14 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS         iscol = b->col, isrow = b->row, isicol;
   int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
   int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
-  Scalar     *rtmp,*v, *pc; 
+  Scalar     *rtmp,*v, *pc, multiplier; 
   /* These declarations are for optimizations.  They reduce the number of
      memory references that are made by locally storing information; the
      word "register" used here with pointers can be viewed as "private" or 
      "known only to me"
    */
   int             *diag_offset = b->diag;
-  register Scalar *pv, *rtmps, multiplier;
+  register Scalar *pv, *rtmps;
   register int    *pj;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
