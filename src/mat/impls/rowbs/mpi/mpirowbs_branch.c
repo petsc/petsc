@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.90 1996/01/26 04:34:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.91 1996/01/27 16:30:52 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -965,12 +965,13 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
                              double shift,int its,Vec xx)
 {
-  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
+  SETERRQ(1,"MatRelax_MPIRowbs:Not done");
+/* None of the relaxation code is finished now! */
+
+/*  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
   Scalar *b;
   int ierr;
 
-/* None of the relaxation code is finished now! */
-  SETERRQ(1,"MatRelax_MPIRowbs:Not done");
 
   if (flag & SOR_FORWARD_SWEEP) {
     if (bsif->procinfo->single) {
@@ -987,7 +988,7 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
     }
   }
   ierr = VecCopy(bb,xx); CHKERRQ(ierr);
-  return 0;
+  return 0; */
 }
 
 static int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)

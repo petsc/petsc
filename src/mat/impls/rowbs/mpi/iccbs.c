@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.5 1995/12/13 15:47:04 curfman Exp curfman $";
+static char vcid[] = "$Id: iccbs.c,v 1.6 1996/01/12 22:07:32 bsmith Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -156,8 +156,8 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
   MPIU_printf(pc->mat->comm,"method=%d, final residual = %e\n",
               iccbs->pre_option,iccbs->rnorm); 
   VecRestoreArray(b,&ba); VecRestoreArray(x,&xa);
-*/
   return 0;
+*/
 }
 
 /* @
@@ -205,13 +205,14 @@ int PCBSIterSetFromOptions(PC pc)
 @*/
 int PCBSIterSetBlockSolve(PC pc)
 {
+  SETERRQ(1,"PCBSIterSetBlockSolve: Not currently supported.");
+/*
   PC_ICC *icc = (PC_ICC *) pc->data;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  SETERRQ(1,"PCBSIterSetBlockSolve: Not currently supported.");
   if (pc->setupcalled) SETERRQ(1,"PCBSIterSetBlockSolve:Must call before PCSetUp");
   if (pc->type != PCICC) return 0;
   icc->bs_iter = 1;
-  return 0;
+  return 0; */
 }
 
 #else
