@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.48 1996/05/07 19:21:43 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.49 1996/05/19 15:54:11 curfman Exp balay $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -157,7 +157,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)size)/((double)N) );
+    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)N) ));
     if (m == 0) m = 1;
     while (m > 0) {
       n = size/m;
@@ -172,17 +172,31 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
-  /* determine locally owned region */
-  x = M/m + ((M % m) > (rank % m));
-  y = N/n + ((N % n) > (rank/m));
-
-  if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
-  if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
-  if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-  else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+  ierr = OptionsHasName(PETSC_NULL,"-da_blockcomm",&flg); CHKERRQ(ierr);
+  if (flg) { /* Block Comm type Distribution */
+    x = (M + rank%m)/m;
+    y = (N + rank/m)/n;
+    
+    if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
+    if (M/m == x) { xs = (rank % m)*x; }
+    else { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
+    if (N/n == y) { ys = (rank/m)*y;  }
+    else { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
+  }
+  else { /* Normal PETSc distribution */
+    /* determine locally owned region */
+    x = M/m + ((M % m) > (rank % m));
+    y = N/n + ((N % n) > (rank/m));
+    
+    if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
+    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+    else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+    if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
+    else { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
+  }
   xe = xs + x;
-  if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
-  else { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
   ye = ys + y;
 
   /* determine ghost region */
