@@ -67,8 +67,9 @@ BLOCKSOLVE_LIB     = -L/usr/local/lib/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} 
 #
 # Option location where adiC is installed
 #
-#ADIC_DEFINES =  -Dad_GRAD_MAX=1
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#ADIC_DEFINES    = -Dad_GRAD_MAX=36
+#ADIC_CC         = adiC -a -d gradient
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 

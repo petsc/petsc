@@ -9,7 +9,7 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm comm)
   int      ierr;
 
   ierr = PCCreate(comm,&this->pc);if (ierr) return;
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi");
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi_");
   ierr = PCSetFromOptions(this->pc);
 
   this->pobject = (PetscObject)this->pc;

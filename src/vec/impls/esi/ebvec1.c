@@ -83,9 +83,9 @@ int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 #define __FUNCT__ "VecPlaceArray_ESI"
 int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
 {
-  Vec_ESI                              *v = (Vec_ESI *)vin->data;
+  Vec_ESI                                *v = (Vec_ESI *)vin->data;
   ::esi::VectorReplaceAccess<double,int> *vr;
-  int                                  ierr;
+  int                                    ierr;
 
   PetscFunctionBegin;
   ierr = v->evec->getInterface("esi::VectorReplaceAccess",reinterpret_cast<void *&>(vr));CHKERRQ(ierr);
@@ -109,8 +109,8 @@ int VecSet_ESI(const PetscScalar *alpha,Vec xin)
 #define __FUNCT__ "VecDuplicate_ESI"
 int VecDuplicate_ESI(Vec xin,Vec *xout)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *nevec;
 
   PetscFunctionBegin;
@@ -126,8 +126,8 @@ int VecDuplicate_ESI(Vec xin,Vec *xout)
 #define __FUNCT__ "VecDot_ESI"
 int VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -141,8 +141,8 @@ int VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecAXPY_ESI"
 int VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -156,8 +156,8 @@ int VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
 #define __FUNCT__ "VecAYPX_ESI"
 int VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -171,8 +171,8 @@ int VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
 #define __FUNCT__ "VecWAXPY_ESI"
 int VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ytmp,*wtmp;
 
   PetscFunctionBegin;
@@ -187,8 +187,8 @@ int VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
 #define __FUNCT__ "VecCopy_ESI"
 int VecCopy_ESI(Vec xin,Vec yin)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -204,8 +204,8 @@ int VecCopy_ESI(Vec xin,Vec yin)
 #define __FUNCT__ "VecPointwiseMult_ESI"
 int VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
 {
-  Vec_ESI                 *x = (Vec_ESI*)xin->data;
-  int                     ierr;
+  Vec_ESI                   *x = (Vec_ESI*)xin->data;
+  int                       ierr;
   ::esi::Vector<double,int> *ztmp;
 
   PetscFunctionBegin;
@@ -247,7 +247,7 @@ int VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
 #define __FUNCT__ "VecSwap_ESI"
 int VecSwap_ESI(Vec xin,Vec yin)
 {
-  int                     ierr;
+  int ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -267,8 +267,8 @@ int VecSwap_ESI(Vec xin,Vec yin)
 #define __FUNCT__ "VecMDot_ESI"
 int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
-  Vec_ESI                 *x = (Vec_ESI *)xin->data;
-  int                     ierr,i;
+  Vec_ESI                   *x = (Vec_ESI *)xin->data;
+  int                       ierr,i;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -285,8 +285,8 @@ int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 #define __FUNCT__ "VecMAXPY_ESI"
 int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
 {
-  Vec_ESI                 *x = (Vec_ESI *)xin->data;
-  int                     ierr,i;
+  Vec_ESI                   *x = (Vec_ESI *)xin->data;
+  int                       ierr,i;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -303,8 +303,8 @@ int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
 #define __FUNCT__ "VecGetSize_ESI"
 int VecGetSize_ESI(Vec vin,int *size)
 {
-  Vec_ESI                 *x = (Vec_ESI*)vin->data;
-  int                     ierr;
+  Vec_ESI *x = (Vec_ESI*)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->getGlobalSize(*size);CHKERRQ(ierr); 
@@ -315,8 +315,8 @@ int VecGetSize_ESI(Vec vin,int *size)
 #define __FUNCT__ "VecGetLocalSize_ESI"
 int VecGetLocalSize_ESI(Vec vin,int *size)
 {
-  Vec_ESI                *x = (Vec_ESI*)vin->data;
-  int                    ierr;
+  Vec_ESI                  *x = (Vec_ESI*)vin->data;
+  int                      ierr;
   ::esi::IndexSpace<int>   *map;
 
   PetscFunctionBegin;
@@ -329,8 +329,8 @@ int VecGetLocalSize_ESI(Vec vin,int *size)
 #define __FUNCT__ "VecGetArray_ESI"
 int VecGetArray_ESI(Vec vin,PetscScalar **array)
 {
-  Vec_ESI                 *x = (Vec_ESI*)vin->data;
-  int                     ierr;
+  Vec_ESI *x = (Vec_ESI*)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->getCoefPtrReadWriteLock(*array);CHKERRQ(ierr);
@@ -341,8 +341,8 @@ int VecGetArray_ESI(Vec vin,PetscScalar **array)
 #define __FUNCT__ "VecRestoreArray_ESI"
 int VecRestoreArray_ESI(Vec vin,PetscScalar **array)
 {
-  Vec_ESI                 *x = (Vec_ESI*)vin->data;
-  int                     ierr;
+  Vec_ESI *x = (Vec_ESI*)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->releaseCoefPtrLock(*array);CHKERRQ(ierr);
@@ -353,8 +353,8 @@ int VecRestoreArray_ESI(Vec vin,PetscScalar **array)
 #define __FUNCT__ "VecScale_ESI"
 int VecScale_ESI(const PetscScalar *array,Vec vin)
 {
-  Vec_ESI                 *x = (Vec_ESI*)vin->data;
-  int                     ierr;
+  Vec_ESI *x = (Vec_ESI*)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->scale(*array);CHKERRQ(ierr);
@@ -365,8 +365,8 @@ int VecScale_ESI(const PetscScalar *array,Vec vin)
 #define __FUNCT__ "VecNorm_ESI"
 int VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
 {
-  Vec_ESI                 *x = (Vec_ESI*)vin->data;
-  int                     ierr;
+  Vec_ESI *x = (Vec_ESI*)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   if (ntype == NORM_2) {
@@ -498,8 +498,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_ESI"
 int VecCreate_ESI(Vec V)
 {
-  Vec_ESI      *s;
-  int          ierr;
+  Vec_ESI *s;
+  int     ierr;
  
   PetscFunctionBegin;
   ierr    = PetscNew(Vec_ESI,&s);CHKERRQ(ierr);

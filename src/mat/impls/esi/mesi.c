@@ -264,8 +264,7 @@ int MatView_ESI(Mat A,PetscViewer viewer)
   int                  ierr,i,rstart,m,*cols,nz,j;
   PetscTruth           issocket,isascii,isbinary,isdraw;
   esi::IndexSpace<int> *rmap,*cmap;
-
-  PetscScalar *values;
+  PetscScalar          *values;
 
   PetscFunctionBegin;  
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);

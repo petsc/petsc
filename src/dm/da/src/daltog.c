@@ -25,6 +25,10 @@
    Level: beginner
 
    Note:
+   This routine discards the values in the ghost point locations. Use 
+   DALocalToGlobalBegin()/DALocalToGlobalEnd() to add the values from the
+   ghost points.
+
    The global and local vectors used here need not be the same as those
    obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
@@ -33,7 +37,7 @@
 .keywords: distributed array, local-to-global
 
 .seealso: DAGlobalToLocalBegin(), DACreate2d(), DALocalToLocalBegin(),
-           DALocalToLocalEnd()
+           DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
 int DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
 {

@@ -5,9 +5,9 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-#include "src/mat/impls/aij/seq/spooles.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#include "src/mat/impls/aij/seq/spooles.h"
 
 extern int MatDestroy_SeqAIJ(Mat); 
 

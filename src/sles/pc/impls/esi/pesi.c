@@ -46,14 +46,18 @@ int PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
   PetscFunctionReturn(0);
 }
 
+#include "esi/petsc/matrix.h"
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ESI"
 static int PCSetUp_ESI(PC pc)
 {
-  PC_ESI     *jac = (PC_ESI*)pc->data;
-  int        ierr;
+  PC_ESI                      *jac = (PC_ESI*)pc->data;
+  int                         ierr;
+  ::esi::Operator<double,int> *em = new ::esi::petsc::Matrix<double,int>(pc->mat);
 
   PetscFunctionBegin;
+  ierr = jac->epc->setOperator(*em);CHKERRQ(ierr);
   ierr = jac->epc->setup();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -136,7 +140,7 @@ extern PetscFList CCAList;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCESISetType"
-/*@
+/*@C
     PCESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
           by name and wraps the ESI operator to look like a PETSc matrix.
 @*/

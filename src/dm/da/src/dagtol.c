@@ -34,7 +34,9 @@
 .keywords: distributed array, global to local, begin
 
 .seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DALocalToLocalBegin(), DALocalToLocalEnd()
+          DALocalToLocalBegin(), DALocalToLocalEnd(),
+          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+          
 
 @*/
 int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
@@ -46,6 +48,92 @@ int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
   PetscValidHeaderSpecific(l,VEC_COOKIE);
   PetscValidHeaderSpecific(g,VEC_COOKIE);
   ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DALocalToGlobalBegin"
+/*@
+   DALocalToGlobalBegin - Adds values from the local (ghosted) vector
+   into the global (nonghosted) vector.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the distributed array context
+-  l  - the local values
+
+   Output Parameter:
+.  g - the global vector
+
+   Level: beginner
+
+   Notes:
+   Use DALocalToGlobal() to discard the ghost point values
+
+   The global and local vectors used here need not be the same as those
+   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be 
+   obtained with VecDuplicate() from the DA originating vectors.
+
+.keywords: distributed array, global to local, begin
+
+.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
+          DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalEnd()
+
+@*/
+int DALocalToGlobalBegin(DA da,Vec l,Vec g)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(l,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  ierr = VecScatterBegin(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DALocalToGlobalEnd"
+/*@
+   DALocalToGlobalEnd - Adds values from the local (ghosted) vector
+   into the global (nonghosted) vector.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the distributed array context
+-  l  - the local values
+
+   Output Parameter:
+.  g - the global vector
+
+   Level: beginner
+
+   Notes:
+   Use DALocalToGlobal() to discard the ghost point values
+
+   The global and local vectors used here need not be the same as those
+   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be 
+   obtained with VecDuplicate() from the DA originating vectors.
+
+.keywords: distributed array, global to local, begin
+
+.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
+          DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin()
+
+@*/
+int DALocalToGlobalEnd(DA da,Vec l,Vec g)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(l,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  ierr = VecScatterEnd(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,7 +165,7 @@ int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 .keywords: distributed array, global to local, end
 
 .seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d(),
-     DALocalToLocalBegin(), DALocalToLocalEnd()
+     DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
 int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
@@ -165,7 +253,8 @@ int DAGlobalToNatural_Create(DA da)
 .keywords: distributed array, global to local, begin
 
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
+          DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
 int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
@@ -210,7 +299,8 @@ int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 .keywords: distributed array, global to local, end
 
 .seealso: DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(),
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
+          DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
 int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
@@ -252,7 +342,9 @@ int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 .keywords: distributed array, global to local, begin
 
 .seealso: DAGlobalToNaturalEnd(), DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
+          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+
 @*/
 int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
@@ -297,7 +389,9 @@ int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 .keywords: distributed array, global to local, end
 
 .seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(),
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
+          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+
 @*/
 int DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {

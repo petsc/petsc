@@ -84,6 +84,8 @@ EXTERN int   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
 EXTERN int   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
 EXTERN int   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
 EXTERN int   DALocalToGlobal(DA,Vec,InsertMode,Vec);
+EXTERN int   DALocalToGlobalBegin(DA,Vec,Vec);
+EXTERN int   DALocalToGlobalEnd(DA,Vec,Vec);
 EXTERN int   DAGetOwnershipRange(DA,int **,int **,int **);
 EXTERN int   DACreateGlobalVector(DA,Vec *);
 EXTERN int   DACreateNaturalVector(DA,Vec *);

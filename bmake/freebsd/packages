@@ -50,8 +50,8 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Location where adiC is installed
 #
-#ADIC_DEFINES =  -Dad_GRAD_MAX=1
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#ADIC_DEFINES    = -Dad_GRAD_MAX=36
+#ADIC_CC         = adiC -a -d gradient
 #PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver

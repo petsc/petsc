@@ -118,7 +118,7 @@ EXTERN_C_BEGIN
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the TS methods that are in the basic PETSc Vec library.
+  This one registers all the methods that are in the basic PETSc Vec library.
 
   Input Parameter:
   path - library path

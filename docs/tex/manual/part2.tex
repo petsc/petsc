@@ -4522,6 +4522,67 @@ PETSc provides code that allows
 \end{itemize}
 The wrapping does not involve data copies and thus is efficient.
 
+To wrap ESI objects as PETSc objects use
+\begin{verse}
+VecCreate(MPI\_Comm,Vec *x);
+VecSetType(x,VECESI);
+VecESISetVector(s,::esi::Vector<double,int> *v);
+\end{verse}
+
+\begin{verse}
+MatCreate(MPI\_Comm,...,Mat *A);
+MatSetType(A,MATESI);
+MatESISetOperator(A,::esi::Operator<double,int> *a);
+\end{verse}
+
+\begin{verse}
+PCCreate(MPI\_Comm,PC *pc);
+PCSetType(pc,PCESI);
+PCESISetPreconditioner(A,::esi::Preconditioner<double,int> *p);
+\end{verse}
+
+To wrap PETSc objects as ESI objects
+\begin{verse}
+int VecESIWrap(Vec xin,::esi::Vector<double,int> **v);
+eis  = new esi::petsc::IndexSpace<int>::IndexSpace(PetscMap map);
+evec = new esi::petsc::Vector<double,int>::Vector(Vec vec);
+emat = new esi::petsc::Operator<double,int>::Operator(Mat mat);
+epc  = new esi::petsc::Preconditioner<double,int>::Preconditioner(PC pc);
+\end{verse}
+
+One can also create ESI objects directly with 
+\begin{verse}
+eis  = new esi::petsc::IndexSpace<int>::IndexSpace(MPI\_Comm icomm, int n, int N)
+esi  = new esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> \&sourceIndexSpace)
+evec = new esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
+emat = new esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
+\end{verse}
+
+PETSc also provides mechanisms to load ESI classes directly from dynamic libraries to be
+used with PETSc.
+\begin{verse}
+VecESISetType(Vec pc,char *name);
+MatESISetType(Mat pc,char *name)
+PCESISetType(PC pc,char *name)
+\end{verse}
+where \trl{name} is the full name of the class; for example, \trl{esi::petsc::Vector}
+or \trl{Petra_ESI_Vector}. These are implemented by loading a factory which then creates the
+actual class object. This can also be achieved from the command line with 
+\begin{verse}
+-is\_esi\_type  esi::petsc::IndexSpace
+-vec\_type esi -vec\_esi\_type esi::petsc::Vector
+-mat\_type esi -mat\_esi\_type esi::petsc::Matrix
+-pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner
+\end{verse}
+Note that the \trl{is} in \trl{-is_esi_type} is short for IndexSpace, \bf{not} PETSc IS objects.
+Finally when using the PETSc ESI objects (not Trilinos or some other implementation), one
+can set the underly PETSc object type to the PETSc objected that is wrapped as ESI with
+\begin{verse}
+-vec\_type esi -vec\_esi\_type esi::petsc::Vector  -esi\_vec\_type <seq,mpi>
+-mat\_type esi -mat\_esi\_type esi::petsc::Matrix -esi\_mat\_type <seqaij,mpiaij,...>
+-pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner -esi\_pc\_type <lu,ilu,....>
+\end{verse}
+
 
 %------------------------------------------------------------------
 \chapter{PETSc Fortran Users}
