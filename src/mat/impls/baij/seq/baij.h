@@ -50,6 +50,7 @@ typedef struct {
 
 EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatMissingDiagonal_SeqBAIJ(Mat);
 EXTERN int MatMarkDiagonal_SeqBAIJ(Mat);
 
 EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);

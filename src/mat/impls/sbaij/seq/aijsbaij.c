@@ -1,6 +1,7 @@
 /*$Id: aijsbaij.c,v 1.9 2001/08/07 03:02:55 balay Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/impls/baij/seq/baij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
 EXTERN_C_BEGIN
@@ -121,9 +122,7 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
-  if (!a->diag){
-    ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr); 
-  }
+  ierr = MatMissingDiagonal_SeqAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
 
   ierr = PetscMalloc(m*sizeof(int),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -166,7 +165,6 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
 }
 EXTERN_C_END
 
-#include "src/mat/impls/baij/seq/baij.h"
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqSBAI_SeqBAIJ"
@@ -269,9 +267,7 @@ int MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat)
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
-  if (!a->diag){
-    ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr); 
-  }
+  ierr = MatMissingDiagonal_SeqBAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
   
   ierr = PetscMalloc(mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {

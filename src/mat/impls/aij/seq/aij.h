@@ -64,6 +64,7 @@ EXTERN int MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN int MatCholeskyFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN int MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat *);
 EXTERN int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
 EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
 
 EXTERN int MatMult_SeqAIJ(Mat A,Vec,Vec);
