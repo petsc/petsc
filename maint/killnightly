@@ -7,7 +7,7 @@ machines = ['shakey','monsoon','ico09','ico08','fire','maple']
 for machine in machines:
         os.system('rsh -n ' + machine + ' zapall')        
 
-machines = ['lemon','ptera','dactyl','hux','playstation','eris.disturbed.net']
+machines = ['lemon','ptera','dactyl','hux','playstation','eris.disturbed.net','dreamcast' ]
 
 for machine in machines:
         os.system('ssh -n ' + machine + ' zapall')        
