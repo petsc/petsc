@@ -1,17 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.50 1997/02/07 15:21:56 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.51 1997/02/07 15:41:11 bsmith Exp curfman $";
 #endif
 /*
-   Defines a additive Schwarz preconditioner for any Mat implementation.
+  This file defines an additive Schwarz preconditioner for any Mat implementation.
 
-  Note each processor may have any number of subdomains. But in order to 
-  deal easily with the VecScatter() we treat each processor as if it has the
+  Note that each processor may have any number of subdomains. But in order to 
+  deal easily with the VecScatter(), we treat each processor as if it has the
   same number of subdomains.
 
        n - total number of true subdomains on all processors
-       n_local_true - actual number on this processor
+       n_local_true - actual number of subdomains on this processor
        n_local = maximum over all processors of n_local_true
-
 */
 #include "src/pc/pcimpl.h"     /*I "pc.h" I*/
 #include "sles.h"
