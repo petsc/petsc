@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.71 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.72 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -35,7 +35,7 @@ EXTERN int DrawSetFromOptions(Draw);
    Number of basic colors in the draw routines, the others are used
    for a uniform colormap.
 */
-#define DRAW_BASIC_COLORS 32
+#define DRAW_BASIC_COLORS 33
 
 #define DRAW_ROTATE          -1         /* will rotate through the colors, start with 2 */
 #define DRAW_WHITE            0
@@ -71,7 +71,7 @@ EXTERN int DrawSetFromOptions(Draw);
 #define DRAW_THISTLE         29
 #define DRAW_LIMEGREEN       30
 #define DRAW_LAVENDERBLUSH   31
-
+#define DRAW_PLUM            32
 
 EXTERN int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
 EXTERN int DrawOpenPS(MPI_Comm,char *,Draw *);
