@@ -433,3 +433,13 @@ To restart mpi server on elvis, log into elvis as ~petsc and type serverstart
 ---------------------------------------------------------------------
 on IBMs to use more than 256 Meg of memory, use compiler option   -bmaxdata:0x80000000
 ---------------------------------------------------------------------
+To run single proc jobs on quad compile servers do:
+>setenv MP_HOSTFILE /homes/balay/hostfile
+#where  /homes/balay/hostfile contains the name of the machine where the job is run
+>cat /homes/balay/hostfile
+ico13
+# Then run the executable as any poe job.
+>ex5
+Number of Newton iterations = 4
+>
+---------------------------------------------------------------------
