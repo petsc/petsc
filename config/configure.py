@@ -196,6 +196,12 @@ def petsc_configure(configure_options):
     import traceback
     framework.log.write(msg+se)
     traceback.print_tb(sys.exc_info()[2], file = framework.log)
+    if os.path.isfile(framework.logName+'.bkp'):
+      framework.logPrintDivider()
+      framework.logPrintBox('Previous configure logs below', debugSection = None)
+      f = file(framework.logName+'.bkp')
+      framework.log.write(f.read())
+      f.close()
     sys.exit(1)
 
 if __name__ == '__main__':
