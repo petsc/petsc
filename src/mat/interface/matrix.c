@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.101 1995/10/22 20:02:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.102 1995/10/23 00:42:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -143,6 +143,8 @@ $    FILE_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    FILE_FORMAT_INFO - basic information about the matrix
 $      size and structure (not the matrix entries)
+$    FILE_FORMAT_INFO_DETAILED - more detailed information about the 
+$      matrix structure.
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
@@ -162,8 +164,9 @@ int MatView(Mat mat,Viewer ptr)
   }
   ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
-  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
-    (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
+  if (vobj->cookie == VIEWER_COOKIE && 
+      (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) &&
+      (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
     MPIU_fprintf(mat->comm,fd,"Matrix Object:\n");
     ierr = MatGetName(mat,&cstring); CHKERRQ(ierr);
     ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
@@ -1003,6 +1006,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 $  -mat_view_draw : Draw nonzero structure of matrix at conclusion of MatEndAssembly(),
                using MatView() and DrawOpenX().
 $  -mat_view_info : Prints info on matrix.
+$  -mat_view_info_detailed: More detailed information.
 $  -mat_view_ascii : Prints matrix out in ascii.
 $  -display <name> : Set display name (default is host)
 $  -pause <sec> : Set number of seconds to pause after display
@@ -1031,6 +1035,13 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
       ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
+      ierr = MatView(mat,viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    if (OptionsHasName(0,"-mat_view_info_detailed")) {
+      Viewer viewer;
+      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
@@ -1345,6 +1356,32 @@ int MatGetSubMatrix(Mat mat,IS irow,IS icol,Mat *submat)
   PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0);
   ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,submat); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0);
+  return 0;
+}
+
+/*@C
+   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat points
+                     to an array of valid matrices it may be reused.
+
+   Input Parameters:
+.  mat - the matrix
+.  irow, icol - index sets of rows and columns to extract
+
+   Output Parameter:
+.  submat - the submatrices
+
+.keywords: matrix, get, submatrix
+
+.seealso: MatGetSubMatrix()
+@*/
+int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,Mat **submat)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!mat->ops.getsubmatrices) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrices");
+  PLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);
+  ierr = (*mat->ops.getsubmatrices)(mat,n,irow,icol,submat); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);
   return 0;
 }
 
