@@ -25,7 +25,10 @@ it removes the locations from the nonzero structure
   KSP
 
     KSPSolvetrans() is now KSPSolveTranspose()
-    
+
+     Added flexible gmres (use gmres or KSPGMRES as the type) see KSPFGMRESSetModifyPC() for
+   how to change PC at each iteration.
+
   SLES
  
 SLESSolveTrans() is now SLESSolveTranspose()

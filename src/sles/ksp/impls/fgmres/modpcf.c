@@ -1,4 +1,4 @@
-/* $Id: modpcf.c,v 1.3 1999/11/24 21:54:59 bsmith Exp bsmith $*/
+/* $Id: modpcf.c,v 1.4 1999/12/12 04:10:39 bsmith Exp bsmith $*/
 
 #include "sles.h" 
 #undef __FUNC__  
@@ -10,39 +10,42 @@
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
--  fcn - modifypc function
+.  fcn - modifypc function
+.  ctx - optional contex
+-  d - optional context destroy routine
 
    Calling Sequence of function:
-    ierr = int fcn(KSP ksp,int total_its,int max_total_its,int loc_its,int,max_loc_its,double res_norm);
+    ierr = int fcn(KSP ksp,int total_its,int loc_its,double res_norm,void*ctx);
 
     ksp - the ksp context being used.
     total_its     - the total number of FGMRES iterations that have occurred.    
-    max_total_its - the maximum number of iterations allowed for the method.
     loc_its       - the number of FGMRES iterations since last restart.
-    max_loc_its   - the maximum number of iterations that can occur before
-                    a restart (so number of Krylov directions to be computed)
     res_norm      - the current residual norm.
+    ctx           - optional context variable
 
+   Options Database Keys:
+   -ksp_fgmres_modifypcnochange
+   -ksp_fgmres_modifypcsles
+
+   Contributed by Allison Baker
 
    Notes:
    Several modifypc routines are predefined, including
     KSPFGMRESModifyPCNoChange()
     KSPFGMRESModifyPCSLES()
 
-   Options Database Keys:
-   -ksp_fgmres_modifypcnochange
-   -ksp_fgmres_modifypcsles
+.seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCSLES()
 
 @*/
-int KSPFGMRESSetModifyPC( KSP ksp, int (*fcn)( KSP, int, int, int, int, double) )
+int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)( KSP,int,int,double,void*),void* ctx,int (*d)(void*))
 {
-  int ierr, (*f)(KSP, int (*)( KSP, int, int, int, int, double ));
+  int ierr, (*f)(KSP, int (*)( KSP, int, int, double,void*),void*,int (*)(void*));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific( ksp, KSP_COOKIE );
   ierr = PetscObjectQueryFunction( (PetscObject)ksp, "KSPFGMRESSetModifyPC_C", (void **)&f); CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)( ksp, fcn ); CHKERRQ(ierr);
+    ierr = (*f)( ksp, fcn,ctx,d ); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -55,28 +58,26 @@ int KSPFGMRESSetModifyPC( KSP ksp, int (*fcn)( KSP, int, int, int, int, double) 
 #define __FUNC__ "KSPFGMRESModifyPCNoChange"
 /*@
 
-  FGMRESModifyPCNoChange - this is the default used by fgmres - it doesn't change the preconditioner. 
+  KSPFGMRESModifyPCNoChange - this is the default used by fgmres - it doesn't change the preconditioner. 
 
   Input Parameters:
 +    ksp - the ksp context being used.
 .    total_its     - the total number of FGMRES iterations that have occurred.    
-.    max_total_its - the maximum number of iterations allowed for the method.
 .    loc_its       - the number of FGMRES iterations since last restart.
-.    max_loc_its   - the maximum number of iterations that can occur before
                     a restart (so number of Krylov directions to be computed)
--    res_norm      - the current residual norm.
+.    res_norm      - the current residual norm.
+-    dummy         - context variable, unused in this routine
 
+   Contributed by Allison Baker
 
 You can use this as a template!
 
-@*/
-int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int max_total_its,int loc_its,int max_loc_its,double res_norm)
-{
-  PC         pc;
-  int        ierr;
+.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
 
+@*/
+int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,double res_norm,void* dummy)
+{
   PetscFunctionBegin;
-  ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -92,17 +93,18 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int max_total_its,int loc_it
   Input Parameters:
 +    ksp - the ksp context being used.
 .    total_its     - the total number of FGMRES iterations that have occurred.    
-.    max_total_its - the maximum number of iterations allowed for the method.
 .    loc_its       - the number of FGMRES iterations since last restart.
-.    max_loc_its   - the maximum number of iterations that can occur before
-                    a restart (so number of Krylov directions to be computed)
--    res_norm      - the current residual norm.
+.    res_norm      - the current residual norm.
+-    dummy         - context, not used here
 
+   Contributed by Allison Baker
 
  This could be used as a template!
 
+.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
+
 @*/
-int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int max_total_its,int loc_its,int max_loc_its,double res_norm)
+int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int loc_its,double res_norm,void *dummy)
 {
   PC         pc;
   int        ierr,maxits;
@@ -125,16 +127,11 @@ int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int max_total_its,int loc_its,in
     /* Now we can use functions such as KSPGMRESSetRestart() or 
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
-    /* we can vary the tolerances depending on the iteration number we are on.  For
-      example, do more iterations in our GMRES inner iteration for the 
-      first 4 Krylov directions (note loc_it will start at 0) */
     ierr = KSPGetTolerances( sub_ksp, &rtol, &atol, &dtol, &maxits ); CHKERRQ(ierr);
     if (loc_its == 0 ) {
-       maxits = 20;
-       rtol = 1.e-2;
-    } else if (loc_its == 4) { 
-       maxits = 5;
-       rtol = 1.e-1;
+      rtol = .1;
+    } else {
+      rtol *= .9;
     }
     ierr = KSPSetTolerances( sub_ksp, rtol, atol, dtol, maxits ); CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.7 1999/12/12 04:10:31 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.8 1999/12/13 03:15:38 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -8,8 +8,10 @@
     code is equivalent to RIGHT-PRECONDITIONED GMRES.
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
- */
+ 
+       Contributed by Allison Baker
 
+*/
 
 #include "src/sles/ksp/impls/fgmres/fgmresp.h"       /*I  "ksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
