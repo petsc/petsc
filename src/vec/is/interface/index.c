@@ -1,10 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.40 1997/01/06 20:39:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.41 1997/02/04 21:23:14 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
-#include "src/is/isimpl.h"      /*I "is.h" I*/
+#include "src/is/isimpl.h" 
+     /*I "is.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ISIdentity"
