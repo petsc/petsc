@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.51 1995/08/22 19:34:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.52 1995/08/24 22:28:38 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -344,6 +344,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   int          ierr, i, j, row, col, rstart = mrow->rstart, rend = mrow->rend;
+  Scalar       *zeros;
 
   if (mrow->insertmode != NOTSETVALUES && mrow->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIRowbs:Cannot mix inserts and adds");
@@ -351,7 +352,12 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
   mrow->insertmode = addv;
   if ((mrow->assembled) && (!mrow->reassemble_begun)) {
     /* Symmetrically unscale the matrix by the diagonal */
-    BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    if (mrow->mat_is_symmetric) {
+      BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    }
+    else {
+      BSILUscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    }
     mrow->reassemble_begun = 1;
   }
   for ( i=0; i<m; i++ ) {
@@ -375,6 +381,37 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
       CHKERRQ(ierr);
     }
   }
+  if (mrow->mat_is_symmetric) return 0;
+
+  /* The following code adds zeros to the symmetric counterpart (ILU) */
+  /* this is only needed to insure that the matrix is structurally symmetric */
+  /* while the user creating it may not make it structurally symmetric. */
+  if (m) {
+    zeros = (Scalar *) PETSCMALLOC (m*sizeof(Scalar));
+    for ( i=0; i<m; i++ ) zeros[i] = 0.0;
+  }
+  for ( i=0; i<n; i++ ) {
+    if (idxn[i] < 0) SETERRQ(1,"MatSetValues_MPIRowbs:Negative column");
+    if (idxn[i] >= mrow->M) SETERRQ(1,"MatSetValues_MPIRowbs:Col too large");
+    if (idxn[i] >= rstart && idxn[i] < rend) {
+      row = idxn[i] - rstart;
+      for ( j=0; j<m; j++ ) {
+        if (idxm[j] < 0) SETERRQ(1,"MatSetValues_MPIRowbs:Negative row");
+        if (idxm[j] >= mrow->N) SETERRQ(1,"MatSetValues_MPIRowbs:Row too large");
+        if (idxm[j] >= 0 && idxm[j] < mrow->N){
+          col = idxm[j];
+          ierr = MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,zeros,ADDVALUES);
+          CHKERRQ(ierr);
+        }
+        else {SETERRQ(1,"MatSetValues_MPIRowbs:Invalid row");}
+      }
+    } 
+    else {
+      ierr = StashValues_Private(&mrow->stash,idxn[i],m,idxm,zeros,ADDVALUES);
+      CHKERRQ(ierr);
+    }
+  }
+  if (m) PETSCFREE(zeros);
   return 0;
 }
 
@@ -398,7 +435,12 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   if ((mrow->assembled) && (!mrow->reassemble_begun)) {
     /* Symmetrically unscale the matrix by the diagonal */
-    BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    if (mrow->mat_is_symmetric) {
+      BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    }
+    else {
+      BSILUscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    }
     mrow->reassemble_begun = 1;
   }
 
@@ -568,13 +610,16 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
     if ((mrow->assembled) && (!mrow->nonew)) {  /* Free the old info */
-      if (mrow->pA)       {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
+      if (mrow->pA) {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
       if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
     }
     if ((!mrow->nonew) || (!mrow->assembled)) {
       /* Form permuted matrix for efficient parallel execution */
-      mrow->pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
-
+        if (mrow->mat_is_symmetric) {
+          mrow->pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
+        }else {
+          mrow->pA = BSILUmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
+        }
       /* Set up the communication */
       mrow->comm_pA = BSsetup_forward(mrow->pA,mrow->procinfo); CHKERRBS(0);
     } else {
@@ -583,7 +628,11 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     }
 
     /* Symmetrically scale the matrix by the diagonal */
-    BSscale_diag(mrow->pA,mrow->pA->diag,mrow->procinfo); CHKERRBS(0);
+    if (mrow->mat_is_symmetric) {
+      BSscale_diag(mrow->pA,mrow->pA->diag,mrow->procinfo); CHKERRBS(0);
+    } else {
+      BSILUscale_diag(mrow->pA,mrow->pA->diag,mrow->procinfo); CHKERRBS(0);
+    }
 
     /* Store inverse of square root of permuted diagonal scaling matrix */
     ierr = VecGetLocalSize( mrow->diag, &ldim ); CHKERRQ(ierr);
@@ -787,22 +836,39 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 #if defined(PETSC_DEBUG)
   MLOG_ELM(bspinfo->procset);
 #endif
-  if (bspinfo->single)
+  if (bsif->mat_is_symmetric) {
+    if (bspinfo->single)
       BSforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-  else
+    else
       BSforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  } else {
+    if (bspinfo->single)
+      BSILUforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+    else
+      BSILUforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+    CHKERRBS(0);
+  }
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MM_FORWARD);
   MLOG_ELM(bspinfo->procset);
 #endif
 
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
-  if (bspinfo->single)
+  if (bsif->mat_is_symmetric) {
+    if (bspinfo->single)
       BSbackward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-  else
+    else
       BSbackward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  }
+  else {
+    if (bspinfo->single)
+      BSILUbackward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+    else
+      BSILUbackward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+    CHKERRBS(0);
+  }
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MM_BACKWARD);
 #endif
@@ -856,19 +922,36 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
   }
   if (flag & SOR_FORWARD_SWEEP) {
     MLOG_ELM(bsif->procinfo->procset);
-    if (bsif->procinfo->single) {
-      BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-    } else {
-      BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    if (bsif->mat_is_symmetric) {
+      if (bsif->procinfo->single) {
+        BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      } else {
+        BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      }
+    }
+    else {
+      if (bsif->procinfo->single) {
+        BSILUfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      } else {
+        BSILUfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      }
     }
     MLOG_ACC(MS_FORWARD);
   }
   if (flag & SOR_BACKWARD_SWEEP) {
     MLOG_ELM(bsif->procinfo->procset);
-    if (bsif->procinfo->single) {
-      BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    if (bsif->mat_is_symmetric) {
+      if (bsif->procinfo->single) {
+        BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      } else {
+        BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      }
     } else {
-      BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      if (bsif->procinfo->single) {
+        BSILUback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      } else {
+        BSILUback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+      }
     }
     MLOG_ACC(MS_BACKWARD);
   }
@@ -956,7 +1039,13 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     if (mrow->diag)     {ierr = VecDestroy(mrow->diag); CHKERRQ(ierr);}
     if (mrow->xwork)    {ierr = VecDestroy(mrow->xwork); CHKERRQ(ierr);}
     if (mrow->pA)       {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
-    if (mrow->fpA)      {BSfree_copy_par_mat(mrow->fpA); CHKERRBS(0);}
+    if (mrow->fpA)      {
+      if (mrow->mat_is_symmetric) {
+        BSfree_copy_par_mat(mrow->fpA); CHKERRBS(0);
+      }else {
+        BSILUfree_copy_par_mat(mrow->fpA); CHKERRBS(0);
+      }
+    }
     if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
     if (mrow->comm_fpA) {BSfree_comm(mrow->comm_fpA); CHKERRBS(0);}
     if (mrow->imax)     PETSCFREE(mrow->imax);    
@@ -1029,8 +1118,9 @@ static int MatRestoreRow_MPIRowbs(Mat mat,int row,int *nz,int **idx,Scalar **v)
 
 /* -------------------------------------------------------------------*/
 extern int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
-extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,double,
-                                                               int,Mat *);
+extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,double,int,Mat *);
+extern int MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
+extern int MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,double,int,Mat *);
 extern int MatSolve_MPIRowbs(Mat,Vec,Vec);
 extern int MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
 extern int MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
@@ -1048,10 +1138,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatAssemblyBegin_MPIRowbs,MatAssemblyEnd_MPIRowbs,
        0,
        MatSetOption_MPIRowbs,MatZeroEntries_MPIRowbs,MatZeroRows_MPIRowbs,0,
-       0,0,0,MatCholeskyFactorNumeric_MPIRowbs,
+       0,MatLUFactorNumeric_MPIRowbs,0,MatCholeskyFactorNumeric_MPIRowbs,
        MatGetSize_MPIRowbs,MatGetLocalSize_MPIRowbs,
        MatGetOwnershipRange_MPIRowbs,
-       0,MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
+       MatILUFactorSymbolic_MPIRowbs,MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
        0,0,0,0,0,0,MatForwardSolve_MPIRowbs,MatBackwardSolve_MPIRowbs};
 
 /* ------------------------------------------------------------------- */
@@ -1131,6 +1221,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->n    = mrow->N; /* each row stores all columns */
   mrow->imax = (int *) PETSCMALLOC( (mrow->m+1)*sizeof(int) ); 
   CHKPTRQ(mrow->imax);
+  mrow->mat_is_symmetric = 0;
 
   /* build local table of row ownerships */
   mrow->rowners = (int *) PETSCMALLOC((mrow->numtids+2)*sizeof(int)); 
