@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.13 1998/03/12 23:16:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.14 1998/03/20 22:47:23 bsmith Exp curfman $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -157,20 +157,20 @@ int DLLibraryObtain(MPI_Comm comm,char *libname,char *llibname,int llen)
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryOpen"
 /*
-     DLLibraryOpen - Opens a dynamic link library
+   DLLibraryOpen - Opens a dynamic link library
 
-   Input Parameter:
-    comm - processors that are opening the library
-    libname - name of the library, can be relative or absolute
+   Input Parameters:
+   comm - processors that are opening the library
+   libname - name of the library, can be relative or absolute
 
-   Output Paramter:
-    handle - returned from DLLibraryOpen
+   Output Parameter:
+   handle - library handle 
 
    Notes:
-     [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
+   [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-     $PETSC_ARCH and $BOPT occuring in directoryname and filename 
-       will be replaced with appropriate values
+   $PETSC_ARCH and $BOPT occuring in directoryname and filename 
+   will be replaced with appropriate values.
 */
 int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
 {
@@ -291,17 +291,16 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
 }
 
 /*
-     DLLibrarySym - Load a symbol from the dynamic link libraries.
+   DLLibrarySym - Load a symbol from the dynamic link libraries.
 
-  Input Parameter:
+   Input Parameter:
 .  path     - optional complete library name
 .  insymbol - name of symbol
 
-  Output Parameter:
+   Output Parameter:
 .  value 
 
-  Notes: Symbol can be of the form
-
+   Notes: Symbol can be of the form
         [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional 
 
 */
