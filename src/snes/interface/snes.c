@@ -6,7 +6,7 @@ PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
 PetscCookie SNES_COOKIE = 0;
-PetscEvent    SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
+PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"

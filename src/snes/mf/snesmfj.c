@@ -184,7 +184,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MFFD"
 /*
-   MatSNESMFAssemblyEnd_Private - Resets the ctx->ncurrenth to zero. This 
+   MatAssemblyEnd_MFFD - Resets the ctx->ncurrenth to zero. This 
    allows the user to indicate the beginning of a new linear solve by calling
    MatAssemblyXXX() on the matrix free matrix. This then allows the 
    MatSNESMFCreate_WP() to properly compute ||U|| only the first time
@@ -457,6 +457,7 @@ PetscErrorCode MatSNESMFSetBase_FD(Mat J,Vec U)
   if (!ctx->w) {
     ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
   }
+  J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -600,6 +601,7 @@ PetscErrorCode MatCreate_MFFD(Mat A)
   A->ops->scale          = MatScale_MFFD;
   A->ops->shift          = MatShift_MFFD;
   A->ops->setfromoptions = MatSNESMFSetFromOptions;
+  A->assembled = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioniBase_C","MatSNESMFSetFunctioniBase_FD",MatSNESMFSetFunctioniBase_FD);CHKERRQ(ierr);

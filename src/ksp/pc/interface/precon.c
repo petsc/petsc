@@ -997,18 +997,20 @@ PetscErrorCode PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
+  if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
 
   /*
       BlockSolve95 cannot use default BJacobi preconditioning
   */
-  ierr = PetscTypeCompare((PetscObject)Amat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
-  if (isrowbs) {
-    ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
-    if (isbjacobi) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-      PetscLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
+  if (Amat) {
+    ierr = PetscTypeCompare((PetscObject)Amat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
+    if (isrowbs) {
+      ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
+      if (isbjacobi) {
+        ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+        PetscLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
+      }
     }
   }
 

@@ -109,6 +109,9 @@ PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
   PetscValidHeaderSpecific(Y,MAT_COOKIE,2);
+  MatPreallocated(Y);
+  if (!Y->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (Y->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (Y->ops->shift) {
     ierr = (*Y->ops->shift)(a,Y);CHKERRQ(ierr);
   } else {
