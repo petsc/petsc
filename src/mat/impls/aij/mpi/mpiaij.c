@@ -11,6 +11,7 @@ EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatPrintHelp_SeqAIJ(Mat);
 EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
+EXTERN int MatUseSpooles_MPIAIJ(Mat);
 
 /* 
   Local utility routine that creates a mapping from the global column 
@@ -355,7 +356,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         *row,*col,other_disassembled;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_SUPERLUDIST) 
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) 
   PetscTruth  flag;
 #endif
 
@@ -407,6 +408,11 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 #if defined(PETSC_HAVE_SUPERLUDIST) 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(mat);CHKERRQ(ierr); }
+#endif 
+
+#if defined(PETSC_HAVE_SPOOLES) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_MPIAIJ(mat);CHKERRQ(ierr); }
 #endif 
   PetscFunctionReturn(0);
 }

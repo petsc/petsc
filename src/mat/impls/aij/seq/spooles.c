@@ -26,6 +26,7 @@ typedef struct {
   MatStructure    flg;
   int             *oldToNew,nz;
   double          tau;
+  int             ordering;
 } Mat_SeqAIJ_Spooles;
 
 extern int MatDestroy_SeqAIJ(Mat); 
@@ -63,7 +64,6 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   PetscScalar             *array;
   DenseMtx                *mtxY, *mtxX ;
   int                     irow,neqns=A->m,*iv;
-  double                  cpus[10] ;
 
   PetscFunctionBegin;
   printf(" Solve_SeqAIJ_Spooles is called ...,\n"); 
@@ -89,11 +89,17 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
     fflush(lu->msgFile) ;
   }
 
-  /* permute solution into original ordering, then copy to x */
-  iv   = IV_entries(lu->newToOldIV);
+  /* permute solution into original ordering, then copy to x */  
+  DenseMtx_permuteRows(mtxX, lu->newToOldIV);
+  ierr = VecGetArray(x,&array);CHKERRQ(ierr); 
+  for ( irow = 0 ; irow < neqns ; irow++ ) DenseMtx_realEntry(mtxX,irow,0,array++);
+  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  /*
+  iv = IV_entries(lu->newToOldIV);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr); 
   for ( irow = 0 ; irow < neqns ; irow++ ) DenseMtx_realEntry(mtxX,irow,0,&array[iv[irow]]);  
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  */
 
   /* free memory */
   DenseMtx_free(mtxX) ;
@@ -110,7 +116,7 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager  ;
   FrontMtx           *frontmtx ; 
-  int                stats[20],error,pivotingflag=1,nz,m=A->m,irow,count;
+  int                stats[20],ierr,pivotingflag=1,nz,m=A->m,irow,count;
   Chv                *rootchv ;
   int                *ai=mat->i,*aj=mat->j;
   PetscScalar        *av  = mat->a;
@@ -118,16 +124,51 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionBegin;
   printf(" Num_SeqAIJ_Spooles is called ..., lu->flg: %d\n", lu->flg); 
 
-  if ( lu->flg == SAME_NONZERO_PATTERN){ /* use previously computed symbolic factor */
+  if ( lu->flg == SAME_NONZERO_PATTERN){ /* new num factorization using previously computed symbolic factor */
+    
+    if (lu->pivotingflag) {              /* different FrontMtx is required */
+      FrontMtx_free(lu->frontmtx) ;   
+      lu->frontmtx   = FrontMtx_new() ;
+    }
+
+    SubMtxManager_free(lu->mtxmanager) ;  
+    lu->mtxmanager = SubMtxManager_new() ;
+    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
+
     /* get new numerical values of A , then permute the matrix */ 
     InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, lu->nz, m) ; 
+    /*
+    int *rowids,i;
+    ierr = PetscMalloc(lu->nz*sizeof(int),&rowids);CHKERRQ(ierr);
+    for (irow = 0; irow < m; irow++){
+      count = ai[irow+1] - ai[irow];
+      for (i =0; i<count; i++) rowids[i]=irow;
+    }
+    InpMtx_inputRealTriples(lu->mtxA, lu->nz, rowids, aj, av);
+    ierr = PetscFree(rowids);CHKERRQ(ierr);
+    */
+    /* run well with -num_numfac 1, but get the following error message:
+       ex10 -f0 matbinary.ex -mat_aij_spooles -pc_type lu -num_numfac 2
+ Symbolic_SeqAIJ_Spooles is called ...
+ Num_SeqAIJ_Spooles is called ..., lu->flg: 1
+ Solve_SeqAIJ_Spooles is called ...,
+ Solve_SeqAIJ_Spooles is called ...,
+Number of iterations =   1
+Residual norm < 1.e-12
+ Num_SeqAIJ_Spooles is called ..., lu->flg: 0
+
+ fatal error in Chv_addChevron(0x8290078,0,4,0x827c6e0,0x827c958)
+ jcol 24 not found in colind[]
+    */
+    
     for (irow = 0; irow < m; irow++){
       count = ai[1] - ai[0];
       InpMtx_inputRealRow(lu->mtxA, irow, count, aj, av);
       ai++; aj += count; av += count;
-    }
+    }   
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
 
+    /* permute mtxA */
     InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ;
     if ( lu->symmetryflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
@@ -139,11 +180,12 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
 
   /* initialize the front matrix object */
-  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ 
+  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
     lu->frontmtx   = FrontMtx_new() ;
     lu->mtxmanager = SubMtxManager_new() ;
+    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
   }
-  SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
+  
   FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symmetryflag, 
                 FRONTMTX_DENSE_FRONTS, lu->pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->msglvl, lu->msgFile) ;   
@@ -154,7 +196,7 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   DVfill(10, lu->cpus, 0.0) ;
   IVfill(20, stats, 0) ;
   rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->tau, 0.0, 
-            chvmanager, &error, lu->cpus, stats, lu->msglvl, lu->msgFile) ; 
+            chvmanager, &ierr, lu->cpus, stats, lu->msglvl, lu->msgFile) ; 
   ChvManager_free(chvmanager) ;
   if ( lu->msglvl > 0 ) {
     fprintf(lu->msgFile, "\n\n factor matrix") ;
@@ -165,8 +207,8 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     fprintf(lu->msgFile, "\n\n matrix found to be singular\n") ;
     exit(-1) ;
   }
-  if ( error >= 0 ) {
-    fprintf(lu->msgFile, "\n\n error encountered at front %d", error) ;
+  if ( ierr >= 0 ) {
+    fprintf(lu->msgFile, "\n\n error encountered at front %d", ierr) ;
     exit(-1) ;
   }
 
@@ -197,10 +239,13 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   Graph                *graph ;
   IVL                  *adjIVL;
   int                  nedges,*newToOld, *oldToNew ;
+  char                 buff[32];
+  char                 *ordertype[] = {"BestOfNDandMS","MMD","MS","ND"}; 
+  PetscTruth           flg;
+  int                  maxdomainsize=1, maxzeros=0, maxsize=1000000;
 
   PetscFunctionBegin;	
-  printf(" Symbolic_SeqAIJ_Spooles is called ...\n"); 
-  ierr                        = PetscNew(Mat_SeqAIJ_Spooles,&lu);CHKERRQ(ierr); 
+  ierr = PetscNew(Mat_SeqAIJ_Spooles,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */  
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
@@ -214,8 +259,9 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   /* get input parameters */
   lu->symmetryflag = 2; /* 0: symmetric entries, 1: Hermitian entries, 2: non-symmetric entries -- 
                                 if A is aij: non-symmetric, if A is sbaij: symmetric, other cookie: error msg */
-  lu->tau  = 100.;
-  lu->seed = 10101;  /* random number seed, used for ordering */
+  lu->tau          = 100.;
+  lu->seed         = 10101;  /* random number seed, used for ordering */
+  lu->ordering     = 0;
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
     ierr = PetscOptionsInt("-mat_aij_spooles_symmetryflag","symmetryflag","None",lu->symmetryflag,&lu->symmetryflag,PETSC_NULL);CHKERRQ(ierr);
@@ -232,6 +278,33 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
         lu->msgFile = fopen("spooles.msgFile", "a");
         PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
     } 
+
+    ierr = PetscOptionsEList("-mat_aij_spooles_ordering","ordering type","None",
+             ordertype,4,ordertype[0],buff,32,&flg);CHKERRQ(ierr);
+    while (flg) {
+      ierr = PetscStrcmp(buff,"BestOfNDandMS",&flg);CHKERRQ(ierr);
+      if (flg) {
+        lu->ordering = 0;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"MMD",&flg);CHKERRQ(ierr);
+      if (flg) {
+        lu->ordering = 1;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"MS",&flg);CHKERRQ(ierr);
+      if (flg) {
+        lu->ordering = 2;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"ND",&flg);CHKERRQ(ierr);
+      if (flg) {
+        lu->ordering = 3;
+        break;
+      }
+      SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
+    }
+    
   PetscOptionsEnd();
 
   lu->pivotingflag = SPOOLES_NO_PIVOTING; 
@@ -244,7 +317,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   if (lu->symmetryflag == 2){
     lu->nz=mat->nz;
   } else {
-    SETERRQ(1,"Mat must be in SeqAIJ format");
+    SETERRQ(1,"symmetryflag should be set as non-symmetric");
     /* 
   } else if (lu->symmetryflag == 2){
     nz=mat->s_nz;
@@ -253,12 +326,24 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   
   lu->mtxA = InpMtx_new() ;
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, lu->nz, m) ;
+  /* fail to work!!! */
+  /*
+  int *rowids,i;
+  ierr = PetscMalloc(lu->nz*sizeof(int),&rowids);CHKERRQ(ierr);
+  for (irow = 0; irow < m; irow++){
+    count = ai[irow+1] - ai[irow];
+    for (i =0; i<count; i++) rowids[i]=irow;
+  }
+  InpMtx_inputRealTriples(lu->mtxA, lu->nz, rowids, aj, av);
+  ierr = PetscFree(rowids);CHKERRQ(ierr);
+  */
   
   for (irow = 0; irow < m; irow++){
     count = ai[1] - ai[0];
     InpMtx_inputRealRow(lu->mtxA, irow, count, aj, av);
     ai++; aj += count; av += count;
   }
+  
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
 
   /*---------------------------------------------------
@@ -275,7 +360,27 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
     Graph_writeForHumanEye(graph, lu->msgFile) ;
     fflush(lu->msgFile) ;
   }
-  lu->frontETree = orderViaMMD(graph, lu->seed, lu->msglvl, lu->msgFile) ;
+
+  switch (lu->ordering) {
+  case 0:
+    lu->frontETree = orderViaBestOfNDandMS(graph,
+                     maxdomainsize, maxzeros, maxsize,
+                     lu->seed, lu->msglvl, lu->msgFile); 
+    break;
+  case 1:
+    lu->frontETree = orderViaMMD(graph, lu->seed, lu->msglvl, lu->msgFile) ; 
+    break;
+  case 2:
+    lu->frontETree = orderViaMS(graph, maxdomainsize,
+                     lu->seed, lu->msglvl, lu->msgFile);
+    break;
+  case 3:
+    lu->frontETree = orderViaND(graph, maxdomainsize, 
+                     lu->seed, lu->msglvl, lu->msgFile);
+    break;
+  default:
+    SETERRQ(1,"Unknown Spooles's ordering");
+  }
   Graph_free(graph) ;
 
   if ( lu->msglvl > 0 ) {
@@ -351,8 +456,8 @@ int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
 #else
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatUseSpooles"
-int MatUseSpooles(Mat A)
+#define __FUNCT__ "MatUseSpooles_SeqAIJ"
+int MatUseSpooles_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
