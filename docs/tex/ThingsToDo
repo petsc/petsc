@@ -221,6 +221,8 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Upgrade LSQR to support damping (petsc-maint #2753)
+
   - Upgrade TS to enable testing/rejecting of timesteps (petsc-maint #2751)
 
   - Upgrade SNES to address petsc-maint #2530 from John Nagle
