@@ -10,8 +10,6 @@
  *    indefinite preconditioner
  * 2/ with -pc_ilu_shift option (or comment in the PCILUSetShift line below):
  *    the method will now successfully converge.
- *
- * Contributed by Victor Eijkhout 2003.
  */
 
 #include <stdlib.h>
@@ -76,11 +74,16 @@ int main(int argc,char **argv)
 
   /*
    * ILU preconditioner;
-   * this will break down unless you add the Shift line,
-   * or use the -pc_ilu_shift option */
+   * The iterative method will break down unless you comment in the SetShift
+   * line below, or use the -pc_ilu_shift option.
+   * Run the code twice: once as given to see the negative pivot and the
+   * divergence behaviour, then comment in the Shift line, or add the 
+   * command line option, and see that the pivots are all positive and
+   * the method converges.
+   */
   ierr = SLESGetPC(solver,&prec); CHKERRQ(ierr);
   ierr = PCSetType(prec,PCICC); CHKERRQ(ierr);
-  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr);
+  /*  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 
   ierr = SLESSetFromOptions(solver); CHKERRQ(ierr);
   ierr = SLESSetUp(solver,B,X); CHKERRQ(ierr);
