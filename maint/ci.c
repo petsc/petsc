@@ -1,10 +1,11 @@
-/* $Id: ci.c,v 1.8 1997/09/30 16:15:53 balay Exp balay $ */
+/* $Id: ci.c,v 1.9 2001/03/30 05:09:29 balay Exp balay $ */
 
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <sys/param.h>
 #include <string.h>
+
 int main(int argc, char **argv)
 {
   int i, len;
@@ -42,7 +43,10 @@ int main(int argc, char **argv)
 
   strcpy(command,"cd ");
   strcat(command, path );
-  strcat(command,"; /soft/apps/bin/ci ");
+  /* path on solaris is /soft/apps/bin/ci */
+  /* path on linux is /usr/bin/ci */
+  /* strcat(command,"; /soft/apps/bin/ci "); */
+  strcat(command,"; /usr/bin/ci ");
 
   for (i=1; i< argc-1; i++) {
     /* if -m option is entered, take it away, and also the string

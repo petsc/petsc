@@ -1,4 +1,4 @@
-/* $Id: co.c,v 1.6 1997/09/30 16:15:43 balay Exp balay $ */
+/* $Id: co.c,v 1.7 2001/03/30 05:09:27 balay Exp balay $ */
 
 #include <stdio.h>
 #include <limits.h>
@@ -44,7 +44,10 @@ int main(int argc, char **argv)
 
   strcpy(command,"cd ");
   strcat(command, path );
-  strcat(command,"; /soft/apps/bin/co ");
+  /* path on solaris is /soft/apps/bin/co */
+  /* path on linux is /usr/bin/co */
+  /* strcat(command,"; /soft/apps/bin/co "); */
+  strcat(command,"; /usr/bin/co ");
 
   for (i=1; i< argc-1; i++) {
     strcat(command, argv[i]);
