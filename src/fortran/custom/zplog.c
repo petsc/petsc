@@ -15,6 +15,7 @@
 #define petsclogeventregister_    PETSCLOGEVENTREGISTER
 #define petsclogstagepop_         PETSCLOGSTAGEPOP
 #define petsclogstageregister_    PETSCLOGSTAGEREGISTER
+#define petsclogclassregister_    PETSCLOGCLASSREGISTER
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogprintsummary_     petsclogprintsummary
@@ -28,6 +29,7 @@
 #define petsclogdump_             petsclogdump
 #define petsclogstagepop_         petsclogstagepop  
 #define petsclogstageregister_    petsclogstageregister
+#define petsclogclassregister_    petsclogclassregister
 #define petsclogstagepush_        petsclogstagepush
 #endif
 
@@ -65,6 +67,17 @@ void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len
   *ierr = PetscLogEventRegister(e,t1,t2,*cookie);
   FREECHAR(string,t1);
   FREECHAR(color,t2);
+#endif
+}
+void PETSC_STDCALL petsclogclassregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
+               int *ierr PETSC_END_LEN(len1))
+{
+#if defined(PETSC_USE_LOG)
+  char *t1;
+  FIXCHAR(string,len1,t1);
+
+  *ierr = PetscLogClassRegister(e,t1);
+  FREECHAR(string,t1);
 #endif
 }
 
