@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.55 2000/08/06 03:51:36 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.56 2000/08/07 03:07:00 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -697,7 +697,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   /* count number subdomains for each local node */
   nprocs = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(nprocs);
   ierr   = PetscMemzero(nprocs,size*sizeof(int));CHKERRQ(ierr);
-  cnt = 0;
+  cnt    = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
     for (j=0; j<nt; j++) {
