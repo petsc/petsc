@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.7 2001/02/19 21:09:20 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.8 2001/02/19 22:02:11 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -309,7 +309,11 @@ public class PETScView extends JApplet {
     jtree.addTreeSelectionListener(new TreeSelectionListener() {
       public void valueChanged(TreeSelectionEvent e) {
         System.out.println("User selected tree node"); 
-        JInternalFrame jp = new PETScViewKSP();
+	System.out.println("node "+e.getPath().getLastPathComponent());
+        Object obj = ((DefaultMutableTreeNode)(e.getPath().getLastPathComponent())).getUserObject();
+	AMS_Memory thisksp = (AMS_Memory) memories.get((String)obj);
+	System.out.println("thisksp "+thisksp);
+        JInternalFrame jp = new PETScViewKSP(thisksp);
 
         rpanel.add(jp);
 	/*        jp.setLocation(50,50); */
@@ -320,12 +324,6 @@ public class PETScView extends JApplet {
     jtree.setRowHeight(15);
     jtree.setPreferredSize(new Dimension(300,550));
 
-Plot plot = new Plot();
-    plot.addLegend(1,"Residual norm");
-    plot.addPoint(1,1.0,1.0,true);
-    plot.fillPlot();
-    plot.setSize(50,50);
-       japplet.add(plot,BorderLayout.SOUTH); 
 
     System.out.println("Processed options set");    
     japplet.setVisible(true);
