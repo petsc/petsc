@@ -19,6 +19,9 @@ easily create complete application codes for the parallel solution of
 nonlinear PDEs, and must generally write very little explicit
 message-passing code (sometimes none).
 
+We are particularly interested in feedback regarding the PETSc
+programming model and ease of use of the software.
+
 Information regarding PETSc as well as the complete software distribution 
 can be obtained from http://www.mcs.anl.gov/petsc/petsc.html or 
 ftp://info.mcs.anl.gov/pub/petsc.
