@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadestroy.c,v 1.5 1996/06/27 14:56:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.6 1996/08/08 14:47:19 bsmith Exp curfman $";
 #endif
  
 /*
@@ -9,14 +9,14 @@ static char vcid[] = "$Id: dadestroy.c,v 1.5 1996/06/27 14:56:34 bsmith Exp bsmi
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@C
-   DADestroy - Destroy a distributed array.
+   DADestroy - Destroys a distributed array.
 
    Input Parameter:
 .  da - the distributed array to destroy 
 
 .keywords: distributed array, destroy
 
-.seealso: DACreate2d()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d()
 @*/
 int DADestroy(DA da)
 {

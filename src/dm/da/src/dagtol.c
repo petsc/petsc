@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dagtol.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.3 1996/08/08 14:47:19 bsmith Exp curfman $";
 #endif
  
 /*
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: dagtol.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith 
 
 /*@
    DAGlobalToLocalBegin - Maps values from the global vector to the local
-   patch, the ghost points are included. Must be followed by 
+   patch; the ghost points are included. Must be followed by 
    DAGlobalToLocalEnd() to complete the exchange.
 
    Input Parameters:
@@ -35,7 +35,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
 /*@
    DAGlobalToLocalEnd - Maps values from the global vector to the local
-   patch, the ghost points are included. Must be preceeded by 
+   patch; the ghost points are included. Must be preceeded by 
    DAGlobalToLocalBegin().
 
    Input Parameters:
