@@ -24,11 +24,9 @@ int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr)
+void PETSC_STDCALL setcroutinefromfortran_(TS *ts,Mat *A,Mat *B,int *__ierr)
 {
-    *__ierr = TSSetRHSJacobian((TS)PetscToPointer(*(int*)(ts)),
-	                       (Mat)PetscToPointer(*(int*)(A)),
-	                       (Mat)PetscToPointer(*(int*)(B)),RHSJacobianFD,PETSC_NULL);
+    *__ierr = TSSetRHSJacobian(*ts,*A,*B,RHSJacobianFD,PETSC_NULL);
 }
 
 EXTERN_C_END

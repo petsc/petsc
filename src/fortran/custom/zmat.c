@@ -615,18 +615,6 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr
   *ierr = MatZeroRowsLocal(*mat,*is,diag);
 }
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define matdiagonalscalelocal_           MATDIAGONALSCALELOCAL
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matdiagonalscalelocal_           matdiagonalscalelocal
-#endif
-
-
-void PETSC_STDCALL matdiagonalscalelocal_(Mat *A,Vec *scale, int *ierr )
-{
-  *ierr = MatDiagonalScaleLocal(*A,*scale);
-}
-
 EXTERN_C_END
 
 
