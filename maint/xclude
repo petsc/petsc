@@ -26,6 +26,7 @@ petsc/src/dfvec/examples/ex5.c
 petsc/src/dfvec/examples/ex20.c
 petsc/src/snes/examples/umin/ex4.c
 petsc/src/snes/examples/umin/ex5.c
+petsc/src/snes/examples/umin/pdgl2fg.f
 petsc/bmake/rs6000_lam
 petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif

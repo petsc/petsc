@@ -59,6 +59,7 @@ if ($day == Thu) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Fri) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -83,6 +84,7 @@ foreach i ($job)
   set arch    = $A[$i]
   set job1    = $J1[$i]
   set job2    = $J2[$i]
+  set job3    = $J3[$i]
   echo "****************************************************" >> build.log
   echo "Build on $mach $bopt `date` " >> build.log
   rsh $mach -n "cd $H ; \
@@ -100,6 +102,9 @@ foreach i ($job)
   echo "******************************************************" >> examples.log
   rsh $mach -n "cd $H ;  \
     make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
+  echo "******************************************************" >> examples.log
+  rsh $mach -n "cd $H ;  \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
   endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
   rsh $mach -n "cd $H ; \
