@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.4 2000/08/17 04:50:52 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.5 2000/10/24 20:24:43 bsmith Exp bsmith $ 
 
-#requirespackage  'PETSC_HAVE_MATLAB'
+#requirespackage  'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar real 
 
 ALL: lib 
