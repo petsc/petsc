@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.25 2000/04/23 19:04:40 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.26 2000/04/26 01:42:11 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -336,24 +336,22 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,MatStructure *flag, void *dummy)
 /*---------------------------------------------------------------------*/
 {
-   AppCtx       *user = (AppCtx *) dummy;
-   GRID         *grid = user->grid;
-   TstepCtx     *tsCtx = user->tsCtx;
-   Mat          jac = *B;
-   VecScatter   scatter = grid->scatter;
-   Vec          localX = grid->qnodeLoc;
-   Scalar       *qnode;
-   int          ierr;
+  AppCtx       *user = (AppCtx *) dummy;
+  GRID         *grid = user->grid;
+  TstepCtx     *tsCtx = user->tsCtx;
+  Mat          jac = *B;
+  VecScatter   scatter = grid->scatter;
+  Vec          localX = grid->qnodeLoc;
+  Scalar       *qnode;
+  int          ierr;
  
-   PetscFunctionBegin;
-   ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-   ierr = MatSetUnfactored(jac);CHKERRQ(ierr); 
-   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = MatSetUnfactored(jac);CHKERRQ(ierr); 
  
-   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
-   /*ierr = MatZeroEntries(jac);CHKERRQ(ierr);*/
-
-   f77FILLA(&grid->nnodesLoc, &grid->nedgeLoc, grid->eptr,
+  ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
+  f77FILLA(&grid->nnodesLoc, &grid->nedgeLoc, grid->eptr,
             &grid->nsface, 
              grid->isface, grid->fxn, grid->fyn, grid->fzn, 
              grid->sxn, grid->syn, grid->szn,
@@ -361,147 +359,8 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,MatStructure *flag, void *du
              grid->ivnode, grid->ifnode, qnode, &jac, grid->cdt, 
              grid->area, grid->xyzn, &tsCtx->cfl, 
             &rank, &grid->nvertices);
-
-   /*ierr = MatView(jac,VIEWER_STDOUT_SELF);CHKERRQ(ierr);*/
-   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-   *flag = SAME_NONZERO_PATTERN;
-   /*{
-       Viewer viewer;
-       ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"mat.bin", BINARY_CREATE, &viewer);
-       ierr = MatView(jac,viewer);CHKERRQ(ierr);
-       ierr = VecView(x,viewer);CHKERRQ(ierr);
-       ierr = ViewerDestroy(viewer);
-       ierr = MPI_Abort(MPI_COMM_WORLD,1);
-     }*/
-#if defined (MAT_DUMP)
-#if defined(INTERLACING) 
-#if defined(BLOCKING)
-    {
-    /* Write the matrix in compressed row format */
-    int  mat_dump_freq = tsCtx->max_steps;
-    int nnodes = grid->nnodes; 
-    if (((c_info->ntt - 1)%mat_dump_freq) == 0) {
-     int fd, nbytes,nwrt, itstep = c_info->ntt - 1;
-     int *rows, *cols;
-     int tmp[10];
-     Scalar *aij;
-     char str[256];
-     ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing the matrix at time step %d\n",itstep);CHKERRQ(ierr);
-     sprintf(str,"matAij%d.bin", itstep);
-     fptr = fopen("matAij.dat","w");
-     /*fd = open("matAij.bin", O_WRONLY, 0);*/
-     if ((fd = creat(str, 0755)) < 0) 
-        SETERRQ(1,1,"Error in opening the file %s");
-     printf("fd is %d\n", fd);
-     nnz = grid->ia[nnodes] - 1;
-     fprintf(fptr,"%d %d %d\n",4*nnodes,4*nnodes,16*nnz);
-     tmp[0] = 4*nnodes;
-     tmp[1] = 4*nnodes;
-     tmp[2] = 16*nnz;
-     nwrt = 3*sizeof(int);
-     if ((nbytes = write(fd, (char *) tmp, nwrt)) != nwrt)
-         SETERRQ(1,1,"Write error on file");
-     in = 0;
-     for (i = 0; i < nnodes; i++) {
-      jend = 4*(grid->ia[i+1]-grid->ia[i]); 
-      fprintf(fptr,"%d %d %d %d ", in,in+jend,in+2*jend,in+3*jend);
-      if ((i%3) == 0)
-       fprintf(fptr,"\n");
-      tmp[0] = in;
-      tmp[1] = in+jend;
-      tmp[2] = in+2*jend;
-      tmp[3] = in+3*jend;
-      in += 4*jend;
-      nwrt = 4*sizeof(int);
-      if ((nbytes = write(fd, (char *)tmp, nwrt)) != nwrt)
-          SETERRQ(1,1,"Write error on file -- row begin array");
-     }
-     tmp[0] = in;
-     nwrt = sizeof(int);
-     if ((nbytes = write(fd, (char *) tmp, nwrt)) != nwrt)
-          SETERRQ(1,1,"Write error on file");
-     for (i = 0; i < nnodes; i++) {
-      jstart = grid->ia[i] - 1;
-      jend = grid->ia[i+1] - 1;
-      for (j = jstart; j < jend; j++) {
-       in = 4*grid->ja[j]; 
-       fprintf(fptr,"%d %d %d %d ", in,in+1,in+2,in+3);
-       tmp[0] = in;
-       tmp[1] = in+1;
-       tmp[2] = in+2;
-       tmp[3] = in+3;
-       nwrt = 4*sizeof(int);
-       if ((nbytes = write(fd, (char *)tmp, nwrt)) != nwrt)
-           SETERRQ(1,1,"Write error on file -- col index array");
-      }
-      for (j = jstart; j < jend; j++) {
-       in = 4*grid->ja[j]; 
-       fprintf(fptr,"%d %d %d %d ", in,in+1,in+2,in+3);
-       tmp[0] = in;
-       tmp[1] = in+1;
-       tmp[2] = in+2;
-       tmp[3] = in+3;
-       nwrt = 4*sizeof(int);
-       if ((nbytes = write(fd, (char *)tmp, nwrt)) != nwrt)
-           SETERRQ(1,1,"Write error on file -- col index array");
-      }
-      for (j = jstart; j < jend; j++) {
-       in = 4*grid->ja[j]; 
-       fprintf(fptr,"%d %d %d %d ", in,in+1,in+2,in+3);
-       tmp[0] = in;
-       tmp[1] = in+1;
-       tmp[2] = in+2;
-       tmp[3] = in+3;
-       nwrt = 4*sizeof(int);
-       if ((nbytes = write(fd, (char *)tmp, nwrt)) != nwrt)
-           SETERRQ(1,1,"Write error on file %s -- col index array");
-      }
-      for (j = jstart; j < jend; j++) {
-       in = 4*grid->ja[j]; 
-       fprintf(fptr,"%d %d %d %d ", in,in+1,in+2,in+3);
-       tmp[0] = in;
-       tmp[1] = in+1;
-       tmp[2] = in+2;
-       tmp[3] = in+3;
-       nwrt = 4*sizeof(int);
-       if ((nbytes = write(fd, (char *) tmp, nwrt)) != nwrt)
-           SETERRQ(1,1,"Write error on file -- col index array");
-      }
-      fprintf(fptr,"\n");
-     }
-     ICALLOC(4*nnodes,&rows);
-     ICALLOC(4*nnodes,&cols);
-     FCALLOC(16*nnodes,&aij);
-     for (i = 0; i < nnodes; i++) { 
-      in = 4*i;
-      rows[0] = in; rows[1] = in+1; 
-      rows[2] = in+2; rows[3] = in+3; 
-      jstart = grid->ia[i] - 1;
-      jend = grid->ia[i+1] - 1;
-      k = 0;
-      for (j = jstart; j < jend; j++) {
-       in = 4*grid->ja[j]; 
-       cols[k++]=in; cols[k++]=in+1;
-       cols[k++]=in+2; cols[k++]=in+3;
-      }
-      ierr = MatGetValues(jac,4,rows,k,cols,aij);
-      nwrt = 4*k*sizeof(REAL);
-      if ((nbytes = write(fd, (char *) aij, nwrt)) != nwrt)
-          SETERRQ(1,1,"Write error on file -- data array");
-      for (in = 0; in < 4; in++) {
-       fprintf(fptr,"row %d ....\n",rows[in]);
-       for (j = 0; j < k; j++) 
-         fprintf(fptr,"%d %g ", cols[j],aij[j+in*k]); 
-       fprintf(fptr,"\n");
-      }
-     }
-     fclose(fptr);
-     close(fd);
-    }
-   }
-#endif
-#endif
-#endif
+  ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -527,16 +386,16 @@ int Update(SNES snes, void *ctx)
  FILE 		*fptr = 0;
  int		nfailsCum = 0, nfails = 0;
  /*Scalar         cpu_ini, cpu_fin, cpu_time;*/
-/*int 		event0 = 14, event1 = 25, gen_start, gen_read;
+ /*int 		event0 = 14, event1 = 25, gen_start, gen_read;
  Scalar		time_start_counters, time_read_counters;
  long long      counter0, counter1;*/
 
   PetscFunctionBegin;
 
   ierr = OptionsHasName(PETSC_NULL,"-print", &print_flag);CHKERRQ(ierr);
-  if (!rank && print_flag) {
-    fptr = fopen("history.out", "w");
-    fprintf(fptr, "VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");
+  if (print_flag) {
+    ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out", "w",&fptr);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
   }
   if (user->PreLoading) 
    max_steps = 1;
@@ -560,13 +419,10 @@ int Update(SNES snes, void *ctx)
  for (i = 0; i < max_steps && fratio <= tsCtx->fnorm_ratio; i++) {
   ierr = ComputeTimeStep(snes,i,user);CHKERRQ(ierr);
   /*tsCtx->ptime +=  tsCtx->dt;*/
-  ierr = PetscTrValid(0,0,0,0);CHKERRQ(ierr);
   ierr = SNESSolve(snes,grid->qnode,&its);CHKERRQ(ierr);
-  ierr=PetscTrValid(0,0,0,0);CHKERRQ(ierr); 
   ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
-  if (nfailsCum >= 2) 
-    SETERRQ(1,1,"Unable to find a Newton Step");
+  if (nfailsCum >= 2) SETERRQ(1,1,"Unable to find a Newton Step");
   if (print_flag){
     ierr = PetscPrintf(MPI_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",i,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   }
@@ -603,19 +459,13 @@ int Update(SNES snes, void *ctx)
             grid->xyz,
             grid->sface_bit, grid->vface_bit,
             &clift, &cdrag, &cmom, &rank, &grid->nvertices);
-  /*
-  if (!rank)
-   fprintf(fptr, "%d\t%15.8e\t%15.8e\t%15.8e\t%15.8e\t%15.8e\t%15.8e\n", 
-           i, tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom, cpuglo);
-  */
   if (print_flag) {
     ierr = PetscPrintf(MPI_COMM_WORLD, "%d\t%g\t%g\t%g\t%g\t%g\n", i, 
-               tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom);CHKERRQ(ierr);
+                       tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom);CHKERRQ(ierr);
     ierr = PetscPrintf(MPI_COMM_WORLD,"Wall clock time needed %g seconds for %d time steps\n", 
-               cpuglo, i);CHKERRQ(ierr);
-   if (!rank)
-    fprintf(fptr, "%d\t%g\t%g\t%g\t%g\t%g\t%g\n", 
-            i, tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom, cpuglo);
+                       cpuglo, i);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr, "%d\t%g\t%g\t%g\t%g\t%g\t%g\n", 
+                        i, tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom, cpuglo);
   }
   ierr = VecRestoreArray(localX, &qnode);CHKERRQ(ierr);
   ierr = VecRestoreArray(grid->res, &res);CHKERRQ(ierr);
