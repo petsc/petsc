@@ -48,8 +48,8 @@ class Configure(config.base.Configure):
     if haveGNUMake:
       self.addMakeRule('libc','${LIBNAME}(${OBJSC} ${SOBJSC})')
     else:
-      self.addMakeRule('libc','${OBJSC}','${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
-    self.addMakeRule('libf','${OBJSF}','${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
+      self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
+    self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
 
   def configure(self):
