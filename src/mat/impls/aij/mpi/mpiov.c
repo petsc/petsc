@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.2 1996/01/23 00:44:57 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.3 1996/01/23 17:16:39 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -10,7 +10,7 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
   int        **idx, *n, *w1, *w2, *w3, *w4, *rtable, size, rank, m, i, j, ierr ;
   int        row, proc, mct, msz, **outdat, **ptr, *ctr;
                                   /* assume overlap = 1 */
-  
+  if (ismax<1) return 0;
   size   = a->size;
   rank   = a->rank;
   m      = a->M;
@@ -52,6 +52,7 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
   mct      = 0;              /* no of outgoing messages */
   msz      = 0;              /* total mesg length (for all proc */
   w1[rank] = 0;              /* no mesg sent to intself */
+  w3[rank] = 0;
   for (j =0; j < size ; ++j) {
     if (w1[j])  { w2[j] = 1; mct++;} /* there exists a message to proc i */
   }
@@ -65,7 +66,7 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
 
   /* Allocate Memory for outgoing messages */
   outdat    = (int **)PetscMalloc( 2*size*sizeof(int*));
-  outdat[0] = (int *)PetscMalloc(msz *sizeof (int));
+  outdat[0] = (int *)PetscMalloc((msz+1) *sizeof (int));
   ptr       = outdat +size;     /* Pointers to the data in outgoing buffers */
   ctr       = (int *)PetscMalloc( size*sizeof(int));  
 
@@ -98,19 +99,26 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
       }
     }
     /*    Update the headers*/
-    for( i = 0; i<size; ++i) {
-      if (ctr[i]) {
-        outdat[i][0] ++;
-        outdat[i][ outdat[i][0]] = ctr[i];
+    for( j = 0; j<size; ++j) {
+      if (ctr[j]) {
+        outdat[j][0] ++;
+        outdat[j][ outdat[j][0]] = ctr[j];
       }
     }
   }
   
   /* Check Validity */
   for ( i=0 ; i<size ; ++i) {
-    if (w3[i] != outdat[i][0]) {SETERRQ(1,"MatIncreaseOverlap_MPIAIJ: Blew it!\n"); }
+    if( w3[i]) {
+      if (w3[i] != outdat[i][0]) {SETERRQ(1,"MatIncreaseOverlap_MPIAIJ: Blew it!\n"); }
+    }
   }
   
+  for ( i=0 ; i<size ; ++i) {
+    if( w3[i]) {
+      sum = 0;
+      for (j = 0; j < w3[i]; ++j) sum+= outdat[i][j]
+  printf("Whew!!!\n");
 
 
 

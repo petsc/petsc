@@ -282,9 +282,9 @@ runex13:
 
 runex16:
 	-@$(MPIRUN) ex16 -f $(PETSC_DIR)/src/mat/examples/matbinary.ex \
-	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_method ilu \
+	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_type ilu \
 	   -b_pc_type bjacobi -b_pc_bjacobi_blocks 5 -b_ksp_max_it 10 \
-	   -b_sub_pc_type bgs _b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
+	   -b_sub_pc_type bgs -b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   $(RM) -f ex13_1.tmp

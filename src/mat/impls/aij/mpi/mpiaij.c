@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.112 1996/01/23 00:41:58 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.113 1996/01/23 00:44:13 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -1322,7 +1322,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
        0,0,MatConvert_MPIAIJ,0,0,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
-       0,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
+       0,0,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ};
 
