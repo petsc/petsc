@@ -1,15 +1,15 @@
-/* $Id: phead.h,v 1.33 1996/07/24 20:22:51 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.34 1996/07/31 15:42:40 bsmith Exp bsmith $ */
 
 /*
-    Defines the basic format of all data types. 
+    Defines the basic header of all data types. 
 */
 
 #if !defined(_PHEAD_H)
 #define _PHEAD_H
 #include "petsc.h"  
 
-extern int  PetscCommDup_Private(MPI_Comm,MPI_Comm*,int*);
-extern int  PetscCommFree_Private(MPI_Comm*);
+extern int PetscCommDup_Private(MPI_Comm,MPI_Comm*,int*);
+extern int PetscCommFree_Private(MPI_Comm*);
 
 extern int PetscRegisterCookie(int *);
 
@@ -43,8 +43,7 @@ extern int PetscRegisterCookie(int *);
 #define  PETSCFREEDHEADER -1
 
 #define PetscHeaderCreate(h,tp,cook,t,com)                         \
-      {h = (struct tp *) PetscNew(struct tp);                      \
-       CHKPTRQ((h));                                               \
+      {h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));         \
        PetscMemzero(h,sizeof(struct tp));                          \
        (h)->cookie = cook;                                         \
        (h)->type   = t;                                            \
@@ -70,7 +69,7 @@ extern void *PetscLow,*PetscHigh;
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");             \
   }                                                                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){              \
-    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");             \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object:out of range");\
   }                                                                 \
   if (((PetscObject)(h))->cookie != ck) {                           \
     if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
@@ -86,7 +85,7 @@ extern void *PetscLow,*PetscHigh;
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");             \
   }                                                                 \
   else if (PetscLow > (void *) h || PetscHigh < (void *)h){         \
-    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");             \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Objectout of range"); \
   }                                                                 \
   else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {        \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                 \
@@ -169,3 +168,5 @@ extern int PetscObjectAppendPrefix(PetscObject,char*);
 extern int PetscObjectGetPrefix(PetscObject,char**);
 
 #endif
+
+

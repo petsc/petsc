@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.49 1996/03/23 23:11:00 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.50 1996/03/26 00:11:15 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -19,8 +19,7 @@ typedef enum { SNES_UNKNOWN_METHOD=-1,
                SNES_UM_TR 
 } SNESType;
 
-typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION} 
-              SNESProblemType;
+typedef enum {SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION} SNESProblemType;
 extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
 extern int SNESSetType(SNES,SNESType);

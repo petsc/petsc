@@ -1,11 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.49 1996/08/04 23:11:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.50 1996/08/05 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
 */
-#include "petsc.h"        /*I    "sys.h"   I*/
+#include "petsc.h"        
+#include "sys.h"             /*I    "sys.h"   I*/
 #include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)

@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.41 1996/04/10 04:31:08 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.42 1996/07/08 22:24:30 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -13,7 +13,6 @@
 
 typedef struct _KSP*     KSP;
 
-/*  Possible Krylov Space Methods */
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
                KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG} KSPType;
 

@@ -1,7 +1,7 @@
-/* $Id: is.h,v 1.27 1996/07/02 18:09:25 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.28 1996/08/04 23:14:42 bsmith Exp bsmith $ */
 
 /*
-      An index set is essentially a subset of the integers. They are used
+      An index set is a genralization of a subset of integers. They are used
    for defining scatters and gathers.
 */
 #if !defined(__IS_PACKAGE)
@@ -41,3 +41,5 @@ extern int   ISBlockGetBlockSize(IS,int **);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
 #endif
+
+

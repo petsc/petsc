@@ -1,7 +1,7 @@
-/* $Id: plog.h,v 1.77 1996/07/28 16:07:13 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.78 1996/08/04 23:09:47 bsmith Exp bsmith $ */
 
 /*
-    Defines high level logging in PETSc.
+    Defines profile/logging in PETSc.
 */
 
 #if !defined(__PLOG_PACKAGE)
@@ -9,6 +9,8 @@
 #include "petsc.h"  
 
 /*
+  Lists all PETSc events that are logged/profiled.
+
   If you add an event here, make sure you add it to 
   petsc/bin/petscview.cfg,
   petsc/bin/petscview,
@@ -191,28 +193,28 @@ extern int (*_PHD)(PetscObject);
 #define PLogObjectDestroy(h)        {if (_PHD) (*_PHD)((PetscObject)h);}
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
-extern int PLogObjectState(PetscObject,char *,...);
-extern int PLogDestroy();
-extern int PLogStagePush(int);
-extern int PLogStagePop();
-extern int PLogStageRegister(int,char*);
-extern int PLogPrintSummary(MPI_Comm,FILE *);
-extern int PLogBegin();
-extern int PLogAllBegin();
-extern int PLogDump(char*);
-extern int PLogEventRegister(int*,char*,char*);
+extern int    PLogObjectState(PetscObject,char *,...);
+extern int    PLogDestroy();
+extern int    PLogStagePush(int);
+extern int    PLogStagePop();
+extern int    PLogStageRegister(int,char*);
+extern int    PLogPrintSummary(MPI_Comm,FILE *);
+extern int    PLogBegin();
+extern int    PLogAllBegin();
+extern int    PLogDump(char*);
+extern int    PLogEventRegister(int*,char*,char*);
 extern double PetscGetFlops();
 
 /*
      This does not use for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
 */
-#if !defined(PETSC_USING_MPIUNI) && !defined(PARCH_hpux)
+#if !defined(PETSC_USING_MPIUNI)
 /*
    Logging of MPI activities
 */
-extern double irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
-extern double irecv_len,isend_len,recv_len,send_len;
+extern double irecv_ct,   isend_ct,    wait_ct,       wait_any_ct, recv_ct, send_ct;
+extern double irecv_len,  isend_len,   recv_len,      send_len;
 extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define TypeSize(buff,count,type) \

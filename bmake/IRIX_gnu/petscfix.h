@@ -78,7 +78,7 @@ extern "C" {
 extern char   *mktemp(char *);
 extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
-extern int     getdomainname(char *,int);
+extern int    getdomainname(char *,int);
 extern void   abort(void);
 extern int    atoi(const char*);
 extern void   exit(int);
@@ -182,9 +182,9 @@ extern int    atoi(char*);
 #if defined(PARCH_hpux)
 
 #if defined(__cplusplus)
-extern int     getdomainname(char *,int);
-extern int    exit(int);
-extern int    abort();
+extern int  getdomainname(char *,int);
+extern int  exit(int);
+extern int  abort();
 
 #else
 extern char *mktemp(char*);
@@ -206,8 +206,8 @@ extern char   *getenv( char *);
 /* extern double atof(char *); */
 extern int    atoi(char*);
 extern char   *mktemp(char *);
-extern unsigned int sleep(unsigned int);
 extern int    close(int);
+extern unsigned int sleep(unsigned int);
 }
 
 #else

@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.17 1996/03/04 15:15:03 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.18 1996/05/19 14:18:36 bsmith Exp bsmith $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -28,18 +28,17 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
 /*
-   With Solaris 5.5 (and maybe 5.4) you should remove the 
- part of the line defined(PARCH_solaris) || 
+   With Solaris 5.3 (and maybe 5.4) you should add the   
+   || defined(PARCH_solaris) below
 */
-#if (defined(PARCH_solaris) || defined(PARCH_sun4)) && defined(__cplusplus)
+#if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
 extern int gettimeofday(struct timeval *, struct timezone *);
 }
 #endif
 
 /*
-    Macros for timing. In the future some of these may be 
-    machine dependent versions. The are not intended for PETSc users!
+    Macros for timing. They are not intended for PETSc users!
 */
 
 /*
@@ -116,11 +115,14 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 
 .keywords:  Petsc, time, add
 */
+
+/*
+    Defines the high accuracy interface to the IBM rs6000 clock through an
+  assembler call.
+*/ 
 #if defined(PARCH_rs6000)
 #if defined(__cplusplus) 
-extern "C" {
-extern UTP_readTime(struct timestruc_t *);
-}
+extern "C" { extern UTP_readTime(struct timestruc_t *);}
 #else 
 extern UTP_readTime(struct timestruc_t *);
 #endif

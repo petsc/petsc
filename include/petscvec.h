@@ -1,16 +1,6 @@
-/* $Id: vec.h,v 1.50 1996/03/26 17:29:58 balay Exp bsmith $ */
+/* $Id: vec.h,v 1.51 1996/08/04 23:14:42 bsmith Exp bsmith $ */
 /* 
-   This defines the abstract vector component. These are patterned
-   after the Level-1 Blas, but with some additions that have proved
-   useful. These include routines to allocate and free vectors.
-
-   Note that the routines that are normally thought of as returning a
-   value (e.g., dot, norm) return their value through an argument.
-   This allows these routines to be used with other datatype, such
-   as float and dcomplex.
-
-   All vectors should be declared as a Vec. All vector routines begin
-   with Vec.
+   This defines the abstract vector component of PETSc.
  */
 
 #ifndef __VEC_PACKAGE 
@@ -98,5 +88,6 @@ extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
 #endif
 
 #endif
+
 
 

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.26 1996/07/21 22:21:36 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.27 1996/07/22 15:32:19 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -12,12 +12,10 @@ C     Flags
 C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
       integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON
-      integer   PETSC_FP_TRAP_ALWAYS
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
      *           PETSC_DEFAULT = -2)
-      parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1, 
-     *           PETSC_FP_TRAP_ALWAYS = 2)
+      parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
 C
 C     Default Viewers

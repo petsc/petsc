@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.19 1996/07/08 22:24:30 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.20 1996/08/04 23:14:42 bsmith Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -7,7 +7,7 @@
 
 #include "petsc.h"
 
-extern int  PetscGetArchType(char*,int);
+extern int  PetscGetArchType(char *,int);
 extern int  PetscGetHostName(char *,int);
 extern int  PetscGetUserName(char *,int);
 
@@ -27,9 +27,9 @@ typedef enum { RANDOM_DEFAULT, RANDOM_DEFAULT_REAL,
 
 typedef struct _PetscRandom*   PetscRandom;
 
-extern int  PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
-extern int  PetscRandomGetValue(PetscRandom,Scalar*);
-extern int  PetscRandomDestroy(PetscRandom);
+extern int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
+extern int PetscRandomGetValue(PetscRandom,Scalar*);
+extern int PetscRandomDestroy(PetscRandom);
 
 extern int PetscGetFullPath(char*,char*,int);
 extern int PetscGetRelativePath(char*,char*,int);
