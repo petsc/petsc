@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.6 1995/04/20 16:03:39 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.7 1995/04/21 21:37:19 curfman Exp bsmith $";
 #endif
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"

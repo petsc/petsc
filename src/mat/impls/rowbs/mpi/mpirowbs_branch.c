@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.19 1995/05/03 13:19:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.20 1995/05/06 20:13:04 curfman Exp bsmith $";
 #endif
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "mpirowbs.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
