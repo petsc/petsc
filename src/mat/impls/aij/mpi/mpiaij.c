@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.224 1997/11/03 04:45:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.225 1997/11/05 22:32:45 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1018,10 +1018,6 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   double     isend[5], irecv[5];
 
   PetscFunctionBegin;
-  info->rows_global    = (double)mat->M;
-  info->columns_global = (double)mat->N;
-  info->rows_local     = (double)mat->m;
-  info->columns_local  = (double)mat->N;
   info->block_size     = 1.0;
   ierr = MatGetInfo(A,MAT_LOCAL,info); CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
@@ -1053,6 +1049,10 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
+  info->rows_global       = (double)mat->M;
+  info->columns_global    = (double)mat->N;
+  info->rows_local        = (double)mat->m;
+  info->columns_local     = (double)mat->N;
 
   PetscFunctionReturn(0);
 }
