@@ -69,7 +69,7 @@ class ArgString(ArgEmpty):
     if not hasattr(self,'value'):
       if self.help: print self.help
       try:                      self.value = parseArg(raw_input('Please enter value for '+key+':'))
-      except KeyboardInterrupt:	self.value = ''
+      except KeyboardInterrupt:	sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
     
@@ -85,7 +85,7 @@ class ArgInt(ArgEmpty):
       if self.help: print self.help
       while 1:
         try: self.value = parseArg(raw_input('Please enter integer value for '+key+':'))
-        except KeyboardInterrupt: self.value = self.min
+        except KeyboardInterrupt: sys.exit(1)
         try: self.value = int(self.value)
         except: self.value = self.min
         if self.value > self.min and self.value < self.max: return (1,self.value)
