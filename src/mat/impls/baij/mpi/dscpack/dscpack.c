@@ -652,7 +652,7 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
 int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
-  /* This routine is only called to convert to MATSUPERLU_DIST */
+  /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
   int             ierr,size;
