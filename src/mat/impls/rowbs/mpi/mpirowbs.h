@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.45 2000/01/11 21:00:45 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.46 2000/05/10 16:40:44 bsmith Exp balay $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -38,6 +38,7 @@ typedef struct {
   PetscTruth  vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;
   int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
+  int         bs_color_single;    /* Indicates blocksolve should bypass cliques in coloring */
   int         reallocs;           /* number of mallocs during MatSetValues() */
 
   /* BlockSolve data */
