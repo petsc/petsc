@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.41 1997/01/01 03:40:47 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.42 1997/01/06 20:29:45 balay Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -194,7 +194,8 @@ $          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 $
    Input Parameters:
 .  snes - the SNES context
-.  error_rel - relative error
+.  error_rel - relative error (should be set to the square root of
+     the relative error in the function evaluations)
 .  umin - minimum allowable u-value
 
 .keywords: SNES, matrix-free, parameters
