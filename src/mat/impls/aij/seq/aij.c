@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.370 2001/04/10 19:35:19 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.371 2001/04/19 20:29:41 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1830,6 +1830,150 @@ int MatRestoreArray_SeqAIJ(Mat A,Scalar **array)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringApply_SeqAIJ"
+int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+{
+  int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
+  Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
+  Scalar        *vscale_array;
+  PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
+  Vec           w1,w2,w3;
+  void          *fctx = coloring->fctx;
+  PetscTruth    flg;
+
+  PetscFunctionBegin;
+  if (!coloring->w1) {
+    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
+    PetscLogObjectParent(coloring,coloring->w1);
+    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
+    PetscLogObjectParent(coloring,coloring->w2);
+    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
+    PetscLogObjectParent(coloring,coloring->w3);
+  }
+  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
+
+  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscLogInfo(coloring,"MatFDColoringApply_SeqAIJ: Not calling MatZeroEntries()\n");
+  } else {
+    ierr = MatZeroEntries(J);CHKERRQ(ierr);
+  }
+
+  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+
+  /*
+       This is a horrible, horrible, hack. See DMMGComputeJacobian_Multigrid() it inproperly sets
+     coloring->F for the coarser grids from the finest
+  */
+  if (coloring->F) {
+    ierr = VecGetLocalSize(coloring->F,&m1);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(w1,&m2);CHKERRQ(ierr);
+    if (m1 != m2) {
+      coloring->F = 0; 
+    }    
+  }
+
+  if (coloring->F) {
+    w1          = coloring->F;
+    coloring->F = 0;
+  } else {
+    ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+  }
+
+  /* 
+      Compute all the scale factors and share with other processors
+  */
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
+  for (k=0; k<coloring->ncolors; k++) { 
+    /*
+       Loop over each column associated with color adding the 
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col];
+      if (dx == 0.0) dx = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+      if (dx < umin && dx >= 0.0)      dx = umin;
+      else if (dx < 0.0 && dx > -umin) dx = -umin;
+#else
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+#endif
+      dx                *= epsilon;
+      vscale_array[col] = 1.0/dx;
+    }
+  } 
+  vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /*  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
+      ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);*/
+
+  if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
+  else                        vscaleforrow = coloring->columnsforrow;
+
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  /*
+      Loop over each color
+  */
+  for (k=0; k<coloring->ncolors; k++) { 
+    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
+    /*
+       Loop over each column associated with color adding the 
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col];
+      if (dx == 0.0) dx = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+      if (dx < umin && dx >= 0.0)      dx = umin;
+      else if (dx < 0.0 && dx > -umin) dx = -umin;
+#else
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+#endif
+      dx            *= epsilon;
+      if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
+      w3_array[col] += dx;
+    } 
+    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+
+    /*
+       Evaluate function at x1 + dx (here dx is a vector of perturbations)
+    */
+
+    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+
+    /*
+       Loop over rows of vector, putting results into Jacobian matrix
+    */
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+    for (l=0; l<coloring->nrows[k]; l++) {
+      row    = coloring->rows[k][l];
+      col    = coloring->columnsforrow[k][l];
+      y[row] *= vscale_array[vscaleforrow[k][l]];
+      srow   = row + start;
+      ierr   = MatSetValues_SeqAIJ(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -1896,7 +2040,19 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatDestroy_SeqAIJ,
        MatView_SeqAIJ,
-       MatGetMaps_Petsc};
+       MatGetMaps_Petsc,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatSetColoring_SeqAIJ,
+       MatSetValuesAdic_SeqAIJ,
+       MatSetValuesAdifor_SeqAIJ,
+       MatFDColoringApply_SeqAIJ};
 
 EXTERN int MatUseSuperLU_SeqAIJ(Mat);
 EXTERN int MatUseEssl_SeqAIJ(Mat);
@@ -2716,8 +2872,8 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,Scalar *a,M
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatADSetColoring_SeqAIJ"
-int MatADSetColoring_SeqAIJ(Mat A,ISColoring coloring)
+#define __FUNCT__ "MatSetColoring_SeqAIJ"
+int MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
 {
   int        ierr;
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
@@ -2728,29 +2884,68 @@ int MatADSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+EXTERN_C_BEGIN
 #include "adic_utils.h"
+EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatADSetValues_SeqAIJ"
-int MatADSetValues_SeqAIJ(Mat A,void *advalues,int nlen)
+#define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
+int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
-  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
+  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
   Scalar     *v = a->a,*values;
+  char       *cadvalues = (char *)advalues;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
-
+  nlen  = my_AD_GetDerivTypeSize();
   color = a->coloring->colors;
   /* loop over rows */
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     /* loop over columns putting computed value into matrix */
-    values = my_AD_GetGradArray(advalues);
+    values = my_AD_GetGradArray(cadvalues);
     for (j=0; j<nz; j++) {
       *v++ = values[color[*jj++]];
     }
-    advalues += nlen; /* jump to next row of derivatives */
+    cadvalues += nlen; /* jump to next row of derivatives */
+  }
+  PetscFunctionReturn(0);
+}
+
+#else
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
+int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
+{
+  PetscFunctionBegin;
+  SETERRQ(1,"PETSc installed without ADIC");
+}
+
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAdifor_SeqAIJ"
+int MatSetValuesAdifor_SeqAIJ(Mat A,int nl,void *advalues)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
+  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
+  Scalar     *v = a->a,*values = (Scalar *)advalues;
+
+  PetscFunctionBegin;
+  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+  color = a->coloring->colors;
+  /* loop over rows */
+  for (i=0; i<m; i++) {
+    nz = ii[i+1] - ii[i];
+    /* loop over columns putting computed value into matrix */
+    for (j=0; j<nz; j++) {
+      *v++ = values[color[*jj++]];
+    }
+    values += nl; /* jump to next row of derivatives */
   }
   PetscFunctionReturn(0);
 }
