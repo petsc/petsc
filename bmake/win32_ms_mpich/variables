@@ -12,7 +12,7 @@ RANLIB           = true
 SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
-DIFF             = ndiff
+DIFF             = ndiff -separators ' \t,=;'  -relerr 1.0e-8
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} cl
