@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.31 1998/07/15 17:54:48 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.32 1998/07/22 18:37:12 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -71,9 +71,9 @@ MCC             = cc
 #
 # Option location where adiC is installed
 #
-ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
-ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
-ADIC_CC      = adiC -E -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -E -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
