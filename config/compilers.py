@@ -443,8 +443,10 @@ class Configure(config.base.Configure):
   def checkPIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
-    if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
-      return
+    # Instead of this, I need to add a link check
+    #
+    #if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
+    #  return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
