@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.172 1999/11/05 14:44:53 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.173 2000/01/11 21:00:12 bsmith Exp balay $*/
 /*
    Implements the sequential vectors.
 */
@@ -84,9 +84,9 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(x->array[i]) > 0.0) {
-        ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16e i\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
       } else if (PetscImaginaryPart(x->array[i]) < 0.0) {
-        ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16e i\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
       } else {
         ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(x->array[i]));CHKERRQ(ierr);
       }

@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.16 1999/11/24 21:53:54 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.17 2000/01/11 21:00:48 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
@@ -515,10 +515,10 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
       for (j=0; j<nz; j++) {
         if (val[j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
-          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e  %18.16e \n",
+          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e  %18.16ei \n",
              i+1,col[j]+1,PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
 #else
-          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e\n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
+          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16ei \n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
 #endif
         }
       }

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.131 1999/11/10 03:18:45 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.132 2000/01/11 21:00:13 bsmith Exp balay $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -73,9 +73,9 @@ int VecView_MPI_ASCII(Vec xin,Viewer viewer)
       for (i=0; i<xin->n; i++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(x->array[i]) > 0.0) {
-          ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16e i\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(x->array[i]) < 0.0) {
-          ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16e i\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
         } else {
           ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(x->array[i]));CHKERRQ(ierr);
         }
