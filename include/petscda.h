@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.50 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.51 2000/02/02 21:21:25 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -61,6 +61,9 @@ extern int   DAGetCoordinates(DA,Vec *);
 extern int   DASetUniformCoordinates(DA,double,double,double,double,double,double);
 extern int   DASetFieldName(DA,int,const char[]);
 extern int   DAGetFieldName(DA,int,char **);
+
+extern int   DAVecGetArray(DA,Vec,void **);
+extern int   DAVecRestoreArray(DA,Vec,void **);
 
 #include "mat.h"
 extern int   DAGetColoring(DA,ISColoring *,Mat *);
