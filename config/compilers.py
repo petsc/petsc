@@ -737,10 +737,14 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCRestrict)
     self.executeTest(self.checkCFormatting)
 
+    self.executeTest(self.checkSharedLinkerPaths)
+    self.executeTest(self.checkLinkerFlags)
+    self.executeTest(self.checkSharedLinkerFlag)
+
     self.executeTest(self.checkCxxCompiler)
     if 'CXX' in self.framework.argDB:
       self.executeTest(self.checkCxxNamespace)
-      self.executeTest(checkCxxOptionalExtensions)
+      self.executeTest(self.checkCxxOptionalExtensions)
 
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
@@ -749,8 +753,4 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranPreprocessor)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
-
-    self.executeTest(self.checkSharedLinkerPaths)
-    self.executeTest(self.checkLinkerFlags)
-    self.executeTest(self.checkSharedLinkerFlag)
     return
