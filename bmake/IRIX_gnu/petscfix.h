@@ -242,7 +242,7 @@ extern int    getpagesize();
 #if defined(PARCH_linux)
 #if defined(__cplusplus)
 extern "C" {
-extern void memalign (int,int);
+extern void* memalign (int,int);
 }
 #endif
 #endif
