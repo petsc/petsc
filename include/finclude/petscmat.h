@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.9 1996/02/12 20:30:32 bsmith Exp balay $;
+C  $Id: mat.h,v 1.10 1996/04/16 00:01:10 balay Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -88,6 +88,11 @@ C
 C  MatOperation is too huge. Is it reguired???
 C
 
+C
+C  
+C
+      integer MATRIX_BINARY_FORMAT_DENSE
+      parmaeter (MATRIX_BINARY_FORMAT_DENSE=-1)
 C
 C  End of Fortran include file for the Mat package in PETSc
 
