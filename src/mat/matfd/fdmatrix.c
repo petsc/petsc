@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.35 1998/08/17 21:11:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.36 1998/08/18 02:19:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -519,7 +519,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
-  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
   ierr = (*f)(sctx,x1,w1,fctx); CHKERRQ(ierr);
 
   PetscMemzero(wscale,N*sizeof(Scalar));
@@ -527,6 +526,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       Loop over each color
   */
 
+  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { 
     ierr = VecCopy(x1,w3); CHKERRQ(ierr);
     /*
@@ -546,9 +546,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
-      VecSetValues(w3,1,&col,&dx,ADD_VALUES); 
+      ierr = VecSetValues(w3,1,&col,&dx,ADD_VALUES);CHKERRQ(ierr); 
     } 
-    VecRestoreArray(x1,&xx);
+
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
@@ -563,7 +563,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
-    VecGetArray(w2,&y);
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
@@ -571,8 +571,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       srow   = row + start;
       ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    VecRestoreArray(w2,&y);
+    ierr = VecRestoreArray(w2,&y); CHKERRQ(ierr);
   }
+  ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -589,7 +590,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
    Collective on Mat, MatFDColoring, and Vec
 
     Input Parameters:
-_   mat - location to store Jacobian
++   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
 -   sctx - optional context required by function (actually a SNES context)
@@ -616,7 +617,6 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
-
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w1);
@@ -636,7 +636,6 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
 
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
-  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
   ierr = (*f)(sctx,t,x1,w1,fctx); CHKERRQ(ierr);
 
   PetscMemzero(wscale,N*sizeof(Scalar));
@@ -644,6 +643,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       Loop over each color
   */
 
+  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { 
     ierr = VecCopy(x1,w3); CHKERRQ(ierr);
     /*
@@ -663,9 +663,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
-      VecSetValues(w3,1,&col,&dx,ADD_VALUES); 
+      ierr = VecSetValues(w3,1,&col,&dx,ADD_VALUES); CHKERRQ(ierr);
     } 
-    VecRestoreArray(x1,&xx);
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
@@ -680,7 +679,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
-    VecGetArray(w2,&y);
+    ierr = VecGetArray(w2,&y); CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
@@ -688,9 +687,13 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       srow   = row + start;
       ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    VecRestoreArray(w2,&y);
+    ierr = VecRestoreArray(w2,&y); CHKERRQ(ierr);
   }
+  ierr  = VecRestoreArray(x1,&xx); CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+
