@@ -372,7 +372,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
   aa  = a->a;
   bs2 = a->bs2;
   
-  if (row < 0 || row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  if (row < 0 || row >= A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Row %d out of range", row);
   
   bn  = row/bs;   /* Block number */
   bp  = row % bs; /* Block Position */
@@ -743,12 +743,12 @@ int MatGetValues_SeqBAIJ(Mat A,int m,const int im[],int n,const int in[],PetscSc
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
     if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Row %d too large", row);
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
       if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-      if (in[l] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[l] >= A->n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column %d too large", in[l]);
       col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
@@ -882,13 +882,13 @@ int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,int m,const int im[],int n,const
         }
       } 
       if (nonew == 1) goto noinsert2;
-      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         MatScalar *new_a;
 
-        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col);
 
         /* malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);
@@ -1171,13 +1171,13 @@ int MatSetValues_SeqBAIJ(Mat A,int m,const int im[],int n,const int in[],const P
         }
       } 
       if (nonew == 1) goto noinsert1;
-      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         MatScalar *new_a;
 
-        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col);
 
         /* Malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);

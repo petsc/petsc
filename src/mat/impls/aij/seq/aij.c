@@ -1233,7 +1233,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   if (a->keepzeroedrows) {
     for (i=0; i<N; i++) {
-      if (rows[i] < 0 || rows[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
+      if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range", rows[i]);
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag) {
@@ -1246,7 +1246,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
   } else {
     if (diag) {
       for (i=0; i<N; i++) {
-        if (rows[i] < 0 || rows[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
+        if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range", rows[i]);
         if (a->ilen[rows[i]] > 0) { 
           a->ilen[rows[i]]          = 1; 
           a->a[a->i[rows[i]]] = *diag;
@@ -1257,7 +1257,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
       }
     } else {
       for (i=0; i<N; i++) {
-        if (rows[i] < 0 || rows[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
+        if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range", rows[i]);
         a->ilen[rows[i]] = 0; 
       }
     }
@@ -1710,7 +1710,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS is[],int ov)
   ai    = a->i;
   aj    = a->j;
 
-  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"illegal overlap value used");
+  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"illegal negative overlap value used");
 
   ierr = PetscMalloc((m+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(m,table);CHKERRQ(ierr);

@@ -150,13 +150,13 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
         } \
       } \
       if (a->nonew == 1) goto a_noinsert; \
-      else if (a->nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
+      else if (a->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         MatScalar *new_a; \
  \
-        if (a->nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
+        if (a->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int); \
@@ -226,13 +226,13 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
         } \
       } \
       if (b->nonew == 1) goto b_noinsert; \
-      else if (b->nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
+      else if (b->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int       new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         MatScalar *new_a; \
  \
-        if (b->nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
+        if (b->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(b->mbs+1)*sizeof(int); \
@@ -602,7 +602,7 @@ int MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const i
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
             if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"(row,col) has no entry in the hash table");
+              SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"(%d,%d) has no entry in the hash table", row, col);
             }
           }
         }
@@ -612,7 +612,7 @@ int MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const i
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
             if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"(row,col) has no entry in the hash table");
+              SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"(%d,%d) has no entry in the hash table", row, col);
             }
           }
         }
@@ -686,7 +686,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
             if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"(row,col) has no entry in the hash table");
+              SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"(%d,%d) has no entry in the hash table", row, col);
             }
           }
         }
@@ -696,7 +696,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
             if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"(row,col) has no entry in the hash table");
+              SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"(%d,%d) has no entry in the hash table", row, col);
             }
           }
         }
