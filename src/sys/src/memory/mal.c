@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.6 1995/06/03 04:24:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.7 1995/06/08 03:08:02 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -16,14 +16,15 @@ void *(*PetscMalloc)(unsigned int,int,char*) =
 int  (*PetscFree)(void *,int,char*) = (int (*)(void*,int,char*))free;
 
 /*@
-      PetscSetMalloc - Sets the routines used to do mallocs and frees.
-         This MUST be called before PetscInitialize() and may be
-         called only once.
+   PetscSetMalloc - Sets the routines used to do mallocs and frees.
+   This routine MUST be called before PetscInitialize() and may be
+   called only once.
 
-  Input Parameters:
-.   malloc - the malloc routine
-.   free - the free routine
+   Input Parameters:
+.  malloc - the malloc routine
+.  free - the free routine
 
+.keywords: Petsc, set, malloc, free, memory allocation
 @*/
 int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*),
                    int (*ifree)(void*,int,char*))
