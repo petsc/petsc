@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.30 1996/03/10 17:29:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.31 1996/03/18 00:43:21 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -102,7 +102,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  s - stencil width  
 
    Output Parameter:
-.  inra - the resulting array object
+.  inra - the resulting distributed array object
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate1d()

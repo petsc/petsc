@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.27 1996/03/10 17:29:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.28 1996/03/18 00:43:21 bsmith Exp curfman $";
 #endif
 
 /*
@@ -151,7 +151,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 
    Input Parameters:
 .  comm - MPI communicator
-.  wrap - type of periodicity should the array have, if any
+.  wrap - type of periodicity the array should have, if any. 
 $      DA_NONPERIODIC, DA_XPERIODIC, 
 $      DA_YPERIODIC, DA_XYPERIODIC
 $      DA_XYZPERIODIC, DA_XZPERIODIC, 
@@ -164,7 +164,7 @@ $      DA_YZPERIODIC
 .  s - stencil width
 
    Output Parameter:
-.  inra - the resulting array object
+.  inra - the resulting distributed array object
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate3d()
@@ -173,8 +173,8 @@ $  -da_view : call DAView() at the conclusion of DACreate3d()
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d()
 @*/
-int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type, 
-             int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)
+int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type, 
+               int M,int N,int P,int m,int n,int p,int w,int s,DA *inra)
 {
   int           rank,size,ierr,start,end,pm,flg;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.39 1996/03/09 18:43:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.40 1996/03/18 00:43:21 bsmith Exp curfman $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -118,7 +118,7 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 .  s - stencil width
 
    Output Parameter:
-.  inra - the resulting array object
+.  inra - the resulting distributed array object
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate2d()
@@ -133,7 +133,7 @@ $  -da_view : call DAView() at the conclusion of DACreate2d()
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M, int N, int m,int n, int w, int s, DA *inra)
+                int M,int N,int m,int n,int w,int s,DA *inra)
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
