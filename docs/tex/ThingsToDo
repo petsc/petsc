@@ -16,6 +16,8 @@ Meta priorities:
 
   - Add nightly testing for ts/examples/tutorials/[ex2.c,ex2f.F]
 
+  - Finish converting ex13.c to sles/exampels/tutorials/ex13f.F (VecPlaceArray)
+
   - Write section in users manual telling how people may test 
     PETSc solvers for matrices stored in files; see src/mat/examples/tests/ex32.c
     and src/sles/examples/tutorials/ex10.c and talk about partitioning 
