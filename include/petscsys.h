@@ -241,18 +241,21 @@ EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *,
 */
 #define PetscLLAdd(nidx,indices,lnk_head,lnk_init,nlnk,lnk) 0;\
 {\
-  int _k,_entry,_lidx=lnk_head,_idx;\
+  int _k,_entry,_location,_lnkdata;\
   nlnk = 0;\
   _k=nidx;\
   while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
     _entry = indices[--_k];\
-    if (lnk[_entry] == lnk_init) { /* new col */\
-      do {\
-        _idx = _lidx;\
-        _lidx  = lnk[_idx];\
-      } while (_entry > _lidx);\
-      lnk[_idx] = _entry;\
-      lnk[_entry] = _lidx;\
+    /* search for insertion location */\
+    _lnkdata  = lnk_head;\
+    do {\
+      _location = _lnkdata;\
+      _lnkdata  = lnk[_location];\
+    } while (_entry > _lnkdata);\
+    /* insertion location is found, add entry into lnk if it is new */\
+    if (_entry <  _lnkdata){/* new entry */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
       nlnk++;\
     }\
   }\

@@ -254,7 +254,8 @@ int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   ci[0] = 0;
   
   ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-  ierr = PetscLLInitialize(lnk_init,bn,lnk);CHKERRQ(ierr);
+  nlnk = bn+1;
+  ierr = PetscLLInitialize(lnk_init,nlnk,lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
