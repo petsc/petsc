@@ -38,8 +38,30 @@ freshmeat.net
   petsc-users mailing list password is bsbglmdk
 approve bsbglmdk subscribe petsc-users kamath2@llnl.gov
 
+--------------------------------------------------------------------------
 To approve a petsc-users mail in elm use | then approve
 
+To determine who is on the PETSc users mailing list send
+   to majordomo@mcs.anl.gov "who petsc-users"
+
+To unsubscribe a person from petsc-users use
+   unsubscribe petsc-users name
+
+Approving mail to petsc-users
+The easiest way to approve a message is to create a file ~/.majordomo
+that contains the lines:
+
+#list         passwd    site
+petsc-users   passwd    majordomo@mcs.anl.gov
+
+You could have multiple lines if you control multple lists.  Then
+take the message you have and send it through the program "approve".
+For MH based mail, that should be "show|approve".  If using "mail", 
+you'd have to save the message to a file then "cat file|approve".
+For other mailers, you are on your own to determine how to pipe the
+message to a program.  Some can do it, and others are like "mail".
+
+--------------------------------------------------------------------------
 General WWW info:
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
@@ -470,13 +492,6 @@ Location of email sent to petsc-maint:
 FTP log files:
   /nfs/logs/ftp
 
-
-To determine who is on the PETSc users mailing list send
-   to majordomo@mcs.anl.gov "who petsc-users"
-
-To unsubscribe a person from petsc-users use
-   unsubscribe petsc-users name
-
 To add an object to the PETSc logging:
   - Add object to plog.h, plog.c, petscview, petscview.cfg, plogmpe.c
     ... anything else?
@@ -502,21 +517,6 @@ Tips for using complex numbers:
 --------------------------------------------------------------------------
 
 Lois no at SMU: 214-768-2515
-
---------------------------------------------------------------------------
-Approving mail to petsc-users
-The easiest way to approve a message is to create a file ~/.majordomo
-that contains the lines:
-
-#list         passwd    site
-petsc-users   passwd    majordomo@mcs.anl.gov
-
-You could have multiple lines if you control multple lists.  Then
-take the message you have and send it through the program "approve".
-For MH based mail, that should be "show|approve".  If using "mail", 
-you'd have to save the message to a file then "cat file|approve".
-For other mailers, you are on your own to determine how to pipe the
-message to a program.  Some can do it, and others are like "mail".
 
 --------------------------------------------------------------------------
 
