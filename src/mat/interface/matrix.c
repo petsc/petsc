@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.248 1997/06/08 04:15:00 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.249 1997/06/08 14:03:38 curfman Exp bsmith $";
 #endif
 
 /*
@@ -2294,7 +2294,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
   if (fill < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Levels of fill negative");
-  if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"Currently only MatCreateMPIRowbs() matrices support parallel ILU");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
