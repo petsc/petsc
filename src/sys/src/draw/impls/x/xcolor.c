@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.41 1998/12/03 04:03:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.42 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 
 
@@ -55,9 +55,78 @@ extern int      XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned ch
 extern int      XiUniformHues( Draw_X *, int);
 
 #undef __FUNC__  
+#define __FUNC__ "XSetUpColorMap_Private"
+/*
+   Sets up a color map for a display. This is shared by all the windows
+  opened on that display; this is to save time when windows are open so 
+  each one does not have to create a color map which can take 15 to 20 seconds
+
+     This is new code written 2/26/1999 Barry Smith, I hope it can replace
+  some older, rather confusing code.
+*/
+static int       gNumcolors = 0;
+static Colormap  gColormap  = 0;
+int XSetUpColorMap_Shared(Display *display,int screen,Visual *visual)
+{
+  PetscFunctionBegin;
+  gColormap   = DefaultColormap(display,screen);CHKPTRQ(gColormap);
+
+  /* set the basic colors into the color map */
+
+/*  ierr = XiInitCmap( XiWin );CHKERRQ(ierr); */
+
+  /* set the uniform hue colors into the color map */
+
+  PetscFunctionReturn(0);
+}
+
+int XSetUpColorMap_Private(Display *display,int screen,Visual *visual)
+{
+  PetscFunctionBegin;
+  gColormap   = XCreateColormap(display,RootWindow(display,screen),
+                                  visual,AllocAll);CHKPTRQ(gColormap);
+  PetscFunctionReturn(0);
+}
+
+int XSetUpColorMap_X(Display *display,int screen,Visual *visual)
+{
+  int         ierr, sharedcolormap = 0;
+  XVisualInfo vinfo;
+
+  PetscFunctionBegin;
+  /* 
+     This is wrong; it needs to take the value from the visual 
+  */
+  gNumcolors = 1 << DefaultDepth( display, screen);
+
+  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap);CHKERRQ(ierr);
+  /*
+        Need to determine if window supports allocating a private colormap,
+    if not, set flag to 1
+  */
+  if (XMatchVisualInfo(display, screen, 24, StaticColor, &vinfo) ||
+      XMatchVisualInfo(display, screen, 24, TrueColor, &vinfo) ||
+      XMatchVisualInfo(display, screen, 16, StaticColor, &vinfo) ||
+      XMatchVisualInfo(display, screen, 16, TrueColor, &vinfo)) {
+    sharedcolormap = 1;
+  }
+
+  /* generate the X color map object */
+  if (sharedcolormap) {
+    ierr = XSetUpColorMap_Shared(display,screen,visual);CHKERRQ(ierr);
+  } else {
+    ierr = XSetUpColorMap_Private(display,screen,visual);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "XiInitColors" 
 int XiInitColors(Draw_X* XiWin,Colormap cmap)
 {
+  int ierr;
+
   PetscFunctionBegin;
   /* 
      Reset the number of colors from info on the display 
@@ -72,7 +141,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap)
   }
 
   /* get the initial colormap */
-  XiInitCmap( XiWin );
+  ierr = XiInitCmap( XiWin );CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -92,7 +161,7 @@ static int      cmap_base = 0;
 #define __FUNC__ "XiInitCmap"
 int XiInitCmap(Draw_X* XiWin )
 {
-  XColor   colordef;
+  XColor   colordef,ecolordef;
   int      i,found;
   Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
@@ -108,12 +177,14 @@ int XiInitCmap(Draw_X* XiWin )
   /*
      Look up the colors so that they can use server standards
      (and be corrected for the monitor) 
+
+     This seems to be very slow
   */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
-    XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
     if (defaultmap == XiWin->cmap) { 
-      XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
+      XAllocNamedColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef,&ecolordef ); 
     } else {
+      XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
       /* try to allocate the color in the default-map */
       found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
       /* use it, if it it exists and is not already used in the new colormap */
@@ -363,8 +434,7 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char
     *r  = 255 * l / 100;
     *g  = 255 * l / 100;
     *b  = 255 * l / 100;
-  }
-  else {
+  } else {
     *r  = (255 * XiHlsHelper( h+120, m1, m2 ) ) / 100;
     *g  = (255 * XiHlsHelper( h, m1, m2 ) )     / 100;
     *b  = (255 * XiHlsHelper( h-120, m1, m2 ) ) / 100;
@@ -463,14 +533,15 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
 #define __FUNC__ "XiUniformHues" 
 int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
+  int           ierr;
   unsigned char *red, *green, *blue;
 
   PetscFunctionBegin;
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red + ncolors;
   blue  = green + ncolors;
-  XiSetCmapHue( red, green, blue, ncolors );
-  XiCmap( red, green, blue, ncolors, Xiwin );
+  ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = XiCmap( red, green, blue, ncolors, Xiwin );CHKERRQ(ierr);
   PetscFree( red );
   PetscFunctionReturn(0);
 }
