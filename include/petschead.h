@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.50 1997/08/15 19:15:34 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.51 1997/08/22 15:20:23 bsmith Exp curfman $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -14,21 +14,20 @@ extern int PetscCommFree_Private(MPI_Comm*);
 extern int PetscRegisterCookie(int *);
 
 /*
-   All Major PETSc Data structures have a common core; this is defined below by PETSCHEADER. 
+   All major PETSc data structures have a common core; this is defined below by PETSCHEADER. 
 
-   PetscHeaderCreate() should be used whenever you create a PETSc structure.
+   PetscHeaderCreate() should be used whenever creating a PETSc structure.
 
-      destroypublic() is the destroy routine for the entire PETSc object;
-                      for example, for matrices it is MatDestroy().
-      destroy() is the private routine that is specific for a particular 
-                subclass; for example, MatDestroy_SeqAIJ();
-
-      viewpublic() is the view routine for the entire PETSc object;
-                      for example, for matrices it is MatView().
-      view() is the private routine that is specific for a particular 
-                subclass; for example, MatView_SeqAIJ();
-
-      
+      destroypublic() is the routine for destroying the entire PETSc object; for
+                      example, MatDestroy() is the general matrix destruction routine.
+      destroy() is the analogous private routine that is specific for a particular 
+                      subclass; for example, MatDestroy_SeqAIJ() is the matrix 
+                      destruction routine for MATSEQAIJ matrices.
+      viewpublic() is the routine for viewing the entire PETSc object; for
+                      example, MatView() is the general matrix viewing routine.
+      view() is the analogous private routine that is specific for a particular  
+                      subclass; for example, MatView_SeqAIJ() is the viewing 
+                      routine for MATSEQAIJ matrices.
 */
 
 #define PETSCHEADER                                    \
