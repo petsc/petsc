@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.235 1998/04/23 22:55:02 balay Exp balay $ 
+# $Id: makefile,v 1.236 1998/04/23 23:55:07 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -6,21 +6,20 @@
 #
 ALL: all
 
-CFLAGS	 =
-SOURCEC	 =
-SOURCEF	 =
-DOCS	 = maint/addlinks maint/builddist \
-	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
-           include/foldinclude/generateincludes bin/petscviewinfo.text \
-           bin/petscoptsinfo.text bmake/*/petscconf.h
-OBJSC	 =
-OBJSF	 =
-LIBBASE	 = libpetscvec
 DIRS	 = src include docs 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
+#
+# Basic targets to build PETSc libraries.
+# all     : builds the c, fortran,f90 libraries
+# fortran : builds the fortran libary
+# f90     : builds the fortran and the f90 libraries.
+#
+all       : info chkpetsc_dir deletelibs build_kernels build_c \
+	    shared build_fortran build_fortran90
+fortran   : info chkpetsc_dir build_fortran
+fortran90 : fortran build_fortran90
 
 #
 #  Prints information about the system and PETSc being compiled
@@ -53,9 +52,9 @@ info:
 	-@echo "Using Fortran libraries: ${PETSC_FORTRAN_LIB}"
 	-@echo "=========================================="
 
-# Builds PETSc libraries for a given BOPT and architecture
-all: info chkpetsc_dir deletelibs build_kernels build_c shared build_fortran build_fortran90
-
+#
+# Build the PETSc libraries
+#
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
@@ -68,33 +67,10 @@ build_c:
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 
-# Builds PETSc test examples for a given BOPT and architecture
-testexamples: info chkopts
-	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines some of the numbers may not match exactly."
-	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_1  tree 
-	-@echo "Completed compiling and running test examples"
-	-@echo "========================================="
-
-# Builds PETSc test examples for a given BOPT and architecture
-testexamples_uni: info chkopts
-	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines some of the numbers may not match exactly."
-	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_4  tree 
-	-@echo "Completed compiling and running uniprocessor test examples"
-	-@echo "========================================="
-
 #
 # Builds PETSc Fortran interface libary
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-fortran: info chkpetsc_dir build_fortran
 
 build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN INTERFACE LIBRARY"
@@ -115,11 +91,8 @@ build_fortran:
 
 #
 # Builds PETSc Fortran90 interface libary
-# Note:	 libfast cannot run on .F files on certain machines, so we
-# use lib and check for errors here.
-# Note: F90 interface currently only supported in NAG F90 compiler
-fortran90: fortran build_fortran90
-
+# Note: F90 interface currently supported in NAG, IRIX, IBM F90 compilers.
+#
 build_fortran90: 
 	-@echo "BEGINNING TO COMPILE FORTRAN90 INTERFACE LIBRARY"
 	-@echo "========================================="
@@ -138,6 +111,7 @@ build_fortran90:
 # Builds PETSc Fortran kernels; some numerical kernels have
 # a Fortran version that may give better performance on certain 
 # machines. These always provide better performance for complex numbers.
+#
 fortrankernels: chkpetsc_dir 
 	-${RM} -f ${PDIR}/libpetsckernels.*
 	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
@@ -148,34 +122,11 @@ fortrankernels: chkpetsc_dir
 	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
 
-# Builds PETSc test examples for a given BOPT and architecture
-testfortran: info chkopts
-	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
-	-@echo "========================================="
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines or the way Fortran formats numbers"
-	-@echo "some of the results may not match exactly."
-	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_3  tree 
-	-@echo "Completed compiling and running Fortran test examples"
-	-@echo "========================================="
-# Builds noise routines (not yet publically available)
-# Note:	 libfast cannot run on .F files on certain machines, so we
-# use lib and check for errors here.
-noise: info chkpetsc_dir
-	-@echo "Beginning to compile noise routines"
-	-@echo "========================================="
-	-@cd src/snes/interface/noise; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
-	  egrep -i '(Error|warning|Can)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${PDIR}/libpetscsnes.a
-	-@chmod g+w  ${PDIR}/libpetscsnes.a
-	-@echo "Completed compiling noise routines"
-	-@echo "========================================="
+# If fortrankernels are used, build them.
+build_kernels:
+	-@kernel_var=`echo "${PETSCFLAGS}" | sed 's/-DUSE_FORTRAN_KERNELS//g'`; \
+	if [ "${PETSCFLAGS}" != "$$kernel_var" ] ; then \
+	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} fortrankernels; fi
 
 petscblas: info chkpetsc_dir
 	-${RM} -f ${PDIR}/libpetscblas.*
@@ -190,17 +141,41 @@ petscblas: info chkpetsc_dir
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 
-# If USE_DYNAMIC_LIBRARIES flag is set, build shared libs
-build_shared:
-	-@shared_var=`echo "${PETSCFLAGS}" | sed 's/-DUSE_DYNAMIC_LIBRARIES//g'`; \
-	if [ "${PETSCFLAGS}" != "$$shared_var" ] ; then \
-	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} shared; fi
 
-# If fortrankernels are used, build them.
-build_kernels:
-	-@kernel_var=`echo "${PETSCFLAGS}" | sed 's/-DUSE_FORTRAN_KERNELS//g'`; \
-	if [ "${PETSCFLAGS}" != "$$kernel_var" ] ; then \
-	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} fortrankernels; fi
+# Builds PETSc test examples for a given BOPT and architecture
+testexamples: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines some of the numbers may not match exactly."
+	-@echo "========================================="
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
+	   ACTION=testexamples_1  tree 
+	-@echo "Completed compiling and running test examples"
+	-@echo "========================================="
+
+# Builds PETSc test examples for a given BOPT and architecture
+testfortran: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
+	-@echo "========================================="
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines or the way Fortran formats numbers"
+	-@echo "some of the results may not match exactly."
+	-@echo "========================================="
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
+	   ACTION=testexamples_3  tree 
+	-@echo "Completed compiling and running Fortran test examples"
+	-@echo "========================================="
+
+# Builds PETSc test examples for a given BOPT and architecture
+testfortran_uni: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR FORTRAN EXAMPLES"
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines some of the numbers may not match exactly."
+	-@echo "========================================="
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
+	   ACTION=testexamples_9  tree 
+	-@echo "Completed compiling and running uniprocessor fortran test examples"
+	-@echo "========================================="
 
 # Ranlib on the libraries
 ranlib:
@@ -209,6 +184,14 @@ ranlib:
 # Deletes PETSc libraries
 deletelibs: chkopts_basic
 	-${RM} -f ${PDIR}/*
+
+
+# ------------------------------------------------------------------
+#
+# All remaining actions are intended for PETSc developers only.
+# PETSc users should not generally need to use these commands.
+#
+
 
 # To access the tags in EMACS, type M-x visit-tags-table and specify
 # the file petsc/TAGS.	
@@ -325,12 +308,15 @@ ctags:
 	-ctags -w -a -f vitags ${TAGS_MAKEFILE_FILES} 
 	-ctags -w -a -f vitags ${TAGS_BMAKE_FILES}
 	-chmod g+w vitags
+#
+# These are here for the target allci and allco
+#
 
-# ------------------------------------------------------------------
-#
-# All remaining actions are intended for PETSc developers only.
-# PETSc users should not generally need to use these commands.
-#
+DOCS	 = maint/addlinks maint/builddist \
+	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
+	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
+           include/foldinclude/generateincludes bin/petscviewinfo.text \
+           bin/petscoptsinfo.text bmake/*/petscconf.h
 
 # Deletes man pages (HTML version)
 deletemanualpages:
@@ -466,3 +452,20 @@ checkbadfortranstubs:
 	grep "$$OBJ \*" *.c | tr -s '' ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
 	done 
+# Builds noise routines (not yet publically available)
+# Note:	 libfast cannot run on .F files on certain machines, so we
+# use lib and check for errors here.
+noise: info chkpetsc_dir
+	-@echo "Beginning to compile noise routines"
+	-@echo "========================================="
+	-@cd src/snes/interface/noise; \
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; ${RM} trashz
+	${RANLIB} ${PDIR}/libpetscsnes.a
+	-@chmod g+w  ${PDIR}/libpetscsnes.a
+	-@echo "Completed compiling noise routines"
+	-@echo "========================================="
+
