@@ -10,8 +10,9 @@ except NameError:
 class Logger(args.ArgumentProcessor):
   '''This class creates a shared log and provides methods for writing to it'''
   defaultLog = None
+  defaultOut = sys.stdout
 
-  def __init__(self, clArgs = None, argDB = None, log = None, out = sys.stdout, debugLevel = None, debugSections = None, debugIndent = None):
+  def __init__(self, clArgs = None, argDB = None, log = None, out = defaultOut, debugLevel = None, debugSections = None, debugIndent = None):
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.logName       = None
     self.log           = log
@@ -26,13 +27,20 @@ class Logger(args.ArgumentProcessor):
     d = args.ArgumentProcessor.__getstate__(self)
     if 'log' in d and d['log'] is Logger.defaultLog:
       del d['log']
+    if 'out' in d:
+      if d['out'] is Logger.defaultOut:
+        del d['out']
+      else:
+        d['out'] = None
     return d
 
   def __setstate__(self, d):
     '''We must create the default log stream'''
-    args.ArgumentProcessor.__setstate__(d)
+    args.ArgumentProcessor.__setstate__(self, d)
     if not 'log' in d:
       self.log = self.createLog(None)
+    if not 'out' in d:
+      self.out = Logger.defaultOut
     self.__dict__.update(d)
     return
 

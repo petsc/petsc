@@ -16,8 +16,11 @@ class ArgumentProcessor(object):
   def __getstate__(self):
     '''We do not want to pickle the default RDict'''
     d = self.__dict__.copy()
-    if 'argDB' in d and d['argDB'] is ArgumentProcessor.defaultDB:
-      del d['argDB']
+    if 'argDB' in d:
+      if d['argDB'] is ArgumentProcessor.defaultDB:
+        del d['argDB']
+      else:
+        d['argDB'] = None
     return d
 
   def __setstate__(self, d):

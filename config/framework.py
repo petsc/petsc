@@ -35,6 +35,19 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.argDB['LDFLAGS']  = ''
     return
 
+  def __getstate__(self):
+    '''We do not want to pickle the default log stream'''
+    d = config.base.Configure.__getstate__(self)
+    d = script.LanguageProcessor.__getstate__(self, d)
+    return d
+
+  def __setstate__(self, d):
+    '''We must create the default log stream'''
+    config.base.Configure.__setstate__(self, d)
+    script.LanguageProcessor.__setstate__(self, d)
+    self.__dict__.update(d)
+    return
+
   def listDirs(self, base, variable):
     '''Returns a list of all directories of the form base/variable where variable can be regular expression syntax'''
     if not variable: return [base]

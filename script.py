@@ -212,22 +212,43 @@ class LanguageProcessor(args.ArgumentProcessor):
     self.modulePath         = 'config.compile'
     return
 
-  def getLanguageModule(self, language):
-    '''Return the module associated with operations for a given language'''
-    if not language in self.languageModule:
+  def __getstate__(self, d = None):
+    '''We do not want to pickle the language modules'''
+    if d is None:
+      d = args.ArgumentProcessor.__getstate__(self)
+    if 'languageModule' in d:
+      d['languageModule'] = dict([(lang,mod._loadName) for lang,mod in d['languageModule'].items()])
+    return d
+
+  def __setstate__(self, d):
+    '''We must create the language modules'''
+    args.ArgumentProcessor.__setstate__(self, d)
+    self.__dict__.update(d)
+    [self.getLanguageModule(language, moduleName) for language,moduleName in self.languageModule.items()]
+    return
+
+  def getLanguageModule(self, language, moduleName = None):
+    '''Return the module associated with operations for a given language
+       - Giving a moduleName explicitly forces a reimport'''
+    if not language in self.languageModule or not moduleName is None:
       try:
-        moduleName = self.modulePath+'.'+language.replace('+', 'x')
+        if moduleName is None:
+          moduleName = self.modulePath+'.'+language.replace('+', 'x')
         module     = __import__(moduleName)
       except ImportError, e:
-        self.logPrint('Failure to find language module: '+str(e))
+        if not moduleName is None:
+          self.logPrint('Failure to find language module: '+str(e))
         try:
-          moduleName = 'config.compile.'+language.replace('+', 'x')
+          moduleName = self.modulePath+'.'+language.replace('+', 'x')
           module     = __import__(moduleName)
         except ImportError, e:
-          raise e
+          self.logPrint('Failure to find language module: '+str(e))
+          moduleName = 'config.compile.'+language.replace('+', 'x')
+          module     = __import__(moduleName)
       components = moduleName.split('.')
       for component in components[1:]:
         module   = getattr(module, component)
+      module._loadName = moduleName
       self.languageModule[language] = module
     return self.languageModule[language]
 
