@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.58 1996/01/09 03:12:46 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.59 1996/01/09 14:46:17 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -210,7 +210,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorABTrans()
 @*/
-int PCApplyBAorAB(PC pc,PrecondSide side,Vec x,Vec y,Vec work)
+int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
@@ -250,7 +250,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorAB()
 @*/
-int PCApplyBAorABTrans(PC pc,PrecondSide side,Vec x,Vec y,Vec work)
+int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
