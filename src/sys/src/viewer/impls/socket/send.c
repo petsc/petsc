@@ -197,7 +197,7 @@ PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port
 PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
   PetscErrorCode ierr;
-  int            def = -1;
+  PetscInt       def = -1;
   char           sdef[256];
   PetscTruth     tflg;
 
@@ -260,10 +260,10 @@ EXTERN_C_END
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
+PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
 {
   PetscErrorCode     ierr;
-  int                rank;
+  PetscMPIInt        rank;
   char               mach[256];
   PetscTruth         tflg;
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
@@ -290,7 +290,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[]
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     PetscLogInfo(0,"PetscViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
-    ierr = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
+    ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -300,7 +300,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[]
     The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 
 #undef __FUNCT__  

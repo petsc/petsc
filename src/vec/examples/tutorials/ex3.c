@@ -1,4 +1,4 @@
-
+\
 static char help[] = "Parallel vector layout.\n\n";
 
 /*T
@@ -20,7 +20,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         i,istart,iend,n = 6,ierr,rank,nlocal;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       i,istart,iend,n = 6,nlocal;
   PetscScalar v,*array;
   Vec         x;
   PetscViewer viewer;

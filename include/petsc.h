@@ -60,14 +60,18 @@ typedef int PetscCookie;
 typedef int PetscEvent;
 typedef int PetscBLASInt;
 typedef int PetscMPIInt;
-typedef int PetscInt;
+
+#if defined(PETSC_USE_64BIT_INT)
+typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
-/*
 #undef  PETSC_PRINTF_FORMAT_CHECK
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #undef  PETSC_FPRINTF_FORMAT_CHECK
 #define PETSC_FPRINTF_FORMAT_CHECK(a,b)
-*/
+#else
+typedef int PetscInt;
+#define MPIU_INT MPI_INT
+#endif  
 
 /*
     Declare extern C stuff after incuding external header files

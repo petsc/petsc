@@ -446,7 +446,7 @@ void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),int *type,int
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,int *istemp,int *ierr)
+void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,PetscTruth *istemp,int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }

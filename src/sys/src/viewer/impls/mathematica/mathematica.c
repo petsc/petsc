@@ -241,9 +241,9 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
   char                     modename[256];
   char                     hostname[256];
   char                     type[256];
-  int                      numPorts;
-  int                      *ports;
-  int                      numHosts;
+  PetscInt                 numPorts;
+  PetscInt                 *ports;
+  PetscInt                 numHosts;
   int                      h;
   char                     **hosts;
   PetscMPIInt              size, rank;

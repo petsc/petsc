@@ -23,7 +23,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PetscMapCreate_MPI(PetscMap m)
 {
   PetscMPIInt    rank,size;
-  PetscInt            p;
+  PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -33,7 +33,7 @@ PetscErrorCode PetscMapCreate_MPI(PetscMap m)
   ierr = MPI_Comm_rank(m->comm, &rank);CHKERRQ(ierr); 
   ierr = PetscSplitOwnership(m->comm,&m->n,&m->N);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt), &m->range);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&m->n, 1, MPI_INT, m->range+1, 1, MPI_INT, m->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&m->n, 1, MPIU_INT, m->range+1, 1, MPIU_INT, m->comm);CHKERRQ(ierr);
 
   m->range[0] = 0;
   for(p = 2; p <= size; p++) {

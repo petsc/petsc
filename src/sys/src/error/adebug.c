@@ -164,9 +164,10 @@ PetscErrorCode PetscSetDebuggerFromString(char *string)
 PetscErrorCode PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int   child=0,sleeptime=0;
+  int            child=0;
+  PetscInt       sleeptime=0;
   PetscErrorCode ierr;
-  char  program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
+  char           program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
 #endif
 
   PetscFunctionBegin;
@@ -497,11 +498,12 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(int line,const char* fun,const ch
 PetscErrorCode PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
-  int        sleeptime=0;
+  PetscInt       sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int        ppid,rank;
-  char       program[PETSC_MAX_PATH_LEN],hostname[256];
-  PetscTruth isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
+  int            ppid;
+  PetscMPIInt    rank;
+  char           program[PETSC_MAX_PATH_LEN],hostname[256];
+  PetscTruth     isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
 #endif
 
   PetscFunctionBegin;

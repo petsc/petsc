@@ -18,9 +18,11 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     i,N,ierr,rank,ng,*gindices,rstart,rend,M;
-  PetscScalar  one = 1.0;
-  Vec     x;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       i,N,ng,*gindices,rstart,rend,M;
+  PetscScalar    one = 1.0;
+  Vec            x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -49,7 +51,7 @@ int main(int argc,char **argv)
   ierr = VecGetSize(x,&M);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ng   = rend - rstart + 2;
-  ierr = PetscMalloc(ng*sizeof(int),&gindices);CHKERRQ(ierr);
+  ierr = PetscMalloc(ng*sizeof(PetscInt),&gindices);CHKERRQ(ierr);
   gindices[0] = rstart - 1; 
   for (i=0; i<ng-1; i++) {
     gindices[i+1] = gindices[i] + 1;

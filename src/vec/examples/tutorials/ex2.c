@@ -19,9 +19,11 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          i,N,ierr,rank;
-  PetscScalar  one = 1.0;
-  Vec          x;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       i,N;
+  PetscScalar    one = 1.0;
+  Vec            x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

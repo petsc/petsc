@@ -37,7 +37,7 @@ PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,Pe
 
   if (*N == PETSC_DECIDE) { 
     if (*n % bs != 0) SETERRQ2(PETSC_ERR_ARG_INCOMP,"local size %d not divisible by block size %d",*n,bs);
-    ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (*n == PETSC_DECIDE) { 
     PetscInt Nbs = *N/bs;
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ PetscErrorCode PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (*n == PETSC_DECIDE) { 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -89,7 +89,7 @@ PetscErrorCode PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 #if defined(PETSC_USE_BOPT_g)
   } else {
     PetscInt tmp;
-    ierr = MPI_Allreduce(n,&tmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (tmp != *N) SETERRQ3(1,"Sum of local lengths %d does not equal global length %d, my local length %d",tmp,*N,*n);
 #endif
   }

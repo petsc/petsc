@@ -227,7 +227,7 @@ EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...) PET
 EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],int);
 EXTERN PetscErrorCode PetscViewerDrawClear(PetscViewer);
 EXTERN PetscErrorCode PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
-EXTERN PetscErrorCode PetscViewerSocketSetConnection(PetscViewer,const char[],int);
+EXTERN PetscErrorCode PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);
 EXTERN PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer);
 EXTERN PetscErrorCode PetscViewerBinaryLoadInfo(PetscViewer);
 

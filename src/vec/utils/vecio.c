@@ -195,7 +195,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);if (ierr) goto handleerror;
     if (type != VEC_FILE_COOKIE) {ierr = PETSC_ERR_ARG_WRONG; goto handleerror;}
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);if (ierr) goto handleerror;
-    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
@@ -228,7 +228,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec
       ierr = PetscFree(avec);CHKERRQ(ierr);
     }
   } else {
-    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     /* this is a marker sent to indicate that the file does not have a vector at this location */
     if (rows == -1)  SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Error loading vector");
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec
   /* tell the other processors we've had an error */
   handleerror:
     nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-    nierr = -1; MPI_Bcast(&nierr,1,MPI_INT,0,comm);
+    nierr = -1; MPI_Bcast(&nierr,1,MPIU_INT,0,comm);
     SETERRQ(ierr,"Error loading vector");
 }
 
@@ -350,7 +350,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
     if (n != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
-    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
@@ -383,7 +383,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
       ierr = PetscFree(avec);CHKERRQ(ierr);
     }
   } else {
-    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
     ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
