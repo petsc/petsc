@@ -19,4 +19,5 @@ ADUTILS_EXTERN void PetscADSetIndepDone();
 ADUTILS_EXTERN void PetscADExtractGrad(double *,DERIV_TYPE *);
 ADUTILS_EXTERN int  PetscADGetDerivTypeSize();
 ADUTILS_EXTERN double *PetscADGetGradArray(DERIV_TYPE *);
-#endif //ad_utils_H_seen
+#endif
+

@@ -67,7 +67,7 @@ int main(int argc,char **argv)
 
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
-  //  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+  /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
 
   /*

@@ -26,7 +26,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   MatStructure pflag;
   PetscReal    dp;
   PetscScalar  ai, bi;
-  PetscScalar  btop, bbot, tmp, mone = -1.0;
+  PetscScalar  apq,btop, bbot, tmp, mone = -1.0;
   Vec          X,B,R,RT,P,AP,ART,Q;
   Mat          Amat, Pmat;
 
@@ -46,13 +46,13 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
                                                  /*                      */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,R); CHKERRQ(ierr);     /*   r <- Ax            */
+    ierr = KSP_MatMult(ksp,Amat,X,R); CHKERRQ(ierr);     /*   r <- Ax            */
     ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);    /*   r <- b-r == b-Ax   */
   } else { 
     ierr = VecCopy(B,R); CHKERRQ(ierr);          /*   r <- b (x is 0)    */
   }
-  ierr = PCApply(ksp->B,R,P); CHKERRQ(ierr);     /*   P <- Br            */
-  ierr = MatMult(Amat,P,AP); CHKERRQ(ierr);      /*   AP <- A p          */
+  ierr = KSP_PCApply(ksp,ksp->B,R,P); CHKERRQ(ierr);     /*   P <- Br            */
+  ierr = KSP_MatMult(ksp,Amat,P,AP); CHKERRQ(ierr);      /*   AP <- A p          */
   ierr = VecCopy(P,RT); CHKERRQ(ierr);           /*   rt <- p            */
   ierr = VecCopy(AP,ART); CHKERRQ(ierr);         /*   ART <- AP          */
   ierr   = VecDot(RT,ART,&btop); CHKERRQ(ierr);  /*   (RT,ART)           */
@@ -73,16 +73,16 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,dp);
 
   for ( i=0; i<maxit; i++) {
-    ierr   = PCApply(ksp->B,AP,Q); CHKERRQ(ierr);/*   q <- B AP          */
+    ierr   = KSP_PCApply(ksp,ksp->B,AP,Q); CHKERRQ(ierr);/*   q <- B AP          */
                                                   /* Step 3              */
 
-    ierr   = VecDot(AP,Q,&bbot); CHKERRQ(ierr);  
-    ai = btop/bbot;                              /* ai = (RT,ART)/(AP,Q) */
+    ierr   = VecDot(AP,Q,&apq); CHKERRQ(ierr);  
+    ai = btop/apq;                              /* ai = (RT,ART)/(AP,Q) */
 
     ierr   = VecAXPY(&ai,P,X); CHKERRQ(ierr);    /*   x <- x + ai p      */
     tmp    = -ai; 
     ierr   = VecAXPY(&tmp,Q,RT); CHKERRQ(ierr);  /*   rt <- rt - ai q    */
-    ierr   = MatMult(Amat,RT,ART); CHKERRQ(ierr);/*   RT <-   ART        */
+    ierr   = KSP_MatMult(ksp,Amat,RT,ART); CHKERRQ(ierr);/*   RT <-   ART        */
     bbot = btop;
     ierr   = VecDot(RT,ART,&btop); CHKERRQ(ierr);
 
