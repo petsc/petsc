@@ -420,11 +420,11 @@ class SharedLinker(Linker):
     return
 
   def getLibExt(self):
-    if self._libExt is None:
-      if self.argDB['HAVE_CYGWIN']:
-        return 'dll'
-      else:
-        return 'so'
+    if hasattr(self,'_libExt'): return self._libExt
+    if self.argDB['HAVE_CYGWIN']:
+      self._libExt='dll'
+    else:
+      self._libExt='so'
     return self._libExt
 
   def setLibExt(self, ext):
