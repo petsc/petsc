@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.14 1996/01/08 18:07:57 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.15 1996/01/08 20:33:46 curfman Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -61,7 +61,7 @@ int KSPSolve_QCG(KSP itP,int *its)
   Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax,beta, rntrn, step;
   double       dzero = 0.0, bsnrm, ptasp, q1, q2, wtasp, bstp, rtr;
   double       xnorm, step1, step2, rnrm, p5 = 0.5, *history;
-  int          i, cerr, hist_len, maxit, ierr, fbsolve = 0;
+  int          i, cerr, hist_len, maxit, ierr;
   PC           pc = itP->B;
   PCType       pctype;
 #if defined(PETSC_COMPLEX)
@@ -85,10 +85,8 @@ int KSPSolve_QCG(KSP itP,int *its)
   pcgP->info = 0;
   if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG:Input error: delta <= 0");
   ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
-  if (pctype != PCICC && pctype != PCNONE && pctype != PCSCALE)
-    SETERRQ(1,"KSPSolve_QCG: Currently supports only PCICC, PCNONE, PCSCALE methods.\n\
-               For example, use the option -pc_type scale");
-  if ((pctype == PCICC) && (!OptionsHasName(PETSC_NULL,"-ksp_qcg_general"))) fbsolve = 1;
+  if (pctype != PCICC && pctype != PCNONE && pctype != PCJACOBI)
+    SETERRQ(1,"KSPSolve_QCG: Currently supports only PCICC, PCNONE, PCJACOBI methods");
 
   /* Initialize variables */
   ierr = VecSet(&zero,W); CHKERRQ(ierr);	/* W = 0 */
@@ -96,8 +94,7 @@ int KSPSolve_QCG(KSP itP,int *its)
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
-  if (fbsolve) {ierr = MatForwardSolve(Pmat,B,BS); CHKERRQ(ierr);}
-  else         {ierr = PCApply(pc,B,BS); CHKERRQ(ierr);}
+  ierr = PCApplySymmLeft(pc,B,BS); CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
   MONITOR(itP,bsnrm,0);
@@ -118,15 +115,9 @@ int KSPSolve_QCG(KSP itP,int *its)
   for (i=0; i<=maxit; i++) {
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
-    if (fbsolve) {
-      ierr = MatBackwardSolve(Pmat,P,WA); CHKERRQ(ierr);
-      ierr = MatMult(Amat,WA,WA2); CHKERRQ(ierr);
-      ierr = MatForwardSolve(Pmat,WA2,ASP); CHKERRQ(ierr);
-    } else {
-      ierr = PCApply(pc,P,WA); CHKERRQ(ierr);
-      ierr = MatMult(Amat,WA,WA2); CHKERRQ(ierr);
-      ierr = PCApply(pc,WA2,ASP); CHKERRQ(ierr);
-    }
+    ierr = PCApplySymmRight(pc,P,WA); CHKERRQ(ierr);
+    ierr = MatMult(Amat,WA,WA2); CHKERRQ(ierr);
+    ierr = PCApplySymmLeft(pc,WA2,ASP); CHKERRQ(ierr);
 
     /* Check for negative curvature */
 #if defined(PETSC_COMPLEX)
@@ -259,8 +250,7 @@ int KSPSolve_QCG(KSP itP,int *its)
   }
   /* Unscale x */
   ierr = VecCopy(X,WA2); CHKERRQ(ierr);
-  if (fbsolve) {ierr = MatBackwardSolve(Pmat,WA2,X); CHKERRQ(ierr);}
-  else         {ierr = PCApply(pc,WA2,X); CHKERRQ(ierr);}
+  ierr = PCApplySymmRight(pc,WA2,X); CHKERRQ(ierr);
 
   ierr = MatMult(Amat,X,WA); CHKERRQ(ierr);
   ierr = VecDot(B,X,&btx); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.43 1996/01/02 19:50:58 balay Exp balay $ */
+/* $Id: pc.h,v 1.44 1996/01/05 19:20:14 balay Exp curfman $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -21,6 +21,8 @@ extern int    PCCreate(MPI_Comm,PC*);
 extern int    PCSetType(PC,PCType);
 extern int    PCSetUp(PC);
 extern int    PCApply(PC,Vec,Vec);
+extern int    PCApplySymmLeft(PC,Vec,Vec);
+extern int    PCApplySymmRight(PC,Vec,Vec);
 extern int    PCApplyBAorAB(PC,int,Vec,Vec,Vec);
 extern int    PCApplyTrans(PC,Vec,Vec);
 extern int    PCApplyBAorABTrans(PC,int,Vec,Vec,Vec);

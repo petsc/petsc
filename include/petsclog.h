@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.39 1996/01/02 20:18:04 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.40 1996/01/04 01:39:50 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -78,6 +78,8 @@
 
 #define PC_SetUp                                75
 #define PC_Apply                                76
+#define PC_ApplySymmLeft                        77
+#define PC_ApplySymmRight                       78
 
 #define SNES_Solve                              80
 #define SNES_LineSearch                         81

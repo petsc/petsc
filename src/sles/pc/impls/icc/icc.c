@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.25 1995/11/19 00:21:16 bsmith Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.26 1995/12/12 22:54:19 curfman Exp curfman $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -70,6 +70,18 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   return MatSolve(icc->fact,x,y);
 }
 
+static int PCApplySymmLeft_ICC(PC pc,Vec x,Vec y)
+{
+  PC_ICC *icc = (PC_ICC *) pc->data;
+  return MatForwardSolve(icc->fact,x,y);
+}
+
+static int PCApplySymmRight_ICC(PC pc,Vec x,Vec y)
+{
+  PC_ICC *icc = (PC_ICC *) pc->data;
+  return MatBackwardSolve(icc->fact,x,y);
+}
+
 static int PCPrintHelp_ICC(PC pc)
 {
   char *p;
@@ -114,6 +126,8 @@ int PCCreate_ICC(PC pc)
   pc->getfactmat   = PCGetFactoredMatrix_ICC;
   pc->type	   = PCICC;
   pc->data	   = (void *) icc;
+  pc->applysymmleft  = PCApplySymmLeft_ICC;
+  pc->applysymmright = PCApplySymmRight_ICC;
   return 0;
 }
 

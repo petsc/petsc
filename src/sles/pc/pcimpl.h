@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.8 1995/08/07 21:58:46 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.9 1995/12/21 18:30:53 bsmith Exp curfman $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -18,13 +18,14 @@ struct _PC {
   int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
                (*applyBA)(PC,int,Vec,Vec,Vec),(*setfrom)(PC),(*printhelp)(PC),
                (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
-  int          (*presolve)(PC,KSP), (*postsolve)(PC,KSP);
+  int          (*presolve)(PC,KSP),(*postsolve)(PC,KSP);
   Mat          mat,pmat;
   Vec          vec;
   void         *data;
   char         *prefix;
   int          (*getfactmat)(PC,Mat*);
   PCNullSpace  nullsp;
+  int          (*applysymmleft)(PC,Vec,Vec),(*applysymmright)(PC,Vec,Vec);
 };
 
 struct _PCNullSpace {

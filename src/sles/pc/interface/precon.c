@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.55 1995/12/21 18:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.56 1996/01/01 01:02:31 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -117,6 +117,61 @@ int PCApply(PC pc,Vec x,Vec y)
   PLogEventEnd(PC_Apply,pc,x,y,0);
   return 0;
 }
+
+/*@
+   PCApplySymmLeft - Applies the left part of a symmetric preconditioner to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  x - input vector
+
+   Output Parameter:
+.  y - output vector
+
+   Notes:
+   Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
+
+.keywords: PC, apply
+
+.seealso: PCApply(), PCApplySymmRight()
+@*/
+int PCApplySymmLeft(PC pc,Vec x,Vec y)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PLogEventBegin(PC_ApplySymmLeft,pc,x,y,0);
+  ierr = (*pc->applysymmleft)(pc,x,y); CHKERRQ(ierr);
+  PLogEventEnd(PC_ApplySymmLeft,pc,x,y,0);
+  return 0;
+}
+
+/*@
+   PCApplySymmRight - Applies the right part of a symmetric preconditioner to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  x - input vector
+
+   Output Parameter:
+.  y - output vector
+
+   Notes:
+   Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
+
+.keywords: PC, apply
+
+.seealso: PCApply(), PCApplySymmLeft()
+@*/
+int PCApplySymmRight(PC pc,Vec x,Vec y)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PLogEventBegin(PC_ApplySymmRight,pc,x,y,0);
+  ierr = (*pc->applysymmright)(pc,x,y); CHKERRQ(ierr);
+  PLogEventEnd(PC_ApplySymmRight,pc,x,y,0);
+  return 0;
+}
+
 /*@
    PCApplyTrans - Applies the transpose of preconditioner to a vector.
 
