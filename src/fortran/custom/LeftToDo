@@ -4,7 +4,6 @@ yet been fixed up for use with Fortran, ie. their interface is
 not done properly.
 
   mdot, maxpy
-  kspbuildresidual, kspbuildsolution
   snessetlinesearchroutine
   Matlufactorsymbolic
   matcholeskyfactorsymbolic
