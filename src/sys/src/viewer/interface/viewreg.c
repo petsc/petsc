@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.9 1999/04/21 20:42:36 bsmith Exp balay $";
+static char vcid[] = "$Id: viewreg.c,v 1.10 1999/05/04 20:28:06 balay Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -207,7 +207,7 @@ int ViewerSetFromOptions(Viewer viewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
-  ierr = OptionsGetString(viewer->prefix,"-viewer_type",vtype,256,&flg);
+  ierr = OptionsGetString(viewer->prefix,"-viewer_type",vtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);
   }

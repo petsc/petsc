@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.89 1999/05/04 20:28:50 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.90 1999/05/12 03:26:57 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -82,7 +82,7 @@ int PetscAttachDebugger(void)
   PetscFunctionBegin;
 
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(program,256);
+  ierr = PetscGetProgramName(program,256);CHKERRQ(ierr);
   if (ierr) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);

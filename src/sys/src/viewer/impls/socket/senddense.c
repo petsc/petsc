@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.33 1999/05/04 20:27:46 balay Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.34 1999/05/12 03:26:02 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
@@ -42,7 +42,7 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
   value = 1;
 #endif
   ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,array,m*n,PETSC_SCALAR,0);
+  ierr = PetscBinaryWrite(t,array,m*n,PETSC_SCALAR,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ int ViewerSocketPutDouble_Private(Viewer viewer,int m,int n,double *array)
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0);CHKERRQ(ierr); 
   value = 0;
   ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,array,m*n,PETSC_DOUBLE,0);
+  ierr = PetscBinaryWrite(t,array,m*n,PETSC_DOUBLE,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -114,7 +114,7 @@ int ViewerSocketPutInt_Private(Viewer viewer,int m,int *array)
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,array,m,PETSC_INT,0);
+  ierr = PetscBinaryWrite(t,array,m,PETSC_INT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
