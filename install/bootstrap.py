@@ -74,7 +74,7 @@ class CursesInstall:
     list.append('A different browser or a browser on a different machine (you will be prompted for it)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
       (status,output) = commands.getstatusoutput('which '+l)
-      if status == 0:  # found it :-)
+      if status == 0 and not output[0:3] == 'no ':  # found it :-)
         list.append(output)
 
     stdscr.clear()
@@ -174,7 +174,7 @@ class CursesInstall:
 
   def CannotClone(self,stdscr,mess):
     stdscr.clear()
-    CenterAddStr(stdscr,1,'Unable to download bk://sidl@sidl.bkbits.net/BuildSystem')
+    CenterAddStr(stdscr,1,'Unable to download bk://sidl.bkbits.net/BuildSystem')
     CenterAddStr(stdscr,2,'(hit return to exit)')
     l = len(mess)
     l = min(l,500)
@@ -185,7 +185,7 @@ class CursesInstall:
     stdscr.clear()
     CenterAddStr(stdscr,1,'Downloading BuildSystem')
     stdscr.refresh()
-    (self.status,output) = commands.getstatusoutput('cd '+self.installpath+';'+self.bkpath+'/bk clone bk://sidl@sidl.bkbits.net/BuildSystem')
+    (self.status,output) = commands.getstatusoutput('cd '+self.installpath+';'+self.bkpath+'/bk clone bk://sidl.bkbits.net/BuildSystem')
     
 #------------------------------------------------------------------
 
@@ -241,5 +241,5 @@ if __name__ ==  '__main__':
 
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import installer
-  installer.runinstaller(['-debugSections=[]','-debugLevel=0'])
+  installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
       

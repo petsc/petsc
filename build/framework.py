@@ -332,10 +332,11 @@ class Framework(base.Base):
     dependenceGraph = self.argDB['projectDependenceGraph']
     dependenceGraph.removeVertex(self.project)
     self.argDB['projectDependenceGraph'] = dependenceGraph
-    return p
+    return self.project
 
   def t_default(self):
     '''Configure, build, and install this project'''
+    self.executeTarget('activate')
     self.executeTarget('configure')
     self.executeTarget('compile')
     return self.executeTarget('install')
