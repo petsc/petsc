@@ -423,26 +423,10 @@ class CygwinSharedLinker (SharedLinker):
   def __str__(self):
     return 'Cygwin Shared linker('+self.processor+') for '+str(self.inputTag)
 
-  def getLinkerFlags(self,source):
-        '''Return a list of the linker specific flags. The default is gives the extraLibraries as arguments.'''
-    flags = []
-    for lib in self.extraLibrariesIter():
-      # Options and object files are passed verbatim
-      if lib[0] == '-' or lib.endswith('.o'):
-        flags.append(lib)
-      # Big Intel F90 hack (the shared library is broken)
-      elif lib.endswith('intrins.a'):
-        flags.append(lib)
-      else:
-        (dir, file) = os.path.split(lib)
-        (base, ext) = os.path.splitext(file)
-        if not base.startswith('lib'):
-          flags.append(lib)
-        else:
-          if dir:
-            flags.extend(['-L'+dir, '-Wl,--out-implib='+self.getLibrary(source)+'.a'])
-          flags.append('-l'+base[3:])
-    return flags
+  def getOutputFlags(self, source):
+    '''Return a list of the linker flags specifying the library'''
+    output_library_name=self.getLibrary(source)
+    return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
 
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
