@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.14 1998/12/17 22:10:39 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.15 1999/01/27 19:47:47 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -38,10 +38,19 @@ extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 extern int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiag_SeqBAIJ(Mat);
+
+extern int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
 
 #endif
