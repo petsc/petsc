@@ -404,10 +404,13 @@ creating two dynamic libraries, both of which link the given library. Then an ex
 libraries in turn. The first library calls the initizlization functions, here <methodname>MPI_Init</methodname>, and the
 second library calls the initialization check function, here <methodname>MPI_Initialized</methodname>. The check
 function will return true if the given library is a shared object. This organization is shown in figure ???</para>
-<mediaobject>
-<imageobject><imagedata fileref="sharedLibraryCheck.jpg" format="JPEG"/></imageobject>
-<textobject><phrase>A diagram of the link structure for the shared library test</phrase></textobject>
-</mediaobject>
+<para>
+<inlinemediaobject>
+<imageobject><imagedata fileref="sharedLibraryCheck" format="EPS"/></imageobject>
+<imageobject><imagedata fileref="sharedLibraryCheck" format="JPG"/></imageobject>
+<!-- <textobject><phrase>A diagram of the link structure for the shared library test</phrase></textobject> -->
+</inlinemediaobject>
+</para>
 
   <para>The lower level interface to compiling and linking in the base class mirrors that for preprocessing. The
 <methodname>outputCompile</methodname> and <methodname>checkCompile</methodname> methods function in the same way. The
@@ -481,15 +484,62 @@ process, but can be output at any time using the <methodname>outputHeader</metho
 <methodname>addSubstitutionFile</methodname> method can be used to tag a file for substitution, and also specify a
 different file for the result of the substitution.</para>
 
-<para>
-  getHeaderPrefix(), getSubstitutionPrefix()
-
-  addTypedef(), addPrototype()
-  outputCHeader(self.cHeader)
-
-  addMakeMacro(), addMakeRule()
-  outputMakeMacroHeader(self.makeMacroHeader), outputMakeRuleHeader(self.makeRuleHeader),
+<para>In the <command>autoconf</command> approach, separating the the defines and substitutions for different packages
+becomes troublesome, and in some cases impossible to maintain. To help with this, we have introduced
+<emphasis>prefixes</emphasis> for the defines and substitutions. The are strings, unique to each module, which are
+prepended with an underscore to each identifier defined or substituted. These are set on a per object basis using the
+<varname>headerPrefix</varname> and <varname>substPrefix</varname> members. For instance, in our
+ParMetis example, if we instead used the code
+<programlisting>
+  self.headerPrefix = 'MATT'
+  self.addDefine('HAVE_PARMETIS', 1)
+</programlisting>
+in our configuration header we would see
+<programlisting>
+#ifndef MATT_HAVE_PARMETIS
+#define MATT_HAVE_PARMETIS 1
+#endif
+</programlisting>
+Note that the value of the prefix is used at output time, not at the time that the define or substitution is set.
 </para>
+
+<para>Another extension of the old-style output mechanisms adds more C structure to the interface. The
+<methodname>addTypedef</methodname> method allows a typedef from one typename to another, which in
+<command>autoconf</command> is handled by a define. Likewise <methodname>addPrototype</methodname> can add a missing
+function prototype to a header. Since these are C specific structures, they are output into a separate configuration
+header file, which is controlled by the <varname>cHeader</varname> member variable.</para>
+
+<para>Extending in a different direction, we allow makefile structures to be specified directly rather than through
+substitutions. Using <methodname>addMakeMacro</methodname>, we can add variable definitions to the configuration
+makefile, whereas <methodname>addMakeRule</methodname> allows the user to specify a make target, complete with
+dependencies and action. As an example, we will replace our ParMetis example from above with the following code
+<programlisting>
+  self.addMakeMacro('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i) for i in self.include]))
+  self.addMakeMacro('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l) for l in self.lib]))
+  self.addMakeRule('.c.o', '', ['${CC} -c -o $@ -I${PARMETIS_INCLUDE} $<'])
+  self.addMakeRule('myApp', '${.c=.o:SOURCE}', ['${CC} -o $@ $< ${PARMETIS_LIB}'])
+</programlisting>
+which will produce
+<programlisting>
+  PARMETIS_INCLUDE = -I/home/knepley/PETSc-dev/petsc-dev/externalpackages/ParMetis/include
+  PARMETIS_LIB = -L/home/knepley/PETSc-dev/petsc-dev/externalpackages/ParMetis/lib/linux-gnu -lparmetis -lmetis
+</programlisting>
+in the file specified by the <varname>makeMacroHeader</varname> member variable, and
+<programlisting>
+  myApp: ${.c=.o:SOURCE}
+        ${CC} -i $@ $< ${PARMETIS_LIB}
+</programlisting>
+in the file specified by the <varname>makeRuleHeader</varname> member variable.</para>
+
+<para>The above output methods are all specified on a per configure object basis, however this may become confusing in a
+large project. All the prefixes and output filenames would have to be coordinated. A common strategy is to use the
+framework for coordination, putting all the output into the framework object itself. For instance, we might have
+<programlisting>
+  self.framework.addDefine('HAVE_PARMETIS', 1)
+</programlisting>
+which would allow the define to appear in the headre specified by the framework with the framework prefix.
+</para>
+
   </sect2>
 
 </sect1>
