@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.39 1996/07/08 22:23:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.40 1996/09/27 20:31:58 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -15,7 +15,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
    Concepts: SNES^Using matrix-free methods and a user-provided preconditioner;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions();
-   Processors: n
+   Processors: 1
 T*/
 
 /* 
@@ -27,7 +27,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
      sles.h   - linear solvers
 */
-
 #include "snes.h"
 #include <math.h>
 
@@ -41,40 +40,53 @@ int MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 int main( int argc, char **argv )
 {
   SNES     snes;                 /* SNES context */
-  SNESType method = SNES_EQ_LS;  /* default nonlinear solution method */
   SLES     sles;                 /* SLES context */
   PC       pc;                   /* PC context */
-  Vec      x, r, F;              /* solution, residual, work vector */
+  Vec      x, r, F;              /* vectors */
   Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
-  int      ierr, its, n = 5, i,flg;
+  int      ierr, its, n = 5, i, size, flg;
   double   h, xp = 0.0;
   Scalar   v, pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
 
-  /* Set up data structures */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create nonlinear solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create vector data structures; set function evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = VecCreate(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
+
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create matrix data structures; set Jacobian evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&J); CHKERRA(ierr);
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,PETSC_NULL,&JPrec); CHKERRA(ierr);
 
-  /* Store right-hand-side of PDE */
-  for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
-    xp += h;
-  }
-
-  /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method); CHKERRA(ierr);
-
-  /* Set various routines */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
+  /*
+     Note that in this case we create separate matrices for the Jacobian
+     and preconditioner matrix.  Both of these are computed in the
+     routine FromJacobian()
+  */
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Customize nonlinear solver; set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Set preconditioner for matrix-free method */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
@@ -88,15 +100,33 @@ int main( int argc, char **argv )
     } else {ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);}
   }
 
-  /* Form initial guess */
-  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
-
-  /* Set options; then solve nonlinear system */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize application:
+     Store right-hand-side of PDE and exact solution
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  xp = 0.0;
+  for ( i=0; i<n; i++ ) {
+    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
+    xp += h;
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Evaluate initial guess; then solve nonlinear system
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = VecSet(&pfive,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
-  /* Free data structures */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = VecDestroy(x); CHKERRA(ierr);     ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = VecDestroy(F); CHKERRA(ierr);     ierr = MatDestroy(J); CHKERRA(ierr);
   ierr = MatDestroy(JPrec); CHKERRA(ierr); ierr = SNESDestroy(snes); CHKERRA(ierr);

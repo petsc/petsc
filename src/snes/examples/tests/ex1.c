@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.42 1996/10/01 01:19:29 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.43 1996/10/01 02:41:30 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -313,7 +313,6 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
   return 0; 
 }
-
 /* ------------------------------------------------------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.
