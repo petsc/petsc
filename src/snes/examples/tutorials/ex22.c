@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.10 2000/12/19 22:15:22 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.11 2001/01/05 04:59:53 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -145,11 +145,11 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   = (h*u(0)   + 2.*d*lambda(0)   - d*lambda(1));
-    else if (i == 1)   fu(1)   = -(2.*h*u(1)   - 2.*d*lambda(1)   + d*lambda(2));
-    else if (i == N-1) fu(N-1) = (h*u(N-1) + 2.*d*lambda(N-1) - d*lambda(N-2));
-    else if (i == N-2) fu(N-2) = -(2.*h*u(N-2) - 2.*d*lambda(N-2) + d*lambda(N-3));
-    else               fu(i)   = -((2.*h*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1))));
+    if      (i == 0)   fu(0)   = h*u(0)   + 2.*d*lambda(0)   - d*lambda(1);
+    else if (i == 1)   fu(1)   = 2.*h*u(1)   + 2.*d*lambda(1)   - d*lambda(2);
+    else if (i == N-1) fu(N-1) = h*u(N-1) + 2.*d*lambda(N-1) - d*lambda(N-2);
+    else if (i == N-2) fu(N-2) = 2.*h*u(N-2) + 2.*d*lambda(N-2) - d*lambda(N-3);
+    else               fu(i)   = 2.*h*u(i)   - d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
   } 
 
   /* derivative of L() w.r.t. lambda */
