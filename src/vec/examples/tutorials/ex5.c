@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.9 1995/09/21 20:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.10 1995/09/30 19:26:45 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example tests binary I/O of vectors and illustrates the use of\n\
+static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
 
 #include <stdio.h>
