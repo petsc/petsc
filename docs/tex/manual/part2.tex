@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.186 1997/01/18 22:49:35 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.187 1997/01/21 18:34:30 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3076,7 +3076,7 @@ product approximation with the command
    ierr = SNESSetMatrixFreeParameters(SNES snes,double rerror,double umin);
 \end{verbatim}
 \findex{SNESSetMatrixFreeParameters()}
-The parameter {\tt rerror} should be set to be the square root of the 
+The parameter {\tt rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
 that the functions are evaluated to full double precision accuracy. 
 Note setting this parameter appropriately is crucial for achieving
