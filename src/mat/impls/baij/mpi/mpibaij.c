@@ -2040,7 +2040,9 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 EXTERN int MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
+EXTERN int MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBAIJ"
@@ -2129,6 +2131,9 @@ int MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
                                      "MatDiagonalScaleLocal_MPIBAIJ",
                                      MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetHashTableFactor_C",
+                                     "MatSetHashTableFactor_MPIBAIJ",
+                                     MatSetHashTableFactor_MPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2674,16 +2679,26 @@ EXTERN_C_END
 @*/
 int MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
+  int ierr,(*f)(Mat,PetscReal);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSetHashTableFactor_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,fact);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetHashTableFactor_MPIBAIJ"
+int MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
+{
   Mat_MPIBAIJ *baij;
   int         ierr;
   PetscTruth  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Incorrect matrix type. Use MPIBAIJ only.");
-  }
   baij = (Mat_MPIBAIJ*)mat->data;
   baij->ht_fact = fact;
   PetscFunctionReturn(0);
