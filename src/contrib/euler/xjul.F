@@ -1,5 +1,5 @@
 C
-C  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+C  "$Id: xjul.F,v 1.13 1997/10/11 18:39:18 curfman Exp curfman $";
 C
 C  This file contains routines that are used only by the Julianne solver,
 C  not by any of the PETSc solvers.
@@ -189,7 +189,6 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "ang.h"
 #include "gs.h"
 #include "es.h"
@@ -206,7 +205,6 @@ c      common /gs/ res(5,ni,nj,nk),vec(5,ni,nj,nk)
 c      COMMON /TSTEP/ DT(NI,NJ,NK)
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-c      COMMON /FREQ/ IFREQ,ISGS
 
       double precision  qer(5),qel(5),eps,dql,dqr,xl2,rqdq,rtmax,rtrms
       double precision  etmax,etrms,con,rt,et,rtrmsr,etrmsr,tcl,tcd
