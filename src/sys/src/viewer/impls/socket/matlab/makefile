@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 2001/02/09 19:27:05 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 2001/02/09 19:28:08 bsmith Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -11,10 +11,10 @@
 #
 lib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
+	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 libfast:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
+	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 
 matlabcodes: receive openport closeport launch readinvecs
 
