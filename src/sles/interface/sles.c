@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.97 1998/04/13 17:44:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.98 1998/04/29 18:40:32 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -10,25 +10,25 @@ static char vcid[] = "$Id: sles.c,v 1.97 1998/04/13 17:44:19 bsmith Exp bsmith $
 /*@ 
    SLESView - Prints the SLES data structure.
 
-   Input Parameters:
-.  SLES - the SLES context
-.  viewer - optional visualization context
+   Collective on SLES unless Viewer is VIEWER_STDOUT_SELF
 
-   Collective on SLES unless Viewer is  VIEWER_STDOUT_SELF
+   Input Parameters:
++  SLES - the SLES context
+-  viewer - optional visualization context
 
    Options Database Key:
-$  -sles_view : calls SLESView() at end of SLESSolve()
+.  -sles_view -  Calls SLESView() at end of SLESSolve()
 
    Note:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open alternative visualization contexts with
+.    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: SLES, view
 
@@ -55,10 +55,10 @@ int SLESView(SLES sles,Viewer viewer)
 /*@
    SLESPrintHelp - Prints SLES options.
 
+   Collective on SLES
+
    Input Parameter:
 .  sles - the SLES context
-
-   Collective on SLES
 
 .keywords: SLES, help
 
@@ -85,11 +85,11 @@ int SLESPrintHelp(SLES sles)
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database.
 
-   Input Parameter:
-.  sles - the SLES context
-.  prefix - the prefix to prepend to all option names
-
    Collective on SLES
+
+   Input Parameter:
++  sles - the SLES context
+-  prefix - the prefix to prepend to all option names
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -122,11 +122,11 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database.
 
-   Input Parameter:
-.  sles - the SLES context
-.  prefix - the prefix to prepend to all option names
-
    Collective on SLES
+
+   Input Parameter:
++  sles - the SLES context
+-  prefix - the prefix to prepend to all option names
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -159,13 +159,13 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
 
+   Not Collective
+
    Input Parameter:
 .  sles - the SLES context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
-
-   Not Collective
 
    Notes:
    This prefix is particularly useful for nested use of SLES.  For
@@ -192,10 +192,10 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
    SLESSetFromOptions - Sets various SLES parameters from user options.
    Also takes all KSP and PC options.
 
+   Collective on SLES
+
    Input Parameter:
 .  sles - the SLES context
-
-   Collective on SLES
 
 .keywords: SLES, set, options, database
 
@@ -218,13 +218,13 @@ int SLESSetFromOptions(SLES sles)
 /*@C
    SLESCreate - Creates a linear equation solver context.
 
+   Collective on MPI_Comm
+
    Input Parameter:
 .  comm - MPI communicator
 
    Output Parameter:
 .  sles - the newly created SLES context
-
-   Collective on MPI_Comm
 
 .keywords: SLES, create, context
 
@@ -253,10 +253,10 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 /*@C
    SLESDestroy - Destroys the SLES context.
 
+   Collective on SLES
+
    Input Parameters:
 .  sles - the SLES context
-
-   Collective on SLES
 
 .keywords: SLES, destroy, context
 
@@ -282,12 +282,12 @@ int SLESDestroy(SLES sles)
 /*@
    SLESSetUp - Performs set up required for solving a linear system.
 
-   Input Parameters:
-.  sles - the SLES context
-.  b - the right hand side
-.  x - location to hold solution
-
    Collective on SLES
+
+   Input Parameters:
++  sles - the SLES context
+.  b - the right hand side
+-  x - location to hold solution
 
    Note:
    For basic use of the SLES solvers the user need not explicitly call
@@ -343,9 +343,9 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 
    Notes:
      On return, the parameter "its" contains
-+     - the iteration number at which convergence
-       was successfully reached, 
--     - or the negative of the iteration at which
++    <its> - the iteration number at which convergence
+       was successfully reached, or
+-    <-its> - the negative of the iteration at which
         divergence or breakdown was detected.
 
      If using a direct method (e.g., via the KSP solver
@@ -358,8 +358,10 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
      By default, SLES assumes an initial guess of zero by zeroing
      the initial value for the solution vector, x. To use a nonzero 
      initial guess, the user must call
-$        SLESGetKSP(sles,&ksp);
-$        KSPSetInitialGuessNonzero(ksp);
+.vb
+        SLESGetKSP(sles,&ksp);
+        KSPSetInitialGuessNonzero(ksp);
+.ve
 
    Solving Successive Linear Systems:
      When solving multiple linear systems of the same size with the
