@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.105 1997/11/12 04:17:49 bsmith Exp bsmith $ 
+% $Id: part1.tex,v 1.106 1997/11/12 19:04:21 bsmith Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -33,7 +33,7 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item preconditioners;
 \item nonlinear solvers;
 \item unconstrained minimization;
-\item timesteppers for solving time dependent (nonlinear) PDEs; and
+\item timesteppers for solving time-dependent (nonlinear) PDEs; and
 \item graphics devices.
 \end{itemize}
 Each of these components consists of an abstract interface 
@@ -125,7 +125,7 @@ routines that support direct use of Fortran90 pointers.
 
 \medskip \medskip
 
-Man pages for all PETSc functions can be
+Manual pages for all PETSc functions can be
 accessed in HTML format with the command {\tt \$(PETSC\_DIR)\-/bin\-/petscman}.
 The HTML manual pages
 provide hyperlinked indices (organized by
@@ -133,10 +133,10 @@ both concepts and routine names) to the tutorial examples and enables
 easy movement among related topics.  Within the PETSc distribution, the directory
 {\tt \$(PETSC\_DIR)/docs} contains all documentation, including this
 manual and the manual pages in PostScript and HTML
-formats. Note that one can also view the man pages in HTML format
+formats. Note that one can also view the manual pages in HTML format
 by loading the file {\tt \$(PETSC\_DIR)/docs/www/www.html}
 into a HTML browser session that has been independently initiated.
-\findex{petscman}\sindex{man pages}Emacs users may find the
+\findex{petscman}\sindex{manual pages}Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
 Section~\ref{sec:emacs}. Similarly, VI users may find the
@@ -148,9 +148,9 @@ the {\em PETSc 2.0 Users Manual} in its entirety, while {\tt intro.ps}
 includes only the introductory segment, Part I.  \sindex{installing PETSc} 
 The file {\tt Installation} contains detailed instructions for
 installing PETSc. The complete PETSc distribution, users
-manual, man pages, and additional information are also available via
-the PETSc home page on the World Wide Web at
-{\tt http://www.mcs.anl.gov/petsc/petsc.html}.  The PETSc home page also
+manual, manual pages, and additional information are also available via
+the PETSc home page at
+{\tt http://www.mcs.anl.gov/petsc}.  The PETSc home page also
 contains details regarding installation, new features and changes in recent
 versions of PETSc, machines that we currently support, a
 troubleshooting guide, and a FAQ list for frequently asked questions.
@@ -547,15 +547,13 @@ given in the file {\tt \$(PETSC\_DIR)/Troubleshooting}.
 As shown in Figure \ref{fig:exprof}, the option {\tt
 -log\_summary} activates printing of a performance summary, including
 times, floating point operation (flop) rates, and message-passing
-activity for the various PETSc events.  Chapter~\ref{ch:profiling}
+activity.  Chapter~\ref{ch:profiling}
 provides details about profiling, including interpretation of the
-output data within Figure~\ref{fig:exprof}
-and more information about monitoring parallel
-programs. This particular example involves the solution of a linear
+output data within Figure~\ref{fig:exprof}.  This particular example involves the solution of a linear
 system on one processor using GMRES and ILU.  The low floating point
 operation (flop) rates in this example are due to the fact that the
-code was run on a tiny matrix.  We include this example merely to
-demonstrate the ease of extracting performance information from PETSc.
+code solved a tiny system.  We include this example merely to
+demonstrate the ease of extracting performance information.
 
 \begin{figure}[H]
 {\footnotesize
@@ -603,7 +601,6 @@ PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+
 Memory usage is given in bytes:
 
 Object Type      Creations   Destructions   Memory  Descendants' Mem.
-Viewer                3              3          0     0
 Index set             3              3      12420     0
 Vector                8              8      65728     0
 Matrix                2              2     184924     4140
@@ -620,14 +617,14 @@ SLES                  1              1          0     122844
 
 \subsection*{Writing Application Codes with PETSc}
 
-The examples throughout the PETSc library demonstrate the details of
-using the software and can serve as templates for the development
-custom application programs.  We suggest that new PETSc
-users examine some programs in the directories {\tt
+The examples throughout the library demonstrate the details software usage
+and can serve as templates for developing
+custom applications.  We suggest that new PETSc
+users examine programs in the directories {\tt
 \$(PETSC\_DIR)/src/<component>/examples/tutorials}, where {\tt <component>}
-denotes any of the PETSc component directories (listed in the following
+denotes any of the PETSc components (listed in the following
 section), such as {\tt snes} or {\tt sles}.  
-Currently some PETSc components have examples only in the directory
+Currently some components have examples only in the directory
 {\tt \$(PETSC\_DIR)/src/<component>/examples/tests}; more tutorial examples
 will be forthcoming.  The HTML version of the manual pages provides indices
 (organized by both routine names and concepts) to the tutorial examples.
@@ -635,7 +632,7 @@ will be forthcoming.  The HTML version of the manual pages provides indices
 To write a new application program using PETSc, we suggest the
 following procedure:
 \begin{enumerate}
-\item Install and test PETSc according to the instructions in the file
+\item Install and test PETSc according to the instructions in 
       {\tt \$(PETSC\_DIR)/docs/installation.html}.
 \item Copy one of the many PETSc examples in the component directory
       that corresponds to the class of problem of interest (e.g.,
@@ -657,11 +654,11 @@ the root directory of PETSc contains the following directories:
 \item {\tt docs} - All documentation for PETSc. The files {\tt manual.ps}
                    and {\tt manual.html} contain the users manual in
                    PostScript and HTML formats, respectively. Includes
-                   the subdirectories
+                   the subdirectory
  \subitem - {\tt www} (HTML manual pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
- \item {\tt petscman} (man page viewer),
+ \item {\tt petscman} (manual page viewer),
  \item {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
  \item {\tt petscview} (GUI utility for high-level visualization of program activity),
  \item {\tt petscopts} (GUI utility for setting runtime options), and

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.65 1997/09/22 15:20:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.66 1997/10/19 03:27:22 bsmith Exp curfman $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -155,8 +155,8 @@ int main(int argc,char **args)
        overridden at runtime, as indicated below.
   */
   /* 
-     We comment out this section of code since the Jacobi
-     preconditioner is not a good general default.
+     We comment out this section of code since the Jacobi method 
+     is not a good general default preconditioner.
 
      ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
      ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
