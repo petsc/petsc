@@ -1,6 +1,6 @@
 #! /usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.11 2000/09/27 17:18:46 balay Exp balay $ 
+# $Id: helpindex.py,v 1.12 2000/09/28 04:27:11 balay Exp bsmith $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -23,8 +23,7 @@ def comptxt(a,b):
       b = lower(b)
       return cmp(a,b)
 
-def gethelpstring(filename):
-      PETSC_DIR = '/home/bsmith/petsc'
+def gethelpstring(PETSC_DIR,filename):
       filename = PETSC_DIR + '/' + filename
       fd = open(filename,'r')
       
@@ -44,7 +43,7 @@ def gethelpstring(filename):
 
 
 # Scan and extract format information from each line
-def updatedata(dict,line):
+def updatedata(PETSC_DIR,dict,line):
       # The first filed is the name of the file which will be used for link
       filename     = split(line," ")[0]
       concept_list = join(split(line," ")[1:]," ")
@@ -55,7 +54,7 @@ def updatedata(dict,line):
             link_title = split(split(filename,'/')[-1],'.')[0]
       else:
             # should be an example file
-            help_str = gethelpstring(filename)
+            help_str = gethelpstring(PETSC_DIR,filename)
             if not help_str == "PetscNoHelp":
                   link_title = help_str
             else:
@@ -90,7 +89,7 @@ def updatedata(dict,line):
             dict[prim_key][sub_key][link_title] = filename
 
 # print the dict in html format
-def printdata(fd,dict):
+def printdata(LOC,fd,dict):
 
       # Put some  HTML Header 
       fd.write("<HTML>\n")
@@ -154,7 +153,7 @@ def printdata(fd,dict):
                   concept_filename = "concepts/" + concept_filename + ".htm"
                   
                   #if os.access(concept_filename,os.F_OK):
-                  fd_tmp = os.popen('ls '+ '/home/bsmith/petsc/docs/manualpages/'+ concept_filename)
+                  fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/'+ concept_filename)
                   buf = fd_tmp.read()
                   if not buf == '':
                         fd.write("<A HREF=\"")
@@ -181,7 +180,7 @@ def printdata(fd,dict):
                   concept_filename = "concepts/" + concept_filename + ".htm"
                   
                   #if os.access(concept_filename,os.F_OK):
-                  fd_tmp = os.popen('ls '+ '/home/bsmith/petsc/docs/manualpages/' + concept_filename)
+                  fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/' + concept_filename)
                   buf = fd_tmp.read()
                   if not buf == '':
                         fd.write("<A HREF=\"")
@@ -237,7 +236,16 @@ def printdata(fd,dict):
 # starts genrating index for all the manpages.
 def main():
 
-      PETSC_DIR = '/home/bsmith/petsc'
+      arg_len = len(argv)
+      
+      if arg_len < 3: 
+            print 'Error! Insufficient arguments.'
+            print 'Usage:', argv[0], 'PETSC_DIR','LOC'
+            exit()
+
+      PETSC_DIR = argv[1]
+      LOC       = argv[2]
+
       dict = {}
 
       # open and read in the input files
@@ -245,16 +253,16 @@ def main():
       fd2 = open( PETSC_DIR + '/docs/tex/manconcepts','r')
 
       for line in fd1.readlines():
-            updatedata(dict,strip(line))
+            updatedata(PETSC_DIR,dict,strip(line))
       for line in fd2.readlines():
-            updatedata(dict,strip(line))
+            updatedata(PETSC_DIR,dict,strip(line))
 
       fd1.close()
       fd2.close()
       #make sure there is no problem re-writing to this file
-      os.system('/bin/rm -f ' + PETSC_DIR + '/docs/manualpages/help.html')
-      fd = open( PETSC_DIR + '/docs/manualpages/help.html','w')
-      printdata(fd,dict)
+      os.system('/bin/rm -f ' + LOC + '/docs/manualpages/help.html')
+      fd = open( LOC + '/docs/manualpages/help.html','w')
+      printdata(LOC,fd,dict)
       fd.close()
       
 # The classes in this file can also
