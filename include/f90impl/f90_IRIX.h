@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.4 2000/07/26 21:15:26 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.5 2000/07/27 15:31:40 balay Exp balay $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H
@@ -27,10 +27,10 @@ void* addr;        /* Pointer to the data/array */ \
 long  sd;          /* sizeof(DataType) in bits */  \
 int   cookie; \
 int   ndim;        /* No of dimentions */          \
-int   a; \
+int   a;  \
 int   id; /* ID corresponding to datatype */ \
-int   b; \
-long  c;
+void* addr_r; /* address redefined */ \
+long  size; /* len1*len2* ... * sd */
 
 typedef struct {
   f90_header()
