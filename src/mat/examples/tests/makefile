@@ -532,7 +532,7 @@ runex54:
 	      for ov in $(OVERLAP); do\
 	        for nd in $(NODOMAINS); do \
 		  for np in $(NPROCS); do \
-		    $(MPIRUN)  ex54 -mat_block_size $$bs -ov $$ov \
+		    $(MPIRUN) -np $$np ex54 -mat_block_size $$bs -ov $$ov \
                        -mat_size $$matsize -nd $$nd > ex54_1.tmp 2>&1; \
 	  	    grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
 	 	    if (diff output/ex54_1.out ex54_12.tmp) then true; \
