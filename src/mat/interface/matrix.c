@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.398 2001/03/23 23:21:44 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.399 2001/03/26 22:15:01 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -513,7 +513,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesStencil"
-/*@ 
+/*@C 
    MatSetValuesStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
 
@@ -540,6 +540,14 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 
    MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
+
+   In Fortran idxm and idxn should be declared as
+$     MatStencil idxm(4,m),idxn(4,n)
+   and the values inserted using
+$    idxm(MatStencil_i,1) = i
+$    idxm(MatStencil_j,1) = j
+$    idxm(MatStencil_k,1) = k
+   etc
 
    Negative indices may be passed in idxm and idxn, these rows and columns are 
    simply ignored. This allows easily inserting element stiffness matrices
@@ -2283,7 +2291,7 @@ int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,Mat
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2342,7 +2350,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     int (*conv)(Mat,MatType,Mat*);
     ierr = PetscStrcpy(convname,"MatConvertTo_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr =  PetscFListFind(mat->comm,MatConvertList,convname,(int(**)(void*))&conv);CHKERRQ(ierr);
+    ierr =  PetscFListFind(mat->comm,MatConvertList,convname,(void(**)())&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
     } else {
@@ -2351,7 +2359,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
       ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
       ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void**)&conv);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)())&conv);CHKERRQ(ierr);
       if (conv) {
         ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
       } else {
@@ -3605,9 +3613,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 @*/
 int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **submat)
 {
-  int        ierr,i,iequal;
-  MPI_Comm   mcomm,icomm;
-  PetscTruth seq = PETSC_TRUE,full = PETSC_TRUE;
+  int        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -3616,26 +3622,9 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
   if (!mat->ops->getsubmatrices) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
-  /*
-       Check if the submatrices lie across all the processors or are sequential
-  */
-  mcomm = mat->comm;
-  for (i=0; i<n; i++) {
-    ierr = PetscObjectGetComm((PetscObject)irow[i],&icomm);CHKERRQ(ierr);
-    ierr = MPI_Comm_compare(mcomm,icomm,&iequal);CHKERRQ(ierr);
-    if (iequal == MPI_UNEQUAL)  full = PETSC_FALSE;
-    ierr = MPI_Comm_compare(PETSC_COMM_SELF,icomm,&iequal);CHKERRQ(ierr);
-    if (iequal == MPI_UNEQUAL)  seq = PETSC_FALSE;
-  }
-  if (seq) {
-    ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-    ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  } else if (full) {
-    ;
-  } else {
-    SETERRQ(1,"Cannot get submatrices unless all index sets are on all processors or all are on one")
-      }
+  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
