@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.5 1995/12/13 21:18:14 balay Exp bsmith $";
+C      "$Id: ex36.F,v 1.6 1995/12/21 18:32:43 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/mat.h"
@@ -31,6 +31,12 @@ C  Access array storage
 
 C  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
+
+C  Finalize matrix assembly
+      call MatAssemblyBegin(A,FINAL_ASSEMBLY,err)
+      call MatAssemblyEnd(A,FINAL_ASSEMBLY,err)
+
+C  View matrix
       call MatView(A,STDOUT_VIEWER_SELF,err)
 
 C  Clean up
@@ -52,5 +58,7 @@ C -----------------------------------------------------------------
  10   continue
       return
       end
+
+
 
 

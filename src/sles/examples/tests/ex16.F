@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.2 1996/01/16 19:55:22 balay Exp balay $";
+C      "$Id: ex16.F,v 1.3 1996/01/24 00:52:00 balay Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -73,8 +73,7 @@ C      print*, 'Time for solve = ',time
 
 C Create system 2 by striping off some rows of the matrix
       call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
-      call MatZeroRows(A, isrow, five, ierr)
-      call MatView(A,STDOUT_VIEWER_SELF)
+      call MatZeroRows(A,isrow,five,ierr)
 
 C Solve system-2
       call SLESCreate(MPI_COMM_WORLD,sles2,ierr)
