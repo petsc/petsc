@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.85 1999/01/31 21:46:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.86 1999/02/08 22:46:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -27,7 +27,7 @@ static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
-  MatShellGetContext(mat,(void **)&pc);
+  ierr = MatShellGetContext(mat,(void **)&pc);CHKERRQ(ierr);
   eis = (PC_Eisenstat *) pc->data;
   ierr = MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
