@@ -1,0 +1,19 @@
+Subject: new local PETSc installation
+Date: Sat, 14 Oct 1995 12:04:47 -0500
+From: Lois Curfman McInnes <curfman@mcs.anl.gov>
+
+
+We have installed a new version of PETSc (version 2.0.Beta.8) 
+in /usr/local/petsc/petsc.  Please see the file
+/usr/local/petsc/petsc/Changes for new features and changes 
+from the previous version.
+
+The old version (PETSc 2.0.Beta.7) is now located in 
+/home/bsmith/petsc.solid.old.  But please only revert to the 
+previous version in case of emergency; be sure to let us know 
+if you experience any problems with the new code, as we should 
+be able to resolve them quickly.
+
+Thanks for your support.
+Barry, Lois, and Bill
+

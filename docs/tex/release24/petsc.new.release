@@ -1,0 +1,22 @@
+
+Subject: New release of PETSc 2.0
+Sender: owner-petsc-users@mcs.anl.gov
+Precedence: bulk
+
+
+PETSc-Users,
+
+We have just released a new version of PETSc with several important 
+bug fixes and a variety of additions to the code.  You can find a list 
+of new features and changes in PETSc in the "Changes" file at 
+ftp://info.mcs.anl.gov/pub/petsc or 
+http://www.mcs.anl.gov/petsc/petsc.html 
+
+As always, please send bug reports, questions, and requests for new 
+features to petsc-maint@mcs.anl.gov.
+
+Thanks for your support.
+
+The PETSc team,
+  Barry, Lois, and Bill
+
