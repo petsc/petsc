@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.104 2001/04/04 18:18:59 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.105 2001/04/04 18:19:34 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -379,10 +379,19 @@ int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason
     ksp->rnorm0 = rnorm;
   }
   if (rnorm <= ksp->ttol) {
-    if (rnorm < ksp->atol) *reason = KSP_CONVERGED_ATOL;
-    else                   *reason = KSP_CONVERGED_RTOL;
-  } else if (rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) {
-   *reason = KSP_DIVERGED_DTOL;
+    if (rnorm < ksp->atol) {
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %d\n",rnorm,ksp->atol,n);
+      *reason = KSP_CONVERGED_ATOL;
+    } else {
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm at iteration %d\n",rnorm,ksp->rtol,ksp->rnorm0,n);
+      *reason = KSP_CONVERGED_RTOL;
+    }
+  } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
+    PetscLogInfo(ksp,"Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %d\n",ksp->rnorm0,rnorm,n);
+    *reason = KSP_DIVERGED_DTOL;
+  } else if (rnorm != rnorm) {
+    PetscLogInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence\n");
+    *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);
 }
