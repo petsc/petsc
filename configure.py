@@ -301,6 +301,9 @@ class Configure:
   def checkRun(self, includes, body):
     if not self.checkLink(includes, body, cleanup = 0): return 0
     success = 0
+    if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
+      self.framework.log.write('ERR (executable): '+self.linkerObj+' is not executable')
+      return success
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
     (status, output) = commands.getstatusoutput(command)
