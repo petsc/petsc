@@ -246,7 +246,7 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = PETSC_TRUE; 
   }
-  if (mfctx->compute_err == PETSC_TRUE) mfctx->need_err = PETSC_TRUE;
+  if (mfctx->compute_err) mfctx->need_err = PETSC_TRUE;
   if (mfctx->jorge || mfctx->compute_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;

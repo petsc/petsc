@@ -373,8 +373,14 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
+  def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd)
+    if returnCode: return 0
+    if output.find('implicit') >= 0 or output.find('Implicit') >= 0: return 0
+    return 1
+    
   def configureGetDomainName(self):
-    if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
+    if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.addPrototype('int getdomainname(char *, int);', 'C')
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
