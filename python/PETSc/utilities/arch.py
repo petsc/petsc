@@ -63,6 +63,13 @@ class Configure(config.base.Configure):
         break
     if auxDir is None:
       raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
+    fd = open(configGuess)
+    data = fd.read()
+    fd.close()
+    if data.find('\r\n') >= 0:
+      raise RuntimeError('''It appears you have uncompressed petsc.tar.gz using WINZIP!
+        Unfortunately WINZIP introduces extraneous charactors into files,
+        please use gunzip and tar to uncompress petsc.tar.gz\n''')
     try:
       host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
       output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
