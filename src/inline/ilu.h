@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.18 2000/05/10 16:38:34 bsmith Exp balay $ */
+/* $Id: ilu.h,v 1.19 2000/08/16 15:17:56 balay Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -25,7 +25,86 @@ EXTERN int  LINPACKdgefa(MatScalar *,int,int *);
 EXTERN int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
 EXTERN int  Kernel_A_gets_inverse_A_2(MatScalar *);
 EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
+
+#define PETSC_INLINE_INVERT4by4
+#if defined(PETSC_INLINE_INVERT4by4)
+#define Kernel_A_gets_inverse_A_4(mat) 0;\
+{\
+  MatScalar d, di;\
+\
+  di = mat[0];\
+  mat[0] = d = 1.0 / di;\
+  mat[4] *= -d;\
+  mat[8] *= -d;\
+  mat[12] *= -d;\
+  mat[1] *= d;\
+  mat[2] *= d;\
+  mat[3] *= d;\
+  mat[5] += mat[4] * mat[1] * di;\
+  mat[6] += mat[4] * mat[2] * di;\
+  mat[7] += mat[4] * mat[3] * di;\
+  mat[9] += mat[8] * mat[1] * di;\
+  mat[10] += mat[8] * mat[2] * di;\
+  mat[11] += mat[8] * mat[3] * di;\
+  mat[13] += mat[12] * mat[1] * di;\
+  mat[14] += mat[12] * mat[2] * di;\
+  mat[15] += mat[12] * mat[3] * di;\
+  di = mat[5];\
+  mat[5] = d = 1.0 / di;\
+  mat[1] *= -d;\
+  mat[9] *= -d;\
+  mat[13] *= -d;\
+  mat[4] *= d;\
+  mat[6] *= d;\
+  mat[7] *= d;\
+  mat[0] += mat[1] * mat[4] * di;\
+  mat[2] += mat[1] * mat[6] * di;\
+  mat[3] += mat[1] * mat[7] * di;\
+  mat[8] += mat[9] * mat[4] * di;\
+  mat[10] += mat[9] * mat[6] * di;\
+  mat[11] += mat[9] * mat[7] * di;\
+  mat[12] += mat[13] * mat[4] * di;\
+  mat[14] += mat[13] * mat[6] * di;\
+  mat[15] += mat[13] * mat[7] * di;\
+  di = mat[10];\
+  mat[10] = d = 1.0 / di;\
+  mat[2] *= -d;\
+  mat[6] *= -d;\
+  mat[14] *= -d;\
+  mat[8] *= d;\
+  mat[9] *= d;\
+  mat[11] *= d;\
+  mat[0] += mat[2] * mat[8] * di;\
+  mat[1] += mat[2] * mat[9] * di;\
+  mat[3] += mat[2] * mat[11] * di;\
+  mat[4] += mat[6] * mat[8] * di;\
+  mat[5] += mat[6] * mat[9] * di;\
+  mat[7] += mat[6] * mat[11] * di;\
+  mat[12] += mat[14] * mat[8] * di;\
+  mat[13] += mat[14] * mat[9] * di;\
+  mat[15] += mat[14] * mat[11] * di;\
+  di = mat[15];\
+  mat[15] = d = 1.0 / di;\
+  mat[3] *= -d;\
+  mat[7] *= -d;\
+  mat[11] *= -d;\
+  mat[12] *= d;\
+  mat[13] *= d;\
+  mat[14] *= d;\
+  mat[0] += mat[3] * mat[12] * di;\
+  mat[1] += mat[3] * mat[13] * di;\
+  mat[2] += mat[3] * mat[14] * di;\
+  mat[4] += mat[7] * mat[12] * di;\
+  mat[5] += mat[7] * mat[13] * di;\
+  mat[6] += mat[7] * mat[14] * di;\
+  mat[8] += mat[11] * mat[12] * di;\
+  mat[9] += mat[11] * mat[13] * di;\
+  mat[10] += mat[11] * mat[14] * di;\
+}
+#else
 EXTERN int  Kernel_A_gets_inverse_A_4(MatScalar *);
+#endif
+
 EXTERN int  Kernel_A_gets_inverse_A_5(MatScalar *);
 EXTERN int  Kernel_A_gets_inverse_A_6(MatScalar *);
 EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
@@ -199,8 +278,8 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  int ierr; \
-  ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(ierr); \
+  int _ierr; \
+  _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   msgemmi_(&bs,A,B,W); \
 }
 
