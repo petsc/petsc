@@ -287,7 +287,9 @@ int checkInit(void) {
     self.framework.argDB['LIBS'] = oldLibs
     if os.path.isfile('lib1.so'): os.remove('lib1.so')
     if os.path.isfile('lib2.so'): os.remove('lib2.so')
-    if not isShared:
+    if isShared:
+      self.framework.logPrint('Library was shared')
+    else:
       self.framework.logPrint('Library was not shared')
     return isShared
 
