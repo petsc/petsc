@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.77 1997/02/04 21:25:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.78 1997/02/22 02:26:43 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -292,38 +292,46 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 .  its - the number of iterations until termination
 
    Notes:
-   On return, the parameter "its" contains
-$   - the iteration number at which convergence
-$     was successfully reached, 
-$   - or the negative of the iteration at which
-$      divergence or breakdown was detected.
+     On return, the parameter "its" contains
+$     - the iteration number at which convergence
+$       was successfully reached, 
+$     - or the negative of the iteration at which
+$        divergence or breakdown was detected.
 
-   If using a direct method (e.g., via the KSP solver
-   KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
-   for more details.
+     If using a direct method (e.g., via the KSP solver
+     KSPPREONLY and a preconditioner such as PCLU/PCILU),
+     then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+     for more details.
+
+   Setting a Nonzero Initial Guess:
+     By default, SLES assumes an initial guess of zero by zeroing
+     the initial value for the solution vector, x. To use a nonzero 
+     initial guess, the user must call
+$        SLESGetKSP(sles,&ksp);
+$        KSPSetInitialGuessNonzero(ksp);
 
    Solving Successive Linear Systems:
-   When solving multiple linear systems of the same size with the
-   same method, several options are available.
+     When solving multiple linear systems of the same size with the
+     same method, several options are available.
 
-   (1) To solve successive linear systems having the SAME
-   preconditioner matrix (i.e., the same data structure with exactly
-   the same matrix elements) but different right-hand-side vectors,
-   the user should simply call SLESSolve() multiple times.  The
-   preconditioner setup operations (e.g., factorization for ILU) will
-   be done during the first call to SLESSolve() only; such operations
-   will NOT be repeated for successive solves.
+     (1) To solve successive linear systems having the SAME
+     preconditioner matrix (i.e., the same data structure with exactly
+     the same matrix elements) but different right-hand-side vectors,
+     the user should simply call SLESSolve() multiple times.  The
+     preconditioner setup operations (e.g., factorization for ILU) will
+     be done during the first call to SLESSolve() only; such operations
+     will NOT be repeated for successive solves.
 
-   (2) To solve successive linear systems that have DIFFERENT
-   preconditioner matrices (i.e., the matrix elements and/or the
-   matrix data structure change), the user MUST call SLESSetOperators()
-   and SLESSolve() for each solve.  See SLESSetOperators() for
-   options that can save work for such cases.
+     (2) To solve successive linear systems that have DIFFERENT
+     preconditioner matrices (i.e., the matrix elements and/or the
+     matrix data structure change), the user MUST call SLESSetOperators()
+     and SLESSolve() for each solve.  See SLESSetOperators() for
+     options that can save work for such cases.
 
 .keywords: SLES, solve, linear system
 
-.seealso: SLESCreate(), SLESSetOperators(), KSPSetTolerances(), KSPDefaultConverged()
+.seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
+          KSPDefaultConverged(), KSPSetInitialGuessNonzero()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
