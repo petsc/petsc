@@ -63,13 +63,12 @@ class UsingSIDL (logging.Logger):
   def setupExtraLibraries(self):
     rootDir   = os.path.join(self.getRootDir(), 'lib')
     using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
-    clientLib = using.getClientLibrary('sidlruntime', self.getBaseLanguage(), isArchive = 0, root = rootDir)
     serverLib = using.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), isArchive = 0, root = rootDir)
     self.extraLibraries['executable'].extend(serverLib)
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.extraLibraries[lang].extend(serverLib)
       if not lang == self.getBaseLanguage():
-        self.extraLibraries[lang].extend(clientLib)
+        self.extraLibraries[lang].extend(using.getClientLibrary('sidlruntime', lang, isArchive = 0, root = rootDir))
     for package in self.getPackages():
       if not self.project == 'sidlruntime' or not package in self.bootstrapPackages:
         self.extraLibraries[package].extend(serverLib)
