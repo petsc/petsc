@@ -20,11 +20,15 @@ class Processor(logging.Logger):
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
     if hasattr(self, 'configCompilers'):
-      self.configCompilers.argDB = argDB
-      self.configCompilers.framework.argDB = argDB
+      if not self.configCompilers.argDB == argDB:
+        self.configCompilers.argDB = argDB
+      if not self.configCompilers.framework.argDB == argDB:
+        self.configCompilers.framework.argDB = argDB
     if hasattr(self, 'configLibraries'):
-      self.configLibraries.argDB = argDB
-      self.configLibraries.framework.argDB = argDB
+      if not self.configLibraries.argDB == argDB:
+        self.configLibraries.argDB = argDB
+      if not self.configLibraries.framework.argDB == argDB:
+        self.configLibraries.framework.argDB = argDB
     if hasattr(self, 'versionControl'):
       self.versionControl.argDB = argDB
     return
