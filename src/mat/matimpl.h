@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.95 1999/02/25 22:56:28 balay Exp balay $ */
+/* $Id: matimpl.h,v 1.96 1999/03/09 21:29:55 balay Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -115,38 +115,36 @@ struct _p_Mat {
 */
 
 typedef struct {
-  Scalar *a;
-  int *i,*j,n;
-} Stash_rdata;
-
-typedef struct {
   int           nmax;                   /* maximum stash size */
   int           oldnmax;                /* the nmax value used previously */
   int           n;                      /* stash size */
-  int           bs;                     /* block size used with the stash */
+  int           bs_stash,bs_mat;        /* block size of the matrix and the stash */
   int           reallocs;               /* preserve the no of mallocs invoked */           
   int           *idx;                   /* global row numbers in stash */
   int           *idy;                   /* global column numbers in stash */
   Scalar        *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
-  int           tag1,tag2;
   MPI_Comm      comm;
+  int           size,rank;
+  int           tag1,tag2;
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
+  MPI_Status    *send_status;           /* array of send status */
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
-  Stash_rdata   *rdata;                  /* used by assmebly routine to access received data */
+  int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
+  int           nprocessed;             /* number of messages already processed */
 } Stash;
 
-extern int StashCreate_Private(MPI_Comm,int,Stash*);
+extern int StashCreate_Private(MPI_Comm,int,int,Stash*);
 extern int StashDestroy_Private(Stash*);
-extern int StashReset_Private(Stash*);
+extern int StashScatterEnd_Private(Stash*);
 extern int StashSetInitialSize_Private(Stash *,int);
 extern int StashInfo_Private(Stash*);
 extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
 extern int StashScatterBegin_Private(Stash*,int*);
-extern int StashScatterEnd_Private(Stash*);
+extern int StashScatterGetMesg_Private(Stash*,int*,int**,int**,Scalar**,int*);
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat,MatStructure);
