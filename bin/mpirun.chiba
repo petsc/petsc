@@ -158,7 +158,7 @@ pbs_job_id=`qsub ./.mpirun$$`
 pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
 
-echo -n "PBS Job ID $pbs_job_id Submitted to queue " 
+echo -n "PBS Job $pbs_job_id Submitted to queue " 
 date
 
 #rm -f ./.mpirun$$
@@ -173,7 +173,7 @@ while [ "$status" = "Q" ] ; do
 done
 echo " "
 # 
-echo -n "PBS Job ID $pbs_job_id No longer in queue (may be running) "
+echo -n "PBS Job $pbs_job_id Running "
 date
 #
 status="R"
@@ -185,7 +185,7 @@ while [ "$status" = "R" ] ; do
 done
 echo " "
 #
-echo -n "PBS Job ID $pbs_job_id Job no longer running "
+echo -n "PBS Job $pbs_job_id Job no longer running "
 date
 #
 status="E"
@@ -197,7 +197,7 @@ while [ "$status" = "E" ] ; do
 done
 echo " "
 #
-echo -n "PBS Job ID $pbs_job_id No longer existing "
+echo -n "PBS Job $pbs_job_id No longer existing "
 date
 #
 # Move the output to the stdout/err of the process running this script
