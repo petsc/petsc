@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2001/04/17 18:23:48 buschelm Exp buschelm $ 
+# $Id: makefile,v 1.5 2001/04/17 21:04:30 buschelm Exp buschelm $ 
 CXX       = cl
 CXX_FLAGS = -nologo -GX -GR -MD
 CXXFLAGS  =
@@ -19,5 +19,5 @@ OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj \
 INCLUDEPATHS = -Iinclude
 
 win32fe: $(SOURCES)
-	$(CXX) $(CXX_FLAGS) $(CXXFLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) -link setargv.obj
+	$(CXX) $(CXX_FLAGS) $(CXXFLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) 
 	$(RM) $(OBJECTS)
