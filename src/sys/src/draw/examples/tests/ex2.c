@@ -9,7 +9,6 @@ static char help[] = "Example demonstrating color map\n";
 #include "sysio.h"
 #include "draw.h"
 #include <math.h>
-#include <unistd.h>
 
 int main(int argc,char **argv)
 {
@@ -24,7 +23,7 @@ int main(int argc,char **argv)
   for ( i=0; i<256; i++) {
     ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
   }
-  ierr = DrawFlush(draw);
+  ierr = DrawFlush(draw); CHKERRA(ierr);
   sleep(2);
   PetscFinalize();
   return 0;

@@ -26,18 +26,18 @@ int main(int argc,char **argv)
   CHKERRA(ierr);
   ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
   ierr = DrawLGGetAxisCtx(lg,&axis); CHKERRA(ierr);
-  ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);
-  ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);
+  ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);
+  ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel); CHKERRA(ierr);
 
   for ( i=0; i<n ; i++ ) {
     xd = (double)( i - 5 ); yd = xd*xd;
-    DrawLGAddPoint(lg,&xd,&yd);
+    ierr = DrawLGAddPoint(lg,&xd,&yd); CHKERRA(ierr);
   }
   ierr = DrawLGIndicateDataPoints(lg); CHKERRA(ierr);
   ierr = DrawLG(lg); CHKERRA(ierr);
-  ierr = DrawFlush(draw); sleep(2);
+  ierr = DrawFlush(draw); CHKERRA(ierr); sleep(2);
 
-  DrawLGDestroy(lg);
+  ierr = DrawLGDestroy(lg); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
