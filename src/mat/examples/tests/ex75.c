@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.7 2000/07/12 21:09:05 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.8 2000/07/14 18:49:33 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   PetscTruth  flg;
   Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
-  int         bs=1, d_nz=3, o_nz=3, n = 16, prob=1;
+  int         bs=1, d_nz=3, o_nz=3, n = 16, prob=2;
   int         rank,size,col[3],n1,mbs,block,row;
   int         flg_A = 0, flg_sA = 1;
   int         ncols,*cols,*ip_ptr,rstart,rend,N;
