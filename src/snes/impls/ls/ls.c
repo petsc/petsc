@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.136 1999/05/12 03:32:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.137 1999/06/08 22:53:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -707,7 +707,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
 
 .keywords: SNES, nonlinear, set, line search, routine
 
-.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), SNESSetLineSearchCheck()
+.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), SNESSetLineSearchCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
 @*/
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void *lsctx)
 {
