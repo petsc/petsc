@@ -35,9 +35,7 @@ T*/
 #include "petscmg.h"
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormMinFunction(Vec,DMMG,PetscScalar*);
 extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
-extern int FormFunctionMinpackLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -48,7 +46,6 @@ int main(int argc,char **argv)
   int         ierr,its,lits;
   PetscReal   litspit;
   DA          da;
-  PetscScalar result;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -71,7 +68,7 @@ int main(int argc,char **argv)
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
   /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
-  ierr = DMMGSetSNESLocal(dmmg,FormFunctionMinpackLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time
@@ -90,9 +87,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
-
-  ierr = FormMinFunction(DMMGGetx(dmmg),(dmmg)[(dmmg)[0]->nlevels-1],&result);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Function value %18.16e\n",result);CHKERRQ(ierr);
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -199,141 +193,5 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *pt
 
     }
   }
-  PetscFunctionReturn(0);
-} 
-
-int FormFunctionMinpackLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
-{
-  int          i,j;
-  PetscScalar  hx,hy;
-  PetscScalar  v,vb,vl,vr,vt,dvdx,dvdy,fl,fu;
-
-  PetscFunctionBegin;
-  hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
-
-  /* zero function */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
-        f[j][i] = 0.0;
-    }
-  }
-
-  /* loop over local elements */ 
-  for (j=info->ys; j<info->ys+info->ym-1; j++) {
-    for (i=info->xs; i<info->xs+info->xm-1; i++) {
-
-      /* handle lower left element */
-      v  = t[j][i];
-      vr = t[j][i+1];
-      vt = t[j+1][i];
-      dvdx = (vr-v)/hx;
-      dvdy = (vt-v)/hy;
-      fl = PetscSqrtScalar(1.0+dvdx*dvdx+dvdy*dvdy);
-      f[j][i]   -= (dvdx/hx+dvdy/hy)/fl;
-      f[j][i+1] += (dvdx/hx)/fl;
-      f[j+1][i] += (dvdy/hy)/fl;
-
-      /* handle upper right element */
-      v  = t[j+1][i+1];
-      vl = t[j+1][i];
-      vb = t[j][i+1];
-      dvdx = (v-vl)/hx;
-      dvdy = (v-vb)/hy;
-      fu = PetscSqrtScalar(1.0+dvdx*dvdx+dvdy*dvdy);
-      f[j+1][i+1]   += (dvdx/hx+dvdy/hy)/fu;
-      f[j+1][i]     -= (dvdx/hx)/fu;
-      f[j][i+1]     -= (dvdy/hy)/fu;
- 
-    }
-  }
-
-  /* Fix the boundary part */
-  for (j=info->ys; j<info->ys+info->ym; j++) {
-    for (i=info->xs; i<info->xs+info->xm; i++) {
-
-      if (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1) {
-
-        f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
-      
-      } 
-    }
-  }
-  PetscFunctionReturn(0);
-} 
-
-/* --------------------------------------------------------------------------------*/
-/*
-          Evaluates the function we are computing the minimum of 
-
-                \integral (1 + || \grad T ||^2)^(1/2)
-*/
-#undef __FUNCT__
-#define __FUNCT__ "FormMinFunction"
-int FormMinFunction(Vec T,DMMG dmmg,PetscScalar *result)
-{
-  int          ierr,i,j,mx,my,xs,ys,xm,ym;
-  PetscScalar  hx,hy;
-  PetscScalar  **t,gradx,grady,sum;
-  Vec          localT;
-
-  PetscFunctionBegin;
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = 1.0/(PetscReal)(mx-1);  hy    = 1.0/(PetscReal)(my-1);
- 
-  /* Get ghost points */
-  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
-
-  /* Evaluate function */
-  sum = 0.0;
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-
-      if (i == 0 && j > 0 && j < my-1) { /* left side */
-        gradx      = (t[j][i+1] - t[j][i])/hx;
-        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
-        sum       += .5*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (i == mx-1 && j > 0 && j < my-1) { /* right side */
-        gradx      = (t[j][i] - t[j][i-1])/hx;
-        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
-        sum       += .5*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (j == 0 && i > 0 && i < mx-1) { /* bottom side */
-        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
-        grady      = (t[j+1][i] - t[j][i])/hy;
-        sum       += .5*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (j == my-1 && i > 0 && i < mx-1) { /* top side */
-        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
-        grady      = (t[j][i] - t[j-1][i])/hy;
-        sum       += .5*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (i == 0 && j == 0) {
-        gradx      = (t[j][i+1] - t[j][i])/hx;
-        grady      = (t[j+1][i] - t[j][i])/hy;
-        sum       += .25*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (i == mx-1 && j == 0) {
-        gradx      = (t[j][i] - t[j][i-1])/hx;
-        grady      = (t[j+1][i] - t[j][i])/hy;
-        sum       += .25*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (i == mx-1 && j == my-1) {
-        gradx      = (t[j][i] - t[j][i-1])/hx;
-        grady      = (t[j][i] - t[j-1][i])/hy;
-        sum       += .25*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else if (i == 0 && j == my-1) {
-        gradx      = (t[j][i+1] - t[j][i])/hx;
-        grady      = (t[j][i] - t[j-1][i])/hy;
-        sum       += .25*PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      } else {
-        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
-        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
-        sum       += PetscSqrtScalar(1.0 + gradx*gradx + grady*grady)*hx*hy;
-      }
-
-    }
-  }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,result,1,MPIU_SCALAR,PetscSum_Op,dmmg->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

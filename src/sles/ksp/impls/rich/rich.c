@@ -46,7 +46,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
-    *its = maxit;
+    if (its) *its = maxit;
     ierr = PCApplyRichardson(ksp->B,b,x,r,ksp->rtol,ksp->atol,ksp->divtol,maxit);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
     PetscFunctionReturn(0);
@@ -114,7 +114,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     i--;
   }
 
-  *its = i+1;
+  if (its) *its = i+1;
   PetscFunctionReturn(0);
 }
 
