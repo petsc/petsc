@@ -20,8 +20,9 @@ class Compiler(config.compile.processor.Processor):
   '''The Fortran compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'FC', 'FFLAGS', '.F', '.o')
-    self.requiredFlags[-1] = '-c'
-    self.outputFlag        = '-o'
+    self.requiredFlags[-1]  = '-c'
+    self.outputFlag         = '-o'
+    self.includeDirectories = sets.Set()
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
