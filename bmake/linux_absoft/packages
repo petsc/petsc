@@ -75,15 +75,4 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB = 
 #
-#  Location of bfort; generates Fortran stubs from C
 #
-BFORT = bfort
-#
-#
-# ---------------------------------------------------------------------------------------
-#
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
-C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/alice/software/egcs/linux/lib
-F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/alice/software/egcs/linux/lib

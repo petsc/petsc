@@ -126,7 +126,3 @@ PETSC_PYTHON    = -DPETSC_PYTHON="/home/petsc/soft/solaris-9/python-2.2.2/bin/py
 RAMG_LIB        = /home/petsc/soft/solaris-9/ramg/libramg_solaris.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

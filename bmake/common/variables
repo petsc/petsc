@@ -54,11 +54,6 @@ LT_LIBNAME = ${INSTALL_LIB_DIR}/lt_${LIBBASE}.${LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 #
-#   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files
-#
-MV  = mv
-CP  = cp
-#
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
@@ -164,6 +159,13 @@ PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${
 # Some variables used to build shared libraries
 SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts \
            libpetsccontrib
+#
+#   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files but
+#   it is easier to have defaults which work on most machines (overwritable in ${PETSC_ARCH}/variables)
+MV    = mv
+CP    = cp
+BFORT = bfort
+
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally

@@ -42,7 +42,3 @@ MPE_INCLUDE   = -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 MPE_LIB       =  -lmpe -lpmpich
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

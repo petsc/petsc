@@ -67,7 +67,3 @@ MUMPS_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/MUMPS_4
 PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS 
 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

@@ -61,7 +61,3 @@ MATLAB_INCLUDE    = -I/software/linux-rh73/com/packages/matlab-r13.1/extern/incl
 MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86:/homes/hzhang/bin -L/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86 -leng -lmx -lmat -lut
 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

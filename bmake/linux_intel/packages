@@ -60,7 +60,3 @@ SPOOLES_INCLUDE       = -I/home/petsc/soft/linux-rh73-intel/spooles-2.2
 SPOOLES_LIB           = /home/petsc/soft/linux-rh73-intel/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/soft/linux-rh73-intel/spooles-2.2/spooles.a
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

@@ -33,7 +33,3 @@ MPE_INCLUDE   =
 MPE_LIB       =  -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

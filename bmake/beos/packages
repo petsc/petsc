@@ -46,13 +46,3 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # Location of ParMetis
 #
-#
-#
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#
-# ------------------------------------------------------------------------------
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#

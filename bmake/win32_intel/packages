@@ -26,7 +26,3 @@ MPIRUN         = mpirun -localonly
 
 # ----------------------------------------------------------------------------------------  
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

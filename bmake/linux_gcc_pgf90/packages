@@ -97,8 +97,3 @@ BLOCKSOLVE_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
 BLOCKSOLVE_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/linux -lBS95
 PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#
-

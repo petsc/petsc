@@ -89,9 +89,6 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
 #
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this

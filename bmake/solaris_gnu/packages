@@ -29,7 +29,3 @@ MPE_LIB        = -L${MPI_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

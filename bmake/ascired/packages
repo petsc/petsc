@@ -72,8 +72,3 @@ MPI_LIB        = /usr/local/intel/tflop/current/tflops/cougar/lib/puma/libmpi.a
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB = 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#
-
