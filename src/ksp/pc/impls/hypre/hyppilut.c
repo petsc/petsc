@@ -611,7 +611,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
-static PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
+PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
