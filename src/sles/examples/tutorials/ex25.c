@@ -23,8 +23,8 @@ extern int ComputeJacobian(DMMG,Mat);
 extern int ComputeRHS(DMMG,Vec);
 
 typedef struct {
-  int    k;
-  double e;
+  int         k;
+  PetscScalar e;
 } AppCtx;
 
 #undef __FUNCT__
