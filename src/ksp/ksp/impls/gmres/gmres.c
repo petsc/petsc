@@ -578,7 +578,7 @@ EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetHapTol_GMRES" 
-int KSPGMRESSetHapTol_GMRES(KSP ksp,double tol)
+int KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
@@ -684,6 +684,62 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
   if (f) {
     ierr = (*f)(ksp,type);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetRestart"
+/*@
+   KSPGMRESSetRestart - Sets number of iterations at which GMRES restarts.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov space context
+-  restart - integer restart value
+
+  Options Database:
+.  -ksp_gmres_restart <positive integer>
+
+   Level: intermediate
+
+.keywords: KSP, GMRES, restart, iterations
+
+.seealso: KSPSetTolerances()
+@*/
+int KSPGMRESSetRestart(KSP ksp, int restart) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod((ksp),KSPGMRESSetRestart_C,(KSP,int),((ksp),(restart)));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetHapTol"
+/*@
+   KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov space context
+-  tol - the tolerance
+
+  Options Database:
+.  -ksp_gmres_haptol <positive real value>
+
+   Level: intermediate
+
+.keywords: KSP, GMRES, tolerance
+
+.seealso: KSPSetTolerances()
+@*/
+int KSPGMRESSetHapTol(KSP ksp,PetscReal tol) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod((ksp),KSPGMRESSetHapTol_C,(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
