@@ -1,8 +1,10 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:44:08 balay Exp $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 20:52:44 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
 */
+#if !defined(INCLUDED_PETSCCONF_H)
+#define INCLUDED_PETSCCONF_H
 
 #define HAVE_64BITS 
 #define HAVE_PWD_H 
