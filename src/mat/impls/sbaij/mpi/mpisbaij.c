@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.44 2001/01/22 23:04:39 bsmith Exp balay $*/
+/*$Id: mpisbaij.c,v 1.45 2001/03/07 19:05:15 balay Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1571,7 +1571,7 @@ int MatCreate_MPISBAIJ(Mat B)
   b->garray      = PETSC_NULL;
   b->roworiented = PETSC_TRUE;
 
-#if defined(PEYSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_MAT_SINGLE)
   /* stuff for MatSetValues_XXX in single precision */
   b->lensetvalues     = 0;
   b->setvaluescopy    = PETSC_NULL;

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.217 2001/01/19 23:20:39 balay Exp bsmith $*/
+/*$Id: baij.c,v 1.218 2001/01/20 03:34:53 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1355,6 +1355,24 @@ int MatSetUpPreallocation_SeqBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetArray_SeqBAIJ"
+int MatGetArray_SeqBAIJ(Mat A,Scalar **array)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
+  PetscFunctionBegin;
+  *array = a->a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreArray_SeqBAIJ"
+int MatRestoreArray_SeqBAIJ(Mat A,Scalar **array)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,
@@ -1391,8 +1409,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,
        0,
-       0,
-       0,
+       MatGetArray_SeqBAIJ,
+       MatRestoreArray_SeqBAIJ,
        MatDuplicate_SeqBAIJ,
        0,
        0,
@@ -1447,7 +1465,7 @@ int MatStoreValues_SeqBAIJ(Mat mat)
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
-    ierr = PetscMalloc(nz*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
   }
 
   /* copy values over */
