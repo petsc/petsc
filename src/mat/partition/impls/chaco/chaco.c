@@ -19,6 +19,8 @@ extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
     int mesh_dims[3], double *goal, int global_method, int local_method,
     int rqi_flag, int vmax, int ndims, double eigtol, long seed);
 
+extern int FREE_GRAPH;        
+
 /*
 int       nvtxs;		number of vertices in full graph 
 int      *start;		start of edge list for each vertex 
@@ -43,8 +45,6 @@ long      seed;	                for random graph mutations
 */
 
 EXTERN_C_END 
-
-extern int FREE_GRAPH = 0;        /* otherwise Chaco will attempt to free memory for adjacency graph */
 
 typedef struct {
     int architecture;
@@ -77,6 +77,8 @@ static int MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
 
     PetscFunctionBegin;
 
+    FREE_GRAPH = 0; /* otherwise Chaco will attempt to free memory for adjacency graph */
+    
     ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
 
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg); CHKERRQ(ierr);
