@@ -1,5 +1,17 @@
 #! /bin/sh
 #
+#   Checks the latest PETSc patch number at the ftp site
+#   If needed, brings over the patch tar file and applies it
+#   For all arches available on the current machine updates any 
+#      libraries that all already built (ignores arches that have no
+#      libraries built yet) after the user for permission
+#   Reminds the user to run petscupdate on all other systems for
+#      libraries that have already been built.
+#
+#  Uses the PETSc sh script urlget
+#
+#--------------------------------------------------------------
+#
 #  Locate the PETSc directory
 #
 if [ "$PETSC_DIR" != "" ]; then
