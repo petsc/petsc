@@ -986,7 +986,7 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],const 
 
 extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat*);
 extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
-extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS*,int);
+extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS[],int);
 extern int MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
 extern int MatMultTranspose_SeqSBAIJ(Mat,Vec,Vec);
