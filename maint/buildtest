@@ -7,7 +7,7 @@
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake            eagle      cyan       rover         doc          ptera               maverick   )
+  set M =(snake            eagle      cyan       elvis         doc          ptera               maverick   )
   set B =(O                O_complex  g          g_c++         O_c++        Opg                 O          )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha               sun4_uni   )
   set J1=(1                1          1          1             1            1                   4          )
@@ -19,7 +19,7 @@ if ($day == Sun) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc /tmp/petsc )
 endif
 if ($day == Mon) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(g                Opg_c++    O_c++      g             O            g                    Opg         )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha_nolog          sun4_local  )
   set J1=(0                1          1          1             1            1                    1           )
@@ -31,7 +31,7 @@ if ($day == Mon) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif  
 if ($day == Tue) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(O                g          O_complex  O             g            O                    Opg_c++     )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
   set J1=(0                1          1          1             1            1                    1           )
@@ -43,7 +43,7 @@ if ($day == Tue) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Wed) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(g                g_c++      Opg        g_complex     Opg_complex  g                    Opg_c++     )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha_nolog          sun4_uni    )
   set J1=(3                1          1          1             1            1                    4           )
@@ -55,7 +55,7 @@ if ($day == Wed) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Thu) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(O                g_complex  g_c++      O_c++         g_c++        g                    Opg_complex )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
   set J1=(0                1          1          1             1            1                    1           )
@@ -67,7 +67,7 @@ if ($day == Thu) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Fri) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(g                O_c++      g_complex  O_complex     g_complex    g_complex            Opg         )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
   set J1=(0                1          1          1             1            1                    1           )
@@ -79,7 +79,7 @@ if ($day == Fri) then
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Sat) then
-  set M =(snake            eagle      cyan       rover         doc          ptera                maverick    )
+  set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
   set B =(O                O          O          Opg_complex   g_complex    g                    g_complex   )
   set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_uni    )
   set J1=(1                1          1          1             1            1                    4           )
