@@ -3,53 +3,39 @@
 
 <!*************************************************************************************************>
 <HR>
-<H3>Patches for PETSc (Release 2.0.28)</H3>
+<H3>Patches for PETSc (Release 2.0.29)</H3>
 
 
-<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.28.2.tar.gz">petsc-patches-2.0.28.2.tar.gz</A>
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.29.1.tar.gz">petsc-patches-2.0.29.1.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.28.2.tar.gz | tar xf -</PRE>
-Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.28)
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.29.1.tar.gz | tar xf -</PRE>
+Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.29)
 before you run the tar command.
 <BR><BR>
-For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.28.2.exe">petsc-patches-2.0.28.2.exe</A> and rebuild the libraries.
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.29.1.exe">petsc-patches-2.0.29.1.exe</A> and rebuild the libraries.
 <HR>
 <BR>The patch file fixes the following:<BR><BR>
 
-<H3> 2.0.28.14 (Apr 11, 2000 )</H3>
-<LI>rs6000_sp fix to be able to use TAO package
+<H3> 2.0.29.1 (Oct 3, 2000 )</H3>
+<LI>Bug in MATSBAIJ factorization with zeros along diagonal</LI>
 <pre>
-<!##>bmake/rs6000_sp/base
-</pre>
-
-<H3> 2.0.28.1 (Apr 11, 2000 )</H3>
-<LI>Bug in ISColoringView()</LI>
-<pre>
-<!##>src/vec/is/utils/iscoloring.c
-</pre>
-<LI>Updated changes file</LI>
-<pre>
-<!##>docs/changes/2028.htm
-</pre>
-<LI>empty keywords.html</LI>
-<pre>
-<!##>docs/manualpages/keywords.html
+<!##>src/mat/impls/sbaij/seq/sbaij2.c
 <!##>include/petscversion.h
 </pre>
 
 <!*************************************************************************************************>
 <HR>
-<H3>Patches for PETSc (Release 2.0.24)</H3>
+<H3>Patches for PETSc (Release 2.0.28)</H3>
 
 You can apply all the general patches by obtaining 
-<A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.13.tar.gz">petsc-patches-2.0.24.13.tar.gz</A>
+<A HREF="ftp://info.mcs.anl.gov/pub/petsc/oldpatches/petsc-patches-2.0.28.2.tar.gz">petsc-patches-2.0.28.2.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.13.tar.gz | tar xf -</PRE>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.28.2.tar.gz | tar xf -</PRE>
 Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
 before you run the tar command.
 <BR><BR>
 For Windows NT/95/98 download the patches file 
-<A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.13.exe">petsc-patches-2.0.24.13.exe</A>
+<A HREF="ftp://info.mcs.anl.gov/pub/petsc/oldpatches/petsc-patches-2.0.28.2.exe">petsc-patches-2.0.28.2.exe</A>
  and rebuild the libraries.
 <HR>
 
