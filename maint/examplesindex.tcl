@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.22 1997/10/08 14:27:32 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.23 1997/10/08 14:59:06 balay Exp bsmith $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -251,8 +251,8 @@ proc write_concepts_file { } {
     global concepts  ConceptsFile Concepts Routines Processors 
     global sub Comment PETSC_DIR_www files html
 
-    exec /bin/rm -f docs/www/concepts.html
-    set concepts_file [ open docs/www/concepts.html w ]
+    exec /bin/rm -f docs/manualpages/concepts.html
+    set concepts_file [ open docs/manualpages/concepts.html w ]
 
     # Put some  HTML Header 
     puts $concepts_file {<HTML>}
@@ -321,7 +321,7 @@ proc write_concepts_file { } {
     puts $concepts_file {</HTML>}
     
     close $concepts_file
-    exec /bin/chmod ug+w docs/www/concepts.html
+    exec /bin/chmod ug+w docs/manualpages/concepts.html
     return 0
 }
 ##################################################
@@ -333,8 +333,8 @@ proc write_routines_file { } {
     global concepts  ConceptsFile Concepts routines Routines RoutinesFile 
     global Processors Comment PETSC_DIR_www files html
     
-    exec /bin/rm -f docs/www/routines.html
-    set routines_file [ open docs/www/routines.html w ]
+    exec /bin/rm -f docs/manualpages/routines.html
+    set routines_file [ open docs/manualpages/routines.html w ]
 
     # Put some  HTML Header 
     puts $routines_file {<HTML>}
@@ -390,7 +390,7 @@ proc write_routines_file { } {
     puts $routines_file {</HTML>}
     
     close $routines_file
-    exec /bin/chmod ug+w docs/www/routines.html
+    exec /bin/chmod ug+w docs/manualpages/routines.html
     return 0
 }
 ##################################################
@@ -531,9 +531,9 @@ proc main { }  {
             return 0
         }
         set routines_file {}
-        set temp [ catch { glob docs/www/man*/$routine_name.html} routines_file ]
+        set temp [ catch { glob docs/manualpages/man*/$routine_name.html} routines_file ]
         if { $temp != 0 } {
-            set mesg "Skipping update of docs/www/man*/$routine_name.html. File doesn't exist"
+            set mesg "Skipping update of docs/manualpages/man*/$routine_name.html. File doesn't exist"
             puts stderr $mesg
             set mesg "$routine_name specified in $RoutinesFile($routine)"
             puts stderr $mesg

@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: htmlkeywords.tcl,v 1.6 1997/09/10 19:44:00 balay Exp bsmith $ 
 
 ################################################
 # This program scans the WWW man pages         #
@@ -93,8 +93,8 @@ proc write_keywords_file { } {
     global  keywords Keywords Keywordsfunction 
     global  html
 
-    exec /bin/rm -f docs/www/keywords.html
-    set keywords_file [ open docs/www/keywords.html w ]
+    exec /bin/rm -f docs/manualpages/keywords.html
+    set keywords_file [ open docs/manualpages/keywords.html w ]
 
     # Put some  HTML Header 
     puts $keywords_file {<HTML>}
@@ -144,7 +144,7 @@ proc write_keywords_file { } {
     puts $keywords_file {</HTML>}
     
     close $keywords_file
-    exec /bin/chmod ug+w docs/www/keywords.html
+    exec /bin/chmod ug+w docs/manualpages/keywords.html
     return 0
 }
 
@@ -165,7 +165,7 @@ proc main { }  {
         set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
     }   
 
-    set files [ glob docs/www/man*/*.html]
+    set files [ glob docs/manualpages/man*/*.html]
     set keywords {}
     set functionnames {}
 

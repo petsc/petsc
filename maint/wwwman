@@ -1,12 +1,12 @@
 #!/bin/csh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: wwwman,v 1.5 1997/09/10 19:46:49 balay Exp bsmith $ 
 
 #
 # yet another HORRIBLE script we have to get rid of.
 #
 #  This creates .html pages for each PETSc man section
 #
-foreach dir (${PETSC_DIR}/docs/www/man?)
+foreach dir (${PETSC_DIR}/docs/manualpages/man?)
   pushd $dir
   ls > .tmp
     set REF = $dir:t
@@ -23,7 +23,7 @@ printf("<LI><A HREF=\"%s/%s\">%s</A>\n",REF, $1, RNAME );}}' - .tmp > ../$REF.ht
 #    /bin/rm -f .tmp2
     /bin/rm -f ../$REF.html
     echo "</MENU>" | cat .tmp - > ../$REF.html
-    echo "<BR><A HREF="www.html"><IMG SRC="up.xbm">Table of Contents</A>" >> ../$REF.html
+    echo "<BR><A HREF="manualpages.html"><IMG SRC="up.xbm">Table of Contents</A>" >> ../$REF.html
     /bin/rm -f .tmp
     popd
 end
