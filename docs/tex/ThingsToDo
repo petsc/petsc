@@ -11,6 +11,8 @@ Meta priorities:
 
   - MatZeroColumns()
 
+  - ISDuplicate()
+
   - make DrawOpenPostscript()
 
   - add indenting to PLogInfo?
