@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.96 1999/10/13 20:36:24 bsmith Exp bsmith $";
-#endif
+/* $Id: filev.c,v 1.97 1999/10/22 23:57:54 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "pinclude/petscfix.h"
@@ -10,7 +8,8 @@ typedef struct {
   FILE          *fd;
   int           tab;            /* how many times text is tabbed in from left */
   int           tab_store;      /* store tabs value while tabs are turned off */
-  MPI_Comm      singleton_comm;
+  Viewer        bviewer;        /* if viewer is a singleton, this points to mother */
+  Viewer        sviewer;        /* if viewer has a singleton, this points to singleton */
 } Viewer_ASCII;
 
 /* ----------------------------------------------------------------------*/
@@ -22,12 +21,23 @@ int ViewerDestroy_ASCII(Viewer viewer)
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
-  if (vascii->singleton_comm) {
+  if (vascii->sviewer) {
     SETERRQ(1,1,"ASCII Viewer destroyed before restoring singleton viewer");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) fclose(vascii->fd);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_ASCII_Singleton"
+int ViewerDestroy_ASCII_Singleton(Viewer viewer)
+{
+  Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
+  int          ierr;
+  PetscFunctionBegin;
+  ierr = ViewerRestoreSingleton(vascii->bviewer,&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -259,10 +269,10 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
   if (!isascii) SETERRQ(1,1,"Not ASCII viewer");
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  if (ascii->singleton_comm) {ierr = MPI_Comm_rank(ascii->singleton_comm,&rank);CHKERRQ(ierr);}
+  if (ascii->bviewer) {ierr = MPI_Comm_rank(ascii->bviewer->comm,&rank);CHKERRQ(ierr);}
   if (!rank) {
     va_list Argp;
-    if (ascii->singleton_comm) {
+    if (ascii->bviewer) {
       queuefile = fd;
     }
 
@@ -287,7 +297,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
       fflush(petsc_history);
     }
     va_end( Argp );
-  } else if (ascii->singleton_comm) { /* this is a singleton viewer that is not on process 0 */
+  } else if (ascii->bviewer) { /* this is a singleton viewer that is not on process 0 */
     int         len;
     va_list     Argp;
 
@@ -376,8 +386,8 @@ int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data,*ovascii;
 
   PetscFunctionBegin;
-  if (vascii->singleton_comm) {
-    SETERRQ(1,1,"Requesting another singleton viewer without restoring previous");
+  if (vascii->sviewer) {
+    SETERRQ(1,1,"Singleton already obtained from viewer and not restored");
   }
   ierr         = ViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
   ierr         = ViewerSetType(*outviewer,ASCII_VIEWER);CHKERRQ(ierr);
@@ -385,12 +395,15 @@ int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
   ovascii->fd  = vascii->fd;
   ovascii->tab = vascii->tab;
 
+  vascii->sviewer = *outviewer;
+
   (*outviewer)->format     = viewer->format;
   (*outviewer)->iformat    = viewer->iformat;
   (*outviewer)->outputname = viewer->outputname;
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  ((Viewer_ASCII*)((*outviewer)->data))->singleton_comm = viewer->comm;
+  ((Viewer_ASCII*)((*outviewer)->data))->bviewer = viewer;
+  (*outviewer)->ops->destroy = ViewerDestroy_ASCII_Singleton;
   if (rank) {
     (*outviewer)->ops->flush = 0;
   } else {
@@ -405,13 +418,21 @@ int ViewerRestoreSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 {
   int          ierr;
   Viewer_ASCII *vascii = (Viewer_ASCII *)(*outviewer)->data;
-  Viewer_ASCII *ascii = (Viewer_ASCII *)viewer->data;
+  Viewer_ASCII *ascii  = (Viewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
-  vascii->fd            = stdout;
-  ierr                  = ViewerDestroy(*outviewer);CHKERRQ(ierr);
+  if (!ascii->sviewer) {
+    SETERRQ(1,1,"Singleton never obtained from viewer");
+  }
+  if (ascii->sviewer != *outviewer) {
+    SETERRQ(1,1,"This viewer did not generate singleton");
+  }
 
-  ascii->singleton_comm = 0;
+  ascii->sviewer             = 0;
+  vascii->fd                 = stdout;
+  (*outviewer)->ops->destroy = ViewerDestroy_ASCII;
+  ierr                       = ViewerDestroy(*outviewer);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -434,7 +455,8 @@ int ViewerCreate_ASCII(Viewer viewer)
 
   /* defaults to stdout unless set with ViewerSetFilename() */
   vascii->fd             = stdout;
-  vascii->singleton_comm = 0;
+  vascii->bviewer        = 0;
+  vascii->sviewer        = 0;
   viewer->format         = VIEWER_FORMAT_ASCII_DEFAULT;
   viewer->iformat        = 0;
   viewer->outputname     = 0;
