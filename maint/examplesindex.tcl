@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.24 1998/01/03 22:36:02 bsmith Exp balay $ 
+# $Id: examplesindex.tcl,v 1.25 1998/01/05 14:46:53 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -13,8 +13,8 @@
 # usage: examplesindex.tcl                     #
 #                                              #
 # options:                                     #
-#    -www    : also update the wwwmanpages     #
-#              with links to examples          #
+#    -noupdatewww  : also update the           #
+#          wwwmanpages with links to examples  #
 #                                              #
 # purpose: To get cute tables which contain    #
 # information like Concept:XXX is demonstrated #
@@ -403,9 +403,9 @@ proc main { }  {
 
     # Process the command line arguments
     # Do the brute force way
-    set UPDATE_WWW false
-    if { $argc == 1  && [lindex $argv 0 ] == "-www" } {
-        set UPDATE_WWW true
+    set UPDATE_WWW true
+    if { $argc == 1  && [lindex $argv 0 ] == "-noupdatewww" } {
+        set UPDATE_WWW false
     }
     set PETSC_DIR_www     ../..
     set PETSC_DIR_www_man ../../..
