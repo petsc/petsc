@@ -36,6 +36,7 @@ class BuildChecker:
   compileErrorRE = {
     ## SGI Mipspro 7.3 compilers
     ##   cc-1020 CC: ERROR File = CUI_App.h, Line = 735
+    ##   cc-1174 CC: WARNING File = da1.c, Line = 136
     'sgiMipsPro': [r'^cc-[0-9]* (cc|CC|f77): (?P<type>REMARK|WARNING|ERROR) File = (?P<filename>.*), Line = (?P<line>[0-9]*)'],
     ## IRIX 5.2
     ##   cfe: Warning 712: foo.c, line 2: illegal combination of pointer and ...
@@ -102,7 +103,7 @@ class BuildChecker:
 
   def run(self):
     if not os.path.exists(self.filename):
-      raise RuntimeError('Invalid filename: '+filename)
+      raise RuntimeError('Invalid filename: '+self.filename)
     m = re.match(r'build_(?P<arch>\w*)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
     if not m:
       raise RuntimeError('Invalid filename '+self.filename)
@@ -134,4 +135,11 @@ class BuildChecker:
             # For win32fe
             print 'From '+self.filename+': '+m.group('type')+' for '+m.group('filename')
 
-if __name__ == '__main__': map(lambda filename: BuildChecker(filename).run(), sys.argv[1:])
+if __name__ == '__main__':
+  if len(sys.argv) < 2:
+    baseDir = '/home/petsc/logs/nightly'
+    buildRE = re.compile(r'^.*build_.*$')
+
+    map(lambda filename: BuildChecker(os.path.join(baseDir, filename)).run(), filter(lambda fname: buildRE.match(fname), os.listdir(baseDir)))
+  else:
+    map(lambda filename: BuildChecker(filename).run(), sys.argv[1:])

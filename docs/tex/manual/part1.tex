@@ -379,12 +379,12 @@ detailed information about PETSc vectors, including their basic
 operations, scattering/gathering, index sets, and distributed arrays, is
 discussed in Chapter~\ref{chapter_vectors}.
 
-\findex{Scalar} \sindex{complex numbers}
-Note the use of the PETSc variable type \trl{Scalar} in this example.
-The \trl{Scalar} is simply defined to be \trl{double} in C/C++
+\findex{PetscScalar} \sindex{complex numbers}
+Note the use of the PETSc variable type \trl{PetscScalar} in this example.
+The \trl{PetscScalar} is simply defined to be \trl{double} in C/C++
 (or correspondingly \trl{double} \trl{precision} in Fortran) for versions of
 PETSc that have {\em not} been compiled for use with complex numbers.
-The \trl{Scalar} data type enables
+The \trl{PetscScalar} data type enables
 identical code to be used when the PETSc libraries have been compiled
 for use with complex numbers.  Section~\ref{sec_complex} discusses the
 use of complex numbers in PETSc programs.
