@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.33 1996/05/02 22:19:30 curfman Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.34 1996/05/19 15:54:21 curfman Exp balay $";
 #endif
 
 /*
@@ -211,7 +211,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
   else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)size)/((double)N*p) );
+    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)N*p) ));
     if (m == 0) m = 1;
     while (m > 0) {
       n = size/(m*p);
@@ -223,7 +223,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }  
   else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)size)/((double)P*n) );
+    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)P*n) ));
     if (m == 0) m = 1;
     while (m > 0) {
       p = size/(m*n);
@@ -235,7 +235,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   } 
   else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) sqrt( ((double)N)*((double)size)/((double)P*m) );
+    n = (int) ( 0.5 + sqrt( ((double)N)*((double)size)/((double)P*m) ));
     if (n == 0) n = 1;
     while (n > 0) {
       p = size/(m*n);
@@ -247,7 +247,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   } 
   else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) pow( ((double)N*N)*((double)size)/((double)P*M), 1./3. );
+    n = (int) (0.5 + pow( ((double)N*N)*((double)size)/((double)P*M), 1./3. ));
     if (n == 0) n = 1;
     while (n > 0) {
       pm = size/n;
@@ -255,7 +255,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       n--;
     }   
     if (n == 0) n = 1; 
-    m = (int) sqrt( ((double)M)*((double)size)/((double)P*n) );
+    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)P*n) ));
     if (m == 0) m = 1;
     while (m > 0) {
       p = size/(m*n);
@@ -271,25 +271,45 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (N < n) SETERRQ(1,"DACreate3d:Partition in y direction is too fine!");
   if (P < p) SETERRQ(1,"DACreate3d:Partition in z direction is too fine!");
 
-  /* determine locally owned region */
-  x = M/m + ((M % m) > (rank % m));
-  y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
-  z = P/p + ((P % p) > (rank / (m*n)));
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
+  if (flg) { /* Block Comm type Distribution */
+    x = (M + rank%m)/m;
+    y = (N + (rank%(m*n))/m)/n;
+    z = (P + rank/(m*n))/p;
 
-  if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
-  if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");
-  if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");
-
-  if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-  else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-  xe = xs + x;
-
-  if ((N % n) > ((rank % (m*n)) /m)) { ys = ((rank % (m*n))/m)*y; }
-  else { ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y; }
+    if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");
+    if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");
+    
+    if (M/m == x) { xs = (rank % m)*x; }
+    else { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
+    if (N/n == y) { ys = ((rank%(m*n))/m)*y;  }
+    else { ys = ((rank%(m*n))/m)*(y-1) + (N+((rank%(m*n))/m))%(y*n); }
+    if (P/p == z) { zs = (rank/(m*n))*z; }
+    else { zs = (rank/(m*n))*(z-1) + (P+(rank/(m*n)))%(z*p); }
+  }
+  else { /* Normal PETSc distribution */
+    /* determine locally owned region */
+    x = M/m + ((M % m) > (rank % m));
+    y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
+    z = P/p + ((P % p) > (rank / (m*n)));
+    
+    if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");
+    if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");
+    
+    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+    else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+    
+    
+    if ((N % n) > ((rank % (m*n)) /m)) { ys = ((rank % (m*n))/m)*y; }
+    else { ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y; }
+    
+    if ((P % p) > (rank / (m*n))) { zs = (rank/(m*n))*z; }
+    else { zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z; }
+  }
   ye = ys + y;
-
-  if ((P % p) > (rank / (m*n))) { zs = (rank/(m*n))*z; }
-  else { zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z; }
+  xe = xs + x;
   ze = zs + z;
 
   /* determine ghost region */

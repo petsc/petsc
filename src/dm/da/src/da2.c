@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.49 1996/05/19 15:54:11 curfman Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.50 1996/05/30 18:47:13 balay Exp balay $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -172,7 +172,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_blockcomm",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
   if (flg) { /* Block Comm type Distribution */
     x = (M + rank%m)/m;
     y = (N + rank/m)/n;

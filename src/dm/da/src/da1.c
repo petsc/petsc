@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.38 1996/05/30 16:17:19 balay Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.39 1996/05/30 18:10:48 balay Exp balay $";
 #endif
 
 /* 
@@ -137,7 +137,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_blockcomm",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
   if (flg) { /* Block Comm type Distribution */
     x = (M + rank)/m;
     
