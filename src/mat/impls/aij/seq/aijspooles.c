@@ -5,7 +5,7 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles.h"
 
 /* Note the Petsc r and c permutations are ignored */
@@ -29,6 +29,11 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   lu->options.pivotingflag  = SPOOLES_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_FALSE;
+#if defined(PETSC_USE_COMPLEX)
+  lu->options.typeflag       = SPOOLES_COMPLEX;
+#else
+  lu->options.typeflag       = SPOOLES_REAL;
+#endif
 
   if (info->dtcol == 0.0) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
