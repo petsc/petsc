@@ -1254,7 +1254,6 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense"
 int MatLoad_MPIDense(PetscViewer viewer,MatType type,Mat *newmat)
@@ -1431,7 +1430,6 @@ int MatLoad_MPIDense(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

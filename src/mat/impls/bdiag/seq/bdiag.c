@@ -679,7 +679,6 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqBDiag"
 int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
@@ -759,7 +758,6 @@ int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    MATSEQBDIAG = "seqbdiag" - A matrix type to be used for sequential block diagonal matrices.

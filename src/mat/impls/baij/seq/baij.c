@@ -1875,7 +1875,6 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqBAIJ"
 int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
@@ -2021,7 +2020,6 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   *A = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqBAIJ"

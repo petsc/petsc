@@ -433,7 +433,6 @@ int MatCreate_ESI(Mat B)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_ESI"
 int MatLoad_ESI(PetscViewer viewer,MatType type,Mat *newmat)
@@ -618,7 +617,6 @@ int MatLoad_ESI(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   MATPETSCESI = "petscesi" - A matrix type which wraps a PETSc matrix as an ESI matrix.

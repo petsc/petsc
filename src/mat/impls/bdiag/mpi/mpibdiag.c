@@ -1180,7 +1180,6 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar
 
 #include "petscsys.h"
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBDiag"
 int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
@@ -1367,7 +1366,6 @@ int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 
