@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.3 1995/09/03 22:32:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1995/09/11 01:12:23 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -87,8 +87,9 @@ int main(int argc,char **argv)
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localS); CHKERRA(ierr);
-  ierr = VecGetLocalSize(x,&lsize); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,lsize,user.ndim,&g); CHKERRA(ierr);
+/*  ierr = VecGetLocalSize(x,&lsize); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,lsize,user.ndim,&g); CHKERRA(ierr); */
+  ierr = VecDuplicate(x,&g); CHKERRA(ierr);
   ierr = VecDuplicate(g,&user.y); CHKERRA(ierr);
 
   /* Create nonlinear solver */
@@ -280,12 +281,12 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
-  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k, kglob;
   double hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
   double zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
   Scalar val, *x, szero = 0.0, floc;
   Vec    localX = user->localX;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep, mytid;
+  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k, *ltog, nloc; 
 
   cdiv3 = user->param/three;
 
@@ -295,6 +296,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
   xe = xs+xm;
   ye = ys+ym;
   if (xs == 0)  xsm = xs-1;
@@ -307,11 +309,11 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   else          yep = ye;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPIU_Seq_begin(MPI_COMM_WORLD,1);
+/*  MPIU_Seq_begin(MPI_COMM_WORLD,1);
   printf("[%d] xs=%d, ys=%d, xm=%d ym=%d, xe=%d, ye=%d, Xs=%d, Ys=%d, Xm=%d, Ym=%d\n",
             mytid,xs,ys,xm,ym,xe,ye,Xs,Ys,Xm,Ym);
   printf("[%d] xsm=%d, ysm=%d, xep=%d yep=%d\n",mytid,xsm,ysm,xep,yep);
-  MPIU_Seq_end(MPI_COMM_WORLD,1);
+  MPIU_Seq_end(MPI_COMM_WORLD,1); */
 
   if (fg & GradientEval) {
     ierr = VecSet(&szero,gvec); CHKERRQ(ierr);
@@ -321,7 +323,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   for (j=ysm; j<ye; j++) {  /*  for (j=-1; j<ny; j++) */
     for (i=xsm; i<xe; i++) {  /*   for (i=-1; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j*nx + i;
       v = zero;
       vr = zero;
       vt = zero;
@@ -336,15 +337,15 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       }
       if (fg & GradientEval) {
         if (i != -1 && j != -1) {
-          ind = kglob; val = - dvdx/hx - dvdy/hy - cdiv3;
+          ind = ltog[k]; val = - dvdx/hx - dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != nx-1 && j != -1) {
-          ind = kglob+1; val =  dvdx/hx - cdiv3;
+          ind = ltog[k+1]; val =  dvdx/hx - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != -1 && j != ny-1) {
-          ind = kglob+nx; val = dvdy/hy - cdiv3;
+          ind = ltog[k+nx]; val = dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -355,7 +356,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   for (j=ys; j<yep; j++) { /*  for (j=0; j<=ny; j++) */
     for (i=xs; i<xep; i++) {  /*   for (i=0; i<=nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j*nx + i;
       vb = zero;
       vl = zero;
       v = zero;
@@ -369,15 +369,15 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
         flin = flin - cdiv3*(vb+vl+v);
       } if (fg & GradientEval) {
         if (i != nx && j != 0) {
-          ind = kglob-nx; val = - dvdy/hy - cdiv3;
+          ind = ltog[k-nx]; val = - dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != 0 && j != ny) {
-          ind = kglob-1; val =  - dvdx/hx - cdiv3;
+          ind = ltog[k-1]; val =  - dvdx/hx - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != nx && j != ny) {
-          ind = kglob; val =  dvdx/hx + dvdy/hy - cdiv3;
+          ind = ltog[k]; val =  dvdx/hx + dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -402,12 +402,12 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 int HessianProduct(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int    nx = user->mx, ny = user->my, i, j, k, kglob, ierr, ind;
   double p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
   double v, vb, vl, vr, vt, hxhx, hyhy;
   Scalar val, area, *x, *s, szero = 0.0;
   Vec    localX = user->localX, localS = user->localS;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
+  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind, nloc, *ltog;
 
   hxhx = one/(hx*hx);
   hyhy = one/(hy*hy);
@@ -421,6 +421,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
   xe = xs+xm;
   ye = ys+ym;
   if (xs == 0)  xsm = xs-1;
@@ -438,23 +439,22 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   for (j=ysm; j<ye; j++) {  /*  for (j=-1; j<ny; j++) */
     for (i=xsm; i<xe; i++) {  /*   for (i=-1; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j*nx + i;
       v = zero;
       vr = zero;
       vt = zero;
       if (i != -1 && j != -1) v = s[k];
       if (i != nx-1 && j != -1) {
         vr = s[k+1];
-        ind = kglob+1; val = hxhx*(vr-v);
+        ind = ltog[k+1]; val = hxhx*(vr-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != -1 && j != ny-1) {
         vt = s[k+nx];
-        ind = kglob+nx; val = hyhy*(vt-v);
+        ind = ltog[k+nx]; val = hyhy*(vt-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != -1 && j != -1) {
-        ind = kglob; val = hxhx*(v-vr) + hyhy*(v-vt);
+        ind = ltog[k]; val = hxhx*(v-vr) + hyhy*(v-vt);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
     }
@@ -464,23 +464,22 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   for (j=ys; j<yep; j++) { /*  for (j=0; j<=ny; j++) */
     for (i=xs; i<xep; i++) {  /*   for (i=0; i<=nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j*nx + i;
       v = zero;
       vl = zero;
       vb = zero;
       if (i != nx && j != ny) v = s[k];
       if (i != nx && j != 0) {
         vb = s[k-nx];
-        ind = kglob-nx; val = hyhy*(vb-v);
+        ind = ltog[k-nx]; val = hyhy*(vb-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != 0 && j != ny) {
         vl = s[k-1];
-        ind = kglob-1; val = hxhx*(vl-v);
+        ind = ltog[k-1]; val = hxhx*(vl-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != nx && j != ny) {
-        ind = kglob; val = hxhx*(v-vl) + hyhy*(v-vb);
+        ind = ltog[k]; val = hxhx*(v-vl) + hyhy*(v-vb);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.74 1995/09/07 04:26:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.75 1995/09/10 20:51:32 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1062,7 +1062,7 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        ierr, i, j, rstart = aij->rstart;
+  int        ierr, i, j, rstart = aij->rstart, cstart = aij->cstart;
   double     sum = 0.0;
   Mat_AIJ    *amat = (Mat_AIJ*) aij->A->data, *bmat = (Mat_AIJ*) aij->B->data;
   Scalar     *v;
@@ -1102,9 +1102,9 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
       v = amat->a; jj = amat->j;
       for ( j=0; j<amat->nz; j++ ) {
 #if defined(PETSC_COMPLEX)
-        tmp[rstart + *jj++ - 1] += abs(*v++); 
+        tmp[cstart + *jj++ - 1] += abs(*v++); 
 #else
-        tmp[rstart + *jj++ - 1] += fabs(*v++); 
+        tmp[cstart + *jj++ - 1] += fabs(*v++); 
 #endif
       }
       v = bmat->a; jj = bmat->j;

@@ -14,6 +14,8 @@ petsc/bin/RCS
 petsc/bmake/RCS
 petsc/docs/RCS
 petsc/docs/tex
+petsc/docs/tex/grants
+petsc/docs/tex/accounts
 petsc/include/RCS
 petsc/pinclude/RCS
 petsc/src/RCS

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.46 1995/09/06 22:51:54 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.47 1995/09/10 20:51:52 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -799,8 +799,8 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
     PETSCFREE(tmp);
   }
   else if (type == NORM_INFINITY) { /* max row norm */
-    tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
-    PETSCMEMSET(tmp,0,mat->n*sizeof(double));
+    tmp = (double *) PETSCMALLOC( mat->m*sizeof(double) ); CHKPTRQ(tmp);
+    PETSCMEMSET(tmp,0,mat->m*sizeof(double));
     *norm = 0.0;
     if (nb == 1) {
       for (d=0; d<nd; d++) {
@@ -859,7 +859,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
         }
       }
     }
-    for ( j=0; j<mat->n; j++ ) {
+    for ( j=0; j<mat->m; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     PETSCFREE(tmp);
@@ -873,39 +873,56 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
 static int MatTranspose_BDiag(Mat A,Mat *matout)
 { 
   Mat_BDiag *mbd = (Mat_BDiag *) A->data, *mbdnew;
-  Mat     tmat;
-  int     i, ierr, nz, *cwork, nd = mbd->nd, *diag = mbd->diag, *diagnew, temp;
-  Scalar  *vwork, *dtemp;
+  Mat       tmat;
+  int       i, j, k, d, ierr, nd = mbd->nd, *diag = mbd->diag, *diagnew;
+  int       nb = mbd->nb, kshift;
+  Scalar    *dwork, *dvnew;
+
+  diagnew = (int *) PETSCMALLOC(nd*sizeof(int)); CHKPTRQ(diagnew);
+  for (i=0; i<nd; i++) {
+    diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
+  }
+  ierr = MatCreateSequentialBDiag(A->comm,mbd->n,mbd->m,nd,nb,diagnew,
+                                    0,&tmat); CHKERRQ(ierr);
+  PETSCFREE(diagnew);
+  mbdnew = (Mat_BDiag *) tmat->data;
+  for (d=0; d<nd; d++) {
+    dvnew = mbdnew->diagv[d];
+    dwork = mbd->diagv[nd-d-1];
+    if (mbdnew->bdlen[d] != mbd->bdlen[nd-d-1])
+      SETERRQ(1,"MatTranspose_BDiag: Incompatible diagonal lengths");
+    if (nb == 1) {
+      for (k=0; k<mbdnew->bdlen[d]; k++) dvnew[k] = dwork[k];
+    } else {
+      for (k=0; k<mbdnew->bdlen[d]; k++) {
+        kshift = k*nb*nb;
+        for (i=0; i<nb; i++) {	/* i = local row */
+          for (j=0; j<nb; j++) {	/* j = local column */
+            dvnew[kshift + j + i*nb] = dwork[kshift + j*nb + i];
+          }
+        }
+      }
+    }
+  }
+  ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   if (matout) {
-    diagnew = (int *) PETSCMALLOC(nd*sizeof(int)); CHKPTRQ(diagnew);
-    for (i=0; i<nd; i++) {
-      diagnew[i] = -diag[nd-i]; /* assume sorted in descending order */
-    }
-    ierr = MatCreateSequentialBDiag(A->comm,mbd->n,mbd->m,nd,mbd->nb,diagnew,
-                                    0,&tmat); CHKERRQ(ierr);
-    PETSCFREE(diagnew);
-    mbdnew = (Mat_BDiag *) tmat->data;
-    for (i=0; i<nd; i++) {
-      PETSCMEMCPY(mbdnew->diagv[i],mbd->diagv[nd-i],
-                  mbd->nb*mbd->nb*mbdnew->bdlen[i]*sizeof(Scalar));
-    } 
-    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
     *matout = tmat;
-  } 
-  else { /* in-place transpose */
-    if (mbd->pivots) PETSCFREE(mbd->pivots);
-    for (i=0; i<nd/2; i++) { /* integer arithmetic */
-      temp             = -diag[i]; /* assume sorted in descending order */
-      diag[i]          = -mbd->diag[nd-i];
-      diag[nd-i]       = temp;
-      dtemp            = mbd->diagv[i];
-      mbd->diagv[i]    = mbd->diagv[nd-i]; 
-      mbd->diagv[nd-i] = dtemp;
+  } else {
+    /* This isn't really an in-place transpose ... but free data 
+       structures from mbd.  We should fix this. */
+    if (!mbd->user_alloc) { /* Free the actual diagonals */
+      for (i=0; i<mbd->nd; i++) PETSCFREE( mbd->diagv[i] );
     }
-    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    if (mbd->pivots) PETSCFREE(mbd->pivots);
+    PETSCFREE(mbd->diagv);
+    PETSCFREE(mbd->diag);
+    PETSCFREE(mbd->colloc);
+    PETSCFREE(mbd->dvalue);
+    PETSCFREE(mbd);
+    PETSCMEMCPY(A,tmat,sizeof(struct _Mat)); 
+    PETSCHEADERDESTROY(tmat);
   }
   return 0;
 }
@@ -1251,7 +1268,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatSolve_BDiag,MatSolveAdd_BDiag,
        MatSolveTrans_BDiag,MatSolveTransAdd_BDiag,
        MatLUFactor_BDiag, 0,
-       MatRelax_BDiag, 0,
+       MatRelax_BDiag, MatTranspose_BDiag,
        MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, MatNorm_BDiag,
        0,MatAssemblyEnd_BDiag,
