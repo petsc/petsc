@@ -16,6 +16,17 @@ class Configure(config.base.Configure):
     self.libraries.append(('dl', 'dlopen'))
     return
 
+  def getIncludeArgument(self, include):
+    '''Return the proper include line argument for the given filename
+       - If the path is empty, return it unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -I<include>'''
+    if not include:
+      return ''
+    if include[0] == '-':
+      return include
+    return '-I'+include
+
   def getLibArgument(self, library):
     '''Return the proper link line argument for the given filename library
        - If the path is empty, return it unchanged
@@ -254,10 +265,10 @@ int checkInit(void) {
     if not found:
       found = self.check(['PSDK/kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
     if found:
-      suffix = 'lib'
+      self.suffix = 'lib'
     else:
-      suffix = 'a'
-    self.addSubstitution('LIB_SUFFIX', suffix)
+      self.suffix = 'a'
+    self.addSubstitution('LIB_SUFFIX', self.suffix)
     self.framework.argDB['LIBS'] = oldLibs
     return
 
