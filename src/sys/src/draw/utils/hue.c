@@ -1,4 +1,4 @@
-/*$Id: hue.c,v 1.4 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: hue.c,v 1.5 2000/04/12 04:21:18 bsmith Exp balay $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -74,7 +74,7 @@ static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char 
 #define __FUNC__ /*<a name=""></a>*/"DrawUtilitySetCmapHue" 
 int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
-  int        i,hue,lightness,saturation;
+  int        ierr,i,hue,lightness,saturation;
   PetscReal  igamma = 1.0 / Gamma;
 
   PetscFunctionBegin;
