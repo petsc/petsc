@@ -164,29 +164,6 @@ class Configure(config.base.Configure):
         self.addSubstitution('F77_LINKER_SLFLAG', self.setCompilers.F77SharedLinkerFlag)
     return
 
-  def configurePIC(self):
-    '''Determine the PIC option for each compiler
-       - There needs to be a test that checks that the functionality is actually working'''
-    if not self.useDynamic:
-      return
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
-      return
-    languages = ['C']
-    if 'CXX' in self.framework.argDB:
-      languages.append('C++')
-    if 'FC' in self.framework.argDB:
-      languages.append('F77')
-    for language in languages:
-      self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
-        try:
-          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-          self.addCompilerFlag(testFlag)
-          break
-        except RuntimeError:
-          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
-      self.popLanguage()
-    return
 
   def configureLibtool(self):
     if self.framework.argDB['with-libtool']:
@@ -689,7 +666,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureFortranCommandline)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
-    self.executeTest(self.configurePIC)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
