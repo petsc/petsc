@@ -7,6 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+Current applications using PETSc (3) - pointers
+        to dinesh's work and ACTI?  This would
+        go into http://www.nersc.gov/ACTS/gallery.html
+
   - Add VecGetValues()/VecGetValue() ??? Alec likes to have these.
 
   - Reorganize codemanagement.html to deemphasis the preaching and add section
@@ -52,7 +56,7 @@ rcheng@oasys.dt.navy.mil
     a lot.
 
 
-  - add map object to vectors and matrices to replace current local size, ownership range etc.
+  * add map object to vectors and matrices to replace current local size, ownership range etc.
 
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
 
