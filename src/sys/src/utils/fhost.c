@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.32 1999/04/22 20:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.33 1999/05/06 17:59:20 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -60,7 +60,6 @@ int PetscGetHostName( char name[], int nlen )
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
 #elif defined(HAVE_UNAME)
   struct utsname utname;
-  int            ierr;
 
   PetscFunctionBegin;
   uname(&utname); 
