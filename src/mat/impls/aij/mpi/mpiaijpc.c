@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.11 1996/01/12 03:53:14 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.12 1996/02/23 23:50:17 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -51,7 +51,7 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
   ierr = VecGetArray(x,&x_array); CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array); CHKERRQ(ierr);
   ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr);
-  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);
+  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr);
   ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   else
     ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag);
   CHKERRQ(ierr);
-  ierr = SLESSetUp(sles,bjac->x,bjac->y); CHKERRQ(ierr);
+  ierr = SLESSetUp(sles,bjac->x,bjac->y); CHKERRQ(ierr);  
   return 0;
 }
 
