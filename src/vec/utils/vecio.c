@@ -1,9 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.5 1995/08/24 22:26:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.6 1995/09/05 16:16:07 curfman Exp curfman $";
 #endif
 
 /* 
-   This file contains simple binary read/write routines for vectors.
+   This file contains simple binary input routines for vectors.  The
+   analogous output routines are within each vector implementation's 
+   VecView (with viewer types BIN_FILE_VIEWER and BIN_FILES_VIEWER).
  */
 
 #include "petsc.h"
@@ -55,6 +57,9 @@ int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
       ierr = VecCreateSequential(MPI_COMM_SELF,rows,&vec); CHKERRQ(ierr);
       ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
       ierr = SYRead(fd,(char *)avec,rows*sizeof(Scalar),SYSCALAR); CHKERRQ(ierr);
+      ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
     } else SETERRQ(1,"Must specify index set for parallel input.");
   }
   else {
@@ -66,6 +71,9 @@ int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
       ierr = VecCreateSequential(MPI_COMM_SELF,rows,&vec); CHKERRQ(ierr);
       ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
       ierr = SYRead(fd,(char *)avec,rows*sizeof(Scalar),SYSCALAR); CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
+      ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
     } else if (outtype == VECMPI) {
       ierr = VecCreateMPI(comm,lsize,rows,&vec); CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(vec,&low,&high);
@@ -78,14 +86,15 @@ int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
         ierr = VecSetValues(vec,1,&iglobal,&avec[pind[i]],INSERTVALUES);
         CHKERRQ(ierr);
       }
+      ierr = VecRestoreArray(tempvec,&avec); CHKERRQ(ierr);
       ierr = VecDestroy(tempvec); CHKERRQ(ierr);
       ierr = ISRestoreIndices(ind,&pind); CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
     } else {
      SETERRQ(1,"Only VECSEQ and VECMPI output vectors are supported.");
     }
   }
-  ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
   *newvec = vec;
   return 0;
 }
