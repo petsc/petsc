@@ -1,5 +1,6 @@
 
-#include "src/mat/impls/aij/seq/aij.h"     
+#include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CheckCompressedRow"
 /*@C
@@ -22,21 +23,21 @@
 PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscReal ratio) 
 {
   PetscErrorCode ierr;
-  PetscInt       nrows,*cpi=PETSC_NULL,*rindex=PETSC_NULL,nz,i,row,m=A->m; 
+  PetscInt       nrows,*cpi=PETSC_NULL,*rindex=PETSC_NULL,nz,i,row,m=A->m/A->bs; 
 
   PetscFunctionBegin;  
   compressedrow->checked = PETSC_TRUE; 
- 
+
   /* compute number of zero rows */
   nrows = 0; 
   for (i=0; i<m; i++){                /* for each row */
     nz = ai[i+1] - ai[i];       /* number of nonzeros */
     if (nz == 0) nrows++;
   }
-  
   /* if enough zero rows are found, use compressedrow data structure */
   if (nrows < ratio*m) {
     compressedrow->use = PETSC_FALSE; 
+    PetscLogInfo(A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,m,ratio);
   } else {
     compressedrow->use = PETSC_TRUE; 
     PetscLogInfo(A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,m,ratio);

@@ -1492,7 +1492,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,PetscInt m,const Pets
   }
   PetscFunctionReturn(0);
 } 
-EXTERN PetscErrorCode Mat_BAIJ_CheckCompressedRow(Mat,PetscTruth); /* rm? */
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqBAIJ"
 PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
@@ -1503,7 +1503,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   PetscErrorCode ierr;
   PetscInt       mbs = a->mbs,bs2 = a->bs2,rmax = 0;
   MatScalar      *aa = a->a,*ap;
-  PetscReal      ratio=0.9;
+  PetscReal      ratio=0.7; 
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -1547,13 +1547,11 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
-  if (!a->compressedrow.checked && a->compressedrow.use && fshift){ /* fshift=!samestructure??? */ 
+  if (!a->compressedrow.checked && a->compressedrow.use){ /* fshift=!samestructure? NO. */
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
-
-
 
 /* 
    This function returns an array of flags which indicate the locations of contiguous
@@ -2360,7 +2358,7 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->xtoy              = 0;
   b->XtoY              = 0;
   b->compressedrow.use     = PETSC_FALSE;
-  b->compressedrow.nrows   = b->mbs;
+  b->compressedrow.nrows   = 0;
   b->compressedrow.i       = PETSC_NULL;
   b->compressedrow.rindex  = PETSC_NULL;
   b->compressedrow.checked = PETSC_FALSE;
