@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.9 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.10 1997/09/22 15:22:57 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked for MatBAIJ";
 
@@ -53,6 +53,7 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+
 
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);    
   ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRQ(ierr);
