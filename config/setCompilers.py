@@ -129,6 +129,7 @@ class Configure(config.base.Configure):
           yield 'xlc'
         if vendor == 'intel' or not vendor:
           yield 'icc'
+          yield 'ecc'          
           yield 'win32fe icl'
         if vendor == 'microsoft' or not vendor:
           yield 'win32fe cl'
@@ -254,6 +255,7 @@ class Configure(config.base.Configure):
           yield 'xlC'
         if vendor == 'intel' or not vendor:
           yield 'icc'
+          yield 'ecc'          
           yield 'win32fe icl'
         if vendor == 'microsoft' or not vendor:
           yield 'cl'
@@ -381,7 +383,8 @@ class Configure(config.base.Configure):
           yield 'win32fe ifort'
           yield 'win32fe ifl'
           yield 'ifort'
-          yield 'icf'
+          yield 'ifc'
+          yield 'efc'          
         if vendor == 'portland' or not vendor:
           yield 'pgf90'
           yield 'pgf77'
