@@ -150,6 +150,7 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
+
  - Port to BeOS ( A Mac replacement OS) http://www.be.com
 
  - Provide a way to view suitable options for any PETSc object. I see two ways?
