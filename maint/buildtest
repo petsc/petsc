@@ -10,6 +10,7 @@
 set RSH=rsh
 set RCP=rcp
 set RSYNCSSH=
+set APPEND='>>&'
 
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
@@ -22,7 +23,7 @@ $RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$B
 $RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 
 $RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& maint/build_$ARCH.$BOPT.$MACH.log"
+$RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 
 $RSH $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
@@ -34,7 +35,7 @@ $RSH $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 $RSH $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 foreach j ($JOBS $EJOBS)
-  $RSH $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree | grep -v 'up to date' >>& maint/examples_$ARCH.$BOPT.$MACH.log"
+  $RSH $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree | grep -v 'up to date' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '******************************************************' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 end
 $RSH $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
