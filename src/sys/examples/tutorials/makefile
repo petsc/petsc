@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1998/03/13 23:02:31 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/03/19 02:06:00 balay Exp curfman $ 
 
 ALL:
 
@@ -11,14 +11,10 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsys
 LOCDIR          = src/sys/examples/tutorials
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = 
-TESTEXAMPLES_9  = 
-TESTEXAMPLES_4  = 
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_3 = 
-BUILDEXAMPLES_9 = 
-BUILDEXAMPLES_4 = 
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm clean
+TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm clean
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
+BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 
 EXAMPLESC       = 
 EXAMPLESF       = 
@@ -26,23 +22,16 @@ EXAMPLESF       =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 runex1:
-	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
-	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
-	   else echo "Possible problem with ex1_1, diffs above. This is a contrived error to test the code."; fi; \
-	   ${RM} -f ex1_1.tmp ex1_1.tmpz
+	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; \
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   ${RM} -f ex1_1.tmp 
 
 runex2:
-	-@${MPIRUN} -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
-	   if (diff output/ex2_1.out ex2_1.tmpz) then true; \
-	   else echo "Possible problem with ex2_1, diffs above. This is a contrived error to test the code."; fi; \
-	   ${RM} -f ex2_1.tmp ex2_1.tmpz
-
-runex3:
-	-@${MPIRUN} -np 1 ex3 -fp_trap > ex3_1.tmp 2>&1;\
-	   grep -v p0 ex3_1.tmp > ex3_1.tmpz ;	 \
-	   if (diff output/ex3_1.out ex3_1.tmpz) then true; \
-	   else echo "Possible problem with ex3_1, diffs above. This is a contrived error to test floating point traps."; fi; \
-	   ${RM} -f ex3_1.tmp ex3_1.tmpz
+	-@${MPIRUN} -np 1 ex2 > ex2_1.tmp 2>&1; \
+	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   else echo "Possible problem with ex2_1, diffs above"; fi; \
+	   ${RM} -f ex2_1.tmp 
 
 ex1: ex1.o 
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}

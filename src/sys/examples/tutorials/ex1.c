@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.4 1998/04/15 02:48:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1998/04/15 03:28:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "This is an introductory PETSc example that illustrates printing.\n\n";
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"No of processors = %d rank = %d\n",size,rank);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRA(ierr);
 
   /*
     Here a barrier is used to separate the two program states.
