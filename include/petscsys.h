@@ -199,8 +199,6 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
-
 /* 
   Create and initialize a linked list 
   Input Parameters:
@@ -211,13 +209,9 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
     lnk       - list initialized
     bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) 0;\
-{\
-  PetscMalloc(nlnk*sizeof(int),&lnk);\
-  PetscBTCreate(nlnk,bt);\
-  ierr = PetscBTMemzero(nlnk,bt);\
-  lnk[idx_start] = lnk_max;\
-}
+#define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
+  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt)); lnk[idx_start] = lnk_max;
+
 
 /*
   Add a index set into a sorted linked list
@@ -281,11 +275,7 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
 /*
   Free memories used by the list
 */
-#define PetscLLDestroy(lnk,bt) 0;\
-{\
-  PetscFree(lnk);\
-  PetscBTDestroy(bt);\
-}
+#define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

@@ -57,7 +57,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,PetscMPIInt *iflags,Pet
 
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&recv_buf);CHKERRQ(ierr);
 
-  /* Now post an allreduce to determine the numer of messages the current node will receive */
+  /* Post an allreduce to determine the numer of messages the current node will receive */
   ierr    = MPI_Allreduce(iflags_local,recv_buf,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   *nrecvs = recv_buf[rank];
 
@@ -117,13 +117,13 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscM
   ierr = PetscMalloc((nrecvs+nsends+1)*sizeof(MPI_Request),&r_waits);CHKERRQ(ierr);
   s_waits = r_waits + nrecvs;
 
-  /* Now post the Irecv to get the message length-info */
+  /* Post the Irecv to get the message length-info */
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((*olengths)+i,1,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
   }
 
-  /* Now post the Isends with the message lenght-info */
+  /* Post the Isends with the message length-info */
   for (i=0,j=0; i<size; ++i) {
     if (ilengths[i]) {
       ierr = MPI_Isend(ilengths+i,1,MPI_INT,i,tag,comm,s_waits+j);CHKERRQ(ierr);
@@ -131,12 +131,12 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscM
     }
   }
   
-  /* Now post waits on sends and receivs */
+  /* Post waits on sends and receivs */
   ierr = PetscMalloc((nrecvs+nsends+1)*sizeof(MPI_Status),&w_status);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);
 
   
-  /* Now pack up the received data */
+  /* Pack up the received data */
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     (*onodes)[i] = w_status[i].MPI_SOURCE;

@@ -7,12 +7,12 @@ CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETS
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c random.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c ctable.c psplit.c \
-	    select.c mpimesg.c sseenabled.c ghost.c plapack.c
+	    select.c mpimesg.c sseenabled.c  plapack.c
 SOURCEF	  =
 SOURCEH	  = dlregis.h
 OBJSC	  = arch.o fhost.o fuser.o memc.o mpiu.o psleep.o random.o sortd.o sorti.o \
             str.o sortip.o pbarrier.o pdisplay.o ctable.o psplit.o \
-	    select.o mpimesg.o sseenabled.o ghost.o plapack.o
+	    select.o mpimesg.o sseenabled.o plapack.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
