@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I..  $(PCONF) \
-           $(CONF) -D__DIR__='"ts/interface/"'
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = ts.c tsreg.c tsregall.c
 SOURCEF  =
 SOURCEH  = 

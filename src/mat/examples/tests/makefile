@@ -16,7 +16,7 @@ RUNEXAMPLES_1 = runex1 runex3 runex5 runex5_2 runex6 runex8 runex9 \
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
 		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 ex46
 RUNEXAMPLES_2 = runex2 runex4 runex7 runex12 runex13 runex19 \
-		runex35 runex40 runex42 runex46
+		runex35 runex40 runex42 runex46 runex48
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
@@ -27,7 +27,7 @@ EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex15 ex20 ex21 ex35 ex47 ex48
+		ex15 ex20 ex21 ex35 ex47 
 RUNEXAMPLES_4 = runex1 runex2 runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex20 runex21 runex35
 
@@ -409,7 +409,9 @@ runex47:
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   $(RM) -f ex47_1.tmp
 runex48:
-	-@$(MPIRUN)  ex48 -mat_block_size 3  > ex48_1.tmp 2>&1; \
+	-@$(MPIRUN)  ex48 -mat_block_size 1  > ex48_1.tmp 2>&1
+	-@$(MPIRUN)  ex48 -mat_block_size 3  >> ex48_1.tmp 2>&1
+	-@$(MPIRUN)  ex48 -mat_block_size 4  >> ex48_1.tmp 2>&1; \
 	   if (diff /dev/null ex48_1.tmp) then true; \
 	   else echo "Possible problem with ex48_1, diffs above"; fi; \
 	   $(RM) -f ex48_1.tmp

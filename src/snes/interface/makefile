@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I..  $(PCONF) \
-           $(CONF) -D__DIR__='"snes/interface/"'
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c
 SOURCEF  =
 SOURCEH  = 

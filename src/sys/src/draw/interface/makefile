@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I.. $(CONF) -D__DIR__='"draw/src/"' $(PCONF)
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = draw.c dline.c dlinew.c dlinegw.c dtext.c dtextv.c dtexts.c \
            dtextgs.c dpoint.c dpoints.c dviewp.c dcoor.c dpause.c dgpause.c \
            dgcoor.c dbuff.c dsetpause.c dflush.c dsflush.c dclear.c \

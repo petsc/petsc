@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I.. $(PCONF) $(CONF) -D__DIR__='"mat/interface/"'
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = matrix.c mhas.c
 SOURCEF  =
 SOURCEH  = 

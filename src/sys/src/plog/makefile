@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 
 ALL: lib 
-CFLAGS	  = $(PETSC_INCLUDE) $(CONF) $(PCONF) -D__DIR__='"plog/src/"'
+CFLAGS	  = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC	  = plog.c plogmpe.c
 SOURCEF	  =
 SOURCEH	  = 

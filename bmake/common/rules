@@ -2,18 +2,19 @@
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
 # LDIR and PDIR will usually be identical.
-# LIBNAME - library name
-# SOURCE - source files
-# OBJS - object files
+# LIBNAME       - library name
+# SOURCE        - source files
+# OBJS          - object files
 # PETSC_INCLUDE - locations of include files
+# CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
 #
 LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME	      = $(PDIR)/$(LIBBASE).a
 SOURCE	      = $(SOURCEC) $(SOURCEF)
 OBJS	      = $(OBJSC) $(OBJSF)
-PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) \
-	       -I$(PETSC_DIR)/src
+PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE)
+CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) 
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).

@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I.. -I$(PETSC_DIR) $(PCONF) \
-           $(CONF) -D__DIR__='"is/interface/"'
+CFLAGS   = $(CPPFLAGS)  -I..  $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = index.c 
 SOURCEF  = 
 SOURCEH  = 
