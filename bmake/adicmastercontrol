@@ -1,11 +1,11 @@
 [STANDARD_INCLUDES]
 mpi.h
 [GENERAL]
-include = /tmp/petsc/bmake/adicignore
 var_prefix = ad_
+type_prefix = ad_
 [INACTIVE_TYPES]
 PLogDouble
-[FUNCTIONS_TO_IGNORE]
+[INACTIVE_FUNCTIONS]
 perror
 gettimeofday
 getdomainname
@@ -13,3 +13,22 @@ readlink
 __builtin_next_arg
 __builtin_saveregs
 getenv
+getpagesize
+getrusage
+srand48
+drand48
+atoi
+ieee_handler
+ieee_flags
+malloc_verify
+malloc_debug
+sleep
+ViewerDestroyMatlab_Private
+ViewerMatlabPutArray_Private
+ViewerMatlabPutSparse_Private
+ViewerDrawOpenX
+DrawOpenX
+ViewerDestroyDrawX_Private
+VIEWER_DRAWX_
+PetscFPrintf
+PetscPrintf
