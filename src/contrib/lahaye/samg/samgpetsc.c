@@ -40,8 +40,8 @@
 /**************************************************************************/
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgShellPCCreate"
+#undef __FUNCT__
+#define __FUNCT__ "SamgShellPCCreate"
 /*.. SamgShellPCCreate - This routine creates a user-defined
      preconditioner context.
 
@@ -59,8 +59,8 @@ int SamgShellPCCreate(SamgShellPC **shell)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgShellPCSetUp"
+#undef __FUNCT__
+#define __FUNCT__ "SamgShellPCSetUp"
 /*..SamgShellPCSetUp - This routine sets up a user-defined
     ramg preconditioner context.  
 
@@ -236,8 +236,8 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgShellPCApply"
+#undef __FUNCT__
+#define __FUNCT__ "SamgShellPCApply"
 /*..SamgShellPCApply - This routine applies the AMG code as preconditioner 
 
     Input Parameters:
@@ -374,8 +374,8 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgShellPCDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "SamgShellPCDestroy"
 /*..RamgShellPCDestroy - This routine destroys a user-defined
     preconditioner context.
 
@@ -396,8 +396,8 @@ int SamgShellPCDestroy(SamgShellPC *shell)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgGetParam"
+#undef __FUNCT__
+#define __FUNCT__ "SamgGetParam"
 /*..SamgGetParam - Gets SAMG parameters specified at runtime 
     OUTPUT: The parameters set in the SAMG_PARAM context
 ..*/   

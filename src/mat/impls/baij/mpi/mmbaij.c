@@ -238,8 +238,8 @@ int *uglyrmapd = 0,*uglyrmapo = 0;  /* mapping from the local ordering to the "d
 Vec uglydd = 0,uglyoo = 0;   /* work vectors used to scale the two parts of the local matrix */
 
 
-#undef __FUNC__
-#define __FUNC__ "MatMPIBAIJDiagonalScaleLocalSetUp"
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIBAIJDiagonalScaleLocalSetUp"
 int MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIBAIJ  *ina = (Mat_MPIBAIJ*) inA->data; /*access private part of matrix */
@@ -303,8 +303,8 @@ int MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "MatMPIBAIJDiagonalScaleLocal"
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIBAIJDiagonalScaleLocal"
 int MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   Mat_MPIBAIJ  *a = (Mat_MPIBAIJ*) A->data; /*access private part of matrix */
