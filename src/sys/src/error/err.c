@@ -230,11 +230,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
 }
 
 #if defined(PETSC_USE_ERRORCHECKING)
-PetscErrorCode PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
-PetscInt       PetscErrorUncatchableCount                  = 0;
-PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
-PetscInt       PetscExceptionsCount                        = 0;
-PetscErrorCode PetscExceptionTmp                           = 0;
+PetscErrorCode PETSC_DLLEXPORT PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
+PetscInt       PETSC_DLLEXPORT PetscErrorUncatchableCount                  = 0;
+PetscErrorCode PETSC_DLLEXPORT PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
+PetscInt       PETSC_DLLEXPORT PetscExceptionsCount                        = 0;
+PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp                           = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorIsCatchable" 

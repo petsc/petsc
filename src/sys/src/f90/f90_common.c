@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petscf90.h"
 
