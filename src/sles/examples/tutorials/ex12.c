@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.13 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.14 1999/11/24 21:55:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -21,7 +21,7 @@ T*/
    Demonstrates registering a new preconditioner (PC) type.
 
    To register a PC type whose code is linked into the executable,
-   use PCRegister(). To register a PC type in a shared library use PCRegister()
+   use PCRegister(). To register a PC type in a dynamic library use PCRegisterDynamic()
 
    Also provide the prototype for your PCCreate_XXX() function. In 
    this example we use the PETSc implementation of the Jacobi method,
@@ -51,12 +51,12 @@ EXTERN_C_END
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;  /* approx solution, RHS, exact solution */
+  Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   double      norm;     /* norm of solution error */
-  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
-  Scalar      v, one = 1.0, neg_one = -1.0;
+  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
+  Scalar      v,one = 1.0,neg_one = -1.0;
   PC          pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -89,12 +89,12 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
 
