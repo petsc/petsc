@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.114 2000/09/28 21:14:10 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.115 2001/01/15 21:47:52 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -283,7 +283,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
     F    = ctx->current_f;
     if (!F) SETERRQ(1,"You must call MatAssembly() even on matrix-free matrices");
-    ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
+    ierr = (*eval_fct)(snes,w,y);CHKERRQ(ierr);
   } else {
     F = ctx->funcvec;
     /* compute func(U) as base for differencing */
