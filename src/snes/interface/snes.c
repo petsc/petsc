@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.169 1999/02/03 23:58:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.170 1999/02/16 22:28:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -355,8 +355,8 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 #undef __FUNC__  
 #define __FUNC__ "SNESGetIterationNumber"
 /*@
-   SNESGetIterationNumber - Gets the current iteration number of the
-   nonlinear solver.
+   SNESGetIterationNumber - Gets the number of nonlinear iterations completed
+       at this time.
 
    Not Collective
 
@@ -365,6 +365,18 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 
    Output Parameter:
 .  iter - iteration number
+
+   Notes:
+     For example, during the computation of iteration 2 this would return 1.
+
+     This is useful for using lagged Jacobians (where one does not recompute the 
+    Jacobian at each SNES iteration). For example the code
+$    ierr = SNESGetIterationNumber(snes,&it);
+$    if (!(it % 2)) {
+$      compute Jacobian
+$    }
+     can be used in your ComputeJacobian() function to cause the Jacobian to be
+     recomputed every second SNES iteration
 
    Level: intermediate
 
