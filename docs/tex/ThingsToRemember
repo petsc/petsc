@@ -78,6 +78,8 @@ password: petsc-password
 ---------
 
 ANL Solaris machines: caffeine,tiamat,dew
+    DEC Alpha: dactile
+
 
 ---------
 
