@@ -1,135 +1,196 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.21 1998/09/22 15:16:29 balay Exp $";
+static char vcid[] = "$Id: fretrieve.c,v 1.1 1998/10/30 01:13:00 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
 */
 #include "petsc.h"
 #include "sys.h"
-#if defined(HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if !defined(PARCH_nt)
-#include <sys/utsname.h>
-#endif
-#if defined(PARCH_nt)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_nt_gnu)
-#include <windows.h>
-#endif
-#include <fcntl.h>
-#if defined(HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#include "pinclude/petscfix.h"
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
-#if defined(HAVE_PWD_H)
+extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath"
-/*@C
-   PetscGetFullPath - Given a filename, returns the fully qualified file name.
+#define __FUNC__ "PetscSharedTmp"
+/*@
+   PetscSharedTmp _ Determines if all processors in a communicator share a
+         /tmp or have different ones.
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
-+  path     - pathname to qualify
-.  fullpath - pointer to buffer to hold full pathname
--  flen     - size of fullpath
+.  comm - MPI_Communicator that may share /tmp
 
-.keywords: system, get, full, path
+   Output Parameters:
+.  shared - PETSC_TRUE or PETSC_FALSE
 
-.seealso: PetscGetRelativePath()
+   Notes:
+   Stores the status as a MPI attribute so it does not have
+    to be redetermined each time.
+
+      Assumes that all processors in a communicator either
+       1) have a common /tmp or
+       2) each has a seperate /tmp
+      eventually we can write a fancier one that determines which processors
+      share a common /tmp.
+
+   This will be very slow on runs with a large number of files since
+   it requires O(p*p) file opens.
+
+   If the environmental variable PETSC_TMP is set it will use this directory
+  as the "/tmp" directory.
+
 @*/
-int PetscGetFullPath( const char path[], char fullpath[], int flen )
+int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 {
-  struct passwd *pwde;
-  int           ln;
+  int        ierr,size,rank,iflag,*tagvalp,sum,cnt,i;
+  PetscTruth flag;
+  FILE       *fd;
+  static int Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 
   PetscFunctionBegin;
-  if (path[0] == '/') {
-    if (PetscStrncmp("/tmp_mnt/",path,9) == 0) PetscStrncpy(fullpath, path + 8, flen);
-    else PetscStrncpy( fullpath, path, flen); 
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
-  PetscGetWorkingDirectory( fullpath, flen );
-  PetscStrncat( fullpath,"/",flen - PetscStrlen(fullpath) );
-  if ( path[0] == '.' && path[1] == '/' ) {
-    PetscStrncat( fullpath, path+2, flen - PetscStrlen(fullpath) - 1 );
-  } else {
-    PetscStrncat( fullpath, path, flen - PetscStrlen(fullpath) - 1 );
+
+  if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tmp_keyval,0);CHKERRQ(ierr);
   }
 
-  /* Remove the various "special" forms (~username/ and ~/) */
-  if (fullpath[0] == '~') {
-    char tmppath[MAXPATHLEN];
-    if (fullpath[1] == '/') {
-	pwde = getpwuid( geteuid() );
-	if (!pwde) PetscFunctionReturn(0);
-	PetscStrcpy( tmppath, pwde->pw_dir );
-	ln = PetscStrlen( tmppath );
-	if (tmppath[ln-1] != '/') PetscStrcat( tmppath+ln-1, "/" );
-	PetscStrcat( tmppath, fullpath + 2 );
-	PetscStrncpy( fullpath, tmppath, flen );
-    } else {
-	char *p, *name;
+  ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,&iflag);CHKERRQ(ierr);
+  if (!iflag) {
+    char       filename[256];
+    /* This communicator does not yet have a shared tmp attribute */
+    tagvalp    = (int *) PetscMalloc( sizeof(int) ); CHKPTRQ(tagvalp);
+    ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval, tagvalp);CHKERRQ(ierr);
 
-	/* Find username */
-	name = fullpath + 1;
-	p    = name;
-	while (*p && isalnum((int)(*p))) p++;
-	*p = 0; p++;
-	pwde = getpwnam( name );
-	if (!pwde) PetscFunctionReturn(0);
-	
-	PetscStrcpy( tmppath, pwde->pw_dir );
-	ln = PetscStrlen( tmppath );
-	if (tmppath[ln-1] != '/') PetscStrcat( tmppath+ln-1, "/" );
-	PetscStrcat( tmppath, p );
-	PetscStrncpy( fullpath, tmppath, flen );
+    ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&flag);CHKERRQ(ierr);
+    if (!flag) {
+      ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
     }
+    ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);
+    
+    /* each processor creates a /tmp file and all the later ones check */
+    /* this makes sure no subset of processors is shared */
+    *shared = PETSC_FALSE;
+    for ( i=0; i<size-1; i++ ) {
+      if (rank == i) {
+        fd = fopen(filename,"w");
+        if (!fd) {
+          SETERRQ(1,1,"Unable to open test file in /tmp directory");
+        }
+        fclose(fd);
+      }
+      ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+      if (rank >= i) {
+        fd = fopen(filename,"r");
+        if (fd) cnt = 1; else cnt = 0;
+        if (fd) {
+          fclose(fd);
+        }
+      } else {
+        cnt = 0;
+      }
+      ierr = MPI_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      if (rank == i) {
+        unlink(filename);
+      }
+
+      if (sum == size) {
+        *shared = PETSC_TRUE;
+        break;
+      } else if (sum != 1) {
+        SETERRQ(1,1,"Subset of processes share /tmp cannot load remote or compressed file");
+      }
+    }
+    *tagvalp = (int) *shared;
+  } else {
+    *shared = (PetscTruth) *tagvalp;
   }
-  /* Remove the automounter part of the path */
-  if (PetscStrncmp( fullpath, "/tmp_mnt/", 9 ) == 0) {
-    char tmppath[MAXPATHLEN];
-    PetscStrcpy( tmppath, fullpath + 8 );
-    PetscStrcpy( fullpath, tmppath );
-  }
-  /* We could try to handle things like the removal of .. etc */
+  PLogInfo(0,"PetscSharedTmp:1 indicates detected shared /tmp, 0 not shared %d\n",(int) *shared);
   PetscFunctionReturn(0);
 }
-#elif defined (PARCH_nt)
+
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[], int flen )
+#define __FUNC__ "PetscFileRetrieve"
+/*@C
+    PetscFileRetrieve - Obtains a library from a URL or compressed 
+        and copies into local disk space as uncompressed.
+
+    Collective on MPI_Comm
+
+    Input Parameter:
++   comm     - processors accessing the library
+.   libname  - name of library, including entire URL (with or without .gz)
+-   llen     - length of llibname
+
+    Output Parameter:
++   llibname - name of local copy of library
+-   found - if found and retrieve the file
+
+@*/
+int PetscFileRetrieve(MPI_Comm comm,char *libname,char *llibname,int llen,PetscTruth *found)
 {
+  char       *par,buf[1024];
+  FILE       *fp;
+  int        i,rank,ierr;
+  PetscTruth sharedtmp;
+
   PetscFunctionBegin;
-  _fullpath(fullpath,path,flen);
+  *found = PETSC_FALSE;
+
+  /* if file does not have an ftp:// or http:// or .gz then need not process file */
+  if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7) &&
+      (!(par = PetscStrstr(libname,".gz")) || PetscStrlen(par) != 3)) {
+    ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
+    ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* Determine if all processors share a common /tmp */
+  ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
+
+  MPI_Comm_rank(comm,&rank);
+  if (!rank || !sharedtmp) {
+  
+    /* Construct the Python script to get URL file */
+    par = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par);
+    ierr = PetscStrcpy(par,"python1.5 ");
+    ierr = PetscStrcat(par,PETSC_DIR);
+    ierr = PetscStrcat(par,"/bin/urlget.py ");
+    ierr = PetscStrcat(par,libname);
+    ierr = PetscStrcat(par," 2>&1 ");
+
+    PLogInfo(0,"PetscFileRetrieve: Running python script:%s\n",par);
+    if ((fp = popen(par,"r")) == 0) {
+      SETERRQ(1,1,"Cannot Execute python1.5 on ${PETSC_DIR}/bin/urlget.py\n\
+        Check if python1.5 is in your path");
+    }
+    if (fgets(buf,1024,fp) == 0) {
+      fprintf(stderr,"Trying to get file %s\n",libname);
+      SETERRQ(1,1,"No output from ${PETSC_DIR}/bin/urlget.py");
+    }
+    /* Check for \n and make it 0 */
+    for ( i=0; i<1024; i++ ) {
+      if ( buf[i] == '\n') {
+        buf[i] = 0;
+        break;
+      }
+    }
+    if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9)) {
+      PLogInfo(0,"Did not find file %s",libname);
+    } else {
+      *found = PETSC_TRUE;
+    }
+    ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
+    PetscFree(par);
+  }
+  if (sharedtmp) { /* send library name to all processors */
+    MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);
+    MPI_Bcast(found,1,MPI_INT,0,comm);
+  }
+
   PetscFunctionReturn(0);
 }
-#else
-#undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[], int flen )
-{
-  PetscFunctionBegin;
-  PetscStrcpy( fullpath, path );
-  PetscFunctionReturn(0);
-}	
-#endif

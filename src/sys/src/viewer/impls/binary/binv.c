@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.48 1998/10/29 04:03:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.49 1998/10/29 23:17:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -17,8 +17,6 @@ struct _p_Viewer {
   VIEWERHEADER
   int          fdes;            /* file descriptor */
   FILE         *fdes_info;      /* optional file containing info on binary file*/
-  PetscTruth   compressedfile;  /* file was compressed; should compress on close */
-  char         filename[1024];
 };
 
 #undef __FUNC__  
@@ -81,21 +79,6 @@ int ViewerDestroy_BinaryFile(Viewer v)
   if (!rank) close(v->fdes);
   if (!rank && v->fdes_info) fclose(v->fdes_info);
 
-  if (v->compressedfile) {
-    FILE *fp;
-    char command[1024],buffer[1024];
-
-    /* compress the file back up */
-    PetscStrcpy(command,"\rm -f ");
-    PetscStrcat(command,v->filename);
-    fp = popen(command,"r");
-    if (!fp) SETERRQ(1,1,"Cannot removed uncompressed file");
-    fgets(buffer,1024,fp);
-    ierr = pclose(fp);
-    if (ierr) { 
-      SETERRQ(1,1,"Unable to remove uncompressed binary file");
-    }
-  }
   PLogObjectDestroy((PetscObject)v);
   PetscHeaderDestroy((PetscObject)v);
   PetscFunctionReturn(0);
@@ -132,9 +115,9 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
 {  
   int        rank,ierr;
   Viewer     v;
-  PetscTruth exists;
-  const char *fname;
+  const char *fname,bname[1024];
   static int id = 0;
+  PetscTruth found;
 
   PetscFunctionBegin;
   PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
@@ -142,7 +125,6 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
   v->destroy        = ViewerDestroy_BinaryFile;
   v->flush          = 0;
   v->iformat        = 0;
-  v->compressedfile = PETSC_FALSE;
   *binv             = v;
 
   MPI_Comm_rank(comm,&rank);
@@ -151,57 +133,16 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
   if (!rank || type == BINARY_RDONLY) {
 
     if (type == BINARY_RDONLY){
-      /*
-          Check if the file exists
-      */
-      ierr  = PetscTestFile(name,'r',&exists);CHKERRQ(ierr);
-      if (!exists) {
-        char *tname;
-        int  size;
-
-        MPI_Comm_size(comm,&size);
-        if (size == 1) {
-          tname = (char *) PetscMalloc((3+PetscStrlen(name))*sizeof(char));CHKPTRQ(tname);
-          PetscStrcpy(tname,name);
-          PetscStrcat(tname,".gz");
-          ierr  = PetscTestFile(tname,'r',&exists);CHKERRQ(ierr);
-          if (exists) { /* try to uncompress it */
-            FILE *fp;
-            char command[1024],buffer[1024],sid[16];
-
-            /* should also include PID for uniqueness */
-            PetscStrcpy(v->filename,"/tmp/petscbinary.tmp");
-            sprintf(sid,"%d",id++);
-            PetscStrcat(v->filename,sid);
-
-            PetscStrcpy(command,"gunzip -c ");
-            PetscStrcat(command,name);
-            PetscStrcat(command," > ");
-            PetscStrcat(command,v->filename);
-
-            PLogInfo(*binv,"Uncompressing file %s into %s\n",name,v->filename);
-            fp = popen(command,"r");
-            if (!fp) SETERRQ(1,1,"Cannot uncompress file");
-            fgets(buffer,1024,fp);
-            ierr = pclose(fp);
-            if (ierr) { 
-              SETERRQ(1,1,"Unable to uncompress compressed binary file");
-            }
-            PLogInfo(*binv,"Uncompressed file %s\n %s\n",name,buffer);
-            v->compressedfile = PETSC_TRUE;
-
-          }
-          PetscFree(tname);
-          fname = v->filename;
-        } else {
-          SETERRQ(PETSC_ERR_FILE_OPEN,1,"Cannot open file for reading, does not exist");
-        }
-      } else {
-        fname = name;
+      /* possibly get the file from remote site or compressed file */
+      ierr  = PetscFileRetrieve(comm,name,bname,1024,&found);CHKERRQ(ierr);
+      if (!found) {
+        fprintf(stderr,"filename: %s\n",name);
+        SETERRQ(1,1,"Cannot locate file");
       }
-  } else {
-    fname = name;
-  }
+      fname = bname;
+    } else {
+      fname = name;
+    }
 
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {
@@ -239,12 +180,20 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
       try to open info file: all processors open this file
   */
   if (type == BINARY_RDONLY) {
-    char infoname[256],iname[256];
+    char infoname[256],iname[256],*gz;
   
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
+    /* remove .gz if it ends library name */
+    if ((gz = PetscStrstr(infoname,".gz")) && (PetscStrlen(gz) == 3)) {
+      *gz = 0;
+    }
+    
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
-    v->fdes_info = fopen(iname,"r");
+    ierr = PetscFileRetrieve(comm,iname,infoname,256,&found); CHKERRQ(ierr);
+    if (found) {
+      v->fdes_info = fopen(infoname,"r");
+    }
   }
 
 #if defined(USE_PETSC_LOG)
