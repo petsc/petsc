@@ -26,44 +26,61 @@ void  mpi_init_(int *ierr)
   *ierr = MPI_SUCCESS;
 }
 
+void  mpi_init__(int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
 void  MPI_INIT(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
 /******mpi_comm_size*******/
-void mpi_comm_size(int *comm, int *size, int *ierr) 
+void mpi_comm_size(MPI_Comm *comm, int *size, int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void mpi_comm_size_(int *comm, int *size, int *ierr) 
+void mpi_comm_size_(MPI_Comm *comm, int *size, int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void MPI_COMM_SIZE(int *comm, int *size, int *ierr) 
+void mpi_comm_size__(MPI_Comm *comm, int *size, int *ierr) 
+{
+  *size = 1;
+  *ierr = 0;
+}
+
+void MPI_COMM_SIZE(MPI_Comm *comm, int *size, int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
 /******mpi_comm_rank*******/
-void mpi_comm_rank(int *comm,int *rank,int *ierr)
+void mpi_comm_rank(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void mpi_comm_rank_(int *comm,int *rank,int *ierr)
+void mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void MPI_COMM_RANK(int *comm,int *rank,int *ierr)
+void mpi_comm_rank__(MPI_Comm *comm,int *rank,int *ierr)
+{
+  *rank=0;
+  *ierr=MPI_SUCCESS;
+}
+
+void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
@@ -77,6 +94,12 @@ double mpi_wtick()
 }
 
 double mpi_wtick_() 
+{
+  fprintf(stderr,"MPI_Wtime: use PetscTime instead\n");
+  return 0.0;
+}
+
+double mpi_wtick__() 
 {
   fprintf(stderr,"MPI_Wtime: use PetscTime instead\n");
   return 0.0;
@@ -101,11 +124,50 @@ double mpi_wtime_()
   return 0.0;
 }
 
+double mpi_wtime__()
+{
+  fprintf(stderr,"MPI_Wtime: use PetscTime instead\n");
+  return 0.0;
+}
+
 double MPI_WTIME()
 {
   fprintf(stderr,"MPI_Wtime: use PetscTime instead\n");
   return 0.0;
 }
+
+/*******mpi_abort******/
+void mpi_abort(MPI_Comm *comm, int *errorcode, int *ierr) 
+{
+  fprintf(stderr,"[0] Aborting program!\n");
+  abort();
+  *ierr = MPI_SUCCESS;
+}
+
+void mpi_abort_(MPI_Comm *comm, int *errorcode, int *ierr) 
+{
+  fprintf(stderr,"[0] Aborting program!\n");
+  abort();
+  *ierr = MPI_SUCCESS;
+}
+
+void mpi_abort__(MPI_Comm *comm, int *errorcode, int *ierr) 
+{
+  fprintf(stderr,"[0] Aborting program!\n");
+  abort();
+  *ierr = MPI_SUCCESS;
+}
+
+void MPI_ABORT(MPI_Comm *comm, int *errorcode, int *ierr) 
+{
+  fprintf(stderr,"[0] Aborting program!\n");
+  abort();
+  *ierr = MPI_SUCCESS;
+}
+
+  
 #if defined(__cplusplus)
 }
 #endif
+
+
