@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.7 1999/08/04 20:57:49 balay Exp balay $ 
+# $Id: base_variables,v 1.8 1999/08/19 20:53:50 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,6 +16,7 @@ C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = gcc
 C_FLINKER	   = f90 -f77
 C_CCV		   = gcc   --version
+C_FCV              = unknown
 C_SYS_LIB	   = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
 	           /home/petsc/lib/sun4/libm.a
