@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.146 2000/07/21 03:49:37 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.147 2000/08/01 20:58:01 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1116,7 +1116,7 @@ int DARefine(DA da,DA *daref)
 #define __FUNC__ /*<a name="DASplitComm2d"></a>*/"DASplitComm2d"
 int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 {
-  int ierr,m,n,csize,size,rank,x,y;
+  int ierr,m,n = 0,csize,size,rank,x = 0,y = 0;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

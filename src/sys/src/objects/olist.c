@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.18 2000/04/12 04:21:29 bsmith Exp balay $*/
+/*$Id: olist.c,v 1.19 2000/05/05 22:14:00 balay Exp bsmith $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -97,11 +97,12 @@ int OListDestroy(OList *fl)
 
   PetscFunctionBegin;
   while (entry) {
-    tmp = entry->next;
-    ierr = PetscObjectDereference(entry->obj);CHKERRQ(ierr);
-    ierr = PetscFree(entry);CHKERRQ(ierr);
+    tmp   = entry->next;
+    ierr  = PetscObjectDereference(entry->obj);CHKERRQ(ierr);
+    ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = tmp;
   }
+  *fl = 0;
   PetscFunctionReturn(0);
 }
 

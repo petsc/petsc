@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.53 2000/08/01 20:01:21 bsmith Exp $*/
+/*$Id: isltog.c,v 1.54 2000/08/04 16:02:17 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -431,8 +431,10 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   if (size == 1) {
     *nproc    = 0;
     *procs    = PETSC_NULL;
-    *numprocs = (int* )PetscMalloc(sizeof(int ));CHKPTRQ(*numprocs); (*numprocs)[0] = 0;
-    *indices  = (int**)PetscMalloc(sizeof(int*));CHKPTRQ(*indices ); (*indices)[0]  = PETSC_NULL;
+    *numprocs = (int*)PetscMalloc(sizeof(int ));CHKPTRQ(*numprocs);
+    (*numprocs)[0] = 0;
+    *indices  = (int**)PetscMalloc(sizeof(int*));CHKPTRQ(*indices); 
+    (*indices)[0]  = PETSC_NULL;
     PetscFunctionReturn(0);
   }
 

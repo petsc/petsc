@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f90.F,v 1.12 2000/07/10 03:39:11 bsmith Exp balay $";
+!  "$Id: ex1f90.F,v 1.13 2000/07/26 20:59:17 balay Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -52,7 +52,7 @@
 
       call ISGetIndicesF90(is,idx,ierr)
 
-      if ( associated(idx) ) then 
+      if (associated(idx)) then 
          write (*,*) 'Association check passed'
       else
          write (*,*) 'Association check failed'
