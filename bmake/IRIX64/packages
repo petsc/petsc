@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1997/09/11 22:07:44 balay Exp balay $ 
+# $Id: base.site,v 1.18 1997/09/18 15:50:30 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -20,7 +20,7 @@ FC_LIB         =  -lftn
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
-LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX64.a
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
 #
 # Location of X-windows software
 #
@@ -75,8 +75,8 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/IRIX64/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX64/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

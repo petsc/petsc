@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.12 1997/10/10 04:04:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -62,21 +62,21 @@ int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,d
 {
   double bcast[4];
   int    ierr,rank;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   MPI_Comm_rank(draw->comm,&rank);
   if (!rank) {
     ierr = DrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys); CHKERRQ(ierr);
   }
   if (button) {
-     MPI_Bcast(button,1,MPI_INT,0,draw->comm);  
+     ierr = MPI_Bcast(button,1,MPI_INT,0,draw->comm);CHKERRQ(ierr);
   }
   if (x_user) bcast[0] = *x_user;
   if (y_user) bcast[1] = *y_user;
   if (x_phys) bcast[2] = *x_phys;
   if (y_phys) bcast[3] = *y_phys;
-  MPI_Bcast(bcast,4,MPI_DOUBLE,0,draw->comm);  
+  ierr = MPI_Bcast(bcast,4,MPI_DOUBLE,0,draw->comm);CHKERRQ(ierr);  
   if (x_user) *x_user = bcast[0];
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];

@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.29 1997/09/17 23:14:34 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.30 1997/10/19 03:22:42 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -22,9 +22,9 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   ierr = VecMDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
-  MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
-  MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #endif
   if (nv > 128) {
@@ -47,9 +47,9 @@ int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   ierr = VecMTDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
-  MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
-  MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #endif
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
@@ -66,6 +66,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   double       sum, work = 0.0;
   Scalar       *xx = x->array;
   register int n = x->n;
+  int          ierr;
 
   PetscFunctionBegin;
   if (type == NORM_2) {
@@ -108,7 +109,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     */
 #endif
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    ierr = MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z = sqrt( sum );
     PLogFlops(2*x->n);
@@ -117,14 +118,14 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     VecNorm_Seq( xin, NORM_1, &work );
     /* Find the global max */
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    ierr = MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     VecNorm_Seq( xin, NORM_INFINITY, &work );
     /* Find the global max */
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_1_AND_2) {
     double temp[2];
@@ -132,7 +133,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     VecNorm_Seq( xin, NORM_2, temp+1 ); 
     temp[1] = temp[1]*temp[1];
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce(temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+    ierr = MPI_Allreduce(temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     z[1] = sqrt(z[1]);
   }
@@ -153,7 +154,7 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
   /* Find the global max */
   if (!idx) {
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
     /* Need to use special linked max */
@@ -176,7 +177,7 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
   /* Find the global Min */
   if (!idx) {
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
-    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
+    ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
     /* Need to use special linked Min */

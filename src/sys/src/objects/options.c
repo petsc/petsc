@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.147 1997/10/27 00:45:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.148 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -133,10 +133,10 @@ double PetscCompareTolerance = 1.e-10;
 @*/
 int PetscCompareInt(int d)
 {
-  int work = d;
+  int work = d,ierr;
 
   PetscFunctionBegin;
-  MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);
+  ierr = MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (d != work) {
     SETERRQ(1,0,"Inconsistent integer");
   }
@@ -162,10 +162,10 @@ int PetscCompareInt(int d)
 @*/
 int PetscCompareDouble(double d)
 {
-  double work = d;
+  double work = d,ierr;
 
   PetscFunctionBegin;
-  MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!d && !work) PetscFunctionReturn(0);
   if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
       > PetscCompareTolerance) {
@@ -195,9 +195,10 @@ int PetscCompareDouble(double d)
 int PetscCompareScalar(Scalar d)
 {
   Scalar work = d;
+  int    ierr;
 
   PetscFunctionBegin;
-  MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  ierr = MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
       >= PetscCompareTolerance) {
@@ -217,7 +218,7 @@ int PetscCompareScalar(Scalar d)
 */
 int PetscCompareInitialize(double tol)
 {
-  int       i, len,rank,work,*gflag,size,mysize;
+  int       ierr,i, len,rank,work,*gflag,size,mysize;
   char      *programname = options->programname, basename[256];
   MPI_Group group_all,group_sub;
 
@@ -232,14 +233,14 @@ int PetscCompareInitialize(double tol)
   }
 
   /* broadcase name from first processor to all processors */
-  MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
-  MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);
+  ierr = MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
   if (!PetscStrcmp(programname,basename)) work = 1;
   else                                    work = 0;
   gflag = (int *) malloc( size*sizeof(int) ); CHKPTRQ(gflag);
-  MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD); 
+  ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD); CHKERRQ(ierr);
   mysize = 0;
   for ( i=0; i<size; i++ ) {
     if (work == gflag[i]) gflag[mysize++] = i;
@@ -251,11 +252,11 @@ int PetscCompareInitialize(double tol)
   }
 
   /* create a new communicator for each program */
-  MPI_Comm_group(MPI_COMM_WORLD,&group_all);
-  MPI_Group_incl(group_all,mysize,gflag,&group_sub);
-  MPI_Comm_create(MPI_COMM_WORLD,group_sub,&PETSC_COMM_WORLD);
-  MPI_Group_free(&group_all);
-  MPI_Group_free(&group_sub);
+  ierr = MPI_Comm_group(MPI_COMM_WORLD,&group_all);CHKERRQ(ierr);
+  ierr = MPI_Group_incl(group_all,mysize,gflag,&group_sub);CHKERRQ(ierr);
+  ierr = MPI_Comm_create(MPI_COMM_WORLD,group_sub,&PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group_all);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group_sub);CHKERRQ(ierr);
   free(gflag);
 
   PetscCompare = 1;
@@ -380,8 +381,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     Scalar ic(0.0,1.0);
     PETSC_i = ic; 
   }
-  MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
-  MPI_Type_commit(&MPIU_COMPLEX);
+  ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU_COMPLEX);CHKERRQ(ierr);
 #endif
   ierr = OptionsCreate_Private(argc,args,file); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr); 
@@ -390,7 +391,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
-  PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+  ierr = PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
 
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
@@ -555,16 +556,16 @@ int PetscFinalize()
        Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
-  PetscCommFree_Private(&PETSC_COMM_SELF);
+  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
   if (flg1) {
     MPI_Comm local_comm;
-    MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm);
+
+    ierr = MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     PetscSequentialPhaseBegin_Private(local_comm,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);
     PetscSequentialPhaseEnd_Private(local_comm,1);
-    MPI_Comm_free(&local_comm);
-  }
-  else if (flg2) {
+    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+  } else if (flg2) {
     double maxm;
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
@@ -727,10 +728,10 @@ int OptionsCheckInitial_Private()
       int        dummy;
       MPI_Status status;
       for ( i=0; i<size; i++) {
-        MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);
+        ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
       }
       for ( i=0; i<size; i++) {
-        MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);
+        ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
       }
     }
     /* check if this processor node should be in debugger */
@@ -759,8 +760,8 @@ int OptionsCheckInitial_Private()
       PetscSetDebugger(debugger,xterm,display);
       PetscPushErrorHandler(PetscAbortErrorHandler,0);
       PetscAttachDebugger();
-      MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
-      MPI_Errhandler_set(comm,abort_handler);
+      ierr = MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);CHKERRQ(ierr);
+      ierr = MPI_Errhandler_set(comm,abort_handler);CHKERRQ(ierr);
     }
     PetscFree(nodes);
   }
@@ -1009,17 +1010,17 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
     if (!rank) {
       eoptions = (char *) getenv("PETSC_OPTIONS");
       len      = PetscStrlen(eoptions);
-      MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
+      ierr     = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     } else {
-      MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
+      ierr     = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       if (len) {
         eoptions = (char *) PetscMalloc((len+1)*sizeof(char *));CHKPTRQ(eoptions);
       }
     }
     if (len) {
-      MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD); 
+      ierr          = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD); CHKERRQ(ierr);
       eoptions[len] = 0;
-      first    = PetscStrtok(eoptions," ");
+      first         = PetscStrtok(eoptions," ");
       while (first) {
         if (first[0] != '-') {first = PetscStrtok(0," "); continue;}
         second = PetscStrtok(0," ");

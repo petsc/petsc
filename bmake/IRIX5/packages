@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1997/09/11 21:54:19 balay Exp balay $ 
+# $Id: base.site,v 1.18 1997/09/17 18:10:06 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -20,8 +20,8 @@ FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_IRIX5.a
-LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX5.a $(FC_LIB)
+BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_IRIX5.a
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX5.a $(FC_LIB)
 #
 # Location of X-windows software
 #
@@ -62,8 +62,8 @@ BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a 
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/IRIX/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

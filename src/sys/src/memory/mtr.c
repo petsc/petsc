@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.89 1997/09/18 18:12:00 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.90 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -479,9 +479,9 @@ int PetscTrLogDump(FILE *fp)
        Try to get the data printed in order by processor. This will only sometimes work 
   */  
   fflush(fp);
-  MPI_Barrier(PETSC_COMM_WORLD);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
-    MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,PETSC_COMM_WORLD,&status);
+    ierr = MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
 
@@ -522,7 +522,7 @@ int PetscTrLogDump(FILE *fp)
   free(shortfunction);
   fflush(fp);
   if (size > 1 && rank != size-1) {
-    MPI_Send(&dummy,1,MPI_INT,rank+1,tag,PETSC_COMM_WORLD);
+    ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

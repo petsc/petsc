@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.58 1997/10/19 03:24:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.59 1997/10/28 14:22:00 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -148,35 +148,35 @@ int PCRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetTypeFromOptions_Private"
-/* 
-  PCGetTypeFromOptions_Private - Sets the selected PC type from the 
-  options database.
+#define __FUNC__ "PCPrintHelp"
+/*@
+   PCPrintHelp - Prints all the options for the PC component.
 
-  Input Parameter:
-. pc - the preconditioner context
+   Input Parameter:
+.  pc - the preconditioner context
 
-  Output Parameter:
-. method - PC method
-. flag - indicates if method found
+   Options Database Keys:
+$  -help, -h
 
+.keywords: PC, help
 
-  Options Database Key:
-$ -pc_type  method
-*/
-int PCGetTypeFromOptions_Private(PC pc,PCType *method,int *flag )
+.seealso: PCSetFromOptions()
+@*/
+int PCPrintHelp(PC pc)
 {
-  int  ierr,flg;
-  char sbuf[50];
+  char p[64]; 
+  int  ierr;
 
   PetscFunctionBegin;
-  *flag = 0;
-  ierr  = OptionsGetString( pc->prefix,"-pc_type", sbuf, 50,&flg );CHKERRQ(ierr);
-  if (flg) {
-    if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-    *method = (PCType)NRFindID( __PCList, sbuf );
-    if (*method == (PCType) -1) SETERRQ(1,1,"Invalid PC type");
-    *flag   = 1;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscStrcpy(p,"-");
+  if (pc->prefix) PetscStrcat(p,pc->prefix);
+  PetscPrintf(pc->comm,"PC options --------------------------------------------------\n");
+  ierr = NRPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",__PCList);CHKERRQ(ierr);
+  PetscPrintf(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
+  PetscPrintf(pc->comm,"a particular method\n");
+  if (pc->printhelp) {
+    ierr = (*pc->printhelp)(pc,p);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -208,36 +208,6 @@ int PCGetType(PC pc,PCType *meth,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintTypes_Private"
-/*
-   PCPrintTypes_Private - Prints the PC methods available from the options 
-   database.
-
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  prefix - prefix (usually "-")
-.  name   - the options database name (by default "pc_type") 
-*/
-int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
-{
-  FuncList *entry;
-  int      count = 0,ierr;
-
-  PetscFunctionBegin;
-  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  entry = __PCList->head;
-  PetscPrintf(comm," %s%s (one of)",prefix,name);
-  while (entry) {
-    PetscPrintf(comm," %s",entry->name);
-    entry = entry->next;
-    count++;
-    if (count == 8) PetscPrintf(comm,"\n     ");
-  }
-  PetscPrintf(comm,"\n");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
@@ -259,7 +229,8 @@ int PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
-  ierr = PCGetTypeFromOptions_Private(pc,&method,&flg); CHKERRQ(ierr);
+  if (!__PCList) {ierr = PCRegisterAll();CHKERRQ(ierr);}
+  ierr = NRGetTypeFromOptions(pc->prefix,"-pc_type",__PCList,&method,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSetType(pc,method); CHKERRQ(ierr);
   }

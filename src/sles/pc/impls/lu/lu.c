@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.82 1997/10/09 15:37:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.83 1997/10/19 03:24:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -10,11 +10,11 @@ static char vcid[] = "$Id: lu.c,v 1.82 1997/10/09 15:37:22 bsmith Exp bsmith $";
 #include "pinclude/pviewer.h"
 
 typedef struct {
-  Mat           fact;             /* factored matrix */
-  double        fill, actualfill; /* expected and actual fill in factor */
-  int           inplace;          /* flag indicating in-place factorization */
-  IS            row, col;         /* index sets used for reordering */
-  MatReordering ordering;         /* matrix ordering */
+  Mat               fact;             /* factored matrix */
+  double            fill, actualfill; /* expected and actual fill in factor */
+  int               inplace;          /* flag indicating in-place factorization */
+  IS                row, col;         /* index sets used for reordering */
+  MatReorderingType ordering;         /* matrix ordering */
 } PC_LU;
 
 #undef __FUNC__  
@@ -178,7 +178,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 
 .seealso: PCILUSetMatReordering()
 @*/
-int PCLUSetMatReordering(PC pc, MatReordering ordering)
+int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
 {
   PC_LU *dir = (PC_LU *) pc->data;
 

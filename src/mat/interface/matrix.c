@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.266 1997/10/22 15:07:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.267 1997/10/28 13:54:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1994,7 +1994,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix.\n did you forget to call MatSetUnfactored()?"); 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.36 1997/10/28 14:25:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.37 1997/10/29 15:32:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -21,6 +21,9 @@ PLogDouble MPI_Wtime()
   return PetscGetTime();
 }
 
+/*
+       With MPI Uni there is only one communicator, which is called 1.
+*/
 #define MAX_ATTR 128
 
 typedef struct {
@@ -34,7 +37,7 @@ static MPI_Attr attr[MAX_ATTR];
 static int      num_attr = 1,mpi_tag_ub = 10000;
 
 /*
-   Used to set the built in MPI_TAG_UB attribute
+   Used to set the built-in MPI_TAG_UB attribute
 */
 static int Keyval_setup()
 {
@@ -90,6 +93,7 @@ int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   *out = comm;
   dups++;
+  return 0;
 }
 
 int MPI_Comm_free(MPI_Comm *comm)

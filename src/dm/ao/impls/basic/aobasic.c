@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.26 1997/10/28 14:25:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.27 1997/10/31 22:26:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -150,7 +150,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   MPI_Comm_rank(comm,&rank);
   lens = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(lens);
   disp = lens + size;
-  MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
   for ( i=0; i<size; i++ ) {
     disp[i] = N;
@@ -167,13 +167,15 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     for ( i=0; i<napp; i++ ) {
       petsc[i] = start + i;
     }
+  } else {
+    petsc = mypetsc;
   }
 
   /* get all indices on all processors */
   allpetsc = (int *) PetscMalloc( 2*N*sizeof(int) ); CHKPTRQ(allpetsc);
   allapp   = allpetsc + N;
-  MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);
-  MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);
+  ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   PetscFree(lens);
 
   /* generate a list of application and PETSc node numbers */
@@ -224,22 +226,25 @@ $   -ao_view : call AOView() at the conclusion of AOCreateBasicIS()
 @*/
 int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
-  int       *mypetsc,*myapp,ierr,napp,npetsc;
+  int       *mypetsc = 0,*myapp,ierr,napp,npetsc;
   MPI_Comm  comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
-  ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
-  if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");
-
+  if (ispetsc) {
+    ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
+    if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");
+    ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
+  }
   ierr = ISGetIndices(isapp,&myapp); CHKERRQ(ierr);
-  ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
 
   ierr = AOCreateBasic(comm,napp,myapp,mypetsc,aoout); CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isapp,&myapp); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
+  if (ispetsc) {
+    ierr = ISRestoreIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.10 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -29,7 +29,7 @@ $  -mpidump : dumps MPI incompleteness during call to PetscFinalize()
  @*/
 int PetscMPIDump(FILE *fd)
 {
-  int    rank;
+  int    rank,ierr;
   double tsends,trecvs,work;
 
   PetscFunctionBegin;
@@ -47,9 +47,9 @@ int PetscMPIDump(FILE *fd)
   PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1 );
   /* Did we receive all the messages that we sent? */
   work = irecv_ct + recv_ct;
-  MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   work = isend_ct + send_ct;
-  MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (!rank && tsends != trecvs) {
     fprintf(fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);
     fflush(fd);

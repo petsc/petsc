@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.11 1997/10/23 01:56:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.12 1997/10/28 14:25:29 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -425,7 +425,6 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
  
   /* get the list of neighbors */
   ierr = AODataSegmentGetReducedIS(aodata,name,name,keys,&reduced);CHKERRQ(ierr);
-
   ierr = ISSum(keys,reduced,is);CHKERRQ(ierr);
   ierr = ISDestroy(reduced);CHKERRQ(ierr);
 
@@ -577,15 +576,15 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N,int nsegments)
 
   /*  Set nlocal and ownership ranges */
   if (N == PETSC_DECIDE) {
-    MPI_Allreduce(&nlocal,&N,1,MPI_INT,MPI_SUM,comm);
+    ierr = MPI_Allreduce(&nlocal,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (nlocal != PETSC_DECIDE) {
-    MPI_Allreduce(&nlocal,&Ntmp,1,MPI_INT,MPI_SUM,comm);
+    ierr = MPI_Allreduce(&nlocal,&Ntmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (Ntmp != N) SETERRQ(1,1,"Sum of nlocal is not N");
   } else {
     nlocal = N/size + ((N % size) > rank);
   }
   key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
-  MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   key->rowners[0] = 0;
   for (i=2; i<=size; i++ ) {
     key->rowners[i] += key->rowners[i-1];

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.96 1997/10/19 03:27:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.97 1997/10/28 14:23:54 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -202,7 +202,7 @@ static int DrawFlush_X(Draw Win )
 #define __FUNC__ "DrawSynchronizedFlush_X" 
 static int DrawSynchronizedFlush_X(Draw Win )
 {
-  int     rank;
+  int     rank,ierr;
   Draw_X* XiWin = (Draw_X*) Win->data;
 
   PetscFunctionBegin;
@@ -211,17 +211,17 @@ static int DrawSynchronizedFlush_X(Draw Win )
     MPI_Comm_rank(Win->comm,&rank);
     /* make sure data has actually arrived at server */
     XSync(XiWin->disp,False);
-    MPI_Barrier(Win->comm);
+    ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
     if (!rank) {
       XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
       XFlush( XiWin->disp );
     }
     XSync(XiWin->disp,False);
-    MPI_Barrier(Win->comm);
+    ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   } else {
-    MPI_Barrier(Win->comm);
+    ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
     XSync(XiWin->disp,False);
-    MPI_Barrier(Win->comm);
+    ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -261,19 +261,19 @@ static int DrawClear_X(Draw Win)
 #define __FUNC__ "DrawSynchronizedClear_X" 
 static int DrawSynchronizedClear_X(Draw Win)
 {
-  int     rank;
+  int     rank,ierr;
   Draw_X* XiWin = (Draw_X*) Win->data;
 
   PetscFunctionBegin;
-  MPI_Barrier(Win->comm);
+  ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   MPI_Comm_rank(Win->comm,&rank);
   if (!rank) {
     DrawClear_X(Win);
   }
   XFlush( XiWin->disp );
-  MPI_Barrier(Win->comm);
+  ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
-  MPI_Barrier(Win->comm);
+  ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +282,7 @@ static int DrawSynchronizedClear_X(Draw Win)
 static int DrawSetDoubleBuffer_X(Draw Win)
 {
   Draw_X*  win = (Draw_X*) Win->data;
-  int      rank;
+  int      rank,ierr;
 
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
@@ -293,7 +293,7 @@ static int DrawSetDoubleBuffer_X(Draw Win)
   }
   /* try to make sure it is actually done before passing info to all */
   XSync(win->disp,False);
-  MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,Win->comm);
+  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,Win->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -421,7 +421,7 @@ static int DrawResizeWindow_X(Draw draw,int w,int h)
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X *) draw->data;
-  int          x,y,rank;
+  int          x,y,rank,ierr;
   Window       root;
   unsigned int w, h, border, depth,geo[2];
   double       xl,xr,yl,yr;
@@ -433,7 +433,7 @@ static int DrawCheckResizedWindow_X(Draw draw)
     XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
   }
-  MPI_Bcast(geo,2,MPI_INT,0,draw->comm);
+  ierr = MPI_Bcast(geo,2,MPI_INT,0,draw->comm);CHKERRQ(ierr);
   w = geo[0]; 
   h = geo[1];
   if (w == win->w && h == win->h) PetscFunctionReturn(0);
@@ -455,7 +455,7 @@ static int DrawCheckResizedWindow_X(Draw draw)
 
   /* try to make sure it is actually done before passing info to all */
   XSync(win->disp,False);
-  MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,draw->comm);
+  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -671,11 +671,10 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
     if (x < 0 || y < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
-    MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
-  }
-  else {
+    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
+  } else {
     unsigned long win;
-    MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
+    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
   }
 
@@ -961,13 +960,16 @@ Viewer VIEWER_DRAWX_(MPI_Comm comm)
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Drawx_keyval,0);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Drawx_keyval,0);
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
+  if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
     ierr = ViewerDrawOpenX(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    MPI_Attr_put( comm, Petsc_Viewer_Drawx_keyval, (void *) viewer );
+    ierr = MPI_Attr_put( comm, Petsc_Viewer_Drawx_keyval, (void *) viewer );
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
@@ -984,10 +986,10 @@ int VIEWER_DRAWX_Destroy(MPI_Comm comm)
   if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    MPI_Attr_delete(comm,Petsc_Viewer_Drawx_keyval);
+    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Drawx_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }

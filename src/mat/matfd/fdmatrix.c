@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.25 1997/10/19 03:24:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.26 1997/10/28 14:22:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -529,9 +529,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
-    MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
+    ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
-    MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
+    ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
     /*
        Loop over rows of vector, putting results into Jacobian matrix
@@ -644,9 +644,9 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
-    MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
+    ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
-    MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
+    ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
     /*
        Loop over rows of vector, putting results into Jacobian matrix

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.46 1997/10/19 03:25:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.47 1997/10/28 14:23:05 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -12,11 +12,11 @@ static char vcid[] = "$Id: sorder.c,v 1.46 1997/10/19 03:25:56 bsmith Exp bsmith
 static NRList *__MatReorderingList = 0;
 int  MatReorderingRegisterAllCalled = 0;
 
-extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
+extern int MatOrder_Flow_SeqAIJ(Mat,MatReorderingType,IS *,IS *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_Flow"
-int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
+int MatOrder_Flow(Mat mat,MatReorderingType type,IS *irow,IS *icol)
 {
   int ierr;
 
@@ -33,7 +33,7 @@ int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_Natural"
-int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
+int MatOrder_Natural(Mat mat,MatReorderingType type,IS *irow,IS *icol)
 {
   int        n, size,ierr,i,*ii;
   MPI_Comm   comm;
@@ -88,7 +88,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
 */
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_RowLength"
-int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
+int MatOrder_RowLength(Mat mat,MatReorderingType type,IS *irow,IS *icol)
 {
   int        ierr,n,*ia,*ja,*permr,*lens,i;
   PetscTruth done;
@@ -131,14 +131,14 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int (*order)(Mat,MatReordering,IS*,IS*))
+int  MatReorderingRegister(MatReorderingType name,MatReorderingType *out,char *sname,int (*order)(Mat,MatReorderingType,IS*,IS*))
 {
   int         ierr;
   static int  numberregistered = 0;
 
   PetscFunctionBegin;
   if (name == ORDER_NEW) {
-    name = (MatReordering) (ORDER_NEW + numberregistered++);
+    name = (MatReorderingType) (ORDER_NEW + numberregistered++);
   }
   if (out) *out = name;
 
@@ -194,7 +194,7 @@ $    -mat_order rcm, -mat_order qmd
 
 .seealso: MatGetReordering()
 @*/
-int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
+int MatGetReorderingTypeFromOptions(char *prefix,MatReorderingType *type)
 {
   char sbuf[50];
   int  ierr,flg;
@@ -203,7 +203,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
   ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!MatReorderingRegisterAllCalled) {ierr = MatReorderingRegisterAll();CHKERRQ(ierr);}
-    *type = (MatReordering)NRFindID( __MatReorderingList, sbuf );
+    *type = (MatReorderingType)NRFindID( __MatReorderingList, sbuf );
   }
   PetscFunctionReturn(0);
 }
@@ -221,7 +221,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 
 .keywords: PC, get, method, name, type
 @*/
-int MatReorderingGetName(MatReordering meth,char **name)
+int MatReorderingGetName(MatReorderingType meth,char **name)
 {
   int ierr;
 
@@ -268,10 +268,10 @@ $    -mat_order rcm, -mat_order qmd
 
 .seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
 @*/
-int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
+int MatGetReordering(Mat mat,MatReorderingType type,IS *rperm,IS *cperm)
 {
   int         ierr,flg,mmat,nmat,mis;
-  int         (*r)(Mat,MatReordering,IS*,IS*);
+  int         (*r)(Mat,MatReorderingType,IS*,IS*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -302,7 +302,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 
   ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
-  r =  (int (*)(Mat,MatReordering,IS*,IS*))NRFindRoutine(__MatReorderingList,(int)type,(char *)0);
+  r =  (int (*)(Mat,MatReorderingType,IS*,IS*))NRFindRoutine(__MatReorderingList,(int)type,(char *)0);
   if (!r) {SETERRQ(1,0,"Unknown or unregistered type");}
 
   ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);

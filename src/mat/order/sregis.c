@@ -1,16 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sregis.c,v 1.20 1997/08/22 15:14:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.21 1997/10/19 03:25:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
-extern int MatOrder_Natural(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_ND(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_1WD(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_QMD(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_RCM(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_RowLength(Mat,MatReordering,IS*,IS*);
-extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_Natural(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_ND(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_1WD(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_QMD(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_RCM(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_RowLength(Mat,MatReorderingType,IS*,IS*);
+extern int MatOrder_Flow(Mat,MatReorderingType,IS*,IS*);
 
 #undef __FUNC__  
 #define __FUNC__ "MatReorderingRegisterAll"

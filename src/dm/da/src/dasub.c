@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.14 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.15 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -55,7 +55,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
 
   owners = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(owners);
   ranks = owners + size;
-  MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);
+  ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
   ict = 0;
   PLogInfo(da,"DAGetProcessorSubset: dim=%d, direction=%d, procs: ",da->dim,(int)dir);
   for (i=0; i<size; i++) {
@@ -65,9 +65,9 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
     }
   }
   PLogInfo(da,"\n");
-  MPI_Comm_group(da->comm,&group);
-  MPI_Group_incl(group,ict,ranks,&subgroup);
-  MPI_Comm_create(da->comm,subgroup,comm);
+  ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
+  ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
+  ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);
   PetscFree(owners);
   PetscFunctionReturn(0);
 } 

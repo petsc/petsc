@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.77 1997/10/19 03:24:56 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.78 1997/10/28 14:22:20 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -76,7 +76,6 @@ struct _MatOps {
             (*setunfactored)(Mat),
 /*60*/      (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*getpartitioning)(Mat,MatPartitioning,int,ISPartitioning*),
             (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
 };
 
@@ -128,6 +127,21 @@ extern int StashInfo_Private(Stash*);
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat);
 extern int MatView_Private(Mat);
+
+/*
+    Object for partitioning graphs
+*/
+
+struct _p_Partitioning {
+  PETSCHEADER
+  Mat         adj;
+  int         (*apply)(Partitioning,IS*);
+  int         (*setfromoptions)(Partitioning);
+  int         (*printhelp)(Partitioning);
+  int         n;                                 /* number of partitions */
+  void        *data;
+  int         setupcalled;
+};
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently

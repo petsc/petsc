@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.35 1997/08/22 15:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.36 1997/10/19 03:22:27 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -52,7 +52,7 @@ int VecReciprocal(Vec v)
 @*/
 int VecSum(Vec v,Scalar *sum)
 {
-  int    i,n;
+  int    i,n,ierr;
   Scalar *x,lsum = 0.0;
 
   PetscFunctionBegin;
@@ -63,9 +63,9 @@ int VecSum(Vec v,Scalar *sum)
     lsum += x[i];
   }
 #if defined(USE_PETSC_COMPLEX)
-  MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);
+  ierr = MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
 #else
-  MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);
+  ierr = MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

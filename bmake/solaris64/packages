@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.12 1997/09/11 19:56:22 bsmith Exp balay $ 
+# $Id: base.site,v 1.13 1997/09/11 23:00:38 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,8 +19,8 @@ FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/bsmith/lapack/blas_solaris.a  $(FC_LIB)
-LAPACK_LIB     =  /home/bsmith/lapack/lapack_solaris.a
+BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  $(FC_LIB)
+LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
 #
 # Location of X-windows software
 #
@@ -61,8 +61,8 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/sun4/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.13 1997/10/23 01:57:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.14 1997/10/28 14:25:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -236,7 +236,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   MPI_Comm_rank(comm,&rank);
   lens = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(lens);
   disp = lens + size;
-  MPI_Allgather(&n,1,MPI_INT,lens,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&n,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
   for ( i=0; i<size; i++ ) {
     disp[i]  = N;
@@ -254,12 +254,12 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   adata = (char *) PetscMalloc((N*bs+1)*datasize); CHKPTRQ(adata);
 
 
-  MPI_Allgatherv(keys,n,MPI_INT,akeys,lens,disp,MPI_INT,comm);
+  ierr = MPI_Allgatherv(keys,n,MPI_INT,akeys,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   for ( i=0; i<size; i++ ) {
     disp[i] *= bs;
     lens[i] *= bs;
   }
-  MPI_Allgatherv(data,n*bs,mtype,adata,lens,disp,mtype,comm);
+  ierr = MPI_Allgatherv(data,n*bs,mtype,adata,lens,disp,mtype,comm);CHKERRQ(ierr);
   PetscFree(lens);
 
   /*
@@ -392,9 +392,9 @@ int AODataKeyRemap_Basic(AOData aodata, char *key,AO ao)
       if (aodata->keys[i].segments[j].datatype != PETSC_INT) {
         SETERRQ(1,1,"Segment name same as key but not integer type");
       }
-      nk = aodata->keys[i].segments[j].bs*aodata->keys[i].N;
-      ii = (int *) aodata->keys[i].segments[j].data;
-      ierr = AOApplicationToPetsc(ao,nk,ii); CHKERRQ(ierr);
+      nk   = aodata->keys[i].segments[j].bs*aodata->keys[i].N;
+      ii   = (int *) aodata->keys[i].segments[j].data;
+      ierr = AOPetscToApplication(ao,nk,ii); CHKERRQ(ierr);
     }
   }
   
@@ -588,7 +588,7 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
     /* determine Nlocal and rowners for key */
     key->nlocal = key->N/size + ((key->N % size) > rank);
     key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
-    MPI_Allgather(&key->nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);
+    ierr = MPI_Allgather(&key->nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
     key->rowners[0] = 0;
     for (j=2; j<=size; j++ ) {
       key->rowners[j] += key->rowners[j-1];

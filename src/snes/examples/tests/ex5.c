@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.3 1997/09/22 15:20:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.4 1997/10/19 03:29:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -557,7 +557,7 @@ int MatConvertRegisterAll()
   return 0;
 }
 
-extern int MatOrder_Natural(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_Natural(Mat,MatReorderingType,IS*,IS*);
 int MatReorderingRegisterAll()
 {
   int           ierr;

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.35 1997/10/12 23:22:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.36 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -164,7 +164,7 @@ void matgetinfo_(Mat mat,MatInfoType *flag,double *finfo,int *__ierr ){
   /*
      this next one is TOTALLY wrong 
   */
-void matgetreorderingtypefromoptions_(CHAR prefix,MatReordering *type, 
+void matgetreorderingtypefromoptions_(CHAR prefix,MatReorderingType *type, 
                                       int *__ierr,int len )
 {
   char *t;
@@ -270,7 +270,7 @@ void matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
   *(int*) newmat = PetscFromPointer(mm);
 }
 
-void matgetreordering_(Mat mat,MatReordering *type,IS *rperm,IS *cperm, 
+void matgetreordering_(Mat mat,MatReorderingType *type,IS *rperm,IS *cperm, 
                        int *__ierr )
 {
   IS i1,i2;

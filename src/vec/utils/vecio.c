@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.34 1997/09/26 02:17:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.35 1997/10/19 03:22:27 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -83,7 +83,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT); CHKERRQ(ierr);
     if ((VecType)type != VEC_COOKIE) SETERRQ(1,0,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
-    MPI_Bcast(&rows,1,MPI_INT,0,comm);
+    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
     v = (Vec_MPI*) vec->data;
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
@@ -103,22 +103,22 @@ int VecLoad(Viewer viewer,Vec *newvec)
       for ( i=1; i<size; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
-        MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
+        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);CHKERRQ(ierr);
       }
-      MPI_Waitall(size-1,requests,statuses);
+      ierr = MPI_Waitall(size-1,requests,statuses);CHKERRQ(ierr);
       PetscFree(avec); PetscFree(requests); PetscFree(statuses);
     }
   } else {
-    MPI_Bcast(&rows,1,MPI_INT,0,comm);
+    ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
-    VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
-    VecGetArray(vec,&avec); CHKERRQ(ierr);
-    MPI_Recv(avec,n,MPIU_SCALAR,0,vec->tag,vec->comm,&status);
+    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
+    ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
+    ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,vec->tag,vec->comm,&status);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }
   *newvec = vec;
-  VecAssemblyBegin(vec);
-  VecAssemblyEnd(vec);
+  ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   PLogEventEnd(VEC_Load,viewer,0,0,0);
   PetscFunctionReturn(0);
 }

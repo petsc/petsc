@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.12 1997/08/22 15:13:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.13 1997/10/19 03:25:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -74,7 +74,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     }
 
     /* Determine the total (parallel) number of columns of this color */
-    MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);
+    ierr = MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
     nctot = 0; for ( j=0; j<size; j++ ) {nctot += ncolsonproc[j];}
     if (!nctot) SETERRQ(1,0,"Invalid coloring");
 
@@ -85,7 +85,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     
     /* Get complete list of columns for color on each processor */
     cols = (int *) PetscMalloc( nctot*sizeof(int) ); CHKPTRQ(cols);
-    MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);
+    ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
 
 /*
 for ( j=0; j<nctot; j++ ) {

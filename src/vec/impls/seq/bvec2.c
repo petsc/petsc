@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.105 1997/10/10 04:02:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.106 1997/10/19 03:22:39 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -317,11 +317,11 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 {
   Vec_Seq *s;
   Vec     v;
-  int     flag;
+  int     flag,ierr;
 
   PetscFunctionBegin;
   *V             = 0;
-  MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
+  ierr = MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);CHKERRQ(ierr);
   if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
   PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
   PLogObjectCreate(v);

@@ -1,5 +1,5 @@
 C
-C  $Id: petsclog.h,v 1.6 1997/08/07 02:49:47 bsmith Exp bsmith $;
+C  $Id: petsclog.h,v 1.7 1997/08/13 22:27:52 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -76,6 +76,8 @@ C
        parameter (MAT_IncreaseOverlap = 34)
        integer    MAT_GetRow
        parameter (MAT_GetRow = 35)
+       integer    MAT_GetPartitioning
+       parameter (MAT_GetPartitioning = 36)
 
        integer    VEC_ScatterBarrier
        parameter (VEC_ScatterBarrier = 39)

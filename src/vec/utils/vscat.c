@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.100 1997/10/19 03:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.101 1997/10/28 14:21:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -30,7 +30,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     Vec_Seq              *xx = (Vec_Seq *) x->data;
     Scalar               *xv = xx->array, *yv = yy->array, *xvt, *xvt2;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
-    int                  i, size = xx->n;
+    int                  i, size = xx->n,ierr;
 
     if (addv == INSERT_VALUES) {
       /* 
@@ -51,45 +51,42 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);
           PLogObjectMemory(ctx,size*sizeof(Scalar));
         }
-        MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);
+        ierr = MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-        MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);
+        ierr = MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #else
-        MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+        ierr = MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #endif
 	for ( i=0; i<size; i++ ) {
 	  xvt[i] += xvt2[i];
 	}
-        MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
-      }
-      else {
-        MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);
+        ierr = MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-        MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);
+        ierr = MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #else
-        MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+        ierr = MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #endif
-        MPI_Scatterv(0,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
+        ierr = MPI_Scatterv(0,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       }
     }
-  }
-  else {
+  } else {
     Vec_MPI              *xx = (Vec_MPI *) x->data;
     Vec_Seq              *yy = (Vec_Seq *) y->data;
     Scalar               *xv = xx->array, *yv = yy->array, *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
-    int                  i, size = yy->n;
+    int                  i, size = yy->n,ierr;
 
     if (addv == INSERT_VALUES) {
-      MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yv,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);
-    }
-    else {
+      ierr = MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yv,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+    } else {
       if (scat->work1) yvt = scat->work1; 
       else {
         scat->work1 = yvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(yvt);
         PLogObjectMemory(ctx,size*sizeof(Scalar));
       }
-      MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);
+      ierr = MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
       for ( i=0; i<size; i++ ) {
 	yv[i] += yvt[i];
       }
@@ -597,7 +594,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
+      ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
       if (cando) {
         to                = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(to);
         to->n             = nx; 
@@ -620,9 +617,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         *newctx           = ctx;
         PetscFunctionReturn(0);
       }
-    }
-    else {
-      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
+    } else {
+      ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
     }
     /* test for special case of all processors getting entire vector */
     totalv = 0;
@@ -640,7 +636,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
                  from_first == to_first && from_step == to_step){
         totalv = 1; 
       } else totalv = 0;
-      MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
       if (cando) {
         MPI_Comm_size(ctx->comm,&size);
@@ -664,9 +660,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         *newctx           = ctx;
         PetscFunctionReturn(0);
       }
-    }
-    else {
-      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);
+    } else {
+      ierr = MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
     }
     ierr = ISBlock(ix,&ixblock); CHKERRQ(ierr);
     ierr = ISBlock(iy,&iyblock); CHKERRQ(ierr);
@@ -736,7 +731,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);CHKERRQ(ierr);
       if (cando) {
         to                = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(to);
         to->n             = nx; 
@@ -759,9 +754,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         *newctx           = ctx;
         PetscFunctionReturn(0);
       }
-    }
-    else {
-      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
+    } else {
+      ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);CHKERRQ(ierr);
     }
     /* general case */
     {
@@ -917,7 +911,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   /* Wrap this in ifdef to allow access to PLogEventFlags array */
   if (_PLogPLB && PLogEventFlags[VEC_ScatterBarrier]) {                           
     PLogEventBegin(VEC_ScatterBarrier,0,0,0,0);
-    MPI_Barrier(inctx->comm);
+    ierr = MPI_Barrier(inctx->comm);CHKERRQ(ierr);
     PLogEventEnd(VEC_ScatterBarrier,0,0,0,0);
   }
 #endif   

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 1997/09/10 18:13:27 balay Exp balay $ 
+# $Id: base.site,v 1.7 1997/09/11 22:32:29 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,8 +16,8 @@ FC_LIB		= -lf /usr/lib/libU77.a
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_hpux.a
-LAPACK_LIB     = /home/bsmith/lapack/lapack_hpux.a $(FC_LIB) 
+BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_hpux.a
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_hpux.a $(FC_LIB) 
 #
 # Location of X-windows software
 #
@@ -56,8 +56,8 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lp
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/hpux/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/hpux/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

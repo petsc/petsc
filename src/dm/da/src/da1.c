@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.69 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.70 1997/10/28 14:25:01 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -50,7 +50,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-    DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
+    ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     /* first processor draws all node lines */
 
@@ -58,17 +58,17 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
       ymin = 0.0; ymax = 0.3;
 
       for ( xmin=0; xmin<da->M; xmin++ ) {
-         DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);
+         ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
       }
 
       xmin = 0.0; xmax = da->M - 1;
-      DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
-      DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_BLACK);
+      ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
+      ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_BLACK);CHKERRQ(ierr);
     }
 
-    DrawSynchronizedFlush(draw); 
-    DrawPause(draw);
-    MPI_Barrier(da->comm);
+    ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
 
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = da->xs / da->w; xmax = (da->xe / da->w)  - 1;
@@ -81,11 +81,11 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     base = da->base / da->w;
     for ( x=xmin; x<=xmax; x++ ) {
       sprintf(node,"%d",base++);
-      DrawString(draw,x,ymin,DRAW_RED,node);
+      ierr = DrawString(draw,x,ymin,DRAW_RED,node);CHKERRQ(ierr);
     }
 
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw); 
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

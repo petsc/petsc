@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.44 1997/08/22 15:15:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.45 1997/10/19 03:27:39 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -191,7 +191,10 @@ int DrawCreatePopUp(Draw draw,Draw *popup)
 #define __FUNC__ "DrawDestroy_Null" 
 int DrawDestroy_Null(PetscObject obj)
 {
+  Draw draw = (Draw) obj;
+
   PetscFunctionBegin;
+  if (draw->title) PetscFree(draw->title);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj); 
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.2 1997/09/26 02:19:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.3 1997/10/19 03:26:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -188,7 +188,7 @@ int MatGetBlockSize_MPIAdj(Mat A, int *bs)
 int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
- int         flag = 1;
+ int         flag = 1,ierr;
 
   if (B->type != MATMPIADJ) SETERRQ(1,0,"Matrices must be same type");
 
@@ -207,7 +207,7 @@ int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
     flag = 0;
   }
 
-  MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);
+  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);
   
 
   PetscFunctionReturn(0);
@@ -299,12 +299,12 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   B->assembled        = PETSC_FALSE;
   
   b->m = m; B->m = m; 
-  MPI_Allreduce(&m,&B->M,1,MPI_INT,MPI_SUM,comm);
+  ierr = MPI_Allreduce(&m,&B->M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   B->n = n; B->N = n;
 
   b->rowners = (int *) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(b->rowners);
   PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
-  MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
   for ( ii=2; ii<=size; ii++ ) {
     b->rowners[ii] += b->rowners[ii-1];

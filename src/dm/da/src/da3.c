@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.65 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.66 1997/10/28 14:25:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -54,25 +54,25 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-    DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
+    ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     /* first processor draw all node lines */
     if (!rank) {
       for (k=0; k<da->P; k++) {
         ymin = 0.0; ymax = (double) (da->N - 1);
         for ( xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++ ) {
-          DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);
+          ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
         }
       
         xmin = (double)(k*(da->M+1)); xmax = xmin + (double)(da->M - 1);
         for ( ymin=0; ymin<(double)da->N; ymin++ ) {
-          DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
+          ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
         }
       }
     }
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
-    MPI_Barrier(da->comm);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
 
 
     for (k=0; k<da->P; k++) {  /*Go through and draw for each plane*/
@@ -96,20 +96,20 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 
         /* Identify which processor owns the box */
         sprintf(node,"%d",rank);
-        DrawString(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
+        ierr = DrawString(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);CHKERRQ(ierr);
 
         for ( y=ymin; y<=ymax; y++ ) {
           for ( x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++ ) {
             sprintf(node,"%d",base++);
-            DrawString(draw,x,y,DRAW_BLACK,node);
+            ierr = DrawString(draw,x,y,DRAW_BLACK,node);CHKERRQ(ierr);
           }
         } 
  
       }
     } 
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
-    MPI_Barrier(da->comm);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
     for (k=0-da->s; k<da->P+da->s; k++) {  
       /* Go through and draw for each plane */
       if ((k >= da->Zs) && (k < da->Ze)) {
@@ -427,7 +427,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   nn = x*y*z;
   bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) ); CHKPTRQ(bases);
   ldims = (int *) (bases+size+1);
-  MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
     bases[i] = ldims[i-1];
@@ -1788,8 +1788,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   /* Broadcast the orderings */
-  MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);
-  MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);
+  ierr = MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
   PetscFree(gA); PetscFree(bases);
 

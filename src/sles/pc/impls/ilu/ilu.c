@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.93 1997/10/09 15:34:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.94 1997/10/19 03:24:44 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -107,7 +107,7 @@ int PCILUSetFill(PC pc,double fill)
 
 .seealso: PCLUSetMatReordering()
 @*/
-int PCILUSetMatReordering(PC pc, MatReordering ordering)
+int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 {
   PC_ILU *dir = (PC_ILU *) pc->data;
 

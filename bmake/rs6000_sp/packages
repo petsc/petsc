@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.5 1997/09/10 18:25:40 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -67,8 +67,8 @@ CMEX           =
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/rs6000/libpvode.a
+PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/rs6000/libpvode.a
 #
 #
 # PCONF - indicates which external packages are available at your site

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.65 1997/08/22 15:12:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.66 1997/10/19 03:24:48 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -103,8 +103,8 @@ static int PCSetUp_ASM(PC pc)
       MPI_Comm_size(pc->comm,&size);
       osm->n = size;
     } else if (osm->n == PETSC_DECIDE) { /* determine global number of subdomains */
-      MPI_Allreduce(&osm->n_local_true,&osm->n,1,MPI_INT,MPI_SUM,pc->comm);
-      MPI_Allreduce(&osm->n_local_true,&osm->n_local,1,MPI_INT,MPI_MAX,pc->comm);
+      ierr = MPI_Allreduce(&osm->n_local_true,&osm->n,1,MPI_INT,MPI_SUM,pc->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&osm->n_local_true,&osm->n_local,1,MPI_INT,MPI_MAX,pc->comm);CHKERRQ(ierr);
     }
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  

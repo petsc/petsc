@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sp1wd.c,v 1.22 1997/08/22 15:14:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.23 1997/10/19 03:25:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: sp1wd.c,v 1.22 1997/08/22 15:14:10 bsmith Exp bsmith 
 */    
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_1WD"
-int MatOrder_1WD( Mat mat, MatReordering type, IS *row, IS *col)
+int MatOrder_1WD( Mat mat, MatReorderingType type, IS *row, IS *col)
 {
   int        i,*mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;
   PetscTruth done;

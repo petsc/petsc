@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.114 1997/09/09 20:27:02 curfman Exp bsmith $ */
+/* $Id: petsclog.h,v 1.115 1997/10/19 03:31:51 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -54,6 +54,7 @@
 #define MAT_GetValues                           33
 #define MAT_IncreaseOverlap                     34
 #define MAT_GetRow                              35
+#define MAT_Partitioning                        36
 
 #define VEC_ScatterBarrier                      39
 #define VEC_Dot                                 40
@@ -276,6 +277,8 @@ extern PLogDouble PetscGetFlops();
 extern PLogDouble irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
 extern PLogDouble irecv_len, isend_len, recv_len, send_len;
 extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
+extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
+
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
@@ -291,57 +294,51 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 */
 
 #define TypeSize(buff,count,type)                                                \
-{                                                                                \
-  if (type == MPIU_SCALAR) {                                                     \
-    buff += (PLogDouble) ((count)*sizeof(Scalar));                               \
-  } else if (type == MPI_INT) {                                                  \
-    buff += (PLogDouble) ((count)*sizeof(int));                                  \
-  } else {                                                                       \
-    int _size; MPI_Type_size(type,&_size); buff += (PLogDouble) ((count)*_size); \
-  }                                                                              \
-}
+(                                                                                \
+  MPI_Type_size(type,&PETSC_DUMMY_SIZE), buff += ((PLogDouble) ((count)*PETSC_DUMMY_SIZE)) \
+)
 
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request)        \
-{                                                                            \
-  MPI_Irecv( buf, count,  datatype, source, tag, comm, request);             \
-  irecv_ct++; TypeSize(irecv_len,count,datatype);                            \
-}
+(                                                                            \
+  PETSC_DUMMY = MPI_Irecv( buf, count,  datatype, source, tag, comm, request),             \
+  irecv_ct++, TypeSize(irecv_len,count,datatype),PETSC_DUMMY                            \
+)
 
 #define MPI_Isend( buf, count,  datatype, dest, tag, comm, request)          \
-{                                                                            \
-  MPI_Isend( buf, count,  datatype, dest, tag, comm, request);               \
-  isend_ct++;   TypeSize(isend_len,count,datatype);                          \
-}
+(                                                                            \
+  PETSC_DUMMY = MPI_Isend( buf, count,  datatype, dest, tag, comm, request),               \
+  isend_ct++,   TypeSize(isend_len,count,datatype),PETSC_DUMMY                          \
+)
 
-#define MPI_Startall_irecv( count,number,requests)                                    \
-{                                                                                     \
-  MPI_Startall( number, requests);                                                    \
-  irecv_ct += (PLogDouble)(number); irecv_len += (PLogDouble) (count*sizeof(Scalar)); \
-}
+#define MPI_Startall_irecv( count,number,requests)                                     \
+(                                                                                      \
+  PETSC_DUMMY = MPI_Startall( number, requests),                                                     \
+  irecv_ct += (PLogDouble)(number), irecv_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY \
+)
 
 #define MPI_Startall_isend( count,number,requests)                                    \
-{                                                                                     \
-  MPI_Startall( number, requests);                                                    \
-  isend_ct += (PLogDouble)(number); isend_len += (PLogDouble) (count*sizeof(Scalar)); \
-}
+(                                                                                     \
+  PETSC_DUMMY = MPI_Startall( number, requests),                                                    \
+  isend_ct += (PLogDouble)(number), isend_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY \
+)
 
-#define MPI_Start_isend(count,  requests)                                     \
-{                                                                             \
-  MPI_Start( requests);                                                       \
-  isend_ct++; isend_len += (PLogDouble) (count*sizeof(Scalar));               \
-}
+#define MPI_Start_isend(count,  requests)\
+(\
+  PETSC_DUMMY = MPI_Start( requests),\
+  isend_ct++, isend_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY\
+)
 
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status)           \
-{                                                                             \
-  MPI_Recv( buf, count,  datatype, source, tag, comm, status);                \
-  recv_ct++; TypeSize(recv_len,count,datatype);                               \
-}
+(                                                                            \
+  PETSC_DUMMY = MPI_Recv( buf, count,  datatype, source, tag, comm, status),                \
+  recv_ct++, TypeSize(recv_len,count,datatype), PETSC_DUMMY                              \
+)
 
 #define MPI_Send( buf, count,  datatype, dest, tag, comm)                     \
-{                                                                             \
-  MPI_Send( buf, count,  datatype, dest, tag, comm);                          \
-  send_ct++;  TypeSize(send_len,count,datatype);                              \
-}
+(                                                                             \
+  PETSC_DUMMY = MPI_Send( buf, count,  datatype, dest, tag, comm),                          \
+  send_ct++,  TypeSize(send_len,count,datatype),PETSC_DUMMY                              \
+)
 
 #define MPI_Wait(request, status) \
 (                                 \
@@ -367,19 +364,19 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #else
 
 #define MPI_Startall_irecv( count,number,requests) \
-{                                                  \
-  MPI_Startall( number, requests);                 \
-}
+(                                                  \
+  MPI_Startall( number, requests)                 \
+)
 
 #define MPI_Startall_isend( count,number,requests) \
-{                                                  \
-  MPI_Startall( number, requests);                 \
-}
+(                                                  \
+  MPI_Startall( number, requests)                 \
+)
 
 #define MPI_Start_isend(count,  requests) \
-{                                         \
-  MPI_Start( requests);                   \
-}
+(                                         \
+  MPI_Start( requests)                   \
+)
 
 #endif /* ! PETSC_USING_MPIUNI && ! PARCH_hpux */
 
@@ -432,20 +429,12 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 extern int PLogObjectState(PetscObject,char *,...);
 
 /* If USE_PETSC_LOG is NOT defined, these still need to be! */
-#define MPI_Startall_irecv( count,number,requests) \
-{                                                  \
-  MPI_Startall( number, requests);                 \
-}
+#define MPI_Startall_irecv( count,number,requests) MPI_Startall( number, requests)
 
-#define MPI_Startall_isend( count,number,requests) \
-{                                                  \
-  MPI_Startall( number, requests);                 \
-}
+#define MPI_Startall_isend( count,number,requests) MPI_Startall( number, requests)
 
-#define MPI_Start_isend(count,  requests) \
-{                                         \
-  MPI_Start( requests);                   \
-}
+#define MPI_Start_isend(count,  requests) MPI_Start( requests)
+
 #endif   /* USE_PETSC_LOG */
 
 /*MC

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.56 1997/08/22 15:17:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.57 1997/10/19 03:29:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -126,7 +126,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
   ovalues[2] = ovalues[2]*ovalues[2];
   PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-  MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );
+  ierr = MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
   dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
   PLogEventEnd(VEC_Norm,a,0,0,0);
@@ -143,7 +143,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
     covalues[1] = ovalues[1];
     covalues[2] = ovalues[2]*ovalues[2];
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-    MPI_Allreduce(covalues,cvalues,6,MPI_DOUBLE,MPI_SUM,comm );
+    ierr = MPI_Allreduce(covalues,cvalues,6,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
     dot = cvalues[0]; sum = PetscReal(cvalues[1]); norm = sqrt(PetscReal(cvalues[2]));
     PLogEventEnd(VEC_Norm,a,0,0,0);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.198 1997/10/20 02:26:18 curfman Exp bsmith $ 
+# $Id: makefile,v 1.199 1997/10/28 18:50:38 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -8,9 +8,7 @@
 CFLAGS	 =
 SOURCEC	 =
 SOURCEF	 =
-DOCS	 = docs/Changes.html docs/Machines.html Readme.html maint/addlinks \
-	   maint/builddist docs/FAQ.html docs/Installation.html docs/BugReporting.html\
-           docs/Troubleshooting.html docs/Changes.html docs/CodeManagement.html \
+DOCS	 = maint/addlinks maint/builddist \
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
 	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/* \
            include/finclude/generateincludes bin/petscviewinfo.text \

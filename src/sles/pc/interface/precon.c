@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.135 1997/10/19 03:24:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.136 1997/10/28 14:22:00 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -7,41 +7,6 @@ static char vcid[] = "$Id: precon.c,v 1.135 1997/10/19 03:24:21 bsmith Exp bsmit
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"         /*I "ksp.h" I*/
 
-extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
-
-#undef __FUNC__  
-#define __FUNC__ "PCPrintHelp"
-/*@
-   PCPrintHelp - Prints all the options for the PC component.
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Options Database Keys:
-$  -help, -h
-
-.keywords: PC, help
-
-.seealso: PCSetFromOptions()
-@*/
-int PCPrintHelp(PC pc)
-{
-  char p[64]; 
-  int  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PetscStrcpy(p,"-");
-  if (pc->prefix) PetscStrcat(p,pc->prefix);
-  PetscPrintf(pc->comm,"PC options --------------------------------------------------\n");
-  PCPrintTypes_Private(pc->comm,p,"pc_type");
-  PetscPrintf(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
-  PetscPrintf(pc->comm,"a particular method\n");
-  if (pc->printhelp) {
-    ierr = (*pc->printhelp)(pc,p);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy"
@@ -1019,8 +984,7 @@ int PCView(PC pc,Viewer viewer)
         PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
         if (mat_exists) {
           PetscFPrintf(pc->comm,fd,"  linear system matrix followed by preconditioner matrix:\n");
-        }
-        else {
+        } else {
           PetscFPrintf(pc->comm,fd,"  linear system matrix:\n");
         }
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
@@ -1028,8 +992,7 @@ int PCView(PC pc,Viewer viewer)
       }
       ViewerPopFormat(viewer);
     }
-  }
-  else if (vtype == STRING_VIEWER) {
+  } else if (vtype == STRING_VIEWER) {
     PCGetType(pc,PETSC_NULL,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);

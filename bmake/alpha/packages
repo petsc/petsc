@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.26 1997/10/01 17:41:28 balay Exp balay $ 
+# $Id: base.site,v 1.27 1997/10/01 18:36:31 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -23,8 +23,8 @@ FC_LIB         =  -lfor -lutil -lFutil -lots
 #LAPACK_LIB      = 
 BLAS_LIB        = -ldxml 
 LAPACK_LIB      = 
-#BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
-#LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a $(FC_LIB)
+#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
 #
 # Location of X-windows software
 #
@@ -73,8 +73,8 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/alpha/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/alpha/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

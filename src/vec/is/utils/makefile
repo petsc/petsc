@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.9 1997/08/22 15:10:18 bsmith Exp bsmith $
+# $Id: makefile,v 1.10 1997/10/01 22:43:58 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c
 SOURCEF	 =
 SOURCEH	 =

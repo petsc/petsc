@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.76 1997/10/27 00:44:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.77 1997/10/29 15:29:58 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -185,7 +185,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
 @*/
 int PetscSynchronizedFlush(MPI_Comm comm)
 {
-  int        rank,size,i,j,n, tag = 12341;
+  int        rank,size,i,j,n, tag = 12341,ierr;
   char       message[256];
   MPI_Status status;
   FILE       *fd;
@@ -202,9 +202,9 @@ int PetscSynchronizedFlush(MPI_Comm comm)
       fd = stdout;
     }
     for ( i=1; i<size; i++ ) {
-      MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);
+      ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for ( j=0; j<n; j++ ) {
-        MPI_Recv(message,256,MPI_CHAR,i,tag,comm,&status);
+        ierr = MPI_Recv(message,256,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
         fprintf(fd,"%s",message);
         if (petsc_history) {
           fprintf(petsc_history,"%s",message);
@@ -217,9 +217,9 @@ int PetscSynchronizedFlush(MPI_Comm comm)
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = queuebase,previous;
 
-    MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);
+    ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for ( i=0; i<queuelength; i++ ) {
-      MPI_Send(next->string,256,MPI_CHAR,0,tag,comm);
+      ierr     = MPI_Send(next->string,256,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
       next     = next->next;
       PetscFree(previous);
@@ -349,17 +349,15 @@ int PetscSetDisplay()
     if (!str || (str[0] == ':' && size > 1)) {
       ierr = PetscGetHostName(PetscDisplay,124); CHKERRQ(ierr);
       PetscStrcat(PetscDisplay,":0.0");
-    }
-    else {
+    } else {
       PetscStrncpy(PetscDisplay,str,128);
     }
-    len = PetscStrlen(PetscDisplay);
-    MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
-    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);
-  }
-  else {
-    MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
-    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);
+    len  = PetscStrlen(PetscDisplay);
+    ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     PetscDisplay[len] = 0;
   }
   PetscFunctionReturn(0);  
@@ -388,7 +386,7 @@ int PetscGetDisplay(char *display,int n)
 #define __FUNC__ "PetscSequentialPhaseBegin_Private" 
 int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
 {
-  int        lidx, np, tag = 0;
+  int        lidx, np, tag = 0,ierr;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -396,11 +394,11 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
   if (np == 1) PetscFunctionReturn(0);
   MPI_Comm_rank( comm, &lidx );
   if (lidx != 0) {
-    MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );
+    ierr = MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );CHKERRQ(ierr);
   }
   /* Send to the next process in the group unless we are the last process */ 
   if ((lidx % ng) < ng - 1 && lidx != np - 1) {
-    MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, comm );
+    ierr = MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, comm );CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -409,7 +407,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
 #define __FUNC__ "PetscSequentialPhaseEnd_Private" 
 int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
 {
-  int        lidx, np, tag = 0;
+  int        lidx, np, tag = 0,ierr;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -419,10 +417,10 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
 
   /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
-    MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, tag, comm );
+    ierr = MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, tag, comm );CHKERRQ(ierr);
   }
   if (lidx == 0) {
-    MPI_Recv( 0, 0, MPI_INT, np-1, tag, comm, &status );
+    ierr = MPI_Recv( 0, 0, MPI_INT, np-1, tag, comm, &status );CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -474,13 +472,13 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
   }
 
-  MPI_Comm_dup( comm, &local_comm );
+  ierr = MPI_Comm_dup( comm, &local_comm );CHKERRQ(ierr);
   addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
   *addr_local_comm = local_comm;
-  MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );
+  ierr = MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -512,15 +510,15 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   MPI_Comm_size( comm, &np );
   if (np == 1) PetscFunctionReturn(0);
 
-  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );
+  ierr = MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );CHKERRQ(ierr);
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   local_comm = *addr_local_comm;
 
   ierr = PetscSequentialPhaseEnd_Private(local_comm,ng); CHKERRQ(ierr);
 
   PetscFree(addr_local_comm); 
-  MPI_Comm_free(&local_comm);
-  MPI_Attr_delete(comm,Petsc_Seq_keyval);
+  ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+  ierr = MPI_Attr_delete(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -653,19 +651,19 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
-    MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);CHKERRQ(ierr);
   }
 
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
 
   if (!flag) {
     /* This communicator is not yet known to this system, so we dup it and set its value */
-    MPI_Comm_dup( comm_in, comm_out );
-    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
+    ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
+    ierr       = MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );CHKERRQ(ierr);
     tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
-    MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);
+    ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
   } else {
     *comm_out = comm_in;
   }
@@ -679,7 +677,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     MPI_Comm_size(*comm_out,&size);
     if (size > 1) {
       int tag1 = *first_tag, tag2;
-      MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);
+      ierr = MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);CHKERRQ(ierr);
       if (tag2 != tag1) {
         SETERRQ(1,0,"Communicator was used on subset\n of processors.");
       }
@@ -704,7 +702,7 @@ int PetscCommFree_Private(MPI_Comm *comm)
     SETERRQ(1,0,"Error freeing PETSc object, problem with corrupted memory");
   }
   tagvalp[1]--;
-  if (!tagvalp[1]) {MPI_Comm_free(comm);}
+  if (!tagvalp[1]) {ierr = MPI_Comm_free(comm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

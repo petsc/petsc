@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.87 1997/09/11 20:38:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.88 1997/10/19 03:22:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,9 +25,9 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
-  MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);
+  ierr = MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
 #else
-  MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);
+  ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
 #endif
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
@@ -39,6 +39,7 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
+  int       ierr;
 
   PetscFunctionBegin;
   VecTDot_Seq(  xin, yin, &work );
@@ -47,9 +48,9 @@ int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
-  MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
-  MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #endif
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
@@ -98,7 +99,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,in
 {
   Vec     v;
   Vec_MPI *s;
-  int     mem,i;
+  int     ierr,mem,i;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -137,9 +138,8 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,in
   s->insertmode  = NOT_SET_VALUES;
   if (owners) {
     PetscMemcpy(s->ownership,owners,(size+1)*sizeof(int));
-  }
-  else {
-    MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);
+  } else {
+    ierr = MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);CHKERRQ(ierr);
     s->ownership[0] = 0;
     for (i=2; i<=size; i++ ) {
       s->ownership[i] += s->ownership[i-1];
@@ -191,7 +191,7 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank); 
   if (N == PETSC_DECIDE) { 
-    MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
+    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
     N = sum;
   }
   if (n == PETSC_DECIDE) { 
@@ -234,7 +234,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank); 
   if (N == PETSC_DECIDE) { 
-    MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
+    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
     N = sum;
   }
   if (n == PETSC_DECIDE) { 
@@ -439,7 +439,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank); 
   if (N == PETSC_DECIDE) { 
-    MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
+    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
     N = sum;
   }
   /* Create global representation */

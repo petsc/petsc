@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.50 1997/08/22 15:13:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.51 1997/10/19 03:25:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,7 +88,10 @@ int MatDestroy_Shell(PetscObject obj)
 
 int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
 {
-  MPI_Scan(&mat->m,rend,1,MPI_INT,MPI_SUM,mat->comm);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Scan(&mat->m,rend,1,MPI_INT,MPI_SUM,mat->comm);CHKERRQ(ierr);
   *rstart = *rend - mat->m;
   PetscFunctionReturn(0);
 }

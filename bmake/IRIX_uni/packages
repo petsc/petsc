@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.5 1997/09/10 18:36:40 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -20,10 +20,10 @@ FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-#BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a 
-#LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
-BLAS_LIB       = -L/home/bsmith/lapack -lblas_IRIX 
-LAPACK_LIB     = -L/home/bsmith/lapack/ -llapack_IRIX $(FC_LIB)
+#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_IRIX.a 
+#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a $(FC_LIB)
+BLAS_LIB       = -L/home/bsmith/libraries/blaslapack -lblas_IRIX 
+LAPACK_LIB     = -L/home/bsmith/libraries/blaslapack/ -llapack_IRIX $(FC_LIB)
 #
 # Location of X-windows software
 #

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.119 1997/10/01 22:44:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.120 1997/10/19 03:22:35 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -74,7 +74,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
   */
   if (PetscCompare) {
     int flag;
-    MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);
+    ierr = MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);CHKERRQ(ierr);
     if (flag != MPI_UNEQUAL) {
       ierr = PetscCompareScalar(*val);CHKERRQ(ierr);
     }
@@ -115,7 +115,7 @@ int VecNorm(Vec x,NormType type,double *val)
   */
   if (PetscCompare) {
     int flag;
-    MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);
+    ierr = MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);CHKERRQ(ierr);
     if (flag != MPI_UNEQUAL) {
       ierr = PetscCompareDouble(*val);CHKERRQ(ierr);
     }

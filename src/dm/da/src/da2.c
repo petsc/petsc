@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.87 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.88 1997/10/28 14:25:01 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -45,22 +45,22 @@ int DAView_2d(PetscObject dain,Viewer viewer)
  
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-    DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
+    ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     /* first processor draw all node lines */
     if (!rank) {
       ymin = 0.0; ymax = da->N - 1;
       for ( xmin=0; xmin<da->M; xmin++ ) {
-        DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);
+        ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
       }
       xmin = 0.0; xmax = da->M - 1;
       for ( ymin=0; ymin<da->N; ymin++ ) {
-        DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
+        ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
       }
     }
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
-    MPI_Barrier(da->comm);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
 
     /* draw my box */
     ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; 
@@ -75,13 +75,13 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     for ( y=ymin; y<=ymax; y++ ) {
       for ( x=xmin; x<=xmax; x++ ) {
         sprintf(node,"%d",base++);
-        DrawString(draw,x,y,DRAW_BLACK,node);
+        ierr = DrawString(draw,x,y,DRAW_BLACK,node);CHKERRQ(ierr);
       }
     }
 
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
-    MPI_Barrier(da->comm);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
@@ -313,7 +313,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   nn = x*y;
   bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) ); CHKPTRQ(bases);
   ldims = (int *) (bases+size+1);
-  MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);
+  ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
     bases[i] = ldims[i-1];
@@ -856,8 +856,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   /* Broadcast the orderings */
-  MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);
-  MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);
+  ierr = MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
   PetscFree(gA); PetscFree(bases);
 

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.147 1997/10/21 04:23:16 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.148 1997/10/28 14:26:00 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -167,11 +167,12 @@ extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 */
 
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
-              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatReordering;
-extern int MatGetReordering(Mat,MatReordering,IS*,IS*);
-extern int MatGetReorderingTypeFromOptions(char *,MatReordering*);
-extern int MatReorderingRegister(MatReordering,MatReordering*,char*,int(*)(Mat,MatReordering,IS*,IS*));
-extern int MatReorderingGetName(MatReordering,char **);
+              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatReorderingType;
+extern int MatGetReordering(Mat,MatReorderingType,IS*,IS*);
+extern int MatGetReorderingTypeFromOptions(char *,MatReorderingType*);
+extern int MatReorderingRegister(MatReorderingType,MatReorderingType*,char*,
+                                 int(*)(Mat,MatReorderingType,IS*,IS*));
+extern int MatReorderingGetName(MatReorderingType,char **);
 extern int MatReorderingRegisterDestroy();
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterAllCalled;
@@ -244,14 +245,28 @@ extern int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateSeqAdj() or MatCreateMPIAdj().
 */
-typedef enum {PARTITIONING_NATURAL, PARTITIONING_CURRENT, PARTITIONING_NEW} MatPartitioning;
-extern int MatGetPartitioning(Mat,MatPartitioning,int,ISPartitioning*);
-extern int MatGetPartitioningTypeFromOptions(char *,MatPartitioning*);
-extern int MatPartitioningRegister(MatPartitioning,MatPartitioning*,char*,
-                                   int(*)(Mat,MatPartitioning,int,ISPartitioning *));
-extern int MatPartitioningRegisterAll();
-extern int MatPartitioningRegisterAllCalled;
-extern int MatPartitioningRegisterDestroy();
+#define PARTITIONING_COOKIE PETSC_COOKIE + 25
+
+typedef struct _p_Partitioning *Partitioning;
+
+typedef enum {PARTITIONING_CURRENT,PARTITIONING_PARMETIS,PARTITIONING_NEW} PartitioningType;
+
+extern int PartitioningCreate(MPI_Comm,Partitioning*);
+extern int PartitioningSetType(Partitioning,PartitioningType);
+extern int PartitioningSetAdjacency(Partitioning,Mat);
+extern int PartitioningSetVertexWeights(Partitioning,double*);
+extern int PartitioningApply(Partitioning,IS*);
+extern int PartitioningDestroy(Partitioning);
+extern int PartitioningRegister(PartitioningType,PartitioningType *,char*,int(*)(Partitioning));
+extern int PartitioningRegisterAll();
+extern int PartitioningRegisterAllCalled;
+extern int PartitioningRegisterDestroy();
+extern int PartitioningView(Partitioning,Viewer);
+extern int PartitioningSetFromOptions(Partitioning);
+extern int PartitioningPrintHelp(Partitioning);
+extern int PartitioningGetType(Partitioning,PartitioningType*,char**);
+
+extern int PartitioningParmetisSetCoarseSequential(Partitioning);
 
 /*
     If you add entries here you must also add them to FINCLUDE/mat.h

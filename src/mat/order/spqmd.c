@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spqmd.c,v 1.23 1997/08/22 15:14:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.24 1997/10/19 03:25:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: spqmd.c,v 1.23 1997/08/22 15:14:10 bsmith Exp bsmith 
 */    
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_QMD"
-int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col) 
+int MatOrder_QMD(Mat mat, MatReorderingType type, IS *row, IS *col) 
 {
   int        i,   *deg, *marker, *rchset, *nbrhd, *qsize, *qlink, nofsub, *iperm, nrow;
   int        ierr, *ia,*ja,*perm;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.24 1997/10/19 03:28:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.25 1997/10/28 14:24:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -148,60 +148,89 @@ int TSGetType(TS ts, TSType *method,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPrintTypes_Private"
-/*
-   TSPrintTypes_Private - Prints the TS methods available from the 
-   options database.
-
-   Input Parameters:
-.  comm   - The communicator (usually PETSC_COMM_WORLD)
-.  prefix - prefix (usually "-")
-.  name   - the options database name (by default "ts_type") 
-*/
-int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
-{
-  FuncList *entry;
-
-  PetscFunctionBegin;
-  if (!__TSList) {TSRegisterAll();}
-  entry = __TSList->head;
-  PetscPrintf(comm," %s%s (one of)",prefix,name);
-  while (entry) {
-    PetscPrintf(comm," %s",entry->name);
-    entry = entry->next;
-  }
-  PetscPrintf(comm,"\n");
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNC__  
-#define __FUNC__ "TSGetTypeFromOptions_Private"
-/*
-   TSGetTypeFromOptions_Private - Sets the selected method from the 
-   options database.
+#define __FUNC__ "TSPrintHelp"
+/*@
+   TSPrintHelp - Prints all options for the TS (timestepping) component.
 
    Input Parameter:
-.  ctx - the TS context
+.  ts - the TS context obtained from TSCreate()
 
-   Output Parameter:
-.  method -  solver method
-.  flg  - indicates if method found
+   Options Database Keys:
+$  -help, -h
 
-   Options Database Key:
-$  -ts_type  method
-*/
-int TSGetTypeFromOptions_Private(TS ctx,TSType *method,int *flg)
+.keywords: TS, timestep, print, help
+
+.seealso: TSSetFromOptions()
+@*/
+int TSPrintHelp(TS ts)
 {
-  int  ierr;
-  char sbuf[50];
+  char    *prefix = "-";
+  int     ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(ctx->prefix,"-ts_type", sbuf, 50, flg); CHKERRQ(ierr);
-  if (*flg) {
-    if (!__TSList) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
-    *method = (TSType)NRFindID( __TSList, sbuf );
-    if (*method == (TSType) -1) SETERRQ(1,1,"Invalid TS Type");
-  }
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->prefix) prefix = ts->prefix;
+  PetscPrintf(ts->comm,"TS options --------------------------------------------------\n");
+  ierr = NRPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",__TSList);CHKERRQ(ierr);
+  PetscPrintf(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
+  PetscPrintf(ts->comm," %sts_view: view TS info after each solve\n",prefix);
+
+  PetscPrintf(ts->comm," %sts_max_steps <steps>: maximum steps, defaults to %d\n",prefix,ts->max_steps);
+  PetscPrintf(ts->comm," %sts_max_time <steps>: maximum time, defaults to %g\n",prefix,ts->max_time);
+  if (ts->printhelp) {ierr = (*ts->printhelp)(ts,prefix);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "TSSetFromOptions"
+/*@
+   TSSetFromOptions - Sets various TS parameters from user options.
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+.keywords: TS, timestep, set, options, database
+
+.seealso: TSPrintHelp()
+@*/
+int TSSetFromOptions(TS ts)
+{
+  int    ierr,flg,loc[4],nmax;
+  TSType method;
+
+  PetscFunctionBegin;
+  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
+
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->setup_called) SETERRQ(1,0,"Call prior to TSSetUp!");
+  if (!__TSList) {ierr = TSRegisterAll();CHKERRQ(ierr);}
+  ierr = NRGetTypeFromOptions(ts->prefix,"-ts_type",__TSList,&method,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSSetType(ts,method); CHKERRQ(ierr);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}
+  ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSSetMonitor(ts,TSDefaultMonitor,0);CHKERRQ(ierr);
+  }
+  nmax = 4;
+  ierr = OptionsGetIntArray(ts->prefix,"-ts_xmonitor",loc,&nmax,&flg); CHKERRQ(ierr);
+  if (flg) {
+    int    rank = 0;
+    DrawLG lg;
+    MPI_Comm_rank(ts->comm,&rank);
+    if (!rank) {
+      ierr = TSLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
+      PLogObjectParent(ts,(PetscObject) lg);
+      ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
+    }
+  }
+  if (!ts->setfromoptions) PetscFunctionReturn(0);
+  ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

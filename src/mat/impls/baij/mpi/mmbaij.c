@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.14 1997/07/09 20:55:26 balay Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.15 1997/10/19 03:26:16 bsmith Exp bsmith $";
 #endif
 
 
@@ -92,7 +92,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     the matrix.
   */
   ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
-  MPI_Barrier(mat->comm);
+  ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);
 
   PLogObjectParent(mat,baij->Mvctx);
   PLogObjectParent(mat,baij->lvec);
