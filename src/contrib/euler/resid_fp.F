@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.11 1997/10/16 18:58:39 curfman Exp keyes $";
+c  "$Id: resid_fp.F,v 1.12 1997/10/16 22:11:35 keyes Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -289,7 +289,7 @@ c p1    p2    p3           p17   p18         p33   p34         p48   p49   p50
 c
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
       fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+bump*
-     &             dy*fsmach*sin(pi*xloc)*cos(pi*xloc)
+     &             dy*fsmach*pi*sin(pi*xloc)*cos(pi*xloc)
       GO TO 2
     4 CONTINUE
 c
