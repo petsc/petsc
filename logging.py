@@ -138,11 +138,12 @@ class Logger(args.ArgumentProcessor):
           try:
             import curses
 
-            curses.setupterm()
-            (y, self._linewidth) = curses.initscr().getmaxyx()
-            curses.endwin()
-          except curses.error:
-            self._linewidth = -1
+            try:
+              curses.setupterm()
+              (y, self._linewidth) = curses.initscr().getmaxyx()
+              curses.endwin()
+            except curses.error:
+              self._linewidth = -1
           except ImportError:
             self._linewidth = -1
           LineWidth = self._linewidth
