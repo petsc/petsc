@@ -193,6 +193,7 @@ proc write_access_tables { } {
         puts  $table1 $mesg
     }
     close $table1
+    exec /bin/chmod ug+w docs/tex/access/table1.txt
     
     
     set table2 [ open docs/tex/access/table2.txt w ]
@@ -210,6 +211,7 @@ proc write_access_tables { } {
         }
     }
     close $table2
+    exec /bin/chmod ug+w docs/tex/access/table2.txt
     
     set table3 [ open docs/tex/access/table3.txt w ]
     puts $table3 "Name of the File;Routines"
@@ -226,6 +228,7 @@ proc write_access_tables { } {
         }
     }
     close $table3
+    exec /bin/chmod ug+w docs/tex/access/table3.txt
     return 0
 }
 ##################################################
@@ -305,6 +308,7 @@ proc write_concepts_file { } {
     puts $concepts_file {</HTML>}
     
     close $concepts_file
+    exec /bin/chmod ug+w docs/www/concepts.html
     return 0
 }
 ##################################################
@@ -371,6 +375,7 @@ proc write_routines_file { } {
     puts $routines_file {</HTML>}
     
     close $routines_file
+    exec /bin/chmod ug+w docs/www/routines.html
     return 0
 }
 ##################################################
@@ -519,7 +524,8 @@ proc main { }  {
         set routines_fileid [ open $routines_file w ]
         #puts "Writing to $routines_file"
         puts  $routines_fileid $routine_file_buff
-        close $routines_fileid  
+        close $routines_fileid 
+        exec /bin/chmod ug+w $routines_file
     }
     return 0
 }
