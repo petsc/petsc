@@ -1,87 +1,193 @@
 
 /*
-    Defines the basic format of all data types. 
+    This fixes various things in system files that are incomplete.
+   For instance many systems don't properly prototype all system functions.
+
+    This is included by files in src/sys and src/viewer.
 */
 
-#if !defined(_PETSCIMPL)
-#define _PETSCIMPL
-#include "petsc.h"  
-#include "plog.h"
-#include <stdio.h>
+#if !defined(_PETSFIX_H)
+#define _PETSCFIX_H
 
-
-/*
-     All Major PETSc Data structures have a common core; this 
-   is defined below by PETSCHEADER. 
-
-     PETSCHEADERCREATE should be used whenever you create a PETSc structure.
-
-     CHKSAME checks if you PETSc structures are of same type.
-
-*/
-
-#define PETSCHEADER                        \
-  double      flops,time;                  \
-  int         cookie;                      \
-  int         type;                        \
-  int         id;                          \
-  int         refct;                       \
-  int         (*destroy)(PetscObject);     \
-  int         (*view)(PetscObject,Viewer); \
-  MPI_Comm    comm;                        \
-  PetscObject parent;                      \
-  char*       name;                        \
-  /*  ... */                               \
-
-
-#define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
-      {h = (struct tp *) NEW(struct tp);                           \
-       CHKPTR((h));                                                \
-       MEMSET(h,0,sizeof(struct tp));                              \
-       (h)->cookie = cook;                                         \
-       (h)->type = t;                                              \
-       (h)->comm = com;}
-#define PETSCHEADERDESTROY(h)                                      \
-       {FREE(h);}
-#define FREEDHEADER -1
-
-extern void *PetscLow,*PetscHigh;
-
-#if defined(PETSC_MALLOC) && !defined(PETSC_INSIGHT)
-#define VALIDHEADER(h,ck)                             \
-  {if (!h) {SETERR(1,"Null Object");}                 \
-  if (PetscLow > (void *) h || PetscHigh < (void *)h){\
-    SETERR(3,"Invalid Pointer to Object");            \
-  }                                                   \
-  if ((h)->cookie != ck) {                            \
-    if ((h)->cookie == FREEDHEADER) {                 \
-      SETERR(1,"Object already free");                \
-    }                                                 \
-    else {                                            \
-      SETERR(2,"Invalid or Wrong Object");            \
-    }                                                 \
-  }}
-#else
-#define VALIDHEADER(h,ck)                             \
-  {if (!h) {SETERR(1,"Null Object");}                 \
-  if ((h)->cookie != ck) {                            \
-    if ((h)->cookie == FREEDHEADER) {                 \
-      SETERR(1,"Object already free");                \
-    }                                                 \
-    else {                                            \
-      SETERR(2,"Invalid or Wrong Object");            \
-    }                                                 \
-  }}
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 64
 #endif
 
-#define CHKSAME(a,b) \
-  if ((a)->type != (b)->type) SETERR(3,"Objects not of same type");
+/* -------------------------Sun Sparc Adjustments  ----------------------*/
+#if defined(PARCH_sun4)
 
-#define CHKTYPE(a,b) (((a)->type & (b)) ? 1 : 0)
-
-struct _PetscObject {
-  PETSCHEADER
+#if defined(__cplusplus)
+extern "C" {
+extern char   *mktemp(char *);
+extern char   *getcwd(char *,long unsigned int);
+extern char   *getwd(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern char   *realpath(char *,char *);
+extern char   *getenv( char *);
+extern void   *malloc(long unsigned int );
+#include <search.h>
+extern char   *tsearch(char *,char **, int (*)(void*,void*));
+extern void   twalk(char *,void (*)(void*,VISIT,int));
+extern int    abort();
+extern int    atoi(char*);
+extern int    exit(int);
+extern void   perror(const char *);
+extern double atof(const char *);
+extern int    free(char *);
+extern void   *malloc(long unsigned int );
+#include <sys/time.h>
+extern int    gettimeofday(struct timeval *,struct timezone *);
 };
 
+#else
+extern char   *getwd(char *);
+extern char   *mktemp(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern char   *realpath(char *,char *);
+extern char   *getenv( char *);
+extern int    vfprintf(FILE*,char*,...);
+extern void   perror(char *);
+extern int    atoi(char*);
+extern double atof(const char*);
+#endif
 
 #endif
+
+
+/* -----------------------Sun Sparc running Solaris ------------------------*/
+#if defined(PARCH_solaris)
+#include <sys/utsname.h>
+#include <sys/systeminfo.h>
+#endif
+
+/* ----------------------IBM RS6000 ----------------------------------------*/
+#if defined(PARCH_rs6000)
+
+#if defined(__cplusplus)
+extern "C" {
+extern char   *mktemp(char *);
+extern char   *getcwd(char *,long unsigned int);
+extern char   *getwd(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern void   *malloc(long unsigned int );
+extern void   abort(void);
+extern int    atoi(const char*);
+extern void   exit(int);
+extern void   perror(const char *);
+extern double atof(const char *);
+extern void   free(void *);
+extern void   *malloc(long unsigned int );
+};
+
+#else
+extern char   *mktemp(char *);
+extern char   *getenv( char *);
+extern void   perror(char *);
+extern double atof(char *);
+extern int    atoi(char*);
+#endif
+#endif
+
+/* -----------------------freeBSD ------------------------------------------*/
+#if defined(PARCH_freebsd)
+
+#if defined(__cplusplus)
+extern "C" {
+extern char   *mktemp(char *);
+extern char   *getwd(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern char   *getenv( char *);
+extern void   *malloc(long unsigned int );
+extern int    atoi(char*);
+extern int    exit(int);
+extern void   perror(const char *);
+extern int    abort();
+extern double atof(const char *);
+extern int    free(char *);
+extern void   *malloc(long unsigned int );
+};
+
+#else
+extern int    getdomainname(char *,int);
+extern char   *getenv( char *);
+extern double atof(char *);
+extern int    atoi(char*);
+#endif
+#endif
+
+/* -----------------------SGI IRIX -----------------------------------------*/
+#if defined(PARCH_IRIX)
+
+/* IRIX has not been tested with C++ since our compiler don't work */
+#if defined(__cplusplus)
+extern "C" {
+extern char   *mktemp(char *);
+extern char   *getcwd(char *,long unsigned int);
+extern char   *getwd(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern char   *getenv( char *);
+extern void   *malloc(long unsigned int );
+extern int    atoi(char*);
+extern int    exit(int);
+extern void   perror(const char *);
+extern int    abort();
+extern double atof(const char *);
+extern int    free(char *);
+extern void   *malloc(long unsigned int );
+};
+
+#else
+extern char   *getenv( char *);
+extern double atof(char *);
+extern int    atoi(char*);
+#endif
+#endif
+
+/* -----------------------DEC alpha ----------------------------------------*/
+
+#if defined(PARCH_alpha)
+
+#if defined(__cplusplus)
+extern "C" {
+extern char   *mktemp(char *);
+extern char   *getcwd(char *,long unsigned int);
+extern char   *getwd(char *);
+extern int     gethostname(char *,int);
+extern int     getdomainname(char *,int);
+extern char   *getenv( char *);
+extern void   *malloc(long unsigned int );
+extern int    atoi(char*);
+extern int    exit(int);
+extern void   perror(const char *);
+extern int    abort();
+extern double atof(const char *);
+extern int    free(char *);
+extern void   *malloc(long unsigned int );
+};
+
+#else
+extern char   *getenv( char *);
+extern int    vfprintf(FILE*,char*,...);
+extern void   perror(char *);
+extern double atof(char *);
+extern int    atoi(char*);
+#endif
+#endif
+/* -------------------------------------------------------------------------*/
+
+#endif
+
+
+
+
+
+
+
+
+
+

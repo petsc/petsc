@@ -35,7 +35,6 @@ petsc/src/inline/RCS
 petsc/src/is/RCS
 petsc/src/ksp/RCS
 petsc/src/mat/RCS
-petsc/src/options/RCS
 petsc/src/pc/RCS
 petsc/src/sles/RCS
 petsc/src/stencil/RCS
@@ -61,8 +60,6 @@ petsc/src/mat/examples/RCS/
 petsc/src/mat/impls/RCS/
 petsc/src/mat/src/RCS/
 petsc/src/mat/utils/RCS/
-petsc/src/options/examples/RCS/
-petsc/src/options/src/RCS/
 petsc/src/pc/examples/RCS/
 petsc/src/pc/impls/RCS/
 petsc/src/pc/src/RCS/
@@ -72,6 +69,9 @@ petsc/src/stencil/examples/RCS/
 petsc/src/stencil/impls/RCS/
 petsc/src/stencil/src/RCS/
 petsc/src/stencil/utils/RCS
+petsc/src/ra/examples/RCS/
+petsc/src/ra/RCS/
+petsc/src/src/RCS/
 petsc/src/sys/error/RCS/
 petsc/src/vec/examples/RCS/
 petsc/src/vec/impls/RCS/
