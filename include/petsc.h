@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.226 1998/07/22 19:52:42 balay Exp balay $ */
+/* $Id: petsc.h,v 1.227 1998/08/26 22:04:55 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -13,12 +13,12 @@
     docs/tex/manual/manual.tex and
     docs/tex/manual/manual_tex.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 28, 1998."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.23, Released September 28, 1998."
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
-#define PETSC_VERSION_SUBMINOR 22
-#define PETSC_VERSION_DATE     "April 29, 1998"
+#define PETSC_VERSION_SUBMINOR 23
+#define PETSC_VERSION_DATE     "September 29, 1998"
 #define PETSC_AUTHOR_INFO      "The PETSc Team:\
  Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n\
  Bug reports, questions: petsc-maint@mcs.anl.gov\n\
@@ -70,6 +70,10 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
 extern int  PetscClearMalloc(void);
 
+/*
+   Routines for tracing memory corruption/bleeding with default PETSc 
+   memory allocation
+*/
 extern int   PetscTrDump(FILE *);
 extern int   PetscTrSpace(PLogDouble *, PLogDouble *,PLogDouble *);
 extern int   PetscTrValid(int,const char[],const char[],const char[]);
@@ -233,6 +237,7 @@ extern int DLLibraryPrintPath();
 
 /*
     Mechanism for translating PETSc object representations between languages
+    Note currently used.
 */
 typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
@@ -300,7 +305,6 @@ extern int PetscCompareInt(int);
 extern int PetscGlobalRank,PetscGlobalSize;
 extern int PetscIntView(int,int[],Viewer);
 extern int PetscDoubleView(int,double[],Viewer);
-
 
 /*
     C code optimization is often enhanced by telling the compiler 
