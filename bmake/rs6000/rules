@@ -1,4 +1,4 @@
-# $Id: base,v 1.38 1998/12/06 16:49:13 balay Exp balay $ 
+# $Id: base,v 1.39 1998/12/06 16:54:52 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -15,7 +15,7 @@ C_CLINKER        = cc_r ${COPTFLAGS} -bmaxdata:0x70000000
 # you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
 C_FLINKER        = cc_r ${COPTFLAGS} -bmaxdata:0x70000000
 C_CCV            = unknown
-C_SYS_LIB        = -lisode
+C_SYS_LIB        = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g  -qfullpath
 G_FOPTFLAGS      = -g  -qfullpath
@@ -29,7 +29,7 @@ CXX_FC           = xlf
 CXX_CLINKER      = xlC_r ${COPTFLAGS}
 CXX_FLINKER      = xlC_r ${COPTFLAGS}
 CXX_CCV          = unknown
-CXX_SYS_LIB      =  -lcomplex -lisode
+CXX_SYS_LIB      = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g  -qfullpath
 GCXX_FOPTFLAGS   = -g  -qfullpath 

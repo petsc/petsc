@@ -1,4 +1,4 @@
-# $Id: base,v 1.31 1998/12/05 20:56:15 balay Exp balay $ 
+# $Id: base,v 1.32 1998/12/07 19:00:42 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -28,7 +28,7 @@ CXX_FC           = /home/alice/software/egcs/rs6000/bin/g77
 CXX_CLINKER      = /home/alice/software/egcs/rs6000/bin/g++ ${COPTFLAGS}
 CXX_FLINKER      = /home/alice/software/egcs/rs6000/bin/g++ ${COPTFLAGS}
 CXX_CCV          = /home/alice/software/egcs/rs6000/bin/g++ -V
-CXX_SYS_LIB      =  -lcomplex -lisode
+CXX_SYS_LIB      = -lg2c -lcomplex -lisode
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
