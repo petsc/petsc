@@ -60,11 +60,11 @@ typedef struct {
 #define __FUNCT__ "myPCApply"
 int myPCApply(DMMG dmmg,Vec x,Vec y)
 {
-  Vec     xu,xlambda,yu,ylambda;
+  Vec          xu,xlambda,yu,ylambda;
   PetscScalar  *xw,*yw;
-  int     ierr;
-  VecPack packer = (VecPack)dmmg->dm;
-  AppCtx  *appctx = (AppCtx*)dmmg->user;
+  int          ierr;
+  VecPack      packer = (VecPack)dmmg->dm;
+  AppCtx       *appctx = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
   ierr = VecPackGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PDEFormFunctionLocal"
 int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
-  int     xs = info->xs,xm = info->xm,i,mx = info->mx;
+  int          xs = info->xs,xm = info->xm,i,mx = info->mx;
   PetscScalar  d,h;
 
   d    = mx-1.0;
