@@ -141,8 +141,8 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATLUSOL,path,"MatCreate_LUSOL",MatCreate_LUSOL);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-  ierr = MatRegisterDynamic(MATAIJMUMPS,  path,"MatCreate_AIJ_MUMPS",MatCreate_AIJ_MUMPS);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSBAIJMUMPS,path,"MatCreate_SBAIJ_MUMPS",MatCreate_SBAIJ_MUMPS);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJMUMPS,  path,"MatCreate_AIJMUMPS",MatCreate_AIJMUMPS);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSBAIJMUMPS,path,"MatCreate_SBAIJMUMPS",MatCreate_SBAIJMUMPS);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
   ierr = MatRegisterDynamic(MATDSCPACK,path,"MatCreate_DSCPACK",MatCreate_DSCPACK);CHKERRQ(ierr);
