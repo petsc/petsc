@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.145 1996/06/27 02:49:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.146 1996/07/01 15:33:56 bsmith Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -115,7 +115,10 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
         else {
           if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[idxn[j]] + shift;
-          ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+          if ( aij->garray[col] != idxn[j] ) *(v+i*n+j) = 0.0;
+          else {
+            ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+          }
         }
       }
     } 

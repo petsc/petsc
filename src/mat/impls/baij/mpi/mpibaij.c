@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.5 1996/06/24 22:18:52 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.6 1996/06/27 23:03:55 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -120,8 +120,11 @@ static int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *
         }
         else {
           if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);} 
-          col = baij->colmap[idxn[j]/bs]*bs + col%bs;
-          ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+          if ( baij->garray[baij->colmap[idxn[j]/bs]] != idxn[j]/bs ) *(v+i*n+j) = 0.0;
+          else {
+            col = baij->colmap[idxn[j]/bs]*bs + idxn[j]%bs;
+            ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+          } 
         }
       }
     } 
@@ -627,8 +630,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
   Scalar     *vworkA, *vworkB, **pvA, **pvB,*v_p;
   int        bs = mat->bs, bs2 = mat->bs2, i, ierr, *cworkA, *cworkB, **pcA, **pcB;
-  int        nztot, nzA, nzB, lrow, rstart = mat->rstart*bs, rend = mat->rend*bs;
-  int        *cmap, *idx_p,cstart = mat->cstart*bs;
+  int        nztot, nzA, nzB, lrow, brstart = mat->rstart*bs, brend = mat->rend*bs;
+  int        *cmap, *idx_p,cstart = mat->cstart;
 
   if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,"MatGetRow_MPIBAIJ:Already active");
   mat->getrowactive = PETSC_TRUE;
@@ -649,8 +652,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   }
        
 
-  if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIBAIJ:Only local rows")
-  lrow = row - rstart;
+  if (row < brstart || row >= brend) SETERRQ(1,"MatGetRow_MPIBAIJ:Only local rows")
+  lrow = row - brstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
   if (!v)   {pvA = 0; pvB = 0;}
@@ -667,7 +670,7 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
       if (v) {
         *v = v_p = mat->rowvalues;
         for ( i=0; i<nzB; i++ ) {
-          if (cmap[cworkB[i]] < cstart)   v_p[i] = vworkB[i];
+          if (cmap[cworkB[i]/bs] < cstart)   v_p[i] = vworkB[i];
           else break;
         }
         imark = i;
@@ -682,13 +685,14 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
           }
         } else {
           for ( i=0; i<nzB; i++ ) {
-            if (cmap[cworkB[i]] < cstart)   idx_p[i] = cmap[cworkB[i]];
+            if (cmap[cworkB[i]/bs] < cstart)   
+              idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
             else break;
           }
           imark = i;
         }
-        for ( i=0; i<nzA; i++ )     idx_p[imark+i] = cstart + cworkA[i];
-        for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]];
+        for ( i=0; i<nzA; i++ )     idx_p[imark+i] = cstart*bs + cworkA[i];
+        for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
       } 
     } 
     else {*idx = 0; *v=0;}
