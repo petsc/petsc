@@ -1,4 +1,4 @@
-/* $Id: petsctoolfe.cpp,v 1.16 2001/05/05 02:16:22 buschelm Exp buschelm $ */
+/* $Id: petsctoolfe.cpp,v 1.18 2001/05/11 19:50:00 buschelm Exp buschelm $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
@@ -143,7 +143,7 @@ void tool::Help(void) {
   cout << "                (ex. the location of a required .dll)" << endl;
   cout << "  --use <arg>:  <arg> specifies the variant of <tool> to use" << endl;
   cout << "  --verbose:    Echo to stdout the translated commandline" << endl;
-  cout << "  --version:    Output Version info for win32fe and <tool>" << endl;
+  cout << "  --version:    Output version info for win32fe and <tool>" << endl;
   cout << "  --woff:       Suppress win32fe specific warning messages" << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
