@@ -17,7 +17,9 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c
+RUNEXAMPLES_2 = runex10 runex11
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c \
+                ex12.c
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
@@ -189,5 +191,17 @@ runex8_2:
            if (diff output/ex8_2.out ex8_2.tmp) then true; \
            else echo "Possible problem with ex8_2, diffs above"; fi; \
            $(RM) -f ex8_2.tmp
+
+runex10:
+	-@$(MPIRUN) ex10 -ksp_smonitor > ex10_1.tmp 2>&1; \
+           if (diff output/ex10_1.out ex10_1.tmp) then true; \
+           else echo "Possible problem with ex10_1, diffs above"; fi; \
+           $(RM) -f ex10_1.tmp
+
+runex11:
+	-@$(MPIRUN) -np 3  ex11 -ksp_smonitor > ex11_1.tmp 2>&1; \
+           if (diff output/ex11_1.out ex11_1.tmp) then true; \
+           else echo "Possible problem with ex11_1, diffs above"; fi; \
+           $(RM) -f ex11_1.tmp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

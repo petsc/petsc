@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.1 1995/07/25 21:42:39 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.2 1995/07/26 19:54:51 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -82,7 +82,9 @@ int main(int argc,char **args)
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  ierr = SLESView(sles,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  if (!OptionsHasName(0,"-noslesview")) {
+    ierr = SLESView(sles,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  }
 
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check the error */
   ierr = VecNorm(x,&norm); CHKERRA(ierr);

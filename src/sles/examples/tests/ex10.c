@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.23 1995/07/23 18:25:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.24 1995/07/28 04:23:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -15,10 +15,11 @@ diagonal data structure.\n\n";
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.*/
 
-int GetElasticityMatrix(int,Mat*);
-int Elastic20Stiff(double**);
-int AddElement(Mat,int,int,Scalar**,int,int);
-int paulsetup20();
+extern int GetElasticityMatrix(int,Mat*);
+extern int Elastic20Stiff(double**);
+extern int AddElement(Mat,int,int,Scalar**,int,int);
+extern int paulsetup20();
+extern int paulintegrate20(double K[60][60]);
 
 int main(int argc,char **args)
 {
@@ -173,8 +174,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   /* Display matrix information and nonzero structure */
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
-  printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
-          nz,nzalloc,mem);
+  printf("matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -410,8 +410,7 @@ int paulsetup20()
 /* 
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */
-int paulintegrate20(K)
-double K[60][60];
+int paulintegrate20(double K[60][60])
 {
   double  det_jac, jac[3][3], inv_jac[3][3];
   double  B[6][60], B_temp[6][60], C[6][6];

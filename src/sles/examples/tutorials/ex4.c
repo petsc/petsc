@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.4 1995/07/23 18:25:13 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -44,7 +44,8 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,0); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,ALLMAT_DIFFERENT_NONZERO_PATTERN); 
+  CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
