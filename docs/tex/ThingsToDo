@@ -144,6 +144,8 @@ Additional Capabilities that PETSc Needs:
    - Maybe add a routine VecCreateVecs()?  Seems useful to me instead of having
      to create a base vector, then duplicate it.
 
+   - Add capability to support double precision vectors in complex version of code.
+
    - Add copyright info to header of each file?  See, e.g., MPICH.
 
    - Examine the SPEC benchmarks to verify that we're using the appropriate
