@@ -154,16 +154,14 @@ extern "C" {
 extern char   *mktemp(char *);
 extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
-extern int     gethostname(char *,int);
-extern int     getdomainname(char *,int);
-extern char   *getenv( char *);
-extern int    atoi(char*);
-extern int    exit(int);
+extern int    gethostname(char *,int);
+extern int    getdomainname(char *,int);
 extern void   perror(const char *);
-extern int    abort();
 extern double atof(const char *);
-extern int    free(void *);
 extern void   *malloc(long unsigned int );
+extern int    readlink(const char *,char *,int);
+extern void   usleep(unsigned int);
+extern unsigned int sleep(unsigned int);
 };
 
 #else

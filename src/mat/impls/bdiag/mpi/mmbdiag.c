@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.8 1995/06/08 03:10:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.9 1995/06/21 05:27:56 curfman Exp curfman $";
 #endif
 
 /*
@@ -69,6 +69,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   /* create temporary index set for building scatter-gather */
   ierr = ISCreateSequential(MPI_COMM_SELF,ec,garray,&to_from); CHKERRQ(ierr);
   CHKERRQ(ierr);
+  PETSCFREE(garray);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
