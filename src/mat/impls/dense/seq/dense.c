@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.198 2001/03/27 22:18:54 balay Exp bsmith $*/
+/*$Id: dense.c,v 1.199 2001/04/10 19:35:15 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -147,17 +147,6 @@ int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,PetscReal f,Mat *fact)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
-int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = MatCholeskyFactor(*fact,0,1.0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactor_SeqDense"
 int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
 {
@@ -179,6 +168,17 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
+int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCholeskyFactor_SeqDense(*fact,0,1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
