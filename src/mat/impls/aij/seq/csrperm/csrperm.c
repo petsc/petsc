@@ -25,6 +25,10 @@ typedef struct {
      * of group i has. */
   PetscInt *iperm;  /* The permutation vector. */
 
+  /* Flag that indicates whether we need to clean up permutation 
+   * information during the MatDestroy. */
+  PetscTruth CleanUpCSRPERM;
+
   /* Some of this stuff is for Ed's recursive triangular solve.
    * I'm not sure what I need yet. */
   PetscInt blocksize;
@@ -55,6 +59,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* Following the example of the SuperLU class, I change the type name 
+   * before calling MatSetType() to force proper construction of SeqAIJ 
+   * and MATSEQCSRPERM types. */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQCSRPERM);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqCSRPERM(A,MATSEQCSRPERM,MAT_REUSE_MATRIX,&A);
@@ -63,6 +70,41 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat A)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_SeqCSRPERM"
+PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_SeqCSRPERM *csrperm;
+
+  csrperm = (Mat_SeqCSRPERM *) A->spptr;
+
+  /* Free everything in the Mat_SeqCSRPERM data structure. */
+  if(csrperm->CleanUpCSRPERM) {
+    ierr = PetscFree(xgroup);CHKERRQ(ierr);
+    ierr = PetscFree(nzgroup);CHKERRQ(ierr);
+    ierr = PetscFree(iperm);CHKERRQ(ierr);
+  }
+
+  /* Free the Mat_SeqCSRPERM struct itself. */
+  ierr = PetscFree(csrperm);CHKERRQ(ierr);
+
+  /* Now convert A back into a SEQAIJ matrix and use MatDestroy_SeqAIJ() 
+   * to destroy everything that remains. */
+  A->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
+    /* I suppose I don't actually need to point A->ops->assemblyend back 
+     * to the right thing, but I do it anyway for completeness. */
+  A->ops->destroy = csrperm->MatDestroy_SeqAIJ;
+  ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
+  /* Note that I don't call MatSetType().  I believe this is because that 
+   * is only to be called when *building* a matrix.  I could be wrong, but 
+   * that is how things work for the SuperLU matrix class. */
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
 
 
 /* MatConvert_SeqAIJ_SeqCSRPERM converts a SeqAIJ matrix into a 
@@ -152,7 +194,7 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat B)
   /* Now actually figure out the permutation and grouping. */
 
   /* First pass: Determine number of nonzeros in each row, maximum 
-   * number of nonzeros in any row, and how many rows are fall into each  
+   * number of nonzeros in any row, and how many rows fall into each  
    * "bucket" of rows with same number of nonzeros. */
   maxnz = 0;
   for(i=0; i<m; i++) {
@@ -207,6 +249,12 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat B)
   ierr = PetscFree(rows_in_bucket); CHKERRQ(ierr);
   ierr = PetscFree(ipnz); CHKERRQ(ierr);
   ierr = PetscFree(nz_in_row); CHKERRQ(ierr);
+
+  /* Since we've allocated some memory to hold permutation info, 
+   * flip the CleanUpCSRPERM flag to true. */
+  csrperm->CleanUpCSRPERM = PETSC_TRUE;
+
+  PetscFunctionReturn(0);
 }
 
 
