@@ -35,7 +35,7 @@ manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex g
 	sed -e 's/_/\\_/g' manual.ind | grep -v "begin{theindex}" >>  part2tmp.tex
 	${PDFELATEX} manual  ${GONULL}
 	${PDFELATEX} manual 
-	${MV} manual.pdf ${LOC}/src/docs/manual.pdf
+	${MV} manual.pdf ${LOC}/docs/manual.pdf
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual.aux intro.aux
 	${PDFELATEX} intro 
