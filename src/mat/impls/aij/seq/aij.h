@@ -14,7 +14,9 @@
 */
 typedef struct {
   int    sorted, roworiented, nonew, singlemalloc,assembled;
-  int    m,n,nz,mem,*diag,       /* rows and columns */
+  int    m,n;                    /* rows, columns */
+  int    nz,maxnz,mem;           /* nonzeros, allocated nonzeros, memory */
+  int    *diag,                  /* diagonal elements */
          *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
          *j;                     /* ilen is actual lenght of row */
   Scalar *a;     
