@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.171 1999/05/12 03:29:54 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.172 1999/06/10 16:08:12 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -914,6 +914,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+/*
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIBAIJ_Binary"
 static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
@@ -927,6 +928,7 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
   } else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
+*/
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
