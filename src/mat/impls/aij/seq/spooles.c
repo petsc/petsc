@@ -44,7 +44,6 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   int              ierr,irow,neqns=A->m,*iv;
 
   PetscFunctionBegin;
-
   /* copy permuted b to mtxY */
   mtxY = DenseMtx_new() ;
   DenseMtx_init(mtxY, SPOOLES_REAL, 0, 0, neqns, 1, 1, neqns) ; /* column major */

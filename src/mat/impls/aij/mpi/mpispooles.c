@@ -92,7 +92,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
    fflush(lu->options.msgFile) ;
   }
-  
+  lu->firsttag = 0;
   newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
                                 lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   DenseMtx_free(lu->mtxY) ;
@@ -115,6 +115,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     DenseMtx_free(lu->mtxY) ;
     lu->mtxY = newY ;
     IV_free(rowmapIV) ;
+    lu->firsttag += size;
   }
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n rhs matrix after split") ;
@@ -239,12 +240,13 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 
   InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
+  /* fprintf() terminates T3E. Error msg from totalview: no parameters.
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n input matrix") ;
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
     fflush(lu->options.msgFile) ;
   }
-
+  */
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
 
     (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
@@ -355,7 +357,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     lu->firsttag = 0 ;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
-    lu->firsttag++ ;
+    lu->firsttag += size ;
 
     InpMtx_free(lu->mtxA) ;
     lu->mtxA = newA ;
@@ -398,9 +400,10 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
 
     /* redistribute the matrix */
+    lu->firsttag = 0;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
-    lu->firsttag++ ;
+    lu->firsttag += size ;
 
     InpMtx_free(lu->mtxA) ;
     lu->mtxA = newA ;
@@ -435,7 +438,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
                      chvmanager, lu->ownersIV, lookahead, &ierr, lu->cpus, 
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   ChvManager_free(chvmanager) ;
-  lu->firsttag += 3*lu->frontETree->nfront + 2 ;
+  lu->firsttag += 3*lu->frontETree->nfront + 3;
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n numeric factorization") ;
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;

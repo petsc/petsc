@@ -20,6 +20,8 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
 
   PetscFunctionBegin;	
   /* set default input parameters */ 
+  options->msglvl         = 0;
+  options->msgFile        = 0;
   options->tau            = 100.; 
   options->seed           = 10101;  
   options->ordering       = 0;     /* BestOfNDandMS */
@@ -44,11 +46,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
     ierr = PetscOptionsInt("-mat_spooles_seed","random number seed, used for ordering","None",
                            options->seed,&options->seed,PETSC_NULL);CHKERRQ(ierr);
 
-    if (PetscLogPrintInfo) {
-      options->msglvl = 1;
-    } else {
-      options->msglvl = 0;
-    }
+    if (PetscLogPrintInfo) options->msglvl = 1;
     ierr = PetscOptionsInt("-mat_spooles_msglvl","msglvl","None",
                            options->msglvl,&options->msglvl,0);CHKERRQ(ierr); 
     if (options->msglvl > 0) {

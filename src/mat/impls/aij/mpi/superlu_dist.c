@@ -211,7 +211,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&a, &asub, &xa);
 
   if (lu->StatPrint) {
-    ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  /* to be removed */
+    ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  
     time0[0] = time[0] - time0[0];
   }
 
