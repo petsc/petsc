@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.83 1998/12/17 22:09:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.84 1998/12/21 00:59:20 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -227,7 +227,7 @@ static int PCView_MG(PC pc,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    ViewerASCIIPrintf(viewer,"   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+    ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
                       cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); 
     for ( i=0; i<levels; i++ ) {
       ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);

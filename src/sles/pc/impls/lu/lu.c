@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.105 1998/12/17 22:09:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.106 1998/12/21 00:59:13 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -110,13 +110,13 @@ static int PCView_LU(PC pc,Viewer viewer)
 
     if (lu->inplace) ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");
     else             ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"      matrix ordering: %s\n",order);
+    ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",order);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"      LU nonzeros %g\n",info.nz_used);
+      ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);
     }
-    if (lu->reusefill)       ViewerASCIIPrintf(viewer,"         Reusing fill from past factorization\n");
-    if (lu->reusereordering) ViewerASCIIPrintf(viewer,"         Reusing reordering from past factorization\n");
+    if (lu->reusefill)       ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
+    if (lu->reusereordering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," order=%s",order);CHKERRQ(ierr);
   } else {

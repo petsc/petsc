@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.4 1998/05/08 16:11:49 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.5 1998/12/17 22:07:56 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -15,6 +15,10 @@ extern int  Kernel_A_gets_inverse_A_3(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_4(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
 
+/*
+     These are Fortran kernels: They replace certain BLAS routines but
+   have some arguments that may be single precision, rather than double
+*/
 #ifdef HAVE_FORTRAN_CAPS
 #define msgemv_  MSGEMV
 #define msgemvp_ MSGEMVP
@@ -30,13 +34,14 @@ extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
 #define msgemmi_ msgemmi
 #define msgemm_  msgemm
 #endif
+EXTERN_C_BEGIN
 extern void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
 extern void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
 extern void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
 extern void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
 extern void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
 extern void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
-
+EXTERN_C_END
 
 /*
     A = inv(A)    A_gets_inverse_A

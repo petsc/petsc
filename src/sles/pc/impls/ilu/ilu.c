@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.113 1998/12/17 22:09:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.114 1998/12/21 00:59:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -436,15 +436,15 @@ static int PCView_ILU(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER )) {
     if (ilu->levels == 1) {
-      ViewerASCIIPrintf(viewer,"    ILU: %d level of fill\n",ilu->levels);
+      ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);
     } else {
-      ViewerASCIIPrintf(viewer,"    ILU: %d levels of fill\n",ilu->levels);
+      ViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",ilu->levels);
     }
-    if (ilu->inplace) ViewerASCIIPrintf(viewer,"         in-place factorization\n");
-    else              ViewerASCIIPrintf(viewer,"         out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"         matrix ordering: %s\n",order);
-    if (ilu->reusefill)       ViewerASCIIPrintf(viewer,"         Reusing fill from past factorization\n");
-    if (ilu->reusereordering) ViewerASCIIPrintf(viewer,"         Reusing reordering from past factorization\n");
+    if (ilu->inplace) ViewerASCIIPrintf(viewer,"       in-place factorization\n");
+    else              ViewerASCIIPrintf(viewer,"       out-of-place factorization\n");
+    ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",order);
+    if (ilu->reusefill)       ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
+    if (ilu->reusereordering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);CHKERRQ(ierr);
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.74 1998/12/17 22:12:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.75 1998/12/21 01:04:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -350,8 +350,8 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-    ViewerASCIIPrintf(viewer,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+    ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);
+    ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

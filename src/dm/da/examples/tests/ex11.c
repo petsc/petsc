@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.1 1998/12/10 19:51:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.1 1998/12/22 04:05:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -9,32 +9,35 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int    rank, M = 13, ierr, dof=1, s=1, wrap=0, flg, i, n, j;
+  int    rank, M = 5, N = 4,ierr, dof=1, s=1, wrap=0, flg, i, n, j, k, m, cnt;
   DA     da;
   Viewer viewer;
   Vec    local, locala, global,coors;
-  Scalar value,*x,*alocal;
+  Scalar value,*xy,*alocal;
   Draw   draw;
   char   fname[16];
+
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Create viewers */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg);  CHKERRA(ierr); 
   ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);  CHKERRA(ierr); 
   ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,&flg);  CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,dof,s,PETSC_NULL,&da); CHKERRA(ierr);
-  ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,DA_STENCIL_BOX,M,N,PETSC_DECIDE,
+                    PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da); CHKERRA(ierr);
+  ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRA(ierr);
   for ( i=0; i<dof; i++ ) {
     sprintf(fname,"Field %d",i);
-    ierr = DASetFieldName(da,i,fname);
+    ierr = DASetFieldName(da,i,fname);CHKERRA(ierr);
   }
 
   ierr = DAView(da,viewer); CHKERRA(ierr);
@@ -42,19 +45,25 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
   ierr = DACreateLocalVector(da,&locala); CHKERRA(ierr);
   ierr = DAGetCoordinates(da,&coors); CHKERRA(ierr);
-  ierr = VecGetArray(coors,&x); CHKERRA(ierr);
+  ierr = VecGetArray(coors,&xy); CHKERRA(ierr);
+
+ierr = VecView(coors,VIEWER_STDOUT_SELF);
 
   /* Set values into local vectors */
   ierr = VecGetArray(local,&alocal); CHKERRA(ierr);
-  ierr = VecGetSize(local,&n);CHKERRA(ierr);
+  ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRA(ierr);
   n    = n/dof;
-  for ( j=0; j<dof; j++ ) {
-    for ( i=0; i<n; i++ ) {
-      alocal[j+dof*i] = sin(2*PETSC_PI*(j+1)*x[i]);
+  for ( k=0; k<dof; k++ ) {
+    cnt = 0;
+    for ( j=0; j<n; j++ ) {
+      for ( i=0; i<m; i++ ) {
+        alocal[k+dof*cnt] = sin(2.0*PETSC_PI*(k+1)*xy[2*cnt]);
+        cnt++;
+      }
     }
   }
   ierr = VecRestoreArray(local,&alocal); CHKERRA(ierr);
-  ierr = VecRestoreArray(coors,&x); CHKERRA(ierr);
+  ierr = VecRestoreArray(coors,&xy); CHKERRA(ierr);
 
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 

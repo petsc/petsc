@@ -1,8 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.107 1998/12/17 22:12:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.108 1998/12/21 16:15:04 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
+
+EXTERN_C_BEGIN
+extern int VecView_MPI_Draw_DA2d(Vec,Viewer);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_2d"
@@ -43,6 +47,7 @@ int DAView_2d(DA da,Viewer viewer)
     ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     /* first processor draw all node lines */
     if (!rank) {
@@ -976,6 +981,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Draw_C",
+         "VecView_MPI_Draw_DA2d",(void *)VecView_MPI_Draw_DA2d);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

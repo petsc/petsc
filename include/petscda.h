@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.41 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.42 1998/12/17 22:13:20 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -51,7 +51,7 @@ extern int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 extern int   DAGetAO(DA,AO*);
 extern int   DASetCoordinates(DA,Vec); 
 extern int   DAGetCoordinates(DA,Vec *);
-extern int   DACreateDefaultCoordinates(DA);
+extern int   DACreateUniformCoordinates(DA,double,double,double,double,double,double);
 extern int   DASetFieldName(DA,int,const char[]);
 extern int   DAGetFieldName(DA,int,char **);
 

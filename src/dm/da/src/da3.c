@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.86 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.87 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -55,8 +55,8 @@ int DAView_3d(DA da,Viewer viewer)
 
     ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     /* first processor draw all node lines */
     if (!rank) {

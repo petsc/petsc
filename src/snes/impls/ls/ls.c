@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.118 1998/12/17 22:12:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.119 1998/12/21 01:04:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -717,8 +717,8 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
     else if (ls->LineSearch == SNESCubicLineSearch)     cstr = "SNESCubicLineSearch";
     else                                                cstr = "unknown";
-    ViewerASCIIPrintf(viewer,"    line search variant: %s\n",cstr);
-    ViewerASCIIPrintf(viewer,"    alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);
+    ViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);
+    ViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

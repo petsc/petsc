@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.113 1998/12/17 22:09:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.114 1998/12/21 00:57:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -583,9 +583,9 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
     } else {
       cstr = "unknown orthogonalization";
     }
-    ViewerASCIIPrintf(viewer,"    GMRES: restart=%d, using %s\n",gmres->max_k,cstr);
+    ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);
     if (gmres->nprestart > 0) {
-      ViewerASCIIPrintf(viewer,"    GMRES: using prestart=%d\n",gmres->nprestart);
+      ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

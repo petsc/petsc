@@ -1,35 +1,53 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.1 1998/11/25 17:08:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.2 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
 
 /* 
    Plots vectors obtained with DACreate1d()
-
-   How should we handle multi-component problems?
 */
 
 #include "da.h"      /*I  "da.h"   I*/
 
-int DACreateDefaultCoordinates(DA da)
+int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 {
-  int            i,ierr,N,igstart,igsize,dim;
-  double         h;
+  int            i,j,ierr,M,N,P,igstart,igsize,jgstart,jgsize,dim,cnt;
+  double         hx,hy;
   Vec            xcoor;
   DAPeriodicType periodic;
-  Scalar         *xg;
+  Scalar         *coors;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,&dim,&N,0,0,0,0,0,0,0,&periodic);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&igstart,0,0,&igsize,0,0);CHKERRQ(ierr);
+  if (xmax <= xmin) SETERRQ(1,1,"Xmax must be larger than xmin");
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,igsize,&xcoor);CHKERRQ(ierr);
-  if (periodic == DA_NONPERIODIC) h = 1.0/(N-1);
-  else                            h = 1.0/N;
-  ierr = VecGetArray(xcoor,&xg);CHKERRQ(ierr);
-  for ( i=0; i<igsize; i++ ) {
-    xg[i] = h*(i+igstart);
+  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&igstart,&jgstart,0,&igsize,&jgsize,0);CHKERRQ(ierr);
+
+  if (dim == 1) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,igsize,&xcoor);CHKERRQ(ierr);
+    if (periodic == DA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
+    else                            hx = (xmax-xmin)/M;
+    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    for ( i=0; i<igsize; i++ ) {
+      coors[i] = xmin + hx*(i+igstart);
+    }
+    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+  } else if (dim == 2) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,2*igsize*jgsize,&xcoor);CHKERRQ(ierr);
+    if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC) hx = (xmax-xmin)/(M);
+    else                                                       hx = (xmax-xmin)/(M-1);
+    if (periodic == DA_YPERIODIC || periodic == DA_XYPERIODIC) hy = (ymax-ymin)/(N);
+    else                                                       hy = (ymax-ymin)/(N-1);
+    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    cnt  = 0;
+    for ( j=0; j<jgsize; j++ ) {
+      for ( i=0; i<igsize; i++ ) {
+        coors[cnt++] = xmin + hx*(i+igstart);
+        coors[cnt++] = ymin + hy*(j+jgstart);
+      }
+    }
+    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xcoor,&xg);CHKERRQ(ierr);
+
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   PLogObjectParent(da,xcoor);
 
@@ -71,7 +89,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
-    ierr = DACreateDefaultCoordinates(da);CHKERRQ(ierr);
+    ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
   ierr = VecGetArray(xcoor,&xg);CHKERRQ(ierr);
@@ -120,9 +138,13 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     ierr = ViewerDrawGetDrawAxis(v,j,&axis); CHKERRQ(ierr);
     PLogObjectParent(draw,axis);
     if (!rank) {
+      char *title;
+
       ierr = DrawAxisSetLimits(axis,xmin,xmax,ymin,ymax); CHKERRQ(ierr);
       ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
       ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
+      ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
+      ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
     if (rank) {

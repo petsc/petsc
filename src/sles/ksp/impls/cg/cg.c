@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.80 1998/12/17 22:09:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.81 1998/12/21 00:57:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -255,11 +255,11 @@ int KSPView_CG(KSP ksp,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (cg->type == KSP_CG_HERMITIAN) {
-      ViewerASCIIPrintf(viewer,"    CG: variant for complex, Hermitian system\n");
+      ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");
     } else if (cg->type == KSP_CG_SYMMETRIC) {
-      ViewerASCIIPrintf(viewer,"    CG: variant for complex, symmetric system\n");
+      ViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");
     } else {
-      ViewerASCIIPrintf(viewer,"    CG: unknown variant\n");
+      ViewerASCIIPrintf(viewer,"  CG: unknown variant\n");
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

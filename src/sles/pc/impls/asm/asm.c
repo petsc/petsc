@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.88 1998/12/17 22:09:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.89 1998/12/21 00:59:32 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -43,16 +43,16 @@ static int PCView_ASM(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"    Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);
+    ViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
     else if (jac->type == PC_ASM_BASIC)       cstring = "full restriction and interpolation (PC_ASM_BASIC)";
     else                                      cstring = "Unknown ASM type";
-    ViewerASCIIPrintf(viewer,"    Additive Schwarz: type - %s\n",cstring);
+    ViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->same_local_solves) {
-      ViewerASCIIPrintf(viewer,"    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");
       if (!rank && jac->sles) {
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);
@@ -61,7 +61,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
     } else {
       FILE *fd;
       ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"    Local solve info for each block is in the following KSP and PC objects:\n");
+      ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");
       PetscSequentialPhaseBegin(pc->comm,1);
       PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);
       for (i=0; i<jac->n_local; i++) {

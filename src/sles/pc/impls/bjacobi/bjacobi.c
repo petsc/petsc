@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.115 1998/12/17 22:09:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.116 1998/12/21 00:59:18 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -137,12 +137,12 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (jac->use_true_local) {
-      ViewerASCIIPrintf(viewer,"    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
+      ViewerASCIIPrintf(viewer,"  %s: using true local matrix, number of blocks = %d\n", c, jac->n);
     }
-    ViewerASCIIPrintf(viewer,"    %s: number of blocks = %d\n", c, jac->n);
+    ViewerASCIIPrintf(viewer,"  %s: number of blocks = %d\n", c, jac->n);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->same_local_solves) {
-      ViewerASCIIPrintf(viewer,"    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");
       if (!rank && jac->sles) {
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);
@@ -152,7 +152,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       FILE *fd;
 
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"    Local solve info for each block is in the following KSP and PC objects:\n");
+      ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");
       PetscSequentialPhaseBegin(pc->comm,1);
       PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
                    rank,jac->n_local,jac->first_local);
