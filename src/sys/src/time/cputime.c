@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.8 1997/07/23 02:17:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.9 1997/07/23 17:23:42 bsmith Exp balay $";
 #endif
 
 /*
@@ -9,36 +9,39 @@ static char vcid[] = "$Id: cputime.c,v 1.8 1997/07/23 02:17:38 bsmith Exp bsmith
 
 #include "petsc.h"                     /*I "petsc.h" I*/
 
-#if defined(PARCH_t3d)
-
+#if defined (PARCH_solaris)
+#include <sys/times.h>
+#include <limits.h>
 PLogDouble PetscGetCPUTime()
 {
-  fprintf(stderr,"CPUTime unavailable on Cray T3D/E\n");
-  fprintf(stderr,"PetscGetCPUTime() returning 0\n");
-  return 0.0;
+  struct tms temp;
+  times(&temp);
+  return  ((double) temp.tms_utime)/((double) CLK_TCK);
 }
+
+#elif defined(PARCH_t3d) || defined(PARCH_hpux) || defined (PARCH_nt)  
+#include "src/sys/src/files.h"
+#if defined(PARCH_hpux)
+#include <time.h>
+#endif
+#include <sys/types.h>
+PLogDouble PetscGetCPUTime()
+{
+  return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
+}  
 
 #else
 
 #include "src/sys/src/files.h"
-#if defined(PARCH_hpux)
-#include <time.h>
-#elif defined(PARCH_solaris)
-#include <sys/times.h>
-#include <limits.h>
-#else
 #include <sys/types.h>
-#if !defined(PARCH_nt)
 #include <sys/time.h>
 #include <sys/resource.h>
-#endif
 #if defined(__cplusplus)
 extern "C" {
 #endif
 extern int getrusage(int,struct rusage*);
 #if defined(__cplusplus)
 }
-#endif
 #endif
 
 /*@C
@@ -65,13 +68,6 @@ $
 @*/
 PLogDouble PetscGetCPUTime()
 {
-#if defined(PARCH_solaris)
-  struct tms temp;
-  times(&temp);
-  return  ((double) temp.tms_utime)/((double) CLK_TCK);
-#elif defined(PARCH_hpux) || defined (PARCH_nt)
-return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
-#else
   static struct rusage temp;
   double foo, foo1;
 
@@ -79,7 +75,6 @@ return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
   foo     = temp.ru_utime.tv_sec;     /* seconds */
   foo1    = temp.ru_utime.tv_usec;    /* uSecs */
   return(foo + foo1 * 1.0e-6);
-#endif
 }
 
 #endif
