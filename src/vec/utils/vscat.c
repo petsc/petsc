@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.44 1995/11/01 23:14:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.45 1995/11/02 04:08:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,11 +20,18 @@ static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_General *gen_to = (VecScatter_General *) ctx->todata;
   VecScatter_General *gen_from = (VecScatter_General *) ctx->fromdata;
-  int                i, n = gen_from->n, *fslots = gen_from->slots;
-  int                *tslots = gen_to->slots;
+  int                i, n = gen_from->n, *fslots, *tslots;
   Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar             *xv = xx->array, *yv = yy->array;
   
+  if (mode & SCATTER_REVERSE ){
+    gen_to   = (VecScatter_General *) ctx->fromdata;
+    gen_from = (VecScatter_General *) ctx->todata;
+    mode    -= SCATTER_REVERSE;
+  }
+  fslots = gen_from->slots;
+  tslots = gen_to->slots;
+
   if (addv == INSERT_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
   }
@@ -33,6 +40,37 @@ static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   }
   return 0;
 }
+
+
+static int SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+{
+  VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
+  VecScatter_General *gen_from = (VecScatter_General *) ctx->fromdata;
+  int                i, n = gen_from->n, *fslots = gen_from->slots;
+  int                first = gen_to->first;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
+  
+  if (mode & SCATTER_REVERSE ){
+    xv += first;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
+    }
+  } else {
+    yv += first;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
+    }
+  }
+  return 0;
+}
+
 static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
@@ -42,11 +80,49 @@ static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar             *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERT_VALUES) {
-    for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
+  if (mode & SCATTER_REVERSE ){
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
+    }
+  } else {
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
+    }
   }
-  else {
-    for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
+  return 0;
+}
+
+static int SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+{
+  VecScatter_Stride  *gen_from = (VecScatter_Stride *) ctx->fromdata;
+  VecScatter_General *gen_to = (VecScatter_General *) ctx->todata;
+  int                i, n = gen_from->n, *fslots = gen_to->slots;
+  int                first = gen_from->first;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
+  
+  if (mode & SCATTER_REVERSE ){
+    yv += first;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
+    }
+  } else {
+    xv += first;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
+    }
   }
   return 0;
 }
@@ -60,11 +136,20 @@ static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar             *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERT_VALUES) {
-    for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
-  }
-  else {
-    for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
+  if (mode & SCATTER_REVERSE ){
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
+    }
+  } else {
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
+    }
+    else {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
+    }
   }
   return 0;
 }
@@ -204,7 +289,9 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       from->slots = (int *) (from + 1); from->n = nx; 
       PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->scatterbegin = SGtoSS; ctx->destroy = SGtoSGDestroy;
+      if (step == 1)  ctx->scatterbegin = SGtoSS_Stride1;
+      else            ctx->scatterbegin = SGtoSS;
+      ctx->destroy = SGtoSGDestroy;
       ctx->scatterend = 0; ctx->pipelinebegin = 0;
       ctx->pipelineend = 0; ctx->copy = 0;
       *newctx = ctx;
@@ -225,7 +312,9 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->slots = (int *) (to + 1); to->n = nx; 
       PetscMemcpy(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->scatterbegin = SStoSG; ctx->destroy = SGtoSGDestroy;
+      if (step == 1) ctx->scatterbegin = SStoSG_Stride1; 
+      else           ctx->scatterbegin = SStoSG; 
+      ctx->destroy = SGtoSGDestroy;
       ctx->scatterend = 0; ctx->pipelinebegin = 0; 
       ctx->pipelineend = 0; ctx->copy = 0;
       *newctx = ctx;
@@ -247,7 +336,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,xin->comm);
+      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
       if (cando) {
         to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first; to->step = to_step;
@@ -264,8 +353,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
     else {
       int cando,islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
     }
+    /* test for special case of all processors getting entire vector */
+
     {
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
@@ -289,7 +380,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
       if (cando) {
         to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first-start; to->step = to_step;
@@ -306,7 +397,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
     else {
       int cando,islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
     }
     {
       int ierr,nx,ny,*idx,*idy;
