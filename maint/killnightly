@@ -2,12 +2,12 @@
 
 import os
 
-machines = ['shakey','zither','ico14','ico15','fire','maple']
+machines = ['shakey','zither','fire','maple']
 
 for machine in machines:
         os.system('rsh -n ' + machine + ' zapall')        
 
-machines = ['lemon','ptera','dactyl','hux1','playstation','eris.disturbed.net','dreamcast','balay@parth','dreamcast' ]
+machines = ['lemon','ptera','dactyl','hux1','playstation','eris.disturbed.net','dreamcast','balay@parth','dreamcast','spinetta' ]
 
 for machine in machines:
         os.system('ssh -n ' + machine + ' zapall')        
