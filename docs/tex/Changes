@@ -32,7 +32,8 @@ add to it).
     
   PC
 
-    
+
+  Removed support for block Gauss-Seidel from the distribution -pct_type bgs    
 
   AO
 
@@ -46,6 +47,7 @@ add to it).
     DrawCreate() creates a generic draw object whose type can be set at run time
     with DrawSetType()
 
+    VIEWER_DRAWX_.... replaced with VIEWER_DRAW_....
 
   General
 

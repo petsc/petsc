@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.299 1999/01/13 22:41:46 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.300 1999/01/14 00:23:54 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2394,7 +2394,7 @@ command \findex{PCSetType()} \findex{-pc_type}
 In Table~\ref{tab:pcdefaults} we summarize the basic
 preconditioning methods supported in PETSc. \findex{PCNONE}
 \findex{PCJACOBI} \findex{PCSOR} \findex{PCICC} \findex{PCLU}
-\findex{PCILU} \findex{PCSHELL} \findex{PCASM} \findex{PCBGS}
+\findex{PCILU} \findex{PCSHELL} \findex{PCASM}
 \findex{PCBJACOBI}
 The {\tt PCSHELL} preconditioner uses a specific,
 application-provided preconditioner.  The direct preconditioner, {\tt PCLU},
@@ -2409,7 +2409,6 @@ consistent interface among direct and iterative linear solvers.
 \hline
 Jacobi                               & PCJACOBI      & jacobi\\
 Block Jacobi                         & PCBJACOBI     & bjacobi\\
-Block Gauss-Seidel (sequential only) & PCBGS         & bgs\\
 SOR (and SSOR)                       & PCSOR         & sor\\
 SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
@@ -2684,7 +2683,6 @@ These options database commands set the particular options for {\em all}
 of the blocks within the global problem.  In addition, the routines
 \begin{verbatim}
    ierr = PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
-   ierr = PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
    ierr = PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
 \end{verbatim}
 extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local 
@@ -2697,7 +2695,7 @@ The array of SLES contexts for the local blocks is given by {\tt subsles}.
 This mechanism enables the user to set different solvers for the 
 various blocks.  To set the appropriate data structures, the 
 user {\em must} explicitly call {\tt SLESSetUp()} \findex{SLESSetUp()} 
-before calling {\tt PCBJacobiGetSubSLES()}, {\tt PCBGSGetSubSLES()}, or
+before calling {\tt PCBJacobiGetSubSLES()} or
 {\tt PCASMGetSubSLES()}.
 For further details, see the 
 example {\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex7.c}.
@@ -2711,11 +2709,10 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks} 
 \begin{verbatim}
    ierr = PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);
-   ierr = PCBGSSetTotalBlocks(PC pc,int blocks,int *size);
    ierr = PCASMSetTotalSubdomains(PC pc,int n,IS *is);
    ierr = PCASMSetType(PC pc,PCASMType type);
 \end{verbatim}
-\findex{PCBJacobiSetTotalBlocks()}  \findex{PCBGSSetTotalBlocks()} 
+\findex{PCBJacobiSetTotalBlocks()}
 The \findex{PCASMSetTotalSubdomains()}
 optional argument {\tt size}, is an array indicating the size of
 each block. Currently, for certain parallel matrix formats, only a
@@ -2750,7 +2747,6 @@ The user can also set the number of blocks and sizes on a per-processor
 basis with the commands
 \begin{verbatim}
    ierr = PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);
-   ierr = PCBGSSetLocalBlocks(PC pc,int blocks,int *size);
    ierr = PCASMSetLocalSubdomains(PC pc,int N,IS *is);
 \end{verbatim}
 
