@@ -1,0 +1,39 @@
+
+
+John Hahn:
+
+Interests listed in order of preference:
+  - parallel programming environments
+  - scientific visualization on parallel computers
+  - virtual reality environments
+  - computing facilities
+  - automated reasoning
+  - trusted software
+
+Do we need more details about the project description?
+  - Question: What do we want this guy to do?
+        - Develop something using Java?
+        - Other visualization stuff?
+
+--------------------------------------------------------------
+
+
+The student will assist in the development of software for the
+parallel solution and visualization of large-scale systems of
+nonlinear equations arising from the discretization of coupled systems
+of partial differential equations.  The long-term goal of this work is
+the development of general-purpose tools for interactive visualization
+of simulations.  Our current application project focuses on
+aerodynamics and acoustics modeling, which is the heart of many
+industrial and civil design challenges.  This software will be
+developed within the context of the PETSc (Portable, Extensible
+Toolkit for Scientific Computation) libraries (see
+http://www.mcs.anl.gov/petsc/petsc.html for further information).
+
+
+The Mathematics and Computer Science Division supports an excellent
+computational environment that includes access to high-performance
+scientific workstations, a scientific visualization and virtual reality
+laboratory, and state-of-the-art parallel computers (including a 128-node
+IBM SP).  
+
