@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.54 1999/02/19 19:43:26 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.55 1999/03/09 16:16:05 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -67,7 +67,8 @@ struct _VecOps {
        (*getmap)(Vec,Map*),
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
-       (*norm_local)(Vec,NormType,double*);
+       (*norm_local)(Vec,NormType,double*),
+       (*loadintovector)(Vec,Viewer);
 };
 
 struct _p_Vec {
