@@ -288,7 +288,9 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
   /* this is terrible; HYPRE frees this array so we have to malloc it */
   jac->gridsweeps    = (int*)malloc(4*sizeof(int));
-  jac->gridsweeps[0] = jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[3] = 1;
+  jac->gridsweeps[0] = jac->gridsweeps[1] = jac->gridsweeps[2] = 2;
+  jac->gridsweeps[3] = 1;
+
   jac->relaxtype     = (int*)malloc(4*sizeof(int));
   jac->relaxtype[0]  = jac->relaxtype[1] = jac->relaxtype[2] = jac->relaxtype[3] = 3;
 
