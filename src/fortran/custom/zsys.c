@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.76 1999/12/01 16:15:23 balay Exp bsmith $*/
+/*$Id: zsys.c,v 1.77 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -180,9 +180,9 @@ void PETSC_STDCALL petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,i
   *ierr = PetscBinaryRead(*fd,p,*n,*type);
 }
 
-void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *ierr)
+void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *offset,int *ierr)
 {
-  *ierr = PetscBinarySeek(*fd,*size,*whence);
+  *ierr = PetscBinarySeek(*fd,*size,*whence,offset);
 }
 
 void PETSC_STDCALL petscbinaryclose_(int *fd,int *ierr)
