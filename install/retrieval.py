@@ -21,8 +21,7 @@ class Retriever(install.base.Base):
       path = os.path.join(base, path)
     return os.path.abspath(path)
 
-  def genericRetrieve(self, url, root, canExist = 0, force = 0):
-    localFile = root+'.tar.gz'
+  def removeRoot(self,root,canExist):
     if os.path.exists(root):
       if canExist:
         if force:
@@ -31,6 +30,10 @@ class Retriever(install.base.Base):
           return root
       else:
         raise RuntimeError('Root directory '+root+' already exists')
+    
+  def genericRetrieve(self, url, root, canExist = 0, force = 0):
+    self.removeRoot(root,canExist)
+    localFile = root+'.tar.gz'
     if os.path.exists(localFile):
       os.remove(localFile)
     urllib.urlretrieve(url, localFile)
@@ -74,14 +77,7 @@ class Retriever(install.base.Base):
     self.debugPrint('Retrieving '+url+' --> '+root+' via ssh', 3, 'install')
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     (dir, project) = os.path.split(path)
-    if os.path.exists(root):
-      if canExist:
-        if force:
-          output = self.executeShellCommand('rm -rf '+root)
-        else:
-          return root
-      else:
-        raise RuntimeError('Root directory '+root+' already exists')
+    self.removeRoot(root,canExist)
     command = 'ssh '+location+' "tar -C '+dir+' -zc '+project+'" | tar -C '+root+' -zx'
     output  = self.executeShellCommand(command)
     return root
