@@ -541,7 +541,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::IndexSpace Factory constructor %s",name);
   f    = (*r)();
-  ierr = f->getIndexSpace(commname,comm,m,v);CHKERRQ(ierr);
+  ierr = f->getIndexSpace(commname,comm,m,PETSC_DECIDE,PETSC_DECIDE,v);CHKERRQ(ierr);
   delete f;
   PetscFunctionReturn(0);
 }
