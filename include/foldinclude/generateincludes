@@ -1,0 +1,10 @@
+#! /bin/csh
+#
+#  Generates the include files in petsc/include/finclude from those in
+#  petsc/include/FINCLUDE
+#
+cd $PETSC_DIR/include/FINCLUDE
+rm -f ../finclude/*.h
+foreach i (*.h) 
+  grep -v "define" $i > ../finclude/$i
+end
