@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.59 1996/03/19 21:25:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.60 1996/03/23 20:42:31 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -75,7 +75,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     }
     /* copy new filled row into permanent storage */
     ainew[i+1] = ainew[i] + nnz;
-    if (ainew[i+1] > jmax+1) {
+    if (ainew[i+1] > jmax) {
       /* allocate a longer ajnew */
       int maxadd;
       maxadd = (int) ((f*(ai[n]+(!shift))*(n-i+5))/n);

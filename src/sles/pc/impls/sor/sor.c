@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.51 1996/03/20 02:16:53 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.52 1996/03/24 15:09:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -141,7 +141,7 @@ $  -pc_sor_local_symmetric
 $  -pc_sor_local_backward
 
    Notes: 
-   To use the Eisenstat trick with SSOR, employ the PCESOR preconditioner,
+   To use the Eisenstat trick with SSOR, employ the PCEISENSTAT preconditioner,
    which can be chosen with the database option 
 $     -pc_type  eisenstat
 

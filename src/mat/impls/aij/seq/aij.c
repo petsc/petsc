@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.169 1996/04/07 22:45:46 curfman Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.170 1996/04/26 00:02:52 balay Exp bsmith $";
 #endif
 
 /*
@@ -241,7 +241,7 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg;
+  int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg1,flg2;
   FILE        *fd;
   char        *outputname;
 
@@ -252,8 +252,9 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     return 0;
   } 
   else if (format == ASCII_FORMAT_INFO_DETAILED) {
-    ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg); CHKERRQ(ierr);
-    if (flg) fprintf(fd,"  not using I-node routines\n");
+    ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2); CHKERRQ(ierr);
+    if (flg1 || flg2) fprintf(fd,"  not using I-node routines\n");
     else     fprintf(fd,"  using I-node routines: found %d nodes, limit used is %d\n",
         a->inode.node_count,a->inode.limit);
   }

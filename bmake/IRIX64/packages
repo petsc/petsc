@@ -13,7 +13,7 @@ FC_LIB         = -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(BS_DIR)/readme for information on retrieving a subset.
-# BLAS usually comes with SGI.
+# BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
 LAPACK_LIB     = /usr/local/pub/lib/lapack_sgi.a

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.24 1996/03/19 21:27:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.25 1996/04/09 14:15:33 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: matio.c,v 1.24 1996/03/19 21:27:41 bsmith Exp curfman
  */
 
 #include "petsc.h"
-#include "vec/vecimpl.h"
 #include "../matimpl.h"
 #include "sys.h"
 #include "pinclude/pviewer.h"
@@ -21,7 +20,7 @@ extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
 extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
 extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
 
-
+extern int MatLoadGetInfo_Private(Viewer);
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
@@ -78,6 +77,9 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   PetscObjectGetComm((PetscObject)viewer,&comm);
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
+
+  ierr = MatLoadGetInfo_Private(viewer); CHKERRQ(ierr);
+
   PLogEventBegin(MAT_Load,viewer,0,0,0);
 
   if (type == MATSEQAIJ) {
@@ -114,4 +116,42 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   PLogEventEnd(MAT_Load,viewer,0,0,0);
   return 0;
+}
+
+/*
+    MatLoadGetInfo_Private - Loads the matrix options from the name.info file
+  if it exists.
+
+*/
+int MatLoadGetInfo_Private(Viewer viewer)
+{
+  FILE *file;
+  char string[128],*first,*second,*final;
+  int  len,ierr,flg;
+
+  ierr = OptionsHasName(PETSC_NULL,"-matload_ignore_info",&flg);CHKERRQ(ierr);
+  if (flg) return 0;
+
+  ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
+  if (!file) return 0;
+
+  /* read rows of the file adding them to options database */
+  while (fgets(string,128,file)) {
+    /* Comments are indicated by #, ! or % in the first column */
+    if (string[0] == '#') continue;
+    if (string[0] == '!') continue;
+    if (string[0] == '%') continue;
+    first = PetscStrtok(string," ");
+    second = PetscStrtok(0," ");
+    if (first && first[0] == '-') {
+      if (second) {final = second;} else {final = first;}
+      len = PetscStrlen(final);
+      while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
+        len--; final[len] = 0;
+      }
+      ierr = OptionsSetValue(first,second); CHKERRQ(ierr);
+    }
+  }
+  return 0;
+
 }

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.27 1996/04/07 22:47:18 curfman Exp curfman $ */
+/* $Id: viewer.h,v 1.28 1996/04/12 00:07:43 curfman Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -22,6 +22,7 @@ extern int ViewerDestroy(Viewer);
 
 extern int ViewerASCIIGetPointer(Viewer,FILE**);
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
+extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 
 #define ASCII_FORMAT_DEFAULT       0
 #define ASCII_FORMAT_MATLAB        1

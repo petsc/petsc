@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.82 1996/04/20 04:19:15 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.83 1996/04/25 23:58:42 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -322,7 +322,7 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
   if (flg1 || flg2) { ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); }
 #endif
-  ierr = OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)

@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.19 1996/04/09 04:21:00 curfman Exp curfman $ */
+/* $Id: bdiag.h,v 1.20 1996/04/09 20:24:24 curfman Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -37,9 +37,9 @@ typedef struct {
 
 extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
 extern int MatNorm_SeqBDiag_Columns(Mat,double*,int);
-extern int MatMult_SeqBDiag(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqBDiag(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
+extern int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
+extern int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+extern int MatMultTrans_SeqBDiag_N(Mat A,Vec,Vec);
+extern int MatMultTransAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
 
 #endif

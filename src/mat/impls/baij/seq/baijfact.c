@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.21 1996/05/02 15:40:00 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.22 1996/05/03 02:38:30 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -189,19 +189,10 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 /*      if (*pc) { */
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
-        /* 
-          BLgemm_("N","N",&bs,&bs,&bs,&one,pc,&bs,pv,&bs,&zero,
-                multiplier,&bs); 
-          PetscMemcpy(pc,multiplier,bs2*sizeof(Scalar));
-	*/
         Kernel_A_gets_A_times_B(bs,pc,pv,multiplier); 
         nz = bi[row+1] - diag_offset[row] - 1;
         pv += bs2;
         for (j=0; j<nz; j++) {
-          /* 
-            BLgemm_("N","N",&bs,&bs,&bs,&mone,pc,&bs,pv+bs2*j,&bs,
-                    &one,rtmp+bs2*pj[j],&bs);
-	  */
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
         PLogFlops(bslog*(nz+1)-bs);
@@ -218,10 +209,6 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
     w = pv + bs2*diag; 
-    /*
-      ierr = Linpack_DGEFA(w,bs,v_pivots); CHKERRQ(ierr);
-      ierr = Linpack_DGEDI(w,bs,v_pivots,v_work); CHKERRQ(ierr);
-    */
     Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
   }
 
@@ -400,10 +387,6 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    /*
-      ierr = Linpack_DGEFA(w,bs,v_pivots); CHKERRQ(ierr);
-      ierr = Linpack_DGEDI(w,bs,v_pivots,v_work); CHKERRQ(ierr);
-    */
     Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
   }
 
@@ -549,10 +532,6 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    /*
-      ierr = Linpack_DGEFA(w,bs,v_pivots); CHKERRQ(ierr);
-      ierr = Linpack_DGEDI(w,bs,v_pivots,v_work); CHKERRQ(ierr);
-    */
     Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
   }
 
@@ -665,7 +644,6 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
     /* invert diagonal block */
     w = ba + 9*diag_offset[i];
     ierr = Kernel_A_gets_inverse_A_3(w); CHKERRQ(ierr);
-    /* Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work); */
   }
 
   PetscFree(rtmp);
@@ -755,10 +733,6 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
-    /*
-      ierr = Linpack_DGEFA(w,bs,v_pivots); CHKERRQ(ierr);
-      ierr = Linpack_DGEDI(w,bs,v_pivots,v_work); CHKERRQ(ierr);
-    */
     Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
   }
 
@@ -872,8 +846,8 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
-  int             nz,bs=a->bs,bs2=a->bs2,_One=1;
-  Scalar          *xa,*ba,*aa=a->a,*sum,_DOne=1.0,_DMOne=-1.0,_DZero=0.0;
+  int             nz,bs=a->bs,bs2=a->bs2;
+  Scalar          *xa,*ba,*aa=a->a,*sum;
   register Scalar *x,*b,*lsum,*tmp,*v;
 
   ierr = VecGetArray(bb,&ba); CHKERRQ(ierr); b = ba;
@@ -893,9 +867,6 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     PetscMemcpy(sum,b+bs*(*r++),bs*sizeof(Scalar));
     while (nz--) {
       Kernel_v_gets_v_minus_A_times_w(bs,sum,v,tmp+bs*(*vi++));
-/*
-      LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,sum,&_One);
-*/
       v += bs2;
     }
   }
@@ -908,17 +879,9 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     PetscMemcpy(lsum,tmp+i*bs,bs*sizeof(Scalar));
     while (nz--) {
       Kernel_v_gets_v_minus_A_times_w(bs,lsum,v,tmp+bs*(*vi++));
-/*
-      LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,lsum,&_One);
-*/
       v += bs2;
     }
-
     Kernel_w_gets_A_times_v(bs,lsum,aa+bs2*a->diag[i],tmp+i*bs);
-/*
-    LAgemv_("N",&bs,&bs,&_DOne,aa+bs2*a->diag[i],&bs,lsum,&_One,&_DZero,
-                tmp+i*bs,&_One);
-*/
     PetscMemcpy(x + bs*(*c--),tmp+i*bs,bs*sizeof(Scalar));
   }
 

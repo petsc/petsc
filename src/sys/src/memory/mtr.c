@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.54 1996/04/10 17:54:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.55 1996/04/29 18:57:06 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -135,27 +135,30 @@ int PetscTrValid(int line,char *file )
   TRSPACE *head;
   char    *a;
   unsigned long *nend;
-  int      errs = 0;
 
   head = TRhead;
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
-      if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
+      fprintf( stderr, "called from %s line %d \n",file,line );
       fprintf( stderr, "Block at address %p is corrupted\n", head );
       SETERRQ(1,"PetscTrValid");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
     if (nend[0] != COOKIE_VALUE) {
-      if (!errs) fprintf( stderr, "called from %s line %d\n",file,line );
-      errs++;
+      fprintf( stderr, "called from %s line %d\n",file,line );
       head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
-      fprintf( stderr, 
+      if (nend[0] == ALREADY_FREED) {
+        fprintf(stderr,"Block [id=%d(%lx)] at address %p already freed\n", 
+	        head->id, head->size, a );
+        SETERRQ(1,"PetscTrValid:Freed block in memory list, corrupted memory");
+      } else {
+        fprintf( stderr, 
              "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 	     head->id, head->size, a );
-      fprintf( stderr, 
-		"Block allocated in %s[%d]\n", head->fname, head->lineno );
-      SETERRQ(1,"PetscTrValid");
+        fprintf(stderr,"Block allocated in %s[%d]\n",head->fname,head->lineno);
+        SETERRQ(1,"PetscTrValid:Corrupted memory");
+      }
     }
     head = head->next;
   }
@@ -163,7 +166,7 @@ int PetscTrValid(int line,char *file )
   malloc_verify();
 #endif
 
-  return errs;
+  return 0;
 }
 
 /*
@@ -184,10 +187,10 @@ void *PetscTrMalloc(unsigned int a, int lineno, char *fname )
   char             *inew;
   unsigned long    *nend;
   unsigned int     nsize;
-  int              l;
+  int              l,ierr;
 
   if (TRdebugLevel > 0) {
-    if (PetscTrValid(lineno,fname )) return 0;
+    ierr = PetscTrValid(lineno,fname); if (ierr) return 0;
   }
 
   if (a == 0) {
@@ -219,12 +222,12 @@ void *PetscTrMalloc(unsigned int a, int lineno, char *fname )
   head->size     = nsize;
   head->id       = TRid;
   head->lineno   = lineno;
-  if ((l = PetscStrlen( fname )) > TR_FNAME_LEN-1 ) fname += (l - (TR_FNAME_LEN-1));
+  if ((l = PetscStrlen(fname)) > TR_FNAME_LEN-1) fname += (l - (TR_FNAME_LEN-1));
   PetscStrncpy( head->fname, fname, (TR_FNAME_LEN-1) );
-  head->fname[TR_FNAME_LEN-1]= 0;
-  head->cookie   = COOKIE_VALUE;
-  nend           = (unsigned long *)(inew + nsize);
-  nend[0]        = COOKIE_VALUE;
+  head->fname[TR_FNAME_LEN-1] = 0;
+  head->cookie                = COOKIE_VALUE;
+  nend                        = (unsigned long *)(inew + nsize);
+  nend[0]                     = COOKIE_VALUE;
 
   allocated += nsize;
   if (allocated > TRMaxMem) {
@@ -259,7 +262,7 @@ int PetscTrFree( void *aa, int line, char *file )
   }
 
   if (TRdebugLevel > 0) {
-    if ((ierr = PetscTrValid(line,file))) return ierr;
+    ierr = PetscTrValid(line,file); CHKERRQ(ierr);
   }
 
   if (PetscLow > aa || PetscHigh < aa){
@@ -278,15 +281,14 @@ may be block not allocated with PetscTrMalloc or MALLOC\n", a );
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
-	fprintf( stderr, 
-  "Block [id=%d(%lx)] at address %p was already freed\n", 
+	fprintf(stderr,"Block [id=%d(%lx)] at address %p was already freed\n", 
 		head->id, head->size, a + sizeof(TrSPACE) );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	if (head->lineno > 0) 
 	  fprintf( stderr, "Block freed in %s[%d]\n", head->fname, head->lineno );
 	else
 	  fprintf( stderr, "Block allocated at %s[%d]\n",head->fname,-head->lineno);
-	  SETERRQ(1,"PetscTrFree:Memory already freed");
+	SETERRQ(1,"PetscTrFree:Memory already freed");
     }
     else {
 	/* Damaged tail */
@@ -359,7 +361,7 @@ $  -trdump : dumps unfreed memory during call to PetscFinalize()
 int PetscTrDump( FILE *fp )
 {
   TRSPACE *head;
-  int     id,rank;
+  int     rank;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (fp == 0) fp = stderr;
@@ -367,16 +369,8 @@ int PetscTrDump( FILE *fp )
   while (head) {
     fprintf( fp, "[%d]%d bytes at address [%p], id = ",rank, 
 	     (int) head->size, head + sizeof(TrSPACE) );
-    if (head->id >= 0) {
-	head->fname[TR_FNAME_LEN-1] = 0;
-	fprintf( fp, "%d, %s[%d]\n", head->id, head->fname, head->lineno );
-    }
-    else {
-	/* Decode the package values */
-	head->fname[TR_FNAME_LEN-1] = 0;
-	id = head->id;
-	fprintf( fp, "%d %s[%d]\n", id, head->fname, head->lineno );
-    }
+    head->fname[TR_FNAME_LEN-1] = 0;
+    fprintf( fp, "%d, %s[%d]\n", head->id, head->fname, head->lineno );
     head = head->next;
   }
   return 0;

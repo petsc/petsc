@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.101 1996/04/09 04:20:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.102 1996/04/26 00:51:00 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -7,248 +7,275 @@ static char vcid[] = "$Id: bdiag.c,v 1.101 1996/04/09 04:20:39 curfman Exp bsmit
 #include "bdiag.h"
 #include "src/vec/vecimpl.h"
 
-static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
-                                 Scalar *v,InsertMode is)
+static int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,
+                                   Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          kk, loc, ldiag, shift, row, dfound, newnz, *bdlen_new;
-  int          j, k, nb = a->nb, *diag_new, roworiented = a->roworiented;
-  Scalar       value, *valpt, **diagv_new;
+  int          kk, ldiag, row, dfound, newnz, *bdlen_new;
+  int          j, k,  *diag_new, roworiented = a->roworiented;
+  Scalar       value, **diagv_new;
 
-  if (nb == 1) { /* special case blocks are 1x1 */
-    for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
-      row = im[kk];   
-      if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
-      if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
-      for (j=0; j<n; j++) {
-        if (in[j] < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative column");
-        if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Col. too large");
-        ldiag = row - in[j]; /* diagonal number */
-        dfound = 0;
-        if (roworiented) {
-          value = *v++; 
-        }
-        else {
-          value = v[kk + j*m];
-        }
-        for (k=0; k<a->nd; k++) {
-	  if (a->diag[k] == ldiag) {
-            dfound = 1;
-	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
-	    else           loc = row;
-	    if ((valpt = &((a->diagv[k])[loc]))) {
-	      if (is == ADD_VALUES) *valpt += value;
-	      else                  *valpt = value;
-            } else SETERRQ(1,"MatSetValues_SeqBDiag:Invalid data location");
-            break;
-          }
-        }
-        if (!dfound) {
-          if (a->nonew || a->nonew_diag) {
-#if !defined(PETSC_COMPLEX)
-            if (a->user_alloc && value) {
-#else
-            if (a->user_alloc && real(value) || imag(value)) {
-#endif
-              PLogInfo(A,
-                "MatSetValues_SeqBDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
-            }
-          } else {
-            PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
-            /* free old bdiag storage info and reallocate */
-            diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int)); CHKPTRQ(diag_new);
-            bdlen_new = diag_new + a->nd + 1;
-            diagv_new = (Scalar**)PetscMalloc((a->nd+1)*sizeof(Scalar*)); CHKPTRQ(diagv_new);
-            for (k=0; k<a->nd; k++) {
-              diag_new[k]  = a->diag[k];
-              diagv_new[k] = a->diagv[k];
-              bdlen_new[k] = a->bdlen[k];
-            }
-            diag_new[a->nd]  = ldiag;
-            if (ldiag > 0) /* lower triangular */
-              bdlen_new[a->nd] = PetscMin(a->nblock,a->mblock - ldiag);
-            else {         /* upper triangular */
-              if (a->mblock - ldiag > a->nblock)
-                bdlen_new[a->nd] = a->nblock + ldiag;
-              else
-                bdlen_new[a->nd] = a->mblock;
-            }
-            newnz = bdlen_new[a->nd];
-            diagv_new[a->nd] = (Scalar*)PetscMalloc(newnz*sizeof(Scalar));
-            CHKPTRQ(diagv_new[a->nd]);
-            PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
-            a->maxnz += newnz;
-            a->nz += newnz;
-            PetscFree(a->diagv); PetscFree(a->diag); 
-            a->diag  = diag_new; 
-            a->bdlen = bdlen_new;
-            a->diagv = diagv_new;
-
-            /* Insert value */
-	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
-	    else           loc = row;
-	    if ((valpt = &((a->diagv[a->nd])[loc]))) {
-	      if (is == ADD_VALUES) *valpt += value;
-	      else                  *valpt = value;
-            } else SETERRQ(1,"MatSetValues_SeqBDiag:Invalid data location");
-            a->nd++;
-            PLogObjectMemory(A,newnz*sizeof(Scalar) + 2*sizeof(int) + sizeof(Scalar*));
-          }
+  for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
+    row = im[kk];   
+    if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
+    if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
+    for (j=0; j<n; j++) {
+      if (in[j] < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative col.");
+      if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Col. too large");
+      ldiag = row - in[j]; /* diagonal number */
+      dfound = 0;
+      if (roworiented) {
+        value = *v++; 
+      }
+      else {
+        value = v[kk + j*m];
+      }
+      /* search diagonals for required one */
+      for (k=0; k<a->nd; k++) {
+	if (a->diag[k] == ldiag) {
+          dfound = 1;
+          if (is == ADD_VALUES) a->diagv[k][row] += value;
+	  else                  a->diagv[k][row]  = value;
+          break;
         }
       }
-    }
-  } else {
-
-    for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
-      row = im[kk];   
-      if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
-      if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
-      shift = (row/nb)*nb*nb + row%nb;
-      for (j=0; j<n; j++) {
-        ldiag = row/nb - in[j]/nb; /* block diagonal */
-        dfound = 0;
-        if (roworiented) {
-          value = *v++; 
-        }
-        else {
-          value = v[kk + j*m];
-        }
-        for (k=0; k<a->nd; k++) {
-          if (a->diag[k] == ldiag) {
-            dfound = 1;
-	    if (ldiag > 0) /* lower triangle */
-	      loc = shift - ldiag*nb*nb;
-            else
-	      loc = shift;
-	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
-	      if (is == ADD_VALUES) *valpt += value;
-	      else                  *valpt = value;
-            } else SETERRQ(1,"MatSetValues_SeqBDiag:Invalid data location");
-            break;
-          }
-        }
-        if (!dfound) {
-          if (a->nonew || a->nonew_diag) {
+      if (!dfound) {
+        if (a->nonew || a->nonew_diag) {
 #if !defined(PETSC_COMPLEX)
-            if (a->user_alloc && value) {
+          if (a->user_alloc && value) {
 #else
-            if (a->user_alloc && real(value) || imag(value)) {
+          if (a->user_alloc && real(value) || imag(value)) {
 #endif
-              PLogInfo(A,
+            PLogInfo(A,
                 "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
-            }
-          } else {
-            PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
-            /* free old bdiag storage info and reallocate */
-            diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int)); CHKPTRQ(diag_new);
-            bdlen_new = diag_new + a->nd + 1;
-            diagv_new = (Scalar**)PetscMalloc((a->nd+1)*sizeof(Scalar*)); CHKPTRQ(diagv_new);
-            for (k=0; k<a->nd; k++) {
-              diag_new[k]  = a->diag[k];
-              diagv_new[k] = a->diagv[k];
-              bdlen_new[k] = a->bdlen[k];
-            }
-            diag_new[a->nd]  = ldiag;
-            if (ldiag > 0) /* lower triangular */
-              bdlen_new[a->nd] = PetscMin(a->nblock,a->mblock - ldiag);
-            else {         /* upper triangular */
-              if (a->mblock - ldiag > a->nblock)
-                bdlen_new[a->nd] = a->nblock + ldiag;
-              else
-                bdlen_new[a->nd] = a->mblock;
-            }
-            newnz = nb*nb*bdlen_new[a->nd];
-            diagv_new[a->nd] = (Scalar*)PetscMalloc(newnz*sizeof(Scalar));
-            CHKPTRQ(diagv_new[a->nd]);
-            PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
-            a->maxnz += newnz; a->nz += newnz;
-            PetscFree(a->diagv); PetscFree(a->diag); 
-            a->diag  = diag_new; 
-            a->bdlen = bdlen_new;
-            a->diagv = diagv_new;
-
-            /* Insert value */
-	    if (ldiag > 0) /* lower triangle */
-	      loc = shift - ldiag*nb*nb;
-             else
-	      loc = shift;
-	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
-	      if (is == ADD_VALUES) *valpt += value;
-	      else                  *valpt = value;
-            } else SETERRQ(1,"MatSetValues_SeqBDiag:Invalid data location");
-            a->nd++;
-            PLogObjectMemory(A,newnz*sizeof(Scalar) + 2*sizeof(int) + sizeof(Scalar*));
           }
+        } else {
+          PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          /* free old bdiag storage info and reallocate */
+          diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
+          bdlen_new = diag_new + a->nd + 1;
+          diagv_new = (Scalar**)PetscMalloc((a->nd+1)*sizeof(Scalar*));CHKPTRQ(diagv_new);
+          for (k=0; k<a->nd; k++) {
+            diag_new[k]  = a->diag[k];
+            diagv_new[k] = a->diagv[k];
+            bdlen_new[k] = a->bdlen[k];
+          }
+          diag_new[a->nd]  = ldiag;
+          if (ldiag > 0) /* lower triangular */
+            bdlen_new[a->nd] = PetscMin(a->nblock,a->mblock - ldiag);
+          else {         /* upper triangular */
+            bdlen_new[a->nd] = PetscMin(a->mblock,a->nblock + ldiag);
+          }
+          newnz = bdlen_new[a->nd];
+          diagv_new[a->nd] = (Scalar*)PetscMalloc(newnz*sizeof(Scalar));
+          CHKPTRQ(diagv_new[a->nd]);
+          PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
+          /* adjust pointers so that dv[diag][row] works for all diagonals*/
+          if (diag_new[a->nd] > 0) {
+            diagv_new[a->nd] -= diag_new[a->nd];
+          }
+          a->maxnz += newnz;
+          a->nz    += newnz;
+          PetscFree(a->diagv); PetscFree(a->diag); 
+          a->diag  = diag_new; 
+          a->bdlen = bdlen_new;
+          a->diagv = diagv_new;
+
+          /* Insert value */
+          if (is == ADD_VALUES) a->diagv[a->nd][row] += value;
+          else                  a->diagv[a->nd][row] = value;
+          a->nd++;
+          PLogObjectMemory(A,newnz*sizeof(Scalar)+2*sizeof(int)+sizeof(Scalar*));
         }
       }
     }
   }
   return 0;
 }
-static int MatGetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,Scalar *v)
+
+
+static int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
+                                   Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          kk, loc, ldiag, shift, row, dfound, j, k, nb = a->nb;
-  Scalar       *valpt, zero = 0.0;
+  int          kk, ldiag, shift, row, dfound, newnz, *bdlen_new;
+  int          j, k, nb = a->nb, *diag_new, roworiented = a->roworiented;
+  Scalar       value, **diagv_new;
 
-  if (nb == 1) {
-    for ( kk=0; kk<m; kk++ ) { /* loop over rows */
-      row = im[kk];   
-      if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
-      if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
-      for (j=0; j<n; j++) {
-        if (in[j] < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative column");
-        if (in[j] >= a->n) SETERRQ(1,"MatGetValues_SeqBDiag:Column too large");
-        ldiag = row - in[j]; /* diagonal number */
-        dfound = 0;
-        for (k=0; k<a->nd; k++) {
-	  if (a->diag[k] == ldiag) {
-            dfound = 1;
-	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
-	    else           loc = row;
-	    if ((valpt = &((a->diagv[k])[loc]))) {
-	      *v++ =  *valpt;
-            } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
-            break;
-          }
-        }
-        if (!dfound) *v++ = zero;
+  for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
+    row = im[kk];   
+    if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
+    if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
+    shift = (row/nb)*nb*nb + row%nb;
+    for (j=0; j<n; j++) {
+      ldiag = row/nb - in[j]/nb; /* block diagonal */
+      dfound = 0;
+      if (roworiented) {
+        value = *v++; 
       }
-    }
-  } else {
-    for ( kk=0; kk<m; kk++ ) { /* loop over rows */
-      row = im[kk];   
-      if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
-      if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
-      shift = (row/nb)*nb*nb + row%nb;
-      for (j=0; j<n; j++) {
-        ldiag = row/nb - in[j]/nb; /* block diagonal */
-        dfound = 0;
-        for (k=0; k<a->nd; k++) {
-          if (a->diag[k] == ldiag) {
-            dfound = 1;
-	    if (ldiag > 0) /* lower triangle */
-	      loc = shift - ldiag*nb*nb;
-             else
-	      loc = shift;
-	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
-              *v++ =  *valpt;
-            } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
-            break;
-          }
+      else {
+        value = v[kk + j*m];
+      }
+      /* seach for appropriate diagonal */
+      for (k=0; k<a->nd; k++) {
+        if (a->diag[k] == ldiag) {
+          dfound = 1;
+          if (is == ADD_VALUES) a->diagv[k][shift + (in[j]%nb)*nb] += value;
+	  else                  a->diagv[k][shift + (in[j]%nb)*nb] = value;
+          break;
         }
-        if (!dfound) *v++ = zero;
+      }
+      if (!dfound) {
+        if (a->nonew || a->nonew_diag) {
+#if !defined(PETSC_COMPLEX)
+          if (a->user_alloc && value) {
+#else
+          if (a->user_alloc && real(value) || imag(value)) {
+#endif
+            PLogInfo(A,
+                "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
+          }
+        } else {
+          PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          /* free old bdiag storage info and reallocate */
+          diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
+          bdlen_new = diag_new + a->nd + 1;
+          diagv_new = (Scalar**)PetscMalloc((a->nd+1)*sizeof(Scalar*)); CHKPTRQ(diagv_new);
+          for (k=0; k<a->nd; k++) {
+            diag_new[k]  = a->diag[k];
+            diagv_new[k] = a->diagv[k];
+            bdlen_new[k] = a->bdlen[k];
+          }
+          diag_new[a->nd]  = ldiag;
+          if (ldiag > 0) /* lower triangular */
+            bdlen_new[a->nd] = PetscMin(a->nblock,a->mblock - ldiag);
+          else {         /* upper triangular */
+            bdlen_new[a->nd] = PetscMin(a->mblock,a->nblock + ldiag);
+          }
+          newnz = nb*nb*bdlen_new[a->nd];
+          diagv_new[a->nd]=(Scalar*)PetscMalloc(newnz*sizeof(Scalar));CHKPTRQ(diagv_new[a->nd]);
+          PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
+          /* adjust pointer so that dv[diag][row] works for all diagonals */
+          if (diag_new[a->nd] > 0) {
+            diagv_new[a->nd] -= nb*nb*diag_new[a->nd];
+          }
+          a->maxnz += newnz; a->nz += newnz;
+          PetscFree(a->diagv); PetscFree(a->diag); 
+          a->diag  = diag_new; 
+          a->bdlen = bdlen_new;
+          a->diagv = diagv_new;
+
+          /* Insert value */
+          if (is == ADD_VALUES) a->diagv[k][shift + (in[j]%nb)*nb] += value;
+          else                  a->diagv[k][shift + (in[j]%nb)*nb] = value;
+          a->nd++;
+          PLogObjectMemory(A,newnz*sizeof(Scalar)+2*sizeof(int)+sizeof(Scalar*));
+        }
       }
     }
   }
   return 0;
+}
+
+static int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          kk, ldiag, row, dfound, j, k;
+  Scalar       zero = 0.0;
+
+  for ( kk=0; kk<m; kk++ ) { /* loop over rows */
+    row = im[kk];   
+    if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
+    if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+    for (j=0; j<n; j++) {
+      if (in[j] < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative column");
+      if (in[j] >= a->n) SETERRQ(1,"MatGetValues_SeqBDiag:Column too large");
+      ldiag = row - in[j]; /* diagonal number */
+      dfound = 0;
+      for (k=0; k<a->nd; k++) {
+        if (a->diag[k] == ldiag) {
+          dfound = 1;
+          *v++ = a->diagv[k][row];
+          break;
+        }
+      }
+      if (!dfound) *v++ = zero;
+    }
+  }
+  return 0;
+}
+
+static int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          kk, ldiag, shift, row, dfound, j, k, nb = a->nb;
+  Scalar       zero = 0.0;
+
+  for ( kk=0; kk<m; kk++ ) { /* loop over rows */
+    row = im[kk];   
+    if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
+    if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+    shift = (row/nb)*nb*nb + row%nb;
+    for (j=0; j<n; j++) {
+      ldiag = row/nb - in[j]/nb; /* block diagonal */
+      dfound = 0;
+      for (k=0; k<a->nd; k++) {
+        if (a->diag[k] == ldiag) {
+          dfound = 1;
+          *v++ = a->diagv[k][shift + (in[j]%nb)*nb ];
+          break;
+        }
+      }
+      if (!dfound) *v++ = zero;
+    }
+  }
+  return 0;
+}
+
+
+int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec yy,Vec zz)
+{ 
+  SETERRQ(1,"not here");
+}
+
+int MatMultTransAdd_SeqBDiag_N(Mat A,Vec xx,Vec yy,Vec zz)
+{ 
+  SETERRQ(1,"not here");
 }
 
 /*
-  MatMult_SeqBDiag_base - This routine is intended for use with 
-  MatMult_SeqBDiag() and MatMultAdd_SeqBDiag().  It computes yy += mat * xx.
+
  */
-static int MatMult_SeqBDiag_base(Mat A,Vec xx,Vec yy)
+int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             nd = a->nd, diag;
+  Scalar          *vin, *vout;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, j, len;
+
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); PetscMemzero(vout,a->m*sizeof(Scalar));
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
+    if (diag > 0) {	/* lower triangle */
+      pvin  = vin;
+      pvout = vout + diag;
+      dv    = dv + diag;
+    } else {		/* upper triangle, including main diagonal */
+      pvin  = vin - diag;
+      pvout = vout;
+    }
+    for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             nd = a->nd, nb = a->nb, diag, kshift, kloc;
@@ -256,53 +283,66 @@ static int MatMult_SeqBDiag_base(Mat A,Vec xx,Vec yy)
   register Scalar *pvin, *pvout, *dv;
   register int    d, i, j, k, len;
 
-  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
-  if (nb == 1) {
-    for (d=0; d<nd; d++) {
-      dv   = a->diagv[d];
-      diag = a->diag[d];
-      len  = a->bdlen[d];
-      if (diag > 0) {	/* lower triangle */
-        pvin = vin;
-	pvout = vout + diag;
-      } else {		/* upper triangle, including main diagonal */
-        pvin  = vin - diag;
-        pvout = vout;
-      }
-      for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); PetscMemzero(vout,a->m*sizeof(Scalar));
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
+    if (diag > 0) {	/* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb*diag;
+      dv    = dv + nb*nb*diag;
+    } else {		/* upper triangle, including main diagonal */
+      pvin  = vin - nb*diag;
+      pvout = vout;
     }
-  } else { /* Block diagonal approach, assuming storage within dense blocks 
-              in column-major order */
-    for (d=0; d<nd; d++) {
-      dv   = a->diagv[d];
-      diag = a->diag[d];
-      len  = a->bdlen[d];
-      if (diag > 0) {	/* lower triangle */
-        pvin = vin;
-	pvout = vout + nb*diag;
-      } else {		/* upper triangle, including main diagonal */
-        pvin  = vin - nb*diag;
-        pvout = vout;
-      }
-      for (k=0; k<len; k++) {
-        kloc = k*nb; kshift = kloc*nb; 
-        for (i=0; i<nb; i++) {	/* i = local row */
-          for (j=0; j<nb; j++) {	/* j = local column */
-            pvout[kloc + i] += dv[kshift + j*nb + i] * pvin[kloc + j];
-          }
+    for (k=0; k<len; k++) {
+      kloc = k*nb; kshift = kloc*nb; 
+      for (i=0; i<nb; i++) {	/* i = local row */
+        for (j=0; j<nb; j++) {	/* j = local column */
+          pvout[kloc + i] += dv[kshift + j*nb + i] * pvin[kloc + j];
         }
       }
     }
   }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
   return 0;
 }
 
 /*
-  MatMultTrans_SeqBDiag_base - This routine is intended for use with 
-  MatMultTrans_SeqBDiag() and MatMultTransAdd_SeqBDiag().  It computes 
-            yy += mat^T * xx.
+
  */
-static int MatMultTrans_SeqBDiag_base(Mat A,Vec xx,Vec yy)
+int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             nd = a->nd, diag;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, j, len;
+  Scalar          *vin, *vout;
+  
+  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
+      /* diag of original matrix is (row/nb - col/nb) */
+      /* diag of transpose matrix is (col/nb - row/nb) */
+    if (diag < 0) {	/* transpose is lower triangle */
+      pvin  = vin;
+      pvout = vout - diag;
+    } else {	/* transpose is upper triangle, including main diagonal */
+      pvin  = vin + diag;
+      pvout = vout;
+      dv    = dv + diag;
+    }
+    for (j=0; j<len; j++) pvout[j] = dv[j] * pvin[j];
+  }
+  return 0;
+}
+
+int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             nd = a->nd, nb = a->nb, diag,kshift, kloc;
@@ -311,43 +351,25 @@ static int MatMultTrans_SeqBDiag_base(Mat A,Vec xx,Vec yy)
   Scalar          *vin, *vout;
   
   VecGetArray(xx,&vin); VecGetArray(yy,&vout);
-  if (nb == 1) {
-    for (d=0; d<nd; d++) {
-      dv   = a->diagv[d];
-      diag = a->diag[d];
-      len  = a->bdlen[d];
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
       /* diag of original matrix is (row/nb - col/nb) */
       /* diag of transpose matrix is (col/nb - row/nb) */
-      if (diag < 0) {	/* transpose is lower triangle */
-        pvin  = vin;
-	pvout = vout - diag;
-      } else {	/* transpose is upper triangle, including main diagonal */
-        pvin  = vin + diag;
-        pvout = vout;
-      }
-      for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
+    if (diag < 0) {	/* transpose is lower triangle */
+      pvin  = vin;
+      pvout = vout - nb*diag;
+    } else {	/* transpose is upper triangle, including main diagonal */
+      pvin  = vin + nb*diag;
+      pvout = vout;
+      dv    = dv + diag;
     }
-  } else { /* Block diagonal approach, assuming storage within dense blocks
-              in column-major order */
-    for (d=0; d<nd; d++) {
-      dv   = a->diagv[d];
-      diag = a->diag[d];
-      len  = a->bdlen[d];
-      /* diag of original matrix is (row/nb - col/nb) */
-      /* diag of transpose matrix is (col/nb - row/nb) */
-      if (diag < 0) {	/* transpose is lower triangle */
-        pvin  = vin;
-        pvout = vout - nb*diag;
-      } else {	/* transpose is upper triangle, including main diagonal */
-        pvin  = vin + nb*diag;
-        pvout = vout;
-      }
-      for (k=0; k<len; k++) {
-        kloc = k*nb; kshift = kloc*nb;
-        for (i=0; i<nb; i++) {	 /* i = local column of transpose */
-          for (j=0; j<nb; j++) { /* j = local row of transpose */
-            pvout[kloc + j] += dv[kshift + j*nb + i] * pvin[kloc + i];
-          }
+    for (k=0; k<len; k++) {
+      kloc = k*nb; kshift = kloc*nb;
+      for (i=0; i<nb; i++) {	 /* i = local column of transpose */
+        for (j=0; j<nb; j++) {   /* j = local row of transpose */
+          pvout[kloc + j] = dv[kshift + j*nb + i] * pvin[kloc + i];
         }
       }
     }
@@ -355,111 +377,61 @@ static int MatMultTrans_SeqBDiag_base(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-int MatMult_SeqBDiag(Mat A,Vec xx,Vec yy)
-{
-  Scalar zero = 0.0;
-  int    ierr;
-  ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  return MatMult_SeqBDiag_base(A,xx,yy);
-}
-
-int MatMultTrans_SeqBDiag(Mat A,Vec xx,Vec yy)
-{
-  Scalar zero = 0.0;
-  int    ierr;
-  ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  return MatMultTrans_SeqBDiag_base(A,xx,yy);
-}
-
-int MatMultAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
-{
-  int ierr;
-  ierr = VecCopy(zz,yy); CHKERRQ(ierr);
-  return MatMult_SeqBDiag_base(A,xx,yy);
-}
-
-int MatMultTransAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
-{
-  int ierr;
-  ierr = VecCopy(zz,yy); CHKERRQ(ierr);
-  return MatMultTrans_SeqBDiag_base(A,xx,yy);
-}
-
-static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
+static int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
                              double shift,int its,Vec xx)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   Scalar       *x, *b, *xb, *dd, *dv, dval, sum;
-  int          m = a->m, i, j, k, d, kbase, nb = a->nb, loc, kloc;
+  int          i, j, k, d, kbase, nb = a->nb, kloc;
   int          mainbd = a->mainbd, diag, mblock = a->mblock, bloc;
 
   /* Currently this code doesn't use wavefront orderings, although
-     we should eventually incorporate that option */
+     we should eventually incorporate that option, whatever wavefront
+     ordering maybe :-) */
+
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
   dd = a->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
-    if (nb == 1) {
-      for ( i=0; i<m; i++ ) {
-        sum = b[i] * (shift + dd[i]) / omega;
+    for ( k=0; k<mblock; k++ ) {
+      kloc = k*nb; kbase = kloc*nb;
+      for (i=0; i<nb; i++) {
+        sum = b[i+kloc] * (shift + dd[i*(nb+1)+kbase]) / omega;
+        for (j=i+1; j<nb; j++) sum += dd[kbase + j*nb + i] * b[kloc + j];
         for (d=mainbd+1; d<a->nd; d++) {
           diag = a->diag[d];
-          if (i-diag < m) sum += a->diagv[d][i] * x[i-diag];
-        }
-        x[i] = sum;
-      }
-    } else {
-      for ( k=0; k<mblock; k++ ) {
-        kloc = k*nb; kbase = kloc*nb;
-        for (i=0; i<nb; i++) {
-          sum = b[i+kloc] * (shift + dd[i*(nb+1)+kbase]) / omega;
-          for (j=i+1; j<nb; j++)
-            sum += dd[kbase + j*nb + i] * b[kloc + j];
-          for (d=mainbd+1; d<a->nd; d++) {
-            diag = a->diag[d];
-            dv   = a->diagv[d];
-            if (k-diag < mblock) {
-              for (j=0; j<nb; j++)
-                sum += dv[kbase + j*nb + i] * b[(k-diag)*nb + j];
+          dv   = a->diagv[d];
+          if (k-diag < mblock) {
+            for (j=0; j<nb; j++) {
+              sum += dv[kbase + j*nb + i] * b[(k-diag)*nb + j];
             }
-	  }
-          x[kloc+i] = sum;
+          }
         }
+        x[kloc+i] = sum;
       }
     }
     return 0;
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      if (nb == 1) {
-        for (i=0; i<m; i++) {
-          sum  = b[i];
+      for ( k=0; k<mblock; k++ ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for (i=0; i<nb; i++) {
+          sum  = b[i+kloc];
+          dval = shift + dd[i*(nb+1)+kbase];
           for (d=0; d<mainbd; d++) {
-            loc = i - a->diag[d];
-            if (loc >= 0) sum -= a->diagv[d][loc] * x[loc];
+            diag = a->diag[d];
+            dv   = a->diagv[d];
+            if (k >= diag) {
+              for (j=0; j<nb; j++)
+                sum -= dv[k*nb*nb + j*nb + i] * x[(k-diag)*nb + j];
+            }
           }
-          x[i] = omega*(sum/(shift + dd[i]));
-        }
-      } else {
-        for ( k=0; k<mblock; k++ ) {
-          kloc = k*nb; kbase = kloc*nb;
-          for (i=0; i<nb; i++) {
-            sum  = b[i+kloc];
-            dval = shift + dd[i*(nb+1)+kbase];
-            for (d=0; d<mainbd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc >= 0) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
-              }
-	    }
-            for (j=0; j<i; j++)
-              sum -= dd[kbase + j*nb + i] * x[kloc + j];
-            x[kloc+i] = omega*sum/dval;
+          for (j=0; j<i; j++){
+            sum -= dd[kbase + j*nb + i] * x[kloc + j];
           }
+          x[kloc+i] = omega*sum/dval;
         }
       }
       xb = x;
@@ -467,47 +439,30 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
     else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
-      if (nb == 1) {
-        for ( i=0; i<m; i++ ) x[i] *= dd[i];
-      } 
-      else {
-        for ( k=0; k<mblock; k++ ) {
-          kloc = k*nb; kbase = kloc*nb;
-          for (i=0; i<nb; i++)
-            x[kloc+i] *= dd[i*(nb+1)+kbase];
-        }
+      for ( k=0; k<mblock; k++ ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for (i=0; i<nb; i++)
+          x[kloc+i] *= dd[i*(nb+1)+kbase];
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
-      if (nb == 1) {
-        for ( i=m-1; i>=0; i-- ) {
-          sum = xb[i];
+      for ( k=mblock-1; k>=0; k-- ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for ( i=nb-1; i>=0; i-- ) {
+          sum  = xb[i+kloc];
+          dval = shift + dd[i*(nb+1)+kbase];
+          for ( j=i+1; j<nb; j++ )
+            sum -= dd[kbase + j*nb + i] * x[kloc + j];
           for (d=mainbd+1; d<a->nd; d++) {
             diag = a->diag[d];
-            if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
+            dv   = a->diagv[d];
+            bloc = k - diag;
+            if (bloc < mblock) {
+              for (j=0; j<nb; j++)
+                sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
+            }
           }
-          x[i] = omega*(sum/(shift + dd[i]));
-        }
-      } 
-      else {
-        for ( k=mblock-1; k>=0; k-- ) {
-          kloc = k*nb; kbase = kloc*nb;
-          for ( i=nb-1; i>=0; i-- ) {
-            sum  = xb[i+kloc];
-            dval = shift + dd[i*(nb+1)+kbase];
-            for ( j=i+1; j<nb; j++ )
-              sum -= dd[kbase + j*nb + i] * x[kloc + j];
-            for (d=mainbd+1; d<a->nd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc < mblock) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
-              }
-	    }
-            x[kloc+i] = omega*sum/dval;
-          }
+          x[kloc+i] = omega*sum/dval;
         }
       }
     }
@@ -515,91 +470,147 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
   }
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      if (nb == 1) {
-        for (i=0; i<m; i++) {
-          sum  = b[i];
-          dval = shift + dd[i];
+      for ( k=0; k<mblock; k++ ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for (i=0; i<nb; i++) {
+          sum  = b[i+kloc];
+          dval = shift + dd[i*(nb+1)+kbase];
           for (d=0; d<mainbd; d++) {
-            loc = i - a->diag[d];
-            if (loc >= 0) sum -= a->diagv[d][loc] * x[loc];
+            diag = a->diag[d];
+            dv   = a->diagv[d];
+            bloc = k - diag;
+            if (bloc >= 0) {
+              for (j=0; j<nb; j++)
+                sum -= dv[k*nb*nb + j*nb + i] * x[bloc*nb + j];
+            }
           }
           for (d=mainbd; d<a->nd; d++) {
             diag = a->diag[d];
-            if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
-          }
-          x[i] = (1. - omega)*x[i] + omega*(sum/dval + x[i]);
-        }
-      } else {
-        for ( k=0; k<mblock; k++ ) {
-          kloc = k*nb; kbase = kloc*nb;
-          for (i=0; i<nb; i++) {
-            sum  = b[i+kloc];
-            dval = shift + dd[i*(nb+1)+kbase];
-            for (d=0; d<mainbd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc >= 0) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
-              }
-	    }
-            for (d=mainbd; d<a->nd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc < mblock) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
-              }
-	    }
-            x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
-          }
+            dv   = a->diagv[d];
+            bloc = k - diag;
+            if (bloc < mblock) {
+              for (j=0; j<nb; j++)
+                sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
+            }
+	  }
+          x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
         }
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
-      if (nb == 1) {
-        for ( i=m-1; i>=0; i-- ) {
-          sum = b[i];
+      for ( k=mblock-1; k>=0; k-- ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for ( i=nb-1; i>=0; i-- ) {
+          sum  = b[i+kloc];
+          dval = shift + dd[i*(nb+1)+kbase];
           for (d=0; d<mainbd; d++) {
-            loc = i - a->diag[d];
-            if (loc >= 0) sum -= a->diagv[d][loc] * x[loc];
+            diag = a->diag[d];
+            dv   = a->diagv[d];
+            bloc = k - diag;
+            if (bloc >= 0) {
+              for (j=0; j<nb; j++)
+                sum -= dv[k*nb*nb + j*nb + i] * x[bloc*nb + j];
+            }
           }
           for (d=mainbd; d<a->nd; d++) {
             diag = a->diag[d];
-            if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
+            dv   = a->diagv[d];
+            bloc = k - diag;
+            if (bloc < mblock) {
+              for (j=0; j<nb; j++)
+                sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
+            }
           }
-          x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dd[i]) + x[i]);
+          x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
         }
-      } 
-      else {
-        for ( k=mblock-1; k>=0; k-- ) {
-          kloc = k*nb; kbase = kloc*nb;
-          for ( i=nb-1; i>=0; i-- ) {
-            sum  = b[i+kloc];
-            dval = shift + dd[i*(nb+1)+kbase];
-            for (d=0; d<mainbd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc >= 0) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
-              }
-	    }
-            for (d=mainbd; d<a->nd; d++) {
-              diag = a->diag[d];
-              dv   = a->diagv[d];
-              bloc = k - diag;
-              if (bloc < mblock) {
-                for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
-              }
-	    }
-            x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
-          }
+      }
+    }
+  }
+  return 0;
+} 
+
+static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
+                               double shift,int its,Vec xx)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Scalar       *x, *b, *xb, *dd, dval, sum;
+  int          m = a->m, i, d,loc;
+  int          mainbd = a->mainbd, diag;
+
+  /* Currently this code doesn't use wavefront orderings, although
+     we should eventually incorporate that option, whatever wavefront
+     ordering maybe :-) */
+
+  VecGetArray(xx,&x); VecGetArray(bb,&b);
+  if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
+  dd = a->diagv[mainbd];
+  if (flag == SOR_APPLY_UPPER) {
+    /* apply ( U + D/omega) to the vector */
+    for ( i=0; i<m; i++ ) {
+      sum = b[i] * (shift + dd[i]) / omega;
+      for (d=mainbd+1; d<a->nd; d++) {
+        diag = a->diag[d];
+        if (i-diag < m) sum += a->diagv[d][i] * x[i-diag];
+      }
+      x[i] = sum;
+    }
+    return 0;
+  }
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      for (i=0; i<m; i++) {
+        sum  = b[i];
+        for (d=0; d<mainbd; d++) {
+          if (i >= a->diag[d]) sum -= a->diagv[d][i] * x[i-a->diag[d]];
         }
+        x[i] = omega*(sum/(shift + dd[i]));
+      }
+      xb = x;
+    }
+    else xb = b;
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+        (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
+      for ( i=0; i<m; i++ ) x[i] *= dd[i];
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+      for ( i=m-1; i>=0; i-- ) {
+        sum = xb[i];
+        for (d=mainbd+1; d<a->nd; d++) {
+          diag = a->diag[d];
+          if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
+        }
+        x[i] = omega*(sum/(shift + dd[i]));
+      }
+    }
+    its--;
+  }
+  while (its--) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      for (i=0; i<m; i++) {
+        sum  = b[i];
+        dval = shift + dd[i];
+        for (d=0; d<mainbd; d++) {
+          if (i >= a->diag[d]) sum -= a->diagv[d][i] * x[i-a->diag[d]];
+        }
+        for (d=mainbd; d<a->nd; d++) {
+          diag = a->diag[d];
+          if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
+        }
+        x[i] = (1. - omega)*x[i] + omega*(sum/dval + x[i]);
+      }
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+      for ( i=m-1; i>=0; i-- ) {
+        sum = b[i];
+        for (d=0; d<mainbd; d++) {
+          loc = i - a->diag[d];
+          if (loc >= 0) sum -= a->diagv[d][i] * x[loc];
+        }
+        for (d=mainbd; d<a->nd; d++) {
+          diag = a->diag[d];
+          if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
+        }
+        x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dd[i]) + x[i]);
       }
     }
   }
@@ -625,10 +636,10 @@ static int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          nd = a->nd, nb = a->nb, loc;
+  int          nd = a->nd, nb = a->nb;
   int          nc = a->n, *diag = a->diag, pcol, shift, i, j, k;
 
-/* For efficiency, if ((nz) && (col) && (v)) then do all at once */
+  /* For efficiency, if ((nz) && (col) && (v)) then do all at once */
   if ((nz) && (col) && (v)) {
     *col = a->colloc;
     *v   = a->dvalue;
@@ -637,11 +648,7 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
       for (j=0; j<nd; j++) {
         pcol = row - diag[j];
         if (pcol > -1 && pcol < nc) {
-	  if (diag[j] > 0)
-	    loc = row - diag[j];
-	  else
-	    loc = row;
-	  (*v)[k]   = (a->diagv[j])[loc];
+	  (*v)[k]   = (a->diagv[j])[row];
           (*col)[k] = pcol;  k++;
 	}
       }
@@ -651,12 +658,8 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
       for (j=0; j<nd; j++) {
         pcol = nb * (row/nb - diag[j]);
         if (pcol > -1 && pcol < nc) {
-          if (diag[j] > 0)
-	    loc = shift - diag[j]*nb*nb;
-	  else 
-	    loc = shift;
           for (i=0; i<nb; i++) {
-	    (*v)[k+i]   = (a->diagv[j])[loc + i*nb];
+	    (*v)[k+i]   = (a->diagv[j])[shift + i*nb];
 	    (*col)[k+i] = pcol + i;
 	  }
           k += nb;
@@ -691,11 +694,7 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
         for (j=0; j<nd; j++) {
           pcol = row - diag[j];
           if (pcol > -1 && pcol < nc) {
-	    if (diag[j] > 0)
-	      loc = row - diag[j];
-	    else
-	      loc = row;
-	    (*v)[k] = (a->diagv[j])[loc]; k++;
+	    (*v)[k] = (a->diagv[j])[row]; k++;
           }
         }
       }
@@ -729,12 +728,8 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
         for (j=0; j<nd; j++) {
 	  pcol = nb * (row/nb - diag[j]);
 	  if (pcol > -1 && pcol < nc) {
-	    if (diag[j] > 0)
-	      loc = shift - diag[j]*nb*nb;
-	    else 
-	      loc = shift;
 	    for (i=0; i<nb; i++) {
-	     (*v)[k+i] = (a->diagv[j])[loc + i*nb];
+	     (*v)[k+i] = (a->diagv[j])[shift + i*nb];
             }
 	    k += nb;
 	  }
@@ -747,7 +742,7 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 
 static int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
-  /* Work space is allocated once during matrix creation and then freed
+  /* Work space is allocated during matrix creation and freed
      when matrix is destroyed */
   return 0;
 }
@@ -763,18 +758,17 @@ int MatNorm_SeqBDiag_Columns(Mat A,double *tmp,int n)
   int          d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
   Scalar       *dv;
 
-  if (n != a->n) SETERRQ(1,"MatNorm_SeqBDiag_Columns:Incorrect work space dimension");
   PetscMemzero(tmp,a->n*sizeof(double));
   if (nb == 1) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
       diag = a->diag[d];
       len  = a->bdlen[d];
-      if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+      if (diag > 0) {	/* lower triangle */
         for (i=0; i<len; i++) {
-          tmp[i] += PetscAbsScalar(dv[i]); 
+          tmp[i] += PetscAbsScalar(dv[i+diag]); 
         }
-      } else {	/* upper triangle: row = loc, col = loc-diag */
+      } else {	/* upper triangle */
         for (i=0; i<len; i++) {
           tmp[i-diag] += PetscAbsScalar(dv[i]); 
         }
@@ -786,16 +780,16 @@ int MatNorm_SeqBDiag_Columns(Mat A,double *tmp,int n)
       diag = a->diag[d];
       len  = a->bdlen[d];
 
-      if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+      if (diag > 0) {	/* lower triangle */
         for (k=0; k<len; k++) {
-          kloc = k*nb; kshift = kloc*nb; 
+          kloc = k*nb; kshift = kloc*nb + diag*nb; 
           for (i=0; i<nb; i++) {	/* i = local row */
             for (j=0; j<nb; j++) {	/* j = local column */
               tmp[kloc + j] += PetscAbsScalar(dv[kshift + j*nb + i]);
             }
           }
         }
-      } else {	/* upper triangle: row = loc, col = loc-diag */
+      } else {	/* upper triangle */
         for (k=0; k<len; k++) {
           kloc = k*nb; kshift = kloc*nb; 
           for (i=0; i<nb; i++) {	/* i = local row */
@@ -814,19 +808,30 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   double       sum = 0.0, *tmp;
-  int          ierr, d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
+  int          ierr,d,i,j,k,nd = a->nd,nb = a->nb,diag, kshift, kloc, len;
   Scalar       *dv;
 
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
       len  = a->bdlen[d]*nb*nb;
-      for (i=0; i<len; i++) {
+      diag = a->diag[d];
+      if (diag > 0) {
+        for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
-        sum += real(conj(dv[i])*dv[i]);
+          sum += real(conj(dv[i+diag])*dv[i+diag]);
 #else
-        sum += dv[i]*dv[i];
+          sum += dv[i+diag]*dv[i+diag];
 #endif
+        }
+      } else {
+        for (i=0; i<len; i++) {
+#if defined(PETSC_COMPLEX)
+          sum += real(conj(dv[i])*dv[i]);
+#else
+          sum += dv[i]*dv[i];
+#endif
+        }
       }
     }
     *norm = sqrt(sum);
@@ -849,11 +854,11 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
         dv   = a->diagv[d];
         diag = a->diag[d];
         len  = a->bdlen[d];
-        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+        if (diag > 0) {	/* lower triangle */
           for (i=0; i<len; i++) {
-            tmp[i+diag] += PetscAbsScalar(dv[i]); 
+            tmp[i+diag] += PetscAbsScalar(dv[i+diag]); 
           }
-        } else {	/* upper triangle: row = loc, col = loc-diag */
+        } else {	/* upper triangle */
           for (i=0; i<len; i++) {
             tmp[i] += PetscAbsScalar(dv[i]); 
           }
@@ -866,10 +871,10 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
         len  = a->bdlen[d];
         if (diag > 0) {
           for (k=0; k<len; k++) {
-            kloc = k*nb; kshift = kloc*nb; 
+            kloc = k*nb; kshift = kloc*nb + nb*diag; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
-                tmp[kloc + i + nb*diag] += PetscAbsScalar(dv[kshift + j*nb + i]);
+                tmp[kloc + i + nb*diag] += PetscAbsScalar(dv[kshift+j*nb+i]);
               }
             }
           }
@@ -908,8 +913,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
-  ierr = MatCreateSeqBDiag(A->comm,a->n,a->m,nd,nb,diagnew,
-                                    0,&tmat); CHKERRQ(ierr);
+  ierr = MatCreateSeqBDiag(A->comm,a->n,a->m,nd,nb,diagnew,0,&tmat);CHKERRQ(ierr);
   PetscFree(diagnew);
   anew = (Mat_SeqBDiag *) tmat->data;
   for (d=0; d<nd; d++) {
@@ -1054,7 +1058,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
         if (diag > 0) {  /* lower triangle */
           len  = a->bdlen[i];
           for (j=0; j<len; j++) {
-            if (dv[j] != zero) {
+            if (dv[diag+j] != zero) {
 #if defined(PETSC_COMPLEX)
               if (imag(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
                                          j+diag,j,real(dv[j]),imag(dv[j]));
@@ -1090,7 +1094,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 	fprintf(fd,"\n<diagonal %d>\n", diag);
 	if (diag > 0) {		/* lower triangle */
 	  for (k=0; k<len; k++) {
-	    kshift = k*nb*nb;
+	    kshift = (diag+k)*nb*nb;
 	    for (i=0; i<nb; i++) {
               iprint = 0;
 	      for (j=0; j<nb; j++) {
@@ -1224,18 +1228,25 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
 {
   Mat          A = (Mat) obj;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i;
+  int          i, nb = a->nb;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",
                        a->m,a->n,a->nz,a->nb,a->nd);
 #endif
   if (!a->user_alloc) { /* Free the actual diagonals */
-    for (i=0; i<a->nd; i++) PetscFree( a->diagv[i] );
+    for (i=0; i<a->nd; i++) {
+      if (a->diag[i] > 0) {
+        PetscFree( a->diagv[i] + nb*nb*a->diag[i]  );
+      } else {
+        PetscFree( a->diagv[i] );
+      }
+    }
   }
   if (a->pivot) PetscFree(a->pivot);
   PetscFree(a->diagv); PetscFree(a->diag);
-  PetscFree(a->colloc); PetscFree(a->dvalue);
+  PetscFree(a->colloc);
+  PetscFree(a->dvalue);
   PetscFree(a);
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -1307,7 +1318,7 @@ int MatPrintHelp_SeqBDiag(Mat A)
   return 0;
 }
 
-static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
+static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, j, n, len, ibase, nb = a->nb, iloc;
@@ -1317,17 +1328,27 @@ static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
-  dd = a->diagv[a->mainbd];
-  if (a->nb == 1) {
-    len = PetscMin(a->m,a->n);
-    for (i=0; i<len; i++) x[i] = dd[i];
-  } else {
-    len = PetscMin(a->mblock,a->nblock);
-    for (i=0; i<len; i++) {
-      ibase = i*nb*nb;  iloc = i*nb;
-      for (j=0; j<nb; j++) x[j + iloc] = dd[ibase + j*(nb+1)];
-    }
+  len = PetscMin(a->mblock,a->nblock);
+  for (i=0; i<len; i++) {
+    ibase = i*nb*nb;  iloc = i*nb;
+    for (j=0; j<nb; j++) x[j + iloc] = dd[ibase + j*(nb+1)];
   }
+  return 0;
+}
+
+static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, n, len;
+  Scalar       *x, *dd, zero = 0.0;
+
+  VecSet(&zero,v);
+  VecGetArray(v,&x); VecGetLocalSize(v,&n);
+  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
+  dd = a->diagv[a->mainbd];
+  len = PetscMin(a->m,a->n);
+  for (i=0; i<len; i++) x[i] = dd[i];
   return 0;
 }
 
@@ -1454,8 +1475,8 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         dv   = a->diagv[d];
         diag = a->diag[d];
         len  = a->bdlen[d];
-        if (diag > 0) for (j=0; j<len; j++) dv[j] *= l[j+diag];
-        else          for (j=0; j<len; j++) dv[j] *= l[j];
+        if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= l[j+diag];
+        else          for (j=0; j<len; j++) dv[j]      *= l[j];
       }
       PLogFlops(a->nz);
     } else SETERRQ(1,"MatDiagonalScale_SeqBDiag:Not yet done for nb>1");
@@ -1468,8 +1489,8 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         dv   = a->diagv[d];
         diag = a->diag[d];
         len  = a->bdlen[d];
-        if (diag > 0) for (j=0; j<len; j++) dv[j] *= r[j];
-        else          for (j=0; j<len; j++) dv[j] *= r[j-diag];
+        if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= r[j];
+        else          for (j=0; j<len; j++) dv[j]      *= r[j-diag];
       }
       PLogFlops(a->nz);
     } else SETERRQ(1,"MatDiagonalScale_SeqBDiag:Not yet done for nb>1");
@@ -1480,35 +1501,34 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 static int MatConvertSameType_SeqBDiag(Mat,Mat *,int);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
-extern int MatLUFactorNumeric_SeqBDiag(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
 extern int MatLUFactor_SeqBDiag(Mat,IS,IS,double);
 extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
-extern int MatSolve_SeqBDiag(Mat,Vec,Vec);
-extern int MatSolveAdd_SeqBDiag(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_SeqBDiag(Mat,Vec,Vec);
-extern int MatSolveTransAdd_SeqBDiag(Mat,Vec,Vec,Vec);
+extern int MatSolve_SeqBDiag_1(Mat,Vec,Vec);
+extern int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
+static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatGetRow_SeqBDiag,MatRestoreRow_SeqBDiag,
-       MatMult_SeqBDiag,MatMultAdd_SeqBDiag, 
-       MatMultTrans_SeqBDiag,MatMultTransAdd_SeqBDiag, 
-       MatSolve_SeqBDiag,MatSolveAdd_SeqBDiag,
-       MatSolveTrans_SeqBDiag,MatSolveTransAdd_SeqBDiag,
+       MatMult_SeqBDiag_N,0, 
+       MatMultTrans_SeqBDiag_N,0, 
+       MatSolve_SeqBDiag_N,0,
+       0,0,
        MatLUFactor_SeqBDiag,0,
-       MatRelax_SeqBDiag,MatTranspose_SeqBDiag,
+       MatRelax_SeqBDiag_N,MatTranspose_SeqBDiag,
        MatGetInfo_SeqBDiag,0,
-       MatGetDiagonal_SeqBDiag,MatDiagonalScale_SeqBDiag,MatNorm_SeqBDiag,
+       MatGetDiagonal_SeqBDiag_N,MatDiagonalScale_SeqBDiag,MatNorm_SeqBDiag,
        0,MatAssemblyEnd_SeqBDiag,
        0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,0,
-       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag,0,0,
+       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag_N,0,0,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
        0,0,MatConvert_SeqBDiag,
        MatGetSubMatrix_SeqBDiag,0,
        MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
-       0,0,MatGetValues_SeqBDiag,0,
+       0,0,MatGetValues_SeqBDiag_N,0,
        MatPrintHelp_SeqBDiag,MatScale_SeqBDiag};
 
 /*@C
@@ -1556,8 +1576,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   *A = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg1); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg1);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
     diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
@@ -1571,7 +1591,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 
   if ((n%nb) || (m%nb)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
   if (!nd) nda = nd + 1;
-  else nda = nd;
+  else     nda = nd;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
@@ -1580,6 +1600,22 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   B->destroy = MatDestroy_SeqBDiag;
   B->view    = MatView_SeqBDiag;
   B->factor  = 0;
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg1); CHKERRQ(ierr);
+  if (!flg1) {
+    switch (nb) {
+      case 1:
+        B->ops.setvalues       = MatSetValues_SeqBDiag_1;
+        B->ops.getvalues       = MatGetValues_SeqBDiag_1;
+        B->ops.getdiagonal     = MatGetDiagonal_SeqBDiag_1;
+        B->ops.mult            = MatMult_SeqBDiag_1;
+        B->ops.multtrans       = MatMultTrans_SeqBDiag_1;
+        B->ops.relax           = MatRelax_SeqBDiag_1;
+        B->ops.solve           = MatSolve_SeqBDiag_1;
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBDiag_1;
+        break;
+    }
+  }
 
   b->m      = m; B->m = m; B->M = m;
   b->n      = n; B->n = n; B->N = n;
@@ -1608,11 +1644,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
     if (diag[i] > 0) /* lower triangular */
       b->bdlen[i] = PetscMin(b->nblock,b->mblock - diag[i]);
     else {           /* upper triangular */
-      if (b->mblock - diag[i] > b->nblock)
-        b->bdlen[i] = b->nblock + diag[i];
-  /*    b->bdlen[i] = b->mblock + diag[i] + (b->nblock - b->mblock); */
-      else
-        b->bdlen[i] = b->mblock;
+      b->bdlen[i] = PetscMin(b->mblock,b->nblock + diag[i]);
     }
     sizetot += b->bdlen[i];
   }
@@ -1634,6 +1666,13 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
     b->nonew = 1; b->nonew_diag = 1;
   }
 
+  /* adjust diagv so one may access rows with diagv[diag][row] for all rows */
+  for (i=0; i<nd; i++) {
+    if (diag[i] > 0) {
+      b->diagv[i] -= nb*nb*diag[i];
+    }
+  }
+
   b->nz          = b->maxnz; /* Currently not keeping track of exact count */
   b->roworiented = 1;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
@@ -1646,10 +1685,10 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 { 
   Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
-  int          i, ierr, len;
+  int          i, ierr, len,diag,nb = a->nb;
   Mat          mat;
 
-  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PETSC_NULL,matout);
+  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,nb,a->diag,PETSC_NULL,matout);
   CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
@@ -1657,8 +1696,13 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
   newmat = (Mat_SeqBDiag *) mat->data;
   if (cpvalues == COPY_VALUES) {
     for (i=0; i<a->nd; i++) {
-      len = a->bdlen[i] * a->nb * a->nb * sizeof(Scalar);
-      PetscMemcpy(newmat->diagv[i],a->diagv[i],len);
+      len = a->bdlen[i] * nb * nb * sizeof(Scalar);
+      diag = a->diag[i];
+      if (diag > 0) {
+        PetscMemcpy(newmat->diagv[i]+nb*nb*diag,a->diagv[i]+nb*nb*diag,len);
+      } else {
+        PetscMemcpy(newmat->diagv[i],a->diagv[i],len);
+      }
     }
   }
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -1671,7 +1715,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   Mat_SeqBDiag *a;
   Mat          B;
   int          *scols, i, nz, ierr, fd, header[4], size;
-  int          nb, *rowlengths = 0,M,N,*cols,flg;
+  int          bs, *rowlengths = 0,M,N,*cols,flg,extra_rows;
   Scalar       *vals, *svals;
   MPI_Comm     comm;
   
@@ -1682,15 +1726,27 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
+  if (M != N) SETERRQ(1,"MatLoad_SeqBDiag:Can only load square matrices");
+  /* 
+     This code adds extra rows to make sure the number of rows is 
+    divisible by the blocksize
+  */
+  bs = 1;
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+  extra_rows = bs - M + bs*(M/bs);
+  if (extra_rows == bs) extra_rows = 0;
+  if (extra_rows) {
+    PLogInfo(0,"MatLoad_SeqBDiag:Padding loaded matrix to match blocksize");
+  }
 
   /* read row lengths */
-  rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
+  rowlengths = (int*) PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
   ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+  for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
 
   /* create our matrix */
-  nb = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&nb,&flg); CHKERRQ(ierr);
-  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
+  ierr = MatCreateSeqBDiag(comm,M+extra_rows,M+extra_rows,0,bs,PETSC_NULL,
+                           PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;
 
@@ -1700,14 +1756,32 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
   ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
   /* insert into matrix */
+
   for ( i=0; i<M; i++ ) {
     ierr = MatSetValues(B,1,&i,rowlengths[i],scols,svals,INSERT_VALUES);
            CHKERRQ(ierr);
     scols += rowlengths[i]; svals += rowlengths[i];
   }
-  PetscFree(cols); PetscFree(vals); PetscFree(rowlengths);   
+  vals[0] = 1.0;
+  for ( i=M; i<M+extra_rows; i++ ) {
+    ierr = MatSetValues(B,1,&i,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  PetscFree(cols);
+  PetscFree(vals);
+  PetscFree(rowlengths);   
 
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
+
+
+
+
+
+
+
+
+
+

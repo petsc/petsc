@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.46 1996/02/13 23:30:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.47 1996/03/04 05:16:31 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -42,8 +42,8 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);  CHKERRQ(ierr);    
-      ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,M); CHKERRQ(ierr); 
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);CHKERRQ(ierr);    
+      ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,M);CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:

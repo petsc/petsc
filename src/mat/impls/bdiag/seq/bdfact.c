@@ -1,48 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.29 1996/04/29 02:30:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.30 1996/05/03 03:10:19 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
 #include "bdiag.h"
 #include "src/inline/ilu.h"
-#include "pinclude/plapack.h"
-
-/* 
-   BlockMatMult_Private - Computes C -= A*B, where
-       A is nrow X nrow,
-       B and C are nrow X ncol,
-       All matrices are dense, stored by columns, where nrow is the 
-           number of allocated rows for each matrix.
- */
-
-#define BMatMult(nrow,ncol,A,B,C) BlockMatMult_Private(nrow,ncol,A,B,C)
-static int BlockMatMult_Private(int nrow,int ncol,Scalar *A,Scalar *B,Scalar *C)
-{
-  Scalar B_i, *Apt;
-  int    i, j, k, jnr;
-
-  if (ncol == 1) {
-    Apt = A;
-    for (i=0; i<nrow; i++) {
-      B_i = B[i];
-      for (k=0; k<nrow; k++) C[k] -= Apt[k] * B_i;
-      Apt += nrow;
-    }
-  } else {
-    for (j=0; j<ncol; j++) {
-      Apt = A;
-      jnr = j*nrow;
-      for (i=0; i<nrow; i++) {
-        B_i = B[i+jnr];
-        for (k=0; k<nrow; k++) C[k+jnr] -= Apt[k] * B_i;
-        Apt += nrow;
-      }
-    }
-  }
-  PLogFlops(2*nrow*nrow*ncol);
-  return 0;
-}
 
 int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
@@ -105,19 +68,11 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   Scalar       **dv = a->diagv, *dd = dv[mainbd],  *v_work;
   Scalar       *multiplier;
 
-  /* Notes: 
-      - We're using only B in this routine (A remains untouched).
-      - The nb>1 case performs block LU, which is functionally the same as
-        the nb=1 case, except that we use factorization, triangular solve,
-        and matrix-matrix products within the dense subblocks.
-      - Pivoting is not employed for the case nb=1; for the case nb>1
-        pivoting is used only within the dense subblocks. 
-   */
   if (!a->pivot) {
     a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
     PLogObjectMemory(C,m*sizeof(int));
   }
-  v_work = (Scalar *) PetscMalloc((nb*nb+nb)*sizeof(Scalar)); CHKPTRQ(v_work);
+  v_work = (Scalar *) PetscMalloc((nb*nb+nb)*sizeof(Scalar));CHKPTRQ(v_work);
   multiplier = v_work + nb;
   nb2 = nb*nb;
   dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
@@ -137,8 +92,8 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
           if (elim_col >=0 && elim_col < nblock) {
             dgk = k - elim_col;
             if ((dnum = dgptr[dgk+mblock])) {
-              BMatMult(nb,nb,&dv[d][elim_row*nb2],
-                              &dv[dnum-1][knb2],&dv[d2][elim_row*nb2]);
+              Kernel_A_gets_A_minus_B_times_C(nb,&dv[d2][elim_row*nb2],
+                             &dv[d][elim_row*nb2],&dv[dnum-1][knb2]);
             }
           }
         }
@@ -159,14 +114,6 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
-  /* Notes: 
-      - We're using only B in this routine (A remains untouched).
-      - The nb>1 case performs block LU, which is functionally the same as
-        the nb=1 case, except that we use factorization, triangular solve,
-        and matrix-matrix products within the dense subblocks.
-      - Pivoting is not employed for the case nb=1; for the case nb>1
-        pivoting is used only within the dense subblocks. 
-   */
   dgptr = (int *) PetscMalloc((m+n)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(m+n)*sizeof(int));
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
@@ -233,10 +180,10 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, ierr, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2,_One = 1;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          nb = a->nb, m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
-  Scalar       work[25],_DZero = 0.0,_DOne = 1.0;
+  Scalar       work[25];
 
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
@@ -249,7 +196,9 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       inb = i*nb;
       for (d=0; d<mainbd; d++) {
         loc = i - diag[d];
-        if (loc >= 0) BMatMult(nb,1,&dv[d][i*nb*nb],&y[loc*nb],&y[inb]);
+        if (loc >= 0) {
+          Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][i*nb*nb],y+loc*nb);
+        }
       }
     }
   }
@@ -258,12 +207,14 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     inb = i*nb; inb2 = inb*nb;
     for (d=mainbd+1; d<a->nd; d++) {
       col = i - diag[d];
-      if (col < nblock) BMatMult(nb,1,&dv[d][inb2],&y[col*nb],&y[inb]);
+      if (col < nblock) {
+        Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][inb2],y+col*nb);
+      }
     }
-    LAgemv_("N",&nb,&nb,&_DOne,&dd[inb2],&nb,&y[inb],&_One,&_DZero,
-               work,&_One);
-    PetscMemcpy(&(y[inb]),work,nb*sizeof(Scalar));
+    Kernel_w_gets_A_times_v(nb,y+inb,dd+inb2,work);  
+    PetscMemcpy(y+inb,work,nb*sizeof(Scalar));
   }
+  PLogFlops(2*(a->nb*nb)*(a->nz) - a->n);
   return 0;
 }
 

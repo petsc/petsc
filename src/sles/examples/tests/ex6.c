@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.36 1996/03/26 15:07:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.37 1996/04/28 15:39:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -94,11 +94,15 @@ int main(int argc,char **args)
   PLogStagePop();
   PetscBarrier(A);
 
+PetscTrValid(0,0);
+
   PLogStagePush(2);
   tsolve = PetscGetTime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   tsolve = PetscGetTime() - tsolve;
   PLogStagePop();
+
+PetscTrValid(0,0);
 
   /* Show result */
   ierr = MatMult(A,x,u);
@@ -124,6 +128,7 @@ int main(int argc,char **args)
   }
 
   /* Cleanup */
+PetscTrValid(0,0);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
