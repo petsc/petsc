@@ -303,15 +303,15 @@ ICASE suns:
 
 ---------
 
-ODU: suns, solaris, (others too?)
+ODU: solaris,irix, (others too?)
   user: mcinnes
   passwd: odupasswd
-  user: balay,bsmith
+  user: balay
   passwd: petsc-passwd
-  sun4:    sandstorm.cs.odu.edu , blizzard
-  solaris: typhoon, flurry, cyclone, hail, fog, orchid, violet
+  sun4:    
+  solaris: typhoon.cs.odu.edu , flurry, cyclone, hail, orchid, violet,sandstorm, blizzard
   solaris: (Ultra-1) hurricane, daisy
-  irix:    galaxa, tetris, pacman, 
+  irix   : pacman
 ---------
 
 Linux accounts:
