@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.11 1999/03/03 21:23:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.12 1999/03/03 22:27:00 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -13,8 +13,8 @@ static char vcid[] = "$Id: gr2.c,v 1.11 1999/03/03 21:23:26 bsmith Exp bsmith $"
 */
 typedef struct {
   int    m,n,step,k;
-  double *xy,min,max,scale;
-  Scalar *v;
+  double min,max,scale;
+  Scalar *xy,*v;
 } ZoomCtx;
 
 /*

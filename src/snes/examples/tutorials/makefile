@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.49 1999/03/03 22:35:07 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.50 1999/03/03 22:41:59 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -228,7 +228,7 @@ runex5_7:
 	   else echo "Possible problem with ex5_7, diffs above"; fi; \
 	   ${RM} -f ex5_7.tmp
 runex5_8:
-	-@${MPIRUN} -np 2 ex5 -snes_vecmonitor 
+	-@${MPIRUN} -np 2 ex5 -snes_vecmonitor > /dev/null 2>&1
 runex5f:
 	-@${MPIRUN} -np 4 ex5f -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex5f_1.tmp 2>&1; \
 	   if (diff output/ex5f_1.out ex5f_1.tmp) then true; \
