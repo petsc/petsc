@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.13 1997/09/26 02:17:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.14 1997/10/01 22:43:58 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -21,7 +21,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 
   PetscValidPointer(iscoloring);
 
-  ierr = OptionsHasName(0,"-iscoloring_view",&flag); CHKERRQ(ierr);
+  ierr = OptionsHasName(0,"-is_coloring_view",&flag); CHKERRQ(ierr);
   if (flag) {
     ierr = ISColoringView(iscoloring,VIEWER_STDOUT_(iscoloring->comm));CHKERRQ(ierr);
   }
@@ -71,6 +71,9 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 
     Output Parameter:
 .   iscoloring - the resulting coloring data structure
+
+    Database Options:
+.    -is_coloring_view
 
 .seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()
 @*/
