@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.90 2000/09/13 03:09:42 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.91 2000/09/22 20:41:48 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -186,7 +186,7 @@ $    BINARY_WRONLY - open existing file for binary output
     node 0 does not have the file it generates an error even if other nodes
     do have the file.
 
-   Concepts: binary file
+   Concepts: binary files
    Concepts: ViewerBinary^creating
    Concepts: gzip
    Concepts: accessing remote file
