@@ -11,6 +11,7 @@ Additional Capabilities that PETSc Needs:
 
  - ADIFOR interface
 
+ - Fix tohtml and doc2tex to do a better job
 ----------------------------------------------------------------------
 
 Changes that should be made to PETSc 
