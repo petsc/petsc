@@ -1202,16 +1202,16 @@ fi
       results = self.executeShellCode(self.xShell)
       # LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
       self.addDefine('HAVE_X11', 1)
-      self.addSubstitution('X_CFLAGS',     results['X_CFLAGS'])
-      self.addSubstitution('X_PRE_LIBS',   results['X_PRE_LIBS'])
-      self.addSubstitution('X_LIBS',       results['X_LIBS']+' -lX11')
-      self.addSubstitution('X_EXTRA_LIBS', results['X_EXTRA_LIBS'])
+      self.framework.addSubstitution('X_CFLAGS',     results['X_CFLAGS'])
+      self.framework.addSubstitution('X_PRE_LIBS',   results['X_PRE_LIBS'])
+      self.framework.addSubstitution('X_LIBS',       results['X_LIBS']+' -lX11')
+      self.framework.addSubstitution('X_EXTRA_LIBS', results['X_EXTRA_LIBS'])
     return
 
   def configureFPTrap(self):
     '''Checking the handling of flaoting point traps'''
     if self.headers.check('sigfpe.h'):
-      if self.functions.check(handle_sigfpes, library = 'fpe'):
+      if self.functions.check('handle_sigfpes', library = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
     elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
       if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
