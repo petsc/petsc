@@ -1,4 +1,4 @@
-# $Id: base,v 1.47 1998/10/30 23:48:57 balay Exp balay $ 
+# $Id: base,v 1.48 1998/10/31 00:26:47 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = gcc -fPIC
@@ -12,7 +12,7 @@ CCV      = ${CC} --version
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
 # 
-FC       = f77 -Nn1000 -fPIC
+FC       = f77 -Nn1000
 AR       = ar
 RM       = rm -f
 #
