@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.34 1996/01/11 20:14:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.35 1996/01/12 03:55:35 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -137,22 +137,28 @@ int SNESSetFromOptions(SNES snes)
   }
 
   if (OptionsHasName(PETSC_NULL,"-help"))  SNESPrintHelp(snes);
-  if (OptionsGetDouble(snes->prefix,"-snes_stol",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetSolutionTolerance(snes,tmp);
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_ttol",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_ttol",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetTruncationTolerance(snes,tmp);
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_atol",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetAbsoluteTolerance(snes,tmp);
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetTrustRegionTolerance(snes,tmp);
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetRelativeTolerance(snes,tmp);
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp)) {
+  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp))) {
+    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
     SNESSetMinFunctionTolerance(snes,tmp);
   }
   OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its);
