@@ -6,6 +6,7 @@ RM       = rm -f
 # the  following is used to convert petsclib into dynamic libraries 
 #
 RANLIB   = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
+#RANLIB	 = true
 OMAKE    = make
 SHELL    = /bin/sh
 #
