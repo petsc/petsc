@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.234 1997/10/06 00:19:43 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.235 1997/10/09 15:39:19 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4730,7 +4730,7 @@ Section~\ref{sec:profimpl} for implementation details.
 If an application code and the PETSc libraries have been compiled with
 the {\tt -DPETSC\_LOG} flag (which is the default for all versions),
 then various kinds of profiling of code between calls to {\tt
-PetscInitialize()} and {\tt PetscFinalize()} can be \findex{PETSC_LOG}
+PetscInitialize()} and {\tt PetscFinalize()} can be \findex{USE_PETSC_LOG}
 activated at runtime.  Note that the flag {\tt -DPETSC\_LOG} can be
 specified for an installation of PETSc in the file {\tt
 \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}, as discussed in
@@ -6189,11 +6189,11 @@ the variable {\tt PETSCFLAGS} within the base files of {\tt
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
 \item PETSC\_DEBUG - The PETSc debugging options are activated. We 
-      recommend always using this. \findex{PETSC_DEBUG}
+      recommend always using this. \findex{USE_PETSC_DEBUG}
 \item PETSC\_COMPLEX - The version with scalars represented 
-      as complex numbers is used. \findex{PETSC_COMPLEX}
+      as complex numbers is used. \findex{USE_PETSC_COMPLEX}
 \item PETSC\_LOG - Various monitoring statistics on floating-point operations,
-      and message-passing activity are kept. \findex{PETSC_LOG}
+      and message-passing activity are kept. \findex{USE_PETSC_LOG}
 \end{itemize}
 
 \subsection{Sample Makefiles}
@@ -6975,23 +6975,41 @@ instead of
       listed on the same line if possible; otherwise, they should be listed
       on adjacent lines.
 \item Equal signs should be aligned in regions where possible.
-\item For routines of more than a few lines, there should be a blank line
+\item There {\em must} be a single blank line
       between the local variable declarations and the body of the function.
-\item Indentation for {\tt if} statements should be done either as
+\item The first line of the executable statments must be {\tt PetscFunctionBegin;}
+\item Use {\tt PetscFunctionReturn(returnvalue);} not {\tt return(returnvalue);}
+\item {\em Never} put a function call in a return statment; do not do
 \begin{verbatim}
-   if (  ) {
-     ....
-   }
-   else {
-     ....
-   }
+   PetscFunctionReturn( somefunction(...) );
 \end{verbatim}
-or as
+\item Indentation for {\tt if} statements {\em must}  be done  as
+as
 \begin{verbatim}
    if (  ) {
      ....
    } else {
      ....
+   }
+\end{verbatim}
+\item {\em Never}  have 
+\begin{verbatim}
+   if (  ) 
+     a single indented line
+\end{verbatim}
+or
+\begin{verbatim}
+   for (  )
+     a single indented line
+\end{verbatim}
+instead use either 
+\begin{verbatim}
+   if (  ) a single line
+\end{verbatim}
+or 
+\begin{verbatim}
+   if (  ) {
+     a single indented line
    }
 \end{verbatim}
 \item {\em No} tabs are allowed in {\em any} of the source code.
@@ -7039,7 +7057,7 @@ is logged with the command, \findex{PLogObjectParent()}
 It is also useful to log information about the state of an object, as can
 be done with the command \findex{PLogObjectState()}
 \begin{verbatim}
-   #if defined(PETSC_LOG)
+   #if defined(USE_PETSC_LOG)
    PLogObjectState(PetscObject h,char *format,...);
    #endif
 \end{verbatim}
