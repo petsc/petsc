@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.11 1996/01/19 17:20:42 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.12 1996/01/19 22:58:03 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -53,8 +53,9 @@ static int PCSetUp_ASM(PC pc)
     if( !osm->is){ /* build the index sets */
       osm->is    = (IS *) PetscMalloc( n_local_true*sizeof(IS **) ); CHKPTRQ(osm->is);
       MatGetOwnershipRange(pc->pmat,&start_val,&end_val);
-      sz = end_val - start_val;
-      for ( start = start_val,i=0; i< n_local_true ; ++i){
+      sz    = end_val - start_val;
+      start = start_val;
+      for ( i=0; i<n_local_true; i++){
         size     = sz/n_local_true + (( sz % n_local_true) > i);
         ierr     = ISCreateStrideSeq(MPI_COMM_SELF,size,start,1,&isl); CHKERRQ(ierr);
         start    += size;
@@ -63,12 +64,13 @@ static int PCSetUp_ASM(PC pc)
     }
 
     osm->sles = (SLES *) PetscMalloc(n_local*sizeof(SLES **)); CHKPTRQ(osm->sles);
-    osm->scat = (VecScatter *) PetscMalloc(n_local*sizeof(VecScatter **)); CHKPTRQ(osm->scat);
+    osm->scat = (VecScatter *) PetscMalloc(n_local*sizeof(VecScatter **));CHKPTRQ(osm->scat);
     osm->x    = (Vec *) PetscMalloc(2*n_local*sizeof(Vec **)); CHKPTRQ(osm->x);
     osm->y    = osm->x + n_local;
 
     /*  Extend the "overlapping" regions by a number of steps  */
-      ierr = MatIncreaseOverlap(pc->pmat,n_local_true,osm->is,osm->overlap); CHKERRQ(ierr);
+    ierr = MatIncreaseOverlap(pc->pmat,n_local_true,osm->is,osm->overlap); CHKERRQ(ierr);
+
     /* create the local work vectors and scatter contexts */
     for ( i=0; i<n_local_true; i++ ) {
       ierr = ISGetSize(osm->is[i],&m); CHKERRQ(ierr);
@@ -87,7 +89,10 @@ static int PCSetUp_ASM(PC pc)
       ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PETSC_NULL,0,PETSC_NULL,&osm->pmat[i]);CHKERRQ(ierr); 
     }
 
-    /* create the local solvers */
+    /* 
+       Create the local solvers, we create SLES objects even for "fake" local subdomains
+       simply to simplify the loops in the code for the actual solves
+    */
     for ( i=0; i<n_local; i++ ) {
       ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
       PLogObjectParent(pc,sles);
@@ -105,8 +110,8 @@ static int PCSetUp_ASM(PC pc)
   }
 
   /* extract out the submatrices */
-  ierr  = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat); 
-          CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);
+         CHKERRQ(ierr);
 
   /* loop over subdomains extracting them and putting them into local sles */
   for ( i=0; i<n_local_true; i++ ) {
@@ -173,10 +178,10 @@ static int PCPrintHelp_ASM(PC pc,char *p)
 
 static int PCSetFromOptions_ASM(PC pc)
 {
-  int        blocks,flg, ovl,ierr;
+  int  blocks,flg, ovl,ierr;
 
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg); CHKERRQ(ierr);
-  if (flg) { PCASMSetSubdomains(pc,blocks,PETSC_NULL); }
+  if (flg) {ierr = PCASMSetSubdomains(pc,blocks,PETSC_NULL); CHKERRQ(ierr); }
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_overlap", &ovl, &flg); CHKERRQ(ierr);
   if (flg) { ierr = PCASMSetOverlap( pc, ovl); CHKERRQ(ierr); }
 
