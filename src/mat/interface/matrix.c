@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.232 1997/03/13 21:22:58 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.233 1997/03/14 17:46:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -293,6 +293,10 @@ $     INSERT_VALUES - replaces existing entries with new values
    MatSetValuesBlocked() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
+   Restrictions:
+   MatSetValuesBlocked() is currently supported only for the block AIJ
+   matrix format (MATSEQBAIJ and MATMPIBAIJ).
+
 .keywords: matrix, insert, add, set, values
 
 .seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues()
@@ -349,8 +353,8 @@ M*/
    Input Parameters:
 .  mat - the matrix
 .  v - a logically two-dimensional array for storing the values
-.  m, indexm - the number of rows and their global indices 
-.  n, indexn - the number of columns and their global indices
+.  m, idxm - the number of rows and their global indices 
+.  n, idxn - the number of columns and their global indices
 
    Notes:
    The user must allocate space (m*n Scalars) for the values, v.
@@ -359,6 +363,11 @@ M*/
 
    MatGetValues() uses 0-based row and column numbers in
    Fortran as well as in C.
+
+   MatGetValues() requires that the matrix has been assembled
+   with MatAssemblyBegin()/MatAssemblyEnd().  Thus, calls to
+   MatSetValues() and MatGetValues() CANNOT be made in succession
+   without intermediate matrix assembly.
 
 .keywords: matrix, get, values
 
@@ -386,8 +395,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 #define __FUNC__ "MatSetLocalToGlobalMapping" /* ADIC Ignore */
 /*@
    MatSetLocalToGlobalMapping - Sets a local numbering to global numbering used
-     by the routine MatSetValuesLocal() to allow users to insert matrices entries
-     using a local (per-processor) numbering.
+   by the routine MatSetValuesLocal() to allow users to insert matrices entries
+   using a local (per-processor) numbering.
 
    Input Parameters:
 .  x - the matrix

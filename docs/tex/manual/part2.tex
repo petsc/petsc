@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.202 1997/02/06 03:03:30 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.203 1997/02/19 23:01:51 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -918,6 +918,10 @@ to insert one matrix into another when using Matlab, one uses the command
 {\tt A(im,in) = B;} where {\tt im} and {\tt in} contain the indices for the
 rows and columns. This action is identical to the calls above to 
 {\tt MatSetValues()}.
+
+When using the block compressed sparse row matrix format ({\tt MATSEQBAIJ} or
+{\tt MATMPIBAIJ}), one can insert elements more efficiently using the block
+variant, {\tt MatSetValuesBlocked()}. \findex{MatSetValuesBlocked()}
 
 The function {\tt MatSetOption()} accepts several other inputs.  We
 discuss two of these, which are related to the efficiency of the
@@ -6782,6 +6786,10 @@ user can set {\tt nz=0} and {\tt nzz=PETSC\_NULL} for PETSc to dynamically
 allocate matrix memory as needed.  Section~\ref{sec:matsparse}
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
+
+Note that the routine {\tt MatSetValuesBlocked()}
+\findex{MatSetValuesBlocked()} can be used for more efficient matrix assembly
+when using the block AIJ format.
 
 \subsection{Parallel Block AIJ Sparse Matrices}
 
