@@ -840,6 +840,9 @@ int PetscLogEventDeactivateClass(int cookie) {
    void PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                        PetscObject o4)
 
+   Fortran Synopsis:
+   void PetscLogEventEnd(int e,int ierr)
+
    Usage:
 .vb
      int USER_EVENT;
@@ -852,7 +855,7 @@ int PetscLogEventDeactivateClass(int cookie) {
 .ve
 
    Notes:
-   You should also register each integer event with the command 
+   You need to register each integer event with the command 
    PetscLogEventRegister().  The source code must be compiled with 
    -DPETSC_USE_LOG, which is the default.
 
@@ -878,6 +881,9 @@ M*/
    Synopsis:
    void PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                      PetscObject o4)
+
+   Fortran Synopsis:
+   void PetscLogEventEnd(int e,int ierr)
 
    Usage:
 .vb
