@@ -668,6 +668,11 @@ EXTERN int  PetscFClose(MPI_Comm,FILE*);
 EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN int  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 
+/* These are used internally by PETSc ASCII IO routines*/
+#include <stdarg.h>
+EXTERN int  PetscVSNPrintf(char*,size_t,const char*,va_list);
+EXTERN int  PetscVFPrintf(FILE*,const char*,va_list);
+
 /*MC
     PetscErrorPrintf - Prints error messages.
 

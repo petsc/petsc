@@ -88,11 +88,11 @@ int PetscLogDestroy(void) {
   int      ierr;
 
   PetscFunctionBegin;
-  if (actions != PETSC_NULL) {
+  if (actions) {
     ierr = PetscFree(actions);CHKERRQ(ierr);
     actions = PETSC_NULL;
   }
-  if (objects != PETSC_NULL) {
+  if (objects) {
     ierr = PetscFree(objects);CHKERRQ(ierr);
     objects =  PETSC_NULL;
   }
@@ -1069,7 +1069,7 @@ int PetscLogDump(const char sname[]) {
   _TotalTime -= BaseTime;
   /* Open log file */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  if (sname != PETSC_NULL) {
+  if (sname) {
     sprintf(file, "%s.%d", sname, rank);
   } else {
     sprintf(file, "Log.%d", rank);
@@ -1192,7 +1192,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   /* Get the total elapsed time */
   PetscTime(locTotalTime);  locTotalTime -= BaseTime;
   /* Open the summary file */
-  if (filename != PETSC_NULL) {
+  if (filename) {
     ierr = PetscFOpen(comm, filename, "w", &fd);CHKERRQ(ierr);
   }
 
@@ -1662,16 +1662,13 @@ int PetscGetFlops(PetscLogDouble *flops)
 #define __FUNCT__ "PetscLogObjectState"
 int PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
+  int     ierr;
   va_list Argp;
 
   PetscFunctionBegin;
-  if (logObjects == PETSC_FALSE) PetscFunctionReturn(0);
+  if (!logObjects) PetscFunctionReturn(0);
   va_start(Argp, format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(objects[obj->id].info, format, (char *) Argp);
-#else
-  vsprintf(objects[obj->id].info, format, Argp);
-#endif
+  ierr = PetscVSNPrintf(objects[obj->id].info, 64,format, Argp);CHKERRQ(ierr);
   va_end(Argp);
   PetscFunctionReturn(0);
 }
