@@ -30,14 +30,20 @@ class Maker (logging.Logger):
     else:
       self.argDB = argDB
     logging.Logger.__init__(self, self.argDB)
+    self.getRoot()
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
     return
 
   def getRoot(self):
-    if hasattr(sys.modules[self.__module__], '__file__'):
-      return os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
-    return os.getcwd()
+    # This has the problem that when we reload a module of the same name, this gets screwed up
+    #   Therefore, we call it in the initializer, and stash it
+    if not hasattr(self, '_root_'):
+      if hasattr(sys.modules[self.__module__], '__file__'):
+        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
+      else:
+        self._root_ = os.getcwd()
+    return self._root_
 
   def checkTmpDir(self, mainTmp):
     if not os.path.exists(mainTmp):

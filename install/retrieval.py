@@ -15,7 +15,7 @@ class Retriever(install.base.Base):
     self.base  = base
     return
 
-  def getRoot(self, url):
+  def getInstallRoot(self, url):
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     path = path[1:]
     if self.base:
@@ -60,7 +60,7 @@ class Retriever(install.base.Base):
     project = self.getInstalledProject(url)
     if not project is None:
       return project.getRoot()
-    if root is None: root = self.getRoot(url)
+    if root is None: root = self.getInstallRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     try:
       if self.argDB.has_key('retrievalCanExist') and int(self.argDB['retrievalCanExist']):
