@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.71 2000/05/20 20:27:23 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.72 2000/08/01 20:02:45 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -598,7 +598,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
-      if (!dx) SETERRQ(1,1,"Computed 0 differencing parameter");
+      if (!PetscAbsScalar(dx)) SETERRQ(1,1,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
     w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
