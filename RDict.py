@@ -311,7 +311,7 @@ if __name__ ==  '__main__':
     try:
       for d in RArgs().dicts():
         for k in RArgs(d).keys():
-          print d+" "+str(k)+" "+str(RArgs(d)[k])
+          print d+" "+str(k)+" "+str(RArgs(d)[k].getValue(k))
     except Exception, e:
       print 'ERROR: '+str(e)
       sys.exit(1)
