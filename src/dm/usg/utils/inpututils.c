@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.7 2000/05/05 22:19:39 balay Exp balay $ */
+/* $Id: inpututils.c,v 1.8 2000/05/08 15:09:28 balay Exp $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -206,7 +206,7 @@ int AOData2dGridAddNode(AOData2dGrid agrid, double cx, double cy, int *cn)
 
   PetscFunctionBegin;
   for (i=0; i<agrid->vertex_n; i++) {
-    if ((PetscAbsDouble(agrid->vertex[2*i] - cx) < 1.e-2) && (PetscAbsDouble(agrid->vertex[1+2*i] - cy) < 1.e-2)) {
+    if ((PetscAbsDouble(agrid->vertex[2*i] - cx) < 1.e-9) && (PetscAbsDouble(agrid->vertex[1+2*i] - cy) < 1.e-9)) {
       *cn = i;
       PetscFunctionReturn(0);
     }
@@ -348,9 +348,23 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
       count[cell_vertex[4*i+j]]++;
     }
   }
+
+
   for (i=0; i<agrid->vertex_n; i++) {
-    if (count[i] < 4) { PetscBTSet(agrid->vertex_boundary,i);}
+    /* UGLY! Just for a quick solution: I want Dirichlet b.c. only at left edge! */
+    PetscTruth neumann_bc;
+    ierr = OptionsHasName(PETSC_NULL,"-dirichlet_on_left",&neumann_bc);CHKERRQ(ierr);
+    if (neumann_bc) {
+      if ( (count[i] < 4) && (agrid->vertex[2*i] == agrid->xmin) ) {
+        PetscBTSet(agrid->vertex_boundary,i);
+      }
+    } else {
+      if (count[i] < 4) {
+        PetscBTSet(agrid->vertex_boundary,i);
+      }
+    }
   }
+
   ierr = PetscFree(count);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
