@@ -3049,6 +3049,18 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE"
+int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
+  int i,*aj=a->j,nz=a->nz;
+  for (i=0;i<nz;i++) {
+    aj[i]=  aj[i]/4;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering"
 int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
 {
@@ -3087,6 +3099,7 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
         for (i=0;i<nz;i++) {
           aj[i] *= 4;
         }
+        inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
         PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
 #  else

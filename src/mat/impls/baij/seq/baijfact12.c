@@ -164,7 +164,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar   *ba = b->a,*aa = a->a;
-  int         nonzero=0;
+  int         nonzero=0,colscale = 16;
   PetscTruth  pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
@@ -174,7 +174,9 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   if ((unsigned long)ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
-
+  if (bj==aj) {
+    colscale = 4;
+  }
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
@@ -201,7 +203,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     ajtmpold = aj + ai[i];
     v        = aa + 16*ai[i];
     for (j=0; j<nz; j++) {
-      x = rtmp+16*ajtmpold[j];
+      x = rtmp+colscale*ajtmpold[j];
       /* Copy v block into x block */ 
       SSE_INLINE_BEGIN_2(v,x)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
