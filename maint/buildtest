@@ -19,11 +19,11 @@ if (${#argv} >= 1 && -f $maintdir/buildtests/$1) then
   set CONFIGURE='no'
   set DASHN='-n'
   source $maintdir/buildtests/$1
-  set CONFIGURE_FILE=_$ARCH
+  set CONFIGURE_FILE=$ARCH
   set CONFIGURE_ARGS=${argv[2-]}
   set PETSC_ARCH_NAME=''
-  rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$TMP
   echo "Performing buildtest on " $MACH " with arch " $ARCH " at " $TMP
+  rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$TMP
   # should delete all previously build libraries
 else
   # run in-place
@@ -32,7 +32,7 @@ else
   set MACH=''
   set DASHN=''
   set CONFIGURE='yes'
-  set CONFIGURE_FILE=''
+  set CONFIGURE_FILE='configure'
   set CONFIGURE_ARGS=${argv}
   setenv PETSC_DIR $dir
   set ARCH=`$dir/bin/configarch`
@@ -46,7 +46,7 @@ $RSH $MACH $DASHN "echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND $TMP/maint/
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
-  $RSH $MACH $DASHN "cd $TMP; ./config/configure${CONFIGURE_FILE}.py ${PETSC_ARCH_NAME} -PETSC_DIR=$TMP ${CONFIGURE_ARGS} $APPEND maint/build_${ARCH}.${BOPT}.${MACH}.log"
+  $RSH $MACH $DASHN "cd $TMP; ./config/${CONFIGURE_FILE}.py ${PETSC_ARCH_NAME} -PETSC_DIR=$TMP ${CONFIGURE_ARGS} $APPEND maint/build_${ARCH}.${BOPT}.${MACH}.log"
   $RSH $MACH $DASHN "echo '****************************************************' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
   set EJOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/ejobs`
   set JOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/jobs`
