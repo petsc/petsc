@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.43 2000/07/11 02:55:19 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.44 2000/07/11 02:59:46 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -330,6 +330,7 @@ static struct _MatOps MatOps_Values = {0,
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
    when the matrix is destroyed. And you must allocate them with PetscMalloc(). If you 
     call from Fortran you need not create the arrays with PetscMalloc().
+   Should not include the matrix diagonals.
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
