@@ -179,3 +179,60 @@ int MatCreate_SeqSBAIJSpooles(Mat A) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*MC
+  MATSBAIJSPOOLES - MATSBAIJSPOOLES = "sbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential and parallel symmetric matrices via the external package Spooles.
+
+  If Spooles is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes Spooles solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation and MatMPISBAIJSetPreallocation are 
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATSBAIJ type without data copy.
+
+  Options Database Keys:
++ -mat_type sbaijspooles - sets the matrix type to sbaijspooles during calls to MatSetFromOptions()
+. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
+. -mat_spooles_seed <seed> - random number seed used for ordering
+. -mat_spooles_msglvl <msglvl> - message output level
+. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
+. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
+. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
+. -mat_spooles_maxsize <n> - maximum size of a supernode
+. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
+. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
+. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
+. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
+. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
+. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
+- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
+
+   Level: beginner
+
+.seealso: MATMPISBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SBAIJSpooles"
+int MatCreate_SBAIJSpooles(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqSBAIJSpooles or MPISBAIJSpooles */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
+  } else {
+    ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

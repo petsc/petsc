@@ -86,5 +86,7 @@ EXTERN_C_BEGIN
 EXTERN int MatConvert_Spooles_Base(Mat,const MatType,Mat*);
 EXTERN int MatConvert_SeqAIJ_SeqAIJSpooles(Mat,const MatType,Mat*);
 EXTERN int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat,const MatType,Mat*);
+EXTERN int MatConvert_MPIAIJ_MPIAIJSpooles(Mat,const MatType,Mat*);
+EXTERN int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat,const MatType,Mat*);
 EXTERN_C_END
 #endif

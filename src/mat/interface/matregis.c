@@ -31,6 +31,8 @@ EXTERN int MatCreate_SeqAIJSpooles(Mat);
 EXTERN int MatCreate_SeqSBAIJSpooles(Mat);
 EXTERN int MatCreate_MPIAIJSpooles(Mat);
 EXTERN int MatCreate_MPISBAIJSpooles(Mat);
+EXTERN int MatCreate_AIJSpooles(Mat);
+EXTERN int MatCreate_SBAIJSpooles(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
 EXTERN int MatCreate_SuperLU(Mat);
@@ -126,6 +128,8 @@ int MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJSpooles",MatCreate_SeqSBAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatCreate_MPIAIJSpooles",  MatCreate_MPIAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatCreate_MPISBAIJSpooles",MatCreate_MPISBAIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJSPOOLES,  path,"MatCreate_AIJSpooles",MatCreate_AIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSBAIJSPOOLES,path,"MatCreate_SBAIJSpooles",MatCreate_SBAIJSpooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
   ierr = MatRegisterDynamic(MATSUPERLU,path,"MatCreate_SuperLU",MatCreate_SuperLU);CHKERRQ(ierr);
