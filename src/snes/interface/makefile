@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/src/"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c 
+SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o
+OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o
 OBJSF    =
 WSOURCEC = snesf.c snesjf.c snesmfjf.c snesregif.c 
 WOBJS    = snesf.o snesjf.o snesmfjf.o snesregif.o 
