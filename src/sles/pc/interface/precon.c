@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.154 1998/09/19 02:38:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.155 1998/09/25 03:14:09 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -487,7 +487,14 @@ int PCSetUp(PC pc)
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
   if (!pc->type_name) {
-    SETERRQ(1,1,"PCType never set; suggest adding a SLESSetFromOptions()");
+    int size;
+
+    MPI_Comm_size(pc->comm,&size);
+    if (size == 1) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+    } else {
+      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
+    }
   }
   if (pc->setup) {
     ierr = (*pc->setup)(pc); CHKERRQ(ierr);
