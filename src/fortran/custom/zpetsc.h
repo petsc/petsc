@@ -48,6 +48,11 @@ Fortran.
    MPI-2 standard
      - MPI_*_f2c() and MPI_*_c2f()
 
+   LAM 6.1
+     - The interface function lam_F2C_comm() cannot be used
+       by PETSc, hence, using the LAM internals - GETHDL()
+       and lam_F_typefind()
+
    We define the macros
      PetscToPointerComm - from Fortran to C
      PetscFromPointerComm - From C to Fortran
@@ -75,6 +80,11 @@ extern int   MPIR_FromPointer(void*);
 */
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
+
+#elif defined(LAM_MPI)
+#include "MPISYS.h"
+#define PetscToPointerComm(a)        GETHDL(*(MPI_Fint *)(&a))
+#define PetscFromPointerComm(a)      lam_F_typefind(a)
 
 #else
 #define PetscToPointerComm(a)        (a)
