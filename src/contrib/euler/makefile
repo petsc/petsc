@@ -11,7 +11,8 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-  PETSC_DIR = /ccsthome/petsc/petsc
+  PETSC_DIR = /home/petsc/petsc-2.0.18
+#   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #    PETSC_DIR = /tmp/petsc
 # Argonne network
@@ -51,8 +52,8 @@
 # CONF     - needed for handling 64-bit pointer conversion to Fortran
 #             (shouldn't be needed by most applications)
 
- CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
-# CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
+#  CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
+ CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -93,8 +94,8 @@ ALL: ex1
   OBJSF_COMMON     = xnd.o xmod2.o pvar.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o implbc.o mat.o obselete.o
-  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
-#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #

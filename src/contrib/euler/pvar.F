@@ -28,11 +28,11 @@ c      COMMON /AVCTRS/ AIX(NI,NJ,NK),AJX(NI,NJ,NK),AKX(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-      Double  CP2(D_NI,D_NK),CP21(D_NI,D_NK)
-      Double  CN1(D_NK),CC1(D_NK),CN(D_NK),CC(D_NK)
-      Double  AREA(D_NK),AREA1(D_NK),ZLOC(D_NK)
-      Double  S(D_NI),CL(D_NI),CD(D_NI)
-      Double  chord,pbody,tcl,tcd,areas,cls,cds
+      double precision  CP2(D_NI,D_NK),CP21(D_NI,D_NK)
+      double precision  CN1(D_NK),CC1(D_NK),CN(D_NK),CC(D_NK)
+      double precision  AREA(D_NK),AREA1(D_NK),ZLOC(D_NK)
+      double precision  S(D_NI),CL(D_NI),CD(D_NI)
+      double precision  chord,pbody,tcl,tcd,areas,cls,cds
       integer i,k,pprint,ierr,btot,wcomm,wing
 
       pvar = 0

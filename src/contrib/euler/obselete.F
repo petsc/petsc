@@ -52,7 +52,7 @@ c
 #include "wing.h"
 #include "bcimpl.h"
 
-      Double  val,scale,negone
+      double precision  val,scale,negone
       integer row,km,jm,im,is1(0:*),id,ijkid,iter
       integer b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
       integer col,ierr,sctype,ijkn,ik,ict,ictmark
@@ -619,7 +619,7 @@ c     uniprocessor grid!
 #include "ibcwork.h"
 
 
-      Double  val(5)
+      double precision  val(5)
       integer i,j,k,jk,sctype,ijkx,ierr,ik
       integer nloc,ltog(0:nloc-1),pos(5)
       Vec     Fvec
@@ -902,7 +902,7 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,epsi,dql,dqr
+      double precision  qer(5),qel(5),eps,epsi,dql,dqr
       integer i,j,k,l,m
 
       jform = 0
@@ -985,7 +985,7 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,epsi,dti
+      double precision  qer(5),qel(5),eps,epsi,dti
       integer nloc,ltog(0:nloc-1)
       integer m,ierr,nd2,ijk,jk,rc(5),i,j,k
       Mat     mat
@@ -1135,7 +1135,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
 c      COMMON /BCINFO/  b1bc(5,5,4,nj,nk), b2bc(5,5,ni,4,nk),
 c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
 
-      Double  qer(5),qel(5),eps,epsi,dql,dqr
+      double precision  qer(5),qel(5),eps,epsi,dql,dqr
       integer i,j,k,l,m,dummy,ierr,ndm,ndem
       AO      ao
 
@@ -1292,16 +1292,16 @@ c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
 c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
 c      COMMON /CONDI/ ORDER,PSI,LIMIT
 c      COMMON /FREQ/ IFREQ,ISGS
-c      Double b1(5,5,ni1,nj1,nk1),b2(5,5,ni1,nj1,nk1)
-c      Double b3(5,5,ni1,nj1,nk1)
+c      double precision b1(5,5,ni1,nj1,nk1),b2(5,5,ni1,nj1,nk1)
+c      double precision b3(5,5,ni1,nj1,nk1)
 c
 c Note: These dimensions MUST agree with those in matrixb.h !!
-      Double  B1(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double  B2(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double  B3(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double  dq(5,d_ni),f(5,d_ni)
-      Double  ql(5,d_ni),qer(5),qel(5)
-      Double  epsi,tl,pl
+      double precision  B1(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision  B2(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision  B3(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision  dq(5,d_ni),f(5,d_ni)
+      double precision  ql(5,d_ni),qer(5),qel(5)
+      double precision  epsi,tl,pl
       integer i,j,k,l,m,ib,jb,kb
 
 C   NUMERICAL JACOBIAN IN THE I DIRECTION

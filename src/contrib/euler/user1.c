@@ -1541,7 +1541,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /* Fortran work arrays for vectors */
   llen = (app->gxefp1 - app->gxsf1+1) * (app->gyefp1 - app->gysf1+1) 
             * (app->gzefp1 - app->gzsf1+1);
-  app->p = (Scalar *)PetscMalloc(7*llen*sizeof(Scalar)); CHKPTRQ(app->p);
+  llenb = 7*llen*sizeof(Scalar);
+  app->p = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->p);
+  PetscMemzero(app->p,llenb);
   app->p_bc  = app->p     + llen; /* parallel bc work space */
   app->r_bc  = app->p_bc  + llen;
   app->ru_bc = app->r_bc  + llen;

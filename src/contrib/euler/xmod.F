@@ -337,7 +337,7 @@ c
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
-      Double  rqdq
+      double precision  rqdq
       integer i,j,k
 
       jpressure = 0
@@ -393,9 +393,9 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       common /junkvar/ rtrmsr, etrmsr
 
-      Double  drecv(3),dsend(3),rtmax,rtrms,etmax,etrms
-      Double  dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
-      Double  area,pbody,cls,cds,xl2,work(*),cfl_new
+      double precision  drecv(3),dsend(3),rtmax,rtrms,etmax,etrms
+      double precision  dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
+      double precision  area,pbody,cls,cds,xl2,work(*),cfl_new
       integer i,j,k,ierr,nsup
 
       ncyc     = ncyc + 1
@@ -607,7 +607,7 @@ c
 #include "param.h"
 #include "wing.h"
 
-      Double  X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
+      double precision  X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
       integer itlA, ituA, ileA, ktipA
 
       readmesh = 0

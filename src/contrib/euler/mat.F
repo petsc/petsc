@@ -41,7 +41,7 @@ c     uniprocessor grid!
 #include "ibcwork.h"
 
 
-      Double  f(0:*)
+      double precision f(0:*)
       integer i,j,k,jk,sctype,ijkx,ik
 
       rbuild_direct = 0
