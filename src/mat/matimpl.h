@@ -184,7 +184,6 @@ typedef struct {
   MatScalar     *svalues;               /* sending data */
   MatScalar     **rvalues;              /* receiving data (values) */
   PetscInt      **rindices;             /* receiving data (indices) */
-  PetscInt      rmax;                   /* maximum message length */
   PetscInt      *nprocs;                /* tmp data used both duiring scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
 } MatStash;

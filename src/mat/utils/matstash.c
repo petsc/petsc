@@ -70,7 +70,6 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->svalues     = 0;
   stash->rvalues     = 0;
   stash->rindices    = 0;
-  stash->rmax        = 0;
   stash->nprocs      = 0;
   stash->nprocessed  = 0;
   PetscFunctionReturn(0);
@@ -129,7 +128,6 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
-  stash->rmax       = 0;
   stash->nprocessed = 0;
 
   if (stash->array) {
@@ -441,7 +439,7 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   PetscInt       *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
   PetscInt       size=stash->size,*nprocs,*nlengths,nsends,nreceives;
   PetscErrorCode ierr;
-  PetscInt       nmax,count,*sindices,**rindices,i,j,idx,lastidx;
+  PetscInt       count,*sindices,**rindices,i,j,idx,lastidx;
   MatScalar      **rvalues,*svalues;
   MPI_Comm       comm = stash->comm;
   MPI_Request    *send_waits,*recv_waits,*recv_waits1,*recv_waits2;
@@ -545,7 +543,6 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   stash->svalues    = svalues;    stash->rvalues     = rvalues;
   stash->rindices   = rindices;   stash->send_waits  = send_waits;
   stash->nsends     = nsends;     stash->nrecvs      = nreceives;
-  stash->rmax       = nmax;
   PetscFunctionReturn(0);
 }
 
