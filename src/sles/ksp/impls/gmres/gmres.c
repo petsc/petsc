@@ -1,14 +1,15 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.58 1996/03/18 00:38:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.59 1996/03/19 21:23:54 bsmith Exp curfman $";
 #endif
 
 /*
-    This implements gmres.  It may be called recurrsively as long as 
-    all of the user-supplied routines can. 
+    This file implements GMRES (a Generalized Minimal Residual) method.  
+    Reference:  Saad and Schultz, 1986.
 
-    This routine is meant to be compatible with execution on a parallel
-    processor.  As such, it expects to be given routines for 
+    The solver may be called recursively as long as all of the user-supplied
+    routines can. This routine is meant to be compatible with execution on a
+    parallel processor.  As such, it expects to be given routines for 
     all operations as well as a user-defined pointer to a distributed
     data structure.  THIS IS A DATA-STRUCTURE NEUTRAL IMPLEMENTATION.
   
