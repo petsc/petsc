@@ -1734,8 +1734,9 @@ EXTERN_C_END
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local 
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
-           of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
+           in the upper triangular and diagonal part of the in diagonal portion of the local
+           (possibly different for each block row) or PETSC_NULL.  You must leave room 
+           for the diagonal entry even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -1779,10 +1780,11 @@ EXTERN_C_END
   
    Thus, any entries in the d locations are stored in the d (diagonal) 
    submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix.  Note that the d and the o submatrices are
-   stored simply in the MATSEQBAIJ format for compressed row storage.
+   o (off-diagonal) submatrix.  Note that the d matrix is stored in
+   MatSeqSBAIJ format and the o submatrix in MATSEQBAIJ format.
 
-   Now d_nz should indicate the number of block nonzeros per row in the d matrix,
+   Now d_nz should indicate the number of block nonzeros per row in the upper triangular
+   plus the diagonal part of the d matrix,
    and o_nz should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
@@ -1898,8 +1900,9 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local 
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows 
-           of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
+           in the upper triangular portion of the in diagonal portion of the local 
+           (possibly different for each block block row) or PETSC_NULL.  
+           You must leave room for the diagonal entry even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -1949,10 +1952,11 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   
    Thus, any entries in the d locations are stored in the d (diagonal) 
    submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix.  Note that the d and the o submatrices are
-   stored simply in the MATSEQBAIJ format for compressed row storage.
+   o (off-diagonal) submatrix.  Note that the d matrix is stored in
+   MatSeqSBAIJ format and the o submatrix in MATSEQBAIJ format.
 
-   Now d_nz should indicate the number of block nonzeros per row in the d matrix,
+   Now d_nz should indicate the number of block nonzeros per row in the upper triangular
+   plus the diagonal part of the d matrix,
    and o_nz should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
