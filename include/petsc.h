@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.40 1995/07/14 13:44:15 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.41 1995/07/14 13:49:30 curfman Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -103,7 +103,7 @@ extern int PetscPopSignalHandler();
 extern int PetscSetFPTrap(int);
 #define FP_TRAP_OFF    0
 #define FP_TRAP_ON     1
-#define FP_TRAP_ALWAYS FP_TRAP_ON
+#define FP_TRAP_ALWAYS 2
 
 #if defined(PARCH_cray) || defined(PARCH_NCUBE) || defined(PARCH_t3d)
 #define FORTRANCAPS

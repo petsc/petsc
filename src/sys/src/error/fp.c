@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.11 1995/07/10 04:50:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: fp.c,v 1.12 1995/07/14 13:51:30 curfman Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -71,7 +71,7 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
    trapping is very slow and should be used with extreme caution!
 
    Input Parameters:
-.  flag - FP_TRAP_ON, FP_TRAP_OFF
+.  flag - FP_TRAP_ON, FP_TRAP_OFF, FP_TRAP_ALWAYS
 
    Options Database Keys:
 $  -fp_trap - turns on floating point trapping
@@ -84,7 +84,7 @@ int PetscSetFPTrap(int flag)
   /* Clear accumulated exceptions.  Used to try and suppress
 	   meaningless messages from f77 programs */
   (void) ieee_flags( "clear", "exception", "all", &out );
-  if (flag == FP_TRAP_ON) {
+  if (flag == FP_TRAP_ON || flag == FP_TRAP_ALWAYS) {
      if (ieee_handler("set","common",SYsample_handler))
 		fprintf(stderr, "Can't set floatingpoint handler\n");
   }
@@ -124,7 +124,7 @@ void SYsample_handler( unsigned exception[],int val[] )
 }
 int PetscSetFPTrap(int flag)
 {
-  if (flag == FP_TRAP_ON) {
+  if (flag == FP_TRAP_ON || flag == FP_TRAP_ALWAYS) {
     sigfpe_[_EN_OVERFL].abort = 1;
     sigfpe_[_EN_DIVZERO].abort = 1;
     sigfpe_[_EN_INVALID].abort = 1;
@@ -157,7 +157,7 @@ void SYsample_handler(int sig)
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on == FP_TRAP_ON) {
+  if (on == FP_TRAP_ON || on == FP_TRAP_ALWAYS) {
     fpsetmask( FP_X_OFL | FP_X_DZ | FP_X_INV );
     flag = (int) 	signal(SIGFPE,SYsample_handler);
     if (flag == -1) fprintf(stderr, "Can't set floatingpoint handler\n");
@@ -229,7 +229,7 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on == FP_TRAP_ON) {
+  if (on == FP_TRAP_ALWAYS) {
     signal( SIGFPE, (void (*)(int))SYsample_handler );
     fp_trap( FP_TRAP_SYNC );
     fp_enable( TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW );
@@ -267,7 +267,7 @@ void SYsample_handler(int sig)
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on == FP_TRAP_ON) {
+  if (on == FP_TRAP_ON || on == FP_TRAP_ALWAYS) {
     flag = (int) signal(SIGFPE,SYsample_handler);
     if (flag == -1) fprintf(stderr, "Can't set floatingpoint handler\n");
   }

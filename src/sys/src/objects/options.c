@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.23 1995/07/14 15:57:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.24 1995/07/15 17:34:36 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -111,7 +111,8 @@ $      compiled with PETSC_LOG)
 $  -log_summary : Prints summary of flop and timing
 $      information to screen (for code compiled with 
 $      PETSC_LOG)
-$  -fp_trap : stops on floating point exceptions
+$  -fp_trap : stops on floating point exceptions, note on the IBM RS6000
+$             this slows your code by at least a factor of 10.
 
 .keywords: finalize, exit, end
 
@@ -330,6 +331,7 @@ static int OptionsCheckInitial_Private()
     MPIU_printf(comm,"       start all processes in the debugger\n");
     MPIU_printf(comm," -no_signal_handler: do not trap error signals\n");
     MPIU_printf(comm," -fp_trap: stop on floating point exceptions\n");
+    MPIU_printf(comm,"           note on IBM RS6000 this slows run greatly\n");
     MPIU_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
     MPIU_printf(comm," -trmalloc: use our error checking malloc\n");
     MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
