@@ -216,7 +216,27 @@ class Configure(config.base.Configure):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+';./make.py '+args, timeout=900, log = self.framework.log)[0]
+        import logging
+        # Split Graphs into its own repository
+        oldDir = os.getcwd()
+        os.chdir(parmetisDir)
+        oldLog = logging.Logger.defaultLog
+        logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
+        oldLevel = self.argDB['debugLevel']
+        self.argDB['debugLevel'] = 0
+        oldIgnore = self.argDB['ignoreCompileOutput']
+        self.argDB['ignoreCompileOutput'] = 1
+        if os.path.exists('RDict.db'):
+          os.remove('RDict.db')
+        if os.path.exists('bsSource.db'):
+          os.remove('bsSource.db')
+        make = self.getModule(parmetisDir, 'make').Make()
+        make.prefix = installDir
+        make.run()
+        self.argDB['ignoreCompileOutput'] = oldIgnore
+        self.argDB['debugLevel'] = oldLevel
+        logging.Logger.defaultLog = oldLog
+        os.chdir(oldDir)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ParMetis: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
