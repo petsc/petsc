@@ -11,6 +11,7 @@ cl::cl() {
 
 void cl::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
+  if (!verbose) compilearg[0] = compilearg[0] + " -nologo";
   linkarg[0]="-link";
 }
 

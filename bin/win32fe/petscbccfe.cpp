@@ -12,6 +12,7 @@ bcc::bcc() {
 
 void bcc::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
+  if (!verbose) compilearg[0] = compilearg[0] + " -q";
   linkarg[0]="**";
 }
 void bcc::Parse(void) {
