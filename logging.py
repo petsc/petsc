@@ -185,13 +185,13 @@ class LoggerOld(object):
   debugIndent   = ' '
 
   def __init__(self, argDB = None, log = None):
-    if Logger.debugLevel is None:
-      Logger.debugLevel    = argDB['debugLevel']
-    self.debugLevel        = Logger.debugLevel
-    if Logger.debugSections is None:
-      Logger.debugSections = argDB['debugSections']
-    self.debugSections     = Logger.debugSections
-    self.debugIndent       = Logger.debugIndent
+    if LoggerOld.debugLevel is None:
+      LoggerOld.debugLevel    = argDB['debugLevel']
+    self.debugLevel        = LoggerOld.debugLevel
+    if LoggerOld.debugSections is None:
+      LoggerOld.debugSections = argDB['debugSections']
+    self.debugSections     = LoggerOld.debugSections
+    self.debugIndent       = LoggerOld.debugIndent
     self.log               = log
     return
 

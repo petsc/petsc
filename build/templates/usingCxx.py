@@ -17,6 +17,7 @@ class UsingCxx (base.Base):
     self.project     = project
     self.usingSIDL   = usingSIDL
     self.usingC      = usingC
+    self.clArgs      = None
     self.configBase  = config.base.Configure(self)
     if self.usingC is None:
       import build.templates.usingC
