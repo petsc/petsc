@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.17 1995/11/28 23:57:04 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.18 1995/11/29 20:49:09 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -402,7 +402,6 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   aj   = a_j + shift;
   ad   = a->diag;
 
-  PLogEventBegin(125,0,0,0,0);
   for (i = 0, row = 0; i< node_max; ++i){
     nsz = ns[i];
     aii = ai[row];
@@ -574,9 +573,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
-  PLogEventEnd(125,0,0,0,0);  
   /* backward solve the upper triangular */
-  PLogEventBegin(126,0,0,0,0);
   for ( i=node_max -1 , row = n-1 ; i>=0; i-- ){
     nsz = ns[i];
     aii = ai[row+1] -1;
@@ -743,7 +740,6 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
-  PLogEventEnd(126,0,0,0,0);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
