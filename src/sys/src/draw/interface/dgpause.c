@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgpause.c,v 1.5 1996/07/08 22:21:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgpause.c,v 1.6 1996/08/08 14:44:45 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: dgpause.c,v 1.5 1996/07/08 22:21:15 bsmith Exp bsmith
 int DrawGetPause(Draw draw,int *pause)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (!pause) SETERRQ(1,"DrawGetPause:Null address to store pause");
+  PetscValidIntPointer(pause);
   if (draw->type == DRAW_NULLWINDOW) return 0;
   *pause = draw->pause;
   return 0;
