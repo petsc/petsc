@@ -22,8 +22,18 @@ class ChecksumError (RuntimeError):
   def __str__(self):
     return str(self.value)
 
-class Maker:
-  def __init__(self):
+class Maker (logging.Logger):
+  """
+  Base class for all build objects, which handles:
+    - Temporary storage
+    - Checksums
+    - Shell commands
+    - Source database update
+    - Advanced debug output
+  """
+  def __init__(self, locArgDB = None):
+    if not locArgDB: locArgDB = argDB
+    logging.Logger.__init__(self, locArgDB)
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
     self.setupChecksum()
@@ -84,7 +94,7 @@ class Maker:
     if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def executeShellCommand(self, command, checkCommand = None):
-    logging.debugPrint('sh: '+command, 3, 'shell')
+    self.debugPrint('sh: '+command, 3, 'shell')
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
@@ -98,8 +108,22 @@ class Maker:
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
     except KeyError:
       pass
-    logging.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
+    self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
     sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+
+  def debugFileSetStr(self, set):
+    if isinstance(set, fileset.FileSet):
+      if set.tag:
+        return '('+set.tag+')'+self.debugListStr(set.getFiles())
+      else:
+        return self.debugListStr(set.getFiles())
+    elif type(set) == types.ListType:
+      output = '['
+      for fs in set:
+        output += self.debugFileSetStr(fs)
+      return output+']'
+    else:
+      raise RuntimeError('Invalid fileset '+set)
 
 class BS (Maker):
   includeRE   = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
@@ -111,6 +135,8 @@ class BS (Maker):
   def __init__(self, clArgs = None):
     self.setupArgDB(clArgs)
     Maker.__init__(self)
+    for key in argDB.keys():
+      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
 
@@ -125,19 +151,15 @@ class BS (Maker):
     argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'))
     self.setupDefaultArgs()
     argDB.input(clArgs)
-    logging.debugLevel    = int(argDB['debugLevel'])
-    logging.debugSections = list(argDB['debugSections'])
-    for key in argDB.keys():
-      logging.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
 
   def saveSourceDB(self):
-    logging.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
+    self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
     dbFile = open(self.sourceDBFilename, 'w')
     cPickle.dump(sourceDB, dbFile)
     dbFile.close()
 
   def setupSourceDB(self):
-    logging.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
+    self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
     global sourceDB
 
     if os.path.exists(self.sourceDBFilename):
@@ -149,9 +171,9 @@ class BS (Maker):
     atexit.register(self.saveSourceDB)
 
   def calculateDependencies(self):
-    logging.debugPrint('Recalculating dependencies', 1, 'sourceDB')
+    self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in sourceDB.keys():
-      logging.debugPrint('Calculating '+source, 3, 'sourceDB')
+      self.debugPrint('Calculating '+source, 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
       newDep = []
       file   = open(source, 'r')
@@ -162,15 +184,15 @@ class BS (Maker):
           filename  = m.group('includeFile')
           matchNum  = 0
           matchName = filename
-          logging.debugPrint('  Includes '+filename, 3, 'sourceDB')
+          self.debugPrint('  Includes '+filename, 3, 'sourceDB')
           for s in sourceDB.keys():
             if string.find(s, filename) >= 0:
-              logging.debugPrint('    Checking '+s, 3, 'sourceDB')
+              self.debugPrint('    Checking '+s, 3, 'sourceDB')
               c = string.split(s, '/')
               for i in range(len(c)):
                 if not comps[i] == c[i]: break
               if i > matchNum:
-                logging.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+                self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
                 matchName = s
                 matchNum  = i
           newDep.append(matchName)
@@ -192,16 +214,16 @@ class BS (Maker):
       if not type(argNames) == types.ListType: argNames = [argNames]
       for argName in argNames:
         if argDB.has_key(argName):
-          logging.debugPrint('Purging '+argName, 3, 'argDB')
+          self.debugPrint('Purging '+argName, 3, 'argDB')
           del argDB[argName]
       del argDB['arg']
     else:
       setName = argDB['fileset']
       try:
-        logging.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
+        self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
         for file in self.filesets[setName]:
           if sourceDB.has_key(file):
-            logging.debugPrint('Purging '+file, 3, 'sourceDB')
+            self.debugPrint('Purging '+file, 3, 'sourceDB')
             del sourceDB[file]
       except KeyError:
         print 'FileSet '+setName+' not found for purge'

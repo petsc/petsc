@@ -12,7 +12,7 @@ class Target (transform.Transform):
     self.transforms = transforms[:]
 
   def executeSingleTransform(self, sources, transform):
-    logging.debugPrint('Executing transform '+str(transform)+' with sources '+logging.debugFileSetStr(sources), 1, 'target')
+    self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugFileSetStr(sources), 1, 'target')
     if len(transform.sources):
       if isinstance(transform.sources, fileset.FileSet):
         if isinstance(sources, fileset.FileSet):
@@ -27,7 +27,7 @@ class Target (transform.Transform):
     else:
       transform.sources = sources
     products = transform.execute()
-    logging.debugPrint('Transform products '+logging.debugFileSetStr(products), 'target')
+    self.debugPrint('Transform products '+self.debugFileSetStr(products), 4, 'target')
     return products
 
   def executeTransformPipe(self, sources, list):
@@ -51,7 +51,7 @@ class Target (transform.Transform):
       products = self.executeTransformFan(sources, t)
     else:
       raise RuntimeError('Invalid transform type '+type(t))
-    logging.debugPrint('Target products '+logging.debugFileSetStr(products), 'target')
+    self.debugPrint('Target products '+self.debugFileSetStr(products), 2, 'target')
     return products
 
   def execute(self):

@@ -9,7 +9,7 @@ import sys
 import types
 import UserDict
 
-class ArgDict (UserDict.UserDict):
+class ArgDict (UserDict.UserDict, logging.Logger):
   def __init__(self, filename = None):
     UserDict.UserDict.__init__(self)
     self.filename = filename
@@ -65,7 +65,7 @@ class ArgDict (UserDict.UserDict):
       dbFile.close()
 
   def save(self):
-    logging.debugPrint('Saving argument database in '+self.filename, 2, 'argDB')
+    self.debugPrint('Saving argument database in '+self.filename, 2, 'argDB')
     dbFile = open(self.filename, 'w')
     cPickle.dump(self.data, dbFile)
     dbFile.close()
@@ -92,7 +92,8 @@ class ArgDict (UserDict.UserDict):
     self.inputDefaultArgs()
     self.update(os.environ)
     self.inputCommandLineArgs(clArgs)
-    if self.filename: logging.debugPrint('Read source database from '+self.filename, 2, 'argDB')
+    self.setFromArgs(self)
+    if self.filename: self.debugPrint('Read source database from '+self.filename, 2, 'argDB')
 
   def setHelp(self, key, docString):
     self.metadata['help'][key] = docString

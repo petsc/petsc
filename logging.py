@@ -1,37 +1,30 @@
-import fileset
-
 import sys
 import traceback
 import types
 
-debugLevel    = 1
-debugSections = []
-debugIndent   = '  '
+class Logger:
+  debugLevel    = 1
+  debugSections = []
+  debugIndent   = '  '
 
-def debugListStr(list):
-  if (debugLevel > 4) or (len(list) < 4):
-    return str(list)
-  else:
-    return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
+  def __init__(self, argDB = None):
+    self.setFromArgs(argDB)
 
-def debugFileSetStr(set):
-  if isinstance(set, fileset.FileSet):
-    if set.tag:
-      return '('+set.tag+')'+debugListStr(set.getFiles())
+  def setFromArgs(self, argDB):
+    if not argDB: return
+    self.debugLevel    = int(argDB['debugLevel'])
+    self.debugSections = argDB['debugSections']
+
+  def debugListStr(self, list):
+    if (self.debugLevel > 4) or (len(list) < 4):
+      return str(list)
     else:
-      return debugListStr(set.getFiles())
-  elif type(set) == types.ListType:
-    output = '['
-    for fs in set:
-      output += debugFileSetStr(fs)
-    return output+']'
-  else:
-    raise RuntimeError('Invalid fileset '+set)
+      return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
 
-def debugPrint(msg, level = 1, section = None):
-  indentLevel = len(traceback.extract_stack())-4
-  if debugLevel >= level:
-    if (not section) or (not debugSections) or (section in debugSections):
-      for i in range(indentLevel):
-        sys.stdout.write(debugIndent)
-      print msg
+  def debugPrint(self, msg, level = 1, section = None):
+    indentLevel = len(traceback.extract_stack())-4
+    if self.debugLevel >= level:
+      if (not section) or (not self.debugSections) or (section in self.debugSections):
+        for i in range(indentLevel):
+          sys.stdout.write(self.debugIndent)
+        print msg

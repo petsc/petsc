@@ -69,18 +69,18 @@ class FileChanged (Transform):
     self.products  = [self.changed, self.unchanged]
 
   def compare(self, source, sourceEntry):
-    logging.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
+    self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
     checksum = self.getChecksum(source)
     if sourceEntry[0] == checksum:
       return 0
     else:
-      logging.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
+      self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
       return 1
 
   def fileExecute(self, source):
     try:
       if not os.path.exists(source):
-        logging.debugPrint(source+' does not exist', 3, 'sourceDB')
+        self.debugPrint(source+' does not exist', 3, 'sourceDB')
         self.changed.append(source)
       else:
         changed = 0
@@ -99,11 +99,11 @@ class FileChanged (Transform):
         else:
           self.unchanged.append(source)
     except KeyError:
-      logging.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
+      self.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
       self.changed.append(source)
 
   def execute(self):
-    logging.debugPrint('Checking for changes to sources '+logging.debugFileSetStr(self.sources), 2, 'sourceDB')
+    self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2, 'sourceDB')
     return Transform.execute(self)
 
 class GenericTag (FileChanged):
