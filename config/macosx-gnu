@@ -1,6 +1,4 @@
 #! /bin/csh
-
-set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=g
 else if ($day == Mon) then

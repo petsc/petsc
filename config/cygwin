@@ -2,7 +2,6 @@
 set DATAFILESPATH=/home/balay/datafiles
 set APPEND='2>&1 >>'
 #
-set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=g
   set JOBS=(1 2 3 6 8)

@@ -1,6 +1,5 @@
 #! /bin/csh
 #
-set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=g
   set JOBS=(1 2 3 6 8 13 18)
