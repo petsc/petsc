@@ -608,7 +608,7 @@ int ESILoadFactory(char *commname,void *comm,char *classname,void *&f)
   PetscFunctionBegin;
   ierr = PetscStrcmp(commname,"MPI",&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ1(1,"Parallel computing model %s not supported",commname);
-  ierr = PetscFListFind((MPI_Comm)comm,CCAList,classname,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,classname,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load constructor %s",classname);
   f    = (*r)();
   PetscFunctionReturn(0);

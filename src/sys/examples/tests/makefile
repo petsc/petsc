@@ -10,6 +10,7 @@ LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 		  ex13.c ex14.c ex15.c ex16.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F ex17f.F
+MANSEC          = Sys
 
 include ${PETSC_DIR}/bmake/common/base
 

@@ -9,6 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/src/draw/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c
 EXAMPLESF       = ex4f.F ex5.F
+MANSEC          = Draw
 
 include ${PETSC_DIR}/bmake/common/base
 
