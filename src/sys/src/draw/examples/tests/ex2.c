@@ -9,6 +9,7 @@ static char help[] = "Example demonstrating color map\n";
 #include "sysio.h"
 #include "draw.h"
 #include <math.h>
+#include <unistd.h>
 
 int main(int argc,char **argv)
 {

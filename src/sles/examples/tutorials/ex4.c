@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.4 1995/07/23 18:25:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.5 1995/07/29 03:16:32 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -11,10 +11,9 @@ static char help[] =
 
 int main(int argc,char **args)
 {
-  Mat     C, A; 
-  int     i,j, m = 15, n = 17, mytid, numtids, low, high, iglobal;
+  Mat     C;
+  int     i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend;
   Scalar  v,  one = 1.0;
-  int     its, I, J, ierr, nz, nzalloc, mem, ldim,Istart,Iend;
   Vec     u,b,x;
   SLES    sles;
 

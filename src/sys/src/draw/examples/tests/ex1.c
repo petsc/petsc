@@ -10,6 +10,7 @@ static char help[] = "Example demonstrating opening and drawing a window\n";
 #include "sysio.h"
 #include "draw.h"
 #include <math.h>
+#include <unistd.h>
 
 int main(int argc,char **argv)
 {
