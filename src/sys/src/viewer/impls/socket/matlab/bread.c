@@ -12,11 +12,11 @@
   link to the PETSc libraries.
 */
 #include <errno.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
@@ -96,7 +96,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   int  maxblock,wsize,err;
   char *pp = (char*)p;
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   int  ntmp = n; 
   void *ptmp = p; 
 #endif
@@ -119,7 +119,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     n  -= err;
     pp += err;
   }
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
   else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
   else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);

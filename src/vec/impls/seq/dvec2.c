@@ -593,7 +593,7 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
   int          n = xin->n,ierr,j,j_rem;
   PetscScalar  *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
 #endif
 

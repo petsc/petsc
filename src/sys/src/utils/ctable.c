@@ -4,7 +4,7 @@
 #include "petscconfig.h"
 #include "petsc.h"
 #include "src/sys/ctable.h" 
-#if defined (HAVE_LIMITS_H)
+#if defined (PETSC_HAVE_LIMITS_H)
 #include <limits.h>
 #endif
 #define HASHT(ta,x) ((3*x)%ta->tablesize)

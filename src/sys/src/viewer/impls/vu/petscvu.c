@@ -304,7 +304,7 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
   vu->queueLength++;
 
   va_start(Argp, format);
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(next->string, format, (char *) Argp);
 #else
   vsprintf(next->string, format, Argp);

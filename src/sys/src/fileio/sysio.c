@@ -10,7 +10,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if defined (PARCH_win32)
@@ -19,7 +19,7 @@
 #include "petscbt.h"
 
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscByteSwapInt"
 /*
@@ -160,7 +160,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   static PetscTruth longintset = PETSC_FALSE,longintfile = PETSC_FALSE;
   PetscTruth        flg;
   char              *pp = (char*)p;
-#if (SIZEOF_SHORT != 8)
+#if (PETSC_SIZEOF_SHORT != 8)
   void              *ptmp = p; 
 #endif
 
@@ -177,7 +177,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     longintset = PETSC_TRUE;
   }
 
-#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
+#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
     if (longintfile) {
       m *= sizeof(int);
@@ -188,7 +188,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
       ptmp = (void*)pp;
     }
   }
-#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
   if (type == PETSC_INT){
     if (longintfile) {
       m *= sizeof(int);
@@ -225,14 +225,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     m  -= err;
     pp += err;
   }
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
+#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
     if (!longintfile) {
       int   *p_int = (int*)p,i;
@@ -243,7 +243,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
       ierr = PetscFree(ptmp);CHKERRQ(ierr);
     }
   }
-#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
 #else
   if (type == PETSC_INT){
     if (longintfile) {
@@ -304,7 +304,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
   char *pp = (char*)p;
   int  err,maxblock,wsize,m = n;
-#if !defined(WORDS_BIGENDIAN) || (SIZEOF_INT == 8)
+#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
   int  ierr;
   void *ptmp = p; 
 #endif
@@ -314,14 +314,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
   maxblock = 65536;
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
     /* 
       integers on the Cray T3d/e are 64 bits so we copy the big
@@ -357,7 +357,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     pp += wsize;
   }
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
@@ -365,7 +365,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   }
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
     ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }

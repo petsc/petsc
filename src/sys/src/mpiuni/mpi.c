@@ -13,7 +13,7 @@
 #define MPIUNI_STDCALL
 #endif
 
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 

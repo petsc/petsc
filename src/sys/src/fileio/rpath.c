@@ -3,16 +3,16 @@
 #include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -26,7 +26,7 @@
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "petscfix.h"

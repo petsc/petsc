@@ -4,7 +4,7 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscfix.h"
-#if defined(HAVE_SYS_TIME_H)
+#if defined(PETSC_HAVE_SYS_TIME_H)
 #include <sys/types.h>
 #include <sys/time.h>
 #endif

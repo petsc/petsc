@@ -102,7 +102,7 @@ int PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
    with other variants of random number generators. We should also add
    a routine to enable restarts [seed48()] 
 */
-#if defined(HAVE_DRAND48)
+#if defined(PETSC_HAVE_DRAND48)
 EXTERN_C_BEGIN
 extern double drand48();
 extern void   srand48(long);
@@ -232,7 +232,7 @@ int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#elif defined(HAVE_RAND)
+#elif defined(PETSC_HAVE_RAND)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 

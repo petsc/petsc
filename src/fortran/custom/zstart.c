@@ -80,7 +80,7 @@ extern void getarg_(int*,char*,int);
 /*
       The Cray T3D/T3E use the PXFGETARG() function
 */
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
 extern void PXFGETARG(int *,_fcd,int*,int*);
 #endif
 #endif
@@ -137,7 +137,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
     ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
     for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
        int  ierr,ilen;
        PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   *ierr = PetscOptionsCreate(); 
   if (*ierr) return;
   i = 0;
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
   { int ilen;
     PXFGETARG(&i,_cptofcd(name,256),&ilen,ierr); 
     if (*ierr) return;

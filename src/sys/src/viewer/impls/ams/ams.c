@@ -2,7 +2,7 @@
 
 #include "src/sys/src/viewer/viewerimpl.h"
 #include "petscsys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -55,7 +55,7 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
     ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
     if (flg2) {
       char dir[256];
-#if defined(HAVE_UCBPS)
+#if defined(PETSC_HAVE_UCBPS)
       char buf[1024],*found;
       FILE *fp;
 
