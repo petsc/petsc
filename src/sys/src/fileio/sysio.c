@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.53 1999/05/04 20:29:01 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.54 1999/05/12 03:27:04 bsmith Exp balay $";
 #endif
 
 /* 
@@ -126,7 +126,7 @@ int PetscByteSwapDouble(double *buff,int n)
    Input Parameters:
 +  fd - the file
 .  n  - the number of items to read 
--  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+-  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 
    Output Parameters:
 .  p - the buffer
@@ -270,7 +270,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 +  fd     - the file
 .  p      - the buffer
 .  n      - the number of items to write
-.  type   - the type of items to read (PETSC_INT or PETSC_SCALAR)
+.  type   - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 -  istemp - 0 if buffer data should be preserved, 1 otherwise.
 
    Level: advanced
