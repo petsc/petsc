@@ -38,6 +38,7 @@ add to it).
 
   General
 
+    Added OptionsGetLogical()
 
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code
@@ -53,4 +54,6 @@ to do what you need.
       MatSNESFDMFGetH(Mat,Scalar *);
       MatSNESFDMFKSPMonitor(KSP,int,double,void *); and the 
       option -snes_mf_ksp_monitr
+    Added support for an alternative way to compute h using the Walker-Pernice
+      strategy accessible via -snes_mf_type wp
 
