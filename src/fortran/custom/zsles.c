@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zsles.c,v 1.7 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.8 1996/03/04 21:30:31 bsmith Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
 #include "draw.h"
 #include "pinclude/petscfix.h"
@@ -31,7 +31,7 @@ void slessetoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESSetOptionsPrefix((SLES)MPIR_ToPointer( *(int*)(sles) ),t);
+  *__ierr = SLESSetOptionsPrefix((SLES)PetscToPointer( *(int*)(sles) ),t);
   FREECHAR(prefix,t);
 }
 
@@ -39,33 +39,33 @@ void slesappendoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESAppendOptionsPrefix((SLES)MPIR_ToPointer( *(int*)(sles) ),t);
+  *__ierr = SLESAppendOptionsPrefix((SLES)PetscToPointer( *(int*)(sles) ),t);
   FREECHAR(prefix,t);
 }
 
 void slesgetksp_(SLES sles,KSP *ksp, int *__ierr ){
   KSP joe;
-  *__ierr = SLESGetKSP((SLES)MPIR_ToPointer( *(int*)(sles) ),&joe);
-  *(int*) ksp = MPIR_FromPointer(joe);
+  *__ierr = SLESGetKSP((SLES)PetscToPointer( *(int*)(sles) ),&joe);
+  *(int*) ksp = PetscFromPointer(joe);
 }
 
 void slesgetpc_(SLES sles,PC *pc, int *__ierr ){
   PC joe;
-  *__ierr = SLESGetPC((SLES)MPIR_ToPointer( *(int*)(sles) ),&joe);
-  *(int*) pc = MPIR_FromPointer(joe);
+  *__ierr = SLESGetPC((SLES)PetscToPointer( *(int*)(sles) ),&joe);
+  *(int*) pc = PetscFromPointer(joe);
 }
 
 void slesdestroy_(SLES sles, int *__ierr )
 {
-  *__ierr = SLESDestroy((SLES)MPIR_ToPointer( *(int*)(sles) ));
-  MPIR_RmPointer( *(int*)(sles) );
+  *__ierr = SLESDestroy((SLES)PetscToPointer( *(int*)(sles) ));
+  PetscRmPointer( *(int*)(sles) );
 }
 
 void slescreate_(MPI_Comm comm,SLES *outsles, int *__ierr )
 {
   SLES sles;
-  *__ierr = SLESCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),&sles);
-  *(int*) outsles = MPIR_FromPointer(sles);
+  *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),&sles);
+  *(int*) outsles = PetscFromPointer(sles);
 
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.90 1997/01/01 03:37:03 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.91 1997/01/06 20:23:43 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -305,7 +305,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
     if (jac->same_local_solves) {
       PetscFPrintf(pc->comm,fd,
       "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
-      if (!rank) {
+      if (!rank && jac->sles) {
         ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
       }           /* now only 1 block per proc */
                 /* This shouldn't really be STDOUT */
@@ -327,7 +327,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
     }
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d",jac->n);
-    ierr = SLESView(jac->sles[0],viewer);
+    if (jac->sles) {ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);}
   }
   return 0;
 }

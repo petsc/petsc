@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.53 1996/11/19 16:34:06 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.54 1996/11/27 22:58:13 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc.
  */
@@ -58,6 +58,10 @@ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
 extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
+#define VecSetValue(v,i,va,mode) \
+{int _ierr,_row = i; Scalar _va = va; \
+  _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
+}
 
 typedef enum {SCATTER_REVERSE=1,SCATTER_FORWARD=8} ScatterMode;
 extern int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);

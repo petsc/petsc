@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.17 1996/10/28 15:04:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.18 1996/10/28 15:21:28 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -21,7 +21,9 @@ static char vcid[] = "$Id: zvec.c,v 1.17 1996/10/28 15:04:50 bsmith Exp curfman 
 #define vecload_              VECLOAD
 #define vecgettype_           VECGETTYPE
 #define vecduplicatevecs_     VECDUPLICATEVECS
+#define vecview_              VECVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecview_              vecview
 #define vecmaxpy_             vecmaxpy
 #define vecmdot_              vecmdot
 #define veccreateseq_         veccreateseq
@@ -43,6 +45,13 @@ static char vcid[] = "$Id: zvec.c,v 1.17 1996/10/28 15:04:50 bsmith Exp curfman 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+
+void vecview_(Vec v,Viewer viewer, int *__ierr )
+{
+  PetscPatchDefaultViewers_Fortran(viewer);
+  *__ierr = VecView((Vec)PetscToPointer( *(int*)(v) ),viewer);
+}
 
 void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 {
@@ -166,7 +175,7 @@ void vecmtdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMTDot_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
@@ -179,7 +188,7 @@ void vecmdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMDot_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
@@ -192,7 +201,7 @@ void vecmaxpy_(int *nv,Scalar *alpha,Vec x,int *y, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMAXPY_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));

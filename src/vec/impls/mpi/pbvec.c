@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.67 1996/12/17 17:57:55 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.68 1997/01/06 20:21:59 balay Exp bsmith $";
 #endif
 
 /*
@@ -91,6 +91,8 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *own
   s->size        = size;
   s->rank        = rank;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
+  s->array_allocated = s->array;
+
   PetscMemzero(s->array,n*sizeof(Scalar));
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOT_SET_VALUES;

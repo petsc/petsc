@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.25 1996/10/03 20:25:39 balay Exp curfman $";
+static char vcid[] = "$Id: zsys.c,v 1.26 1996/10/07 15:31:51 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -51,7 +51,7 @@ extern "C" {
 
 void petsctrvalid_(int *__ierr)
 {
-  *__ierr = PetscTrValid(0,"Unknown Fortran");
+  *__ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
 void petscrandomgetvalue_(PetscRandom r,Scalar *val, int *__ierr )
@@ -109,11 +109,11 @@ void petscobjectsetname_(PetscObject obj,CHAR name,int *__ierr,int len)
   *__ierr = PetscObjectSetName((PetscObject)PetscToPointer(*(int*)(obj)),t1);
 }
 
-void petscerror_(int *number,CHAR message,int *__ierr,int len)
+void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
+  *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
 }
 
 double petscgettime_()

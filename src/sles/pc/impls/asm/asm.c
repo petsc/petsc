@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.44 1997/01/01 03:37:13 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.45 1997/01/06 20:23:55 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -42,10 +42,10 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
     MPI_Comm_rank(pc->comm,&rank);
-    ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+    if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d, overlap=%d",jac->n,jac->overlap);
-    ierr = SLESView(jac->sles[0],viewer);
+    if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);}
   }
   return 0;
 }
@@ -219,7 +219,9 @@ static int PCDestroy_ASM(PetscObject obj)
     ierr = VecDestroy(osm->x[i]);
     ierr = VecDestroy(osm->y[i]);
   }
-  ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat); CHKERRQ(ierr);
+  if (osm->n_local_true > 0) {
+    ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat); CHKERRQ(ierr);
+  }
   for ( i=0; i<osm->n_local_true; i++ ) {
     ierr = SLESDestroy(osm->sles[i]);
   }
@@ -227,9 +229,9 @@ static int PCDestroy_ASM(PetscObject obj)
      for ( i=0; i<osm->n_local_true; i++ ) ISDestroy(osm->is[i]);
      PetscFree(osm->is);
   }
-  PetscFree(osm->sles);
-  PetscFree(osm->scat);
-  PetscFree(osm->x);
+  if (osm->sles) PetscFree(osm->sles);
+  if (osm->scat) PetscFree(osm->scat);
+  if (osm->x) PetscFree(osm->x);
   PetscFree(osm);
   return 0;
 }
@@ -272,6 +274,7 @@ int PCCreate_ASM(PC pc)
   osm->n_local_true = PETSC_DECIDE;
   osm->overlap      = 1;
   osm->is_flg       = PETSC_FALSE;
+  osm->sles         = 0;
 
   pc->apply         = PCApply_ASM;
   pc->setup         = PCSetUp_ASM;

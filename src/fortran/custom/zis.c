@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.7 1996/03/04 21:30:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.8 1996/10/03 19:50:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -20,7 +20,9 @@ static char vcid[] = "$Id: zis.c,v 1.7 1996/03/04 21:30:31 bsmith Exp bsmith $";
 #define issorted_              ISSORTED
 #define isequal_               ISEQUAL
 #define isinvertpermutation_   ISINVERTPERMUTATION
+#define isview_                ISVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define isview_                isview
 #define isinvertpermutation_   isinvertpermutation
 #define isdestroy_             isdestroy
 #define iscreatestride_        iscreatestride
@@ -41,6 +43,12 @@ static char vcid[] = "$Id: zis.c,v 1.7 1996/03/04 21:30:31 bsmith Exp bsmith $";
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void isview_(IS is,Viewer viewer, int *__ierr )
+{
+  PetscPatchDefaultViewers_Fortran(viewer);
+  *__ierr = ISView((IS)PetscToPointer( *(int*)(is) ),viewer);
+}
 
 void isequal_(IS is1,IS is2,PetscTruth *flg, int *__ierr )
 {

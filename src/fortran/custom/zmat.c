@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.27 1996/08/22 22:44:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.28 1996/09/29 14:39:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,7 +32,9 @@ static char vcid[] = "$Id: zmat.c,v 1.27 1996/08/22 22:44:03 curfman Exp bsmith 
 #define matgettype_                      MATGETTYPE
 #define matgetinfo_                      MATGETINFO
 #define matshellsetoperation_            MATSHELLSETOPERATION
+#define matview_                         MATVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define matview_                         matview
 #define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
 #define matgettypefromoptions_           matgettypefromoptions
@@ -60,6 +62,12 @@ static char vcid[] = "$Id: zmat.c,v 1.27 1996/08/22 22:44:03 curfman Exp bsmith 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void matview_(Mat mat,Viewer viewer, int *__ierr )
+{
+  PetscPatchDefaultViewers_Fortran(viewer);
+  *__ierr = MatView((Mat)PetscToPointer( *(int*)(mat) ),viewer);
+}
 
 void matgetinfo_(Mat mat,MatInfoType *flag,double *finfo,int *__ierr ){
   MatInfo info;
@@ -288,7 +296,8 @@ void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*
                                    (void*) ourmult);
     theirmult = f;
   } else {
-    PetscError(__LINE__,__DIR__,__FILE__,1,"Cannot set that matrix operation");
+    PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__DIR__,1,0,
+               "Cannot set that matrix operation");
     *__ierr = 0;
   }
 }

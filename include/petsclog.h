@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.95 1996/12/15 17:37:32 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.96 1996/12/31 23:46:59 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -465,7 +465,7 @@ M*/
                 PetscObject o4)
 
    Notes:
-   You should also register each integer event with the command 
+   You should also register each additional integer event with the command 
    PLogRegisterEvent(). Source code must be compiled with 
    -DPETSC_LOG, which is the default.
 

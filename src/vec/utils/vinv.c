@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.28 1997/01/01 03:35:22 bsmith Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.29 1997/01/06 20:21:47 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -136,8 +136,7 @@ int VecAbs(Vec v)
 
   Note: You should backup the original array by calling VecGetArray() and 
 stashing the value somewhere, then at the end call VecPlaceArray() with 
-that stashed value, otherwise you will bleed the memory from that original
-array or worse corrupt memory.
+that stashed value, otherwise you may lose access to the original array.
 @*/
 int VecPlaceArray(Vec vec,Scalar *array)
 {

@@ -21,18 +21,25 @@ extern void petscsetcommonblock_(int*,int*,int*,int*);
 }
 #endif
 
-/*
-  This function should be called to be able to use PETSc routines
-  from the FORTRAN subroutines, when the main() routine is in C
-*/
+/*@
+
+    PetscInitializeFortran - Routine that should be called from C after
+        the call to PetscInitialize() if one is using a C main program
+        that calls Fortran routines that call PETSc routines.
+
+.seealso:  PetscFortranObjectToCObject(), PetscCObjectToFortranObject(),
+           PetscInitialize()
+
+.keywords: Mixing C and Fortran, passing PETSc objects to Fortran
+@*/
 
 void PetscInitializeFortran()
 {
   int s1,s2,s3,s4;
-  s1 = MPIR_FromPointer(VIEWER_STDOUT_SELF);
-  s2 = MPIR_FromPointer(VIEWER_STDERR_SELF);
-  s3 = MPIR_FromPointer(VIEWER_STDOUT_WORLD);
-  s4 = MPIR_FromPointer_Comm(PETSC_COMM_WORLD);
+  s1 = PetscFromPointer(VIEWER_STDOUT_SELF);
+  s2 = PetscFromPointer(VIEWER_STDERR_SELF);
+  s3 = PetscFromPointer(VIEWER_STDOUT_WORLD);
+  s4 = PetscFromPointerComm(PETSC_COMM_WORLD);
   petscsetcommonblock_(&s1,&s2,&s3,&s4);
 }
   
@@ -48,13 +55,13 @@ void petscinitializefortran_()
 #if defined(USES_CPTOFCD)
 void petscsetfortranbasepointers_(void *fnull,_fcd fcnull)
 {
-  PETSC_NULL_Fortran       = fnull;
+  PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fcnull);
 }
 #else
 void petscsetfortranbasepointers_(void *fnull,char *fcnull)
 {
-  PETSC_NULL_Fortran       = fnull;
+  PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_CHARACTER_Fortran  = fcnull;
 }
 #endif 

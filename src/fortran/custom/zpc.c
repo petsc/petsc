@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.10 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.12 1996/03/04 21:50:23 bsmith Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
 #include "mg.h"
 #include "pinclude/petscfix.h"
@@ -51,31 +51,31 @@ static void (*f1)(void *,int*,int*,int*);
 static int ourshellapply(void *ctx,Vec x,Vec y)
 {
   int ierr = 0, s1, s2;
-  s1 = MPIR_FromPointer(x);
-  s2 = MPIR_FromPointer(y);
+  s1 = PetscFromPointer(x);
+  s2 = PetscFromPointer(y);
   (*f1)(ctx,&s1,&s2,&ierr); CHKERRQ(ierr);
-  MPIR_RmPointer(s1);
-  MPIR_RmPointer(s2); 
+  PetscRmPointer(s1);
+  PetscRmPointer(s2); 
   return 0;
 }
 void pcshellsetapply_(PC pc,void (*apply)(void*,int*,int*,int*),void *ptr,
                       int *__ierr ){
   f1 = apply;
   *__ierr = PCShellSetApply(
-	(PC)MPIR_ToPointer( *(int*)(pc) ),ourshellapply,ptr);
+	(PC)PetscToPointer( *(int*)(pc) ),ourshellapply,ptr);
 }
 /* -----------------------------------------------------------------*/
 static void (*f2)(void*,int*,int*,int*,int*,int*);
 static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 {
   int ierr = 0, s1,s2,s3;
-  s1 = MPIR_FromPointer(x);
-  s2 = MPIR_FromPointer(y);
-  s3 = MPIR_FromPointer(w);
+  s1 = PetscFromPointer(x);
+  s2 = PetscFromPointer(y);
+  s3 = PetscFromPointer(w);
   (*f2)(ctx,&s1,&s2,&s3,&m,&ierr); CHKERRQ(ierr);
-  MPIR_RmPointer(s1);
-  MPIR_RmPointer(s2); 
-  MPIR_RmPointer(s3); 
+  PetscRmPointer(s1);
+  PetscRmPointer(s2); 
+  PetscRmPointer(s3); 
   return 0;
 }
 
@@ -84,28 +84,28 @@ void pcshellsetapplyrichardson_(PC pc,
                               void *ptr, int *__ierr ){
   f2 = apply;
   *__ierr = PCShellSetApplyRichardson(
-	(PC)MPIR_ToPointer( *(int*)(pc) ),ourapplyrichardson,ptr);
+	(PC)PetscToPointer( *(int*)(pc) ),ourapplyrichardson,ptr);
 }
 
 void mggetcoarsesolve_(PC pc,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetCoarseSolve((PC)MPIR_ToPointer( *(int*)(pc) ),&asles);
-  *(int*) sles = MPIR_FromPointer(asles);
+  *__ierr = MGGetCoarseSolve((PC)PetscToPointer( *(int*)(pc) ),&asles);
+  *(int*) sles = PetscFromPointer(asles);
 }
 void mggetsmoother_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmoother((PC)MPIR_ToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = MPIR_FromPointer(asles);
+  *__ierr = MGGetSmoother((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
+  *(int*) sles = PetscFromPointer(asles);
 }
 void mggetsmootherup_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmootherUp((PC)MPIR_ToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = MPIR_FromPointer(asles);
+  *__ierr = MGGetSmootherUp((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
+  *(int*) sles = PetscFromPointer(asles);
 }
 void mggetsmootherdown_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmootherDown((PC)MPIR_ToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = MPIR_FromPointer(asles);
+  *__ierr = MGGetSmootherDown((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
+  *(int*) sles = PetscFromPointer(asles);
 }
 
 void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,int *sles, 
@@ -113,30 +113,30 @@ void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,int *sles,
   SLES *tsles;
   int  i;
   *__ierr = PCBJacobiGetSubSLES(
-	(PC)MPIR_ToPointer( *(int*)(pc) ),n_local,first_local,&tsles);
+	(PC)PetscToPointer( *(int*)(pc) ),n_local,first_local,&tsles);
   for ( i=0; i<*n_local; i++ ){
-    sles[i] = MPIR_FromPointer(tsles[i]);
+    sles[i] = PetscFromPointer(tsles[i]);
   }
 }
 
 void pcgetoperators_(PC pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr){
   Mat m,p;
-  *__ierr = PCGetOperators((PC)MPIR_ToPointer( *(int*)(pc) ),&m,&p,flag);
-  *(int*) mat = MPIR_FromPointer(m);
-  *(int*) pmat = MPIR_FromPointer(p);
+  *__ierr = PCGetOperators((PC)PetscToPointer( *(int*)(pc) ),&m,&p,flag);
+  *(int*) mat = PetscFromPointer(m);
+  *(int*) pmat = PetscFromPointer(p);
 }
 
 void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
   Mat m;
-  *__ierr = PCGetFactoredMatrix((PC)MPIR_ToPointer( *(int*)(pc) ),&m);
-  *(int*) mat = MPIR_FromPointer(m);
+  *__ierr = PCGetFactoredMatrix((PC)PetscToPointer( *(int*)(pc) ),&m);
+  *(int*) mat = PetscFromPointer(m);
 }
  
 void pcsetoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCSetOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t);
+  *__ierr = PCSetOptionsPrefix((PC)PetscToPointer( *(int*)(pc) ),t);
   FREECHAR(prefix,t);
 }
 
@@ -144,19 +144,19 @@ void pcappendoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCAppendOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t);
+  *__ierr = PCAppendOptionsPrefix((PC)PetscToPointer( *(int*)(pc) ),t);
   FREECHAR(prefix,t);
 }
 
 void pcdestroy_(PC pc, int *__ierr ){
-  *__ierr = PCDestroy((PC)MPIR_ToPointer( *(int*)(pc) ));
-  MPIR_RmPointer( *(int*)(pc) );
+  *__ierr = PCDestroy((PC)PetscToPointer( *(int*)(pc) ));
+  PetscRmPointer( *(int*)(pc) );
 }
 
 void pccreate_(MPI_Comm comm,PC *newpc, int *__ierr ){
   PC p;
-  *__ierr = PCCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),&p);
-  *(int*) newpc = MPIR_FromPointer(p);
+  *__ierr = PCCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),&p);
+  *(int*) newpc = PetscFromPointer(p);
 }
 
 void pcregisterdestroy_(int *__ierr){
@@ -172,14 +172,14 @@ void pcgettype_(PC pc,PCType *type,CHAR name,int *__ierr,int len)
   char *tname;
 
   if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = PCGetType((PC)MPIR_ToPointer(*(int*)pc),type,&tname);
-#if defined(PARCH_t3d)
+  *__ierr = PCGetType((PC)PetscToPointer(*(int*)pc),type,&tname);
+#if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
 #endif
 }
 

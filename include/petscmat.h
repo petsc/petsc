@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.120 1996/11/29 21:45:38 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.121 1997/01/03 18:43:01 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -41,6 +41,10 @@ extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
+#define MatSetValue(v,i,j,va,mode) \
+{int _ierr,_row = i,_col = j; Scalar _va = va; \
+  _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
+}
 
 typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
@@ -126,6 +130,8 @@ extern int MatShift(Scalar *,Mat);
 extern int MatSetLocalToGlobalMapping(Mat, int,int *);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
+
+extern int MatComputeExplicitOperator(Mat,Mat*);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);

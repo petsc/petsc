@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.98 1997/01/01 03:35:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.99 1997/01/06 20:39:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -636,7 +636,8 @@ int VecDestroyVecs(Vec *vv,int m)
 
 .keywords: vector, set, values
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
+           VecSetValue()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -649,6 +650,24 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   return 0;
 }
+
+/*MC
+   VecSetValue - Set a single entry into a vector.
+
+   Input Parameters:
+.  v - the vector
+.  row - the row location of the entry
+.  value - the value to insert
+.  mode - either INSERT_VALUES or ADD_VALUES
+
+   Synopsis:
+   void VecSetValue(Vec v,int row,Scalar value, InsertMode mode);
+
+   Notes: For efficiency one should use VecSetValues() and set 
+several or many values simultaneously.
+
+.seealso: VecSetValues()
+M*/
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetLocalToGlobalMapping"

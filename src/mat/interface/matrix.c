@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.215 1997/01/03 18:42:42 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.216 1997/01/06 20:24:04 balay Exp bsmith $";
 #endif
 
 /*
@@ -262,6 +262,25 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
 }
+
+/*MC
+   MatSetValue - Set a single entry into a matrix.
+
+   Input Parameters:
+.  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+.  mode - either INSERT_VALUES or ADD_VALUES
+
+   Synopsis:
+   void MatSetValue(Mat m,int row,int col,Scalar value,InsertMode mode);
+
+   Notes: For efficiency one should use MatSetValues() and set 
+several or many values simultaneously.
+
+.seealso: MatSetValues()
+M*/
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetValues"
@@ -2119,11 +2138,12 @@ int MatDestroyMatrices(int n,Mat **mat)
 {
   int ierr,i;
 
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Trying to destroy negative number of matrices");
   PetscValidPointer(mat);
   for ( i=0; i<n; i++ ) {
     ierr = MatDestroy((*mat)[i]); CHKERRQ(ierr);
   }
-  PetscFree(*mat);
+  if (n) PetscFree(*mat);
   return 0;
 }
 

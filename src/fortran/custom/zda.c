@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.6 1996/03/05 00:06:55 curfman Exp curfman $";
+static char vcid[] = "$Id: zda.c,v 1.7 1996/06/21 03:10:58 curfman Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "da.h"
 #ifdef HAVE_FORTRAN_CAPS
 #define dacreate1d_             DACREATE1D
@@ -13,7 +13,9 @@ static char vcid[] = "$Id: zda.c,v 1.6 1996/03/05 00:06:55 curfman Exp curfman $
 #define dagetlocalvector_       DAGETLOCALVECTOR
 #define dagetscatter_           DAGETSCATTER
 #define dagetglobalindices_     DAGETGLOBALINDICES
+#define daview_                 DAVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define daview_                 daview
 #define dacreate1d_             dacreate1d
 #define dacreate3d_             dacreate3d
 #define dacreate2d_             dacreate2d
@@ -28,39 +30,44 @@ static char vcid[] = "$Id: zda.c,v 1.6 1996/03/05 00:06:55 curfman Exp curfman $
 extern "C" {
 #endif
 
+void daview_(DA da,Viewer v, int *__ierr ){
+  PetscPatchDefaultViewers_Fortran(v);
+  *__ierr = DAView((DA)PetscToPointer( *(int*)(da) ),v);
+}
+
 void dagetglobalindices_(DA da,int *n, int *indices, int *ia,int *__ierr )
 {
   int *idx;
-  *__ierr = DAGetGlobalIndices((DA)MPIR_ToPointer(*(int*)(da)),n,&idx);
+  *__ierr = DAGetGlobalIndices((DA)PetscToPointer(*(int*)(da)),n,&idx);
   *ia     = PetscIntAddressToFortran(indices,idx);
 }
 
 void dagetdistributedvector_(DA da,Vec* g, int *__ierr )
 {
   Vec v;
-  *__ierr = DAGetDistributedVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
-  *(int*) g = MPIR_FromPointer(v);
+  *__ierr = DAGetDistributedVector((DA)PetscToPointer(*(int*)(da)),&v);
+  *(int*) g = PetscFromPointer(v);
 }
 void dagetlocalvector_(DA da,Vec* l, int *__ierr )
 {
   Vec v;
-  *__ierr = DAGetLocalVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
-  *(int*) l = MPIR_FromPointer(v);
+  *__ierr = DAGetLocalVector((DA)PetscToPointer(*(int*)(da)),&v);
+  *(int*) l = PetscFromPointer(v);
 }
 void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
                    int *__ierr )
 {
   VecScatter l,g,ll;
-  *__ierr = DAGetScatter((DA)MPIR_ToPointer(*(int*)(da)),&l,&g,&ll);
-  if (!FORTRANNULL(ltog)) *(int*) ltog = MPIR_FromPointer(l);
-  if (!FORTRANNULL(gtol)) *(int*) gtol = MPIR_FromPointer(g);
-  if (!FORTRANNULL(ltol)) *(int*) ltol = MPIR_FromPointer(ll);
+  *__ierr = DAGetScatter((DA)PetscToPointer(*(int*)(da)),&l,&g,&ll);
+  if (!FORTRANNULL(ltog)) *(int*) ltog = PetscFromPointer(l);
+  if (!FORTRANNULL(gtol)) *(int*) gtol = PetscFromPointer(g);
+  if (!FORTRANNULL(ltol)) *(int*) ltol = PetscFromPointer(ll);
 }
 
 void dadestroy_(DA da, int *__ierr ){
   *__ierr = DADestroy(
-	(DA)MPIR_ToPointer( *(int*)(da) ));
-  MPIR_RmPointer(*(int*)(da));
+	(DA)PetscToPointer( *(int*)(da) ));
+  PetscRmPointer(*(int*)(da));
 }
 
 void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
@@ -69,9 +76,9 @@ void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   DA da;
   *__ierr = DACreate2d(
-	    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,
+	    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 void dacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
@@ -79,8 +86,8 @@ void dacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 {
   DA da;
   *__ierr = DACreate1d(
-	   (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
@@ -89,9 +96,9 @@ void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   DA da;
   *__ierr = DACreate3d(
-	   (MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),*wrap,*stencil_type,
+	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 #if defined(__cplusplus)

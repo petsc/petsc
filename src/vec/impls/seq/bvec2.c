@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.84 1997/01/02 01:20:48 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.85 1997/01/06 20:21:57 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -253,7 +253,7 @@ static int VecDestroy_Seq(PetscObject obj )
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
-  PetscFree(vs->array);
+  if (vs->array_allocated) PetscFree(vs->array_allocated);
   PetscFree(vs);
   if (v->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
@@ -321,6 +321,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   v->N           = n;
   v->mapping     = 0;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
+  s->array_allocated = s->array;
   PetscMemzero(s->array,n*sizeof(Scalar));
   *V = v; return 0;
 }

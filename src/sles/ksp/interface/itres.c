@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.26 1997/01/01 03:35:54 bsmith Exp balay $";
+static char vcid[] = "$Id: itres.c,v 1.27 1997/01/06 20:22:18 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -172,7 +172,6 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   return 0;
 }
 
-
 #include "pinclude/plapack.h"
 
 #undef __FUNC__  
@@ -237,7 +236,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatGetArray(A,&array); CHKERRQ(ierr);
   } else {
-    ierr     = MatGetArray(BA,&array); CHKERRQ(ierr);
+    ierr = MatGetArray(BA,&array); CHKERRQ(ierr);
   }
 
 #if !defined(PETSC_COMPLEX)

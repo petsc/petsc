@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.73 1997/01/06 20:23:38 balay Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.74 1997/01/07 16:22:49 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -84,7 +84,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   char       *order;
   ViewerType vtype;
 
-  MatReorderingGetName(lu->ordering,&order);
+  ierr = MatReorderingGetName(lu->ordering,&order); CHKERRQ(ierr);
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     MatInfo info;
@@ -92,8 +92,10 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
     if (lu->inplace) PetscFPrintf(pc->comm,fd,"  LU: in-place factorization\n");
     else PetscFPrintf(pc->comm,fd,"  LU: out-of-place factorization\n");
     PetscFPrintf(pc->comm,fd,"      matrix ordering: %s\n",order);
-    ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);
-    PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
+    if (lu->fact) {
+      ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
+      PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
+    }
   }
   else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," order=%s",order);
