@@ -7,7 +7,6 @@ petsc/bmake/sun4_uni
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
 petsc/src/contrib/RCS
-petsc/src/contrib/sda/
 petsc/src/contrib/ysmp
 petsc/src/contrib/vgrid/RCS
 petsc/src/contrib/vgrid/src/RCS
