@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex22.c,v 1.8 1999/02/02 23:41:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex22.c,v 1.9 1999/03/19 21:18:10 bsmith Exp balay $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
@@ -28,10 +28,10 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,(n*(rank+1))%N,1,&is2); CHKERRA(ierr);
 
-  value = rank+1; 
+  value = (Scalar)(rank+1); 
   ierr = VecSet(&value,x); CHKERRA(ierr);
   ierr = VecSet(&zero,y); CHKERRA(ierr);
 
