@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.22 1996/09/03 16:04:46 bsmith Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.23 1996/09/03 18:09:32 balay Exp balay $";
 #endif
 
 /* #include <signal.h> */
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <stdio.h>
-/* #if defined(HAVE_UNISTD_H)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
-#endif */
+#endif
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
