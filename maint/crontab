@@ -1,8 +1,8 @@
-# $Id: crontab,v 1.104 1998/03/06 16:47:02 bsmith Exp bsmith $ 
+# $Id: crontab,v 1.105 1998/03/12 23:12:05 bsmith Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
-# This file is run every night.
+# This file is run every night on 'eagle.mcs.anl.gov'.
 # Run "crontab crontab" to install the nightly build;
 # use "crontab -r" to remove it.
 #
