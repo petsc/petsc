@@ -8,5 +8,5 @@ set CONF=solaris-gnu
 if ($day == Sun || $day == Wed || $day == Sat) then
   set CONF=solaris-uni
 else if ($day == Thu || $day == Fri) then
-  set CONF=solaris64
+  set CONF=solaris-64
 endif
