@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.10 1997/09/11 23:54:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ec.c,v 1.11 1997/09/11 23:58:01 curfman Exp bsmith $";
 #endif
 
 /*
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: ec.c,v 1.10 1997/09/11 23:54:40 curfman Exp curfman $
    Input Parameter:
 .  ec - the eigenvalue computation context
 
+   Collective on EC
+
 .keywords: EC, destroy
 
 .seealso: ECCreate(), ECSetUp()
@@ -25,12 +27,13 @@ static char vcid[] = "$Id: ec.c,v 1.10 1997/09/11 23:54:40 curfman Exp curfman $
 int ECDestroy(EC ec)
 {
   int ierr = 0;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
-  if (ec->destroy) ierr =  (*ec->destroy)((PetscObject)ec);
+  if (ec->ops->destroy) {ierr =  (*ec->ops->destroy)(ec);CHKERRQ(ierr);}
   else {if (ec->data) PetscFree(ec->data);}
   PLogObjectDestroy(ec);
   PetscHeaderDestroy(ec);
-  return ierr;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -41,6 +44,8 @@ int ECDestroy(EC ec)
    Input Parameters:
 .  EC - the eigenvalue computation context
 .  viewer - visualization context
+
+   Collective on EC unless view is sequential
 
    Note:
    The available visualization contexts include
@@ -64,19 +69,20 @@ int ECView(EC ec,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ec->comm,fd,"EC Object:\n");
     ECGetType(ec,PETSC_NULL,&method);
     PetscFPrintf(ec->comm,fd,"  method: %s\n",method);
-    if (ec->view) (*ec->view)((PetscObject)ec,viewer);
+    if (ec->view) (*ec->ops->view)(ec,viewer);
   } else if (vtype == STRING_VIEWER) {
     ECType type;
     ECGetType(ec,&type,&method);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -94,6 +100,8 @@ int ECView(EC ec,Viewer viewer)
 .  rpart - array containing the real parts of the eigenvalues
 .  ipart - array containing the imaginary parts of the eigenvalues
 
+   Note Collective
+
    Notes:
    ECGetEigenvalues() may be called only after ECSolve().
 
@@ -103,12 +111,13 @@ int ECView(EC ec,Viewer viewer)
 @*/
 int ECGetEigenvalues(EC ec,int *n,double **rpart,double **ipart)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   *n     = ec->n;
   *rpart = ec->realpart;
   *ipart = ec->imagpart;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -125,6 +134,8 @@ int ECGetEigenvalues(EC ec,int *n,double **rpart,double **ipart)
 .  n - number of eigenvectors computed
 .  evecs - the eigenvectors
 
+   Not Collective
+
    Notes:
    ECGetEigenvectors() may be called only after ECSolveEigenvectors().
 
@@ -134,11 +145,12 @@ int ECGetEigenvalues(EC ec,int *n,double **rpart,double **ipart)
 @*/
 int ECGetEigenvectors(EC ec,int *n,Vec *evecs)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   *n     = ec->n;
   *evecs = ec->evecs;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -149,6 +161,8 @@ int ECGetEigenvectors(EC ec,int *n,Vec *evecs)
    Input parameters:
 .  ec - the eigenvalue computation context
 
+   Collective on EC
+
 .keywords: EC, setup
 
 .seealso: ECCreate(), ECSolve(), ECDestroy()
@@ -156,15 +170,16 @@ int ECGetEigenvectors(EC ec,int *n,Vec *evecs)
 int ECSetUp(EC ec)
 {
   int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
-  if (ec->setupcalled > 0) return 0;
+  if (ec->setupcalled > 0) PetscFunctionReturn(0);
   PLogEventBegin(EC_SetUp,ec,0,0,0); 
-  if (!ec->A) {SETERRQ(1,0,"Matrix must be set first");}
+  if (!ec->A) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
   if (ec->setup) { ierr = (*ec->setup)(ec); CHKERRQ(ierr);}
   ec->setupcalled = 1;
   PLogEventEnd(EC_SetUp,ec,0,0,0); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -176,6 +191,8 @@ int ECSetUp(EC ec)
    Output Parameter:
 .  ec - eigenvalue computation context
 
+   Collective on EC
+
 .keywords: EC, set, eigenvectors, required
 
 .seealso: ECSetUp(), ECSolve(), ECDestroy(), ECSolveEigenvectors(),
@@ -183,9 +200,10 @@ int ECSetUp(EC ec)
 @*/
 int ECSetEigenvectorsRequired(EC ec)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
   ec->computeeigenvectors = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "src/sys/nreg.h"
@@ -200,6 +218,8 @@ static NRList *__ECList = 0;
 .  pt - either EC_EIGENVALUE or EC_GENERALIZED_EIGENVALUE
 .  comm - MPI communicator
 
+   Collective on MPI_Comm
+
    Notes:
    The default EC type is ?????
 
@@ -209,10 +229,12 @@ static NRList *__ECList = 0;
 @*/
 int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 {
-  EC ctx;
+  int ierr;
+  EC  ctx;
 
+  PetscFunctionBegin;
   *ec = 0;
-  PetscHeaderCreate(ctx,_p_EC,EC_COOKIE,EC_LAPACK,comm,ECDestroy,ECView);
+  PetscHeaderCreate(ctx,_p_EC,int,EC_COOKIE,EC_LAPACK,comm,ECDestroy,ECView);
   PLogObjectCreate(ctx);
   *ec                = ctx;
   ctx->view          = 0;
@@ -234,7 +256,8 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 
   ctx->setupcalled   = 0;
   /* this violates our rule about separating abstract from implementations */
-  return ECSetType(*ec,EC_LAPACK);
+  ierr = ECSetType(*ec,EC_LAPACK);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -244,6 +267,8 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 
    Input Parameter:
 .   ec - the eigenvalue computation context
+
+   Collective on EC
 
    Options Database Commands:
 $  -ec_type  <method>
@@ -263,6 +288,7 @@ int ECSetFromOptions(EC ec)
   int  ierr,flag;
   char spectrum[128];
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   ierr = OptionsGetString(ec->prefix,"-ec_spectrum_portion",spectrum,128,&flag);CHKERRQ(ierr);
@@ -284,9 +310,9 @@ int ECSetFromOptions(EC ec)
       ec->spectrumportion = EC_INTERIOR;
       ierr = OptionsGetScalar(ec->prefix,"-ec_spectrum_location",&ec->location,&flag);
              CHKERRQ(ierr);
-      if (!flag) SETERRQ(1,1,"Must set interior spectrum location");   
+      if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set interior spectrum location");   
     } else {
-      SETERRQ(1,1,"Unknown spectrum request");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown spectrum request");
     }
   }
   ierr = OptionsGetInt(ec->prefix,"-ec_spectrum_number",&ec->n,&flag);CHKERRQ(ierr);
@@ -298,10 +324,8 @@ int ECSetFromOptions(EC ec)
   if (flag) {
     ierr = ECPrintHelp(ec); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
-
-extern int ECPrintTypes_Private(MPI_Comm,char *,char *);
 
 #undef __FUNC__  
 #define __FUNC__ "ECPrintHelp" 
@@ -310,6 +334,8 @@ extern int ECPrintTypes_Private(MPI_Comm,char *,char *);
 
    Input Parameter:
 .   ec - the eigenvalue computation context
+
+   Collective on EC
 
    Options Database Command:
 $  -help
@@ -321,24 +347,25 @@ int ECPrintHelp(EC ec)
   int  ierr;
   char p[64]; 
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
-
   PetscStrcpy(p,"-");
   if (ec->prefix) PetscStrcat(p,ec->prefix);
-  PetscPrintf(ec->comm,"EC options --------------------------------------------------\n");
-  ECPrintTypes_Private(ec->comm,p,"ec_type");
-  PetscPrintf(ec->comm,"  %sec_view: print information on solvers used for eigenvalues\n",p);
-  PetscPrintf(ec->comm,"  %sec_view_eigenvalues: print eigenvalues to screen\n",p);
-  PetscPrintf(ec->comm,"  %sec_view_eigenvalues_draw: plot eigenvalues to screen\n",p);
-  PetscPrintf(ec->comm,"  %sec_spectrum_number <n>: number of eigenvalues to compute\n",p);
-  PetscPrintf(ec->comm,"  %sec_spectrum_portion <largest_real,largest_magnitude,smallest_real\n",p);
-  PetscPrintf(ec->comm,"                smallest_magnitude,interior>: specify spectrum portion\n");
-  PetscPrintf(ec->comm,"  %sec_spectrum_location <location>: find eigenvalues nearby.\n",p);
-  PetscPrintf(ec->comm,"                Use with interior portion (listed above).\n");
+
+  (*PetscHelpPrintf)(ec->comm,"EC options --------------------------------------------------\n");
+  ierr = NRPrintTypes(ec->comm,stdout,ec->prefix,"ex_type",__ECList);CHKERRQ(ierr);
+  (*PetscHelpPrintf)(ec->comm,"  %sec_view: print information on solvers used for eigenvalues\n",p);
+  (*PetscHelpPrintf)(ec->comm,"  %sec_view_eigenvalues: print eigenvalues to screen\n",p);
+  (*PetscHelpPrintf)(ec->comm,"  %sec_view_eigenvalues_draw: plot eigenvalues to screen\n",p);
+  (*PetscHelpPrintf)(ec->comm,"  %sec_spectrum_number <n>: number of eigenvalues to compute\n",p);
+  (*PetscHelpPrintf)(ec->comm,"  %sec_spectrum_portion <largest_real,largest_magnitude,smallest_real\n",p);
+  (*PetscHelpPrintf)(ec->comm,"                smallest_magnitude,interior>: specify spectrum portion\n");
+  (*PetscHelpPrintf)(ec->comm,"  %sec_spectrum_location <location>: find eigenvalues nearby.\n",p);
+  (*PetscHelpPrintf)(ec->comm,"                Use with interior portion (listed above).\n");
   if (ec->printhelp) {
     ierr = (*ec->printhelp)(ec,p); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -351,12 +378,15 @@ int ECPrintHelp(EC ec)
 .  A  - the matrix for which eigenvalues are requested
 .  B  - optional matrix for generalized eigenvalue problem
 
+   Collective on EC
+
 .keywords: EC, set, operators
 
 .seealso: ECCreate()
 @*/
 int ECSetOperators(EC ec,Mat A,Mat B)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   if (B) {
@@ -369,7 +399,7 @@ int ECSetOperators(EC ec,Mat A,Mat B)
   }
   ec->A = A;
   ec->B = B;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -386,6 +416,8 @@ int ECSetOperators(EC ec,Mat A,Mat B)
                EC_INTERIOR
 .   location - value near which you wish the spectrum computed
 
+   Collective on EC
+
    Options Database Keys:
 $  -ec_spectrum_portion <largest_real,largest_magnitude, 
 $                        smallest_real,smallest_magnitude,
@@ -398,12 +430,13 @@ $  -ec_number <ne>, where <ne> is the number of eigenvalues requested
 @*/
 int ECSetEigenvaluePortion(EC ec,int n,ECSpectrumPortion portion,Scalar location)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   ec->n               = n;
   ec->spectrumportion = portion;
   ec->location        = location;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -414,6 +447,8 @@ int ECSetEigenvaluePortion(EC ec,int n,ECSpectrumPortion portion,Scalar location
    Input Parameter:
 .   ec - the eigenvalue computation context
 
+   Collective on EC
+
 .keywords: EC, solve
 
 .seealso: ECCreate(), ECSetOperators(), ECGetEigenvalues(),
@@ -422,6 +457,7 @@ int ECSetEigenvaluePortion(EC ec,int n,ECSpectrumPortion portion,Scalar location
 int ECSolve(EC ec)
 {
   int ierr,flag;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   PLogEventBegin(EC_Solve,ec,0,0,0); 
@@ -465,7 +501,7 @@ int ECSolve(EC ec)
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
   }  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -475,6 +511,8 @@ int ECSolve(EC ec)
 
    Input Parameter:
 .   ec - the eigenvalue computation context
+
+   Collective on EC
 
    Notes: Must be called after ECSolve().
 
@@ -486,16 +524,17 @@ int ECSolve(EC ec)
 int ECSolveEigenvectors(EC ec)
 {
   int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   if (!ec->computeeigenvectors) {
-    SETERRQ(1,1,"Must call ECSetEigenvectorsRequired() before this call");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call ECSetEigenvectorsRequired() before this call");
   }
 
   /* PLogEventBegin(EC_SolveEigenvectors,ec,0,0,0);  */
   ierr = (*ec->solveeigenvectors)(ec); CHKERRQ(ierr);
   /* PLogEventEnd(EC_SolveEigenvectors,ec,0,0,0);  */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -506,6 +545,8 @@ int ECSolveEigenvectors(EC ec)
    Input Parameter:
 .  ctx      - the eigenvalue computation context
 .  itmethod - a known method
+
+   Collective on EC
 
    Options Database Command:
 $  -ec_type  <method>
@@ -536,22 +577,23 @@ int ECSetType(EC ec,ECType itmethod)
 {
   int ierr,(*r)(EC);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
-  if (ec->type == (int) itmethod) return 0;
+  if (ec->type == (int) itmethod) PetscFunctionReturn(0);
 
   if (ec->setupcalled) {
     /* destroy the old private EC context */
-    ierr = (*(ec)->destroy)((PetscObject)ec); CHKERRQ(ierr);
+    ierr = (*(ec)->ops->destroy)(ec); CHKERRQ(ierr);
     ec->data = 0;
   }
   /* Get the function pointers for the approach requested */
   if (!__ECList) {ierr = ECRegisterAll(); CHKERRQ(ierr);}
-  if (!__ECList) SETERRQ(1,0,"Could not get list of EC types"); 
   r =  (int (*)(EC))NRFindRoutine( __ECList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
   if (ec->data) PetscFree(ec->data);
   ec->data = 0;
-  return (*r)(ec);
+  ierr = (*r)(ec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -565,6 +607,8 @@ int ECSetType(EC ec,ECType itmethod)
 .  sname  - corresponding string for name
 .  create - routine to create method context
 
+   Note Collective
+
 .keywords: EC, register
 
 .seealso: ECRegisterAll(), ECRegisterDestroy(), ECDestroy(), ECCreate()
@@ -573,8 +617,10 @@ int  ECRegister(ECType name, char *sname, int  (*create)(EC))
 {
   int ierr;
   int (*dummy)(void *) = (int (*)(void *)) create;
+  PetscFunctionBegin;
   if (!__ECList) {ierr = NRCreate(&__ECList); CHKERRQ(ierr);}
-  return NRRegister( __ECList, (int) name, sname, dummy );
+  ierr = NRRegister( __ECList, (int) name, sname, dummy );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -583,46 +629,20 @@ int  ECRegister(ECType name, char *sname, int  (*create)(EC))
    ECRegisterDestroy - Frees the list of EC methods that were
    registered by ECRegister().
 
+  Not Collective
+
 .keywords: EC, register, destroy
 
 .seealso: ECRegister(), ECRegisterAll()
 @*/
-int ECRegisterDestroy()
+int ECRegisterDestroy(void)
 {
+  PetscFunctionBegin;
   if (__ECList) {
     NRDestroy( __ECList );
     __ECList = 0;
   }
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "ECGetTypeFromOptions_Private" 
-/*
-   ECGetTypeFromOptions_Private - Sets the selected EC type from 
-   the options database.
-
-   Input Parameter:
-.  ec - the EC context
-
-   Output Parameter:
-.  itmethod - iterative method
-
-   Returns:
-   Returns 1 if the method is found; 0 otherwise.
-*/
-int ECGetTypeFromOptions_Private(EC ec,ECType *itmethod)
-{
-  char sbuf[50];
-  int  flg,ierr;
-
-  ierr = OptionsGetString(ec->prefix,"-ec_type", sbuf, 50,&flg); CHKERRQ(ierr);
-  if (flg) {
-    if (!__ECList) ECRegisterAll();
-    *itmethod = (ECType)NRFindID( __ECList, sbuf );
-    return 1;
-  }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -638,45 +658,18 @@ int ECGetTypeFromOptions_Private(EC ec,ECType *itmethod)
 .  itmeth - EC method (or use PETSC_NULL)
 .  name - name of EC method (or use PETSC_NULL)
 
+   Not Collective
+
 .keywords: EC, get, type, name
 @*/
 int ECGetType(EC ec,ECType *type,char **name)
 {
   int ierr;
+  PetscFunctionBegin;
   if (!__ECList) {ierr = ECRegisterAll(); CHKERRQ(ierr);}
   if (type) *type = (ECType) ec->type;
   if (name)  *name = NRFindName( __ECList, (int) ec->type);
-  return 0;
-}
-
-#include <stdio.h>
-#undef __FUNC__  
-#define __FUNC__ "ECPrintTypes_Private" 
-/*
-   ECPrintTypes_Private - Prints the EC methods available from the options 
-   database.
-
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  prefix - prefix (usually "-")
-.  name   - the options database name (by default "ec_type") 
-*/
-int ECPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
-{
-  FuncList *entry;
-  int      count = 0;
-
-  if (!__ECList) {ECRegisterAll();}
-  entry = __ECList->head;
-  PetscPrintf(comm,"  %s%s (one of)",prefix,name);
-  while (entry) {
-    PetscPrintf(comm," %s",entry->name);
-    entry = entry->next;
-    count++;
-    if (count == 8) PetscPrintf(comm,"\n    ");
-  }
-  PetscPrintf(comm,"\n");
-  return 1;
+  PetscFunctionReturn(0);
 }
 
 

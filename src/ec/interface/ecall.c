@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ecall.c,v 1.3 1997/02/22 02:30:37 bsmith Exp balay $";
+static char vcid[] = "$Id: ecall.c,v 1.4 1997/07/09 21:37:43 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,9 +8,11 @@ static char vcid[] = "$Id: ecall.c,v 1.3 1997/02/22 02:30:37 bsmith Exp balay $"
 extern int ECCreate_Lapack(EC);
 
 #undef __FUNC__  
-#define __FUNC__ "ECRegisterAll" /* ADIC Ignore */
+#define __FUNC__ "ECRegisterAll" 
 /*@C
   ECRegisterAll - Registers all of the preconditioners in the EC package.
+
+  Not Collective
 
   Adding new methods:
   To add a new method to the registry
@@ -33,10 +35,11 @@ $       routine requires recompilation.
 
 .seealso: ECRegister(), ECRegisterDestroy()
 @*/
-int ECRegisterAll()
+int ECRegisterAll(void)
 {
+  PetscFunctionBegin;
   ECRegister(EC_LAPACK         , "lapack",       ECCreate_Lapack);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
