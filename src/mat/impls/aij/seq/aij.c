@@ -596,7 +596,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   PetscInt       fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
   PetscInt       m = A->m,*ip,N,*ailen = a->ilen,rmax = 0;
   PetscScalar    *aa = a->a,*ap;
-  PetscReal      ratio=0.9;
+  PetscReal      ratio=0.7;
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -646,7 +646,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
-  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use && fshift){ /* fshift=!samestructure??? */ 
+  /* fshift=0 <-> samestructure? */
+  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use && fshift){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
     if (a->compressedrow.use){
       A->ops->mult    = MatMult_SeqAIJ_CompressedRow;

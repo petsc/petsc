@@ -78,8 +78,7 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 #elif defined(PETSC_USE_PROC_FOR_SIZE)
   FILE            *file;
   char            proc[PETSC_MAX_PATH_LEN];
-#elif defined(PETSC_HAVE_NO_GETRUSAGE)
-#else
+#elif defined(PETSC_HAVE_GETRUSAGE)
   static struct   rusage temp;
 #endif
 
@@ -101,15 +100,17 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
   if (!(file = fopen(proc,"r"))) {
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   }
-#elif defined(PETSC_HAVE_NO_GETRUSAGE)
-  *mem = 0.0;
-#else
+#elif defined(PETSC_HAVE_GETRUSAGE)
+
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
   *mem = 1024.0 * ((double)temp.ru_maxrss);
 #else
   *mem = ((double)getpagesize())*((double)temp.ru_maxrss);
 #endif
+
+#else
+  *mem = 0.0;
 #endif
   PetscFunctionReturn(0);
 }

@@ -3,7 +3,7 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
 
 #include "petscmat.h"
-#define IMAX 15
+#define IMAX 15 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   const PetscInt    *cols1,*cols2;
-  PetscScalar       vals1[4],vals2[4],v;
+  PetscScalar       vals1[4],vals2[4],v,mone = -1.0;
   const PetscScalar *v1,*v2;
   PetscTruth        flg;
 
@@ -33,10 +33,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Input file not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATAIJ,&B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-
-  ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRQ(ierr);
  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -53,28 +52,27 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(B,xx,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
-    rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e bs = %D\n",
-s1norm,s2norm,bs);CHKERRQ(ierr);  
+    ierr = VecAXPY(&mone,s1,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
+    if (rnorm>tol) { 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm2=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);  
     }
   } 
+
   /* test MatMultAdd() */
   for (i=0; i<IMAX; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
     ierr = VecSetRandom(rand,yy);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,xx,yy,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
-    rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd - Norm1=%16.14e Norm2=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,s1,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
+    if (rnorm>tol) { 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd - Norm2=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);
     } 
   }
-    /* Test MatMultTranspose() */
+
+  /* Test MatMultTranspose() */
   for (i=0; i<IMAX; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,xx,s1);CHKERRQ(ierr);
@@ -180,7 +178,7 @@ s1norm,s2norm,bs);CHKERRQ(ierr);
   ierr = MatDestroy(Bt);CHKERRQ(ierr);
 
   ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr); 
   ierr = VecDestroy(xx);CHKERRQ(ierr);
   ierr = VecDestroy(yy);CHKERRQ(ierr);
   ierr = VecDestroy(s1);CHKERRQ(ierr);
