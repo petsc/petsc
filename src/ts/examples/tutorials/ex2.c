@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.14 1998/06/20 20:37:11 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.15 1998/06/21 01:06:45 curfman Exp curfman $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -60,8 +60,8 @@ typedef struct {
   Vec      localwork;     /* local ghosted work vector */
   Vec      u_local;       /* local ghosted approximate solution vector */
   Vec      solution;      /* global exact solution vector */
-  int      M;             /* total number of grid points */
-  double   h;             /* mesh width: h = 1/(M-1) */
+  int      m;             /* total number of grid points */
+  double   h;             /* mesh width: h = 1/(m-1) */
   int      debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
@@ -87,7 +87,8 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 1000;  /* default max timesteps */
-  double        dt, ftime;
+  double        ftime;                  /* final time */
+  double        dt;
   int           ierr, steps, flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,10 +98,10 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   appctx.comm = PETSC_COMM_WORLD;
-  appctx.M    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg); CHKERRA(ierr);
+  appctx.m    = 60;
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.m,&flg); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug); CHKERRA(ierr);
-  appctx.h    = 1.0/(appctx.M-1.0);
+  appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -111,7 +112,7 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M 
      total grid values spread equally among all the processors.
   */ 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.m,1,1,PETSC_NULL,
                     &appctx.da); CHKERRA(ierr);
 
   /*
@@ -150,7 +151,7 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,appctx.m,appctx.m,&A); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-fdjac",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx); CHKERRA(ierr);
@@ -177,7 +178,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps_max_max,time_total_max); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps_max,time_total_max); CHKERRA(ierr);
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -220,7 +221,7 @@ int main(int argc,char **argv)
 /*
    InitialConditions - Computes the solution at the initial time. 
 
-   Input Parameter:
+   Input Parameters:
    u - uninitialized solution vector (global)
    appctx - user-defined application context
 
@@ -304,7 +305,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
 
   /* 
      Simply write the solution directly into the array locations.
-     Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
+     Alternatively, we could use VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
     x = i*h;
@@ -326,7 +327,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
    Input Parameters:
    ts     - the timestep context
    step   - the count of the current step (with 0 meaning the
-             initial condition)
+            initial condition)
    time   - the current time
    u      - the solution at this timestep
    ctx    - the user-provided context for this monitoring routine.
@@ -401,7 +402,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
    RHSFunction - User-provided routine that evalues the right-hand-side
    function of the ODE.  This routine is set in the main program by 
    calling TSSetRHSFunction().  We compute:
-          globalout = F(globalin)
+          global_out = F(global_in)
 
    Input Parameters:
    ts         - timesteping context
@@ -461,8 +462,8 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
      for some function g. Now take the derivative with respect to t to obtain
         u_{t}(t,boundary) = g_{t}(t,boundary)
 
-     In our case, u(t,0) = t + 1; so u_{t}(t,0) = 1 
-             and  u(t,1) = 2t+ 1; so u_{t}(t,1) = 2
+     In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1 
+             and  u(t,1) = 2t+ 1, so that u_{t}(t,1) = 2
   */
   MPI_Comm_rank(appctx->comm,&rank);
   MPI_Comm_size(appctx->comm,&size);
@@ -480,7 +481,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
   /* 
      Restore vectors
   */
-  ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(local_in,&localptr); CHKERRQ(ierr);
   ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /*
@@ -578,7 +579,7 @@ int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB, MatStructure *str,
     ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
     mstart++;
   }
-  if (mend == appctx->M) {
+  if (mend == appctx->m) {
     mend--;
     v[0] = 0.0;
     ierr = MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1998/06/12 20:19:55 bsmith Exp balay $ 
+# $Id: makefile,v 1.17 1998/06/13 05:15:49 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -12,8 +12,9 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_4  =  
-BUILDEXAMPLES_1 =
-BUILDEXAMPLES_3 =
+BUILDEXAMPLES_1 = ex2.PETSc ex4.PETSc
+BUILDEXAMPLES_3 = ex2f.PETSc 
+BUILDEXAMPLES_4 = ex3.PETSc
 
 EXAMPLESC       = ex1.c ex2.c util2.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
@@ -35,6 +36,14 @@ ex2: ex2.o util2.o chkopts
 ex2f: ex2f.o util2.o chkopts
 	-${FLINKER} -o ex2f ex2f.o util2.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} ex2f.o util2.o
+
+ex3: ex3.o  chkopts
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	${RM} ex3.o
+
+ex4: ex4.o  chkopts
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	${RM} ex4.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1  > ex1_1.tmp 2>&1;	  \

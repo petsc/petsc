@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.18 1998/04/15 18:00:41 balay Exp balay $";
+! "$Id: ex2f.F,v 1.19 1998/04/21 18:31:57 balay Exp curfman $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -13,13 +13,13 @@
 !
 !   This program solves a simple time-dependent nonlinear PDE using implicit
 !   timestepping:
-!                                    U * U_xx 
-!                              U_t = ---------
+!                                    u * u_xx 
+!                              u_t = ---------
 !                                    2*(t+1)^2 
 !
-!             U(0,x) = 1 + x*x; U(t,0) = t + 1; U(t,1) = 2*t + 2
+!             u(0,x) = 1 + x*x; u(t,0) = t + 1; u(t,1) = 2*t + 2
 !
-!   The exact solution is U(t,x) = (1 + x*x) * (1 + t).
+!   The exact solution is u(t,x) = (1 + x*x) * (1 + t).
 !
 !   Note that since the solution is linear in time and quadratic in x, 
 !   the finite difference scheme actually computes the "exact" solution.
@@ -62,13 +62,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !
 !  Variables:
-!     ts         - timestepping solver
-!     A          - Jacobian matrix context
-!     local      - local vector
-!     global     - global vector
-!     ftime      - final time
-!     duration   - total duration
-!     time_steps - number of timesteps
+!     ts             - timestepping solver
+!     A              - Jacobian matrix context
+!     u_local          - local vector
+!     u              - approximate solution vector
+!     ftime          - final time
+!     time_total_max - default total max time
+!     time_steps_max - default max timesteps
 !
 !  Note that vectors are declared as PETSc "Vec" objects.  These vectors
 !  are mathematical objects that contain more than just an array of
@@ -78,11 +78,11 @@
 !  See the Fortran section of the PETSc users manual for details.
 
       TS               ts
-      Vec              local, global
+      Vec              u_local, u
       Mat              A
       integer          flg, ierr
-      integer          time_steps, steps
-      double precision dt, ftime, duration
+      integer          time_steps_max, steps
+      double precision dt, ftime, time_total_max
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -102,67 +102,62 @@
 
 !  Initialize problem parameters
 
-      time_steps = 1000
-      duration   = 100.0
-      M          = 60
-      debug      = 0
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,       &
-     &                   flg,ierr)
+      time_steps_max = 1000
+      time_total_max = 100.0
+      m              = 60
+      debug          = 0
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
       one_d0  = 1.0d0
       two_d0  = 2.0d0
       four_d0 = 4.0d0
-      h       = one_d0/(M-one_d0)
-      dt      = h/two_d0
+      h       = one_d0/(m-one_d0)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create distributed array (DA) to manage parallel grid and vectors
-!  Set up the ghost point communication pattern.  There are M total
+!  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,1,1,
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types.
 
-      call DACreateGlobalVector(da,global,ierr)
-      call DACreateLocalVector(da,local,ierr)
+      call DACreateGlobalVector(da,u,ierr)
+      call DACreateLocalVector(da,u_local,ierr)
 
 !  Make local work vector for evaluating right-hand-side function
-      call VecDuplicate(local,localwork,ierr)
+      call VecDuplicate(u_local,localwork,ierr)
 
 !  Make global work vector for storing exact solution
-      call VecDuplicate(global,solution,ierr)
+      call VecDuplicate(u,solution,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Evaluate initial conditions
+!  Create timestepping solver context; set callback routine for
+!  right-hand-side function evaluation.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (rank .eq. 0) then
-         write(6,*) 'Calling InitialConditions() routine ...'
-      endif
-      call InitialConditions(global)
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Create timestepping solver context; set various callback routines
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      if (rank .eq. 0) write(6,*) 'Creating TS solver ...'
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Create matrix data structure; set Jacobian evaluation routine;
-!  Set the solution method to be backward Euler.
+!  Set optional user-defined monitoring routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call MatCreate(comm,M,M,A,ierr)
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr)
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  For nonlinear problems, the user can provide a Jacobian evaluation
+!  routine (or use a finite differencing approximation).
+!
+!  Create matrix data structure; set Jacobian evaluation routine.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      call MatCreate(comm,m,m,A,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then
          call SetCRoutineFromFortran(ts,A,A,ierr)
@@ -170,30 +165,39 @@
          call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,    &
      &        ierr)
       endif
-      call TSSetType(ts,TS_BEULER,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Customize timestepping solver; set runtime options.
-!  We can override the defaults set by TSSetDuration() with
+!  Set solution vector and initial timestep
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      dt = h/two_d0
+      call TSSetInitialTimeStep(ts,0.0,dt,ierr)
+      call TSSetSolution(ts,u,ierr)
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Customize timestepping solver:  
+!     - Set the solution method to be the Backward Euler method.
+!     - Set timestepping duration info 
+!  Then set runtime options, which can override these defaults.
+!  For example,
 !     -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+!  to override the defaults set by TSSetDuration().
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetDuration(ts,time_steps,duration,ierr)
+      call TSSetType(ts,TS_BEULER,ierr)
+      call TSSetDuration(ts,time_steps_max,time_total_max,ierr)
       call TSSetFromOptions(ts,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Set solution vector, initial timestep.
+!  Solve the problem
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetInitialTimeStep(ts,0.0,dt,ierr)
-      call TSSetSolution(ts,global,ierr)
+!  Evaluate initial conditions
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Set up and run the timestepping solver
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call InitialConditions(u)
 
-      if (rank .eq. 0) write(6,*) 'Calling timestepping solver ...'
-      call TSSetUp(ts,ierr)
+!  Run the timestepping solver
+
       call TSStep(ts,steps,ftime,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,12 +205,11 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (rank .eq. 0) write(6,*) 'Freeing work space ...'
       call TSDestroy(ts,ierr)
       call VecDestroy(localwork,ierr)
       call VecDestroy(solution,ierr)
-      call VecDestroy(local,ierr)
-      call VecDestroy(global,ierr)
+      call VecDestroy(u_local,ierr)
+      call VecDestroy(u,ierr)
       call DADestroy(da,ierr)
       call MatDestroy(A,ierr)
 
@@ -222,18 +225,19 @@
 !
 !  InitialConditions - Computes the solution at the initial time. 
 !
-!  Input Parameter:
-!     global - uninitialized solution vector
+!  Input Parameters:
+!     u - uninitialized solution vector (global)
+!     appctx - user-defined application context
 !
 !  Output Parameter:
-!     global - vector with solution at initial time
+!     u - vector with solution at initial time (global)
 !
-      subroutine InitialConditions(global)
+      subroutine InitialConditions(u)
       implicit none
 #include "ex2f.h"
 
 !  Input/output parameters:
-      Vec     global
+      Vec     u
 
 !  Local variables:
       double  precision localptr(1), x
@@ -244,7 +248,7 @@
 !  grid values.  Note that we shift by 1 to convert from the 0-based
 !  C convention of starting indices to the 1-based Fortran convention.
 
-      call VecGetOwnershipRange(global,mybase,myend,ierr)
+      call VecGetOwnershipRange(u,mybase,myend,ierr)
       mybase = mybase + 1
 
 !  Get a pointer to vector data.
@@ -255,10 +259,11 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArray(global,localptr,idx,ierr) 
+      call VecGetArray(u,localptr,idx,ierr) 
 
 !     We initialize the solution array by simply writing the solution
-!     directly into the array locations.
+!     directly into the array locations.  Alternatively, we could use
+!     VecSetValues() or VecSetValuesLocal().
 
       do 10, i=mybase,myend
 !       x - current location in global grid 
@@ -268,12 +273,12 @@
 
 !  Restore vector
 
-      call VecRestoreArray(global,localptr,idx,ierr) 
+      call VecRestoreArray(u,localptr,idx,ierr) 
 
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'initial guess vector'
-        call VecView(global,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(u,VIEWER_STDOUT_WORLD,ierr)
       endif
 
       return
@@ -281,10 +286,11 @@
 
 !  ------------------------------------------------------------------------
 !
-!  ExactSolution - Computes the exact solution at any time.
+!  ExactSolution - Computes the exact solution at a given time.
 !
-!  Input Parameter:
-!    t - time
+!  Input Parameters:
+!    t - current time
+!    appctx - user-defined application context
 !
 !  Output Parameter:
 !    ierr - error code
@@ -315,6 +321,7 @@
       call VecGetArray(solution,localptr,idx,ierr) 
 
 !  Simply write the solution directly into the array locations
+!  Alternatively, we could use VecSetValues() or VecSetValuesLocal().
 
       do 10, i=mybase,myend
 !       x - current location in global grid 
@@ -340,13 +347,11 @@
 !   step   - the count of the current step (with 0 meaning the
 !            initial condition)
 !   time   - the current time
-!   dummy  - optional user-provided context for this monitoring routine,
-!           not used here
+!   u      - the solution at this timestep
+!   dummy  - optional user-provided context for this monitoring
+!            routine (not used here)
 !
-!   Output Parameter:
-!   global - the solution at this timestep
-
-      subroutine Monitor(ts,step,time,global,dummy)
+      subroutine Monitor(ts,step,time,u,dummy)
       implicit none
 #include "ex2f.h"
 
@@ -354,7 +359,7 @@
       TS               ts
       integer          step, dummy
       double precision time
-      Vec              global
+      Vec              u
 
 !  Local variables:
       integer          ierr
@@ -365,7 +370,7 @@
       mone = -1.0d0
 
 !  We use the default X windows viewer
-!       VIEWER_DRAWX_PETSC_COMM 
+!       VIEWER_DRAWX_WORLD
 !  that is associated with the PETSC_COMM_WORLD communicator. This
 !  saves the effort of calling ViewerDrawOpenX() to create the window.
 !  Note that if we wished to plot several items in separate windows we
@@ -376,23 +381,22 @@
 
       call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
       call DrawSetDoubleBuffer(draw,ierr)
-      call VecView(global,VIEWER_DRAWX_WORLD,ierr)
+      call VecView(u,VIEWER_DRAWX_WORLD,ierr)
 
-!  Compute the exact solution at this time-step, then compute the 
-!  2-norm and max-norm of the error.  Note that the solution vector
-!  is passed via the user-defined common block.
+!  Compute the exact solution at this time-step.  Note that the
+!  solution vector is passed via the user-defined common block.
       call ExactSolution(time,ierr)
 
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'Computed solution vector'
-        call VecView(global,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(u,VIEWER_STDOUT_WORLD,ierr)
         if (rank .eq. 0) write(6,*) 'Exact solution vector'
         call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
       endif
 
 !  Compute the 2-norm and max-norm of the error
-      call VecAXPY(mone,global,solution,ierr)
+      call VecAXPY(mone,u,solution,ierr)
       call VecNorm(solution,NORM_2,en2,ierr)
 !  Scale the 2-norm by the grid spacing
       en2s = dsqrt(h)*en2
@@ -418,61 +422,71 @@
 !   RHSFunction - User-provided routine that evalues the RHS function
 !   in the ODE.  This routine is set in the main program by calling
 !   TSSetRHSFunction().  We compute:
-!         globalout = F(globalin)
+!         global_out = F(global_in)
 !
 !   Input Parameters:
-!      ts        - timestep context
-!      t         - current time
-!      globalin  - input vector to function
-!      dummy     - (optional) user-provided context for function
-!                  (not used here because we use a common block instead)
+!      ts         - timestep context
+!      t          - current time
+!      global_in  - input vector to function
+!      dummy      - (optional) user-provided context for function evaluation
+!                   (not used here because we use a common block instead)
 !
 !   Output Parameter:
-!      globalout - value of function
+!      global_out - value of function
 !
-      subroutine RHSFunction(ts,t,globalin,globalout,dummy)
+      subroutine RHSFunction(ts,t,global_in,global_out,dummy)
       implicit none
 #include "ex2f.h"
 
 !  Input/output parameters:
       TS               ts
       double precision t
-      Vec              globalin, globalout
+      Vec              global_in, global_out
       integer          dummy
 
 !  Local variables:
-      Vec              local
+      Vec              u_local
       double precision localptr(1), copyptr(1), sc
       integer          i, il, ierr, localsize
       PetscOffset      idx_c, idx_l
 
-!  The vector 'local' will be a workspace that contains the ghost region
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  Get ready for local function computations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call DACreateLocalVector(da,local,ierr)
-  
-!  Copy the input vector into local and up-date the ghost points
-      call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
-      call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
+!  Scatter ghost points to local vector, using the 2-step process
+!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!  By placing code between these two statements, computations can be
+!  done while messages are in transition.
 
-!  Access directly the values in our local INPUT work array
-      call VecGetArray(local,localptr,idx_l,ierr) 
+      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
-!  Access directly the values in our local OUTPUT work array
+!  Access directly the values in our local INPUT work vector
+
+      call VecGetArray(u_local,localptr,idx_l,ierr) 
+
+!  Access directly the values in our local OUTPUT work vector
+
       call VecGetArray(localwork,copyptr,idx_c,ierr) 
 
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
 
 !  Evaluate our function on the nodes owned by this processor
 
-      call VecGetLocalSize(local,localsize,ierr)
+      call VecGetLocalSize(u_local,localsize,ierr)
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  Compute entries for the locally owned part 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Handle boundary conditions: This is done by using the boundary condition 
-!        U(t,boundary) = g(t,boundary) 
+!        u(t,boundary) = g(t,boundary) 
 !  for some function g. Now take the derivative with respect to t to obtain
-!        U_{t}(t,boundary) = g_{t}(t,boundary)
+!        u_{t}(t,boundary) = g_{t}(t,boundary)
 !
-!  In our case, U(t,0) = t + 1; so U_{t}(t,0) = 1 
-!          and  U(t,1) = 2t+ 1; so U_{t}(t,1) = 2
+!  In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1 
+!          and  u(t,1) = 2t+ 1, so that u_{t}(t,1) = 2
 
        if (rank .eq. 0)      copyptr(1+idx_c) = one_d0
        if (rank .eq. size-1) copyptr(localsize+idx_c) = two_d0
@@ -486,18 +500,18 @@
      &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
  10   continue
 
-      call VecRestoreArray(local,localptr,idx_l,ierr) 
+      call VecRestoreArray(u_local,localptr,idx_l,ierr) 
       call VecRestoreArray(localwork,copyptr,idx_c,ierr) 
 
-!  Return the values from our local OUTPUT array into our global 
-!  output array.
+!  Return the values from our local OUTPUT vector into our global 
+!  output vector.
 
-      call DALocalToGlobal(da,localwork,INSERT_VALUES,globalout,ierr)
+      call DALocalToGlobal(da,localwork,INSERT_VALUES,global_out,ierr)
 
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'RHS function vector'
-        call VecView(globalout,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(global_out,VIEWER_STDOUT_WORLD,ierr)
       endif
 
       return
@@ -511,7 +525,7 @@
 !  Input Parameters:
 !     ts - the TS context
 !     t - current time
-!     globalin - global input vector
+!     global_in - global input vector
 !     dummy - optional user-defined context, as set by TSetRHSJacobian()
 !
 !  Output Parameters:
@@ -533,43 +547,58 @@
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-      subroutine RHSJacobian(ts,t,globalin,A,B,str,dummy)
+      subroutine RHSJacobian(ts,t,global_in,A,B,str,dummy)
       implicit none
 #include "ex2f.h"
 
 !  Input/output parameters:
       TS               ts
       double precision t
-      Vec              globalin
+      Vec              global_in
       Mat              A, B
       MatStructure     str
       integer          dummy
 
 !  Local variables:
-      Vec              local
+      Vec              u_local
       double precision localptr(1), sc, v(3)
       integer          i, ierr,  col(3), is
       integer          mstart, mend, mstarts, mends
       PetscOffset      idx
 
-!  Extract local array
-      call DACreateLocalVector(da,local,ierr)
-      call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
-      call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  Get ready for local Jacobian computations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-!  Get a pointer to vector data
+!  Scatter ghost points to local vector, using the 2-step process
+!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!  By placing code between these two statements, computations can be
+!  done while messages are in transition.
 
-      call VecGetArray(local,localptr,idx,ierr) 
+      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
-!  Set matrix sparsity info
+!  Get pointer to vector data
 
-      str = SAME_NONZERO_PATTERN
+      call VecGetArray(u_local,localptr,idx,ierr) 
 
 !  Get starting and ending locally owned rows of the matrix
 
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
       mstart = mstarts
       mend   = mends
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  Compute entries for the locally owned part of the Jacobian.
+!   - Currently, all PETSc parallel matrix formats are partitioned by
+!     contiguous chunks of rows across the processors. 
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Here, we set all entries for a particular row at once.
+!   - We can set matrix entries either using either
+!     MatSetValuesLocal() or MatSetValues().
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Set matrix rows corresponding to boundary data
 
@@ -578,7 +607,7 @@
         call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr)
         mstart = mstart + 1
       endif
-      if (mend .eq. M) then
+      if (mend .eq. m) then
         mend = mend - 1
         v(1) = zero_d0
         call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr)
@@ -602,7 +631,11 @@
 
 !  Restore vector
 
-      call VecRestoreArray(local,localptr,idx,ierr) 
+      call VecRestoreArray(u_local,localptr,idx,ierr) 
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  Complete the matrix assembly process and set some options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Assemble matrix, using the 2-step process:
 !       MatAssemblyBegin(), MatAssemblyEnd()
@@ -612,6 +645,28 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
+!  Set flag to indicate that the Jacobian matrix retains an identical
+!  nonzero structure throughout all timestepping iterations (although the
+!  values of the entries change). Thus, we can save some work in setting
+!  up the preconditioner (e.g., no need to redo symbolic factorization for
+!  ILU/ICC preconditioners).
+!   - If the nonzero structure of the matrix is different during
+!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+!     must be used instead.  If you are unsure whether the matrix
+!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
+!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+!     believes your assertion and does not check the structure
+!     of the matrix.  If you erroneously claim that the structure
+!     is the same when it actually is not, the new preconditioner
+!     will not function correctly.  Thus, use this optimization
+!     feature with caution!
+
+      str = SAME_NONZERO_PATTERN
+
+!  Set and option to indicate that we will never add a new nonzero location 
+!  to the matrix. If we do, it will generate an error.
+
+      call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
+
       return
       end
-
