@@ -40,6 +40,9 @@ class Framework(config.base.Configure):
     self.help = help.Help(self.argDB)
     self.help.title = 'Python Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]'
 
+    self.actions = help.Info()
+    self.actions.title = 'Python Configure Actions\n   These are the actions performed by configure on the filesystem'
+
     self.configureHelp(self.help)
     for child in self.children:
       if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
@@ -185,6 +188,8 @@ class Framework(config.base.Configure):
       outFile.write(self.substRE.sub(self.substituteName, line))
     outFile.close()
     inFile.close()
+    self.actions.addArgument('Framework', 'Substitution', inName+' was substituted to produce '+outName)
+    return
 
   def substitute(self):
     '''Preform all substitution'''
@@ -225,6 +230,7 @@ class Framework(config.base.Configure):
       else:
         argDB.update(child.subst)
         argDB.update(dict(map(lambda k: (k, self.argDB[child.argSubst[k]]), child.argSubst)))
+    self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
     return
 
   def outputDefine(self, f, name, value = None, comment = ''):
@@ -393,4 +399,9 @@ class Framework(config.base.Configure):
         self.log.write(str(child))
     self.substitute()
     self.outputHeader(self.header)
+    self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
+    print
+    self.actions.output()
+    self.log.write('\n')
+    self.actions.output(self.log)
     return
