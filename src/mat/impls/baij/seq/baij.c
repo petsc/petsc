@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.15 1996/03/19 21:27:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.16 1996/03/23 20:43:02 bsmith Exp balay $";
 #endif
 
 /*
@@ -398,6 +398,57 @@ static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
   if (nz)  *nz  = a->bs*a->bs*a->nz;
   if (nza) *nza = a->maxnz;
   if (mem) *mem = (int)A->mem;
+  return 0;
+}
+
+static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
+
+  if (B->type !=MATSEQBAIJ)SETERRQ(1,"MatEqual_SeqBAIJ:Matrices must be same type");
+
+  /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
+  if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| 
+      (a->nz != b->nz)||(a->indexshift != b->indexshift)) {
+    *flg = PETSC_FALSE; return 0; 
+  }
+  
+  /* if the a->i are the same */
+  if (PetscMemcmp(a->i,b->i, (a->mbs+1)*sizeof(int))) { 
+    *flg = PETSC_FALSE; return 0;
+  }
+  
+  /* if a->j are the same */
+  if (PetscMemcmp(a->j,b->j,(a->nz)*sizeof(int))) { 
+    *flg = PETSC_FALSE; return 0;
+  }
+  
+  /* if a->a are the same */
+  if (PetscMemcmp(a->a, b->a,(a->nz)*(a->bs)*(a->bs)*sizeof(Scalar))) {
+    *flg = PETSC_FALSE; return 0;
+  }
+  *flg = PETSC_TRUE; 
+  return 0;
+  
+}
+
+static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int        i,j, n,shift = a->indexshift;
+  Scalar     *x, zero = 0.0;
+
+  VecSet(&zero,v);
+  VecGetArray(v,&x); VecGetLocalSize(v,&n);
+  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Nonconforming matrix and vector");
+  for ( i=0; i<a->mbs; i++ ) {
+    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+      if (a->j[j]+shift == i) {
+        x[i] = a->a[j];
+        break;
+      }
+    }
+  }
   return 0;
 }
 
