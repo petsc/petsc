@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.6 1995/10/13 01:58:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.7 1995/11/01 23:21:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -31,7 +31,6 @@ is solved.  The command line options are:\n\
     system of equations.
 */
 
-#include "draw.h"
 #include "snes.h"
 #include "da.h"
 #include <math.h>
@@ -137,10 +136,10 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   sc     = hx*hy;
   hxdhy  = hx/hy; hydhx  = hy/hx;
 
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr  = VecGetArray(localX,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
-  DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);
-  DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);
+  ierr  = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr  = DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
  
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs);
@@ -159,7 +158,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);
+  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
@@ -184,8 +183,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
 
-  DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);
-  DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);
+  ierr = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm); CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs); 

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.21 1995/11/20 23:25:20 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.22 1995/11/20 23:32:50 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -58,7 +58,6 @@ extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double
 typedef struct _DrawAxis* DrawAxis;
 #define AXIS_COOKIE PETSC_COOKIE+16
 extern int DrawAxisCreate(Draw,DrawAxis *);
-extern int DrawAxisCreateInParallel(Draw,double*,double*,double*,double*,DrawAxis *);
 extern int DrawAxisDestroy(DrawAxis);
 extern int DrawAxisDraw(DrawAxis);
 extern int DrawAxisSetLimits(DrawAxis,double,double,double,double);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.21 1995/10/12 04:20:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.22 1995/10/29 18:43:09 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -10,7 +10,6 @@ with a user-provided preconditioner.  Input arguments are:\n\
    -user_precond : Employ a user-defined preconditioner.  Used only with\n\
                    matrix-free methods in this example.\n\n";
 
-#include "draw.h"
 #include "snes.h"
 #include <math.h>
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.76 1995/11/21 22:13:22 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.77 1995/11/22 22:38:52 curfman Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -525,6 +525,7 @@ static int MatDestroy_SeqDense(PetscObject obj)
   PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
 #endif
   if (l->pivots) PetscFree(l->pivots);
+  if (!l->user_alloc) PetscFree(l->v);
   PetscFree(l);
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
@@ -840,22 +841,19 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
 @*/
 int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
 {
-  int          size = sizeof(Mat_SeqDense) + m*n*sizeof(Scalar);
   Mat          mat;
   Mat_SeqDense *l;
 
   *newmat        = 0;
 
-  if (!data) size = sizeof(Mat_SeqDense) + m*n*sizeof(Scalar);
-  else       size = sizeof(Mat_SeqDense);
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
-  l               = (Mat_SeqDense *) PetscMalloc(size); CHKPTRQ(l);
+  l               = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(l);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy    = MatDestroy_SeqDense;
   mat->view       = MatView_SeqDense;
   mat->factor     = 0;
-  PLogObjectMemory(mat,sizeof(struct _Mat) + size);
+  PLogObjectMemory(mat,sizeof(struct _Mat));
   mat->data       = (void *) l;
 
   l->m            = m;
@@ -863,9 +861,10 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
   l->pivots       = 0;
   l->roworiented  = 1;
   if (!data) {
-    l->v = (Scalar *) (l + 1);
+    l->v = (Scalar*) PetscMalloc(m*n*sizeof(Scalar)); CHKPTRQ(l->v);
     PetscMemzero(l->v,m*n*sizeof(Scalar));
     l->user_alloc = 0;
+    PLogObjectMemory(mat,n*m*sizeof(Scalar));
   } 
   else { /* user-allocated storage */
     l->v = data;

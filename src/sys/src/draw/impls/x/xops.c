@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.33 1995/11/01 23:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.34 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -325,7 +325,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
 
-  OptionsGetInt(0,"-pause",&ctx->pause);
+  OptionsGetInt(0,"-draw_pause",&ctx->pause);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);

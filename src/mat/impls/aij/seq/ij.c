@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.13 1995/11/01 23:17:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.14 1995/11/02 04:28:29 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -31,7 +31,8 @@ $    matrix.
 */
 int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
 {
-  int *work,*ia,*ja,*j,i, nz, n = A->m, row, wr, col, shift = A->indexshift;
+  int *work,*ia,*ja,*j,i, nz, n = A->m, row, col, shift = A->indexshift;
+  int *ai = A->i, *aj = A->j + shift;
 
   /* allocate space for row pointers */
   *iia = ia = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ia);
@@ -41,11 +42,11 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
   /* determine the number of columns in each row */
   ia[0] = 1;
   for (row = 0; row < n; row++) {
-    nz = A->i[row+1] - A->i[row];
-    j  = A->j + A->i[row] + shift;
+    nz = ai[row+1] - ai[row];
+    j  = aj + ai[row];
     while (nz--) {
        col = *j++ + shift;
-       if ( col > row ) { break;}
+       if (col > row) { break;}
        if (col != row) ia[row+1]++;
        ia[col+1]++;
     }
@@ -64,14 +65,13 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
 
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < n; row++) {
-    nz = A->i[row+1] - A->i[row];
-    j  = A->j + A->i[row] + shift;
+    nz = ai[row+1] - ai[row];
+    j  = aj + ai[row];
     while (nz--) {
       col = *j++ + shift;
-      if ( col > row ) { break;}
-      if (col != row) {wr = work[col]; work[col] = wr + 1; ja[wr] = row + 1; }
-      wr = work[row]; work[row] = wr + 1;
-      ja[wr] = col + 1;
+      if (col > row) { break;}
+      if (col != row) {ja[work[col]++] = row + 1; }
+      ja[work[row]++] = col + 1;
     }
   }
   PetscFree(work);

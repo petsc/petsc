@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.23 1995/11/01 23:20:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.24 1995/11/09 22:31:27 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -211,6 +211,8 @@ int DrawSetViewPort(Draw ctx,double xl,double yl,double xr,double yr)
                  right corner of the drawing region.
 
 .keywords:  draw, set, coordinates
+
+.seealso: DrawSetCoordinatesInParallel()
 @*/
 int DrawSetCoordinates(Draw ctx,double xl,double yl,double xr, double yr)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.23 1995/11/01 23:20:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.24 1995/11/09 22:31:51 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -136,8 +136,7 @@ int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
 .   xmin,xmax - limits in x
 .   ymin,ymax - limits in y
 @*/
-int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,
-                      double ymax)
+int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
 {
   ad->xlow = xmin;
   ad->xhigh= xmax;
@@ -160,12 +159,13 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,
 @*/
 int DrawAxisDraw(DrawAxis ad )
 {
-  int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc;
-  int       cc = ad->cc;
+  int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc,cc = ad->cc,rank;
   double    tickloc[MAXSEGS], sep;
   char      *p;
-  Draw   awin = ad->win;
+  Draw      awin = ad->win;
   double    h,w,tw,th,xl,xr,yl,yr;
+
+  MPI_Comm_rank(ad->comm,&rank); if (rank) return 0;
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}
