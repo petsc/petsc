@@ -106,6 +106,9 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('CC'):
+      if 'CC' in os.environ and os.environ['CC'] == self.framework.argDB['CC']:
+        self.startLine()
+        print '\n*****WARNING: Using C compiler '+self.framework.argDB['CC']+' from environmental variable CC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
       if self.framework.argDB['CC'] in ['icl','cl','bcc32']: self.framework.argDB['CC'] = 'win32fe '+self.framework.argDB['CC']
       yield self.framework.argDB['CC']
       raise RuntimeError('C compiler you provided with -CC='+self.framework.argDB['CC']+' does not work')
@@ -118,10 +121,10 @@ class Configure(config.base.Configure):
           yield 'mpicc'
         if not Configure.isGNU('mpicc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpicc'
-        if not Configure.isGNU('mpxlc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
-          yield 'mpxlc'
-        if not Configure.isGNU('mpcc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not self.framework.argDB['with-vendor-compilers'] == '0':
+          yield 'mpcc_r'
           yield 'mpcc'
+          yield 'mpxlc'
       vendor = self.framework.argDB['with-vendor-compilers']
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
@@ -223,6 +226,9 @@ class Configure(config.base.Configure):
         yield self.framework.argDB['with-cxx']
         raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('CXX'):
+      if 'CXX' in os.environ and os.environ['CXX'] == self.framework.argDB['CXX']:
+        self.startLine()
+        print '\n*****WARNING: Using C++ compiler '+self.framework.argDB['CXX']+' from environmental variable CXX****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
       if self.framework.argDB['CXX'] in ['icl','cl','bcc32']: self.framework.argDB['CXX'] = 'win32fe '+self.framework.argDB['CXX']
       yield self.framework.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work')
@@ -245,8 +251,9 @@ class Configure(config.base.Configure):
           yield 'mpic++'
         if not Configure.isGNU('mpic++') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpic++'
-        if not Configure.isGNU('mpCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
-          yield 'mpCC'
+        if not self.framework.argDB['with-vendor-compilers'] == '0':
+          yield 'mpCC_r'
+          yield 'mpCC'          
       vendor = self.framework.argDB['with-vendor-compilers']
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
@@ -361,6 +368,9 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('FC'):
+      if 'FC' in os.environ and os.environ['FC'] == self.framework.argDB['FC']:
+        self.startLine()
+        print '\n*****WARNING: Using Fortran compiler '+self.framework.argDB['FC']+' from environmental variable FC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
       if self.framework.argDB['FC'] in ['ifl','ifort'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['FC'] = 'win32fe '+self.framework.argDB['FC']
       yield self.framework.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work')
@@ -379,8 +389,9 @@ class Configure(config.base.Configure):
           yield 'mpif77'
         if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpif77'
-        if not Configure.isGNU('mpxlf') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
-          yield 'mpxlf'
+        if not self.framework.argDB['with-vendor-compilers'] == '0':
+          yield 'mpxlf_r'
+          yield 'mpxlf'          
       vendor = self.framework.argDB['with-vendor-compilers']
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
         yield 'g77'
