@@ -244,6 +244,8 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-maint/wwwman
 
 allwwwpages: deletewwwpages
+	-@$(RM) -f $(PETSC_DIR)/docs/www/www.cit
+	-make ACTION=wwwpages_nocite tree
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 
