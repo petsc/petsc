@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.19 1996/03/26 18:56:10 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.20 1996/03/27 00:06:28 balay Exp balay $";
 #endif
 
 /*
@@ -218,6 +218,20 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   else if (vtype == DRAW_VIEWER) {
     SETERRQ(1,"MatView_SeqBAIJ:Draw viewer not supported");
   }
+  return 0;
+}
+
+static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  *m = a->m; *n = a->n;
+  return 0;
+}
+
+static int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  *m = 0; *n = a->m;
   return 0;
 }
 
