@@ -161,7 +161,7 @@ int  KSPSolve_CGNE(KSP ksp)
   ierr = MatMultTranspose(Amat,B,T); CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
-    ierr = KSP_MatMult(ksp,Amat,P,R);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
     ierr = VecAYPX(&mone,T,R);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
@@ -216,7 +216,7 @@ int  KSPSolve_CGNE(KSP ksp)
      }
      betaold = beta;
      ierr = MatMult(Amat,P,T); CHKERRQ(ierr);
-     ierr = MatMult(Amat,T,Z); CHKERRQ(ierr);
+     ierr = MatMultTranspose(Amat,T,Z); CHKERRQ(ierr);
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      if (eigs) {
