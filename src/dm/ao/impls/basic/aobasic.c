@@ -298,14 +298,14 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
       petsc[i] = start + i;
     }
   } else {
-    petsc = mypetsc;
+    petsc = (int *)mypetsc;
   }
 
   /* get all indices on all processors */
   ierr   = PetscMalloc(2*N * sizeof(int), &allpetsc);                                                     CHKERRQ(ierr);
   allapp = allpetsc + N;
   ierr   = MPI_Allgatherv(petsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv(myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);                       CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv((void*)myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);                       CHKERRQ(ierr);
   ierr   = PetscFree(lens);                                                                               CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */

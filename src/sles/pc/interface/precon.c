@@ -856,7 +856,7 @@ int PCSetUpOnBlocks(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetModifySubMatrices"
-/*@
+/*@C
    PCSetModifySubMatrices - Sets a user-defined routine for modifying the
    submatrices that arise within certain subdomain-based preconditioners.
    The basic submatrices are extracted from the preconditioner matrix as
@@ -906,7 +906,7 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],v
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCModifySubMatrices"
-/*@
+/*@C
    PCModifySubMatrices - Calls an optional user-defined routine within 
    certain preconditioners if one has been set with PCSetModifySubMarices().
 

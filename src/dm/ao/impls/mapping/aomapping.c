@@ -372,7 +372,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
       petsc[i] = start + i;
     }
   } else {
-    petsc = mypetsc;
+    petsc = (int *)mypetsc;
   }
 
   /* get all indices on all processors */
@@ -380,8 +380,8 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   appPerm   = allapp   + N;
   allpetsc  = appPerm  + N;
   petscPerm = allpetsc + N;
-  ierr = MPI_Allgatherv(myapp,   napp, MPI_INT, allapp,   lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp,   napp, MPI_INT, allapp,   lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
   ierr = PetscFree(lens);                                                                                 CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
