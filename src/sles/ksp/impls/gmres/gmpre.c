@@ -5,7 +5,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetPreAllocateVectors" 
 /*@
-    KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
+    KSPGMRESSetPreAllocateVectors - Causes GMRES and FGMRES to preallocate all its
     needed work vectors at initial setup rather than the default, which 
     is to allocate them in chunks when needed.
 
