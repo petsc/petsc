@@ -1,7 +1,7 @@
 import bk
 import bs
 import fileset
-import logging
+import maker
 import target
 import transform
 import BSTemplates.compileDefaults as compileDefaults
@@ -9,18 +9,25 @@ import BSTemplates.sidlDefaults as sidlDefaults
 
 import os
 
-class Defaults(logging.Logger):
-  def __init__(self, project, sourceDB, sources = None, bootstrapPackages = []):
+class Defaults(maker.Maker):
+  def __init__(self, project, sourceDB, argDB = None, sources = None, bootstrapPackages = []):
+    maker.Maker.__init__(self, argDB)
     self.project    = project
     self.sourceDB   = sourceDB
     self.sources    = sources
     self.usingSIDL  = sidlDefaults.UsingSIDL(project, self.getPackages(), bootstrapPackages = bootstrapPackages)
     self.compileExt = []
     self.masterCompiler = self.usingSIDL.compilerDefaults.getCompilerModule().__name__
-    # Add C for the IOR
-    self.addLanguage('C')
     # Give source database to usingSIDL
     self.usingSIDL.sourceDB = self.sourceDB
+    self.setupLanguages()
+    return
+
+  def setupLanguages(self):
+    for language in self.argDB['clientLanguages']:
+      self.addClientLanguage(language)
+    # Add C for the IOR
+    self.addLanguage('C')
     return
 
   def getUsing(self, lang):
@@ -37,12 +44,16 @@ class Defaults(logging.Logger):
     return
 
   def addClientLanguage(self, lang):
-    self.usingSIDL.clientLanguages.append(lang)
-    self.addLanguage(lang)
+    if lang in self.argDB['installedLanguages'] and not lang in self.usingSIDL.clientLanguages:
+      self.usingSIDL.clientLanguages.append(lang)
+      self.addLanguage(lang)
+    return
 
   def addServerLanguage(self, lang):
-    self.usingSIDL.serverLanguages.append(lang)
-    self.addLanguage(lang)
+    if lang in self.argDB['installedLanguages'] and not lang in self.usingSIDL.serverLanguages:
+      self.usingSIDL.serverLanguages.append(lang)
+      self.addLanguage(lang)
+    return
 
   def isImpl(self, source):
     if not self.usingSIDL.compilerDefaults.getCompilerModule().__name__ == self.masterCompiler:

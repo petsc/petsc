@@ -106,9 +106,9 @@ class BS (install.base.Base):
       if not self.filesets.has_key('sidl'):
         self.filesets['sidl'] = None
       if self.filesets.has_key('bootstrap'):
-        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.argDB, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
       else:
-        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'])
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.argDB, self.filesets['sidl'])
       self.updateRepositoryDirs(self.sidlDefaults.usingSIDL.repositoryDirs)
     return self.sidlDefaults
 
