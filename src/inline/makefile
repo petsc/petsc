@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  = axpy.h bitarrya.h dot.h ilu.h setval.h spops.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
