@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.66 2001/04/10 19:37:22 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.67 2001/04/30 15:12:58 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -127,7 +127,9 @@ typedef struct {
 EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
 typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN int DAFormFunction1(DA,DALocalFunction1,Vec,Vec,void*);
-EXTERN int DAFormJacobian1(DA,ISColoring,DALocalFunction1,Vec,Mat,void*);
+EXTERN int DAFormJacobian1(DA,DALocalFunction1,Vec,Mat,void*);
+EXTERN int DASetLocalFunction(DA,DALocalFunction1,DALocalFunction1);
+EXTERN int DAGetLocalFunction(DA,DALocalFunction1*,DALocalFunction1*);
 
 #include "petscmat.h"
 EXTERN int DAGetColoring(DA,ISColoringType,MatType,ISColoring *,Mat *);
@@ -224,13 +226,12 @@ struct _p_DMMG {
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
 
-  int           (*computefunctionlocal)(void*,void*,DALocalInfo*,void*);  
-  int           (*ad_computefunctionlocal)(void*,void*,DALocalInfo*,void*);  
-  ISColoring    iscoloring;            /* used with AD or FD coloring for Jacobian */
-  MatFDColoring fdcoloring;            /* only used with FD coloring for Jacobian */  
-  SNES          snes;                  
-  int           (*initialguess)(SNES,Vec,void*);
-  Vec           work1,work2;
+  DALocalFunction1 computefunctionlocal;
+  DALocalFunction1 ad_computefunctionlocal;
+  MatFDColoring    fdcoloring;            /* only used with FD coloring for Jacobian */  
+  SNES             snes;                  
+  int              (*initialguess)(SNES,Vec,void*);
+  Vec              work1,work2;
 };
 
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
@@ -244,12 +245,12 @@ EXTERN int DMMGSolve(DMMG*);
 EXTERN int DMMGSetUseMatrixFree(DMMG*);
 EXTERN int DMMGSetDM(DMMG*,DM);
 
-EXTERN int DMMGSetSNESLocal_Private(DMMG*,int (*)(void*,void*,DALocalInfo*,void*),int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),int (*)(void*,void*,DALocalInfo*,void*));
+EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) \
-  DMMGSetSNESLocal_Private(dmmg,(int (*)(void*,void*,DALocalInfo*,void*))function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(int (*)(void*,void*,DALocalInfo*,void*))(ad_function))
+  DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(DALocalFunction1)(ad_function))
 #else
-#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) DMMGSetSNESLocal_Private(dmmg,(int (*)(void*,void*,DALocalInfo*,void*))function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(int (*)(void*,void*,DALocalInfo*,void*))0)
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(DALocalFunction1)0)
 #endif
 
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
