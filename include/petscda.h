@@ -1,28 +1,22 @@
 
 /*
-      An index set is essentially a subset of the integers
+      Regular array object, for easy parallism of simple grid 
+   problems on regular arrays.
 */
-#if !defined(__IS_PACKAGE)
-#define __IS_PACKAGE
+#if !defined(__RA_PACKAGE)
+#define __RA_PACKAGE
 #include "petsc.h"
+#include "vec.h"
 
-#define IS_COOKIE PETSC_COOKIE+2
+#define RA_COOKIE PETSC_COOKIE+14
 
-typedef struct _IS* IS;
+typedef struct _RA* RA;
 
-extern int   ISCreateSequential(MPI_Comm,int,int *,IS *);
-extern int   ISCreateMPI(int,int,int *,MPI_Comm,IS *);
-extern int   ISCreateStrideSequential(MPI_Comm,int,int,int,IS *);
-extern int   ISStrideGetInfo(IS,int *,int*);
-
-extern int   ISSetPermutation(IS);
-extern int   ISIsPermutation(IS); 
-extern int   ISGetIndices(IS,int **);
-extern int   ISRestoreIndices(IS,int **);
-extern int   ISGetSize(IS,int *);
-extern int   ISGetLocalSize(IS,int *);
-extern int   ISDestroy(IS);
-extern int   ISInvertPermutation(IS,IS*);
-extern int   ISView(IS,Viewer);
+extern int   RACreate2d(MPI_Comm,int,int,int,int,int,RA *);
+extern int   RADestroy(RA);
+extern int   RAView(RA,Viewer);
+extern int   RAGetDistributedVector(RA,Vec*);
+extern int   RAGetLocalVector(RA,Vec*);
+extern int   RAGetOwnershipRange(RA,int*,int*,int*,int*);
 
 #endif
