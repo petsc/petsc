@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.175 1999/09/02 14:53:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.176 1999/09/14 18:35:25 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1561,21 +1561,34 @@ CHKERRQ(ierr);
 
 #undef __FUNC__  
 #define __FUNC__ "MatDiagonalScale_MPIBAIJ"
-int MatDiagonalScale_MPIBAIJ(Mat A,Vec ll,Vec rr)
+int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 {
-  Mat a = ((Mat_MPIBAIJ *) A->data)->A;
-  Mat b = ((Mat_MPIBAIJ *) A->data)->B;
-  int ierr,s1,s2,s3;
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat         a = baij->A, b = baij->B;
+  int         ierr,s1,s2,s3;
 
   PetscFunctionBegin;
-  if (ll)  {
-    ierr = VecGetLocalSize(ll,&s1);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
-    if (s1!=s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"non-conforming local sizes");
-    ierr = MatDiagonalScale(a,ll,0);CHKERRQ(ierr);
-    ierr = MatDiagonalScale(b,ll,0);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&s2,&s3);CHKERRQ(ierr);
+  if (rr) {
+    ierr = VecGetLocalSize(rr,&s1);CHKERRQ(ierr);
+    if (s1!=s3) SETERRQ(PETSC_ERR_ARG_SIZ,0,"right vector non-conforming local size");
+    /* Overlap communication with computation. */
+    ierr = VecScatterBegin(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
   }
-  if (rr) SETERRQ(PETSC_ERR_SUP,0,"not supported for right vector");
+  if (ll) {
+    ierr = VecGetLocalSize(ll,&s1);CHKERRQ(ierr);
+    if (s1!=s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"left vector non-conforming local size");
+    ierr = (*b->ops->diagonalscale)(b,ll,0);CHKERRQ(ierr);
+  }
+  /* scale  the diagonal block */
+  ierr = (*a->ops->diagonalscale)(a,ll,rr);CHKERRQ(ierr);
+
+  if (rr) {
+    /* Do a scatter end and then right scale the off-diagonal block */
+    ierr = VecScatterEnd(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
+    ierr = (*b->ops->diagonalscale)(b,0,baij->lvec);CHKERRQ(ierr);
+  } 
+  
   PetscFunctionReturn(0);
 }
 
@@ -1973,15 +1986,15 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
-  if (d_nz < -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"d_nz cannot be less than -1: value %d",d_nz);
-  if (o_nz < -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"o_nz cannot be less than -1: value %d",o_nz);
+  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"d_nz cannot be less than -1: value %d",d_nz);
+  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"o_nz cannot be less than -1: value %d",o_nz);
   if (d_nnz) {
-    for (i=0; i<m; i++) {
+    for (i=0; i<m/bs; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
     }
   }
   if (o_nnz) {
-    for (i=0; i<m; i++) {
+    for (i=0; i<m/bs; i++) {
       if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
     }
   }
