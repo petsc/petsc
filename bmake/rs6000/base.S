@@ -1,5 +1,6 @@
 #
-BASEOPT = -O3  -S -DPETSC_DEBUG -DPETSC_LOG  -DPETSC_BOPT_O
+PETSCFLAGS = -DPETSC_DEBUG -DPETSC_LOG  -DPETSC_BOPT_O
+COPTFLAGS  = -O3  -S 
 # For Fortran, there are lots of options
 # -P is a preprocessor that seems to unroll loops.
 # -Wp,-ew    invokes the most common optimizations = -ea2478
@@ -35,7 +36,7 @@ BASEOPT = -O3  -S -DPETSC_DEBUG -DPETSC_LOG  -DPETSC_BOPT_O
 # generate INCORRECT code for relatively simple doubly-nested loops, even
 # when the only operations are ASSIGNMENTS!  See the ANL/IBM-SP1 User's
 # guide for an example.
-BASEOPTF = -O 
+FOPTFLAGS = -O  -S
 # For ANL, the following are also useful (cache is for RS6000/370)
 #-qarch=pwr \
 #-qhot  \
