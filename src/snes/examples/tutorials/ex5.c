@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.15 1995/07/23 18:20:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.16 1995/07/28 04:25:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -66,7 +66,7 @@ int main( int argc, char **argv )
   N          = user.mx*user.my;
   
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
                user.mx,user.my,PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); 
   CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRQ(ierr);
@@ -113,7 +113,8 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     i, j, row, mx, my, ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc,*x;
+  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  Scalar  *x;
   Vec     localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; lambda = user->param;
@@ -145,8 +146,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
-  double  u, uxx, uyy, sc,*x,*f;
+  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
+  Scalar  u, uxx, uyy, *x,*f;
   Vec     localX = user->localX, localF = user->localF; 
 
   mx	 = user->mx; my	 = user->my;lambda = user->param;
@@ -162,8 +163,9 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
 
   for (j=ys; j<ys+ym; j++) {
+    row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
+      row++;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         f[row] = x[row];
         continue;
@@ -177,6 +179,13 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
   /* stick values into global vector */
+
+
+
+
+
+
+
   ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
   PLogFlops(11*ym*xm);
   return 0; 
