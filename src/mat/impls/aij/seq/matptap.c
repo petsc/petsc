@@ -228,7 +228,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
   int            *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   int            *ci,*cj,*denserow,*sparserow,*ptadenserow,*ptasparserow,*ptaj;
   int            an=A->N,am=A->M,pn=P->N,pm=P->M,ppdof=pp->dof;
-  int            i,j,k,dof,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
+  int            i,j,k,dof,pdof,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
   MatScalar      *ca;
 
   PetscFunctionBegin;
@@ -280,13 +280,14 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
       ptaj = ptasparserow;
       cnzi   = 0;
       for (j=0;j<ptanzi;j++) {
+        pdof = *ptaj%dof;
         prow = (*ptaj++)/dof;
         pnzj = pi[prow+1] - pi[prow];
         pjj  = pj + pi[prow];
         for (k=0;k<pnzj;k++) {
-          if (!denserow[pjj[k]]) {
-            denserow[pjj[k]]  = -1;
-            sparserow[cnzi++] = pjj[k];
+          if (!denserow[pjj[k]+pdof]) {
+            denserow[pjj[k]+pdof] = -1;
+            sparserow[cnzi++]     = pjj[k]+pdof;
           }
         }
       }
