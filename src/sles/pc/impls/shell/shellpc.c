@@ -64,16 +64,16 @@ int PCiShellCreate(PC pc)
   Input Parameters:
 .  pc - the preconditioner context
 .  mult - the application routine.
-.  ctx - pointer to data needed by application routine
+.  ptr - pointer to data needed by application multiply routine
 
   Keywords: preconditioner, user-provided
 @*/
-int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ctx)
+int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
 {
   PCShell *shell;
   VALIDHEADER(pc,PC_COOKIE);
   shell        = (PCShell *) pc->data;
   shell->apply = mult;
-  shell->ctx   = ctx;
+  shell->ctx   = ptr;
   return 0;
 }
