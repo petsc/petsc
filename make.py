@@ -59,7 +59,7 @@ class Make(maker.Make):
 
   def getLibDir(self):
     if not hasattr(self, '_libDir'):
-      self._libDir = os.path.join(self.petscDir, 'lib', 'lib'+self.argDB['BOPT'], self.petscArch)
+      self._libDir = os.path.join(self.petscDir, 'lib',  self.petscArch)
     return self._libDir
   def setLibDir(self, libDir):
     self._libDir = libDir

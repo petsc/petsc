@@ -126,7 +126,7 @@ $     -mat_type my_mat
 
    Level: advanced
 
-   Notes: ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+   Notes: ${PETSC_ARCH} occuring in pathname will be replaced with appropriate values.
          If your function is not being put into a shared library then use VecRegister() instead
 
 .keywords: Mat, register
@@ -819,7 +819,7 @@ $     MatOrderingSetType(part,"my_order)
 $     -pc_ilu_mat_ordering_type my_order
 $     -pc_lu_mat_ordering_type my_order
 
-   ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH} occuring in pathname will be replaced with appropriate values.
 
 .keywords: matrix, ordering, register
 
@@ -962,7 +962,7 @@ $     MatColoringSetType(part,"my_color")
    or at runtime via the option
 $     -mat_coloring_type my_color
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
 
 .keywords: matrix, Coloring, register
 
@@ -1080,7 +1080,7 @@ $     MatPartitioningSetType(part,"my_part")
    or at runtime via the option
 $     -mat_partitioning_type my_part
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
 
 .keywords: matrix, partitioning, register
 

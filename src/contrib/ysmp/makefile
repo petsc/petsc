@@ -14,8 +14,8 @@ LINCLUDE  = ${SOURCEH}
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: chkopts ex1.o ${PETSC_ARCH}${BOPT}ysmp.a
-	-${CLINKER} -o ex1 ex1.o ${LIBNAME} ${PETSC_LIB} ${PETSC_ARCH}${BOPT}ysmp.a
+ex1: chkopts ex1.o ${PETSC_ARCH}ysmp.a
+	-${CLINKER} -o ex1 ex1.o ${LIBNAME} ${PETSC_LIB} ${PETSC_ARCH}ysmp.a
 	${RM} ex1.o
 
 
@@ -37,14 +37,14 @@ SRC = cdrv.f md.f mdi.f mdm.f mdp.f mdu.f ndrv.f nnf.f \
       i1mach.f xermax.f xerror.f xerrwv.f j4save.f  \
       xerprt.f xerabt.f fdump.f xerctl.f xgetua.f xersav.f
 
-test1:  ysmp.o ${PETSC_ARCH}${BOPT}ysmp.a
-	f77 -o test1 ysmp.o ${PETSC_ARCH}${BOPT}ysmp.a
+test1:  ysmp.o ${PETSC_ARCH}ysmp.a
+	f77 -o test1 ysmp.o ${PETSC_ARCH}ysmp.a
 	rm -f ysmp.o
 
-${PETSC_ARCH}${BOPT}ysmp.a  : ${SRC}
+${PETSC_ARCH}ysmp.a  : ${SRC}
 	${FC} -c ${FFLAGS}${BASEOPTF} ${SRC} 
-	ar r ${PETSC_ARCH}${BOPT}ysmp.a ${OBJ}
-	ranlib ${PETSC_ARCH}${BOPT}ysmp.a
+	ar r ${PETSC_ARCH}ysmp.a ${OBJ}
+	ranlib ${PETSC_ARCH} ysmp.a
 	rm -f  ${OBJ}
 
 

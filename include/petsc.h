@@ -1246,7 +1246,7 @@ M*/
 
 /*M
     PetscScalar - PETSc type that represents either a double precision real number or 
-       a double precision complex number if the code is compiled with BOPT=g_complex or O_complex
+       a double precision complex number if the code is configured with --with-scalar-type=complex
 
    Level: beginner
 
@@ -1263,7 +1263,7 @@ M*/
 
 /*M
     PassiveScalar - PETSc type that represents either a double precision real number or 
-       a double precision complex number if the code is compiled with BOPT=g_complex or O_complex
+       a double precision complex number if the code is  code is configured with --with-scalar-type=complex
 
    Level: beginner
 

@@ -6,7 +6,7 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-    '--download-mpi=1',
+    '--download-mpich=1',
     '--with-gnu-compilers=0',
     '--with-vendor-compilers=ibm',
     # c++ doesn't work yet

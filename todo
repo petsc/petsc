@@ -66,13 +66,12 @@ PC/Mat
   indicates limits on context from Fortran. (Make like MatShell())
 
   Manual pages for mat ordering/coloring/partitioning types
+  Manual pages for partitioners
 
   Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?
 
   Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
 ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
-
-  + (Hong) For seqaij and seqbaij handle many empty rows for optimization re Hong and Kris
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
@@ -80,7 +79,6 @@ ia and ja data. Then the reoordering codes need to check that flag since Sparsep
 
   + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC.
 
-  Manual pages for partitioners
 
   Add support for ICC for BAIJ by converting to SBAIJ
 

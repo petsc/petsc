@@ -14,13 +14,10 @@
 !     Dirichlet b.c.'s on all sides
 !     Use the 2-D, five-point finite difference stencil.
 !
-!  Compiling the code:
-!     This code uses the complex numbers version of PETSc, so one of the
-!     following values of BOPT must be used for compiling the PETSc libraries
-!     and this example:
-!        BOPT=g_complex   - debugging version
-!        BOPT=O_complex   - optimized version
-!        BOPT=Opg_complex - profiling version
+!     Compiling the code:
+!      This code uses the complex numbers version of PETSc, so configure
+!      must be run to enable this
+!
 !
 ! -----------------------------------------------------------------------
 

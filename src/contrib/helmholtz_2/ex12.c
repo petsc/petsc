@@ -60,12 +60,8 @@ T*/
    ---------------------
     Compiling the code:
    ---------------------
-     This code uses the complex numbers version of PETSc, so one of the
-     following values of BOPT must be used for compiling the PETSc libraries
-     and this example:
-        BOPT=g_complex   - debugging version
-        BOPT=O_complex   - optimized version
-        BOPT=Opg_complex - profiling version
+     This code uses the complex numbers version of PETSc, so configure must
+     be run to set complex numbers
 
    ----------------------------------
     Code organization and extension:

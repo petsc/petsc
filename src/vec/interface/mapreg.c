@@ -119,7 +119,7 @@ PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
     -map_type my_map_name
 .ve
 
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+  Note: $PETSC_ARCH  occuring in pathname will be replaced with appropriate values.
 
   Level: advanced
 

@@ -162,7 +162,7 @@ EXTERN PetscErrorCode TSRegisterDestroy(void);
     -ts_type my_ts
 .ve
 
-  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
         If your function is not being put into a shared library then use TSRegister() instead
 
   Level: advanced

@@ -587,7 +587,7 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
 -   len - the length of b
 
    Notes:
-      Replaces   ${PETSC_ARCH},${BOPT},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
+      Replaces   ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
       ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
       as well as any environmental variables.
    
@@ -600,8 +600,8 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
   int            i = 0;
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree;
-  const char     *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  const char     *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
+  const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
+  const char     *r[] = {PETSC_ARCH,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth     flag;
 
   PetscFunctionBegin;

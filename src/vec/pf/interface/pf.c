@@ -364,7 +364,7 @@ $     -pf_type my_function
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
  occuring in pathname will be replaced with appropriate values.
 
 .keywords: PF, register

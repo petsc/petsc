@@ -23,7 +23,7 @@ petscdlib.c:
 
 petscdlib:  petscdlib.c
 	-@${RM} libpetscdlib.a libpetscdlib.${SLSUFFIX}
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib oshared
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib oshared
 #	-@${RM} petscdlib.c
 

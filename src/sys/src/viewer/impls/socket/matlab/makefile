@@ -4,7 +4,7 @@
 #requiresscalar real 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
-# in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If mex fails 
+# in Matlab. You cannot use a complex numbers. If mex fails 
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 #
@@ -12,7 +12,7 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 speciallib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
+	-@${OMAKE}  matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 	-@if [ ! -d "${PETSC_DIR}/bin/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/bin/matlab; fi
 	-@${MV} receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
 specialfastlib: speciallib

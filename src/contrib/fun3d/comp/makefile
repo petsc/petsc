@@ -6,7 +6,7 @@ ALL: flow
 USERCPPFLAGS     =   -DINTERLACING -DBLOCKING 
 
 # To run the benchmark case on the mesh called BigSample, uncomment
-# the following line and compile with BOPT=O_matsingle.
+# the following line and run configure to use matsingle
 #USERCPPFLAGS     =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
 CFLAGS	         =
 FFLAGS	         =	 

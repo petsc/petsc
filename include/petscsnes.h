@@ -83,7 +83,7 @@ EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],PetscE
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
    and others of the form ${any_environmental_variable} occuring in pathname will be 
    replaced with appropriate values.
 

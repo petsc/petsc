@@ -26,8 +26,8 @@ class Configure(config.base.Configure):
 
   def configureRegression(self):
     '''Output a file listing the jobs that should be run by the PETSc buildtest'''
-    jobs  = []    # Jobs can be run on with all BOPTs
-    rjobs = []    # Jobs can only be run with real numbers; i.e. NOT BOPT=g_complex or BOPT=O_complex
+    jobs  = []    # Jobs can be run on with alwaysw
+    rjobs = []    # Jobs can only be run with real numbers; i.e. NOT  complex
     ejobs = []    # Jobs that require an external package install (also cannot work with complex)
     if self.mpi.usingMPIUni:
       jobs.append('4')

@@ -352,7 +352,7 @@ EXTERN PetscErrorCode VecRegisterDestroy(void);
     -vec_type my_vector_name
 .ve
 
-  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
          If your function is not being put into a shared library then use VecRegister() instead
         
   Level: advanced

@@ -158,7 +158,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
   }
 #endif
 #if !defined(PETSC_USE_DEBUG)
-  (*PetscErrorPrintf)("compile, link, and run with BOPT=g or g_c++ or g_complex\n");
+  (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
   ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1," ");

@@ -20,20 +20,20 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc Compiler Flags', 'optionsModule=<module name>', nargs.Arg(None, None,      'The Python module used to determine compiler options and versions'))
     help.addArgument('PETSc Compiler Flags', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
+    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
     help.addArgument('PETSc Compiler Flags', 'CXX_VERSION',                 nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=O'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
+    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler without debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
     help.addArgument('PETSc Compiler Flags', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=O'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
+    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler without debugging'))
+    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
+    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
 
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
     help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
@@ -41,7 +41,6 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSCFLAGS'] = ''
     self.framework.argDB['COPTFLAGS']  = ''
     self.framework.argDB['FOPTFLAGS']  = ''
-    self.framework.argDB['BOPT']       = 'O'
     return
 
   def configureCompilerFlags(self):

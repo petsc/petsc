@@ -144,16 +144,6 @@ class Configure(config.base.Configure):
       PETSC_ARCH = os.getenv('PETSC_ARCH')
     if PETSC_ARCH and PETSC_DIR:
       pass
-##      try:
-##        libArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs', log = self.framework.log)[0].strip()
-##        incArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs', log = self.framework.log)[0].strip()
-##        libArgs = self.splitLibs(libArgs)
-##        incArgs = self.splitIncludes(incArgs)
-##        if libArgs and incArgs:
-##          yield ('PETSc location', [libArgs], [incArgs])
-##      except RuntimeError:
-##        # This happens with older Petsc versions which are missing those targets
-##        pass
     # If necessary, download ParMetis
     if not self.found and self.framework.argDB['download-parmetis'] == 2:
       (name, lib, include) = self.downloadParMetis()

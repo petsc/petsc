@@ -267,31 +267,6 @@ class Configure(config.base.Configure):
     yield('Default MPICH install location (C:\Program Files\MPICH with MS compatible SDK',self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
     yield('Default MPICH install location (C:\Program Files\MPICH with SDK.gcc',self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
     
-    # Try PETSc location
-    PETSC_DIR  = None
-    PETSC_ARCH = None
-    if 'PETSC_DIR' in self.framework.argDB and 'PETSC_ARCH' in self.framework.argDB:
-      PETSC_DIR  = self.framework.argDB['PETSC_DIR']
-      PETSC_ARCH = self.framework.argDB['PETSC_ARCH']
-    elif os.getenv('PETSC_DIR') and os.getenv('PETSC_ARCH'):
-      PETSC_DIR  = os.getenv('PETSC_DIR')
-      PETSC_ARCH = os.getenv('PETSC_ARCH')
-
-    if PETSC_ARCH and PETSC_DIR:
-      try:
-        libArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs', log = self.framework.log)[0].strip()
-        incArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs', log = self.framework.log)[0].strip()
-        runArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun', log = self.framework.log)[0].strip()
-
-        libArgs = self.splitLibs(libArgs)
-        incArgs = self.splitIncludes(incArgs)
-        if runArgs and not 'with-mpirun' in self.framework.argDB:
-          self.framework.argDB['with-mpirun'] = runArgs
-        if libArgs and incArgs:
-          yield ('PETSc location', [libArgs], [incArgs])
-      except RuntimeError:
-        # This happens with older Petsc versions which are missing those targets
-        pass
     # If necessary, download MPICH
     if not self.foundMPI and self.framework.argDB['download-mpich'] == 2:
       (name, lib, include) = self.downLoadMPICH()
