@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.251 1998/03/12 23:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.252 1998/03/13 21:43:00 balay Exp bsmith $";
 #endif
 
 /*
@@ -1355,7 +1355,7 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
-  int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
+  int          *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
   int          row,mat_i,*mat_j,tcol,first,step,*mat_ilen;
   register int sum,lensi;
   int          *irow, *icol, nrows, ncols, shift = a->indexshift,*ssmap;
@@ -1457,7 +1457,6 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall
     c = (Mat_SeqAIJ *)(C->data);
     for (i=0; i<nrows; i++) {
       row    = irow[i];
-      nznew  = 0;
       kstart = ai[row]+shift; 
       kend   = kstart + a->ilen[row];
       mat_i  = c->i[i]+shift;
