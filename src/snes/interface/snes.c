@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.84 1996/08/26 02:35:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.85 1996/09/08 22:49:01 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -445,9 +445,12 @@ $      (for unconstrained minimization)
 .  outsnes - the new SNES context
 
    Options Database Key:
-$   -snes_mf - use default matrix free for Jacobian and preconditioner
-$   -snes_mf_operator - use default matrix free for Jacobian but not for preconditioner
-$   -snes_fd - use slow finite differences to compute Jacobian
+$   -snes_mf - use default matrix-free Jacobian-vector products,
+$              and no preconditioning matrix
+$   -snes_mf_operator - use default matrix-free Jacobian-vector
+$             products, and a user-provided preconditioning matrix
+$             as set by SNESSetJacobian()
+$   -snes_fd - use (slow!) finite differences to compute Jacobian
 
 .keywords: SNES, nonlinear, create, context
 
