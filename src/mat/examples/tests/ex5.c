@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.9 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   /* Flush off proc Vec values and do more assembly */
   ierr = VecAssemblyBegin(z);CHKERRA(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*i;
+    v = one*((double)i);
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
     v = 100.0*i;
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   /* ------- Test MatMultTrans(), MatMultTransAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
-    v = one*i;
+    v = one*((double)i);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(C,x);CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*(i+1);
+    v = one*((double)(i+1));
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
   /* ierr = MatDiagonalScale(C,x,y);CHKERRA(ierr);
