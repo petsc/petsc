@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.33 1995/09/01 20:02:06 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.34 1995/10/11 15:20:50 bsmith Exp curfman $ */
 
 /*
       Preconditioner module.
@@ -61,7 +61,8 @@ extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
-extern int PCLUSetUseInplace(PC);
+extern int PCLUSetUseInPlace(PC);
+extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetLevels(PC,int);
 extern int PCEisenstatUseDiagonalScaling(PC);
 
