@@ -67,3 +67,23 @@ etags:
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
 	chmod g+w TAGS
+
+etags_noexamples:
+	$(RM) TAGS_NO_EXAMPLES
+	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
+	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
+	etags -a -f TAGS include/*.h pinclude/*.h bmake/common
+	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
+	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
+	etags -a -f TAGS src/*/utils/makefile
+	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
+	etags -a -f TAGS bmake/solaris/solaris*
+	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
+	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
+	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
+	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
+	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
+	chmod g+w TAGS_NO_EXAMPLES
