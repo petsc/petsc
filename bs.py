@@ -52,7 +52,7 @@ class BS (maker.Maker):
       sourceDB = cPickle.load(dbFile)
       dbFile.close()
     else:
-      sourceDB = SourceDB()
+      sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     if not int(argDB['restart']):
       for source in sourceDB:
