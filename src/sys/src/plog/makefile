@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 2000/08/16 15:04:30 balay Exp bsmith $ 
+# $Id: makefile,v 1.19 2000/08/17 04:50:51 bsmith Exp bsmith $ 
 
 ALL: lib 
 
@@ -6,7 +6,7 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c
 SOURCEF	  =
-SOURCEH	  = ptime.h
+SOURCEH	  = ptime.h ../../../../include/petsclog.h
 OBJSC	  = plog.o plogmpe.o ploginfo.o mpitr.o
 OBJSF	  =
 MANSEC	  = Profiling
