@@ -83,8 +83,7 @@ ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
    See the file ~mcinnes/README on crabcake for up-to-date info on
    the paragon's quirks: 
       - must do "unsetenv TERM" so that make does'nt crash
-      - unalias doesn't work
-      - must use make -e PETSC_DIR=<whatever>
+      - must use make -e PETSC_DIR=<whatever> (which always crashes)
       - for BlockSolve95 muse use 
             make -e BS_DIR=<whatever> PETSC_DIR=<whatever>
       - sample run command:
