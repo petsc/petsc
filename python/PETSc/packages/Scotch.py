@@ -36,8 +36,6 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('Scotch', '-with-scotch=<bool>',                nargs.ArgBool(None, 0, 'Activate Scotch'))
     help.addArgument('Scotch', '-with-scotch-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Scotch installation'))
-    help.addArgument('Scotch', '-with-scotch-include=<dir>',         nargs.ArgDir(None, None, 'The directory containing scotch.h'))
-    help.addArgument('Scotch', '-with-scotch-lib=<lib>',             nargs.Arg(None, None, 'The Scotch library or list of libraries'))
     help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 2, 'Install MPICH to provide Scotch'))
     return
 
@@ -45,11 +43,7 @@ class Configure(config.base.Configure):
     '''Check for Scotch_Init in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found = 1 #cheat!
-#    found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))  #SCOTCH_graphInit, SCOTCH_graphCheck
-#  Possible ERROR while running linker:/sandbox/hzhang/externalpackages/scotch_3.4/bin/i586_pc_linux2/libscotcherrcom.a(library_errcom.o): In function `SCOTCHerrorPrint':
-#  library_errcom.o(.text+0x2c): undefined reference to `errorPrint'
-
+    found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib))) 
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
@@ -73,35 +67,17 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     if root:
-      yield [os.path.join(root,'libscotch.a'), os.path.join(root,'libcommon.a'), os.path.join(root, 'libscotcherr.a'), os.path.join(root, 'libscotcherrcom.a')]
+      yield [os.path.join(root,'libscotch.a'), os.path.join(root, 'libscotcherr.a'), os.path.join(root, 'libscotcherrcom.a'), os.path.join(root,'libcommon.a'), ]
     else:
       yield ['']
-      yield ['scotch', 'common', 'scotcherr', 'scotcherrcom']
+      yield ['scotch', 'scotcherr', 'scotcherrcom', 'common']
     return
 
   def generateGuesses(self):
-    if 'with-scotch-lib' in self.framework.argDB and 'with-scotch-dir' in self.framework.argDB:
-      raise RuntimeError('You cannot give BOTH Scotch library with --with-scotch-lib=<lib> and search directory with --with-scotch-dir=<dir>')
     if self.framework.argDB['download-scotch'] == 1:
       (name, lib, include) = self.downloadScotch()
       yield (name, lib, include) 
       raise RuntimeError('Downloaded Scotch could not be used. Please check install in '+os.path.dirname(include[0][0])+'\n')
-    # Try specified library 
-    if 'with-scotch-lib' in self.framework.argDB:
-      libs = self.framework.argDB['with-scotch-lib'] #='dir/libscotch.a'
-      if not isinstance(libs, list):
-        (dir,dummy) = os.path.split(libs)
-        libs = [libs,os.path.join(dir, 'libcommon.a'),os.path.join(dir, 'libscotcherr.a'),os.path.join(dir, 'libscotcherrcom.a')]
-        includes = [[dir]]
-      yield ('User specified library', [libs], includes)
-      raise RuntimeError('You set a value for --with-scotch-lib, but '+str(self.framework.argDB['with-scotch-lib'])+' cannot be used.\n')
-    # Try specified include
-    if 'with-scotch-include' in self.framework.argDB:
-      includes = self.framework.argDB['with-scotch-include']
-      libs = [os.path.join(includes, 'libscotch.a'),os.path.join(includes, 'libcommon.a'),os.path.join(includes, 'libscotcherr.a'),os.path.join(includes, 'libscotcherrcom.a')]
-      includes = [[includes]]
-      yield ('User specified includes', [libs], includes)
-      raise RuntimeError('You set a value for --with-scotch-include, but '+str(self.framework.argDB['with-scotch-include'])+' cannot be used.\n')
     # Try specified installation root
     if 'with-scotch-dir' in self.framework.argDB:  #~scotch_3.4
       dir = self.framework.argDB['with-scotch-dir']
@@ -110,51 +86,6 @@ class Configure(config.base.Configure):
         dir = os.path.join(dir, 'bin/i586_pc_linux2')
       yield ('User specified installation root', self.libraryGuesses(dir), [[dir]])
       raise RuntimeError('You set a value for --with-scotch-dir, but '+self.framework.argDB['with-scotch-dir']+' cannot be used.\n')
-    # May not need to list anything -- not tested 
-    yield ('Default compiler locations', self.libraryGuesses(), [[]])
-    # Try configure package directories -- not tested  
-    dirExp = re.compile(r'(scotch_*)')   #???
-    for packageDir in self.framework.argDB['package-dirs']:
-      packageDir = os.path.abspath(packageDir)
-      if not os.path.isdir(packageDir):
-        raise RuntimeError('Invalid package directory: '+packageDir)
-      for f in os.listdir(packageDir):
-        dir = os.path.join(packageDir, f)
-        if not os.path.isdir(dir):
-          continue
-        if not dirExp.match(f):
-          continue
-        yield ('Package directory installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-    # Try /usr/local -- not tested 
-    dir = os.path.abspath(os.path.join('/usr', 'local'))
-    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-    # Try /usr/local/*scotch* -- not tested
-    ls = os.listdir(os.path.join('/usr','local'))
-    for dir in ls:
-      if not dirExp.match(f):
-        continue
-      dir = os.path.join('/usr','local',dir)
-      if os.path.isdir(dir):
-        yield ('Frequent user install location (/usr/local/scotch*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-    # Try ~/scotch* -- not tested
-    ls = os.listdir(os.getenv('HOME'))
-    for dir in ls:
-      if not dirExp.match(f):
-        continue
-      dir = os.path.join(os.getenv('HOME'),dir)
-      if os.path.isdir(dir):
-        yield ('Frequent user install location (~/scotch*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-    # Try PETSc location -- not tested
-    PETSC_DIR  = None
-    PETSC_ARCH = None
-    if 'PETSC_DIR' in self.framework.argDB and 'PETSC_ARCH' in self.framework.argDB:
-      PETSC_DIR  = self.framework.argDB['PETSC_DIR']
-      PETSC_ARCH = self.framework.argDB['PETSC_ARCH']
-    elif os.getenv('PETSC_DIR') and os.getenv('PETSC_ARCH'):
-      PETSC_DIR  = os.getenv('PETSC_DIR')
-      PETSC_ARCH = os.getenv('PETSC_ARCH')
-    if PETSC_ARCH and PETSC_DIR:
-      pass
     # If necessary, download Scotch
     if not self.found and self.framework.argDB['download-scotch'] == 2:
       (name, lib, include) = self.downloadScotch()
@@ -210,52 +141,8 @@ class Configure(config.base.Configure):
     installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    # Configure and Build Scotch
-#    self.framework.pushLanguage('C')
-#    args = ['--prefix='+installDir, '--with-cc="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"', '-PETSC_DIR='+self.arch.dir]
-#    self.framework.popLanguage()
-#    if not 'FC' in self.framework.argDB:
-#      args.append('--with-fc=0')
-#    argsStr = ' '.join(args)
-#    try:
-#      fd         = file(os.path.join(installDir,'config.args'))
-#      oldArgsStr = fd.readline()
-#      fd.close()
-#    except:
-#      oldArgsStr = ''
-#    if not oldArgsStr == argsStr:
-#      self.framework.log.write('Have to rebuild Scotch oldargs = '+oldArgsStr+' new args '+argsStr+'\n')
-#      self.logPrint("Configuring and compiling Scotch; this may take several minutes\n", debugSection='screen')
-#      try:
-#        import logging
-#        # Split Graphs into its own repository
-#        oldDir = os.getcwd()
-#        os.chdir(scotchDir)
-#        oldLog = logging.Logger.defaultLog
-#        logging.Logger.defaultLog = file(os.path.join(scotchDir, 'build.log'), 'w')
-#        oldLevel = self.argDB['debugLevel']
-#        #self.argDB['debugLevel'] = 0
-#        oldIgnore = self.argDB['ignoreCompileOutput']
-#        #self.argDB['ignoreCompileOutput'] = 1
-#        if os.path.exists('RDict.db'):
-#          os.remove('RDict.db')
-#        if os.path.exists('bsSource.db'):
-#          os.remove('bsSource.db')
-#        make = self.getModule(scotchDir, 'make').Make()   
-#        make.prefix = installDir
-#        make.clArgs = map(lambda s: s.replace('"', ''), args)
-#        make.run()
-#        self.argDB['ignoreCompileOutput'] = oldIgnore
-#        self.argDB['debugLevel'] = oldLevel
-#        logging.Logger.defaultLog = oldLog
-#        os.chdir(oldDir)
-#      except RuntimeError, e:
-#        raise RuntimeError('Error running configure on Scotch: '+str(e))
-#      fd = file(os.path.join(installDir,'config.args'), 'w')
-#      fd.write(argsStr)
-#      fd.close()
-#      self.framework.actions.addArgument('Scotch', 'Install', 'Installed Scotch into '+installDir)
-    lib = [[os.path.join(installDir, 'libscotch.a'), os.path.join(installDir, 'libcommon.a'),os.path.join(installDir, 'libscotcherr.a'),os.path.join(installDir, 'libscotcherrcom.a')]]
+    #lib = libraryGuesses ???
+    lib = [[os.path.join(installDir, 'libscotch.a'), os.path.join(installDir, 'libscotcherr.a'),os.path.join(installDir, 'libscotcherrcom.a'), os.path.join(installDir, 'libcommon.a'),]]
     include = [[installDir]]
     return ('Downloaded Scotch', lib, include)
 
