@@ -109,7 +109,7 @@ manpages:
 
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(IPETSCDIR)/doc/doc2lt  \
+	doc2lt  \
           $(SOURCEC) $(SOURCEH) >> \
                     $(PETSCLIB)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
