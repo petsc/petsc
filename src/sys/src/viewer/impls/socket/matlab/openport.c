@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.7 1998/05/06 22:07:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.8 1998/06/11 19:57:49 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -46,8 +46,14 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   if (nlhs != 1) ERROR("Open requires one output argument.");
 
   /* figure out portnumber user wants to use; default to 5005 */
-  if (nrhs == 0) portnumber = DEFAULTPORT;  
-  else portnumber = (int) *mxGetPr(prhs[0]);
+  if (nrhs == 0) {
+    char *str;
+    str = getenv("PETSC_VIEWER_MATLAB_PORT");
+    if (str) portnumber = atoi(str);
+    else portnumber = DEFAULTPORT;  
+  } else {
+    portnumber = (int) *mxGetPr(prhs[0]);
+  }
 
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
@@ -99,7 +105,7 @@ int SOCKConnect_Private(int portnumber)
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
-  int                s;
+  int                s,ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
   struct utsname utname;
@@ -120,6 +126,11 @@ int establish(u_short portnum)
      fprintf(stderr,"RECEIVE: error from socket\n");
      return(-1);
   }
+  {
+  int optval = 1; /* Turn on the option */
+  ierr = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
+  }
+
   while ( bind(s,(struct sockaddr *) &sa,sizeof(sa) ) < 0 ) {
      if ( errno != EADDRINUSE ) { 
         close(s);

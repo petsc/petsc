@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.72 1998/10/01 22:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.73 1998/10/02 02:21:14 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -193,6 +193,9 @@ $    VecView(Vec vector,Viewer viewer)
 $    -viewer_matlab_machine <machine>
 $    -viewer_matlab_port <port>
 
+   Environmental variables:
+.   PETSC_VIEWER_MATLAB_PORT portnumber
+
 .keywords: Viewer, Matlab, open
 
 .seealso: MatView(), VecView()
@@ -207,16 +210,22 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
   if (!machine) {
     ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",mach,128,&flag);CHKERRQ(ierr);
     if (!flag) {
-      ierr = PetscGetHostName(mach,128); CHKERRQ(ierr);
+      ierr = PetscGetHostName(mach,256); CHKERRQ(ierr);
     }
   } else {
-    PetscStrncpy(mach,machine);
+    PetscStrncpy(mach,machine,256);
   }
 
   if (port <= 0) {
     ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
     if (!flag) {
-      port = DEFAULTPORT;
+      char portn[16];
+      ierr = OptionsGetenv(comm,"PETSC_VIEWER_MATLAB_PORT",portn,16,&flag);CHKERRQ(ierr);
+      if (flag) {
+        port = OptionsAtoi(portn);
+      } else {
+        port = DEFAULTPORT;
+      }
     }
   }
 
@@ -224,6 +233,7 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
+    PLogInfo(0,"Connecting to matlab process on port %d machine %s\n",port,mach);
     ierr    = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
     v->port = t;
   }
