@@ -205,7 +205,7 @@ class Configure(script.Script):
     return self.language[-1]
 
   def popLanguage(self):
-    self.logPrint('Poping language '+self.language[-1])
+    self.logPrint('Popping language '+self.language[-1])
     self.language.pop()
     return self.language[-1]
 
