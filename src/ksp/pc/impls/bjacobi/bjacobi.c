@@ -18,6 +18,7 @@ static int PCSetUp_BJacobi(PC pc)
   int             ierr,N,M,start,i,rank,size,sum,end;
   int             bs,i_start=-1,i_end=-1;
   char            *pprefix,*mprefix;
+  int             (*f)(Mat,PetscTruth*,MatReuse,Mat*);
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -105,13 +106,13 @@ static int PCSetUp_BJacobi(PC pc)
   }
 
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
+  ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (size == 1 && !f) {
     mat  = pc->mat;
     pmat = pc->pmat;
   } else {
     PetscTruth iscopy;
     MatReuse   scall;
-    int        (*f)(Mat,PetscTruth*,MatReuse,Mat*);
 
     if (jac->use_true_local) {
       scall = MAT_INITIAL_MATRIX;
@@ -127,7 +128,6 @@ static int PCSetUp_BJacobi(PC pc)
           }
         }
       }
-      ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       }

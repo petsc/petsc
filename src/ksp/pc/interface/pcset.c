@@ -157,6 +157,8 @@ int PCGetType(PC pc,PCType *meth)
   PetscFunctionReturn(0);
 }
 
+EXTERN int PCGetDefaultType_Private(PC,const char*[]);
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions"
 /*@
@@ -189,39 +191,7 @@ int PCSetFromOptions(PC pc)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
     if (!pc->type_name) {
-      PetscTruth ismatshell;
-      int        size;
-
-      /*
-        Shell matrix (probably) cannot support Bjacobi and ILU
-      */
-      ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-      if (pc->pmat) {
-        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
-      } else {
-        ismatshell = PETSC_FALSE; /* matrix is not yet set, so guess that it will not be MATSHELL */
-      }
-      /* 
-         MATMFFD cannot support BJacobia and ILU
-      */
-      if (!ismatshell) {
-        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMFFD,&ismatshell);CHKERRQ(ierr);
-      }
-
-      if (ismatshell) {
-        def = PCNONE;
-        PetscLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
-    preconditioners (unless defined by the user)\n");
-      } else if (size == 1) {
-        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
-        if (flg) {
-          def = PCICC;
-        } else {
-	  def = PCILU;
-        }
-      } else {
-        def = PCBJACOBI;
-      }
+      ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
     } else {
       def = pc->type_name;
     }
@@ -229,7 +199,9 @@ int PCSetFromOptions(PC pc)
     ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,type);CHKERRQ(ierr);
-    }
+    } else if (!pc->type_name){
+      ierr = PCSetType(pc,def);CHKERRQ(ierr);
+    } 
 
     ierr = PetscOptionsName("-pc_constant_null_space","Add constant null space to preconditioner","PCNullSpaceAttach",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -240,20 +212,10 @@ int PCSetFromOptions(PC pc)
       ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
     }
 
-
     /* option is actually checked in PCSetUp() */
     if (pc->nullsp) {
       ierr = PetscOptionsName("-pc_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
     }
-
-    /*
-      Set the type if it was never set.
-    */
-    if (!pc->type_name) {
-      ierr = PCSetType(pc,def);CHKERRQ(ierr);
-    }
-
-
 
     if (pc->ops->setfromoptions) {
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);

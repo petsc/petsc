@@ -9,6 +9,46 @@ int PC_COOKIE = 0;
 int PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
 int PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetDefaultType_Private"
+int PCGetDefaultType_Private(PC pc,const char* type[])
+{
+  int        ierr,size;
+  PetscTruth flg1,flg2;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  if (pc->pmat) {
+    int (*f)(Mat,PetscTruth*,MatReuse,Mat*);
+    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg1);CHKERRQ(ierr);
+      ierr = MatHasOperation(pc->pmat,MATOP_ILUFACTOR_SYMBOLIC,&flg2);CHKERRQ(ierr);
+      if (flg1) { /* for sbaij mat */
+	*type = PCICC;
+      } else if (flg2) {
+	*type = PCILU;
+      } else if (f) { /* likely is a parallel matrix run on one processor */
+	*type = PCBJACOBI;
+      } else {  
+	*type = PCNONE;
+      }
+    } else {
+       if (f) {
+	*type = PCBJACOBI;
+      } else {
+	*type = PCNONE;
+      }
+    }
+  } else {
+    if (size == 1) {
+      *type = PCILU;
+    } else {
+      *type = PCBJACOBI;
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCNullSpaceAttach"
@@ -806,8 +846,8 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, Pet
 @*/
 int PCSetUp(PC pc)
 {
-  int ierr;
-  PetscTruth flg;
+  int        ierr;
+  const char *def;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -828,20 +868,10 @@ int PCSetUp(PC pc)
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
 
   if (!pc->type_name) {
-    int size;
-
-    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-    if (size == 1) {
-      ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg);CHKERRQ(ierr);
-      if (flg) { /* for sbaij mat */
-        ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
-      } else {
-        ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
-    }
+    ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
+    ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
+
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
