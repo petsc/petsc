@@ -8,10 +8,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matmatmult.c
+SOURCEC  = 
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = matmatmult.o
+OBJSC    = 
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC

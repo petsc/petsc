@@ -444,6 +444,7 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0;i<am;i++) {
+CHKMEMQ;
     /* Form sparse row of A*P */
     anzi  = ai[i+1] - ai[i];
     apnzj = 0;
@@ -454,9 +455,13 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
       paj  = pa + pi[prow];
       for (k=0;k<pnzj;k++) {
         if (!apa[pjj[k]]) {
+CHKMEMQ;
           apj[apnzj++]=pjj[k];
+CHKMEMQ;
         }
+CHKMEMQ;
         apa[pjj[k]] += (*aa)*paj[k];
+CHKMEMQ;
       }
       flops += 2*pnzj;
       aa++;
@@ -484,7 +489,9 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
     }
 
     for (j=0;j<apnzj;j++) {
+CHKMEMQ;
       apa[apj[j]] = 0.;
+CHKMEMQ;
     }
   }
   ierr = PetscFree(apa);CHKERRQ(ierr);

@@ -5,11 +5,11 @@ ALL: lib
 CFLAGS   = ${MATLAB_INCLUDE} ${DSCPACK_INCLUDE} ${SUPERLU_INCLUDE} ${SPOOLES_INCLUDE}
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c \
-	   lusol.c dsc.c superlu.c spooles.c
+	   lusol.c dsc.c superlu.c spooles.c matmatmult.c
 SOURCEF  = 
 SOURCEH  = aij.h
 OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o aijmatlab.o \
-	   lusol.o dsc.o superlu.o spooles.o
+	   lusol.o dsc.o superlu.o spooles.o matmatmult.o
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = 
