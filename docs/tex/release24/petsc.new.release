@@ -14,7 +14,7 @@ available at
      ftp://info.mcs.anl.gov/pub/petsc/Changes
 or
      http://www.mcs.anl.gov/petsc/petsc.html
-Also, before installing a new version PETSc, please see the list
+Also, before installing a new version of PETSc, please see the list
 of patches at
      http://www.mcs.anl.gov/petsc/petsc-patches.html
 to determine if any are required for your machine(s) of interest.
