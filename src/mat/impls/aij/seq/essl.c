@@ -1,33 +1,32 @@
-/*$Id: essl.c,v 1.38 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.39 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
 
 */
 #include "src/mat/impls/aij/seq/aij.h"
-#include "src/vec/vecimpl.h"
 
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
 /* #include <essl.h> This doesn't work!  */
 
 typedef struct {
-   int    n,nz;
-   Scalar *a;
-   int    *ia;
-   int    *ja;
-   int    lna;
-   int    iparm[5];
+   int       n,nz;
+   Scalar    *a;
+   int       *ia;
+   int       *ja;
+   int       lna;
+   int       iparm[5];
    PetscReal rparm[5];
    PetscReal oparm[5];
-   Scalar *aux;
-   int    naux;
+   Scalar    *aux;
+   int       naux;
 } Mat_SeqAIJ_Essl;
 
 
 extern int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroy_SeqAIJ_Essl"
+#define __FUNC__ /*<a name="MatDestroy_SeqAIJ_Essl"></a>*/"MatDestroy_SeqAIJ_Essl"
 extern int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -42,7 +41,7 @@ extern int MatDestroy_SeqAIJ_Essl(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqAIJ_Essl"
+#define __FUNC__ /*<a name="MatSolve_SeqAIJ_Essl"></a>*/"MatSolve_SeqAIJ_Essl"
 extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -60,43 +59,7 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
-extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
-{
-  Mat             B;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
-  int             ierr,*ridx,*cidx,i,len;
-  Mat_SeqAIJ_Essl *essl;
-
-  PetscFunctionBegin;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
-  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
-  B             = *F;
-  B->ops->solve   = MatSolve_SeqAIJ_Essl;
-  B->ops->destroy = MatDestroy_SeqAIJ_Essl;
-  B->factor     = FACTOR_LU;
-  b             = (Mat_SeqAIJ*)B->data;
-  essl          = PetscNew(Mat_SeqAIJ_Essl);CHKPTRQ(essl);
-  b->spptr      = (void*)essl;
-
-  /* allocate the work arrays required by ESSL */
-  essl->nz   = a->nz;
-  essl->lna  = (int)a->nz*f;
-  essl->naux = 100 + 10*a->m;
-
-  /* since malloc is slow on IBM we try a single malloc */
-  len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);
-  essl->a    = (Scalar*)PetscMalloc(len);CHKPTRQ(essl->a);
-  essl->aux  = essl->a + essl->lna;
-  essl->ia   = (int*)(essl->aux + essl->naux);
-  essl->ja   = essl->ia + essl->lna;
-
-  PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Essl"></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
 extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
@@ -130,16 +93,48 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
+#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Essl"></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
+extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
+{
+  Mat             B;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
+  int             ierr,*ridx,*cidx,i,len;
+  Mat_SeqAIJ_Essl *essl;
+
+  PetscFunctionBegin;
+  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
+  ierr           = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  B                       = *F;
+  B->ops->solve           = MatSolve_SeqAIJ_Essl;
+  B->ops->destroy         = MatDestroy_SeqAIJ_Essl;
+  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Essl;
+  B->factor               = FACTOR_LU;
+  b                       = (Mat_SeqAIJ*)B->data;
+  essl                    = PetscNew(Mat_SeqAIJ_Essl);CHKPTRQ(essl);
+  b->spptr                = (void*)essl;
+
+  /* allocate the work arrays required by ESSL */
+  essl->nz   = a->nz;
+  essl->lna  = (int)a->nz*f;
+  essl->naux = 100 + 10*a->m;
+
+  /* since malloc is slow on IBM we try a single malloc */
+  len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);
+  essl->a    = (Scalar*)PetscMalloc(len);CHKPTRQ(essl->a);
+  essl->aux  = essl->a + essl->lna;
+  essl->ia   = (int*)(essl->aux + essl->naux);
+  essl->ja   = essl->ia + essl->lna;
+
+  PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatUseEssl_SeqAIJ"></a>*/"MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
-
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Essl;
-
   PetscFunctionReturn(0);
 }
 
@@ -154,4 +149,5 @@ int MatUseEssl_SeqAIJ(Mat A)
 }
 
 #endif
+
 

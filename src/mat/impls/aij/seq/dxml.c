@@ -1,21 +1,20 @@
-/*$Id: dxml.c,v 1.18 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: dxml.c,v 1.19 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the DEC Alpha DXML library
      At the moment the DXNL library only offers sparse matrix vector product.
 */
 #include "src/mat/impls/aij/seq/aij.h"
-#include "src/vec/vecimpl.h"
 
 #if defined(PETSC_HAVE_DXML) && !defined(__cplusplus)
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqAIJ_DXML"
+#define __FUNC__ /*<a name="MatMult_SeqAIJ_DXML"></a>*/"MatMult_SeqAIJ_DXML"
 static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  Scalar             *xx,*yy;
-  int                ierr,zero = 0;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  Scalar     *xx,*yy;
+  int        ierr,zero = 0;
 
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -27,20 +26,18 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseDXML_SeqAIJ"
+#define __FUNC__ /*<a name="MatUseDXML_SeqAIJ"></a>*/"MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
-  A->ops->mult    = MatMult_SeqAIJ_DXML;
+  A->ops->mult = MatMult_SeqAIJ_DXML;
   PetscFunctionReturn(0);
 }
 
 #else
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseDXML_SeqAIJ"
+#define __FUNC__ /*<a name="MatUseDXML_SeqAIJ"></a>*/"MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
@@ -49,3 +46,5 @@ int MatUseDXML_SeqAIJ(Mat A)
 
 
 #endif
+
+
