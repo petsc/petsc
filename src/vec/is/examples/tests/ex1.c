@@ -10,9 +10,10 @@ static char help[] = "Tests IS general routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,n,*indices,rank,size,*ii;
-  IS         is,newis;
-  PetscTruth flg;
+  PetscMPIInt    rank,size;
+  PetscInt       i,n,*indices,*ii;
+  IS             is,newis;
+  PetscTruth     flg;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -31,7 +32,7 @@ int main(int argc,char **argv)
      Create large IS and test ISGetIndices()
   */
   n = 10000 + rank;
-  ierr = PetscMalloc(n*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }

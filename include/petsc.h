@@ -60,13 +60,14 @@ typedef int PetscCookie;
 typedef int PetscEvent;
 typedef int PetscBLASInt;
 typedef int PetscMPIInt;
-typedef long long  PetscInt;
-/*#define MPIU_INT MPI_LONG_LONG_INT */
+typedef int PetscInt;
+/*
 #define MPIU_INT MPI_LONG_LONG_INT
 #undef  PETSC_PRINTF_FORMAT_CHECK
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #undef  PETSC_FPRINTF_FORMAT_CHECK
 #define PETSC_FPRINTF_FORMAT_CHECK(a,b)
+*/
 
 /*
     Declare extern C stuff after incuding external header files
@@ -776,9 +777,9 @@ EXTERN PetscErrorCode        PetscCompareInt(int);
    For use in debuggers 
 */
 extern int PetscGlobalRank,PetscGlobalSize;
-EXTERN PetscErrorCode PetscIntView(int,int[],PetscViewer);
-EXTERN PetscErrorCode PetscRealView(int,PetscReal[],PetscViewer);
-EXTERN PetscErrorCode PetscScalarView(int,PetscScalar[],PetscViewer);
+EXTERN PetscErrorCode PetscIntView(PetscInt,PetscInt[],PetscViewer);
+EXTERN PetscErrorCode PetscRealView(PetscInt,PetscReal[],PetscViewer);
+EXTERN PetscErrorCode PetscScalarView(PetscInt,PetscScalar[],PetscViewer);
 
 /*
     Allows accessing Matlab Engine

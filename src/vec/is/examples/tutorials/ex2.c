@@ -21,8 +21,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int i,n,ierr, *indices,first,step;
-  IS  set;
+  PetscErrorCode ierr;
+  PetscInt       i,n,*indices,first,step;
+  IS             set;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
       

@@ -15,8 +15,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int                    i,n = 4,ierr,indices[] = {0,3,9,12},m = 2,input[] = {0,2};
-  int                    output[2],inglobals[13],outlocals[13];
+  PetscErrorCode         ierr;
+  PetscInt               i,n = 4,indices[] = {0,3,9,12},m = 2,input[] = {0,2};
+  PetscInt               output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
@@ -39,15 +40,13 @@ int main(int argc,char **argv)
   for (i=0; i<13; i++) {
     inglobals[i] = i;
   }
-  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);
-        CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*
      Map some global indices to local, dropping the ones without a local index.
   */
-  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);
-        CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*

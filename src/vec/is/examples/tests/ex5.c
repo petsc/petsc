@@ -7,7 +7,9 @@ static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int                    ierr,size,nlocal,local[5],rank,nneigh,*neigh,**ineigh,*numneigh;
+  PetscErrorCode         ierr;
+  PetscMPIInt            size,rank;
+  PetscInt               nlocal,local[5],nneigh,*neigh,**ineigh,*numneigh;
   ISLocalToGlobalMapping mapping;
 
 
