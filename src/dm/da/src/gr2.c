@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.14 1999/03/06 19:44:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.15 1999/03/11 16:23:45 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -227,8 +227,7 @@ EXTERN_C_BEGIN
 int VecView_MPI_Binary_DA(Vec xin,Viewer viewer)
 {
   DA             da;
-  int            rank,ierr;
-  MPI_Comm       comm;
+  int            ierr;
   Vec            natural;
 
   PetscFunctionBegin;
@@ -242,3 +241,23 @@ int VecView_MPI_Binary_DA(Vec xin,Viewer viewer)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "VecLoadIntoVector_Binary_DA"
+int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
+{
+  DA             da;
+  int            ierr;
+  Vec            natural;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  PLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
+  PetscFunctionReturn(0);
+}
