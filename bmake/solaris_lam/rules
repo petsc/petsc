@@ -1,68 +1,7 @@
-# $Id: base,v 1.5 1998/12/06 17:30:45 balay Exp bsmith $ 
+# $Id: base,v 1.6 1999/01/25 21:58:37 bsmith Exp balay $ 
 #
-#     See the file .... for a complete explanation of all these fields
-#
-AR               = ar
-RM               = rm -f
-OMAKE            = make
-RANLIB           = true
-SHELL            = /bin/sh
-# ######################### C and Fortran compiler ########################
-#
-C_CC             = cc    -KPIC -dalign -xtarget=native
-C_FC             = f77   -xpp=cpp
-C_CLINKER        = cc    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77   ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
-C_CCV            = cc    -V -c
-C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
-# ---------------------------- BOPT=g options ----------------------------
-G_COPTFLAGS      = -g -xs
-G_FOPTFLAGS      = -g -xs
-# ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -fast -xO4  -fsimple=2 -xtarget=native
-O_FOPTFLAGS      = -fast
-# ########################## C++ compiler ##################################
-#
-CXX_CC           = CC    -KPIC
-CXX_FC           = f77   -xpp=cpp
-CXX_CLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-CXX_CCV          = CC    -V -c
-CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -lcomplex -ldl
-# ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g  -xs
-GCXX_FOPTFLAGS   = -g  -xs
-# ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O4  -fast -fsimple=2
-OCXX_FOPTFLAGS   = -fast -dalign
-# -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g -xs
-GCOMP_FOPTFLAGS  = -g -xs
-# --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O4 -fast -fsimple=2
-OCOMP_FOPTFLAGS  = -fast -dalign
-# ########################### PETSc install options ###########################
-G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK 
-O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
-GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK
-OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
-GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
-OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
-                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
-
-##################################################################################
-#
-#   PETSc installers should very rarely ever need to edit anything below this 
-#
-##################################################################################
-
-PARCH    = solaris
-
-
 include ${PETSC_DIR}/bmake/common
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 
 libc: ${LIBNAME}(${OBJSC})
 libf: ${LIBNAME}(${OBJSF})
