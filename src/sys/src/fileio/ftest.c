@@ -30,7 +30,7 @@
 #endif
 #include "petscfix.h"
 
-#if defined (PETSC_HAVE_U_ACCESS) || defined(PETSC_HAVE_ACCESS)
+#if defined (HAVE__ACCESS) || defined(HAVE_ACCESS)
 #if !defined(R_OK)
 #define R_OK 04
 #endif
@@ -68,7 +68,7 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(1,"Mode must be one of r, w, or x");
-#if defined(PETSC_HAVE_U_ACCESS)
+#if defined(HAVE__ACCESS)
   if (m == X_OK) SETERRQ1(PETSC_ERR_SUP,"Unable to check execute permission for file %s",fname);
   if(!_access(fname,m)) *flg = PETSC_TRUE;
 #else

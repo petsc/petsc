@@ -72,7 +72,7 @@ Fortran.
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
-#elif (PETSC_SIZEOF_VOID_P == 8)
+#elif (SIZEOF_VOID_P == 8)
 #error "Use Either of the following flags in the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file: \
 -DPETSC_HAVE_INT_MPI_COMM, -DPETSC_HAVE_MPI_COMM_F2C"
 

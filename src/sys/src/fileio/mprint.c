@@ -49,14 +49,14 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(stdout,format,(char*)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -74,7 +74,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);

@@ -56,7 +56,7 @@ int PetscGetWorkingDirectory(char path[],int len)
   PetscFunctionBegin;
 #if defined(HAVE_GETWD)
   getwd(path);
-#elif defined(HAVE_U_GETCWD)
+#elif defined(HAVE__GETCWD)
   _getcwd(path,len);
 #else
   getcwd(path,len);

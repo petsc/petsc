@@ -43,7 +43,7 @@ PETSC_HAVE_FAST_MPI_WTIME
 the MPI_WTIME is accurate and fast on this machine, so we use this for
 all PETSc timings rather than a system timer
 
-PETSC_HAVE_MEMALIGN
+HAVE_MEMALIGN
 the system routine memalign() exists and is used to ensure that all
 Scalars are allocated with the correct alignment
 
@@ -63,12 +63,12 @@ PETSC_HAVE_VPRINTF_CHAR
 final argument to vprintf() is a char *, rather than the usual void *
 true under freebsd #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
 
-PETSC_SIZEOF_VOID_P
+SIZEOF_VOID_P
 used in handling passing pointers to PETSc objects between C and
 Fortran. When this is 8 (bytes) then we use integer*8 as
 PetscFortranAddr and PetscOffset.
 
-PETSC_SIZEOF_INT
+SIZEOF_INT
 used when reading/writing binary files. We always save using 32 bits
 for portability, so when this is on, the integers are first compressed
 to 32 bits before being written

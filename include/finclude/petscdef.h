@@ -28,7 +28,7 @@
 ! ???? All integers should also be changed to PetscFortranInt ?????
 !
 
-#if (PETSC_SIZEOF_VOID_P == 8)
+#if (SIZEOF_VOID_P == 8)
 #define PetscOffset integer*8
 #define PetscFortranAddr integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
@@ -39,7 +39,7 @@
 #define PetscFortranAddr integer*4
 #endif
 
-#if (PETSC_SIZEOF_INT == 8)
+#if (SIZEOF_INT == 8)
 #define PetscFortranInt integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranInt integer
