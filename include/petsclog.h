@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.74 1996/07/11 23:04:58 balay Exp bsmith $ */
+/* $Id: plog.h,v 1.75 1996/07/12 22:29:29 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -230,7 +230,7 @@ extern double wait_all_ct,allreduce_ct;
 
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
 { \
-  MPI_Irecv( buf, count,  datatype, source, tag, comm, status); \
+  MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
   irecv_ct++; TypeSize(irecv_len,count,datatype); \
 }
 
