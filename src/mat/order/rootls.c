@@ -1,6 +1,4 @@
 /* rootls.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -55,12 +53,7 @@
 /*                                                                        24.
 */
 /*<       SUBROUTINE  ROOTLS ( ROOT, XADJ, ADJNCY, MASK, NLVL, XLS, LS )     >*/
-#if defined(FORTRANCAPS)
-#define rootls_ ROOTLS
-#elif !defined(FORTRANUNDERSCORE)
-#define rootls_ rootls
-#endif
-/* Subroutine */ int rootls_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int rootls(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */

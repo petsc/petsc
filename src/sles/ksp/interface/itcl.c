@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.19 1995/04/17 02:15:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.20 1995/04/26 18:21:58 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -50,15 +50,19 @@ int KSPSetFromOptions(KSP ctx)
   /* this is not good!
        1) there is no way to free lg at end of KSP
   */
-  if (OptionsHasName(0,ctx->prefix,"-ksp_xmonitor")){
+  {
+  int loc[4] = {0,0,300,300},nmax = 4;
+  if (OptionsGetIntArray(0,ctx->prefix,"-ksp_xmonitor",loc,&nmax)){
     int       ierr,mytid = 0;
     DrawLGCtx lg;
     MPI_Initialized(&mytid);
     if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
     if (!mytid) {
-      ierr = KSPLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERR(ierr);
+      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); 
+      CHKERR(ierr);
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
     }
+  }
   }
   if (OptionsHasName(0,ctx->prefix,"-ksp_preres")) {
     KSPSetUsePreconditionedResidual(ctx);

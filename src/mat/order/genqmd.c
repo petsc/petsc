@@ -1,6 +1,5 @@
 /* genqmd.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
+
 */
 
 #include "petsc.h"
@@ -89,12 +88,7 @@
 /*                                                                        41.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define genqmd_ GENQMD
-#elif !defined(FORTRANUNDERSCORE)
-#define genqmd_ genqmd
-#endif
-/* Subroutine */ int genqmd_(int *neqns, int *xadj, int *adjncy, 
+/* Subroutine */ int genqmd(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *invp, int *deg, int *marker, int *
 	rchset, int *nbrhd, int *qsize, int *qlink, int *
 	nofsub)
@@ -104,12 +98,12 @@
 
     /* Local variables */
     static int ndeg, irch, node, nump1, j, inode;
-    extern /* Subroutine */ int qmdqt_(int *, int *, int *, 
+    extern /* Subroutine */ int qmdqt(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int ip, np, mindeg, search;
-    extern /* Subroutine */ int qmdrch_(int *, int *, int *, 
+    extern /* Subroutine */ int qmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
-	     qmdupd_(int *, int *, int *, int *, int *, 
+	     qmdupd(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *);
     static int nhdsze, nxnode, rchsze, thresh, num;
 
@@ -239,7 +233,7 @@ L500:
 /*<             MARKER(NODE) = 1                                             >*/
     marker[node] = 1;
 /*<    >*/
-    qmdrch_(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
+    qmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
 	    rchset[1], &nhdsze, &nbrhd[1]);
 /*          ------------------------------------------------              
 98.*/
@@ -289,7 +283,7 @@ L600:
 /*             ------------------------------------------------          1
 18.*/
 /*<    >*/
-    qmdupd_(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
+    qmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
 	    qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
 /*             -------------------------------------------               1
 22.*/
@@ -336,7 +330,7 @@ L700:
     }
 /*<    >*/
     if (nhdsze > 0) {
-	qmdqt_(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
+	qmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
 		nbrhd[1]);
     }
 /*<   800    IF ( NUM .LT. NEQNS )  GO TO 300                                >*/

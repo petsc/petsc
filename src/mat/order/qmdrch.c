@@ -1,6 +1,4 @@
 /* qmdrch.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -63,12 +61,7 @@
 /*                                                                        28.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define qmdrch_ QMDRCH
-#elif !defined(FORTRANUNDERSCORE)
-#define qmdrch_ qmdrch
-#endif
-/* Subroutine */ int qmdrch_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int qmdrch(int *root, int *xadj, int *adjncy, 
 	int *deg, int *marker, int *rchsze, int *rchset, 
 	int *nhdsze, int *nbrhd)
 {

@@ -1,6 +1,4 @@
 /* fn1wd.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -68,12 +66,7 @@
 /*                                                                        30.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define fn1wd_ FN1WD
-#elif !defined(FORTRANUNDERSCORE)
-#define fn1wd_ fn1wd
-#endif
-/* Subroutine */ int fn1wd_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int fn1wd(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *nlvl, int *
 	xls, int *ls)
 {
@@ -88,7 +81,7 @@
     static int kstop, kstrt, lp1beg, lp1end;
     static double deltp1;
     static int lvlbeg, lvlend;
-    extern /* Subroutine */ int fnroot_(int *, int *, int *, 
+    extern /* Subroutine */ int fnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int nbr, lvl;
 
@@ -116,7 +109,7 @@
     --xadj;
 
     /* Function Body */
-    fnroot_(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
+    fnroot(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
 /*<          FNLVL = FLOAT(NLVL)                                             >*/
     fnlvl = (double) (*nlvl);
 /*<          NSEP  = XLS(NLVL + 1) - 1                                       >*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.5 1995/03/27 22:57:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -26,7 +26,7 @@ than nrow, I have made it 2nrow to be safe.
 */
 xls  = (int *)MALLOC( 2*nrow * sizeof(int) ); CHKPTR(xls);
 
-genrcm_( &nrow, ia, ja, perm, mask, xls );
+genrcm( &nrow, ia, ja, perm, mask, xls );
 FREE( mask );
 FREE( xls );
 

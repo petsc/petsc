@@ -1,17 +1,10 @@
 /* gennd.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
 
 /*<       subroutine revrse(n,perm) >*/
-#if defined(FORTRANCAPS)
-#define revrse_ REVRSE
-#elif !defined(FORTRANUNDERSCORE)
-#define revrse_ revrse
-#endif
-/* Subroutine */ int revrse_(int *n, int *perm)
+/* Subroutine */ int revrse(int *n, int *perm)
 {
     /* System generated locals */
     int i__1;
@@ -106,12 +99,7 @@
 /*                                                                        28.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define gennd_ GENND
-#elif !defined(FORTRANUNDERSCORE)
-#define gennd_ gennd
-#endif
-/* Subroutine */ int gennd_(int *neqns, int *xadj, int *adjncy, 
+/* Subroutine */ int gennd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *xls, int *ls)
 {
     /* System generated locals */
@@ -119,8 +107,8 @@
 
     /* Local variables */
     static int nsep, root, i;
-    extern /* Subroutine */ int fndsep_(int *, int *, int *, 
-	    int *, int *, int *, int *, int *), revrse_(
+    extern /* Subroutine */ int fndsep(int *, int *, int *, 
+	    int *, int *, int *, int *, int *), revrse(
 	    int *, int *);
     static int num;
 
@@ -180,7 +168,7 @@ L200:
 /*              -------------------------------------------           
     52.*/
 /*<    >*/
-	fndsep_(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], 
+	fndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], 
 		&xls[1], &ls[1]);
 /*<                 NUM  = NUM + NSEP                                        >*/
 	num += nsep;
@@ -206,7 +194,7 @@ L300:
 63.*/
 /*<   400     CALL  REVRSE ( NEQNS, PERM )                                   >*/
 L400:
-    revrse_(neqns, &perm[1]);
+    revrse(neqns, &perm[1]);
 /*<           RETURN                                                         >*/
     return 0;
 /*<        END                                                               >*/

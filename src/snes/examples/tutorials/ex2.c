@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.7 1995/04/19 03:01:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.8 1995/04/26 18:24:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -68,9 +68,6 @@ int main( int argc, char **argv )
   SNESSetSolution( snes, x,FormInitialGuess,0 );
   SNESSetFunction( snes, r,FormResidual,(void*)F, 1 );
   SNESSetJacobian( snes, J, FormJacobian,0 );	
-
-  SNESGetSLES(snes,&sles);
-  SLESSetFromOptions(sles);
 
   SNESSetUp( snes );				       
 

@@ -1,6 +1,4 @@
 /* qmdupd.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -65,12 +63,7 @@
 /*                                                                        29.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define qmdupd_ QMDUPD
-#elif !defined(FORTRANUNDERSCORE)
-#define qmdupd_ qmdupd
-#endif
-/* Subroutine */ int qmdupd_(int *xadj, int *adjncy, int *nlist, 
+/* Subroutine */ int qmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)
 {
@@ -79,9 +72,9 @@
 
     /* Local variables */
     static int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    extern /* Subroutine */ int qmdrch_(int *, int *, int *, 
+    extern /* Subroutine */ int qmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
-	     qmdmrg_(int *, int *, int *, int *, int *, 
+	     qmdmrg(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int nhdsze, rchsze, deg0, deg1;
 
@@ -174,7 +167,7 @@ L100:
 69.*/
 /*<    >*/
     if (nhdsze > 0) {
-	qmdmrg_(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[
+	qmdmrg(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[
 		1], &deg0, &nhdsze, &nbrhd[1], &rchset[1], &nbrhd[nhdsze + 1])
 		;
     }
@@ -200,7 +193,7 @@ L100:
 /*<                MARKER(NODE) = 2                                          >*/
 	marker[node] = 2;
 /*<    >*/
-	qmdrch_(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
+	qmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
 		rchset[1], &nhdsze, &nbrhd[1]);
 /*<                DEG1 = DEG0                                               >*/
 	deg1 = deg0;

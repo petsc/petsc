@@ -1,6 +1,4 @@
 /* gen1wd.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -63,12 +61,7 @@
 /*                                                                        28.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define gn1wd_ GN1WD
-#elif !defined(FORTRANUNDERSCORE)
-#define gn1wd_ gn1wd
-#endif
-/* Subroutine */ int gen1wd_(int *neqns, int *xadj, int *adjncy, 
+/* Subroutine */ int gen1wd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *nblks, int *xblk, int *perm, int *
 	xls, int *ls)
 {
@@ -77,10 +70,10 @@
 
     /* Local variables */
     static int node, nsep, lnum, nlvl, root;
-    extern /* Subroutine */ int fn1wd_(int *, int *, int *, 
+    extern /* Subroutine */ int fn1wd(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int i, j, k, ccsize;
-    extern /* Subroutine */ int revrse_(int *, int *), rootls_(
+    extern /* Subroutine */ int revrse(int *, int *), rootls(
 	    int *, int *, int *, int *, int *, int *, 
 	    int *);
     static int num;
@@ -137,7 +130,7 @@
 /*<                ROOT = I                                                  >*/
 	root = i;
 /*<    >*/
-	fn1wd_(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
+	fn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
 		nlvl, &xls[1], &ls[1]);
 /*<                NUM = NUM + NSEP                                          >*/
 	num += nsep;
@@ -167,7 +160,7 @@
 		goto L300;
 	    }
 /*<    >*/
-	    rootls_(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
+	    rootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
 		    perm[num + 1]);
 /*<                      LNUM = NUM + 1                                      >*/
 	    lnum = num + 1;
@@ -211,9 +204,9 @@ L400:
 84.*/
 /*<   500    CALL  REVRSE ( NEQNS, PERM )                                    >*/
 L500:
-    revrse_(neqns, &perm[1]);
+    revrse(neqns, &perm[1]);
 /*<          CALL  REVRSE ( NBLKS, XBLK )                                    >*/
-    revrse_(nblks, &xblk[1]);
+    revrse(nblks, &xblk[1]);
 /*<          XBLK(NBLKS+1) = NEQNS + 1                                       >*/
     xblk[*nblks + 1] = *neqns + 1;
 /*<          RETURN                                                          >*/

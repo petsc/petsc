@@ -1,6 +1,4 @@
 /* qmdqt.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -55,12 +53,7 @@
 /*                                                                        24.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define qmdqt_ QMDQT
-#elif !defined(FORTRANUNDERSCORE)
-#define qmdqt_ qmdqt
-#endif
-/* Subroutine */ int qmdqt_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int qmdqt(int *root, int *xadj, int *adjncy, 
 	int *marker, int *rchsze, int *rchset, int *nbrhd)
 {
     /* System generated locals */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.5 1995/03/27 22:57:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,7 +23,7 @@ mask = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(mask);
 xls  = (int *)MALLOC( (nrow + 1) * sizeof(int) ); CHKPTR(xls);
 ls   = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(ls);
 
-gennd_( &nrow, ia, ja, mask, perm, xls, ls );
+gennd( &nrow, ia, ja, mask, perm, xls, ls );
 FREE( mask ); FREE( xls ); FREE( ls );
 
 for (i=0; i<nrow; i++) perm[i]--;

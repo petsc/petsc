@@ -1,6 +1,4 @@
 /* genrcm.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -73,12 +71,7 @@
 /*                                                                        33.
 */
 /*<       SUBROUTINE  GENRCM ( NEQNS, XADJ, ADJNCY, PERM, MASK, XLS )        >*/
-#if defined(FORTRANCAPS)
-#define genrcm_ GENRCM
-#elif !defined(FORTRANUNDERSCORE)
-#define genrcm_ genrcm
-#endif
-/* Subroutine */ int genrcm_(int *neqns, int *xadj, int *adjncy, 
+/* Subroutine */ int genrcm(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *mask, int *xls)
 {
     /* System generated locals */
@@ -86,8 +79,8 @@
 
     /* Local variables */
     static int nlvl, root, i, ccsize;
-    extern /* Subroutine */ int fnroot_(int *, int *, int *, 
-	    int *, int *, int *, int *), rcm_(int *, 
+    extern /* Subroutine */ int fnroot(int *, int *, int *, 
+	    int *, int *, int *, int *), rcm(int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int num;
 
@@ -153,10 +146,10 @@
 /*             -----------------------------------------              
     60.*/
 /*<    >*/
-	fnroot_(&root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[
+	fnroot(&root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[
 		num]);
 /*<    >*/
-	rcm_(&root, &xadj[1], &adjncy[1], &mask[1], &perm[num], &ccsize, &xls[
+	rcm(&root, &xadj[1], &adjncy[1], &mask[1], &perm[num], &ccsize, &xls[
 		1]);
 /*<                NUM = NUM + CCSIZE                                        >*/
 	num += ccsize;

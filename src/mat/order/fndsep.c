@@ -1,6 +1,4 @@
 /* fndsep.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -71,12 +69,7 @@
 /*                                                                        32.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define fndsep_ FNDSEP
-#elif !defined(FORTRANUNDERSCORE)
-#define fndsep_ fndsep
-#endif
-/* Subroutine */ int fndsep_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int fndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {
     /* System generated locals */
@@ -85,7 +78,7 @@
     /* Local variables */
     static int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
-    extern /* Subroutine */ int fnroot_(int *, int *, int *, 
+    extern /* Subroutine */ int fnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int nbr;
 
@@ -113,7 +106,7 @@
     --xadj;
 
     /* Function Body */
-    fnroot_(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
+    fnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
 /*       ----------------------------------------------                   
 47.*/
 /*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN                   

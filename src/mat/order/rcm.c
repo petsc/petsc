@@ -1,6 +1,4 @@
 /* rcm.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -83,12 +81,7 @@
 /*                                                                        38.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define rcm_ RCM
-#elif !defined(FORTRANUNDERSCORE)
-#define rcm_ rcm
-#endif
-/* Subroutine */ int rcm_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int rcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {
     /* System generated locals */
@@ -96,7 +89,7 @@
 
     /* Local variables */
     static int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    extern /* Subroutine */ int degree_(int *, int *, int *, 
+    extern /* Subroutine */ int degree(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int lbegin, lvlend, nbr;
 
@@ -131,7 +124,7 @@
     --xadj;
 
     /* Function Body */
-    degree_(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
+    degree(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
 /*<          MASK(ROOT) = 0                                                  >*/
     mask[*root] = 0;
 /*<          IF ( CCSIZE .LE. 1 ) RETURN                                     >*/

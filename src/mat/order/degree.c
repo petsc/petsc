@@ -1,6 +1,4 @@
 /* degree.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -59,12 +57,7 @@
 /*                                                                        26.
 */
 /*<    >*/
-#if defined(FORTRANCAPS)
-#define degree_ DEGREE
-#elif !defined(FORTRANUNDERSCORE)
-#define degree_ degree
-#endif
-/* Subroutine */ int degree_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int degree(int *root, int *xadj, int *adjncy, 
 	int *mask, int *deg, int *ccsize, int *ls)
 {
     /* System generated locals */

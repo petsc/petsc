@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.5 1995/03/27 22:57:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -29,7 +29,7 @@ nbrhd  = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(nbrhd);
 qsize  = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(qsize);
 qlink  = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(qlink);
 /* WARNING - genqmd trashes ja */    
-genqmd_( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,
+genqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,
 	 qlink, &nofsub );
 FREE( deg ); FREE( marker ); FREE( rchset ); FREE( nbrhd ); FREE( qsize );
 FREE( qlink );

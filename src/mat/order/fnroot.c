@@ -1,6 +1,4 @@
 /* fnroot.f -- translated by f2c (version 19931217).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
 */
 
 #include "petsc.h"
@@ -71,12 +69,7 @@
 /*                                                                        32.
 */
 /*<       SUBROUTINE  FNROOT ( ROOT, XADJ, ADJNCY, MASK, NLVL, XLS, LS )     >*/
-#if defined(FORTRANCAPS)
-#define fnroot_ FNROOT
-#elif !defined(FORTRANUNDERSCORE)
-#define fnroot_ fnroot
-#endif
-/* Subroutine */ int fnroot_(int *root, int *xadj, int *adjncy, 
+/* Subroutine */ int fnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */
@@ -85,7 +78,7 @@
     /* Local variables */
     static int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
-    extern /* Subroutine */ int rootls_(int *, int *, int *, 
+    extern /* Subroutine */ int rootls(int *, int *, int *, 
 	    int *, int *, int *, int *);
 
 /*                                                                        
@@ -117,7 +110,7 @@
     --xadj;
 
     /* Function Body */
-    rootls_(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
+    rootls(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
 /*<          CCSIZE = XLS(NLVL+1) - 1                                        >*/
     ccsize = xls[*nlvl + 1] - 1;
 /*<          IF ( NLVL .EQ. 1 .OR. NLVL .EQ. CCSIZE ) RETURN                 >*/
@@ -184,7 +177,7 @@ L300:
 72.*/
 /*<   400    CALL  ROOTLS ( ROOT, XADJ, ADJNCY, MASK, NUNLVL, XLS, LS )      >*/
 L400:
-    rootls_(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
+    rootls(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
 /*<          IF (NUNLVL .LE. NLVL)  RETURN                                   >*/
     if (nunlvl <= *nlvl) {
 	return 0;
