@@ -6,6 +6,8 @@
 #include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
 #include "petscsys.h"
 
+EXTERN int VecInitializePackage(char *);
+
 typedef struct {
   int        N,n;            /* number of blocks */
   PetscTruth sorted;       /* are the blocks sorted? */
@@ -252,7 +254,14 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   PetscTruth sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
-  *is = 0;
+  PetscValidPointer(is);
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n) {PetscValidIntPointer(idx);}
+  *is = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
   PetscLogObjectCreate(Nindex);
   ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);

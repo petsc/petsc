@@ -5,6 +5,8 @@
 */
 #include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
 
+EXTERN int VecInitializePackage(char *);
+
 typedef struct {
   int N,n,first,step;
 } IS_Stride;
@@ -308,8 +310,12 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  *is = 0;
+  PetscValidPointer(is);
+  *is = PETSC_NULL;
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
   PetscLogObjectCreate(Nindex);

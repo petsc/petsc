@@ -4,6 +4,8 @@
 */
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
+EXTERN int VecInitializePackage(char *);
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_General" 
 int ISDuplicate_General(IS is,IS *newIS)
@@ -251,8 +253,11 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   PetscValidPointer(is);
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx);}
+  *is = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
 
-  *is = 0;
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
   PetscLogObjectCreate(Nindex);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
