@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.27 2000/10/11 19:24:56 hzhang Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.28 2000/10/16 19:54:11 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2231,12 +2231,103 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowMax_MPISBAIJ"
 int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 {
-  Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int          ierr;
+  Mat_MPISBAIJ  *a = (Mat_MPISBAIJ*)A->data;
+  int          ierr,i;
+  PetscReal    *va,*vb,atmp;
+  double       *work,*svalues,*rvalues;
+  Vec          vtmp;
+  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(a->B)->data;
+  int          bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
+  int          rank,size,*rowners,*rowners_bs,dest,count,tag,source;
+  Scalar       *ba;
+  MPI_Status   stat;
 
   PetscFunctionBegin;
-  /* if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block"); */
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
-  /* printf("GetRowMax is called\n"); */
+  ierr = VecGetArray(v,&va);CHKERRQ(ierr);  
+
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+
+  bs   = a->bs;
+  mbs  = a->mbs;
+  Mbs  = a->Mbs;
+  ba   = b->a;
+  bi   = b->i;
+  bj   = b->j;
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] M: %d, bs: %d, mbs: %d \n",rank,bs*Mbs,bs,mbs); 
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+
+  /* find ownerships */
+  rowners    = a->rowners;
+  rowners_bs = a->rowners_bs;
+  /*
+  for (i=0; i<size+1; i++) {
+    PetscPrintf(PETSC_COMM_SELF,"rowners[%d]: %d, rowners_bs: %d\n",i,rowners[i],rowners_bs[i]); 
+  } 
+  */
+
+  /* each proc creates an array to be distributed */
+  work    = (double*)malloc(bs*Mbs*sizeof(double));  
+  ierr  = PetscMemzero(work,bs*Mbs*sizeof(double));CHKERRQ(ierr);
+
+  /* row_max for B */
+  for (i=0; i<mbs; i++) {
+    ncols = bi[1] - bi[0]; bi++;
+    brow  = bs*i;
+    for (j=0; j<ncols; j++){
+      bcol = bs*(*bj); 
+      for (kcol=0; kcol<bs; kcol++){
+        col = bcol + kcol;      /* col index */
+        PetscPrintf(PETSC_COMM_SELF,"[%d], col: %d\n",rank,col);
+        for (krow=0; krow<bs; krow++){         
+          atmp = PetscAbsScalar(*ba); ba++;         
+          row = brow + krow;    /* row index */
+          /* printf("val[%d,%d]: %g\n",row,col,atmp); */
+          if (va[row] < atmp) va[row] = atmp;
+          if (work[col] < atmp) work[col] = atmp;
+        }
+      }
+      bj++;
+    }   
+  }
+  
+  /* send values to its owners */
+  if (rank != size-1){
+    for (dest=rank+1; dest<size; dest++){
+      svalues = work + rowners_bs[dest];
+      count = rowners[dest+1]-rowners[dest];
+      MPI_Send(svalues,count,MPI_DOUBLE_PRECISION,dest,rank,PETSC_COMM_WORLD); 
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends to [%d]\n",rank,dest); 
+    }
+    PetscSynchronizedFlush(PETSC_COMM_WORLD); 
+  }
+  
+  /* receive values */
+  if (rank != 0){
+    rvalues = work;
+    count = mbs*bs;
+    for (source=0; source<rank; source++){     
+      MPI_Recv(rvalues,count,MPI_DOUBLE_PRECISION,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);      
+      /* process values */     
+      for (i=0; i<count; i++){
+        if (va[i] < rvalues[i]) {
+          va[i] = rvalues[i];
+          PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] recv a larger val from [%d]\n",rank,stat.MPI_SOURCE);
+          PetscSynchronizedFlush(PETSC_COMM_WORLD);
+        }
+      }      
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] received from [%d] \n",rank,stat.MPI_SOURCE);   
+    }
+    PetscSynchronizedFlush(PETSC_COMM_WORLD); 
+  }
+
+  for (i=0; i<10000; i++) j=i; /* delay for print output */
+
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is done. \n",rank);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
+  free(work);
   PetscFunctionReturn(0);
 }
