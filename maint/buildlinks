@@ -25,4 +25,4 @@ else
         >>& $petscdir/maint/links$suffix.log \;
 endif
 echo "Finished building links from" $petscdir "to" $shadowdir "(`date`)" \
-     >> $petscdir/maint/links.log
+     >> $petscdir/maint/links$suffix.log
