@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.45 1996/09/14 03:34:44 curfman Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.46 1996/09/14 03:39:08 curfman Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -307,7 +307,7 @@ int PetscError(int line,char *dir,char *file,int number,char *message)
   else  return (*eh->handler)(line,dir,file,number,message,eh->ctx);
 }
 
-/*@
+/*@C
     PetscIntView - Prints an array of integers, useful for debugging.
 
   Input Parameters:
@@ -339,7 +339,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   return 0;
 }
 
-/*@
+/*@C
     PetscDoubleView - Prints an array of double, useful for debugging.
 
   Input Parameters:
