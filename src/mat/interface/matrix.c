@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.377 2000/08/01 20:01:52 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3740,8 +3740,13 @@ int MatGetType(Mat mat,MatType *type,char **name)
     matname[7] = "MATMPIDENSE";
     matname[8] = "MATSEQBAIJ";
     matname[9] = "MATMPIBAIJ";
+    matname[10] = "MATMPICSN";
+    matname[11] = "MATSEQCSN";
+    matname[12] = "MATMPIADJ";
+    matname[13] = "MATSEQSBAIJ";
+    matname[14] = "MATMPISBAIJ";
     
-    if (itype < 0 || itype > 9) *name = "Unknown matrix type";
+    if (itype < 0 || itype > 14) *name = "Unknown matrix type";
     else                        *name = matname[itype];
   }
   PetscFunctionReturn(0);
