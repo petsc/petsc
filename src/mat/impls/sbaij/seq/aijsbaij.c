@@ -166,3 +166,151 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
 }
 EXTERN_C_END
 
+#include "src/mat/impls/baij/seq/baij.h"
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqSBAI_SeqBAIJ"
+int MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+{
+  Mat          B;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqBAIJ  *b;
+  int          ierr,*ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,
+               *browlengths,nz,*browstart,itmp;
+  int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
+  PetscScalar  *av,*bv;
+
+  PetscFunctionBegin;
+  /* compute browlengths of newmat */
+  ierr = PetscMalloc(2*mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
+  browstart = browlengths + mbs;
+  for (i=0; i<mbs; i++) browlengths[i] = 0;
+  aj = a->j;
+  for (i=0; i<mbs; i++) {
+    nz = ai[i+1] - ai[i];
+    aj++; /* skip diagonal */
+    for (k=1; k<nz; k++) { /* no. of lower triangular blocks */
+      browlengths[*aj]++; aj++;
+    }
+    browlengths[i] += nz;   /* no. of upper triangular blocks */
+  }
+  
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,n,0,browlengths,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  
+  b  = (Mat_SeqBAIJ*)(B->data);
+  bi = b->i;
+  bj = b->j; 
+  bv = b->a; 
+
+  /* set b->i */
+  bi[0] = 0;
+  for (i=0; i<mbs; i++){
+    b->ilen[i]    = browlengths[i];
+    bi[i+1]       = bi[i] + browlengths[i]; 
+    browstart[i]  = bi[i];
+  }
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(1,"bi[mbs]: %d != 2*a->nz - mbs: %d\n",bi[mbs],2*a->nz - mbs);
+  
+  /* set b->j and b->a */
+  aj = a->j; av = a->a;
+  for (i=0; i<mbs; i++) {
+    /* diagonal block */
+    *(bj + browstart[i]) = *aj; aj++;
+    itmp = bs2*browstart[i];
+    for (k=0; k<bs2; k++){
+      *(bv + itmp + k) = *av; av++; 
+    } 
+    browstart[i]++;
+    
+    nz = ai[i+1] - ai[i] -1;
+    while (nz--){
+      /* lower triangular blocks */   
+      *(bj + browstart[*aj]) = i;
+      itmp = bs2*browstart[*aj];
+      for (k=0; k<bs2; k++){
+        *(bv + itmp + k) = *(av + k);
+      }
+      browstart[*aj]++;
+
+      /* upper triangular blocks */
+      *(bj + browstart[i]) = *aj; aj++;
+      itmp = bs2*browstart[i];
+      for (k=0; k<bs2; k++){
+        *(bv + itmp + k) = *av; av++;
+      }
+      browstart[i]++;
+    }
+  }
+  ierr = PetscFree(browlengths);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (*newmat == A) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
+int MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+{
+  Mat          B;
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data; 
+  Mat_SeqSBAIJ *b;
+  int          ierr,*ai=a->i,*aj,m=A->m,n=A->n,i,j,k,
+               *bi,*bj,*browlengths;
+  int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
+  PetscScalar  *av,*bv;
+
+  PetscFunctionBegin;
+  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (!a->diag){
+    ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr); 
+  }
+  
+  ierr = PetscMalloc(mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
+  for (i=0; i<mbs; i++) {
+    browlengths[i] = ai[i+1] - a->diag[i];
+  }
+
+  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m,n,PETSC_NULL,browlengths,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  
+  b  = (Mat_SeqSBAIJ*)(B->data);
+  bi = b->i;
+  bj = b->j;
+  bv = b->a;
+
+  bi[0] = 0;
+  for (i=0; i<mbs; i++) {
+    aj = a->j + a->diag[i];
+    av = a->a + (a->diag[i])*bs2;   
+    for (j=0; j<browlengths[i]; j++){
+      *bj = *aj; bj++; aj++; 
+      for (k=0; k<bs2; k++){
+        *bv = *av; bv++; av++;
+      }
+    }
+    bi[i+1]    = bi[i] + browlengths[i];
+    b->ilen[i] = browlengths[i];
+  }
+  ierr = PetscFree(browlengths);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (*newmat == A) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
