@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.2 1996/02/13 05:21:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.3 1996/02/13 23:29:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,7 @@ extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int**,int**);
 static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr, *ia, *ja,n,*idx,i;
+  int         ierr, *ia, *ja,n = a->mbs,*idx,i;
 
   /* 
      this is tacky: In the future when we have written special factorization
@@ -25,7 +25,6 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
      stride index set instead of the general one.
   */
   if (type  == ORDER_NATURAL) {
-    n = a->n;
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
     ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
@@ -38,13 +37,35 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
     return 0;
   }
 
-  ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,a->indexshift,&ia,&ja);CHKERRQ(ierr);
-  ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
+  ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,&ia,&ja);CHKERRQ(ierr);
+  ierr = MatGetReordering_IJ(n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
 
   PetscFree(ia); PetscFree(ja);
   return 0; 
 }
 
+/*
+     Adds diagonal pointers to sparse matrix structure.
+*/
+
+int MatMarkDiag_SeqBAIJ(Mat A)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
+  int         i,j, *diag, m = a->m;
+
+  diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
+  PLogObjectMemory(A,(m+1)*sizeof(int));
+  for ( i=0; i<a->m; i++ ) {
+    for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+      if (a->j[j] == i) {
+        diag[i] = j;
+        break;
+      }
+    }
+  }
+  a->diag = diag;
+  return 0;
+}
 
 #include "draw.h"
 #include "pinclude/pviewer.h"
@@ -57,7 +78,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   Scalar      *aa;
 
   ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
-  col_lens = (int *) PetscMalloc( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens = (int *) PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = a->m;
   col_lens[2] = a->n;
@@ -76,20 +97,15 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   /* store column indices (zero start index) */
   jj = (int *) PetscMalloc( a->nz*bs*bs*sizeof(int) ); CHKPTRQ(jj);
   count = 0;
-  if (!a->indexshift) {
-    for ( i=0; i<a->mbs; i++ ) {
-      for ( j=0; j<bs; j++ ) {
-        for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
-          for ( l=0; l<bs; l++ ) {
-            jj[count++] = bs*a->j[k] + l;
-/* printf(" count %d jj %d row %d\n",count-1,jj[count-1],bs*i+j);*/
-          }
+  for ( i=0; i<a->mbs; i++ ) {
+    for ( j=0; j<bs; j++ ) {
+      for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
+        for ( l=0; l<bs; l++ ) {
+          jj[count++] = bs*a->j[k] + l;
         }
       }
     }
-  } else {
-    SETERRQ(1,"Not yet done");
-  }  
+  }
   ierr = SYWrite(fd,jj,bs*bs*a->nz,SYINT,0); CHKERRQ(ierr);
   PetscFree(jj);
 
@@ -112,13 +128,13 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 
 static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
-  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr, i,j, shift = a->indexshift,format,bs = a->bs,k,l;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr, i,j,format,bs = a->bs,k,l;
   FILE        *fd;
   char        *outputname;
 
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerFileGetOutputname_Private(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (format == FILE_FORMAT_INFO) {
     /* no need to print additional information */ ;
@@ -132,7 +148,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
-            fprintf(fd," %d %g",bs*a->j[k]+l-shift,a->a[bs*bs*k + l*bs + j]);
+            fprintf(fd," %d %g",bs*a->j[k]+l,a->a[bs*bs*k + l*bs + j]);
           }
         }
         fprintf(fd,"\n");
@@ -173,7 +189,7 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 static int MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
-  PetscMemzero(a->a,a->bs*a->bs*(a->i[a->mbs]+a->indexshift)*sizeof(Scalar));
+  PetscMemzero(a->a,a->bs*a->bs*a->i[a->mbs]*sizeof(Scalar));
   return 0;
 }
 
@@ -191,6 +207,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
   if (a->ilen) PetscFree(a->ilen);
   if (a->imax) PetscFree(a->imax);
   if (a->solve_work) PetscFree(a->solve_work);
+  if (a->mult_work) PetscFree(a->mult_work);
   PetscFree(a); 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -232,8 +249,6 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
   int             mbs = a->mbs, m = a->m, i, *idx,*ii;
   int             bs = a->bs,j,n,bs2 = bs*bs;
 
-  if (a->indexshift) SETERRQ(PETSC_ERR_SUP,"MatMult_SeqBAIJ:index shift no");
-
   VecGetArray(xx,&xg); x = xg;  VecGetArray(yy,&yg); y = yg;
   PetscMemzero(y,m*sizeof(Scalar));
   x     = x;
@@ -252,7 +267,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       break;
     case 2:
       for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; /* number of blocks in row */
+        n  = ii[1] - ii[0]; ii++; 
         sum1 = 0.0; sum2 = 0.0;
         for ( j=0; j<n; j++ ) {
           xb = x + 2*(*idx++); x1 = xb[0]; x2 = xb[1];
@@ -266,7 +281,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       break;
     case 3:
       for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; /* number of blocks in row */
+        n  = ii[1] - ii[0]; ii++; 
         sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
         for ( j=0; j<n; j++ ) {
           xb = x + 3*(*idx++); x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
@@ -281,7 +296,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       break;
     case 4:
       for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; /* number of blocks in row */
+        n  = ii[1] - ii[0]; ii++; 
         sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
         for ( j=0; j<n; j++ ) {
           xb = x + 4*(*idx++);
@@ -298,7 +313,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       break;
     case 5:
       for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; /* number of blocks in row */
+        n  = ii[1] - ii[0]; ii++; 
         sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
         for ( j=0; j<n; j++ ) {
           xb = x + 5*(*idx++);
@@ -316,15 +331,23 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       break;
       /* block sizes larger then 5 by 5 are handled by BLAS */
     default: {
-      int  _One = 1; Scalar _DOne = 1.0;
+      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
+      if (!a->mult_work) {
+        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
+        CHKPTRQ(a->mult_work);
+      }
+      work = a->mult_work;
       for ( i=0; i<mbs; i++ ) {
-        n    = ii[1] - ii[0]; ii++; /* number of blocks in row */
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        workt = work;
         for ( j=0; j<n; j++ ) {
           xb = x + bs*(*idx++);
-          /* do dense mat-vec product */
-          LAgemv_("N",&bs,&bs,&_DOne,v,&bs,xb,&_One,&_DOne,y,&_One);
-          v += bs2;
+          for ( k=0; k<bs; k++ ) workt[k] = xb[k];
+          workt += bs;
         }
+        LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,y,&_One);
+        v += n*bs2;
         y += bs;
       }
     }
@@ -333,12 +356,12 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  *nz      = a->bs*a->bs*a->nz;
-  *nzalloc = a->maxnz;
-  *mem     = (int)A->mem;
+  *nz  = a->bs*a->bs*a->nz;
+  *nza = a->maxnz;
+  *mem = (int)A->mem;
   return 0;
 }
 
@@ -384,7 +407,6 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   return 0;
 }
 
-
 /*
      note: This can only work for identity for row and col. It would 
    be good to check this and otherwise generate an error.
@@ -392,8 +414,8 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
 static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
-  int         ierr;
   Mat         outA;
+  int         ierr;
 
   if (fill != 0) SETERRQ(1,"MatILUFactor_SeqBAIJ:Only fill=0 supported");
 
@@ -402,18 +424,15 @@ static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   a->row        = row;
   a->col        = col;
 
-  a->solve_work = (Scalar *) PetscMalloc((a->m+1)*sizeof(Scalar));CHKPTRQ(a->solve_work);
+  a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
 
-/*
   if (!a->diag) {
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric_SeqBAIJ(inA,&outA); CHKERRQ(ierr);
-*/
   return 0;
 }
 
-#include "pinclude/plapack.h"
 static int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
@@ -429,9 +448,6 @@ int MatPrintHelp_SeqBAIJ(Mat A)
   MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
-  MPIU_printf(comm," Options for MATSeqBAIJ and MATMPIAIJ matrix formats (the defaults):\n");
-  MPIU_printf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
-  MPIU_printf(comm,"  -mat_aij_oneindex - internal indices begin at 1 instead of the default 0.\n");
   return 0;
 }
 /* -------------------------------------------------------------------*/
@@ -439,9 +455,9 @@ static struct _MatOps MatOps = {0,
        0,0,
        MatMult_SeqBAIJ,0,
        0,0,
-       /*MatSolve_SeqBAIJ*/ 0,0,
+       MatSolve_SeqBAIJ,0,
        0,0,
-       /*MatLUFactor_SeqBAIJ*/0,0,
+       MatLUFactor_SeqBAIJ,0,
        0,
        0,
        MatGetInfo_SeqBAIJ,0,
@@ -450,9 +466,9 @@ static struct _MatOps MatOps = {0,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
        MatGetReordering_SeqBAIJ,
-       /*MatLUFactorSymbolic_SeqBAIJ */0,/* MatLUFactorNumeric_SeqBAIJ*/ 0,0,0,
+       MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ,0,0,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
-       /* MatILUFactorSymbolic_SeqBAIJ */ 0,0,
+       MatILUFactorSymbolic_SeqBAIJ,0,
        0,0,/*MatConvert_SeqBAIJ*/ 0,
        0,0,
        MatConvertSameType_SeqBAIJ,0,0,
@@ -511,21 +527,16 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqBAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold, \
-                          &flg); CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
-  b->indexshift       = 0;
   b->reallocs         = 0;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_oneindex", &flg); CHKERRQ(ierr);
-  if (flg) b->indexshift = -1;
   
   b->m       = m;
   b->mbs     = mbs;
   b->n       = n;
   b->imax    = (int *) PetscMalloc( (mbs+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
-    if (nz == PETSC_DEFAULT) nz = 10;
+    if (nz == PETSC_DEFAULT) nz = 5;
     else if (nz <= 0)        nz = 1;
     for ( i=0; i<mbs; i++ ) b->imax[i] = nz;
     nz = nz*mbs;
@@ -544,7 +555,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->i  = b->j + nz;
   b->singlemalloc = 1;
 
-  b->i[0] = -b->indexshift;
+  b->i[0] = 0;
   for (i=1; i<mbs+1; i++) {
     b->i[i] = b->i[i-1] + b->imax[i-1];
   }
@@ -563,6 +574,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->nonew            = 0;
   b->diag             = 0;
   b->solve_work       = 0;
+  b->mult_work        = 0;
   b->spptr            = 0;
 
   *A = B;
@@ -575,7 +587,9 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat         C;
   Mat_SeqBAIJ *c,*a = (Mat_SeqBAIJ *) A->data;
-  int         i,len, shift = a->indexshift, mbs = a->mbs, bs = a->bs;
+  int         i,len, mbs = a->mbs, bs = a->bs,nz = a->nz;
+
+  if (a->i[mbs] != nz) SETERRQ(1,"MatConvertSameType_SeqBAIJ:Corrupt matrix");
 
   *B = 0;
   PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm);
@@ -587,7 +601,6 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   C->factor     = A->factor;
   c->row        = 0;
   c->col        = 0;
-  c->indexshift = shift;
   C->assembled  = PETSC_TRUE;
 
   c->m          = a->m;
@@ -605,15 +618,15 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
 
   /* allocate the matrix space */
   c->singlemalloc = 1;
-  len   = (mbs+1)*sizeof(int)+(a->i[mbs])*(bs*bs*sizeof(Scalar)+sizeof(int));
+  len   = (mbs+1)*sizeof(int) + nz*(bs*bs*sizeof(Scalar) + sizeof(int));
   c->a  = (Scalar *) PetscMalloc( len ); CHKPTRQ(c->a);
-  c->j  = (int *) (c->a + a->i[mbs]*bs*bs + shift);
-  c->i  = c->j + a->i[mbs] + shift;
+  c->j  = (int *) (c->a + nz*bs*bs);
+  c->i  = c->j + nz;
   PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(int));
   if (mbs > 0) {
-    PetscMemcpy(c->j,a->j,(a->i[mbs]+shift)*sizeof(int));
+    PetscMemcpy(c->j,a->j,nz*sizeof(int));
     if (cpvalues == COPY_VALUES) {
-      PetscMemcpy(c->a,a->a,(bs*bs*a->i[mbs]+shift)*sizeof(Scalar));
+      PetscMemcpy(c->a,a->a,bs*bs*nz*sizeof(Scalar));
     }
   }
 
@@ -643,21 +656,22 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
 {
   Mat_SeqBAIJ  *a;
   Mat          B;
-  int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,shift,bs=1,flg;
+  int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1,flg;
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
-  int          *masked, nmask,tmp;
+  int          *masked, nmask,tmp,ishift,bs2;
   Scalar       *aa;
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
+  bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBAIJ:view must have one processor");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBAIJ:not Mat object in file");
+  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBAIJ:not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (M != N) SETERRQ(1,"MatLoad_SeqBAIJ:Can only do square matrices");
@@ -685,7 +699,7 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
   for ( i=0; i<extra_rows; i++ ) jj[nz+i] = M+i;
 
   /* loop over row lengths determining block row lengths */
-  browlengths = (int *) PetscMalloc( mbs*sizeof(int) );CHKPTRQ(browlengths);
+  browlengths = (int *) PetscMalloc(mbs*sizeof(int));CHKPTRQ(browlengths);
   PetscMemzero(browlengths,mbs*sizeof(int));
   mask   = (int *) PetscMalloc( 2*mbs*sizeof(int) ); CHKPTRQ(mask);
   PetscMemzero(mask,mbs*sizeof(int));
@@ -711,10 +725,9 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
          CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBAIJ *) B->data;
-  shift = a->indexshift;
 
   /* set matrix "i" values */
-  a->i[0] = -shift;
+  a->i[0] = 0;
   for ( i=1; i<= mbs; i++ ) {
     a->i[i]      = a->i[i-1] + browlengths[i-1];
     a->ilen[i-1] = browlengths[i-1];
@@ -723,7 +736,7 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
   for ( i=0; i<mbs; i++ ) a->nz += browlengths[i];
 
   /* read in nonzero values */
-  aa = (Scalar *) PetscMalloc( (nz+extra_rows)*sizeof(Scalar) ); CHKPTRQ(aa);
+  aa = (Scalar *) PetscMalloc((nz+extra_rows)*sizeof(Scalar));CHKPTRQ(aa);
   ierr = SYRead(fd,aa,nz,SYSCALAR); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) aa[nz+i] = 1.0;
 
@@ -740,21 +753,24 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
       }
       rowcount++;
     }
+    /* sort the masked values */
+    SYIsort(nmask,masked);
+
     /* set "j" values into matrix */
     maskcount = 1;
     for ( j=0; j<nmask; j++ ) {
       a->j[jcount++]  = masked[j];
-      mask[masked[j]] = maskcount++; /* what nonzero block in this row is j */
+      mask[masked[j]] = maskcount++; 
     }
     /* set "a" values into matrix */
+    ishift = bs2*a->i[i];
     for ( j=0; j<bs; j++ ) {
       kmax = rowlengths[i*bs+j];
       for ( k=0; k<kmax; k++ ) {
-        block  = mask[jj[nzcountb]/bs] - 1;
-        point  = jj[nzcountb] - bs*(jj[nzcountb]/bs);
-        idx = bs*bs*(a->i[i] + block) + j + bs*(point);
-	/* printf("block row %d subrow %d cold %d block %d idx %d val %g a->i[i] %d point %d\n",i,j,k,block,idx,
-aa[nzcountb],a->i[i],point); */
+        tmp    = jj[nzcountb]/bs ;
+        block  = mask[tmp] - 1;
+        point  = jj[nzcountb] - bs*tmp;
+        idx    = ishift + bs2*block + j + bs*point;
         a->a[idx] = aa[nzcountb++];
       }
     }
@@ -770,6 +786,46 @@ aa[nzcountb],a->i[i],point); */
   PetscFree(mask);
 
   B->assembled = PETSC_TRUE;
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(B,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
+    ierr = MatView(B,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = MatView(B,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_MATLAB,"M");CHKERRQ(ierr);
+    ierr = MatView(B,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Draw    win;
+    ierr = DrawOpenX(B->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
+    ierr = MatView(B,(Viewer)win); CHKERRQ(ierr);
+    ierr = DrawSyncFlush(win); CHKERRQ(ierr);
+    ierr = DrawDestroy(win); CHKERRQ(ierr);
+  }
   return 0;
 }
 
