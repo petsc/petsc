@@ -3,9 +3,9 @@
 #include "src/snes/impls/ls/ls.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetLineSeachParams"
+#define __FUNCT__ "SNESSetLineSearchParams"
 /*@C
-   SNESSetLineSearchParams - Sets the parameters associated with the line search
+   SNESLineSearchSetParams - Sets the parameters associated with the line search
    routine in the Newton-based method SNESLS.
 
    Collective on SNES
@@ -28,9 +28,9 @@
 
 .keywords: SNES, nonlinear, set, line search params
 
-.seealso: SNESGetLineSearchParams(), SNESSetLineSearch()
+.seealso: SNESLineSearchGetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
   SNES_LS *ls;
 
@@ -45,9 +45,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchParams(SNES snes,PetscReal a
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetLineSeachParams"
+#define __FUNCT__ "SNESGetLineSearchParams"
 /*@C
-   SNESGetLineSearchParams - Gets the parameters associated with the line search
+   SNESLineSearchGetParams - Gets the parameters associated with the line search
      routine in the Newton-based method SNESLS.
 
    Not collective, but any processor will return the same values
@@ -70,9 +70,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchParams(SNES snes,PetscReal a
 
 .keywords: SNES, nonlinear, set, line search parameters
 
-.seealso: SNESSetLineSearchParams(), SNESSetLineSearch()
+.seealso: SNESLineSearchSetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
 {
   SNES_LS *ls;
 

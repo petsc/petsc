@@ -151,7 +151,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls .eq. PETSC_TRUE) then
-        call SNESSetLineSearch(snes,MyLineSearch,                       &
+        call SNESLineSearchSet(snes,MyLineSearch,                       &
      &                         PETSC_NULL_OBJECT,ierr)
       endif
 

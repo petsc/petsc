@@ -48,14 +48,14 @@
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgetjacobian_                 SNESGETJACOBIAN
 #define matsnesmfsetfunction_            MATSNESMFSETFUNCTION
-#define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
-#define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
-#define snessetlinesearch_               SNESSETLINESEARCH
+#define sneslinesearchsetparams_         SNESLINESEARCHSETPARAMS
+#define sneslinesearchgetparams_         SNESLINESEARCHGETPARAMS
+#define sneslinesearchset_               SNESLINESEARCHSET
 #define sneslinesearchsetpostcheck_      SNESLINESEARCHSETPOSTCHECK
-#define snescubiclinesearch_             SNESCUBICLINESEARCH
-#define snesquadraticlinesearch_         SNESQUADRATICLINESEARCH
-#define snesnolinesearch_                SNESNOLINESEARCH
-#define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
+#define sneslinesearchcubic_             SNESLINESEARCHCUBIC
+#define sneslinesearchquadratic_         SNESLINESEARCHQUADRATIC
+#define sneslinesearchno_                SNESLINESEARCHNO
+#define sneslinesearchnonorms_           SNESLINESEARCHNONORMS
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgsetsnes_                     dmmgsetsnes
@@ -65,13 +65,13 @@
 #define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
 #define snesdaformfunction_              snesdaformfunction
-#define snescubiclinesearch_             snescubiclinesearch     
-#define snesquadraticlinesearch_         snesquadraticlinesearch    
-#define snesnolinesearch_                snesnolinesearch    
-#define snesnolinesearchnonorms_         snesnolinesearchnonorms    
-#define snessetlinesearchparams_         snessetlinesearchparams
-#define snesgetlinesearchparams_         snesgetlinesearchparams
-#define snessetlinesearch_               snessetlinesearch
+#define sneslinesearchcubic_             sneslinesearchcubic     
+#define sneslinesearchquadratic_         sneslinesearchquadratic    
+#define sneslinesearchno_                sneslinesearchno    
+#define sneslinesearchnonorms_           sneslinesearchnonorms    
+#define sneslinesearchsetparams_         sneslinesearchsetparams
+#define sneslinesearchgetparams_         sneslinesearchgetparams
+#define sneslinesearchset_               sneslinesearchset
 #define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
 #define snesconverged_tr_                snesconverged_tr
 #define snesconverged_ls_                snesconverged_ls
@@ -237,17 +237,17 @@ void PETSC_STDCALL snesgetconvergedreason_(SNES *snes,SNESConvergedReason *r,Pet
   *ierr = SNESGetConvergedReason(*snes,r);
 }
 
-void PETSC_STDCALL snessetlinesearchparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
+void PETSC_STDCALL sneslinesearchsetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
 {
-  *ierr = SNESSetLineSearchParams(*snes,*alpha,*maxstep,*steptol);
+  *ierr = SNESLineSearchSetParams(*snes,*alpha,*maxstep,*steptol);
 }
 
-void PETSC_STDCALL snesgetlinesearchparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
+void PETSC_STDCALL sneslinesearchgetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLREAL(alpha);
   CHKFORTRANNULLREAL(maxstep);
   CHKFORTRANNULLREAL(steptol);
-  *ierr = SNESGetLineSearchParams(*snes,alpha,maxstep,steptol);
+  *ierr = SNESLineSearchGetParams(*snes,alpha,maxstep,steptol);
 }
 
 /*  func is currently ignored from Fortran */
@@ -350,41 +350,41 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
 }
 
 /* -----------------------------------------------------------------------------------------------------*/
-void snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
+void sneslinesearchcubic_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
                                         PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
-  *ierr = SNESCubicLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
+  *ierr = SNESLineSearchCubic(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void snesquadraticlinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
+void sneslinesearchquadratic_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
                                         PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
-  *ierr = SNESQuadraticLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
+  *ierr = SNESLineSearchQuadratic(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void snesnolinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
+void sneslinesearchno_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
                                         PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
-  *ierr = SNESNoLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
+  *ierr = SNESLineSearchNo(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
+void sneslinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
                                         PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
-  *ierr = SNESNoLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
+  *ierr = SNESLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 
 
-void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL sneslinesearchset_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   if ((FCNVOID)f == (FCNVOID)snescubiclinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,ctx);
+    *ierr = SNESLineSearchSet(*snes,SNESLineSearchCubic,ctx);
   } else if ((FCNVOID)f == (FCNVOID)snesquadraticlinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESQuadraticLineSearch,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)snesnolinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearch,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)snesnolinesearchnonorms_) {
-    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearchNoNorms,ctx);
+    *ierr = SNESLineSearchSet(*snes,SNESLineSearchQuadratic,ctx);
+  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchno_) {
+    *ierr = SNESLineSearchSet(*snes,SNESLineSearchNo,ctx);
+  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchnonorms_) {
+    *ierr = SNESLineSearchSet(*snes,SNESLineSearchNoNorms,ctx);
   } else {
     f73 = f;
-    *ierr = SNESSetLineSearch(*snes,OurSNESLineSearch,ctx);
+    *ierr = SNESLineSearchSet(*snes,OurSNESLineSearch,ctx);
   }
 }
 
