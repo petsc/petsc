@@ -561,7 +561,7 @@ if test -z "$BMAKEDIR" ; then
     echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
   fi
 else 
-  if test -z "$PETSC_ARCH" -o  "$PETSC_ARCH" != "$BMAKEDIR" ; then
+  if test -z "$PETSC_ARCH_SET" -o  "$PETSC_ARCH" != "$BMAKEDIR" ; then
     echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
   fi
 fi
