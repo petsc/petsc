@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.76 1996/02/24 05:33:04 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.77 1996/02/26 18:05:53 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -61,193 +61,6 @@ int PLogInfo(PetscObject obj,char *format,...)
 
 /* -------------------------------------------------------------------*/
 #if defined(PETSC_LOG)
-#if defined(HAVE_MPE)
-#include "mpe.h"
-#define MPEBEGIN    1000 
-static int mpeflg[] = { 1,1,1,1,1,  /* 0 - 24*/
-                        1,1,1,1,1,
-                        1,1,1,1,1,
-                        1,1,1,1,1,
-                        1,1,1,1,1,
-                        0,1,1,1,1,  /* 25 -49 */
-                        1,1,1,1,1,
-                        0,0,0,0,0,
-                        1,1,1,1,1,
-                        1,1,1,1,1,
-                        1,1,1,1,1, /* 50 - 74 */
-                        1,1,1,1,1,
-                        1,1,1,1,0,
-                        0,0,0,0,0,
-                        1,1,1,1,0,
-                        1,1,1,1,0, /* 75 - 99 */
-                        1,1,1,1,1,
-                        1,1,0,0,0,
-                        1,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0, /* 100 - 124 */ 
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0, /* 125 - 149 */
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0, /* 150 - 174 */
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0, /* 175 - 199 */
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0,
-                        0,0,0,0,0};
-
-
-static char *(color[]) = {"AliceBlue	  ",
-                          "BlueViolet	  ",
-                          "CadetBlue	  ",
-                          "CornflowerBlue ",
-                          "DarkGoldenrod  ",
-                          "DarkGreen	  ",
-                          "DarkKhaki	  ",
-                          "DarkOliveGreen ",
-                          "DarkOrange	  ",
-                          "DarkOrchid	  ",
-                          "DarkSeaGreen	  ",
-                          "DarkSlateGray  ",
-                          "DarkTurquoise  ",
-                          "DeepPink	  ",
-                          "DeepSkyBlue	  ",
-                          "DimGray	  ", 
-                          "DodgerBlue	  ",
-                          "GreenYellow	  ",
-                          "HotPink	  ",
-                          "IndianRed	  ",
-                          "LavenderBlush  ",
-                          "LawnGreen	  ",
-                          "LemonChiffon	  ", 
-                          "LightCoral	  ",
-                          "LightCyan	  ",
-                          "LightPink	  ",
-                          "LightSalmon	  ",
-                          "LightSlateGray ",
-                          "LightYellow	  ",
-                          "LimeGreen	  ",
-                          "MediumPurple	  ",
-                          "MediumSeaGreen ",
-                          "MediumSlateBlue",
-                          "MidnightBlue	  ",
-                          "MintCream	  ",
-                          "MistyRose	  ",
-                          "NavajoWhite	  ",
-                          "NavyBlue	  ",
-                          "OliveDrab	  ",
-                          "OrangeRed	  ",
-                          "PaleGoldenrod  ",
-                          "PaleVioletRed  ",
-                          "PapayaWhip	",
-                          "PeachPuff	  ",
-                          "RosyBrown	  ",
-                          "SaddleBrown	  ",
-                          "SpringGreen	  ",
-                          "SteelBlue	  ",
-                          "VioletRed	  ",
-                          "beige	  ",
-                          "chocolate	  ",
-                          "coral	  ",
-                          "gold		  ",
-                          "magenta	  ",
-                          "maroon	  ",
-                          "orchid	  ",
-                          "pink		  ",
-                          "plum		  ",
-                          "red		  ",
-                          "tan		  ",
-                          "tomato	  ",
-                          "violet	  ",
-                          "wheat	  ",
-                          "yellow	  ",
-                          "AliceBlue	  ",
-                          "BlueViolet	  ",
-                          "CadetBlue	  ",
-                          "CornflowerBlue ",
-                          "DarkGoldenrod  ",
-                          "DarkGreen	  ",
-                          "DarkKhaki	  ",
-                          "DarkOliveGreen ",
-                          "DarkOrange	  ",
-                          "DarkOrchid	  ",
-                          "DarkSeaGreen	  ",
-                          "DarkSlateGray  ",
-                          "DarkTurquoise  ",
-                          "DeepPink	  ",
-                          "DeepSkyBlue	  ",
-                          "DimGray	  ", 
-                          "DodgerBlue	  ",
-                          "GreenYellow	  ",
-                          "HotPink	  ",
-                          "IndianRed	  ",
-                          "LavenderBlush  ",
-                          "LawnGreen	  ",
-                          "LemonChiffon	  ", 
-                          "LightCoral	  ",
-                          "LightCyan	  ",
-                          "LightPink	  ",
-                          "LightSalmon	  ",
-                          "LightSlateGray ",
-                          "LightYellow	  ",
-                          "LimeGreen	  ",
-                          "MediumPurple	  ",
-                          "MediumSeaGreen ",
-                          "MediumSlateBlue",
-                          "MidnightBlue	  ",
-                          "MintCream	  ",
-                          "MistyRose	  ",
-                          "NavajoWhite	  ",
-                          "NavyBlue	  ",
-                          "OliveDrab	  ",
-                          "OrangeRed	  ",
-                          "PaleGoldenrod  ",
-                          "PaleVioletRed  ",
-                          "PapayaWhip	",
-                          "PeachPuff	  ",
-                          "RosyBrown	  ",
-                          "SaddleBrown	  ",
-                          "SpringGreen	  ",
-                          "SteelBlue	  ",
-                          "VioletRed	  ",
-                          "beige	  ",
-                          "chocolate	  ",
-                          "coral	  ",
-                          "gold		  ",
-                          "magenta	  ",
-                          "maroon	  ",
-                          "orchid	  ",
-                          "pink		  ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," ",
-                          " "," "," "," "," " };
-#endif
-
 static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
 
 static char *(oname[]) = {"Viewer           ",
@@ -268,7 +81,8 @@ static char *(oname[]) = {"Viewer           ",
                           "                 ",
                           "                 ",
 			  "                 "};
-static char *(name[]) = {"MatMult         ",
+
+char *(PLogEventName[]) = {"MatMult         ",
                          "MatMatFreeMult  ",
                          "MatAssemblyBegin",
                          "MatAssemblyEnd  ",
@@ -389,7 +203,6 @@ static char *(name[]) = {"MatMult         ",
 #define DESTROY      1
 #define ACTIONBEGIN  2
 #define ACTIONEND    3
-
 
 /*
     flops contains cumulative flops 
@@ -660,41 +473,6 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   return 0;
 }
 /*
-    Event begin logger with complete logging along with upshot loging
-*/
-#if defined(HAVE_MPE)
-int plballup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
-{
- double ltime;
- if (nevents >= eventsspace) {
-    Events *tmp;
-    double end,start;
-    PetscTime(start);
-    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    free(events);
-    events = tmp; eventsspace += CHUNCK;
-    PetscTime(end); BaseTime += (end - start);
-  }
-  PetscTime(ltime);
-  events[nevents].time = ltime - BaseTime;
-  events[nevents].id1     = o1->id;
-  if (o2) events[nevents].id2     = o2->id; else events[nevents].id2 = -1;
-  if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
-  events[nevents].type   = event;
-  events[nevents].cookie = 0;
-  events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents++].event= ACTIONBEGIN;
-  if (t != 1) return 0;
-  EventsType[EventsStage][event][COUNT]++;
-  EventsType[EventsStage][event][TIME]  -= ltime;
-  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
-  return 0;
-}
-#endif
-/*
      Event end logger with complete logging
 */
 int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
@@ -726,40 +504,6 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   return 0;
 }
 /*
-     Event end logger with complete logging with upshot loging
-*/
-#if defined(HAVE_MPE)
-int pleallup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
-{
- double ltime;
- if (nevents >= eventsspace) {
-    Events *tmp;
-    double end,start;
-    PetscTime(start);
-    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    free(events);
-    events = tmp; eventsspace += CHUNCK;
-    PetscTime(end); BaseTime += (end - start);
-  }
-  PetscTime(ltime);
-  events[nevents].time   = ltime - BaseTime;
-  events[nevents].id1    = o1->id;
-  if (o2) events[nevents].id2    = o2->id; else events[nevents].id2 = -1;
-  if (o3) events[nevents].id3    = o3->id; else events[nevents].id3 = -1;
-  events[nevents].type   = event;
-  events[nevents].cookie = 0;
-  events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents++].event= ACTIONEND;
-  if (t != 1) return 0;
-  EventsType[EventsStage][event][TIME] += ltime;
-  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
-  return 0;
-}
-#endif
-/*
      Default event begin logger
 */
 int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
@@ -770,20 +514,6 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
   return 0;
 }
-/*
-     Default event begin logger with upshot loging 
-*/
-#if defined(HAVE_MPE)
-int plbup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
-{
-  if (t != 1) return 0;
-  EventsType[EventsStage][event][COUNT]++;
-  PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
-  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
-  return 0;
-}
-#endif
 
 /*
      Default event end logger
@@ -795,19 +525,6 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
   return 0;
 }
-/*
-     Default event end logger with upshot loging
-*/
-#if defined(HAVE_MPE)
-int pleup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
-{
-  if (t != 1) return 0;
-  PetscTimeAdd(EventsType[EventsStage][event][TIME]);
-  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
-  return 0;
-}
-#endif
 
 int PLogObjectState(PetscObject obj,char *format,...)
 {
@@ -851,74 +568,17 @@ int PLogAllBegin()
   return 0;
 }
 
-#if defined(HAVE_MPE)
-/*@C
-   PLogAllUpshotBegin - Turns on extensive logging of objects and events. Logs 
-   all events. This creates large log files and slows the program down.
-
-   Options Database Keys:
-$  -log_all : Prints extensive log information (for code compiled
-$      with PETSC_LOG)
-
-   Notes:
-   A related routine is PLogBegin (with the options key -log), which is 
-   intended for production runs since it logs only flop rates and object
-   creation (and shouldn't significantly slow the programs).
-
-.keywords: log, all, begin
-
-.seealso: PLogDump(), PLogUpshotBegin()
-@*/
-int PLogAllUpshotBegin()
-{
-  int i, proc_no;
-  
-  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC    = phc;
-  _PHD    = phd;
-  _PLB    = plballup;
-  _PLE    = pleallup;
-  /* all processors sync here for more consistent logging */
-  MPI_Barrier(MPI_COMM_WORLD);
-  PetscTime(BaseTime);
-  PLogStagePush(0);
-  
-  /* Do MPE initialization */
-  MPE_Init_log();
-  MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
-  if (!proc_no) {
-    for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
-      if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
-  }
-  return 0;
-}
-#endif
-
 /*@C
    PLogDestroy - Destroys the object and event logging data and resets the 
    global counters. 
 
    Notes:
-   This routine should be employed when the user wants to dump summary 
-   information for multiple segments of code within one PETSc program.  
-
-   Example of Usage:
-   If the option -log_sumary is used to run the program containing the 
-   following code, then 2 sets of summary data will be printed (one during 
-   PLogPrint and one during PetscFinalize, which in turn calls PLogPrint).
-$
-$     PetscInitialize(int *argc,char ***args,0,0,0);
-$     [section 1 of code]
-$     PLogPrint(MPI_COMM_WORLD,stdout);
-$     PLogDestroy();
-$     PLogBegin();
-$     [section 2 of code]
-$     PetscFinalize();
+   This routine should not usually be used by programmers. Instead employ 
+   PLogStagePush() and PLogStagePop().
 
 .keywords: log, destroy
 
-.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
+.seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogStagePush(), PlogStagePop()
 @*/
 int PLogDestroy()
 {
@@ -935,13 +595,6 @@ int PLogDestroy()
   nobjects         = 0;
   nevents          = 0;
   ObjectsDestroyed = 0;
-#if defined(HAVE_MPE)
-  {
-    int ierr,flg;
-    ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &flg); CHKERRQ(ierr);
-    if(flg) { MPE_Finish_log("upshot.log"); }
-  }
-#endif
   return 0;
 }
 
@@ -958,7 +611,7 @@ $      to screen (for code compiled with PETSC_LOG)
 
 .keywords: log, begin
 
-.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
+.seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary()
 @*/
 int PLogBegin()
 {
@@ -974,48 +627,6 @@ int PLogBegin()
   PLogStagePush(0);
   return 0;
 }
-
-#if defined(HAVE_MPE)
-/*@C
-    PLogUpshotBegin - Turns on logging of objects and events. This logs flop
-    rates and object creation and should not slow programs down too much.
-    This routine may be called more than once.
-
-   Options Database Keys:
-$  -log : Prints basic log information (for code compiled 
-$      with PETSC_LOG)
-$  -log_summary : Prints summary of flop and timing information 
-$      to screen (for code compiled with PETSC_LOG)
-
-.keywords: log, begin
-
-.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
-@*/
-int PLogUpshotBegin()
-{
-  int i, proc_no;
-  
-  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC    = phc;
-  _PHD    = phd;
-  _PLB    = plbup;
-  _PLE    = pleup;
-  /* all processors sync here for more consistent logging */
-  MPI_Barrier(MPI_COMM_WORLD);
-  PetscTime(BaseTime);
-  PLogStagePush(0);
-
-  /* Do MPE initialization */
-  MPE_Init_log();
-  MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
-  if (!proc_no) {
-    for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
-      if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
-  }
-  return 0;
-}
-#endif
 
 /*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
@@ -1038,7 +649,7 @@ $      with PETSC_LOG)
    
 .keywords: log, dump
 
-.seealso: PLogBegin(), PLogPrint()
+.seealso: PLogBegin(), PLogPrintSummary()
 @*/
 int PLogDump(char* sname)
 {
@@ -1122,12 +733,12 @@ int PLogEventRegister(int *e,char *string)
     *e = 0;
     SETERRQ(1,"PLogEventRegister:Out of event IDs");
   }
-  name[*e] = string;
+  PLogEventName[*e] = string;
   return 0;
 }
   
 /*@C
-   PLogPrint - Prints a summary of the logging.
+   PLogPrintSummary - Prints a summary of the logging.
 
    Input Parameter:
 .  file - a file pointer
@@ -1146,7 +757,7 @@ $  -log_summary : Prints summary of log information (for code
 
 .seealso: PLogBegin(), PLogDump()
 @*/
-int PLogPrint(MPI_Comm comm,FILE *fd)
+int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
@@ -1274,7 +885,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
         MPIU_fprintf(comm,fd,"%s %4d  %2.1e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
-                     name[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
+                    PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     100.*totts/tott,100.*totff/totf,100.*totts/stime,100.*totff/sflops);
       }
     }

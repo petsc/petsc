@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.51 1996/02/26 03:05:24 balay Exp bsmith $ */
+/* $Id: plog.h,v 1.52 1996/02/26 21:32:43 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -11,7 +11,7 @@
 /*
   If you add an event here, make sure you add to petsc/bin/petscview.cfg,
   petsc/bin/petscview, petsc/src/sys/src/plog.c, and 
-  petsc/src/sys/src/plgmpe.c!!!
+  petsc/src/sys/src/plogmpe.c!!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1
@@ -205,7 +205,7 @@ M*/
   { _tacky++; \
    if (_PLB) \
      (*_PLB)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
-   if (tacky == 1 && && UseMPE && MPEFlag[e])\
+   if (_tacky == 1 && UseMPE && MPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e,0,"");\
   }
 #else
@@ -254,7 +254,7 @@ M*/
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLE) \
     (*_PLE)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
-  if (tacky == 1 && && UseMPE && MPEFlag[e])\
+  if (_tacky == 1 && UseMPE && MPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
   }  _tacky--;}
 #else
