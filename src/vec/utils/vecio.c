@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.18 1995/10/19 22:15:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.19 1995/11/01 23:14:28 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -26,9 +26,7 @@ static char vcid[] = "$Id: vecio.c,v 1.18 1995/10/19 22:15:56 curfman Exp bsmith
 
   Notes:
   Currently, the input file must contain the full global vector, as
-  written by the routine VecView().  Only those vector indices that
-  are specified by the index set "ind" are read into the local vector
-  segment on a given processor. 
+  written by the routine VecView().
 
 .keywords: vector, load, binary, input
 
