@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.104 2001/07/09 22:52:08 buschelm Exp buschelm $ */
+/* $Id: petscksp.h,v 1.105 2001/07/10 07:15:38 buschelm Exp balay $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -120,7 +120,6 @@ EXTERN int KSPQCGGetQuadratic(KSP,double*);
 EXTERN int KSPQCGGetTrialStepNorm(KSP,double*);
 
 EXTERN int KSPSetFromOptions(KSP);
-EXTERN int KSPSetTypeFromOptions(KSP);
 EXTERN int KSPAddOptionsChecker(int (*)(KSP));
 
 EXTERN int KSPSingularValueMonitor(KSP,int,double,void *);

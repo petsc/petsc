@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.230 2001/06/21 21:18:37 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.231 2001/07/17 20:50:41 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -172,7 +172,7 @@ int SNESView(SNES snes,PetscViewer viewer)
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESSetOptionsPrefix(), SNESSetTypeFromOptions()
+.seealso: SNESSetOptionsPrefix()
 @*/
 int SNESSetFromOptions(SNES snes)
 {

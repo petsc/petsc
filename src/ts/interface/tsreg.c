@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.68 2001/04/10 19:37:09 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.69 2001/04/14 03:58:15 bsmith Exp balay $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -149,7 +149,7 @@ int TSGetType(TS ts,TSType *type)
 
 .keywords: TS, timestep, set, options, database
 
-.seealso: TSSetTypeFromOptions()
+.seealso: TSGetType
 @*/
 int TSSetFromOptions(TS ts)
 {

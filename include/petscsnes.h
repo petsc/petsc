@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.108 2001/06/21 21:18:34 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.109 2001/07/20 21:25:13 bsmith Exp balay $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -77,7 +77,6 @@ EXTERN int SNESSetOptionsPrefix(SNES,char*);
 EXTERN int SNESAppendOptionsPrefix(SNES,char*);
 EXTERN int SNESGetOptionsPrefix(SNES,char**);
 EXTERN int SNESSetFromOptions(SNES);
-EXTERN int SNESSetTypeFromOptions(SNES);
 
 EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
 EXTERN int MatCreateMF(Vec,Mat*);

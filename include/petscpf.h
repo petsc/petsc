@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.9 2001/01/15 21:49:41 bsmith Exp bsmith $ */
+/* $Id: petscpf.h,v 1.10 2001/04/10 19:37:42 bsmith Exp balay $ */
 
 /*
       mathematical function module. 
@@ -60,7 +60,6 @@ EXTERN int PFRegister(char*,char*,char*,int(*)(PF,void*));
 
 EXTERN int PFDestroy(PF);
 EXTERN int PFSetFromOptions(PF);
-EXTERN int PFSetTypeFromOptions(PF);
 EXTERN int PFGetType(PF,PFType*);
 
 EXTERN int PFView(PF,PetscViewer);

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.118 2001/07/11 21:47:27 buschelm Exp balay $ */
+/* $Id: petscpc.h,v 1.119 2001/07/17 19:01:21 balay Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -93,7 +93,6 @@ EXTERN int PCRegister(char*,char*,char*,int(*)(PC));
 
 EXTERN int PCDestroy(PC);
 EXTERN int PCSetFromOptions(PC);
-EXTERN int PCSetTypeFromOptions(PC);
 EXTERN int PCGetType(PC,PCType*);
 
 EXTERN int PCGetFactoredMatrix(PC,Mat*);

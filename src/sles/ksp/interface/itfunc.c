@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.156 2001/04/10 19:36:24 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.157 2001/06/21 21:18:09 bsmith Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -1141,7 +1141,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
    Notes:
    Must be called after the KSP type has been set so put this after
-   a call to KSPSetType(), KSPSetTypeFromOptions() or KSPSetFromOptions().
+   a call to KSPSetType(), or KSPSetFromOptions().
 
    The default convergence test, KSPDefaultConverged(), aborts if the 
    residual grows to more than 10000 times the initial residual.
