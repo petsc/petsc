@@ -1,33 +1,23 @@
 
-/* $Id: vgrid.h,v 1.3 1996/01/29 14:19:20 curfman Exp curfman $ */
+/* $Id: sda.h,v 1.1 1996/02/04 22:27:58 bsmith Exp bsmith $ */
+/*
+    Defines the interface object for the simplified distributed array
+    */
 
-/* This file declares some utility routines for manipulating vectors that are
-   associated with multicomponent problems on grids */
+#ifndef __SDA_H
+#define __SDA_H
 
-#ifndef __VEC_GRID_UTILS
-#define __VEC_GRID_UTILS
+#include "da.h"
 
-#include "vec.h"
+typedef struct _SDA* SDA;
 
-typedef enum {STRUCTURED,UNSTRUCTURED} GridType;
-
-typedef enum {ORDER_1,ORDER_2} GridComponentOrdering;
-  /* ORDER_1 - ordering by interlacing components at each grid point
-     ORDER_2 - ordering by segregating unknowns according to type
-          (1 component for whole grid, then the next component, etc.) */
-
-#define VECGRID_COOKIE         PETSC_COOKIE+40 /* need to set range for petsc cookies */
-
-typedef struct _VecGridInfo* VecGridInfo;
-
-extern int VecGridInfoCreate(MPI_Comm,GridType,int,VecGridInfo*);
-extern int VecGridInfoDuplicate(VecGridInfo,VecGridInfo*);
-extern int VecGridInfoDestroy(VecGridInfo);
-extern int VecGridInfoSetComponents(VecGridInfo,int,GridComponentOrdering,char**);
-extern int VecGridInfoSetCoordinates(VecGridInfo,double*,double*,double*,int,int,int);
-extern int VecGridInfoGetComponentVecs(Vec,VecGridInfo,Vec**);
-extern int VecGridInfoAssembleGlobalVec(Vec*,VecGridInfo,Vec);
-extern int VecGridInfoDrawContours(Vec,VecGridInfo,int,int);
-extern int VecGridInfoRefine(Vec,VecGridInfo,int,Vec*,VecGridInfo*);
+extern int SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
+                int, int, int,int,int, int,int, int, SDA *);
+extern int SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,
+                int, int, int,int, int, int, SDA *);
+extern int SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,SDA *);
+extern int SDADestroy(SDA);
+extern int SDALocalToLocalBegin(SDA,Scalar*,InsertMode,Scalar*);
+extern int SDALocalToLocalEnd(SDA,Scalar*,InsertMode,Scalar*);
 
 #endif

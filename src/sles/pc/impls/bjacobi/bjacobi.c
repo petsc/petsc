@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.73 1996/03/18 00:39:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.74 1996/03/19 21:25:14 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -290,6 +290,9 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
       fflush(fd);
       PetscSequentialPhaseEnd(pc->comm,1);
     }
+  } else if (vtype == STRING_VIEWER) {
+    ViewerStringSPrintf(viewer," blks=%d",jac->n);
+    ierr = SLESView(jac->sles[0],viewer);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.60 1996/03/18 00:39:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.61 1996/03/19 21:25:10 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -87,7 +87,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
     PetscFPrintf(pc->comm,fd,"      LU nonzeros %d\n",nzlu);
   }
   else if (vtype == STRING_VIEWER) {
-    ViewerStringSPrintf(viewer,"ordering=%s",order);
+    ViewerStringSPrintf(viewer," order=%s",order);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.25 1996/03/10 17:26:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.26 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -16,8 +16,7 @@ int main(int argc,char **argv)
   int        i,n = 50, ierr, flg;
   Scalar     v;
   Vec        x;
-  Draw       draw;
-  DrawLG     lg;
+  Viewer     viewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
@@ -33,14 +32,9 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&draw); CHKERRA(ierr);
-  ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
-
-  ierr = VecView(x,(Viewer) lg); CHKERRA(ierr);
-
-  ierr = DrawLGDestroy(lg); CHKERRA(ierr);
-
-  ierr = DrawDestroy(draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&viewer); CHKERRA(ierr);
+  ierr = VecView(x,viewer); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
 
   PetscFinalize();

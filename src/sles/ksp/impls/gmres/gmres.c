@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.59 1996/03/19 21:23:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.60 1996/03/21 22:54:18 curfman Exp bsmith $";
 #endif
 
 /*
@@ -210,14 +210,12 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
   while (!(converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
-    if (ksp->monitor) {
-	gmres->it = (it - 1);
-        ierr = (*ksp->monitor)(ksp,it + itsSoFar,res,ksp->monP);CHKERRQ(-ierr);
-	}
+    gmres->it = (it - 1);
+    KSPMonitor(ksp,it + itsSoFar,res);
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
-	/* get more vectors */
-	ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(-ierr);
-	}
+      /* get more vectors */
+      ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(-ierr);
+    }
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),
                          VEC_TEMP_MATOP); CHKERRQ(-ierr);
 
@@ -248,10 +246,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
   if (nres) 
     ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it + itsSoFar + 1;
-  if (ksp->monitor) {
-    gmres->it = it - 1;
-    ierr = (*ksp->monitor)( ksp,  it + itsSoFar, res, ksp->monP ); CHKERRQ(-ierr);
-  }
+  gmres->it = it - 1;
+  KSPMonitor( ksp,  it + itsSoFar, res );
   if (itcount) *itcount    = it;
 
   /*

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.3 1996/03/07 20:28:24 bsmith Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.4 1996/03/07 20:38:48 balay Exp bsmith $";
 #endif
 
 #include "tsimpl.h"      /*I "ts.h"  I*/
@@ -34,7 +34,7 @@ int TSSetType(TS ts,TSType method)
 {
   int (*r)(TS);
 
-  PETSCVALIDHEADERSPECIFIC(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
   /* Get the function pointers for the method requested */
   if (!__TSList) {TSRegisterAll();}
   if (!__TSList) {SETERRQ(1,"TSSetType:Could not get methods");}
@@ -119,12 +119,12 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
   FuncList *entry;
   if (!__TSList) {TSRegisterAll();}
   entry = __TSList->head;
-  MPIU_printf(comm," %s%s (one of)",prefix,name);
+  PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    MPIU_printf(comm," %s",entry->name);
+    PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
   }
-  MPIU_printf(comm,"\n");
+  PetscPrintf(comm,"\n");
   return 0;
 }
 

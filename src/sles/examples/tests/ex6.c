@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.33 1996/03/08 05:48:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.34 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -74,15 +74,13 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
-    KSP ksp; PC pc; char *kspname, *pcname, *matrixname, pcinfo[120];
+    char   *matrixname, slesinfo[120];
     Viewer viewer;
-    ViewerStringOpen(MPI_COMM_WORLD,pcinfo,120,&viewer);
-    SLESGetKSP(sles,&ksp); KSPGetType(ksp,PETSC_NULL,&kspname);
-    SLESGetPC(sles,&pc); PCGetType(pc,PETSC_NULL,&pcname);
-    PCView(pc,viewer);
+    ViewerStringOpen(MPI_COMM_WORLD,slesinfo,120,&viewer);
+    SLESView(sles,viewer);
     matrixname = PetscStrrchr(file,'/');
-    PetscPrintf(MPI_COMM_WORLD,"%-8.8s %-7.7s %-7.7s %-20.20s %3d %2.2e %2.2e %2.2e\n",
-                matrixname,kspname,pcname,pcinfo,its,norm,tsetup,tsolve);
+    PetscPrintf(MPI_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
+                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);
     ViewerDestroy(viewer);
   } else {
     PetscPrintf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);

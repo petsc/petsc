@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.153 1996/03/18 00:39:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.154 1996/03/19 21:25:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -408,8 +408,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
   int ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE); PetscValidHeaderSpecific(v1,VEC_COOKIE);
-  PetscValidHeaderSpecific(v2,VEC_COOKIE); PetscValidHeaderSpecific(v3,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
+  PetscValidHeaderSpecific(v2,VEC_COOKIE);PetscValidHeaderSpecific(v3,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultTransAdd:Not for unassembled matrix");
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,"MatMultTransAdd");
   if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v2 must be different vectors");

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.21 1996/03/19 21:24:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.22 1996/03/21 22:37:45 curfman Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -99,7 +99,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = PCApplySymmetricLeft(pc,B,BS); CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
-  MONITOR(ksp,bsnrm,0);
+  KSPMonitor(ksp,bsnrm,0);
   if (history) history[0] = bsnrm;
   cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
   if (cerr) {*its =  0; return 0;}
@@ -224,7 +224,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = VecNorm(R,NORM_2,&rnrm); CHKERRQ(ierr);
 
          if (history && hist_len > i + 1) history[i+1] = rnrm;
-         MONITOR(ksp,rnrm,i+1);
+         KSPMonitor(ksp,rnrm,i+1);
          cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */

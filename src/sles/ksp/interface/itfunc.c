@@ -1,10 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.46 1996/03/10 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.47 1996/03/19 21:23:32 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
 */
 #include "petsc.h"
+#include "draw.h"
 #include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*@
@@ -74,6 +75,7 @@ int KSPDestroy(KSP ksp)
   int ierr;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = (*ksp->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+  if (ksp->xmonitor) KSPLGMonitorDestroy(ksp->xmonitor);
   PLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
   return 0;

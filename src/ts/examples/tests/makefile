@@ -11,13 +11,13 @@ OBJSF	      =
 LIBBASE	      = libpetscts
 EXAMPLES_1    = 
 RUNEXAMPLES_1 = 
-EXAMPLES_2    = ex1
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5
 RUNEXAMPLES_2 = runex1
 EXAMPLES_3    = 
 RUNEXAMPLES_3 = 
 EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
-EXAMPLESC     = ex1.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF     = 
 #
 #
@@ -30,15 +30,15 @@ ex2: ex2.o  chkopts
 	$(RM) ex2.o
 
 ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
+	-$(CLINKER) -o ex3 ex3.o -L$(LDIR) -lpetscts $(PETSC_LIB)
 	$(RM) ex3.o
 
 ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o $(PETSC_LIB)
+	-$(CLINKER) -o ex4 ex4.o -L$(LDIR) -lpetscts $(PETSC_LIB)
 	$(RM) ex4.o
 
 ex5: ex5.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
+	-$(CLINKER) -o ex5 ex5.o -L$(LDIR) -lpetscts $(PETSC_LIB)
 	$(RM) ex5.o
 
 ex6: ex6.o  chkopts

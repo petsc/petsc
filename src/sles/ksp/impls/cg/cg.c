@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.39 1996/03/21 02:42:11 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.40 1996/03/21 02:44:31 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -95,7 +95,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; return 0;}
-  MONITOR(ksp,dp,0);
+  KSPMonitor(ksp,dp,0);
   if (history) history[0] = dp;
 
   for ( i=0; i<maxit; i++) {
@@ -131,7 +131,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
        ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      if (history && hist_len > i + 1) history[i+1] = dp;
-     MONITOR(ksp,dp,i+1);
+     KSPMonitor(ksp,dp,i+1);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
      if (!pres) 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.21 1996/03/10 17:27:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.22 1996/03/19 21:24:04 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -51,7 +51,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   /* Test for nothing to do */
   ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; return 0;}
-  MONITOR(ksp,rnorm,0);
+  KSPMonitor(ksp,rnorm,0);
   if (history) history[0] = rnorm;
 
   ierr = VecCopy(B,U); CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 #endif
 
     if (history && hist_len > i + 1) history[i+1] = rnorm;
-    MONITOR(ksp,rnorm,i+1);
+    KSPMonitor(ksp,rnorm,i+1);
     cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);
     if (cerr) break;
     SWAP( U1, U, TMP );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.60 1996/03/18 00:39:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.61 1996/03/19 21:25:22 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -130,7 +130,7 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
     PetscFPrintf(pc->comm,fd,"         matrix ordering: %s\n",order);
   }
   else if (vtype == STRING_VIEWER) {
-    ViewerStringSPrintf(viewer,"levels=%d ordering=%s",ilu->levels,order);
+    ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);
   }
   return 0;
 }

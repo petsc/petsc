@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.3 1996/03/18 00:42:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.4 1996/03/19 21:28:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -35,13 +35,19 @@ static int ViewerDestroy_String(PetscObject obj)
 int ViewerStringSPrintf(Viewer v,char *format,...)
 {
   va_list Argp;
+  int     shift;
+
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->type != STRING_VIEWER) return 0;
   va_start( Argp, format );
   vsprintf(v->head,format,Argp);
   va_end( Argp );
 
-  /* need to update the position of v->head, don't know how */
+  /* update the position of v->head */
+  for ( shift=0; shift<256; shift++ ) {
+    if (v->head[shift] == 0) break;
+  }
+  v->head += shift;
   return 0;
 }
 

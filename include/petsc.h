@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.102 1996/03/04 05:17:33 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.103 1996/03/19 21:30:28 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -23,7 +23,12 @@ extern void fscanf(FILE *,char *,...);
 
 /* MPI interface */
 #include "mpi.h"
-#include "mpiu.h"
+#if defined(PETSC_COMPLEX)
+extern MPI_Datatype MPIU_COMPLEX;
+#define MPIU_SCALAR MPIU_COMPLEX
+#else
+#define MPIU_SCALAR MPI_DOUBLE
+#endif
 
 #if defined(PETSC_COMPLEX)
 /* work around for bug in alpha g++ compiler */
@@ -167,5 +172,23 @@ extern int PetscSetFPTrap(int);
    PLogEventBegin(Petsc_Barrier,A,0,0,0); \
    MPI_Barrier(((PetscObject)A)->comm); \
    PLogEventEnd(Petsc_Barrier,A,0,0,0);}
+
+/*
+      This code allows one to pass a PETSc object in C
+  to a Fortran routine, where (like all PETSc objects in 
+  Fortran) it is treated as an integer.
+*/
+extern int PetscCObjectToFortranObject(void *a,int *b);
+extern int PetscFortranObjectToCObject(int a,void *b);
+
+extern FILE *PetscFOpen(MPI_Comm,char *,char *);
+extern int  PetscFClose(MPI_Comm,FILE*);
+extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
+extern int  PetscPrintf(MPI_Comm,char *,...);
+
+extern int  PetscSetDisplay(MPI_Comm,char *,int);
+
+extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
+extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.57 1996/03/10 17:28:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.58 1996/03/19 21:27:47 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -34,15 +34,11 @@ int SLESView(SLES sles,Viewer viewer)
 {
   KSP         ksp;
   PC          pc;
-  PCType      pcmethod;
   int         ierr;
 
   SLESGetPC(sles,&pc);
   SLESGetKSP(sles,&ksp);
-  PCGetType(pc,&pcmethod,PETSC_NULL);
-  if (pcmethod != PCLU) {
-    ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
-  }
+  ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
   ierr = PCView(pc,viewer); CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.3 1996/03/08 05:49:06 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.4 1996/03/10 17:30:09 bsmith Exp bsmith $ */
 /*
     User interface for the time-stepping package. This is package
   is for use in solving time dependent PDES.
@@ -32,15 +32,15 @@ extern int TSPrintHelp(TS);
 extern int TSDefaultMonitor(TS,int,Scalar,Vec,void*);
 extern int TSStep(TS,int *,Scalar*);
 
-extern int TSSetInitialTimeStep(TS,Scalar,Scalar);
-extern int TSGetTimeStep(TS,Scalar *);
-extern int TSSetTimeStep(TS,Scalar);
+extern int TSSetInitialTimeStep(TS,double,double);
+extern int TSGetTimeStep(TS,double*);
+extern int TSSetTimeStep(TS,double);
 
 extern int TSSetRHSFunction(TS,int (*)(TS,Scalar,Vec,Vec,void*),void*);
-extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,Scalar,Mat*,Mat*,MatStructure*,void*),void*);
-extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,Scalar,Vec,Mat*,Mat*,MatStructure*,void*),void*);
+extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,void*),void*);
+extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 
-extern int TSComputeRHSFunction(TS,Scalar,Vec,Vec);
+extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
 extern int TSRegisterAll();
 extern int TSRegister(int,char*,int (*)(TS));
@@ -48,5 +48,6 @@ extern int TSRegister(int,char*,int (*)(TS));
 extern int TSGetSNES(TS,SNES*);
 extern int TSGetSLES(TS,SLES*);
 
+extern int TSView(TS,Viewer);
 #endif
 

@@ -1,7 +1,10 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(PETSC_INCLUDE) $(COPT) $(PCONF)
+#
+# the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_???
+#
+CFLAGS	      =	 $(PETSC_INCLUDE) $(COPT) $(PCONF) $(CONF)
 FFLAGS	      =	 
 SOURCEC	      = 
 SOURCEF	      =
@@ -16,14 +19,14 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
 		runex17 runex20 runex20_2 runex23
 EXAMPLES_2    = ex15 ex22
 RUNEXAMPLES_2 = runex15
-EXAMPLES_3    = ex19 ex21
-RUNEXAMPLES_3 = runex19 runex21
+EXAMPLES_3    = ex19 ex21 ex24
+RUNEXAMPLES_3 = runex19 runex21 runex24
 EXAMPLES_4    = ex1 ex2 ex4 ex6 ex7 ex8 ex14 ex20 
 RUNEXAMPLES_4 = runex1	runex2 runex6 runex7 runex8 runex20
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
-                ex20.c ex22.c ex23.c
-EXAMPLESF     = ex19.F ex21.F
+                ex20.c ex22.c ex23.c ex24.c
+EXAMPLESF     = ex19.F ex21.F ex24f.F
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -117,9 +120,9 @@ ex23: ex23.o  chkopts
 	-$(CLINKER) -o ex23 ex23.o  $(SLES_LIB)
 	$(RM) -f ex23.o
 
-ex24: ex24.o  chkopts
-	-$(CLINKER) -o ex24 ex24.o  $(SLES_LIB)
-	$(RM) -f ex24.o
+ex24: ex24.o ex24f.o chkopts
+	-$(CLINKER) -o ex24 ex24.o ex24f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex24.o ex24f.o
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
@@ -237,6 +240,12 @@ runex23:
 	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
 	   $(RM) -f ex23_1.tmp input.dat
+
+runex24:
+	-@$(MPIRUN) -np 3 ex24 > ex24_1.tmp 2>&1;\
+	   if (diff output/ex24_1.out ex24_1.tmp) then true; \
+	   else echo "Possible problem with ex24_1, diffs above"; fi;\
+	   $(RM) -f ex24_1.tmp input.dat
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

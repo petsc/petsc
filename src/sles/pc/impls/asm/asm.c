@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.21 1996/03/04 05:15:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.22 1996/03/19 21:25:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -26,6 +26,27 @@ typedef struct {
   IS         *is;                 /* index set that defines each subdomain */
   Mat        *mat,*pmat;          /* mat is not currently used */
 } PC_ASM;
+
+static int PCView_ASM(PetscObject obj,Viewer viewer)
+{
+  PC           pc = (PC)obj;
+  FILE         *fd;
+  PC_ASM       *jac = (PC_ASM *) pc->data;
+  int          rank, ierr;
+  ViewerType   vtype;
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
+    MPI_Comm_rank(pc->comm,&rank);
+    ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+  } else if (vtype == STRING_VIEWER) {
+    ViewerStringSPrintf(viewer," blks=%d,ovrlap=%d",jac->n,jac->overlap);
+    ierr = SLESView(jac->sles[0],viewer);
+  }
+  return 0;
+}
 
 static int PCSetUp_ASM(PC pc)
 {
@@ -233,7 +254,7 @@ int PCCreate_ASM(PC pc)
   pc->setfrom       = PCSetFromOptions_ASM;
   pc->setuponblocks = PCSetUpOnBlocks_ASM;
   pc->data          = (void *) osm;
-  pc->view          = 0;
+  pc->view          = PCView_ASM;
   return 0;
 }
 

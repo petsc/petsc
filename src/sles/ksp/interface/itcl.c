@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.60 1996/03/19 21:23:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.61 1996/03/20 06:06:23 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -17,45 +17,45 @@ extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);
    allowed to set the Krylov type. 
 
    Input Parameters:
-.  ctx - the Krylov space context
+.  ksp - the Krylov space context
 
 .keywords: KSP, set, from, options, database
 
 .seealso: KSPPrintHelp()
 @*/
-int KSPSetFromOptions(KSP ctx)
+int KSPSetFromOptions(KSP ksp)
 {
   KSPType   method;
   int       restart, flg, ierr;
-  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);  CHKERRQ(ierr);
-  if (flg) { KSPPrintHelp(ctx);  }
-  if (KSPGetTypeFromOptions_Private(ctx,&method)) {
-    KSPSetType(ctx,method);
+  if (flg) { KSPPrintHelp(ksp);  }
+  if (KSPGetTypeFromOptions_Private(ksp,&method)) {
+    KSPSetType(ksp,method);
   }
-  ierr = OptionsGetInt(ctx->prefix,"-ksp_max_it",&ctx->max_it, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol, &flg);CHKERRQ(ierr);
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_preallocate", &flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate", &flg);CHKERRQ(ierr);
   if(flg){
-    KSPGMRESSetPreAllocateVectors(ctx);
+    KSPGMRESSetPreAllocateVectors(ksp);
   }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_monitor", &flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_monitor", &flg);  CHKERRQ(ierr);
   if (flg) {
     int rank = 0;
-    MPI_Comm_rank(ctx->comm,&rank);
+    MPI_Comm_rank(ksp->comm,&rank);
     if (!rank) {
-      KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
+      KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0);
     }
   }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_smonitor", &flg); CHKERRQ(ierr); 
+  ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor", &flg); CHKERRQ(ierr); 
   if (flg){
     int rank = 0;
-    MPI_Comm_rank(ctx->comm,&rank);
+    MPI_Comm_rank(ksp->comm,&rank);
     if (!rank) {
-      KSPSetMonitor(ctx,KSPDefaultSMonitor,(void *)0);
+      KSPSetMonitor(ksp,KSPDefaultSMonitor,(void *)0);
     }
   }
   /* this is not good!
@@ -64,40 +64,40 @@ int KSPSetFromOptions(KSP ctx)
   {
   int loc[4], nmax = 4;
   loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[3] = 300;
-  ierr = OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax, &flg); CHKERRQ(ierr);
   if (flg){
     int    rank = 0;
     DrawLG lg;
-    MPI_Initialized(&rank);
-    if (rank) MPI_Comm_rank(ctx->comm,&rank);
+    MPI_Comm_rank(ksp->comm,&rank);
     if (!rank) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-      PLogObjectParent(ctx,(PetscObject) lg);
-      KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
+      PLogObjectParent(ksp,(PetscObject) lg);
+      KSPSetMonitor(ksp,KSPLGMonitor,(void *)lg);
+      ksp->xmonitor = lg; 
     }
   }
   }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetUsePreconditionedResidual(ctx); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_left_pc",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetPreconditionerSide(ctx,PC_LEFT); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_right_pc",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetPreconditionerSide(ctx,PC_RIGHT); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetPreconditionerSide(ctx,PC_SYMMETRIC); }
-  ierr = OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetRestart(ctx,restart); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetOrthogonalization(ctx, 
+  ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetUsePreconditionedResidual(ksp); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_left_pc",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetPreconditionerSide(ksp,PC_LEFT); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_right_pc",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetPreconditionerSide(ksp,PC_RIGHT); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetPreconditionerSide(ksp,PC_SYMMETRIC); }
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
+  if (flg) { KSPGMRESSetRestart(ksp,restart); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
+  if (flg) { KSPGMRESSetOrthogonalization(ksp, 
              KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetOrthogonalization(ctx, KSPGMRESIROrthogonalization);}
-  ierr = OptionsHasName(ctx->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetCalculateEigenvalues(ctx); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
-  if (flg) { KSPCGSetType(ctx,CG_HERMITIAN); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) { KSPCGSetType(ctx,CG_SYMMETRIC); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
+  if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
+  if (flg) { KSPSetCalculateEigenvalues(ksp); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
+  if (flg) { KSPCGSetType(ksp,CG_HERMITIAN); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) { KSPCGSetType(ksp,CG_SYMMETRIC); }
   return 0;
 }
   
@@ -107,7 +107,7 @@ extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
    KSPPrintHelp - Prints all options for the KSP component.
 
    Input Parameter:
-.  ctx - the KSP context
+.  ksp - the KSP context
 
    Options Database Keys:
 $  -help, -h
@@ -116,37 +116,37 @@ $  -help, -h
 
 .seealso: KSPSetFromOptions()
 @*/
-int KSPPrintHelp(KSP ctx)
+int KSPPrintHelp(KSP ksp)
 {
   char p[64];
   int  rank = 0;
 
-  MPI_Comm_rank(ctx->comm,&rank);
+  MPI_Comm_rank(ksp->comm,&rank);
     
   if (!rank) {
     PetscStrcpy(p,"-");
-    if (ctx->prefix)  PetscStrcat(p,ctx->prefix);
-    PetscValidHeaderSpecific(ctx,KSP_COOKIE);
-    PetscPrintf(ctx->comm,"KSP Options -------------------------------------\n");
-    KSPPrintTypes_Private(ctx->comm,p,"ksp_type");
-    PetscPrintf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
-                     p,ctx->rtol);
-    PetscPrintf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
-                     p,ctx->atol);
-    PetscPrintf(ctx->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
-                     p,ctx->divtol);
-    PetscPrintf(ctx->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
-                     p,ctx->max_it);
-    PetscPrintf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
-    PetscPrintf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-    PetscPrintf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
-    PetscPrintf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    PetscPrintf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
-    PetscPrintf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
-    PetscPrintf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
+    PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+    PetscPrintf(ksp->comm,"KSP Options -------------------------------------\n");
+    KSPPrintTypes_Private(ksp->comm,p,"ksp_type");
+    PetscPrintf(ksp->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
+                     p,ksp->rtol);
+    PetscPrintf(ksp->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
+                     p,ksp->atol);
+    PetscPrintf(ksp->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
+                     p,ksp->divtol);
+    PetscPrintf(ksp->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
+                     p,ksp->max_it);
+    PetscPrintf(ksp->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
+    PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
+    PetscPrintf(ksp->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
+    PetscPrintf(ksp->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
+    PetscPrintf(ksp->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
+    PetscPrintf(ksp->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
+    PetscPrintf(ksp->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
 #if defined(PETSC_COMPLEX)
-    PetscPrintf(ctx->comm," %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
-    PetscPrintf(ctx->comm," %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
+    PetscPrintf(ksp->comm," %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
+    PetscPrintf(ksp->comm," %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
 #endif
   }
   return 1;

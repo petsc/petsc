@@ -240,20 +240,20 @@ etags_makefiles:
 #
 
 # Builds all versions of the man pages
-allmanpages: deletemanpages deletewwwpages deletelatexpages
+allmanpages: deletemanpages allwwwpages alllatexpages
 	-make ACTION=manpages tree
-	-make ACTION=latexpages tree
-	-make ACTION=wwwpages_buildcite tree
-	-make ACTION=wwwpages tree
-	-maint/wwwman
+	-cd src/fortran/custom; make manpages
 
 allwwwpages: deletewwwpages
 	-make ACTION=wwwpages_buildcite tree
+	-cd src/fortran/custom; make wwwpages_buildcite
+	-cd src/fortran/custom; make wwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
+	-cd src/fortran/custom; make latexpages
 
 # Builds Fortran stub files
 allfortranstubs:

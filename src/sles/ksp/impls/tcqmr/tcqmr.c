@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.22 1996/03/19 21:24:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: tcqmr.c,v 1.23 1996/03/21 22:33:32 curfman Exp bsmith $";
 #endif
 
 /*
@@ -54,10 +54,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
    CALCULATE SQUARED LANCZOS  vectors
    */
   while (!(cerr=(*ksp->converged)(ksp,it,rnorm,ksp->cnvP))) {     
-    if (ksp->monitor) {
-        (*ksp->monitor)( ksp, it, rnorm,ksp->monP );
-    }
-    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,u,y,vtmp); CHKERRQ(ierr); /* y = A*u */
+    KSPMonitor( ksp, it, rnorm);
+    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11); CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2); CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.20 1996/03/19 21:24:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: tfqmr.c,v 1.21 1996/03/21 22:11:52 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -56,7 +56,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
-  MONITOR(ksp,dp,0);
+  KSPMonitor(ksp,dp,0);
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP); CHKERRQ(ierr);
@@ -101,7 +101,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 
       dpest = sqrt(m + 1.0) * tau;
       if (history && hist_len > i + 1) history[i+1] = dpest;
-      MONITOR(ksp,dpest,i+1);
+      KSPMonitor(ksp,dpest,i+1);
       if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;
 
       etaold = eta;

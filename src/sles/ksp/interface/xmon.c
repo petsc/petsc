@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.14 1995/11/09 22:26:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.15 1996/03/10 17:26:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,6 +21,9 @@ static char vcid[] = "$Id: xmon.c,v 1.14 1995/11/09 22:26:59 bsmith Exp bsmith $
 
    Output Parameter:
 .  draw - the drawing context
+
+   Notes: use KSPLGMonitorDestroy() to destroy this line graph,
+          not DrawLGDestroy().
 
 .keywords: KSP, monitor, line graph, residual, create
 

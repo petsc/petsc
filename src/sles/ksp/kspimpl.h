@@ -1,9 +1,11 @@
-/* $Id: kspimpl.h,v 1.17 1996/03/10 17:26:56 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.18 1996/03/19 21:23:30 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
 #include "ksp.h"
+#include "draw.h"
+
 /*
    Defines the KSP data structure.
 */
@@ -62,11 +64,16 @@ struct _KSP {
   void *monP,       /* User Monitor */
        *cnvP;       /* Convergence tester */
   int setupcalled;
+
+  DrawLG xmonitor;  /* location for stashing default xmonitor context */
 };
 
-#define MONITOR(ksp,rnorm,it) if (ksp->monitor) { \
-                                (*ksp->monitor)(ksp,it,rnorm,ksp->monP);\
-                              }
+#define KSPMonitor(ksp,rnorm,it) \
+        if (ksp->monitor) { \
+          int _ierr; \
+          _ierr = (*ksp->monitor)(ksp,it,rnorm,ksp->monP); \
+          CHKERRQ(_ierr); \
+        }
 
 extern int KSPCreate_Richardson(KSP);
 extern int KSPCreate_Chebychev(KSP);

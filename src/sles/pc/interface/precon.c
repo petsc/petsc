@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.78 1996/03/19 21:24:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.79 1996/03/20 03:36:06 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -590,7 +590,7 @@ $    ViewerFileOpenASCII() - output to a specified file
 int PCView(PC pc,Viewer viewer)
 {
   FILE        *fd;
-  char        *cstring;
+  char        *cstr;
   int         fmt, ierr, mat_exists;
   ViewerType  vtype;
 
@@ -600,8 +600,8 @@ int PCView(PC pc,Viewer viewer)
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"PC Object:\n");
-    PCGetType(pc,PETSC_NULL,&cstring);
-    PetscFPrintf(pc->comm,fd,"  method: %s\n",cstring);
+    PCGetType(pc,PETSC_NULL,&cstr);
+    PetscFPrintf(pc->comm,fd,"  method: %s\n",cstr);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
     if (mat_exists) {
@@ -624,6 +624,8 @@ int PCView(PC pc,Viewer viewer)
     }
   }
   else if (vtype == STRING_VIEWER) {
+    PCGetType(pc,PETSC_NULL,&cstr);
+    ViewerStringSPrintf(viewer," %-7.7s",cstr);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }
   return 0;

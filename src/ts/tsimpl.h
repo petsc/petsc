@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.1 1996/01/01 19:52:21 bsmith Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.2 1996/01/31 03:59:23 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -9,6 +9,7 @@
       
       General case: U_t = F(t,U) <-- the right hand side function.
       Linear  case: U_t = A(t) U. <-- the right hand side matrix.
+      Linear (no time) case: U_t = A U. <-- the right hand side matrix
 */
 
 struct _TS {
@@ -16,48 +17,50 @@ struct _TS {
 
   TSProblemType problem_type;
 
-  Vec   vec_sol, vec_sol_always;
+  Vec           vec_sol, vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
-  int   (*monitor)(TS,int,Scalar,Vec,void*); /* monitor routine */
-  void  *monP;		                     /* monitor routine context */
+  int           (*monitor)(TS,int,double,Vec,void*); /* monitor routine */
+  void          *monP;		            /* monitor routine context */
 
-  int   (*rhsfunction)(TS,Scalar,Vec,Vec,void*); 
-  void  *funP;
-  int   (*rhsmatrix)(TS,Scalar,Mat*,Mat*,MatStructure *,void*);       
-  Mat   A,B;                        /* user provided matrix and preconditioner */
-  int   (*rhsjacobian)(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
-  void  *jacP;
+  int           (*rhsmatrix)(TS,double,Mat*,Mat*,MatStructure *,void*);
+  Mat           A,B;           /* user provided matrix and preconditioner */
+  PetscTruth    Ashell;       /* indicates A is a Shell matrix */
+
+  int           (*rhsfunction)(TS,double,Vec,Vec,void*); 
+  void          *funP;
+  int           (*rhsjacobian)(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+  void          *jacP;
 
   /* ---------Inner nonlinear or linear solvers ---------------------------*/
 
-  SNES     snes;
-  SLES     sles;
+  SNES          snes;
+  SLES          sles;
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  int   (*setup)(TS);               /* sets up the nonlinear solver */
-  int   setup_called;               /* true if setup has been called */
-  int   (*step)(TS,int*,Scalar*);      
-  int   (*setfromoptions)(TS);      /* sets options from database */
-  int   (*printhelp)(TS);           /* prints help info */
-  void  *data;                      /* implementationspecific data */
+  int           (*setup)(TS);            /* sets up the nonlinear solver */
+  int           setup_called;            /* true if setup has been called */
+  int           (*step)(TS,int*,double*);      
+  int           (*setfromoptions)(TS);    /* sets options from database */
+  int           (*printhelp)(TS);         /* prints help info */
+  void          *data;                    /* implementationspecific data */
 
-  void  *user;                      /* user context */
+  void          *user;                    /* user context */
   /* ------------------  Parameters -------------------------------------- */
 
-  int      max_steps;          /* max number of steps */
-  Scalar   max_time;
-  Scalar   time_step;
-  int      steps;              /* steps taken so far */
-  Scalar   ptime;              /* time taken so far */
+  int           max_steps;          /* max number of steps */
+  double        max_time;
+  double        time_step;
+  int           steps;              /* steps taken so far */
+  double        ptime;              /* time taken so far */
 
   /* ------------------- Default work-area management ------------------ */
 
-  int      nwork;              
-  Vec      *work;
-
+  int           nwork;              
+  Vec           *work;
 };
 
 
+extern int TSMonitor(TS,int,Scalar,Vec);
 #endif

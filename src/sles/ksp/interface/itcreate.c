@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.79 1996/03/18 00:38:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.80 1996/03/19 21:23:32 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -58,6 +58,12 @@ int KSPView(KSP ksp,Viewer viewer)
     else if (ksp->pc_side == PC_SYMMETRIC) 
       PetscFPrintf(ksp->comm,fd,"  symmetric preconditioning\n");
     else PetscFPrintf(ksp->comm,fd,"  left preconditioning\n");
+  } else if (vtype == STRING_VIEWER) {
+    KSPType type;
+    KSPGetType(ksp,&type,&method);
+    if (type != KSPPREONLY) {    
+      ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
+    }
   }
   return 0;
 }

@@ -1,75 +1,71 @@
 #ifndef lint
-static char vcid[] = "$Id: ex23.c,v 1.4 1996/03/19 21:23:15 bsmith Exp $";
+static char vcid[] = "$Id: ex24.c,v 1.1 1996/03/19 23:03:48 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Writes an array to a file, then reads an array from\n\
-a file, then forms a vector.\n\n";
+static char help[] = "Demonstrates calling a Fortran compute routine from C.\n\n";
 
 #include <stdio.h>
 #include "vec.h"
-#include "pinclude/pviewer.h"
+
+/*
+    Ugly stuff to insure the function names match between Fortran 
+  and C. Sorry but this is out of our PETSc hands to cleanup.
+*/
+#if defined(HAVE_FORTRAN_CAPS)
+#define ex24f_ EX24F
+#define ex24c_ EX24C
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define ex24f_ ex24f
+#define ex24c_ ex24c
+#endif
+#if defined(__cplusplus)
+extern "C" {
+#endif
+extern void ex24f_(int*);
+#if defined(__cplusplus)
+}
+#endif
 
 int main(int argc,char **args)
 {
-  int     i, ierr, m = 10, flg, fd, size;
-  Scalar  *avec, *array;
+  int     ierr, m = 10,fvec;
   Vec     vec;
-  Viewer  view_out, view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = VecCreate(MPI_COMM_WORLD,m,&vec); CHKERRA(ierr);
 
-  /* ---------------------------------------------------------------------- */
-  /*          PART 1: Write some data to a file in binary format            */
-  /* ---------------------------------------------------------------------- */
+  /* 
+     call Fortran routine - the use of PetscCObjectToFortranObject()
+     insures that the PETSc vector is properly interpreted on the 
+     Fortran side. Note Fortran treats all PETSc objects as integers.
+  */
+  ierr = PetscCObjectToFortranObject(vec,&fvec);
+  ex24f_(&fvec);
 
-  /* Allocate array and set values */
-  array = (Scalar *) PetscMalloc( m*sizeof(Scalar) ); CHKPTRA(array);
-  for (i=0; i<m; i++) {
-    array[i] = i*10.0;
-  }
-
-  /* Open viewer for binary output */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"input.dat",BINARY_CREATE,&view_out);
-         CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
-
-  /* Write binary output */
-  ierr = PetscBinaryWrite(fd,&m,1,BINARY_INT,0); CHKERRA(ierr);
-  ierr = PetscBinaryWrite(fd,array,m,BINARY_SCALAR,0); CHKERRA(ierr);
-
-  /* Destroy the output viewer and work array */
-  ierr = ViewerDestroy(view_out); CHKERRA(ierr);
-  PetscFree(array);
-
-  /* ---------------------------------------------------------------------- */
-  /*          PART 2: Read data from file and form a vector                 */
-  /* ---------------------------------------------------------------------- */
-
-  /* Open input binary viewer */
-  ierr = ViewerFileOpenBinary(MPI_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
-         CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_in,&fd); CHKERRA(ierr);
-
-  /* Create vector and get pointer to data space */
-  ierr = VecCreate(MPI_COMM_SELF,m,&vec); CHKERRA(ierr);
-  ierr = VecGetArray(vec,&avec); CHKERRA(ierr);
-
-  /* Read data into vector */
-  ierr = PetscBinaryRead(fd,&size,1,BINARY_INT); CHKERRQ(ierr);
-  if (size <=0) SETERRA(1,"Error: Must have array length > 0");
-
-  printf("reading data in binary from input.dat, size =%d ...\n",size); 
-  ierr = PetscBinaryRead(fd,avec,size,BINARY_SCALAR); CHKERRA(ierr);
-
-  /* View vector */
-  ierr = VecRestoreArray(vec,&avec); CHKERRA(ierr);
-  ierr = VecView(vec,STDOUT_VIEWER_SELF); CHKERRA(ierr);
-
-  /* Free data structures */
+  ierr = VecView(vec,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(vec); CHKERRA(ierr);
-  ierr = ViewerDestroy(view_in); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+int ex24c_(int *fvec)
+{
+  Vec vec;
+  int ierr;
+
+  /*
+      Translate Fortran integer pointer back to C
+  */
+  ierr = PetscFortranObjectToCObject(*fvec,&vec);
+
+  ierr = VecView(vec,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  return 0;
+}
+ 
+#if defined(__cplusplus)
+}
+#endif
