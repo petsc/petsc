@@ -142,10 +142,10 @@ PetscErrorCode PetscSharedMemorySetSize(int s)
 PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  int     rank,flag;
-  size_t  len;
-  char    filename[PETSC_MAX_PATH_LEN];
-  usptr_t **arena;
+  PetscMPIInt    rank,flag;
+  size_t         len;
+  char           filename[PETSC_MAX_PATH_LEN];
+  usptr_t        **arena;
 
   PetscFunctionBegin;
 
@@ -195,10 +195,11 @@ PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
 #define __FUNCT__ "PetscSharedMalloc"
 PetscErrorCode PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
 {
-  char    *value;
+  char           *value;
   PetscErrorCode ierr;
-  int     shift,rank,flag;
-  usptr_t **arena;
+  int            shift;
+  PetscMPIInt    rank,flag;
+  usptr_t        **arena;
 
   PetscFunctionBegin;
   *result = 0;

@@ -175,7 +175,7 @@ PetscErrorCode ISDestroy(IS is)
    Concepts: permutation^inverse
    Concepts: index sets^inverting
 @*/
-PetscErrorCode ISInvertPermutation(IS is,int nlocal,IS *isout)
+PetscErrorCode ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
   PetscErrorCode ierr;
 
@@ -191,7 +191,7 @@ PetscErrorCode ISInvertPermutation(IS is,int nlocal,IS *isout)
 #if defined(__cplusplus)
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSizeNew" 
-PetscErrorCode ISGetSizeNew(IS is,int *size)
+PetscErrorCode ISGetSizeNew(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -222,7 +222,7 @@ PetscErrorCode ISGetSizeNew(IS is,int *size)
    Concepts: index sets^size
 
 @*/
-PetscErrorCode ISGetSize(IS is,int *size)
+PetscErrorCode ISGetSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -253,7 +253,7 @@ PetscErrorCode ISGetSize(IS is,int *size)
    Concepts: index sets^local size
   
 @*/
-PetscErrorCode ISGetLocalSize(IS is,int *size)
+PetscErrorCode ISGetLocalSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -303,7 +303,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-PetscErrorCode ISGetIndices(IS is,int *ptr[])
+PetscErrorCode ISGetIndices(IS is,PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -347,7 +347,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-PetscErrorCode ISRestoreIndices(IS is,int *ptr[])
+PetscErrorCode ISRestoreIndices(IS is,PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 

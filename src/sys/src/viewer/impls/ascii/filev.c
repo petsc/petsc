@@ -344,7 +344,8 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
 PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  int               rank,tab;
+  PetscMPIInt       rank;
+  int               tab;
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
   PetscTruth        iascii;
@@ -668,7 +669,8 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char 
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;
-  int               rank,tab = vascii->tab;
+  PetscMPIInt       rank;
+  int               tab = vascii->tab;
   MPI_Comm          comm;
   FILE              *fp;
   PetscTruth        iascii;

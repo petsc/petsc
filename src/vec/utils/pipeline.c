@@ -465,7 +465,8 @@ PetscErrorCode PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject 
 /* >>>> Routines for multicolor ordering of processors <<<< */
 
 typedef struct {
-  int rank,size,*proc_colors;
+  PetscMPIInt rank,size;
+  int         *proc_colors;
 } Pipeline_colored_info;
 
 #undef __FUNCT__
@@ -473,7 +474,7 @@ typedef struct {
 PetscErrorCode ProcColorUp(int proc,PetscObject pipe_info)
 {
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
-  int                    rank = comm_info->rank;
+  PetscMPIInt            rank = comm_info->rank;
 
   PetscFunctionBegin;
   if (comm_info->proc_colors[rank]<comm_info->proc_colors[proc]) {
@@ -487,7 +488,7 @@ PetscErrorCode ProcColorUp(int proc,PetscObject pipe_info)
 PetscErrorCode ProcColorDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
-  int                    rank = comm_info->rank;
+  PetscMPIInt            rank = comm_info->rank;
 
   PetscFunctionBegin;
   if (comm_info->proc_colors[rank]>comm_info->proc_colors[proc]) {

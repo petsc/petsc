@@ -53,16 +53,17 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
 {
-  Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
-  int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
+  Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
+  int            **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
   PetscErrorCode ierr;
-  int         size,rank,m,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
-  int         *ctr,*pa,*tmp,nrqr,*isz,*isz1,**xdata,**rbuf2;
-  int         *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2;
-  PetscBT     *table;
-  MPI_Comm    comm;
-  MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
-  MPI_Status  *s_status,*recv_status;
+  PetscMPIInt    size,rank;
+  int            m,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
+  int            *ctr,*pa,*tmp,nrqr,*isz,*isz1,**xdata,**rbuf2;
+  int            *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2;
+  PetscBT        *table;
+  MPI_Comm       comm;
+  MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;
+  MPI_Status     *s_status,*recv_status;
 
   PetscFunctionBegin;
   comm   = C->comm;
@@ -428,15 +429,16 @@ memory is used.
 */
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata,int * isz1)
 {
-  Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
-  Mat         A = c->A,B = c->B;
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
+  Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
+  Mat            A = c->A,B = c->B;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
-  int         rstart,cstart,*ai,*aj,*bi,*bj,*garray,i,j,k;
-  int         row,total_sz,ct,ct1,ct2,ct3,mem_estimate,oct2,l,start,end;
-  int         val,max1,max2,rank,m,no_malloc =0,*tmp,new_estimate,ctr;
-  int         *rbuf_i,kmax,rbuf_0;
-  PetscBT     xtable;
+  PetscMPIInt    rank;
+  int            rstart,cstart,*ai,*aj,*bi,*bj,*garray,i,j,k;
+  int            row,total_sz,ct,ct1,ct2,ct3,mem_estimate,oct2,l,start,end;
+  int            val,max1,max2,m,no_malloc =0,*tmp,new_estimate,ctr;
+  int            *rbuf_i,kmax,rbuf_0;
+  PetscBT        xtable;
 
   PetscFunctionBegin;
   rank   = c->rank;
@@ -553,13 +555,14 @@ EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ_All" 
 PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
 {
-  Mat          B;
-  Mat_MPIAIJ   *a = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ   *b,*ad = (Mat_SeqAIJ*)a->A->data,*bd = (Mat_SeqAIJ*)a->B->data;
+  Mat            B;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ *)A->data;
+  Mat_SeqAIJ     *b,*ad = (Mat_SeqAIJ*)a->A->data,*bd = (Mat_SeqAIJ*)a->B->data;
   PetscErrorCode ierr;
-  int          sendcount,*recvcounts = 0,*displs = 0,size,i,*rstarts = a->rowners,rank,n,cnt,j;
-  int          m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
-  PetscScalar  *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
+  PetscMPIInt    rank;
+  int            sendcount,*recvcounts = 0,*displs = 0,size,i,*rstarts = a->rowners,n,cnt,j;
+  int            m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
+  PetscScalar    *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -775,25 +778,26 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const I
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ_Local" 
 PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
-  Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
-  Mat         A = c->A;
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)c->B->data,*mat;
-  int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
+  Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
+  Mat            A = c->A;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)c->B->data,*mat;
+  int            **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end;
   PetscErrorCode ierr;
-  int         **sbuf1,**sbuf2,rank,m,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
-  int         nrqs,msz,**ptr,idex,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
-  int         **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2,**rmap;
-  int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
-  int         len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
-  int         *rmap_i,tag0,tag1,tag2,tag3;
-  MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
-  MPI_Request *r_waits4,*s_waits3,*s_waits4;
-  MPI_Status  *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
-  MPI_Status  *r_status3,*r_status4,*s_status4;
-  MPI_Comm    comm;
-  PetscScalar **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
-  PetscTruth  sorted;
-  int         *onodes1,*olengths1;
+  PetscMPIInt    rank,size;
+  int            **sbuf1,**sbuf2,m,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
+  int            nrqs,msz,**ptr,idex,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
+  int            **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2,**rmap;
+  int            **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
+  int            len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
+  int            *rmap_i,tag0,tag1,tag2,tag3;
+  MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
+  MPI_Request    *r_waits4,*s_waits3,*s_waits4;
+  MPI_Status     *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
+  MPI_Status     *r_status3,*r_status4,*s_status4;
+  MPI_Comm       comm;
+  PetscScalar    **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
+  PetscTruth     sorted;
+  int            *onodes1,*olengths1;
 
   PetscFunctionBegin;
   comm   = C->comm;

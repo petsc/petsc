@@ -11,11 +11,11 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        ierr;
-  PetscTruth flg;
-  const char *string;
-  char       filename[PETSC_MAX_PATH_LEN];
-  void       *handle;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  const char     *string;
+  char           filename[PETSC_MAX_PATH_LEN];
+  void           *handle;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.

@@ -31,7 +31,7 @@
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectGetState(PetscObject obj,int *state)
+PetscErrorCode PetscObjectGetState(PetscObject obj,PetscInt *state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -111,8 +111,8 @@ PetscErrorCode PetscObjectIncreaseState(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int globalcurrentstate = 0, globalmaxstate = 10;
-PetscErrorCode PetscRegisterComposedData(int *id)
+PetscInt globalcurrentstate = 0, globalmaxstate = 10;
+PetscErrorCode PetscRegisterComposedData(PetscInt *id)
 {
   PetscFunctionBegin;
   *id = globalcurrentstate++;

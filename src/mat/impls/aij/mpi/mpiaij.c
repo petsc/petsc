@@ -755,8 +755,9 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ*       A = (Mat_SeqAIJ*)aij->A->data;
   Mat_SeqAIJ*       B = (Mat_SeqAIJ*)aij->B->data;
-  PetscErrorCode ierr;
-  int               nz,fd,header[4],rank,size,*row_lengths,*range,rlen,i,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;
+  int               nz,fd,header[4],*row_lengths,*range,rlen,i;
   int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart,rnz;
   PetscScalar       *column_values;
 
@@ -877,8 +878,8 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
 PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
-  PetscErrorCode ierr;
-  int               rank = aij->rank,size = aij->size;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank = aij->rank,size = aij->size;
   PetscTruth        isdraw,iascii,flg,isbinary;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -1971,15 +1972,16 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
 #define __FUNCT__ "MatLoad_MPIAIJ"
 PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 {
-  Mat          A;
-  PetscScalar  *vals,*svals;
-  MPI_Comm     comm = ((PetscObject)viewer)->comm;
-  MPI_Status   status;
+  Mat            A;
+  PetscScalar    *vals,*svals;
+  MPI_Comm       comm = ((PetscObject)viewer)->comm;
+  MPI_Status     status;
   PetscErrorCode ierr;
-  int          i,nz,j,rstart,rend,fd;
-  int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
-  int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
-  int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
+  int            i,nz,j,rstart,rend,fd;
+  int            header[4],*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
+  int            *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
+  int            cend,cstart,n;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2164,12 +2166,13 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
-  int          i,m,n,rstart,row,rend,nz,*cwork,size,rank,j;
-  int          *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
-  Mat          *local,M,Mreuse;
-  PetscScalar  *vwork,*aa;
-  MPI_Comm     comm = mat->comm;
-  Mat_SeqAIJ   *aij;
+  PetscMPIInt    rank,size;
+  int            i,m,n,rstart,row,rend,nz,*cwork,j;
+  int            *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
+  Mat            *local,M,Mreuse;
+  PetscScalar    *vwork,*aa;
+  MPI_Comm       comm = mat->comm;
+  Mat_SeqAIJ     *aij;
 
 
   PetscFunctionBegin;
@@ -2788,8 +2791,9 @@ PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
 #define __FUNCT__ "MatFileSplit"
 PetscErrorCode MatFileSplit(Mat A,char *outfile)
 {
-  PetscErrorCode ierr;
-  int               rank,m,N,i,rstart,nnz;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank;
+  int               m,N,i,rstart,nnz;
   size_t            len;
   const int         *indx;
   PetscViewer       out;
@@ -2884,10 +2888,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
   PetscErrorCode    ierr; 
   Mat               B_seq,B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
-  int               size,rank,M=seqmat->m,N=seqmat->n,m,i,j,*owners,
-                    *ai=a->i,*aj=a->j,tag,taga,len,len_a,*len_s,*len_sa,proc,*len_r,*len_ra,
-                    **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,
-                    *bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj;                  
+  PetscMPIInt       size,rank;
+  int               M=seqmat->m,N=seqmat->n,m,i,j,*owners,*ai=a->i,*aj=a->j,tag,taga,len,len_a,*len_s,*len_sa,proc,*len_r,*len_ra;
+  int               **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj;                  
   MPI_Request       *s_waits,*r_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
   MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;

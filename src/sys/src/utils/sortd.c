@@ -15,9 +15,9 @@
 #undef __FUNCT__  
 #define __FUNCT__ "PetsciDqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-static PetscErrorCode PetsciDqsort(PetscReal *v,int right)
+static PetscErrorCode PetsciDqsort(PetscReal *v,PetscInt right)
 {
-  int       i,last;
+  PetscInt  i,last;
   PetscReal vl,tmp;
   
   PetscFunctionBegin;
@@ -56,9 +56,9 @@ static PetscErrorCode PetsciDqsort(PetscReal *v,int right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PetscSortReal(int n,PetscReal v[])
+PetscErrorCode PetscSortReal(PetscInt n,PetscReal v[])
 {
-  int       j,k;
+  PetscInt  j,k;
   PetscReal tmp,vk;
 
   PetscFunctionBegin;

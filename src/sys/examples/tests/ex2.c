@@ -7,8 +7,8 @@
 #define __FUNCT__ "CreateError"
 int CreateError(int n)
 {
-  int       ierr;
-  PetscReal *x = 0;
+  PetscErrorCode ierr;
+  PetscReal      *x = 0;
   if (!n) x[0] = 100.; 
   ierr = CreateError(n-1);CHKERRQ(ierr);
   return 0;

@@ -1070,8 +1070,8 @@ PetscErrorCode PetscLogDump(const char sname[])
   FILE          *fd;
   char           file[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
   PetscLogDouble flops, _TotalTime;
-  int            rank, curStage;
-  int            action, object, event;
+  PetscMPIInt    rank;
+  int            action, object, event, curStage;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;

@@ -183,6 +183,13 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 /* -----------------------------------------------------------------------------------------------*/
 
+extern MPI_Op PetscADMax_Op;
+extern MPI_Op PetscADMin_Op;
+EXTERN_C_BEGIN
+extern void PetscADMax_Local(void *,void *,PetscInt *,MPI_Datatype *);
+extern void PetscADMin_Local(void *,void *,PetscInt *,MPI_Datatype *);
+EXTERN_C_END
+
 
 EXTERN_C_BEGIN
 /*
@@ -277,8 +284,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic;
   }
-  MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);
-  MPI_Type_commit(&MPIU_COMPLEX);
+  *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
+  *ierr = MPI_Type_commit(&MPIU_COMPLEX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}  
   *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
 #endif
@@ -288,6 +297,15 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
      half of the entries and maxes the second half.
   */
   *ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
+
+  *ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
+  *ierr = MPI_Type_commit(&MPIU_2SCALAR);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
+  *ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
+  *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
 
   /*

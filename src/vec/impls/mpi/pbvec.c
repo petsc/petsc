@@ -157,7 +157,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-PetscErrorCode VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap map)
+PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar array[],PetscMap map)
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;
@@ -182,7 +182,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
   } else {
-    int n              = ((v->n+nghost) > 0) ? v->n+nghost : 1;
+    PetscInt n              = ((v->n+nghost) > 0) ? v->n+nghost : 1;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     s->array_allocated = s->array;
     ierr               = PetscMemzero(s->array,v->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -281,7 +281,7 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -535,7 +535,7 @@ PetscErrorCode VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatter
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
   Vec_MPI      *w;
@@ -604,7 +604,7 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,cons
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
+PetscErrorCode VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -712,7 +712,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
   Vec_MPI      *w;
@@ -788,7 +788,7 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],Vec *vv)
+PetscErrorCode VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -827,7 +827,7 @@ PetscErrorCode VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesLocal_FETI"
-PetscErrorCode VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,InsertMode mode)
+PetscErrorCode VecSetValuesLocal_FETI(Vec vv,PetscInt n,const PetscInt *ix,const PetscScalar *values,InsertMode mode)
 {
   PetscErrorCode ierr;
   Vec_MPI *v = (Vec_MPI *)vv->data;

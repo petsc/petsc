@@ -21,8 +21,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int      ierr,*indices,rank,n;
-  IS       is;
+  PetscErrorCode ierr;
+  PetscInt       *indices,n;
+  PetscMPIInt    rank;
+  IS             is;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

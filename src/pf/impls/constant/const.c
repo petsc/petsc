@@ -3,13 +3,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Constant"
-PetscErrorCode PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Constant(void *value,PetscInt n,PetscScalar *x,PetscScalar *y)
 {
-  int    i;
+  PetscInt    i;
   PetscScalar v = ((PetscScalar*)value)[0];
 
   PetscFunctionBegin;
-  n *= (int) PetscRealPart(((PetscScalar*)value)[1]);
+  n *= (PetscInt) PetscRealPart(((PetscScalar*)value)[1]);
   for (i=0; i<n; i++) {
     y[i] = v;
   }
@@ -87,7 +87,7 @@ PetscErrorCode PFCreate_Constant(PF pf,void *value)
 EXTERN_C_END
 
 
-typedef PetscErrorCode (*FCN)(void*,int,PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN)(void*,PetscInt,PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"
@@ -104,12 +104,12 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Identity"
-PetscErrorCode PFApply_Identity(void *value,int n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Identity(void *value,PetscInt n,PetscScalar *x,PetscScalar *y)
 {
-  int    i;
+  PetscInt    i;
 
   PetscFunctionBegin;
-  n *= *(int*)value;
+  n *= *(PetscInt*)value;
   for (i=0; i<n; i++) {
     y[i] = x[i];
   }
@@ -155,13 +155,13 @@ EXTERN_C_BEGIN
 PetscErrorCode PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  int *loc;
+  PetscInt *loc;
 
   PetscFunctionBegin;
   if (pf->dimout != pf->dimin) {
     SETERRQ2(1,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
   }
-  ierr = PetscMalloc(sizeof(int),&loc);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt),&loc);CHKERRQ(ierr);
   loc[0] = pf->dimout;
   ierr   = PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

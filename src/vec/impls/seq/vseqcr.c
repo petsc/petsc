@@ -29,7 +29,7 @@
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode VecCreateSeq(MPI_Comm comm,int n,Vec *v)
+PetscErrorCode VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 

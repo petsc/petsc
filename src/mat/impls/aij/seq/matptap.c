@@ -81,7 +81,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   int               i,prow,prstart,prend,m=P->m,pncols;
   const int         *pcols;
   const PetscScalar *pvals;
-  int               rank;
+  PetscMPIInt       rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);

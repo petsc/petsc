@@ -40,10 +40,10 @@ typedef struct _p_PF* PF;
 
 extern PetscCookie PF_COOKIE;
 
-EXTERN PetscErrorCode PFCreate(MPI_Comm,int,int,PF*);
+EXTERN PetscErrorCode PFCreate(MPI_Comm,PetscInt,PetscInt,PF*);
 EXTERN PetscErrorCode PFSetType(PF,const PFType,void*);
-EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,int,PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
-EXTERN PetscErrorCode PFApply(PF,int,PetscScalar*,PetscScalar*);
+EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
+EXTERN PetscErrorCode PFApply(PF,PetscInt,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
 EXTERN PetscErrorCode        PFRegisterDestroy(void);

@@ -53,7 +53,7 @@
 
    Concepts: home directory
 @*/
-PetscErrorCode PetscGetHomeDirectory(char dir[],int maxlen)
+PetscErrorCode PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
   char *d1 = 0;

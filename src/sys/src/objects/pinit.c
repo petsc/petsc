@@ -137,16 +137,16 @@ sum of the second entry.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
-PetscErrorCode PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
+PetscErrorCode PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
-  int            *work;
+  PetscInt            *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr   = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*size*sizeof(PetscInt),&work);CHKERRQ(ierr);
   ierr   = MPI_Allreduce((void*)nprocs,work,size,MPI_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   *max   = work[2*rank];
   *sum   = work[2*rank+1]; 
@@ -160,10 +160,10 @@ MPI_Op PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PetscADMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PetscADMax_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  int         i,count = *cnt;
+  PetscInt         i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2SCALAR) {
@@ -188,10 +188,10 @@ MPI_Op PetscADMin_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PetscADMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PetscADMin_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  int         i,count = *cnt;
+  PetscInt         i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2SCALAR) {
@@ -218,10 +218,10 @@ MPI_Op PetscSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSum_Local"
-void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PetscSum_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  int         i,count = *cnt;
+  PetscInt         i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR) {
@@ -513,7 +513,8 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
 PetscErrorCode PetscFinalize(void)
 {
   PetscErrorCode ierr;
-  int            rank,nopt;
+  PetscMPIInt    rank;
+  int            nopt;
   PetscLogDouble rss;
   PetscTruth     flg1,flg2,flg3;
   
@@ -710,6 +711,15 @@ PetscErrorCode PetscFinalize(void)
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = 0;
+
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MPI_Op_free(&PetscSum_Op);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPIU_COMPLEX);CHKERRQ(ierr);
+#endif
+  ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
   PetscLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
   if (PetscBeganMPI) {

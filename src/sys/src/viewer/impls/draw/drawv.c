@@ -298,7 +298,8 @@ PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char
 PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
-  int              rank,i;
+  PetscMPIInt      rank;
+  int              i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -327,7 +328,8 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
 PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
-  int              rank,i;
+  PetscMPIInt      rank;
+  int              i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;

@@ -21,11 +21,11 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscTruth PetscBeganMPI         = PETSC_FALSE;
-PetscTruth PetscInitializeCalled = PETSC_FALSE;
-int        PetscGlobalRank = -1,PetscGlobalSize = -1;
-MPI_Comm   PETSC_COMM_WORLD = 0;
-MPI_Comm   PETSC_COMM_SELF  = 0;
+PetscTruth  PetscBeganMPI         = PETSC_FALSE;
+PetscTruth  PetscInitializeCalled = PETSC_FALSE;
+PetscMPIInt PetscGlobalRank = -1,PetscGlobalSize = -1;
+MPI_Comm    PETSC_COMM_WORLD = 0;
+MPI_Comm    PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)

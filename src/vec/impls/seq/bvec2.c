@@ -21,7 +21,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   PetscScalar *xx;
   PetscErrorCode ierr;
-  int         n = xin->n;
+  PetscInt         n = xin->n;
   PetscBLASInt bn = (PetscBLASInt)n,one = 1;
 
   PetscFunctionBegin;
@@ -50,7 +50,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z = sqrt(work);}
 #else
     {
-      int         i;
+      PetscInt         i;
       PetscScalar sum=0.0;
       for (i=0; i<n; i++) {
         sum += (xx[i])*(PetscConj(xx[i]));
@@ -64,7 +64,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(2*n-1);
   } else if (type == NORM_INFINITY) {
-    int          i;
+    PetscInt          i;
     PetscReal    max = 0.0,tmp;
 
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
   Vec_Seq           *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  int               i,n = xin->n;
+  PetscInt               i,n = xin->n;
   char              *name;
   PetscViewerFormat format;
 
@@ -153,7 +153,7 @@ static PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  int         i,n = xin->n;
+  PetscInt         i,n = xin->n;
   PetscDraw   win;
   PetscReal   *xx;
   PetscDrawLG lg;
@@ -219,7 +219,8 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  int      fdes,n = xin->n,cookie=VEC_FILE_COOKIE;
+  int      fdes,cookie=VEC_FILE_COOKIE;
+  PetscInt n = xin->n;
   FILE     *file;
 
   PetscFunctionBegin;
@@ -348,11 +349,11 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValues_Seq"
-PetscErrorCode VecSetValues_Seq(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode m)
+PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode m)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscScalar *xx = x->array;
-  int         i;
+  PetscInt         i;
 
   PetscFunctionBegin;
   if (m == INSERT_VALUES) {
@@ -377,11 +378,11 @@ PetscErrorCode VecSetValues_Seq(Vec xin,int ni,const int ix[],const PetscScalar 
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
-PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode m)
+PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode m)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscScalar *xx = x->array,*y = (PetscScalar*)yin;
-  int         i,bs = xin->bs,start,j;
+  PetscInt         i,bs = xin->bs,start,j;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
@@ -587,7 +588,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode VecCreateSeqWithArray(MPI_Comm comm,int n,const PetscScalar array[],Vec *V)
+PetscErrorCode VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscErrorCode ierr;
 
@@ -617,7 +618,7 @@ PetscErrorCode VecCreate_Seq(Vec V)
   Vec_Seq        *s;
   PetscScalar    *array;
   PetscErrorCode ierr;
-  int            n = PetscMax(V->n,V->N);
+  PetscInt            n = PetscMax(V->n,V->N);
   PetscMPIInt    size;
 
   PetscFunctionBegin;

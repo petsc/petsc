@@ -124,7 +124,8 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
-  int         i,N,n,rank,bs;
+  PetscMPIInt    rank;
+  int         i,N,n,bs;
   int         ncid,start;
   Vec         vec;
   PetscScalar *avec;
@@ -276,7 +277,8 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
-  int         i,N,rows,n,rank,bs;
+  PetscMPIInt    rank;
+  int         i,N,rows,n,bs;
   int         ncid,start;
   PetscScalar *avec;
   MPI_Comm    comm;

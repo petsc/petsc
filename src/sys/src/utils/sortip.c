@@ -12,10 +12,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortIntWithPermutation_Private"
-static PetscErrorCode PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right)
+static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],PetscInt vdx[],PetscInt right)
 {
   PetscErrorCode ierr;
-  int tmp,i,vl,last;
+  PetscInt tmp,i,vl,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -58,10 +58,10 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const int v[],int vdx[
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-PetscErrorCode PetscSortIntWithPermutation(int n,const int i[],int idx[])
+PetscErrorCode PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
-  int j,k,tmp,ik;
+  PetscInt j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -84,11 +84,11 @@ PetscErrorCode PetscSortIntWithPermutation(int n,const int i[],int idx[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortRealWithPermutation_Private"
-static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],int vdx[],int right)
+static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],PetscInt vdx[],PetscInt right)
 {
   PetscReal vl;
   PetscErrorCode ierr;
-  int       tmp,i,last;
+  PetscInt       tmp,i,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -131,10 +131,10 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],i
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-PetscErrorCode PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
+PetscErrorCode PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
-  int       j,k,tmp;
+  PetscInt       j,k,tmp;
   PetscReal ik;
 
   PetscFunctionBegin;
@@ -156,10 +156,10 @@ PetscErrorCode PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortStrWithPermutation_Private"
-static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],int vdx[],int right)
+static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscInt vdx[],PetscInt right)
 {
   PetscErrorCode ierr;
-  int        tmp,i,last;
+  PetscInt        tmp,i,last;
   PetscTruth gt;
   const char *vl;
 
@@ -206,10 +206,10 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],int vd
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-PetscErrorCode PetscSortStrWithPermutation(int n,const char* i[],int idx[])
+PetscErrorCode PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
-  int        j,k,tmp;
+  PetscInt        j,k,tmp;
   const char *ik;
   PetscTruth gt;
 

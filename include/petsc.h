@@ -60,6 +60,11 @@ typedef int PetscCookie;
 typedef int PetscEvent;
 typedef int PetscBLASInt;
 typedef int PetscMPIInt;
+typedef int  PetscInt;
+/*#define MPIU_INT MPI_LONG_LONG_INT */
+#define MPIU_INT MPI_INT
+#undef  PETSC_PRINTF_FORMAT_CHECK
+#define PETSC_PRINTF_FORMAT_CHECK(a,b)
 
 /*
     Declare extern C stuff after incuding external header files
@@ -400,7 +405,7 @@ EXTERN MPI_Op PetscSum_Op;
 #else
 #define PetscSum_Op MPI_SUM
 #endif
-EXTERN PetscErrorCode PetscMaxSum(MPI_Comm,const int[],int*,int*);
+EXTERN PetscErrorCode PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
 
 /*S
      PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
@@ -612,10 +617,10 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **
 /*
      Useful utility routines
 */
-EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,int*,int*);
-EXTERN PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,int,int*,int*);
-EXTERN PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,int);
-EXTERN PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,int);
+EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,PetscMPIInt);
+EXTERN PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,PetscMPIInt);
 EXTERN PetscErrorCode PetscBarrier(PetscObject);
 EXTERN PetscErrorCode PetscMPIDump(FILE*);
 

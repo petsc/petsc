@@ -198,7 +198,7 @@ PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **strin
 PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;  
   ierr = MPI_Comm_rank(mengine->comm,&rank);CHKERRQ(ierr);

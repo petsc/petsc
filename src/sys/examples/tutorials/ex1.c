@@ -12,7 +12,8 @@ T*/
 #include "petsc.h"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr,rank,size;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.

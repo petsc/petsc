@@ -36,7 +36,7 @@ $    is2 = {2, 3} {0, 1}
 @*/
 PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  int        sz1,sz2,*ptr1,*ptr2,*a1,*a2;
+  PetscInt        sz1,sz2,*ptr1,*ptr2,*a1,*a2;
   PetscTruth flag;
   MPI_Comm   comm;
   PetscErrorCode ierr;
@@ -65,15 +65,15 @@ PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
   
-      ierr = PetscMalloc((sz1+1)*sizeof(int),&a1);CHKERRQ(ierr);
-      ierr = PetscMalloc((sz2+1)*sizeof(int),&a2);CHKERRQ(ierr);
+      ierr = PetscMalloc((sz1+1)*sizeof(PetscInt),&a1);CHKERRQ(ierr);
+      ierr = PetscMalloc((sz2+1)*sizeof(PetscInt),&a2);CHKERRQ(ierr);
 
-      ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);
 
       ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
       ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(a1,a2,sz1*sizeof(int),&flag);CHKERRQ(ierr);
+      ierr = PetscMemcmp(a1,a2,sz1*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
       ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
-    ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&flag,flg,1,MPIU_INT,MPI_MIN,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

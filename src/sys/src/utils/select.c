@@ -35,10 +35,11 @@
 @*/
 PetscErrorCode PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
-  int    i,rank,rows = n + 2;
-  size_t cols,len;
-  char   buffer[2048],display[256],geometry[64];
-  FILE   *fp;
+  PetscMPIInt    rank;
+  int            i,rows = n + 2;
+  size_t         cols,len;
+  char           buffer[2048],display[256],geometry[64];
+  FILE           *fp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

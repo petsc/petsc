@@ -76,5 +76,7 @@ General
   
   keywords in maual pages should get listed in help topic list
 
+  move creations of MPI_op_create() to PetscInitialize() and fortran version and put frees in finalize()
+
 
 

@@ -32,7 +32,7 @@
 PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
-  int      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscInt      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
   MPI_Comm comm;
 
@@ -79,7 +79,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
   }
 
   /* create the new IS containing the difference */
-  ierr = PetscMalloc((nout+1)*sizeof(int),&iout);CHKERRQ(ierr);
+  ierr = PetscMalloc((nout+1)*sizeof(PetscInt),&iout);CHKERRQ(ierr);
   nout = 0;
   for (i=0; i<imax-imin+1; i++) {
     if (PetscBTLookup(mask,i)) iout[nout++] = i + imin;
@@ -122,7 +122,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
-  int      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscInt      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
   MPI_Comm comm;
 
@@ -153,7 +153,7 @@ PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
   } else {
     imin = imax = 0;
   }
-  ierr = PetscMalloc((n1+n2+1)*sizeof(int),&iout);CHKERRQ(ierr);
+  ierr = PetscMalloc((n1+n2+1)*sizeof(PetscInt),&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */

@@ -24,7 +24,7 @@ PetscCookie IS_LTOGM_COOKIE = -1;
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
+PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
@@ -52,9 +52,10 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int 
 @*/
 PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
 {
-  int        i,rank;
-  PetscTruth iascii;
-  PetscErrorCode ierr;
+  PetscInt        i;
+  PetscMPIInt     rank;
+  PetscTruth      iascii;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
@@ -98,7 +99,7 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscVi
 PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  int      n,*indices;
+  PetscInt      n,*indices;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -137,16 +138,16 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapp
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreateNC()
 @*/
-PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  int *in;
+  PetscInt *in;
 
   PetscFunctionBegin;
   PetscValidIntPointer(indices,3);
   PetscValidPointer(mapping,4);
-  ierr = PetscMalloc((n+1)*sizeof(int),&in);CHKERRQ(ierr);
-  ierr = PetscMemcpy(in,indices,n*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&in);CHKERRQ(ierr);
+  ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateNC(cm,n,in,mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -176,7 +177,7 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
 
@@ -194,10 +195,10 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indice
   PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
                     cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);
   PetscLogObjectCreate(*mapping);
-  PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(int));
+  PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(PetscInt));
 
   (*mapping)->n       = n;
-  (*mapping)->indices = (int*)indices;
+  (*mapping)->indices = (PetscInt*)indices;
 
   /*
       Do not create the global to local mapping. This is only created if 
@@ -229,15 +230,15 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indice
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
 @*/
-PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlobalMapping *outmap)
+PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
 {
   PetscErrorCode ierr;
-  int            *ii,i,n;
+  PetscInt            *ii,i,n;
 
   PetscFunctionBegin;
   if (bs > 1) {
     n    = inmap->n/bs;
-    ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ii[i] = inmap->indices[bs*i]/bs;
     }
@@ -308,7 +309,7 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
   PetscErrorCode ierr;
-  int            n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
+  PetscInt            n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
   PetscValidPointer(mapping,1);
@@ -319,7 +320,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS i
   ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);
   idxmap = mapping->indices;
   
-  ierr = PetscMalloc((n+1)*sizeof(int),&idxout);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&idxout);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
     idxout[i] = idxmap[idxin[i]];
@@ -370,7 +371,7 @@ M*/
 static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
-  int            i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
+  PetscInt            i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
 
   PetscFunctionBegin;
   end   = 0;
@@ -385,7 +386,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
   mapping->globalstart = start;
   mapping->globalend   = end;
 
-  ierr             = PetscMalloc((end-start+2)*sizeof(int),&globals);CHKERRQ(ierr);
+  ierr             = PetscMalloc((end-start+2)*sizeof(PetscInt),&globals);CHKERRQ(ierr);
   mapping->globals = globals;
   for (i=0; i<end-start+1; i++) {
     globals[i] = -1;
@@ -395,7 +396,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     globals[idx[i] - start] = i;
   }
 
-  PetscLogObjectMemory(mapping,(end-start+1)*sizeof(int));
+  PetscLogObjectMemory(mapping,(end-start+1)*sizeof(PetscInt));
   PetscFunctionReturn(0);
 }
 
@@ -436,9 +437,9 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
           ISLocalToGlobalMappingDestroy()
 @*/
 PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
-                                  int n,const int idx[],int *nout,int idxout[])
+                                  PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  int i,*globals,nf = 0,tmp,start,end;
+  PetscInt i,*globals,nf = 0,tmp,start,end;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -509,15 +510,15 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlob
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
+PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,tag3;
-  int            i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
-  int            *nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
-  int            cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
-  int            node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
-  int            first_procs,first_numprocs,*first_indices;
+  PetscInt       i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
+  PetscInt       *nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
+  PetscInt       cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
+  PetscInt       node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
+  PetscInt       first_procs,first_numprocs,*first_indices;
   MPI_Request    *recv_waits,*send_waits;
   MPI_Status     recv_status,*send_status,*recv_statuses;
   MPI_Comm       comm = mapping->comm;
@@ -529,9 +530,9 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   if (size == 1) {
     *nproc         = 0;
     *procs         = PETSC_NULL;
-    ierr           = PetscMalloc(sizeof(int),numprocs);CHKERRQ(ierr);
+    ierr           = PetscMalloc(sizeof(PetscInt),numprocs);CHKERRQ(ierr);
     (*numprocs)[0] = 0;
-    ierr           = PetscMalloc(sizeof(int*),indices);CHKERRQ(ierr); 
+    ierr           = PetscMalloc(sizeof(PetscInt*),indices);CHKERRQ(ierr); 
     (*indices)[0]  = PETSC_NULL;
     PetscFunctionReturn(0);
   }
@@ -559,7 +560,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   for (i=0; i<n; i++) {
     if (lindices[i] > max) max = lindices[i];
   }
-  ierr   = MPI_Allreduce(&max,&Ng,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   Ng++;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -568,11 +569,11 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   rstart = scale*rank;
 
   /* determine ownership ranges of global indices */
-  ierr = PetscMalloc((2*size+1)*sizeof(int),&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((2*size+1)*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* determine owners of each local node  */
-  ierr = PetscMalloc((n+1)*sizeof(int),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     proc             = lindices[i]/scale; /* processor that globally owns this index */
     nprocs[2*proc+1] = 1;                 /* processor globally owns at least one of ours */
@@ -587,15 +588,15 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   PetscLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of local owners for my global data %d\n",nrecvs);
 
   /* post receives for owned rows */
-  ierr = PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(int),&recvs);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(PetscInt),&recvs);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPI_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+i);CHKERRQ(ierr);
   }
 
   /* pack messages containing lists of local nodes to owners */
-  ierr       = PetscMalloc((2*n+1)*sizeof(int),&sends);CHKERRQ(ierr);
-  ierr       = PetscMalloc((size+1)*sizeof(int),&starts);CHKERRQ(ierr);
+  ierr       = PetscMalloc((2*n+1)*sizeof(PetscInt),&sends);CHKERRQ(ierr);
+  ierr       = PetscMalloc((size+1)*sizeof(PetscInt),&starts);CHKERRQ(ierr);
   starts[0]  = 0; 
   for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[2*i-2];} 
   for (i=0; i<n; i++) {
@@ -608,11 +609,11 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
 
   /* send the messages */
   ierr = PetscMalloc((nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc((nsends+1)*sizeof(int),&dest);CHKERRQ(ierr);
+  ierr = PetscMalloc((nsends+1)*sizeof(PetscInt),&dest);CHKERRQ(ierr);
   cnt = 0;
   for (i=0; i<size; i++) {
     if (nprocs[2*i]) {
-      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPI_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPIU_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
       dest[cnt] = i;
       cnt++;
     }
@@ -620,15 +621,15 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   ierr = PetscFree(starts);CHKERRQ(ierr);
 
   /* wait on receives */
-  ierr = PetscMalloc((2*nrecvs+1)*sizeof(int),&source);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*nrecvs+1)*sizeof(PetscInt),&source);CHKERRQ(ierr);
   len  = source + nrecvs;
   cnt  = nrecvs; 
-  ierr = PetscMalloc((ng+1)*sizeof(int),&nownedsenders);CHKERRQ(ierr);
-  ierr = PetscMemzero(nownedsenders,ng*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((ng+1)*sizeof(PetscInt),&nownedsenders);CHKERRQ(ierr);
+  ierr = PetscMemzero(nownedsenders,ng*sizeof(PetscInt));CHKERRQ(ierr);
   while (cnt) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
-    ierr           = MPI_Get_count(&recv_status,MPI_INT,&len[imdex]);CHKERRQ(ierr);
+    ierr           = MPI_Get_count(&recv_status,MPIU_INT,&len[imdex]);CHKERRQ(ierr);
     source[imdex]  = recv_status.MPI_SOURCE;
     len[imdex]     = len[imdex]/2;
     /* count how many local owners for each of my global owned indices */
@@ -645,8 +646,8 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   }
 
   /* create single array to contain rank of all local owners of each globally owned index */
-  ierr      = PetscMalloc((nownedm+1)*sizeof(int),&ownedsenders);CHKERRQ(ierr);
-  ierr      = PetscMalloc((ng+1)*sizeof(int),&starts);CHKERRQ(ierr);
+  ierr      = PetscMalloc((nownedm+1)*sizeof(PetscInt),&ownedsenders);CHKERRQ(ierr);
+  ierr      = PetscMalloc((ng+1)*sizeof(PetscInt),&starts);CHKERRQ(ierr);
   starts[0] = 0;
   for (i=1; i<ng; i++) {
     if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
@@ -698,7 +699,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
     else starts[i] = starts[i-1];
   }
   nsends2 = nrecvs;
-  ierr    = PetscMalloc((nsends2+1)*sizeof(int),&nprocs);CHKERRQ(ierr); /* length of each message */
+  ierr    = PetscMalloc((nsends2+1)*sizeof(PetscInt),&nprocs);CHKERRQ(ierr); /* length of each message */
   for (i=0; i<nrecvs; i++) {
     nprocs[i] = 1;
     for (j=0; j<len[i]; j++) {
@@ -709,8 +710,8 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
     }
   }
   nt = 0; for (i=0; i<nsends2; i++) nt += nprocs[i];
-  ierr = PetscMalloc((nt+1)*sizeof(int),&sends2);CHKERRQ(ierr); 
-  ierr = PetscMalloc((nsends2+1)*sizeof(int),&starts2);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt+1)*sizeof(PetscInt),&sends2);CHKERRQ(ierr); 
+  ierr = PetscMalloc((nsends2+1)*sizeof(PetscInt),&starts2);CHKERRQ(ierr);
   starts2[0] = 0; for (i=1; i<nsends2; i++) starts2[i] = starts2[i-1] + nprocs[i-1];
   /*
      Each message is 1 + nprocs[i] long, and consists of 
@@ -728,7 +729,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
         sends2[starts2[i]]++;
         sends2[starts2[i]+cnt++] = recvs[2*i*nmax+2*j+1];
         sends2[starts2[i]+cnt++] = nownedsenders[node];
-        ierr = PetscMemcpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]*sizeof(PetscInt));CHKERRQ(ierr);
         cnt += nownedsenders[node];
       }
     }
@@ -736,32 +737,32 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
 
   /* send the message lengths */
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Send(&nprocs[i],1,MPI_INT,source[i],tag2,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(&nprocs[i],1,MPIU_INT,source[i],tag2,comm);CHKERRQ(ierr);
   }
 
   /* receive the message lengths */
   nrecvs2 = nsends;
-  ierr = PetscMalloc((nrecvs2+1)*sizeof(int),&lens2);CHKERRQ(ierr);  
-  ierr = PetscMalloc((nrecvs2+1)*sizeof(int),&starts3);CHKERRQ(ierr);  
+  ierr = PetscMalloc((nrecvs2+1)*sizeof(PetscInt),&lens2);CHKERRQ(ierr);  
+  ierr = PetscMalloc((nrecvs2+1)*sizeof(PetscInt),&starts3);CHKERRQ(ierr);  
   nt      = 0;
   for (i=0; i<nrecvs2; i++) {
-    ierr =  MPI_Recv(&lens2[i],1,MPI_INT,dest[i],tag2,comm,&recv_status);CHKERRQ(ierr);
+    ierr =  MPI_Recv(&lens2[i],1,MPIU_INT,dest[i],tag2,comm,&recv_status);CHKERRQ(ierr);
     nt   += lens2[i];
   }
   starts3[0] = 0;
   for (i=0; i<nrecvs2-1; i++) {
     starts3[i+1] = starts3[i] + lens2[i];
   }
-  ierr = PetscMalloc((nt+1)*sizeof(int),&recvs2);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt+1)*sizeof(PetscInt),&recvs2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs2; i++) {
-    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPI_INT,dest[i],tag3,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPIU_INT,dest[i],tag3,comm,recv_waits+i);CHKERRQ(ierr);
   }
   
   /* send the messages */
   ierr = PetscMalloc((nsends2+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPI_INT,source[i],tag3,comm,send_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPIU_INT,source[i],tag3,comm,send_waits+i);CHKERRQ(ierr);
   }
 
   /* wait on receives */
@@ -788,8 +789,8 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   } /* -----------------------------------  */
 
   /* count number subdomains for each local node */
-  ierr = PetscMalloc(size*sizeof(int),&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,size*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr = PetscMemzero(nprocs,size*sizeof(PetscInt));CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -802,23 +803,23 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   }
   nt = 0; for (i=0; i<size; i++) nt += (nprocs[i] > 0);
   *nproc    = nt;
-  ierr = PetscMalloc((nt+1)*sizeof(int),procs);CHKERRQ(ierr);
-  ierr = PetscMalloc((nt+1)*sizeof(int),numprocs);CHKERRQ(ierr);
-  ierr = PetscMalloc((nt+1)*sizeof(int*),indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(int),&bprocs);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt+1)*sizeof(PetscInt),procs);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt+1)*sizeof(PetscInt),numprocs);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt+1)*sizeof(PetscInt*),indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscInt),&bprocs);CHKERRQ(ierr);
   cnt       = 0;
   for (i=0; i<size; i++) {
     if (nprocs[i] > 0) {
       bprocs[i]        = cnt;
       (*procs)[cnt]    = i;
       (*numprocs)[cnt] = nprocs[i];
-      ierr             = PetscMalloc(nprocs[i]*sizeof(int),&(*indices)[cnt]);CHKERRQ(ierr);
+      ierr             = PetscMalloc(nprocs[i]*sizeof(PetscInt),&(*indices)[cnt]);CHKERRQ(ierr);
       cnt++;
     }
   }
 
   /* make the list of subdomains for each nontrivial local node */
-  ierr = PetscMemzero(*numprocs,nt*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(*numprocs,nt*sizeof(PetscInt));CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -835,7 +836,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
   /* sort the node indexing by their global numbers */
   nt = *nproc;
   for (i=0; i<nt; i++) {
-    ierr = PetscMalloc(((*numprocs)[i])*sizeof(int),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc(((*numprocs)[i])*sizeof(PetscInt),&tmp);CHKERRQ(ierr);
     for (j=0; j<(*numprocs)[i]; j++) {
       tmp[j] = lindices[(*indices)[i][j]];
     }
@@ -917,10 +918,10 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingGetInfo()
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
+PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin;
   if (*procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}

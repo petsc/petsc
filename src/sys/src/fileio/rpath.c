@@ -49,7 +49,7 @@
 
 .seealso: PetscGetFullPath()
 @*/
-PetscErrorCode PetscGetRelativePath(const char fullpath[],char path[],int flen)
+PetscErrorCode PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
 {
   char  *p;
   PetscErrorCode ierr;

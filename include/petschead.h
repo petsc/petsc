@@ -274,15 +274,15 @@ EXTERN PetscErrorCode PetscObjectPublishBaseBegin(PetscObject);
 EXTERN PetscErrorCode PetscObjectPublishBaseEnd(PetscObject);
 
 EXTERN PetscErrorCode PetscObjectIncreaseState(PetscObject);
-EXTERN PetscErrorCode PetscObjectGetState(PetscObject obj,int*);
-EXTERN PetscErrorCode PetscRegisterComposedData(int *id);
-EXTERN PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject obj);
-EXTERN PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject obj);
-EXTERN PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject obj);
-EXTERN PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject obj);
-EXTERN PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject obj);
-EXTERN PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject obj);
-EXTERN int globalcurrentstate,globalmaxstate;
+EXTERN PetscErrorCode PetscObjectGetState(PetscObject,PetscInt*);
+EXTERN PetscErrorCode PetscRegisterComposedData(PetscInt*);
+EXTERN PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject);
+EXTERN PetscInt globalcurrentstate,globalmaxstate;
 /*MC
    PetscObjectSetIntComposedData - attach integer data to a PetscObject
 

@@ -3,11 +3,11 @@
 
 EXTERN PetscErrorCode ISDuplicate_General(IS,IS *);
 EXTERN PetscErrorCode ISDestroy_General(IS);
-EXTERN PetscErrorCode ISGetIndices_General(IS,int **);
-EXTERN PetscErrorCode ISRestoreIndices_General(IS,int **);
-EXTERN PetscErrorCode ISGetSize_General(IS,int *);
-EXTERN PetscErrorCode ISGetLocalSize_General(IS,int *);
-EXTERN PetscErrorCode ISInvertPermutation_General(IS,int,IS *);
+EXTERN PetscErrorCode ISGetIndices_General(IS,PetscInt **);
+EXTERN PetscErrorCode ISRestoreIndices_General(IS,PetscInt **);
+EXTERN PetscErrorCode ISGetSize_General(IS,PetscInt *);
+EXTERN PetscErrorCode ISGetLocalSize_General(IS,PetscInt *);
+EXTERN PetscErrorCode ISInvertPermutation_General(IS,PetscInt,IS *);
 EXTERN PetscErrorCode ISView_General(IS,PetscViewer);
 EXTERN PetscErrorCode ISSort_General(IS);
 EXTERN PetscErrorCode ISSorted_General(IS,PetscTruth*);
@@ -43,9 +43,9 @@ static struct _ISOps myops = { ISGetSize_General,
 PetscErrorCode ISStrideToGeneral(IS inis)
 {
   PetscErrorCode ierr;
-  int        step;
-  IS_General *sub;
-  PetscTruth stride,flg;
+  PetscInt       step;
+  IS_General     *sub;
+  PetscTruth     stride,flg;
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);

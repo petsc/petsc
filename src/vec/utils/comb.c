@@ -267,7 +267,7 @@ EXTERN_C_END
 PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscErrorCode ierr;
-  int      flag;
+  PetscMPIInt    flag;
 
   PetscFunctionBegin;
   if (Petsc_Reduction_keyval == MPI_KEYVAL_INVALID) {

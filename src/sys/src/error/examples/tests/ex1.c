@@ -27,15 +27,15 @@ int handleSignal(int signum, void *ctx)
 #define __FUNCT__ "main"
 int main(int argc, char *args[])
 {
-  HandlerCtx user;
-  int        ierr;
+  HandlerCtx     user;
+  PetscErrorCode ierr;
 
   user.exitHandler = 0;
 
   ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscPushSignalHandler(handleSignal, &user);CHKERRQ(ierr);
   while(!user.exitHandler) {
-    if (user.signum >= 0) {
+    if (user.signum > 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum);CHKERRQ(ierr);
       user.signum = -1;
     }
