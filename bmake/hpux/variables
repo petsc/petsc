@@ -1,66 +1,66 @@
-# $Id: base_variables,v 1.8 1999/08/04 20:28:07 balay Exp balay $ 
+# $Id: base_variables,v 1.9 1999/08/19 18:17:24 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
-AR               = ar
-RM               = rm -f
-RANLIB           = true
-OMAKE            = /bin/make
-SHELL            = /bin/sh
+AR		   = ar
+RM		   = rm -f
+RANLIB		   = true
+OMAKE		   = /bin/make
+SHELL		   = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = cc -Aa +z -Ae
-C_FC             = f90 +z
-C_CLINKER_SLFLAG      = -L
-C_FLINKER_SLFLAG      = -L
-C_CLINKER        = cc
-C_FLINKER        = f90
-C_CCV            = unknown
-C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
+C_CC		   = cc -Aa +z -Ae
+C_FC		   = f90 +z
+C_CLINKER_SLFLAG   = -L
+C_FLINKER_SLFLAG   = -L
+C_CLINKER	   = cc
+C_FLINKER	   = f90
+C_CCV		   = unknown
+C_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
 
 # ---------------------------- BOPT - g options ----------------------------
-G_COPTFLAGS      = -g 
-G_FOPTFLAGS      = -g
+G_COPTFLAGS	   = -g 
+G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS      = -O +Onolimit
-O_FOPTFLAGS      = -O
+O_COPTFLAGS	   = -O +Onolimit
+O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
-#CXX_CC           = CC -Aa +z -ext +eh 
-CXX_CC           = CC -Aa +z -ext
-CXX_FC           = f90 +z
-CXX_CLINKER_SLFLAG    = -L
-CXX_FLINKER_SLFLAG    = -L
-CXX_CLINKER      = CC
-CXX_FLINKER      = f90
-CXX_CCV          = unknown
-CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
-	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+#CXX_CC		   = CC -Aa +z -ext +eh 
+CXX_CC		   = CC -Aa +z -ext
+CXX_FC		   = f90 +z
+CXX_CLINKER_SLFLAG = -L
+CXX_FLINKER_SLFLAG = -L
+CXX_CLINKER	   = CC
+CXX_FLINKER	   = f90
+CXX_CCV		   = unknown
+CXX_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
+	             -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
 # ------------------------- BOPT - g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g
-GCXX_FOPTFLAGS   = -g
+GCXX_COPTFLAGS	   = -g
+GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O +Onolimit
-OCXX_FOPTFLAGS   = -O 
+OCXX_COPTFLAGS	   = -O +Onolimit
+OCXX_FOPTFLAGS	   = -O 
 # -------------------------- BOPT - g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g 
-GCOMP_FOPTFLAGS  = -g
+GCOMP_COPTFLAGS	   = -g 
+GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O +Onolimit
-OCOMP_FOPTFLAGS  = -O
+OCOMP_COPTFLAGS	   = -O +Onolimit
+OCOMP_FOPTFLAGS	   = -O
 # ########################### PETSc install options ###########################
 #
-G_PETSCFLAGS     = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK
-O_PETSCFLAGS     = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O
-GCXX_PETSCFLAGS  = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK
-OCXX_PETSCFLAGS  = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O
-GCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DUSE_FORTRAN_KERNELS
-OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O \
-                   -DPETSC_USE_COMPLEX -DUSE_FORTRAN_KERNELS
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK
+O_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DUSE_FORTRAN_KERNELS
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O \
+                     -DPETSC_USE_COMPLEX -DUSE_FORTRAN_KERNELS
 
 ##################################################################################
 #
@@ -68,6 +68,6 @@ OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG -DPETSC_USE_LOG  -DPETSC_USE_BOPT_O \
 #
 ##################################################################################
 
-PARCH    = hpux
+PARCH		   = hpux
 
 include ${PETSC_DIR}/bmake/common_variables
