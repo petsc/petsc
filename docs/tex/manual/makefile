@@ -4,9 +4,9 @@ NOADIC    = true
 # Build the entire manual as well as the intro part
 manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines.red part2.tex
 # First build the manual
-	latex manual_tex
+	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1
 	-bibtex manual_tex
-	latex manual_tex
+	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1
 	/nfs/local-sun4/tex3.14/bin/makeindex manual_tex
 	echo  \\\\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
@@ -14,12 +14,12 @@ manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines
              sed 's/_/\\_/g' >> findex.tex
 	echo \\end\{theindex\} >> findex.tex
 	grep -v FUNCTION manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
-	latex manual_tex
+	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
 # Now make the intro part ... note that this depends on latexing the manual
 	cp manual_tex.aux intro.aux
-	latex intro
+	latex intro | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1
 	-@chmod g+w intro.dvi intro.aux intro.log
 
 manual.ps: 
@@ -67,9 +67,9 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit latex.err
 	cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
-	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit 
-	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit 
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w manual
