@@ -3221,12 +3221,12 @@ int MatCompress(Mat mat)
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
-+    MAT_ROW_ORIENTED - row-oriented
++    MAT_ROW_ORIENTED - row-oriented (default)
 .    MAT_COLUMN_ORIENTED - column-oriented
 .    MAT_ROWS_SORTED - sorted by row
-.    MAT_ROWS_UNSORTED - not sorted by row
+.    MAT_ROWS_UNSORTED - not sorted by row (default)
 .    MAT_COLUMNS_SORTED - sorted by column
--    MAT_COLUMNS_UNSORTED - not sorted by column
+-    MAT_COLUMNS_UNSORTED - not sorted by column (default)
 
    Not these options reflect the data you pass in with MatSetValues(); it has 
    nothing to do with how the data is stored internally in the matrix 
