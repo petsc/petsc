@@ -8,6 +8,9 @@
 # Example usage: buildtest solaris
 #
 set RSH=rsh
+set RCP=rcp
+set RSYNC_SSH=
+
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 #echo Testing packages ${EJOBS}

@@ -5,7 +5,7 @@
 #
 set TMP=/home/petsc/petsc-test
 set MACH=petsc@eris.disturbed.net
-set ARCH=linux
+set ARCH=freebsd
 set TEST=testexamples_
 set NICE=''
 set RSH=ssh
