@@ -52,24 +52,19 @@ struct _p_DrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
-{
-  int         ierr;
-  PetscTruth  isnull;
-  PetscObject obj = (PetscObject)draw;
+int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscDrawHG h;
+  MPI_Comm    comm;
+  PetscTruth  isnull;
+  int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE);
   PetscValidPointer(hist);
-  ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
-  if (isnull) {
-    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)hist);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  PetscHeaderCreate(h,_p_DrawHG,int,DRAWHG_COOKIE,0,"PetscDrawHG",obj->comm,PetscDrawHGDestroy,0);
-  h->view        = 0;
-  h->destroy     = 0;
+  ierr = PetscObjectGetComm((PetscObject) draw, &comm);                                                   CHKERRQ(ierr);
+  PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_COOKIE, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);
+  h->view        = PETSC_NULL;
+  h->destroy     = PETSC_NULL;
   h->win         = draw;
   h->color       = PETSC_DRAW_GREEN;
   h->xmin        = PETSC_MAX;
@@ -78,15 +73,20 @@ int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
   h->ymax        = 1.;
   h->numBins     = bins;
   h->maxBins     = bins;
-  ierr = PetscMalloc(h->maxBins * sizeof(PetscReal), &h->bins);CHKERRQ(ierr);
+  ierr = PetscMalloc(h->maxBins * sizeof(PetscReal), &h->bins);                                           CHKERRQ(ierr);
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
-  ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
-  PetscLogObjectMemory(h,bins*sizeof(PetscReal) + h->maxValues*sizeof(PetscReal));
-  ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
-  PetscLogObjectParent(h, h->axis);
+  ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);                                       CHKERRQ(ierr);
+  PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);                                  CHKERRQ(ierr);
+  if (isnull == PETSC_FALSE) {
+    ierr = PetscDrawAxisCreate(draw, &h->axis);                                                           CHKERRQ(ierr);
+    PetscLogObjectParent(h, h->axis);
+  } else {
+    h->axis = PETSC_NULL;
+  }
   *hist = h;
   PetscFunctionReturn(0);
 }
@@ -109,14 +109,11 @@ int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
    Concepts: histogram^setting number of bins
 
 @*/
-int PetscDrawHGSetNumberBins(PetscDrawHG hist,int bins)
-{
+int PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
   int ierr;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   if (hist->maxBins < bins) {
     ierr = PetscFree(hist->bins);                                                                         CHKERRQ(ierr);
     ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);                                            CHKERRQ(ierr);
@@ -137,18 +134,16 @@ int PetscDrawHGSetNumberBins(PetscDrawHG hist,int bins)
   Input Parameter:
 . hist - The histogram context.
 
-   Level: intermediate
+  Level: intermediate
 
   Contributed by: Matthew Knepley
 
-   Concepts: histogram^resetting
-
+  Concepts: histogram^resetting
 @*/
 int PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   hist->xmin      = PETSC_MAX;
   hist->xmax      = PETSC_MIN;
   hist->ymin      = 0;
@@ -167,7 +162,7 @@ int PetscDrawHGReset(PetscDrawHG hist)
   Input Parameter:
 . hist - The histogram context
 
-   Level: intermediate
+  Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -181,14 +176,11 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
   PetscValidHeader(hist);
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
-  if (hist->cookie == PETSC_DRAW_COOKIE){
-    ierr = PetscDrawDestroy((PetscDraw) hist);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  if (hist->axis != PETSC_NULL) {
+    ierr = PetscDrawAxisDestroy(hist->axis);                                                              CHKERRQ(ierr);
   }
-
-  ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
-  ierr = PetscFree(hist->bins);CHKERRQ(ierr);
-  ierr = PetscFree(hist->values);CHKERRQ(ierr);
+  ierr = PetscFree(hist->bins);                                                                           CHKERRQ(ierr);
+  ierr = PetscFree(hist->values);                                                                         CHKERRQ(ierr);
   PetscLogObjectDestroy(hist);
   PetscHeaderDestroy(hist);
   PetscFunctionReturn(0);
@@ -205,7 +197,7 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
 + hist  - The histogram
 - value - The value 
 
-   Level: intermediate
+  Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -213,12 +205,10 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
 
 .seealso: PetscDrawHGAddValues()
 @*/
-int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
+int PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
     PetscReal *tmp;
@@ -231,6 +221,8 @@ int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
     hist->values     = tmp;
     hist->maxValues += CHUNKSIZE;
   }
+  /* I disagree with the original Petsc implementation here. There should be no overshoot, but rather the
+     stated convention of using half-open intervals (always the way to go) */
   if (!hist->numValues) {
     hist->xmin = value;
     hist->xmax = value;
@@ -276,22 +268,23 @@ int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
   Input Parameter:
 . hist - The histogram context
 
-   Level: intermediate
+  Level: intermediate
 
   Contributed by: Matthew Knepley
-
 @*/
 int PetscDrawHGDraw(PetscDrawHG hist)
 {
-  PetscDraw draw;
-  PetscReal xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
-  char      title[256];
-  char      xlabel[256];
-  int       numBins,numBinsOld,numValues,initSize,i,p,ierr,bcolor,color;
+  PetscDraw  draw = hist->win;
+  PetscTruth isnull;
+  PetscReal  xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
+  char       title[256];
+  char       xlabel[256];
+  int        numBins,numBinsOld,numValues,initSize,i,p,ierr,bcolor,color;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);                                  CHKERRQ(ierr);
+  if (isnull == PETSC_FALSE) PetscFunctionReturn(0);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
@@ -300,9 +293,8 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   if (rank) PetscFunctionReturn(0);
 #endif
 
-  color = hist->color; 
+  color     = hist->color; 
   if (color == PETSC_DRAW_ROTATE) {bcolor = 2;} else {bcolor = color;}
-  draw      = hist->win;
   xmin      = hist->xmin;
   xmax      = hist->xmax;
   ymin      = hist->ymin;
@@ -312,7 +304,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   mean      = 0.0;
   var       = 0.0;
  
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);                                                                            CHKERRQ(ierr);
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
     bins    = hist->bins;
@@ -430,8 +422,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
   int      numBins,numBinsOld,numValues,initSize,i,p,ierr;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
@@ -518,11 +509,10 @@ int PetscDrawHGPrint(PetscDrawHG hist)
   Level: intermediate
 
 @*/
-int PetscDrawHGSetColor(PetscDrawHG hist,int color)
+int PetscDrawHGSetColor(PetscDrawHG hist, int color)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   hist->color = color;
   PetscFunctionReturn(0);
 }
@@ -545,13 +535,11 @@ int PetscDrawHGSetColor(PetscDrawHG hist,int color)
   Contributed by: Matthew Knepley
 
   Concepts: histogram^setting axis
-
 @*/
-int PetscDrawHGSetLimits(PetscDrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_max) 
+int PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   hist->xmin = x_min; 
   hist->xmax = x_max; 
   hist->ymin = y_min; 
@@ -580,8 +568,7 @@ int PetscDrawHGSetLimits(PetscDrawHG hist,PetscReal x_min,PetscReal x_max,int y_
 int PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   hist->calcStats = calc;
   PetscFunctionReturn(0);
 }
@@ -602,13 +589,11 @@ int PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, statistics
-
 @*/
 int PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   hist->integerBins = ints;
   PetscFunctionReturn(0);
 }
@@ -632,16 +617,11 @@ int PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
   Level: intermediate
 
   Contributed by: Matthew Knepley
-
 @*/
-int PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
+int PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) {
-    *axis = 0;
-    PetscFunctionReturn(0);
-  }
-  PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   *axis = hist->axis;
   PetscFunctionReturn(0);
 }
@@ -662,17 +642,12 @@ int PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
   Level: intermediate
 
   Contributed by: Matthew Knepley
-
 @*/
-int PetscDrawHGGetDraw(PetscDrawHG hist,PetscDraw *win)
+int PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {
   PetscFunctionBegin;
-  PetscValidHeader(hist);
-  if (hist && hist->cookie == PETSC_DRAW_COOKIE) {
-    *win = (PetscDraw)hist;
-  } else {
-    *win = hist->win;
-  }
+  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
+  *win = hist->win;
   PetscFunctionReturn(0);
 }
 
