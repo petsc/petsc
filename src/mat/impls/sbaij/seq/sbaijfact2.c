@@ -1372,13 +1372,15 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
     while (i < mbs){
       /* merge row i into k-th row */
       j      = iu[i];
-      lev_ik = lev[j];  
+      /* lev_ik = lev[j];  */
+      lev_ik = lev[j-shift]; /* old */
       nzi    = iu[i+1] - (iu[i]+1);
       jmin   = iu[i] + 1; jmax = iu[i] + nzi;
       qm = k;
       for (j=jmin; j<jmax+1; j++){
         vj      = ju[j];
-        incrlev = lev[j]+lev_ik+1; 
+        /* incrlev = lev[j]+lev_ik+1; */
+        incrlev = lev[j-shift]+lev_ik+1; /* old */
 
 	if (incrlev > levels) continue; 
         do {
@@ -1417,7 +1419,8 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
       ju       = jutmp;
 
       ierr     = PetscMalloc(umax*sizeof(int),&jutmp);CHKERRQ(ierr);
-      ierr     = PetscMemcpy(jutmp,lev,iu[k]*sizeof(int));CHKERRQ(ierr);
+      /* ierr     = PetscMemcpy(jutmp,lev,iu[k]*sizeof(int));CHKERRQ(ierr); */
+      ierr     = PetscMemcpy(jutmp,lev,(iu[k]-shift)*sizeof(int));CHKERRQ(ierr); /* old */
       ierr     = PetscFree(lev);CHKERRQ(ierr);       
       lev      = jutmp;
       realloc += 2; /* count how many times we realloc */
@@ -1426,11 +1429,12 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
     /* save nonzero structure of k-th row in ju */
     i=k;
     jumin = juptr + 1; juptr += nzk; 
-    lev[juptr] = 0;
+    /* lev[juptr] = 0; */ /* new! */
     for (j=jumin; j<juptr+1; j++){
       i      = q[i];
       ju[j]  = i;
-      lev[j] = levtmp[i];
+      /* lev[j] = levtmp[i]; */
+      lev[j-shift] = levtmp[i]; /* old */
     }    
   } 
   
