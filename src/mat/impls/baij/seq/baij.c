@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.163 1999/02/15 21:55:44 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.164 1999/02/17 00:33:09 balay Exp bsmith $";
 #endif
 
 /*
@@ -1545,8 +1545,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     for ( i=0; i<mbs; i++ ) {
       c->diag[i] = a->diag[i];
     }
-  }
-  else c->diag          = 0;
+  } else c->diag        = 0;
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
