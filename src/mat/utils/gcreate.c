@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.112 1999/04/16 15:47:16 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.113 1999/05/04 20:33:40 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -49,6 +49,14 @@ static char vcid[] = "$Id: gcreate.c,v 1.112 1999/04/16 15:47:16 bsmith Exp bala
    for additional format-specific options.
 
    Notes:
+   If PETSC_DECIDE is not used for the arguments 'm' and 'n', then the
+   user must ensure that they are chosen to be compatible with the
+   vectors. To do this, one first considers the matrix-vector product 
+   'y = A x'. The 'm' that is used in the above routine must match the 
+   local size used in the vector creation routine VecCreateMPI() for 'y'.
+   Likewise, the 'n' used must match that used as the local size in
+   VecCreateMPI() for 'x'.
+
    This routine calls MatGetTypeFromOptions() to determine the matrix type.
 
    Level: beginner
