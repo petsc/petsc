@@ -285,7 +285,7 @@ class Configure(config.base.Configure):
       if line.startswith('AR_FLAGS  '):
         line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
       if line.startswith('LIB_SUFFIX  '):
-        line = 'LIB_SUFFIX = '+self.programs.LIB_SUFFIX+'\n'
+        line = 'LIB_SUFFIX = '+self.libraries.suffix+'\n'
       if line.startswith('RANLIB  '):
         line = 'RANLIB = '+self.setcompilers.RANLIB+'\n'
       if line.startswith('RM  '):

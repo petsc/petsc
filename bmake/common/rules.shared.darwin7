@@ -7,7 +7,7 @@ SLSUFFIX = dylib
 
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
+	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
         if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${MPI_LIB} ${BLASLAPACK_LIB}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
@@ -39,11 +39,11 @@ shared:
 	mkdir ${INSTALL_LIB_DIR}/tmp; \
 	for LIBNAME in libmpiuni ${SHLIBS}; \
 	do \
-	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${LIB_SUFFIX}; then \
+	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
 	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME..dylib; then \
-	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
+	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
 	      if [ "$$flag" = "" ]; then \
-	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
+	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
 	      fi; \
 	    else \
 	      flag="build"; \
