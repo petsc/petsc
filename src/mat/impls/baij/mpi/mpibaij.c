@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.78 1997/08/13 22:47:40 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.79 1997/08/22 15:14:37 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -875,9 +875,6 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   if (baij->rowvalues) PetscFree(baij->rowvalues);
   if (baij->barray) PetscFree(baij->barray);
   PetscFree(baij); 
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
-  }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   return 0;
