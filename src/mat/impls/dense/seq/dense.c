@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.16 1995/03/23 05:01:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.17 1995/03/23 22:31:22 bsmith Exp curfman $";
 #endif
 
 /*
@@ -16,29 +16,29 @@ typedef struct {
   int    roworiented;
   int    m,n,pad;
   int    *pivots;   /* pivots in LU factorization */
-} MatiSD;
+} Mat_Dense;
 
 
-static int MatiSDnz(Mat matin,int *nz)
+static int MatNz_Dense(Mat matin,int *nz)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i,N = mat->m*mat->n,count = 0;
   Scalar *v = mat->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
   *nz = count; return 0;
 }
-static int MatiSDmemory(Mat matin,int *mem)
+static int MatMemory_Dense(Mat matin,int *mem)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   *mem = mat->m*mat->n*sizeof(Scalar); return 0;
 }
   
 /* ---------------------------------------------------------------*/
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
-static int MatiSDlufactor(Mat matin,IS row,IS col)
+static int MatLUFactor_Dense(Mat matin,IS row,IS col)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    info;
   if (!mat->pivots) {
     mat->pivots = (int *) MALLOC( mat->m*sizeof(int) );
@@ -49,29 +49,29 @@ static int MatiSDlufactor(Mat matin,IS row,IS col)
   matin->factor = FACTOR_LU;
   return 0;
 }
-static int MatiSDlufactorsymbolic(Mat matin,IS row,IS col,Mat *fact)
+static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,Mat *fact)
 {
   int ierr;
   if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
   return 0;
 }
-static int MatiSDlufactornumeric(Mat matin,Mat *fact)
+static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
 {
   return MatLUFactor(*fact,0,0);
 }
-static int MatiSDchfactorsymbolic(Mat matin,IS row,Mat *fact)
+static int MatChFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
 {
   int ierr;
   if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
   return 0;
 }
-static int MatiSDchfactornumeric(Mat matin,Mat *fact)
+static int MatChFactorNumeric_Dense(Mat matin,Mat *fact)
 {
   return MatCholeskyFactor(*fact,0);
 }
-static int MatiSDchfactor(Mat matin,IS perm)
+static int MatChFactor_Dense(Mat matin,IS perm)
 {
-  MatiSD    *mat = (MatiSD *) matin->data;
+  Mat_Dense    *mat = (Mat_Dense *) matin->data;
   int       info;
   if (mat->pivots) {FREE(mat->pivots); mat->pivots = 0;}
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
@@ -80,9 +80,9 @@ static int MatiSDchfactor(Mat matin,IS perm)
   return 0;
 }
 
-static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
+static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -99,9 +99,9 @@ static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
   if (info) SETERR(1,"Bad solve");
   return 0;
 }
-static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
+static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -118,9 +118,9 @@ static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
   if (info) SETERR(1,"Bad solve");
   return 0;
 }
-static int MatiSDsolveadd(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    one = 1, info,ierr;
   Scalar *x, *y, sone = 1.0;
   Vec    tmp = 0;
@@ -144,9 +144,9 @@ static int MatiSDsolveadd(Mat matin,Vec xx,Vec zz,Vec yy)
   else VecAXPY(&sone,zz,yy);
   return 0;
 }
-static int MatiSDsolvetransadd(Mat matin,Vec xx,Vec zz, Vec yy)
+static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
 {
-  MatiSD  *mat = (MatiSD *) matin->data;
+  Mat_Dense  *mat = (Mat_Dense *) matin->data;
   int     one = 1, info,ierr;
   Scalar  *x, *y, sone = 1.0;
   Vec     tmp;
@@ -171,10 +171,10 @@ static int MatiSDsolvetransadd(Mat matin,Vec xx,Vec zz, Vec yy)
   return 0;
 }
 /* ------------------------------------------------------------------*/
-static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,double shift,
+static int MatRelax_Dense(Mat matin,Vec bb,double omega,int flag,double shift,
                        int its,Vec xx)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
   int    o = 1,ierr, m = mat->m, i;
 
@@ -202,9 +202,9 @@ static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,double shift,
 } 
 
 /* -----------------------------------------------------------------*/
-static int MatiSDmulttrans(Mat matin,Vec xx,Vec yy)
+static int MatMultTrans_Dense(Mat matin,Vec xx,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v, *x, *y;
   int _One=1;Scalar _DOne=1.0, _DZero=0.0;
   VecGetArray(xx,&x), VecGetArray(yy,&y);
@@ -212,9 +212,9 @@ static int MatiSDmulttrans(Mat matin,Vec xx,Vec yy)
          x, &_One, &_DZero, y, &_One );
   return 0;
 }
-static int MatiSDmult(Mat matin,Vec xx,Vec yy)
+static int MatMult_Dense(Mat matin,Vec xx,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v, *x, *y;
   int _One=1;Scalar _DOne=1.0, _DZero=0.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -222,9 +222,9 @@ static int MatiSDmult(Mat matin,Vec xx,Vec yy)
          x, &_One, &_DZero, y, &_One );
   return 0;
 }
-static int MatiSDmultadd(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1; Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
@@ -233,9 +233,9 @@ static int MatiSDmultadd(Mat matin,Vec xx,Vec zz,Vec yy)
          x, &_One, &_DOne, y, &_One );
   return 0;
 }
-static int MatiSDmulttransadd(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultTransAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1;
   Scalar _DOne=1.0;
@@ -248,10 +248,10 @@ static int MatiSDmulttransadd(Mat matin,Vec xx,Vec zz,Vec yy)
 }
 
 /* -----------------------------------------------------------------*/
-static int MatiSDgetrow(Mat matin,int row,int *ncols,int **cols,
+static int MatGetRow_Dense(Mat matin,int row,int *ncols,int **cols,
                         Scalar **vals)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v;
   int    i;
   *ncols = mat->n;
@@ -266,7 +266,7 @@ static int MatiSDgetrow(Mat matin,int row,int *ncols,int **cols,
   }
   return 0;
 }
-static int MatiSDrestorerow(Mat matin,int row,int *ncols,int **cols,
+static int MatRestoreRow_Dense(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
   if (cols) { FREE(*cols); }
@@ -274,10 +274,10 @@ static int MatiSDrestorerow(Mat matin,int row,int *ncols,int **cols,
   return 0;
 }
 /* ----------------------------------------------------------------*/
-static int MatiSDinsert(Mat matin,int m,int *indexm,int n,
+static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
                         int *indexn,Scalar *v,InsertMode addv)
 { 
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i,j;
  
   if (!mat->roworiented) {
@@ -324,24 +324,24 @@ static int MatiSDinsert(Mat matin,int m,int *indexm,int n,
 }
 
 /* -----------------------------------------------------------------*/
-static int MatiSDcopy(Mat matin,Mat *newmat)
+static int MatCopy_Dense(Mat matin,Mat *newmat)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int ierr;
   Mat newi;
-  MatiSD *l;
+  Mat_Dense *l;
   if ((ierr = MatCreateSequentialDense(mat->m,mat->n,&newi))) SETERR(ierr,0);
-  l = (MatiSD *) newi->data;
+  l = (Mat_Dense *) newi->data;
   MEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
   return 0;
 }
 #include "viewer.h"
 
-int MatiSDview(PetscObject obj,Viewer ptr)
+int MatView_Dense(PetscObject obj,Viewer ptr)
 {
   Mat         matin = (Mat) obj;
-  MatiSD      *mat = (MatiSD *) matin->data;
+  Mat_Dense      *mat = (Mat_Dense *) matin->data;
   Scalar      *v;
   int         i,j;
   PetscObject ojb = (PetscObject) ptr;
@@ -366,10 +366,10 @@ int MatiSDview(PetscObject obj,Viewer ptr)
 }
 
 
-static int MatiSDdestroy(PetscObject obj)
+static int MatDestroy_Dense(PetscObject obj)
 {
   Mat    mat = (Mat) obj;
-  MatiSD *l = (MatiSD *) mat->data;
+  Mat_Dense *l = (Mat_Dense *) mat->data;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
 #endif
@@ -380,9 +380,9 @@ static int MatiSDdestroy(PetscObject obj)
   return 0;
 }
 
-static int MatiSDtrans(Mat matin)
+static int MatTrans_Dense(Mat matin)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    k,j;
   Scalar *v = mat->v, tmp;
   if (mat->m != mat->n) {
@@ -398,10 +398,10 @@ static int MatiSDtrans(Mat matin)
   return 0;
 }
 
-static int MatiSDequal(Mat matin1,Mat matin2)
+static int MatEqual_Dense(Mat matin1,Mat matin2)
 {
-  MatiSD *mat1 = (MatiSD *) matin1->data;
-  MatiSD *mat2 = (MatiSD *) matin2->data;
+  Mat_Dense *mat1 = (Mat_Dense *) matin1->data;
+  Mat_Dense *mat2 = (Mat_Dense *) matin2->data;
   int    i;
   Scalar *v1 = mat1->v, *v2 = mat2->v;
   if (mat1->m != mat2->m) return 0;
@@ -413,9 +413,9 @@ static int MatiSDequal(Mat matin1,Mat matin2)
   return 1;
 }
 
-static int MatiSDgetdiag(Mat matin,Vec v)
+static int MatGetDiag_Dense(Mat matin,Vec v)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i, n;
   Scalar *x;
   CHKTYPE(v,SEQVECTOR);
@@ -427,9 +427,9 @@ static int MatiSDgetdiag(Mat matin,Vec v)
   return 0;
 }
 
-static int MatiSDscale(Mat matin,Vec ll,Vec rr)
+static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *l,*r,x,*v;
   int    i,j,m = mat->m, n = mat->n;
   if (ll) {
@@ -454,9 +454,9 @@ static int MatiSDscale(Mat matin,Vec ll,Vec rr)
 }
 
 
-static int MatiSDnorm(Mat matin,int type,double *norm)
+static int MatNorm_Dense(Mat matin,int type,double *norm)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v;
   double sum = 0.0;
   int    i, j;
@@ -505,25 +505,25 @@ static int MatiSDnorm(Mat matin,int type,double *norm)
   return 0;
 }
 
-static int MatiDenseinsopt(Mat aijin,int op)
+static int MatInsOpt_Dense(Mat aijin,int op)
 {
-  MatiSD *aij = (MatiSD *) aijin->data;
+  Mat_Dense *aij = (Mat_Dense *) aijin->data;
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
   else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
   /* doesn't care about sorted rows or columns */
   return 0;
 }
 
-static int MatiZero(Mat A)
+static int MatZero_Dense(Mat A)
 {
-  MatiSD *l = (MatiSD *) A->data;
+  Mat_Dense *l = (Mat_Dense *) A->data;
   MEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
   return 0;
 }
 
-static int MatiZerorows(Mat A,IS is,Scalar *diag)
+static int MatZeroRows_Dense(Mat A,IS is,Scalar *diag)
 {
-  MatiSD *l = (MatiSD *) A->data;
+  Mat_Dense *l = (Mat_Dense *) A->data;
   int    n = l->n, i, j,ierr,N, *rows;
   Scalar *slot;
   ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
@@ -542,36 +542,38 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatiSDSize(Mat matin,int *m,int *n)
+static int MatSize_Dense(Mat matin,int *m,int *n)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
-static int MatiSDGetArray(Mat matin,Scalar **array)
+static int MatGetArray_Dense(Mat matin,Scalar **array)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
   *array = mat->v;
   return 0;
 }
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatiSDinsert,
-       MatiSDgetrow, MatiSDrestorerow,
-       MatiSDmult, MatiSDmultadd, MatiSDmulttrans, MatiSDmulttransadd, 
-       MatiSDsolve,MatiSDsolveadd,MatiSDsolvetrans,MatiSDsolvetransadd,
-       MatiSDlufactor,MatiSDchfactor,
-       MatiSDrelax,
-       MatiSDtrans,
-       MatiSDnz,MatiSDmemory,MatiSDequal,
-       MatiSDcopy,
-       MatiSDgetdiag,MatiSDscale,MatiSDnorm,
+static struct _MatOps MatOps = {MatInsert_Dense,
+       MatGetRow_Dense, MatRestoreRow_Dense,
+       MatMult_Dense, MatMultAdd_Dense, 
+       MatMultTrans_Dense, MatMultTransAdd_Dense, 
+       MatSolve_Dense,MatSolveAdd_Dense,
+       MatSolveTrans_Dense,MatSolveTransAdd_Dense,
+       MatLUFactor_Dense,MatChFactor_Dense,
+       MatRelax_Dense,
+       MatTrans_Dense,
+       MatNz_Dense,MatMemory_Dense,MatEqual_Dense,
+       MatCopy_Dense,
+       MatGetDiag_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
-       0, MatiDenseinsopt,MatiZero,MatiZerorows,0,
-       MatiSDlufactorsymbolic,MatiSDlufactornumeric,
-       MatiSDchfactorsymbolic,MatiSDchfactornumeric,
-       MatiSDSize,MatiSDSize,0,
-       0,0,MatiSDGetArray
+       0, MatInsOpt_Dense,MatZero_Dense,MatZeroRows_Dense,0,
+       MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
+       MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
+       MatSize_Dense,MatSize_Dense,0,
+       0,0,MatGetArray_Dense
 };
 /*@
     MatCreateSequentialDense - Creates a sequential dense matrix that 
@@ -588,16 +590,16 @@ static struct _MatOps MatOps = {MatiSDinsert,
 @*/
 int MatCreateSequentialDense(int m,int n,Mat *newmat)
 {
-  int       size = sizeof(MatiSD) + m*n*sizeof(Scalar);
+  int       size = sizeof(Mat_Dense) + m*n*sizeof(Scalar);
   Mat mat;
-  MatiSD    *l;
+  Mat_Dense    *l;
   *newmat        = 0;
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,MPI_COMM_SELF);
   PLogObjectCreate(mat);
-  l              = (MatiSD *) MALLOC(size); CHKPTR(l);
+  l              = (Mat_Dense *) MALLOC(size); CHKPTR(l);
   mat->ops       = &MatOps;
-  mat->destroy   = MatiSDdestroy;
-  mat->view      = MatiSDview;
+  mat->destroy   = MatDestroy_Dense;
+  mat->view      = MatView_Dense;
   mat->data      = (void *) l;
   mat->factor    = 0;
   mat->col       = 0;
@@ -614,8 +616,8 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   return 0;
 }
 
-int MatiSDCreate(Mat matin,Mat *newmat)
+int MatCreate_Dense(Mat matin,Mat *newmat)
 {
-  MatiSD *m = (MatiSD *) matin->data;
+  Mat_Dense *m = (Mat_Dense *) matin->data;
   return MatCreateSequentialDense(m->m,m->n,newmat);
 }

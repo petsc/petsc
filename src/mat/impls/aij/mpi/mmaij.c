@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.6 1995/03/17 04:56:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.7 1995/03/21 23:19:19 bsmith Exp curfman $";
 #endif
 
 
@@ -10,10 +10,10 @@ static char vcid[] = "$Id: mmaij.c,v 1.6 1995/03/17 04:56:54 bsmith Exp bsmith $
 #include "vec/vecimpl.h"
 #include "../seq/aij.h"
 
-int MPIAIJSetUpMultiply(Mat mat)
+int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
-  Matiaij    *B = (Matiaij *) (aij->B->data);  
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  Mat_AIJ    *B = (Mat_AIJ *) (aij->B->data);  
   int        N = aij->N,i,j,*indices,*aj = B->j;
   int        ierr,ec = 0,*garray;
   IS         from,to;

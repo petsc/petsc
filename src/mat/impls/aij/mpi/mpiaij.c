@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.12 1995/03/23 01:05:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.13 1995/03/23 05:01:27 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -59,8 +59,8 @@ length of colmap equals the global matrix length.
 */
 static int CreateColmap(Mat mat)
 {
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
-  Matiaij    *B = (Matiaij*) aij->B->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
   int        n = B->n,i;
   aij->colmap = (int *) MALLOC( aij->N*sizeof(int) ); CHKPTR(aij->colmap);
   MEMSET(aij->colmap,0,aij->N*sizeof(int));
@@ -70,10 +70,10 @@ static int CreateColmap(Mat mat)
   return 0;
 }
 
-static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
+static int MatInsertValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
   int        cstart = aij->cstart, cend = aij->cend,row,col;
 
@@ -122,9 +122,9 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatiAIJBeginAssemble(Mat mat)
+static int MatBeginAssemble_MPIAIJ(Mat mat)
 { 
-  Matimpiaij  *aij = (Matimpiaij *) mat->data;
+  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
   int         numtids = aij->numtids, *owners = aij->rowners;
   int         mytid = aij->mytid;
@@ -223,12 +223,12 @@ static int MatiAIJBeginAssemble(Mat mat)
 
   return 0;
 }
-extern int MPIAIJSetUpMultiply(Mat);
+extern int MatSetUpMultiply_MPIAIJ(Mat);
 
-static int MatiAIJEndAssemble(Mat mat)
+static int MatEndAssemble_MPIAIJ(Mat mat)
 { 
   int        ierr;
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
 
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n;
@@ -292,9 +292,9 @@ static int MatiAIJEndAssemble(Mat mat)
   return 0;
 }
 
-static int MatiZero(Mat A)
+static int MatZero_MPIAIJ(Mat A)
 {
-  Matimpiaij *l = (Matimpiaij *) A->data;
+  Mat_MPIAIJ *l = (Mat_MPIAIJ *) A->data;
 
   MatZeroEntries(l->A); MatZeroEntries(l->B);
   return 0;
@@ -310,9 +310,9 @@ static int MatiZero(Mat A)
    aij->A and aij->B directly and not through the MatZeroRows() 
    routine. 
 */
-static int MatiZerorows(Mat A,IS is,Scalar *diag)
+static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 {
-  Matimpiaij     *l = (Matimpiaij *) A->data;
+  Mat_MPIAIJ     *l = (Mat_MPIAIJ *) A->data;
   int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
   int            *procs,*nprocs,j,found,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
@@ -323,7 +323,7 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERR(1,"MatiZerorows: must assmble matrix first");
+  if (!l->assembled) SETERR(1,"MatZeroRows_MPIAIJ: must assemble matrix first");
   ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
   ierr = ISGetIndices(is,&rows); CHKERR(ierr);
 
@@ -435,11 +435,11 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
+static int MatMult_MPIAIJ(Mat aijin,Vec xx,Vec yy)
 {
-  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
-  if (!aij->assembled) SETERR(1,"MatiAIJMul: must assmble matrix first");
+  if (!aij->assembled) SETERR(1,"MatMult_MPIAIJ: must assemble matrix first");
   ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMult(aij->A,xx,yy); CHKERR(ierr);
@@ -449,11 +449,11 @@ static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatiAIJMultadd(Mat aijin,Vec xx,Vec yy,Vec zz)
+static int MatMultAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
 {
-  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
-  if (!aij->assembled) SETERR(1,"MatiAIJMul: must assmble matrix first");
+  if (!aij->assembled) SETERR(1,"MatMult_MPIAIJ: must assemble matrix first");
   ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(aij->A,xx,yy,zz); CHKERR(ierr);
@@ -463,12 +463,13 @@ static int MatiAIJMultadd(Mat aijin,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
-static int MatiAIJMultTrans(Mat aijin,Vec xx,Vec yy)
+static int MatMultTrans_MPIAIJ(Mat aijin,Vec xx,Vec yy)
 {
-  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
 
-  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
+  if (!aij->assembled) 
+    SETERR(1,"MatMulTrans_MPIAIJ: must assemble matrix first");
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
@@ -484,12 +485,13 @@ static int MatiAIJMultTrans(Mat aijin,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatiAIJMultTransadd(Mat aijin,Vec xx,Vec yy,Vec zz)
+static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
 {
-  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
 
-  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
+  if (!aij->assembled) 
+    SETERR(1,"MatMulTransAdd_MPIAIJ: must assemble matrix first");
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
@@ -509,17 +511,17 @@ static int MatiAIJMultTransadd(Mat aijin,Vec xx,Vec yy,Vec zz)
   This only works correctly for square matrices where the subblock A->A is the 
    diagonal block
 */
-static int MatiAIJgetdiag(Mat Ain,Vec v)
+static int MatGetDiag_MPIAIJ(Mat Ain,Vec v)
 {
-  Matimpiaij *A = (Matimpiaij *) Ain->data;
-  if (!A->assembled) SETERR(1,"MatiAIJgetdiag: must assmble matrix first");
+  Mat_MPIAIJ *A = (Mat_MPIAIJ *) Ain->data;
+  if (!A->assembled) SETERR(1,"MatGetDiag_MPIAIJ: must assemble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
-static int MatiAIJdestroy(PetscObject obj)
+static int MatDestroy_MPIAIJ(PetscObject obj)
 {
   Mat        mat = (Mat) obj;
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",aij->M,aij->N);
@@ -537,13 +539,13 @@ static int MatiAIJdestroy(PetscObject obj)
   return 0;
 }
 
-static int MatiView(PetscObject obj,Viewer viewer)
+static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat        mat = (Mat) obj;
-  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
 
-  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
+  if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
   MPE_Seq_begin(mat->comm,1);
     ViewerPrintf(viewer,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
@@ -555,7 +557,7 @@ static int MatiView(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int MatiAIJmarkdiag(Matiaij  *);
+extern int MatMarkDiag_MPIAIJ(Mat_AIJ  *);
 /*
     This has to provide several versions.
 
@@ -564,23 +566,23 @@ extern int MatiAIJmarkdiag(Matiaij  *);
         b) local smoothing updating outer values each inner iteration
      3) color updating out values betwen colors.
 */
-static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
+static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,int flag,double shift,
                         int its,Vec xx)
 {
-  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
-  Matiaij    *A = (Matiaij *) AA->data, *B = (Matiaij *)BB->data;
+  Mat_AIJ    *A = (Mat_AIJ *) AA->data, *B = (Mat_AIJ *)BB->data;
   Scalar     zero = 0.0,*b,*x,*xs,*ls,d,*v,sum,scale,*t,*ts;
   int        ierr,*idx, *diag;
   int        n = mat->n, m = mat->m, i;
   Vec        tt;
 
-  if (!mat->assembled) SETERR(1,"MatiAIJRelax: must assmble matrix first");
+  if (!mat->assembled) SETERR(1,"MatRelax_MPIAIJ: must assemble matrix first");
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
   ls--;
-  if (!A->diag) {if ((ierr = MatiAIJmarkdiag(A))) return ierr;}
+  if (!A->diag) {if ((ierr = MatMarkDiag_MPIAIJ(A))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
     SETERR(1,"That option not yet support for parallel AIJ matrices");
@@ -880,9 +882,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
   }
   return 0;
 } 
-static int MatiAIJinsopt(Mat aijin,int op)
+static int MatInsOpt_MPIAIJ(Mat aijin,int op)
 {
-  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
 
   if      (op == NO_NEW_NONZERO_LOCATIONS)  {
     MatSetOption(aij->A,op);
@@ -896,49 +898,49 @@ static int MatiAIJinsopt(Mat aijin,int op)
   return 0;
 }
 
-static int MatiAIJsize(Mat matin,int *m,int *n)
+static int MatSize_MPIAIJ(Mat matin,int *m,int *n)
 {
-  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->M; *n = mat->N;
   return 0;
 }
 
-static int MatiAIJlocalsize(Mat matin,int *m,int *n)
+static int MatLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
-  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
-static int MatiAIJrange(Mat matin,int *m,int *n)
+static int MatRange_MPIAIJ(Mat matin,int *m,int *n)
 {
-  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->rstart; *n = mat->rend;
   return 0;
 }
 
-static int MatiCopy(Mat,Mat *);
-extern int MatiAIJMPIConvert(Mat,MATTYPE,Mat *);
+static int MatCopy_MPIAIJ(Mat,Mat *);
+extern int MatConvert_MPIAIJ(Mat,MATTYPE,Mat *);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatiAIJInsertValues,
+static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
        0, 0,
-       MatiAIJMult,MatiAIJMultadd,MatiAIJMultTrans,MatiAIJMultTransadd,
+       MatMult_MPIAIJ,MatMultAdd_MPIAIJ,
+       MatMultTrans_MPIAIJ,MatMultTransAdd_MPIAIJ,
        0,0,0,0,
        0,0,
-       MatiAIJrelax,
+       MatRelax_MPIAIJ,
        0,
        0,0,0,
-       MatiCopy,
-       MatiAIJgetdiag,0,0,
-       MatiAIJBeginAssemble,MatiAIJEndAssemble,
+       MatCopy_MPIAIJ,
+       MatGetDiag_MPIAIJ,0,0,
+       MatBeginAssemble_MPIAIJ,MatEndAssemble_MPIAIJ,
        0,
-       MatiAIJinsopt,MatiZero,MatiZerorows,0,
+       MatInsOpt_MPIAIJ,MatZero_MPIAIJ,MatZeroRows_MPIAIJ,0,
        0,0,0,0,
-       MatiAIJsize,MatiAIJlocalsize,MatiAIJrange,
+       MatSize_MPIAIJ,MatLocalSize_MPIAIJ,MatRange_MPIAIJ,
        0,0,
-       0,MatiAIJMPIConvert };
-
+       0,MatConvert_MPIAIJ };
 
 /*@
 
@@ -965,15 +967,15 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
                  int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)
 {
   Mat          mat;
-  Matimpiaij   *aij;
+  Mat_MPIAIJ   *aij;
   int          ierr, i,sum[2],work[2];
   *newmat         = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,comm);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIAIJ,comm);
   PLogObjectCreate(mat);
-  mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
+  mat->data       = (void *) (aij = NEW(Mat_MPIAIJ)); CHKPTR(aij);
   mat->ops        = &MatOps;
-  mat->destroy    = MatiAIJdestroy;
-  mat->view       = MatiView;
+  mat->destroy    = MatDestroy_MPIAIJ;
+  mat->view       = MatView_MPIAIJ;
   mat->factor     = 0;
   mat->row        = 0;
   mat->col        = 0;
@@ -1040,20 +1042,20 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   return 0;
 }
 
-static int MatiCopy(Mat matin,Mat *newmat)
+static int MatCopy_MPIAIJ(Mat matin,Mat *newmat)
 {
   Mat        mat;
-  Matimpiaij *aij,*oldmat = (Matimpiaij *) matin->data;
+  Mat_MPIAIJ *aij,*oldmat = (Mat_MPIAIJ *) matin->data;
   int        ierr;
   *newmat      = 0;
 
   if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,matin->comm);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
   PLogObjectCreate(mat);
-  mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
+  mat->data       = (void *) (aij = NEW(Mat_MPIAIJ)); CHKPTR(aij);
   mat->ops        = &MatOps;
-  mat->destroy    = MatiAIJdestroy;
-  mat->view       = MatiView;
+  mat->destroy    = MatDestroy_MPIAIJ;
+  mat->view       = MatView_MPIAIJ;
   mat->factor     = matin->factor;
   mat->row        = 0;
   mat->col        = 0;
