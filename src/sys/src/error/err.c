@@ -12,7 +12,7 @@
 typedef struct _EH *EH;
 struct _EH {
   int            cookie;
-  PetscErrorCode (*handler)(int,const char*,const char*,const char *,int,int,const char*,void *);
+  PetscErrorCode (*handler)(int,const char*,const char*,const char *,PetscErrorCode,int,const char*,void *);
   void           *ctx;
   EH             previous;
 };
@@ -61,7 +61,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char        command[PETSC_MAX_PATH_LEN];
@@ -93,7 +93,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char 
          example file pointers for error messages etc.)
 
    Calling sequence of handler:
-$    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess,void *ctx);
+$    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p,char *mess,void *ctx);
 
 +  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
@@ -113,7 +113,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,PetscErrorCode,int,const char*,void*),void *ctx)
 {
   EH  neweh;
   PetscErrorCode ierr;
@@ -229,6 +229,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
   PetscFunctionReturn(0);
 }
 
+#define        PETSC_EXCEPTIONS_MAX                    256
+PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX] = {0};
+PetscInt       PetscExceptionsCount                  = 0;
+PetscErrorCode PetscExceptionTmp                     = 0;
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscExceptionPush" 
+PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err) 
+{
+  PetscFunctionBegin;
+  if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sys/srcd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
+  PetscExceptions[PetscExceptionsCount++] = err;
+  PetscFunctionReturn(0);   
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscExceptionPop" 
+void PETSC_DLLEXPORT PetscExceptionPop()
+{
+  /* if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty"); */
+  PetscExceptionsCount--;
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscError" 
 /*@C
@@ -262,12 +286,13 @@ $     SETERRQ(n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* file,const char *dir,int n,int p,const char *mess,...)
+PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,...)
 {
-  va_list     Argp;
+  va_list        Argp;
   PetscErrorCode ierr;
-  char        buf[2048],*lbuf = 0;
-  PetscTruth  ismain,isunknown;
+  char           buf[2048],*lbuf = 0;
+  PetscTruth     ismain,isunknown;
+  PetscInt       i;
 
   if (!func)  func = "User provided function";
   if (!file)  file = "User file";
@@ -283,6 +308,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
     if (p == 1) {
       PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
     }
+  }
+
+  /* check if user is catching this exception */
+  for (i=0; i<PetscExceptionsCount; i++) {
+    if (n == PetscExceptions[i])  PetscFunctionReturn(n);
   }
 
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,lbuf,0);

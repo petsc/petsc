@@ -148,7 +148,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
 #define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2);}
 
@@ -177,7 +177,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
 #define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
 
@@ -243,7 +243,7 @@ M*/
 
    Concepts: memory corruption
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), 
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           PetscMallocValidate()
 M*/
 #define CHKMEMQ {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
@@ -253,6 +253,33 @@ extern  PetscErrorCode __gierr;
 #define _   __gierr = 
 #define ___  CHKERRQ(__gierr);
 #endif
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
+EXTERN void PETSC_DLLEXPORT PetscExceptionPop();
+
+/*MC
+   PetscExceptionTry1 - Runs the routine, causing a particular error code to be treated as an exception,
+         rather than an error. That is if that error code is treated the program returns to this level,
+         but does not call the error handlers
+
+   Not Collective
+
+   Synopsis:
+     PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+
+  Concepts: exceptions, exception hanlding
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+          CHKERRQ()
+M*/
+extern PetscErrorCode PetscExceptionTmp;
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(),PetscExceptionTmp)
 
 #else
 #define SETERRQ(n,s) ;
@@ -275,22 +302,23 @@ extern  PetscErrorCode __gierr;
 #define ___  
 #endif 
 
+#define PetscExceptionTry1(a,b) a
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStopErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscAbortErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*); 
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscError(int,const char*,const char*,const char*,int,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char*,const char*,const char*,int,int,const char*,void*),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopErrorHandler(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscDefaultSignalHandler(int,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopSignalHandler(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscStopErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*); 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*),void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);

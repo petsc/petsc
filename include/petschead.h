@@ -310,11 +310,6 @@ EXTERN PetscInt       PETSC_DLLEXPORT globalmaxstate;
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    Level: developer
 M*/
 #define PetscObjectComposedDataSetInt(obj,id,data)                                      \
@@ -337,11 +332,6 @@ M*/
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
@@ -362,11 +352,6 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    Level: developer
 M*/
@@ -391,11 +376,6 @@ M*/
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
@@ -416,11 +396,6 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    Level: developer
 M*/
@@ -444,11 +419,6 @@ M*/
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
@@ -469,11 +439,6 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    Level: developer
 M*/
@@ -498,11 +463,6 @@ M*/
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
@@ -523,11 +483,6 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    Level: developer
 M*/
@@ -555,11 +510,6 @@ M*/
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
-
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
@@ -585,11 +535,6 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    Level: developer
 M*/
@@ -617,11 +562,6 @@ M*/
    Output parameters
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
-
-   Notes:
-
-   This routine does not return an error code; any errors are handled
-   internally.
 
    The 'data' and 'flag' variables are inlined, so they are not pointers.
 

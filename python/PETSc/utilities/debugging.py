@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
   def configureDebugging(self):
     # should do error checking
     if self.framework.argDB['with-errorchecking']:
-      self.addDefine('USE_ERRORCHECKING',1=1)
+      self.addDefine('USE_ERRORCHECKING',1)
     else:
       self.framework.logClear()
       print '=================================================================================\r'

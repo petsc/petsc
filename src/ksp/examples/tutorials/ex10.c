@@ -36,7 +36,6 @@ T*/
 */
 #include "petscksp.h"
 
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -47,7 +46,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
-  PetscErrorCode ierr,ierrp;
+  PetscErrorCode ierr;
   PetscInt       its;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
@@ -104,11 +103,10 @@ int main(int argc,char **args)
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr  = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
-    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
-    ierrp = VecLoad(fd,PETSC_NULL,&b);
-    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
-    if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
+    ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+
+    ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_READ);
+    if (ierr == PETSC_ERR_FILE_READ) { /* if file contains no RHS, then use a vector of all ones */
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscLogInfo((0,"Using vector of ones for RHS\n"));CHKERRQ(ierr);
@@ -117,7 +115,8 @@ int main(int argc,char **args)
       ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(&one,b);CHKERRQ(ierr);
-    }
+    } else CHKERRQ(ierr); 
+
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
     /* Test MatDuplicate() */

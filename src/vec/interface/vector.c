@@ -390,7 +390,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
    */
   if (type!=NORM_1_AND_2) {
     ierr = VecNormComposedDataID(type,&type_id);CHKERRQ(ierr);
-    ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
   
@@ -666,16 +666,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (const PetscScalar *alpha,Vec x)
   /* see if we have cached norms */
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id1);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id1,norm1,flg1);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id1,norm1,flg1);CHKERRQ(ierr);
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id2);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id2,norm2,flg2);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id2,norm2,flg2);CHKERRQ(ierr);
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_idInf);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_idInf,normInf,flgInf);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idInf,normInf,flgInf);CHKERRQ(ierr);
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_idF);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_idF,normF,flgF);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idF,normF,flgF);CHKERRQ(ierr);
 
   /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
@@ -751,25 +751,25 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   /* however, norms can be simply copied over */
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
@@ -1074,20 +1074,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   /* See if we have cached norms */
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id1);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id1,norm1x,flg1x);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)y,type_id1,norm1y,flg1y);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id1,norm1x,flg1x);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_id1,norm1y,flg1y);CHKERRQ(ierr);
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id2);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id2,norm2x,flg2x);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)y,type_id2,norm2y,flg2y);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id2,norm2x,flg2x);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_id2,norm2y,flg2y);CHKERRQ(ierr);
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_idInf);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_idInf,normInfx,flgInfx);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)y,type_idInf,normInfy,flgInfy);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idInf,normInfx,flgInfx);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_idInf,normInfy,flgInfy);CHKERRQ(ierr);
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_idF);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_idF,normFx,flgFx);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)y,type_idF,normFy,flgFy);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idF,normFx,flgFx);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_idF,normFy,flgFy);CHKERRQ(ierr);
 
   /* Do the actual swap */
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
