@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.12 1995/03/25 01:25:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.13 1995/03/27 22:56:41 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -31,6 +31,17 @@ static struct _VeOps DvOps = {VecCreate_Blas,
             VecGetArray_Seq, VecGetSize_Seq,VecGetSize_Seq ,
             VecGetOwnershipRange_Seq};
 
+/*@
+    VecCreateSequentialBLAS - creates a standard array-style vector
+
+  Input Parameter:
+.   n - the vector length 
+
+  Output Parameter:
+.   V - the vector
+
+  Keywords: vector, sequential, Fortran, create, BLAS
+@*/
 int VecCreateSequentialBLAS(int n,Vec *V)
 {
   int      size = sizeof(Vec_Seq)+n*sizeof(Scalar);

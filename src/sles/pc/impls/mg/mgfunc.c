@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: mgfunc.c,v 1.4 1995/03/06 04:15:59 bsmith Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
@@ -85,7 +85,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 
   Input Parameters:
 .   mg - the multigrid context 
-.   sles - the smoother
+.   mat - the restriction matrix
 .  l - the level to supply
 
 @*/

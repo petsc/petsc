@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: newtr1.c,v 1.8 1995/02/22 00:52:41 curfman Exp $";
+static char vcid[] = "$Id: tr.c,v 1.1 1995/04/12 20:36:40 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
-#include "nonlin/nlall.h"
-#include "nonlin/snes/nlepriv.h"
+#include "tr.h"
 
-/*D
+/*
     NLE_NTR1 - Implements Newton's Method with a trust region 
     approach for solving systems of nonlinear equations. 
 
@@ -34,7 +33,7 @@ $   NLDestroy()
     Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
     of Mathematical Software", Wayne Cowell, editor.  See the examples 
     in nonlin/examples.
-D*/
+*/
 /*
    This is intended as a model implementation, since it does not 
    necessarily have many of the bells and whistles of other 
@@ -51,155 +50,123 @@ D*/
         point, assuming a local linearization.  The value is 0 if the 
         step lies within the trust region and is > 0 otherwise.
 */
-int NLENewtonTR1Solve( nlP )
-NLCtx *nlP;
+static int SNESSolve_TR(SNES snes, int *its )
 {
-   NLENewtonTR1Ctx *neP = (NLENewtonTR1Ctx *) nlP->MethodPrivate;
-   void            *X, *F, *Y, *G, *TMP;
-   int             maxits, i, iters, history_len, nlconv;
-   double          rho, fnorm, gnorm, gpnorm, xnorm, delta;
-   double          *history, ynorm;
-   FILE            *fp = nlP->fp;
-   NLMonCore       *mc = &nlP->mon.core;
-   VECntx          *vc = NLGetVectorCtx(nlP);
+  SNES_TR  *neP = (SNES_TR *) snes->data;
+  Vec      X, F, Y, G, TMP;
+  int      maxits, i, iters, history_len, nlconv,ierr,lits;
+  double   rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
+  double   *history, ynorm;
+  Scalar   one = 1.0;
 
-   CHKCOOKIEN(nlP,NL_COOKIE);
-   nlconv	= 0;			/* convergence monitor */
-   history	= nlP->conv_hist;	/* convergence history */
-   history_len	= nlP->conv_hist_len;	/* convergence history length */
-   maxits	= nlP->max_its;		/* maximum number of iterations */
-   X		= nlP->vec_sol;		/* solution vector */
-   F		= nlP->vec_rg;		/* residual vector */
-   Y		= nlP->work[0];		/* work vectors */
-   G		= nlP->work[1];
+  nlconv	= 0;			/* convergence monitor */
+  history	= snes->conv_hist;	/* convergence history */
+  history_len	= snes->conv_hist_len;	/* convergence history length */
+  maxits	= snes->max_its;	/* maximum number of iterations */
+  X		= snes->vec_sol;		/* solution vector */
+  F		= snes->vec_res;		/* residual vector */
+  Y		= snes->work[0];		/* work vectors */
+  G		= snes->work[1];
 
-   INITIAL_GUESS( X );			/* X <- X_0 */
-   VNORM( vc, X, &xnorm ); 		/* xnorm = || X || */
+  ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
+  VecNorm(X, &xnorm ); 		/* xnorm = || X || */
    
-   RESIDUAL( X, F );			/* Evaluate (+/-) F(X) */
-   VNORM( vc, F, &fnorm );		/* fnorm <- || F || */ 
-   nlP->norm = fnorm;
-   if (history && history_len > 0) history[0] = fnorm;
-   delta = neP->delta0*fnorm;         
-   neP->delta = delta;
-   mc->nvectors += 4; mc->nscalars += 3;
-   MONITOR( X, F, &fnorm );		/* Monitor progress */
+  ierr = SNESComputeResidual(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
+  VecNorm(F, &fnorm );		/* fnorm <- || F || */ 
+  snes->norm = fnorm;
+  if (history && history_len > 0) history[0] = fnorm;
+  delta = neP->delta0*fnorm;         
+  neP->delta = delta;
+  if (snes->Monitor)(*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
  
    for ( i=0; i<maxits; i++ ) {
-       nlP->iter = i+1;
+     snes->iter = i+1;
 
-       STEP_SETUP( X );			/* Step set-up phase */
-       while(1) {
-           iters = STEP_COMPUTE( X, F, Y, &fnorm, &delta, 
-		   &(nlP->trunctol), &gpnorm, &ynorm, (void *)0 );
-		   CHKERRV(1,-(NL));	/* Step compute phase */
-           VAXPY( vc, 1.0, X, Y );	/* Y <- X + Y */
-           RESIDUAL( Y, G );		/* Evaluate (+/-) G(Y) */
-           VNORM( vc, G, &gnorm );	/* gnorm <- || g || */ 
-           if (fnorm == gpnorm) rho = 0.0;
-           else rho = (fnorm*fnorm - gnorm*gnorm)/
-                      (fnorm*fnorm - gpnorm*gpnorm); 
-
-           /* Update size of trust region */
-           if      (rho < neP->mu)  delta *= neP->delta1;
-           else if (rho < neP->eta) delta *= neP->delta2;
-           else                     delta *= neP->delta3;
-
-           if (fp) fprintf(fp,"%d:  f=%g, g=%g, ynorm=%g\n",
-                   i, fnorm, gnorm, ynorm );
-           if (fp) fprintf(fp,"     gpred=%g, rho=%g, delta=%g, iters=%d\n", 
-                   gpnorm, rho, delta, iters);
-
-           neP->delta = delta;
-           mc->nvectors += 4; mc->nscalars += 8;
-           if (rho > neP->sigma) break;
-           neP->itflag = 0;
-           if (CONVERGED( &xnorm, &ynorm, &fnorm )) {
-              /* We're not progressing, so return with the current iterate */
-              if (X != nlP->vec_sol) VCOPY( vc, X, nlP->vec_sol );
-              return i;
-              }
-           nlP->mon.nunsuc++;
-           }
-       STEP_DESTROY();			/* Step destroy phase */
-       fnorm = gnorm;
-       nlP->norm = fnorm;
-       if (history && history_len > i+1) history[i+1] = fnorm;
-       TMP = F; F = G; G = TMP;
-       TMP = X; X = Y; Y = TMP;
-       VNORM( vc, X, &xnorm );		/* xnorm = || X || */
-       mc->nvectors += 2;
-       mc->nscalars++;
-       MONITOR( X, F, &fnorm );		/* Monitor progress */
-
-       /* Test for convergence */
-       neP->itflag = 1;
-       if (CONVERGED( &xnorm, &ynorm, &fnorm )) {
-           /* Verify solution is in corect location */
-           if (X != nlP->vec_sol) VCOPY( vc, X, nlP->vec_sol );
-           break;
-           } 
+     (*snes->ComputeJacobian)(X,&snes->jacobian,snes->jacP);
+     while(1) {
+       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian,0);
+       ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERR(ierr);
+       /* Scale Y if need be and predict new value of F norm */
+       VecNorm( Y, &norm );
+       if (norm > delta) {
+         norm = delta/norm;
+         gpnorm = (1.0 - norm)*fnorm;
+         VecScale( &norm, Y );
+         PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
+         ynorm = delta;
+       } else {
+         gpnorm = 0.0;
+         PLogInfo((PetscObject)snes,"Direction is in Trust Region \n" );
+         ynorm = norm;
        }
-   if (i == maxits) i--;
-   return i+1;
+       VecAXPY(&one, X, Y );	/* Y <- X + Y */
+       ierr = SNESComputeResidual(snes,Y,G); CHKERR(ierr); /* (+/-) F(X) */
+       VecNorm( G, &gnorm );	/* gnorm <- || g || */ 
+       if (fnorm == gpnorm) rho = 0.0;
+       else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
+
+       /* Update size of trust region */
+       if      (rho < neP->mu)  delta *= neP->delta1;
+       else if (rho < neP->eta) delta *= neP->delta2;
+       else                     delta *= neP->delta3;
+
+       PLogInfo((PetscObject)snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
+                                             i, fnorm, gnorm, ynorm );
+       PLogInfo((PetscObject)snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
+                                               gpnorm, rho, delta, lits);
+
+       neP->delta = delta;
+       if (rho > neP->sigma) break;
+       neP->itflag = 0;
+       if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP)) {
+         /* We're not progressing, so return with the current iterate */
+         if (X != snes->vec_sol) VecCopy( X, snes->vec_sol );
+         return i;
+       }
+     }
+     fnorm = gnorm;
+     snes->norm = fnorm;
+     if (history && history_len > i+1) history[i+1] = fnorm;
+     TMP = F; F = G; G = TMP;
+     TMP = X; X = Y; Y = TMP;
+     VecNorm(X, &xnorm );		/* xnorm = || X || */
+     if (snes->Monitor) (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
+
+     /* Test for convergence */
+     neP->itflag = 1;
+     if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+       /* Verify solution is in corect location */
+       if (X != snes->vec_sol) VecCopy(X, snes->vec_sol );
+       break;
+     } 
+   }
+   if (i == maxits) *its = i-1; else *its = i;
+   return 0;
 }
 /* -------------------------------------------------------------*/
-void NLENewtonTR1Create( nlP )
-NLCtx *nlP;
-{
-  NLENewtonTR1Ctx *neP;
- 
-  CHKCOOKIE(nlP,NL_COOKIE);
-  nlP->method		= NLE_NTR1;
-  nlP->method_type	= NLE;
-  nlP->setup		= NLENewtonTR1SetUp;
-  nlP->solver		= NLENewtonTR1Solve;
-  nlP->destroy		= NLENewtonTR1Destroy;
-  nlP->set_param	= NLENewtonTR1SetParameter;
-  nlP->get_param	= NLENewtonTR1GetParameter;
-  nlP->usr_monitor	= NLENewtonDefaultMonitor;
-  nlP->converged	= NLENewtonTR1DefaultConverged;
-  nlP->term_type	= NLENewtonTR1DefaultConvergedType;
 
-  neP			= NEW(NLENewtonTR1Ctx); CHKPTR(neP);
-  nlP->MethodPrivate	= (void *) neP;
-  neP->mu		= 0.25;
-  neP->eta		= 0.75;
-  neP->delta		= 0.0;
-  neP->delta0		= 0.2;
-  neP->delta1		= 0.3;
-  neP->delta2		= 0.75;
-  neP->delta3		= 2.0;
-  neP->sigma		= 0.0001;
-  neP->itflag		= 0;
-}
 /*------------------------------------------------------------*/
-/*ARGSUSED*/
-void  NLENewtonTR1SetUp( nlP )
-NLCtx *nlP;
+static int SNESSetUp_TR( SNES snes )
 {
-  CHKCOOKIE(nlP,NL_COOKIE);
-  nlP->nwork = 2;
-  nlP->work = VGETVECS( nlP->vc, nlP->nwork );	CHKPTR(nlP->work);
-  NLiBasicSetUp( nlP, "NLENewtonTR1SetUp" );	CHKERR(1);
+  int ierr;
+  snes->nwork = 2;
+  ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERR(ierr);
+  return 0;
 }
 /*------------------------------------------------------------*/
-/*ARGSUSED*/
-void NLENewtonTR1Destroy( nlP )
-NLCtx *nlP;
+static int SNESDestroy_TR(PetscObject obj )
 {
-  CHKCOOKIE(nlP,NL_COOKIE);
-  VFREEVECS( nlP->vc, nlP->work, nlP->nwork );
-  NLiBasicDestroy( nlP );	CHKERR(1);
+  SNES snes = (SNES) obj;
+  VecFreeVecs(snes->work, snes->nwork );
+  return 0;
 }
 /*------------------------------------------------------------*/
-/*ARGSUSED*/
 /*@
-   NLENewtonTR1DefaultConverged - Default test for monitoring the 
+   SNESTRDefaultConverged - Default test for monitoring the 
    convergence of the method NLENewtonTR1Solve.
 
    Input Parameters:
-.  nlP - nonlinear context obtained from NLCreate()
+.  snes - nonlinear context obtained from NLCreate()
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of residual
@@ -230,135 +197,72 @@ $               set with NLSetRelConvergenceTol()
    information about the type of termination which occurred for the
    nonlinear solver.
 @*/
-int NLENewtonTR1DefaultConverged( nlP, xnorm, pnorm, fnorm )
-NLCtx  *nlP;
-double *xnorm;
-double *pnorm;
-double *fnorm;
+int SNESTRDefaultConverged(SNES snes, double xnorm, double pnorm, 
+                           double fnorm, void *ctx )
 {
-  NLENewtonTR1Ctx *neP = (NLENewtonTR1Ctx *)nlP->MethodPrivate;
-  double          epsmch = 1.0e-14;   /* This must be fixed */
+  SNES_TR *neP = (SNES_TR *)snes->data;
+  double  epsmch = 1.0e-14;   /* This must be fixed */
 
-  CHKCOOKIEN(nlP,NL_COOKIE);
-  if (nlP->method_type != NLE) {
-      SETERRC(1,"Compatible with NLE component only");
-      return 0;
-      }
-  nlP->conv_info = 0;
-  if (neP->delta < *xnorm * nlP->deltatol) 	nlP->conv_info = 1;
+  if (neP->delta < xnorm * neP->deltatol) 	return  1;
   if (neP->itflag) {
-      if (nlP->conv_info) return nlP->conv_info;
-      nlP->conv_info = 
-          NLENewtonDefaultConverged( nlP, xnorm, pnorm, fnorm );
+          return SNESDefaultConverged( snes, xnorm, pnorm, fnorm,ctx );
       }
-  if (neP->delta < *xnorm * epsmch)		nlP->conv_info = -1;
-  return nlP->conv_info;
+  if (neP->delta < xnorm * epsmch)		return -1;
+  return 0;
 }
-/*------------------------------------------------------------*/
-/*
-   NLENewtonTR1DefaultConvergedType - Returns information regarding 
-   the type of termination which occurred within the 
-   NLENewtonTR1DefaultConverged() test.
 
-   Input Parameter:
-.  nlP - nonlinear context obtained from NLCreate()
-
-   Returns:
-   Character string - message detailing the type of termination which
-   occurred.
-*/
-char *NLENewtonTR1DefaultConvergedType( nlP )
-NLCtx *nlP;
+static int SNESSetFromOptions_TR(SNES snes)
 {
-  char *mesg;
+  SNES_TR *ctx = (SNES_TR *)snes->data;
+  double  tmp;
 
-  CHKCOOKIEN(nlP,NL_COOKIE);
-  if ((int)nlP->converged != (int)NLENewtonTR1DefaultConverged) {
-     mesg = "Compatible only with NLENewtonTR1DefaultConverged.\n";
-     SETERRC(1,"Compatible only with NLENewtonTR1DefaultConverged.");
-  } else { 
-  switch (nlP->conv_info) {
-   case 1:
-     mesg = "Trust region parameter satisfies the trust region tolerance.\n";
-     break;
-   case -1:
-     mesg = "Machine epsilon tolerance exceeds the trust region parameter.\n";
-     break;
-   default:
-     mesg = NLENewtonDefaultConvergedType( nlP );
-  } }
-  return mesg;
+  if (OptionsGetDouble(0,snes->prefix,"-mu",&tmp)) {ctx->mu = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-eta",&tmp)) {ctx->eta = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-sigma",&tmp)) {ctx->sigma = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-delta0",&tmp)) {ctx->delta0 = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-delta1",&tmp)) {ctx->delta1 = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-delta2",&tmp)) {ctx->delta2 = tmp;}
+  if (OptionsGetDouble(0,snes->prefix,"-delta3",&tmp)) {ctx->delta3 = tmp;}
+  return 0;
 }
-/*------------------------------------------------------------*/
-/*
-   NLENewtonTR1SetParameter - Sets a chosen parameter used by the
-   NLE_NTR1 method to the desired value.
 
-   Note:
-   Possible parameters for the NLE_NTR1 method are
-$       param = "mu" - used to compute trust region parameter
-$       param = "eta" - used to compute trust region parameter
-$       param = "sigma" - used to determine termination
-$       param = "delta0" - used to initialize trust region parameter
-$       param = "delta1" - used to compute trust region parameter
-$       param = "delta2" - used to compute trust region parameter
-$       param = "delta3" - used to compute trust region parameter
-*/
-void NLENewtonTR1SetParameter( nlP, param, value )
-NLCtx  *nlP;
-char   *param;
-double *value;
+static int SNESPrintHelp_TR(SNES snes)
 {
-  NLENewtonTR1Ctx *ctx = (NLENewtonTR1Ctx *)nlP->MethodPrivate;
- 
-  CHKCOOKIE(nlP,NL_COOKIE);
-  if (nlP->method != NLE_NTR1) {
-      SETERRC(1,"Compatible only with NLE_NTR1 method");
-      return;
-      }
-  if (!strcmp(param,"mu"))		ctx->mu     = *value;
-  else if (!strcmp(param,"eta"))	ctx->eta    = *value;
-  else if (!strcmp(param,"sigma"))	ctx->sigma  = *value;
-  else if (!strcmp(param,"delta0"))	ctx->delta0 = *value;
-  else if (!strcmp(param,"delta1"))	ctx->delta1 = *value;
-  else if (!strcmp(param,"delta2"))	ctx->delta2 = *value;
-  else if (!strcmp(param,"delta3"))	ctx->delta3 = *value;
-  else SETERRC(1,"Invalid parameter name for NLE_NTR1");
+  SNES_TR *ctx = (SNES_TR *)snes->data;
+  char    *prefix = "-";
+  if (snes->prefix) prefix = snes->prefix;
+  fprintf(stderr,"%smu mu (default %g)\n",prefix,ctx->mu);
+  fprintf(stderr,"%seta eta (default %g)\n",prefix,ctx->eta);
+  fprintf(stderr,"%ssigma sigma (default %g)\n",prefix,ctx->sigma);
+  fprintf(stderr,"%sdelta0 delta0 (default %g)\n",prefix,ctx->delta0);
+  fprintf(stderr,"%sdelta1 delta1 (default %g)\n",prefix,ctx->delta1);
+  fprintf(stderr,"%sdelta2 delta2 (default %g)\n",prefix,ctx->delta2);
+  fprintf(stderr,"%sdelta3 delta3 (default %g)\n",prefix,ctx->delta3);
+  return 0;
 }
-/*------------------------------------------------------------*/
-/*
-   NLENewtonTR1GetParameter - Returns the value of a chosen parameter
-   used by the NLE_NTR1 method.
 
-   Note:
-   Possible parameters for the NLE_NTR1 method are
-$       param = "mu" - used to compute trust region parameter
-$       param = "eta" - used to compute trust region parameter
-$       param = "sigma" - used to determine termination
-$       param = "delta0" - used to initialize trust region parameter
-$       param = "delta1" - used to compute trust region parameter
-$       param = "delta2" - used to compute trust region parameter
-$       param = "delta3" - used to compute trust region parameter
-*/
-double NLENewtonTR1GetParameter( nlP, param )
-NLCtx *nlP;
-char  *param;
+int SNESCreate_TR(SNES snes )
 {
-  NLENewtonTR1Ctx *ctx = (NLENewtonTR1Ctx *)nlP->MethodPrivate;
-  double          value = 0.0;
+  SNES_TR *neP;
 
-  CHKCOOKIEN(nlP,NL_COOKIE);
-  if (nlP->method != NLE_NTR1) {
-      SETERRC(1,"Compatible only with NLE_NTR1 method");
-      return value;
-      }
-  if (!strcmp(param,"mu"))		value = ctx->mu;
-  else if (!strcmp(param,"eta"))	value = ctx->eta;
-  else if (!strcmp(param,"sigma"))	value = ctx->sigma;
-  else if (!strcmp(param,"delta0"))	value = ctx->delta0;
-  else if (!strcmp(param,"delta1"))	value = ctx->delta1;
-  else if (!strcmp(param,"delta2"))	value = ctx->delta2;
-  else if (!strcmp(param,"delta3"))	value = ctx->delta3;
-  else SETERRC(1,"Invalid parameter name for NLE_NTR1");
-  return value;
+  snes->type 		= SNES_NTR;
+  snes->Setup		= SNESSetUp_TR;
+  snes->Solver		= SNESSolve_TR;
+  snes->destroy		= SNESDestroy_TR;
+  snes->Monitor  	= 0;
+  snes->Converged	= SNESTRDefaultConverged;
+  snes->PrintHelp       = SNESPrintHelp_TR;
+  snes->SetFromOptions  = SNESSetFromOptions_TR;
+
+  neP			= NEW(SNES_TR); CHKPTR(neP);
+  snes->data	        = (void *) neP;
+  neP->mu		= 0.25;
+  neP->eta		= 0.75;
+  neP->delta		= 0.0;
+  neP->delta0		= 0.2;
+  neP->delta1		= 0.3;
+  neP->delta2		= 0.75;
+  neP->delta3		= 2.0;
+  neP->sigma		= 0.0001;
+  neP->itflag		= 0;
 }

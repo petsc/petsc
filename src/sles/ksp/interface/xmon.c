@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: xmon.c,v 1.5 1995/03/06 04:19:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -41,6 +41,14 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
   return 0;
 } 
  
+/*@
+     KSPLGMonitorDestroy - Destroys a line graph context for use with 
+                          KSP to monitor convergence of residual norms, 
+                          that was created with KSPLGMonitorCreate().
+
+  Input Parameters:
+.   label
+@*/
 int KSPLGMonitorDestroy(DrawLGCtx ctx)
 {
   DrawCtx win;

@@ -3,11 +3,11 @@ ITOOLSDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../..  \
-          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/newls1/"'
-SOURCEC  = newls1.c
+          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/ls/"'
+SOURCEC  = ls.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = newls1.o
+OBJSC    = ls.o
 OBJSF    =
 WSOURCEC = 
 WOBJS    = 

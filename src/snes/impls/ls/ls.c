@@ -1,12 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: newls1.c,v 1.1 1995/03/20 22:59:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.2 1995/04/05 20:34:33 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
-#include "newls1.h"
-
-int SNESNewtonDefaultMonitor(SNES,int,Vec,Vec, double ,void*);
-int SNESNewtonDefaultConverged(SNES, double ,double ,double,void * );
+#include "ls.h"
 
 /*
      Implements a line search variant of Newton's Method 
@@ -51,7 +48,7 @@ int SNESSolve_LS( SNES snes, int *outits )
   VecNorm(F, &fnorm );	        	/* fnorm <- || F || */  
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
-  (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);  /* Monitor progress */
+  if (snes->Monitor) (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
         
   for ( i=0; i<maxits; i++ ) {
        snes->iter = i+1;
@@ -69,7 +66,7 @@ int SNESSolve_LS( SNES snes, int *outits )
        snes->norm = fnorm;
        if (history && history_len > i+1) history[i+1] = fnorm;
        VecNorm( X, &xnorm );		/* xnorm = || X || */
-       (*snes->Monitor)(snes,i+1,X,F,fnorm,snes->monP);  /* Monitor progress */
+       if (snes->Monitor) (*snes->Monitor)(snes,i+1,X,F,fnorm,snes->monP);
 
        /* Test for convergence */
        if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
@@ -455,7 +452,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 /* ------------------------------------------------------------ */
 /*@C
    SNESSetLineSearchRoutine - Sets the line search routine to be used
-   by the method SNES_NLS1.
+   by the method SNES_LS.
 
    Input Parameters:
 .  snes - nonlinear context obtained from NLCreate()
@@ -489,7 +486,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double *,double*) )
 {
-  if ((snes)->type == SNES_NLS1)
+  if ((snes)->type == SNES_NLS)
     ((SNES_LS *)(snes->data))->LineSearch = func;
   return 0;
 }
@@ -538,11 +535,11 @@ int SNESCreate_LS(SNES  snes )
 {
   SNES_LS *neP;
 
-  snes->type		= SNES_NLS1;
+  snes->type		= SNES_NLS;
   snes->Setup		= SNESSetUp_LS;
   snes->Solver		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
-  snes->Monitor  	= SNESDefaultMonitor;
+  snes->Monitor  	= 0;
   snes->Converged	= SNESDefaultConverged;
   snes->PrintHelp       = SNESPrintHelp_LS;
   snes->SetFromOptions  = SNESSetFromOptions_LS;

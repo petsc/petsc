@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1995/03/29 03:50:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.2 1995/04/04 19:51:02 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -16,7 +16,7 @@ int main( int argc, char **argv )
 {
   SNES         snes;
   SLES         sles;
-  SNESMETHOD   method = SNES_NLS1;  /* nonlinear solution method */
+  SNESMETHOD   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
   int          ierr, its; 

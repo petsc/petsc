@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.9 1995/03/25 01:25:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.10 1995/03/27 22:56:25 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -10,9 +10,19 @@ typedef struct {
   int n,first,step;
 } IS_Stride;
 
-/*
+/*@
+    ISStrideGetInfo - Returns the first index in a stride index set and 
+          the stride width.
+
+  Input Parameters:
+.   is - the index set
+
+  Output Parameters:
+.   first, step - the first index and the step length
+
+  Notes:
    Returns info on stride index set. This is a pseudo-public function.
-*/
+@*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
   IS_Stride *sub = (IS_Stride *) is->data;

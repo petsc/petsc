@@ -32,7 +32,7 @@ deletemanpages:
 	$(RM) -f $(PETSCLIB)/docs/man/man*/*
 
 deletewwwpages:
-	$(RM) -f $(PETSCLIB)/docs/www/man*/*
+	$(RM) -f $(PETSCLIB)/docs/www/man*/* $(PETSCLIB)/docs/www/www.cit
 
 deletelatexpages:
 	$(RM) -f $(PETSCLIB)/docs/tex/rsum/*sum*.tex

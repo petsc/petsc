@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: error.c,v 1.10 1995/03/06 04:31:41 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -73,6 +73,11 @@ int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
   eh = neweh;
   return 0;
 }
+/*@
+    PetscPopErrorHandler - Removes the latest error handler that was 
+                           pushed with PetscPushErrorHandler().
+
+@*/
 int PetscPopErrorHandler()
 {
   struct EH *tmp;
