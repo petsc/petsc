@@ -25,7 +25,7 @@ c
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
-     &        Agzef01, Anc, Aggrid, Abcswitch)
+     &        Agzef01, Andof, Aggrid, Abcswitch)
 
 #include "param.h"
 
@@ -37,7 +37,7 @@ c
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
-     &        Agxm, Agym, Agzm, ierr, Ano_output, Anc, Aggrid,
+     &        Agxm, Agym, Agzm, ierr, Ano_output, Andof, Aggrid,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01
 
 c  in param.h: Common block, pgrid, for local grid data:
@@ -50,7 +50,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       size      = Asize
       problem   = Aproblem
       no_output = Ano_output
-      nc        = Anc
+      ndof      = Andof
       bcswitch  = Abcswitch
 
       if (problem .eq. 1) then
@@ -202,7 +202,7 @@ c       Using local grid
       endif
 
       if (rank .eq. 0) then 
-        write(6,*) 'Problem is ',problem,', nc = ',nc
+        write(6,*) 'Problem is ',problem,', ndof = ',ndof
         write(6,*) 'Iteration for BC impermeability switch is',bcswitch
       endif
       if (printg .eq. 1) then
