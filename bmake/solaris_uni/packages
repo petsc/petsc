@@ -14,7 +14,7 @@
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris -lflapack -lfblas
+BLASLAPACK_LIB  =  -lsunperf
 #
 # Location of MPI (Message Passing Interface) software
 #
