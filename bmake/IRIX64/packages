@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.51 1999/05/10 16:24:34 balay Exp bsmith $ 
+# $Id: base.site,v 1.52 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -68,6 +68,7 @@ BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #  you may not need any of that stuff
 MCC            = cc
 CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
+MATLABCOMMAND  = matlab -sgi
 #
 #
 # Option location where adiC is installed
