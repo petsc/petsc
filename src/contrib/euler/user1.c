@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.63 1997/10/16 19:00:35 curfman Exp keyes $";
+static char vcid[] = "$Id: user1.c,v 1.64 1997/10/16 22:11:09 keyes Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -369,12 +369,12 @@ int main(int argc,char **argv)
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
       }
       else if (app->problem == 5) {
-        sprintf(filename,"f_duct%_asm%d_p%d.m","c",overlap,app->size);
-        sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+        sprintf(filename,"f_duct%s_asm%d_p%d.m","c",overlap,app->size);
+        sprintf(outstring,"zsnes_ductc_asm%d_p%d = [\n",overlap,app->size);
       } 
       else if (app->problem == 6) {
-        sprintf(filename,"f_duct%_asm%d_p%d.m","f",overlap,app->size);
-        sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+        sprintf(filename,"f_duct%s_asm%d_p%d.m","f",overlap,app->size);
+        sprintf(outstring,"zsnes_ductf_asm%d_p%d = [\n",overlap,app->size);
       } 
       else SETERRQ(1,0,"No support for this problem number");
       app->fp = fopen(filename,"w"); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.15 1997/10/16 04:57:25 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.16 1997/10/17 02:16:16 curfman Exp curfman $";
 #endif
 
 /* 
@@ -439,7 +439,7 @@ int FixJacobian(Euler *user,Mat mat)
   /* edges of grid */
   mx = user->mx; my = user->my; mz = user->mz;
 
-  if (app->mmtype != MMEULER) SETERRQ(1,0,"Unsupported model type");
+  if (user->mmtype != MMEULER) SETERRQ(1,0,"Unsupported model type");
 
   /* Boundary edges of brick: rows of Jacobian are identity;
      corresponding residual values are 0.  So, we modify the
@@ -483,6 +483,37 @@ int FixJacobian(Euler *user,Mat mat)
               for (m=0; m<ndof; m++) {
                 diag = ijkx + m;
                 ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+      
+      if ((user->problem == 1 || user->problem == 2 || user->problem ==3) && (j == 0)) {
+        for (k=zsi; k<zei; k++) {
+          if (k > user->ktip) {
+            jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+            for (i=xsi; i<xei; i++) {
+              ijkv = jkx + i-gxs;
+              ijkx = ltog[ndof * ijkv];
+              dti = one/user->dt[ijkv];
+              for (m=0; m<ndof; m++) {
+                diag = ijkx + m;
+                ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,INSERT_VALUES); CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+        for (k=zsi; k<zei; k++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xsi; i<xei; i++) {
+            if (i <= user->ile || i > user->itu) {
+              ijkv = jkx + i-gxs;
+              ijkx = ltog[ndof * ijkv];
+              dti = one/user->dt[ijkv];
+              for (m=0; m<ndof; m++) {
+                diag = ijkx + m;
+                ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,INSERT_VALUES); CHKERRQ(ierr);
               }
             }
           }
