@@ -77,33 +77,50 @@ int PetscSetDefaultDebugger(void)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "CheckForDefaultDebugger"
+static int CheckForDefaultDebugger(char *defaultDbg, char *string, char **debugger)
+{
+  PetscTruth exists;
+  char      *f;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (*debugger != PETSC_NULL) {
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscStrstr(string, defaultDbg, &f);                                                             CHKERRQ(ierr);
+  if (f) {
+    ierr = PetscTestFile(string, 'x', &exists);                                                           CHKERRQ(ierr);
+    if (exists) {
+      *debugger = string;
+    } else {
+      *debugger = defaultDbg;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscSetDebuggerFromString" 
 int PetscSetDebuggerFromString(char *string)
 {
+  char      *debugger = PETSC_NULL;
+  PetscTruth xterm    = PETSC_TRUE;
+  char      *f;
   int        ierr;
-  PetscTruth xterm = PETSC_TRUE;
-  char       *f,*debugger = 0;
 
   PetscFunctionBegin;
-  ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
+  ierr = PetscStrstr(string, "noxterm", &f);                                                              CHKERRQ(ierr);
   if (f) xterm = PETSC_FALSE;
-  ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
-  if (f)     debugger = "xdb";
-  ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
-  if (f)     debugger = "dbx";
-  ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
-  if (f)     debugger = "xldb";
-  ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
-  if (f)     debugger = "gdb";
-  ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
-  if (f)     debugger = "xxgdb";
-  ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
-  if (f)     debugger = "ups";
-  ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
-  if (f)     debugger = "workshop";
-  ierr = PetscStrstr(string,"pgdbg",&f);CHKERRQ(ierr);
-  if (f)     debugger = "pgdbg";
-  ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("xdb",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("dbx",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("xldb",     string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("gdb",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("xxgdb",    string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("ups",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("workshop", string, &debugger);                                          CHKERRQ(ierr);
+  ierr = CheckForDefaultDebugger("pgdbg",    string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscSetDebugger(debugger, xterm);                                                               CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
