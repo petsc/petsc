@@ -1,8 +1,8 @@
 
-/* $Id: vgrid.h,v 1.1 1996/01/28 18:13:42 curfman Exp curfman $ */
+/* $Id: vgrid.h,v 1.2 1996/01/29 14:18:16 curfman Exp curfman $ */
 
-/* This file declares some utility routins for manipulating vectors that are
-   associated with grids */
+/* This file declares some utility routines for manipulating vectors that are
+   associated with multicomponent problems on grids */
 
 #ifndef __VEC_GRID_UTILS
 #define __VEC_GRID_UTILS
