@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.25 1996/07/08 22:30:59 curfman Exp bsmith $;
+C  $Id: petsc.h,v 1.26 1996/07/21 22:21:36 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -74,7 +74,7 @@ C
 C     Prototypes for functions which return a value.
 C
       external PetscGetTime, PetscGetFlops
-      DOUBLE PetscGetTime, PetscGetFlops
+      Double PetscGetTime, PetscGetFlops
 C     
 C     End of base Fortran include file for the PETSc package
 
