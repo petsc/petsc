@@ -62,8 +62,11 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
       try:
         import sys
-        (output,error,status) = config.base.Configure.executeShellCommand(sys.executable+' '+os.path.join('maint','generatefortranstubs.py')+' ' +self.bfort,timeout = 15*60.0,log = self.framework.log)
-        self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs ')
+        sys.path.insert(0, os.path.abspath('maint'))
+        import generatefortranstubs
+        del sys.path[0]
+        generatefortranstubs.main(self.bfort)
+        self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs and made makefile.src')
       except RuntimeError, e:
         raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return
