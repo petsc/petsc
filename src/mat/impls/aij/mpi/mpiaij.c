@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.171 1996/11/01 16:57:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.172 1996/11/01 23:25:33 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1170,15 +1170,15 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   if (ll) {
     VecGetLocalSize_Fast(ll,s1);
     if (s1!=s2) SETERRQ(1,"MatDiagonalScale: left vector non-conforming local size");
-    ierr = (*mat->ops.diagonalscale)(b,ll,0); CHKERRQ(ierr);
+    ierr = (*b->ops.diagonalscale)(b,ll,0); CHKERRQ(ierr);
   }
   /* scale  the diagonal block */
-  ierr = (*mat->ops.diagonalscale)(a,ll,rr); CHKERRQ(ierr);
+  ierr = (*a->ops.diagonalscale)(a,ll,rr); CHKERRQ(ierr);
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     ierr = VecScatterEnd(rr,aij->lvec,INSERT_VALUES,SCATTER_ALL,aij->Mvctx); CHKERRQ(ierr);
-    ierr = (*mat->ops.diagonalscale)(b,0,aij->lvec); CHKERRQ(ierr);
+    ierr = (*b->ops.diagonalscale)(b,0,aij->lvec); CHKERRQ(ierr);
   } 
   
   return 0;
