@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.230 1997/09/10 22:17:21 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.231 1997/09/11 20:42:53 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -894,7 +894,7 @@ vector. In the simplest case this may be written as
 
    ierr = VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD,VecScatter scatter);
-   ierr = VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
+   ierr = VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD,VecScatter scatter);
    /*
         For example,  do local calculations from localin to localout and call
