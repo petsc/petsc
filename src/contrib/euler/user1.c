@@ -87,11 +87,11 @@ int main(int argc,char **argv)
   KSP      ksp;                   /* KSP context */
   Euler    *app;                  /* user-defined context */
   Viewer   view;                  /* viewer for printing vectors */
-  /* char     stagename[2][16]; */     /* names of profiling stages */
+  char     stagename[2][16];      /* names of profiling stages */
   int      fort_app;              /* Fortran interface user context */
   int      log;                   /* flag indicating use of logging */
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
-  /* int      init1, init2, init3; */   /* event numbers for application initialization */
+  int      init1, init2, init3;   /* event numbers for application initialization */
   int      its, ierr, flg, stage;
 
   /* Set Defaults */
@@ -113,8 +113,8 @@ int main(int argc,char **argv)
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
-  PLogEventDeactivate(VEC_SetValues);
-  PLogEventDeactivate(MAT_SetValues);
+  /*  PLogEventDeactivate(VEC_SetValues);
+  PLogEventDeactivate(MAT_SetValues); */
 
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
@@ -138,52 +138,50 @@ int main(int argc,char **argv)
   /* 
       temporarily deactivate user-defined events and multiple logging stages
   */
-  /*
   if (log) total_stages = 2;
   ierr = PLogEventRegister(&init1,"DA, Scatter Init","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&init2,"Mesh Setup      ","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&init3,"Julianne Init   ","Red:"); CHKERRA(ierr);
-  */
+
   for ( stage=0; stage<total_stages; stage++ ) {
   
   /*
      Begin profiling next stage
   */
-  /*
   PLogStagePush(stage);
   sprintf(stagename[stage],"Solve %d",stage);
   PLogStageRegister(stage,stagename[stage]);
   if (log && !stage) log_stage_0 = 1;
-  */
+  else               log_stage_0 = 0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize distributed arrays and vector scatters; allocate work space
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = OptionsHasName(PETSC_NULL,"-julianne",&solve_with_julianne); CHKERRA(ierr);
-  /* PLogEventBegin(init1,0,0,0,0); */
+  PLogEventBegin(init1,0,0,0,0);
   ierr = UserCreateEuler(comm,solve_with_julianne,log_stage_0,&app); CHKERRA(ierr);
-  /* PLogEventEnd(init1,0,0,0,0); */
+  PLogEventEnd(init1,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Read mesh and convert to parallel version
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* PLogEventBegin(init2,0,0,0,0); */
+  PLogEventBegin(init2,0,0,0,0);
   ierr = UserSetGrid(app); CHKERRA(ierr); 
-  /* PLogEventEnd(init2,0,0,0,0); */
+  PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      If desired, use original (uniprocessor) solver in Julianne code
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* for dummy logging stage 1, form the Jacobian every 2 iterations */
-  /* if (log && stage==0) app->jfreq = 2; */
+  if (log && stage==0) app->jfreq = 2;
 
   if (solve_with_julianne) {
     if (app->size != 1) SETERRA(1,1,"Original code runs on 1 processor only.");
     ierr = OptionsGetDouble(PETSC_NULL,"-julianne_rtol",&rtol,&flg); CHKERRA(ierr);
-    /* PLogEventBegin(init3,0,0,0,0); */
+    PLogEventBegin(init3,0,0,0,0);
     time1 = PetscGetTime();
     ierr = julianne_(&solve_with_julianne,0,&app->cfl,
            &rtol,app->b1,app->b2,
@@ -197,7 +195,7 @@ int main(int argc,char **argv)
            app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
            &app->angle,&app->jfreq); CHKERRA(ierr);
     tsolve = PetscGetTime() - time1;
-    /* PLogEventEnd(init3,0,0,0,0); */
+    PLogEventEnd(init3,0,0,0,0);
     PetscPrintf(comm,"Julianne solution time = %g seconds\n",tsolve);
     if (app->dump_general) {ierr = MonitorDumpGeneralJulianne(app); CHKERRA(ierr);}
     PetscFinalize();
@@ -209,7 +207,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Read entire grid and initialize data */
-  /* PLogEventBegin(init2,0,0,0,0); */
+  PLogEventBegin(init2,0,0,0,0);
   fort_app = PetscFromPointer(app);
   ierr = julianne_(&solve_with_julianne,&fort_app,&app->cfl,
          &rtol,app->b1,
@@ -222,7 +220,7 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
- /* PLogEventEnd(init2,0,0,0,0); */
+  PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver
@@ -308,8 +306,8 @@ int main(int argc,char **argv)
   ierr = UserDestroyEuler(app); CHKERRA(ierr);
 
   /* Conclude profiling this stage */
-  /* PLogStagePop();
-  MPI_Barrier(comm); */
+  PLogStagePop();
+  MPI_Barrier(comm);
 
   /* -----------------------------------------------------------
                       End of nonlinear solver loop
@@ -989,7 +987,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   ierr = OptionsGetInt(PETSC_NULL,"-problem",&problem,&flg); CHKERRQ(ierr);
   /* force use of problem 1 for dummy logging stage 0 */
-  /* if (log_stage_0) problem = 1; */
+  if (log_stage_0) problem = 1;
   switch (problem) {
     case 1:
     /* full grid dimensions, including all boundaries */
@@ -1027,10 +1025,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /* Set various defaults */
   app->cfl                 = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_switch          = 10.0;     /* CFL at which to dump binary linear system */
-  if (problem == 1)
-    app->f_reduction       = 0.5;      /* fnorm reduction ratio before beginning to advance CFL */
-  else
-    app->f_reduction       = 0.3;
+  app->f_reduction         = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_max             = 100000.0; /* maximum CFL value */
   app->cfl_advance         = 0;        /* flag - by default we don't advance CFL */
   app->angle               = 3.06;     /* default angle of attack = 3.06 degrees */
