@@ -98,21 +98,6 @@ class Make(script.Script):
       return 0
     return 1
 
-  def loadConfigure(self):
-    import cPickle
-
-    if not 'configureCache' in self.argDB:
-      return None
-    try:
-      cache           = self.argDB['configureCache']
-      framework       = cPickle.loads(cache)
-      framework.argDB = self.argDB
-      self.logPrint('Loaded configure to cache: size '+str(len(cache)))
-    except cPickle.UnpicklingError, e:
-      framework       = None
-      self.logPrint('Invalid cached configure: '+str(e))
-    return framework
-
   def configure(self, builder):
     '''Run configure if necessary and return the configuration Framework'''
     import cPickle
@@ -344,10 +329,13 @@ class SIDLMake(Make):
   def addDependencyLibraries(self, linker, language):
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
+        self.logPrint('Checking dependency '+depSidlFile+' for a '+language+' client', debugSection = 'build')
         try:
           clientConfig = depMake.builder.pushConfiguration(language+' Stub '+os.path.splitext(os.path.basename(depSidlFile))[0])
           if 'Linked ELF' in clientConfig.outputFiles:
-            linker.libraries.update(sets.Set([os.path.join(depMake.getRoot(), lib) for lib in clientConfig.outputFiles['Linked ELF']]))
+            files = sets.Set([os.path.join(depMake.getRoot(), lib) for lib in clientConfig.outputFiles['Linked ELF']])
+            self.logPrint('Adding '+str(files)+'from dependency '+depSidlFile, debugSection = 'build')
+            linker.libraries.update(files)
           depMake.builder.popConfiguration()
         except KeyError, e:
           if e.args[0] == language:
@@ -430,6 +418,7 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Skeleton '+baseName)
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     for depFile in builder.sourceDB.getDependencies(sidlFile):
       dir = self.getSIDLServerDirectory(builder, depFile, language)
       if not dir is None:
@@ -445,6 +434,7 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
     linker   = builder.getLinkerObject()
+    self.addDependencyLibraries(linker, language)
     if not baseName == self.ase.baseName:
       linker.libraries.update(self.ase.lib)
     builder.popConfiguration()
@@ -593,11 +583,14 @@ class SIDLMake(Make):
     linker      = builder.getLinkerObject()
     if not os.path.isdir(os.path.dirname(library)):
       os.makedirs(os.path.dirname(library))
-    self.addDependencyLibraries(linker, language)
-    clientConfig = builder.pushConfiguration(language+' Stub '+baseName)
-    if 'Linked ELF' in clientConfig.outputFiles:
-      linker.libraries.update(clientConfig.outputFiles['Linked ELF'])
-    builder.popConfiguration()
+    for depSidlFile in builder.sourceDB.getDependencies(sidlFile)+(sidlFile,):
+      self.logPrint('Checking dependency '+depSidlFile+' for a '+language+' client', debugSection = 'build')
+      clientConfig = builder.pushConfiguration(language+' Stub '+os.path.splitext(os.path.basename(depSidlFile))[0])
+      if 'Linked ELF' in clientConfig.outputFiles:
+        files = clientConfig.outputFiles['Linked ELF']
+        self.logPrint('Adding '+str(files)+'from dependency '+depSidlFile, debugSection = 'build')
+        linker.libraries.update(files)
+      builder.popConfiguration()
     builder.link(iorObjects.union(implObjects), library, shared = 1)
     builder.popConfiguration()
     builder.saveConfiguration(language+' Server '+baseName)

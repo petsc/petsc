@@ -440,6 +440,28 @@ class Configure(config.base.Configure):
       self.f90SourcePath = sourcePath
     return
 
+  def checkPIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
+      return
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('F77')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.popLanguage()
+    return
+
   def output(self):
     '''Output module data as defines and substitutions'''
     if 'CC' in self.framework.argDB:
@@ -517,5 +539,6 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranPreprocessor)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
+    self.executeTest(self.checkPIC)
     self.executeTest(self.output)
     return

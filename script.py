@@ -223,6 +223,23 @@ class Script(logging.Logger):
     return
   debugger = property(getDebugger, setDebugger, doc = 'The debugger')
 
+  def loadConfigure(self, argDB = None):
+    import cPickle
+
+    if argDB is None:
+      argDB = self.argDB
+    if not 'configureCache' in argDB:
+      return None
+    try:
+      cache           = argDB['configureCache']
+      framework       = cPickle.loads(cache)
+      framework.argDB = argDB
+      self.logPrint('Loaded configure to cache: size '+str(len(cache)))
+    except cPickle.UnpicklingError, e:
+      framework       = None
+      self.logPrint('Invalid cached configure: '+str(e))
+    return framework
+
 import args
 
 class OutputFiles(dict):
