@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ispai.c,v 1.3 1999/04/02 22:37:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ispai.c,v 1.4 1999/04/02 22:56:06 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -9,6 +9,9 @@ static char vcid[] = "$Id: ispai.c,v 1.3 1999/04/02 22:37:41 bsmith Exp bsmith $
 /*
       Provides an interface to the SPAI Sparse Approximate Inverse Preconditioner
    Code written by Stephen Barnard.
+
+      Note: there is some BAD memory bleeding below!
+
 */
 
 #include "src/sles/pc/pcimpl.h"        /*I "pc.h" I*/
@@ -16,10 +19,11 @@ static char vcid[] = "$Id: ispai.c,v 1.3 1999/04/02 22:37:41 bsmith Exp bsmith $
 /*
     These are the SPAI include files
 */
-
+EXTERN_C_BEGIN
 #include "spai.h"
 #include "matrix.h"
 #include "read_mm_matrix.h"
+EXTERN_C_END
 
 extern int ConvertMatToMatrix(Mat,Mat,matrix**);
 extern int ConvertMatrixToMat(matrix *, Mat *);
@@ -54,7 +58,6 @@ static int PCSetUp_SPAI(PC pc)
   PC_SPAI *ispai = (PC_SPAI *) pc->data;
   int      ierr;
   Mat      AT;
-  Mat      PB;
   Mat      PBT;
   MPI_Comm comm;
 
@@ -63,16 +66,13 @@ static int PCSetUp_SPAI(PC pc)
 
   init_SPAI();
 
-  /* Symmetric pattern? If not, construct the transpose. */
-  if (! ispai->sp) {
-    ierr = MatTranspose(pc->pmat,&AT) ;CHKERRQ(ierr);
-  }
-  
   if (ispai->sp) {
     ierr = ConvertMatToMatrix(pc->pmat,pc->pmat,&ispai->B); CHKERRQ(ierr);
   } else {
     /* Use the transpose to get the column nonzero structure. */
+    ierr = MatTranspose(pc->pmat,&AT) ;CHKERRQ(ierr);
     ierr = ConvertMatToMatrix(pc->pmat,AT,&ispai->B); CHKERRQ(ierr);
+    ierr = MatDestroy(AT);CHKERRQ(ierr);
   }
 
   /* Destroy the transpose */
@@ -104,13 +104,11 @@ static int PCSetUp_SPAI(PC pc)
 
   if (!ispai->M) SETERRQ(1,1,"Unable to create SPAI preconditioner");
 
-  ierr = ConvertMatrixToMat(ispai->M,&PB);CHKERRQ(ierr);
+  ierr = ConvertMatrixToMat(ispai->M,&ispai->PM);CHKERRQ(ierr);
 
   /* free the SPAI matrices */
   sp_free_matrix(ispai->B);
   sp_free_matrix(ispai->M);
-
-  ispai->PM = PB;
 
   PetscFunctionReturn(0);
 }
@@ -136,9 +134,11 @@ static int PCApply_SPAI(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCDestroy_SPAI"
 static int PCDestroy_SPAI(PC pc)
 {
+  int     ierr;
   PC_SPAI *ispai = (PC_SPAI *) pc->data;
 
   PetscFunctionBegin;
+  ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);
   PetscFree(ispai);
   PetscFunctionReturn(0);
 }
@@ -172,6 +172,7 @@ static int PCView_SPAI(PC pc,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetEpsilon_SPAI"
 int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
@@ -181,9 +182,11 @@ int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
   ispai->epsilon = epsilon;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
     
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetNBSteps_SPAI"
 int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
@@ -193,10 +196,12 @@ int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
   ispai->nbsteps = nbsteps;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
 /* added 1/7/99 g.h. */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetMax_SPAI"
 int PCSPAISetMax_SPAI(PC pc,int max)
@@ -206,9 +211,11 @@ int PCSPAISetMax_SPAI(PC pc,int max)
   ispai->max = max;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetMaxNew_SPAI"
 int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
@@ -218,9 +225,11 @@ int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
   ispai->maxnew = maxnew;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetBlockSize_SPAI"
 int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
@@ -230,9 +239,11 @@ int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
   ispai->block_size = block_size;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetCacheSize_SPAI"
 int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
@@ -242,9 +253,11 @@ int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
   ispai->cache_size = cache_size;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetVerbose_SPAI"
 int PCSPAISetVerbose_SPAI(PC pc,int verbose)
@@ -254,9 +267,11 @@ int PCSPAISetVerbose_SPAI(PC pc,int verbose)
   ispai->verbose = verbose;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSPAISetSp_SPAI"
 int PCSPAISetSp_SPAI(PC pc,int sp)
@@ -266,6 +281,7 @@ int PCSPAISetSp_SPAI(PC pc,int sp)
   ispai->sp = sp;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -------------------------------------------------------------------*/
 
@@ -455,7 +471,7 @@ static int PCPrintHelp_SPAI(PC pc,char *p)
 }
 
 /**********************************************************************/
-
+EXTERN_C_BEGIN
 /*
    PCCreate_SPAI - Creates the preconditioner context for the SPAI 
                    preconditioner written by Stephen Barnard.
@@ -518,6 +534,7 @@ int PCCreate_SPAI(PC pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /**********************************************************************/
 
@@ -720,8 +737,8 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  d_nnz = (int *) malloc(m*sizeof(int));
-  o_nnz = (int *) malloc(m*sizeof(int));
+  d_nnz = (int *) PetscMalloc(m*sizeof(int));
+  o_nnz = (int *) PetscMalloc(m*sizeof(int));
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -737,8 +754,7 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
   }
 
   M = N = B->n;
-  ierr = MatCreateMPIAIJ
-    (PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB); CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB); CHKERRA(ierr);
 
   for (i=0; i<B->mnls[rank]; i++) {
     global_row = B->start_indices[rank]+i;
@@ -749,8 +765,8 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
     }
   }
 
-  free(d_nnz);
-  free(o_nnz);
+  PetscFree(d_nnz);
+  PetscFree(o_nnz);
 
   ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);  CHKERRA(ierr);
   ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);  CHKERRA(ierr);
@@ -781,27 +797,27 @@ int ConvertVectorToVec(vector *v, Vec *Pv)
   
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv); CHKERRA(ierr);
 
-  mnls = (int *) malloc(size*sizeof(int));
+  mnls = (int *) PetscMalloc(size*sizeof(int));
   MPI_Barrier(PETSC_COMM_WORLD);
   MPI_Allgather((void *) &v->mnl, 1, MPI_INT,
 		(void *) mnls, 1, MPI_INT,
 		PETSC_COMM_WORLD);
   
-  start_indices = (int *) malloc(size*sizeof(int));
+  start_indices = (int *) PetscMalloc(size*sizeof(int));
   start_indices[0] = 0;
   for (i=1; i<size; i++) 
     start_indices[i] = start_indices[i-1] +mnls[i-1];
   
-  global_indices = (int *) malloc(v->mnl*sizeof(int));
+  global_indices = (int *) PetscMalloc(v->mnl*sizeof(int));
   for (i=0; i<v->mnl; i++) 
     global_indices[i] = start_indices[rank] + i;
 
-  free(mnls);
-  free(start_indices);
+  PetscFree(mnls);
+  PetscFree(start_indices);
   
   ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES); CHKERRA(ierr);
 
-  free(global_indices);
+  PetscFree(global_indices);
 
   ierr = VecAssemblyBegin(*Pv);  CHKERRA(ierr);
   ierr = VecAssemblyEnd(*Pv);  CHKERRA(ierr);
