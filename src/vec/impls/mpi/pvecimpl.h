@@ -13,7 +13,6 @@ typedef struct {
     int         n;           /* Length of LOCAL vector */
     Scalar      *array;
     int         N;           /* length of total vector */
-    MPI_Comm    comm;        /* Vector is distributed on these processors */
     int         numtids,mytid,*ownership;
     InsertMode  insertmode;
     struct      {int nmax, n, *idx; Scalar *array;} stash;
