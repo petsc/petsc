@@ -70,6 +70,8 @@ template<class Scalar,class Ordinal>
 
 };
 
+  /* -------------------------------------------------------------------------*/
+
 template<class Scalar,class Ordinal> class VectorFactory 
 #if defined(PETSC_HAVE_CCA)
            :  public virtual gov::cca::Port, public virtual gov::cca::Component
@@ -95,6 +97,7 @@ template<class Scalar,class Ordinal> class VectorFactory
 
 
 }}
+EXTERN int VecESIWrap(Vec,esi::Vector<double,int>**);
 
 #endif
 
