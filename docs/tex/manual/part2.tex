@@ -1037,9 +1037,7 @@ vector. In the simplest case this may be written as
                           ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
   VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
                         ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
-   \trl{/*} \\
-        For example,  do local calculations from localin to localout\\
-   \trl{*/} \\
+  \trl{/*} For example, do local calculations from localin to localout \trl{*/} \\
   VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
                           ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
   VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
@@ -1835,7 +1833,7 @@ which converts the matrix \trl{mat} to new matrix, \trl{M}, that has
 either the same or different format.  Set \trl{newtype} to MATSAME
 to copy the matrix, keeping the same matrix format.  See 
 \trl{${PETSC_DIR}/include/petscmat.h} for other available matrix types;
-standard ones are MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,  
+standard ones are MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ, and
                MATMPIBAIJ.
 
@@ -1960,9 +1958,6 @@ use to store the grid information and the type of grid information that you need
 for your application. We do plan to include more support for this in the future,
 but designing the appropriate user interface and providing a scalable implementation
 that can be used for a wide variety of different grids requires a great deal of time.
-Thus we demonstrate how this may be managed for the model
-grid depicted above using (1) element based partitioning and (2) a vertex based 
-partitioning. 
 
 
 
@@ -2195,7 +2190,7 @@ it is Hermitian symmetric). To indicate that it is symmetric, one uses the comma
 \findex{KSPCGSetType()} \findex{KSP_CG_SYMMETRIC} \findex{KSPCGType}
 \sindex{Hermitian matrix} 
 \begin{tabbing}
-  KSPCGSetType(KSP ksp,KSPCGType KSP\_CG\_SYMMETRIC);
+  KSPCGSetType(KSP ksp,KSPCGType \trl{KSP_CG_SYMMETRIC});
 \end{tabbing}
 Note that this option is not valid for all matrices.
 
@@ -3760,7 +3755,7 @@ This parameter can also be set from the options database with
 \end{tabbing}
 \findex{-snes_mf_err}
 
-In addition, SNES provides a way to register new routines to compute the h-differencing parameter;
+In addition, SNES provides a way to register new routines to compute the differencing parameter ($h$);
 see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic) \findex{MatSNESMFSetType()}
 \findex{MatSNESMFRegisterDynamic)}. We currently provide two default routines accessible via
 \begin{tabbing}
@@ -4693,7 +4688,7 @@ One can use
 
 
 %------------------------------------------------------------------
-\chapter{PETSc Fortran Users}
+\chapter{PETSc for Fortran Users}
 \label{ch_fortran}
 
 Most of the functionality of PETSc can be obtained by people who
@@ -4714,7 +4709,9 @@ underlying numerical computations.
 \section{Differences between PETSc Interfaces for C and Fortran}
 
 Only a few differences exist between the C and Fortran PETSc
-interfaces, all of which are due to differences in Fortran syntax.
+interfaces, all of which are due to Fortran 77 syntax limitations.
+Since PETSc is primarily written in C, the FORTRAN 90 
+dynamic allocation is not easily accessible.
 All Fortran routines have the same names as the corresponding C
 versions, and PETSc command line options are fully supported. The
 routine arguments follow the usual Fortran conventions; the user need
@@ -4791,7 +4788,7 @@ final \trl{ierr} argument.
 \subsection{Array Arguments}
 \label{sec_fortranarrays}
 
-Since Fortran does not allow arrays to be returned in routine
+Since Fortran 77 does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as 
 VecGetArray(), MatGetArray(), 
 ISGetIndices(), and DAGetGlobalIndices()
@@ -4809,8 +4806,8 @@ The Fortran interface for several routines is as follows:
    Vec x\\
    Mat A\\
    IS  s\\
-   DA  d
-
+   DA  d \\
+ 
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
    call MatGetArray(A,aa\_v,aa\_i,ierr)\\
    call ISGetIndices(s,ss\_v,ss\_i,ierr)\\
@@ -4913,8 +4910,8 @@ format as an existing vector, the user must declare a vector array,
 \trl{v_new} of size \trl{n}.  Then, after VecDuplicateVecs() has
 been called, \trl{v_new} will contain (pointers to) the new PETSc
 vector objects.  When finished with the vectors, the user should
-destroy them by calling VecDestroyVectors().
-\findex{VecDestroyVectors()} For example, the following code fragment
+destroy them by calling VecDestroyVecs().
+\findex{VecDestroyVecs()} For example, the following code fragment
 duplicates \trl{v_old} to form two new vectors, \trl{v_new(1)} and \trl{v_new(2)}.
 \begin{tabbing}
    Vec     v\_old, v\_new(2)\\
@@ -4953,8 +4950,8 @@ of the Fortran program \trl{ex3.F} with the actions \trl{make} \trl{BOPT=g} \trl
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{tabbing}
    ex3: ex3.o \\
-           -\${FLINKER} -o ex3 ex3.o  \${PETSC\_FORTRAN\_LIB} \${PETSC\_LIB}\\
-           \${RM} ex3.o
+   \trl{      -${FLINKER}} -o ex3 ex3.o  \${PETSC\_FORTRAN\_LIB} \${PETSC\_LIB}\\
+   \trl{       ${RM}} ex3.o
 \end{tabbing}
 Note that the PETSc Fortran interface library, given by 
 \trl{${PETSC_FORTRAN_LIB}}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
@@ -5015,7 +5012,7 @@ IBM and the NAG Fortran 90 compiler.
 \label{sec_fortran-examples}
 
 Sample programs that illustrate the PETSc interface for Fortran
-are given in Figures \ref{fig_vec-Fortran} - \ref{fig_SNES-Fortran},
+are given in Figures \ref{fig_vec-Fortran} {\em ---} \ref{fig_SNES-Fortran},
 corresponding to
 \trl{${PETSC_DIR}/src/vec/examples/tests/ex19.F}, 
 \trl{${PETSC_DIR}/src/vec/examples/tutorials/ex4f.F}, 
