@@ -19,8 +19,8 @@ struct _AOOps {
                       (*applicationtopetsc)(AO, PetscInt, PetscInt[]),
                       (*petsctoapplicationpermuteint)(AO, PetscInt, PetscInt[]),
                       (*applicationtopetscpermuteint)(AO, PetscInt, PetscInt[]),
-                      (*petsctoapplicationpermutereal)(AO, PetscInt, double[]),
-                      (*applicationtopetscpermutereal)(AO, PetscInt, double[]);
+                      (*petsctoapplicationpermutereal)(AO, PetscInt, PetscReal[]),
+                      (*applicationtopetscpermutereal)(AO, PetscInt, PetscReal[]);
 };
 
 struct _p_AO {
