@@ -213,6 +213,10 @@ int DMMGSetUp(DMMG *dmmg)
 
     Level: advanced
 
+    Options Database:
++   -dmmg_grid_sequence - use grid sequencing to get the initial solution for each level from the previous
+-   -dmmg_vecmonitor - display the solution at each iteration
+
      Notes: For linear (SLES) problems may be called more than once, uses the same 
     matrices but recomputes the right hand side for each new solve. Call DMMGSetSLES()
     to generate new matrices.
