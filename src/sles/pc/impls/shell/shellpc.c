@@ -82,6 +82,7 @@ static int PCDestroy_Shell(PC pc)
   int      ierr;
 
   PetscFunctionBegin;
+  if (shell->name) {ierr = PetscFree(shell->name);}
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

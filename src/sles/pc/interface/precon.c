@@ -9,7 +9,7 @@ int PC_COOKIE;
 int PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
 int PC_ApplySymmetricRight, PC_ModifySubMatrices;
 
-EXTERN int SLESInitializePackage(char *);
+EXTERN int SLESInitializePackage(const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCNullSpaceAttach"

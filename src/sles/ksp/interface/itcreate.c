@@ -9,7 +9,7 @@
 int KSP_COOKIE;
 int KSP_GMRESOrthogonalization;
 
-EXTERN int SLESInitializePackage(char *);
+EXTERN int SLESInitializePackage(const char[]);
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
