@@ -241,21 +241,42 @@ class Framework(base.Base):
     compileGraph.prependGraph(sidlGraph)
     return self.executeGraph(compileGraph, input = self.filesets['sidl'], checkpoint = endVertex)
 
+  def getCompileInput(self):
+    if 'checkpoint' in self.argDB:
+      return None
+    return self.filesets['sidl']
+
   def t_compile(self):
     '''Recompile the entire source for this project'''
     import build.buildGraph
 
+    input = self.getCompileInput()
     if 'checkpoint' in self.argDB:
-      input        = None
       self.builder = cPickle.loads(self.argDB['checkpoint'])
       compileGraph = self.builder.buildGraph
       #del self.argDB['checkpoint']
       self.debugPrint('Loaded checkpoint for '+str(self.project), 2, 'build')
     else:
-      input        = self.filesets['sidl']
       sidlGraph    = self.sidlTemplate.getTarget()
       compileGraph = self.compileTemplate.getTarget()
       compileGraph.prependGraph(sidlGraph)
+      # Add project dependency compile graphs
+      # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
+      if len(self.dependenceGraph.outEdges[self.project]):
+        import sys
+        input = dict(map(lambda r: (r, self.getCompileInput()), build.buildGraph.BuildGraph.getRoots(compileGraph)))
+        for v in self.dependenceGraph.outEdges[self.project]:
+          try:
+            maker     = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
+            maker.setupProject()
+            maker.setupBuild()
+            sidlGraph = maker.sidlTemplate.getTarget()
+            depGraph  = maker.compileTemplate.getTarget()
+            depGraph.prependGraph(sidlGraph)
+            compileGraph.prependGraph(depGraph)
+            input.update(dict(map(lambda r: (r, maker.getCompileInput()), build.buildGraph.BuildGraph.getRoots(depGraph))))
+          except ImportError:
+            self.debugPrint('No make module present in '+v.getRoot(), 2, 'build')
     return self.executeGraph(compileGraph, input = input)
 
   def t_install(self):
@@ -408,7 +429,7 @@ class Framework(base.Base):
     '''Execute the build operation'''
     try:
       if target is None:
-        target = self.argDB.target
+        target = self.argDB.target[:]
       else:
         target = target[:]
       if not isinstance(target, list): target = [target]
