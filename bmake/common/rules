@@ -195,7 +195,7 @@ wwwpages:
 
 
 .PRECIOUS: $(PRECIOUS) $(LIBNAME)
-.SUFFIXES: $(SUFFIXES) .F .PETSc .C .cc .cpp .r
+.SUFFIXES: $(SUFFIXES) .F .PETSc .C .cc .cpp .r .rm
 
 .c.a: 
 	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
@@ -216,6 +216,8 @@ wwwpages:
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
+.cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
+	-@$(RM) -f $* *.o
 .c.PETSc:
 	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
