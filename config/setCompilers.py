@@ -592,8 +592,9 @@ class Configure(config.base.Configure):
     os.rename(self.compilerObj, 'conf1.o')
     for (archiver, flags, ranlib) in self.generateArchiverGuesses():
       self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
-      (output, error, status) = config.base.Configure.executeShellCommand(archiver+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-      (output, error, status) = config.base.Configure.executeShellCommand(ranlib+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+      self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
+      (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+      (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
       self.framework.argDB['LIBS'] = 'conf1.a'
       success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
       os.rename('conf1.a','conf1.lib')
