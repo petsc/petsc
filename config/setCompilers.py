@@ -454,12 +454,12 @@ class Configure(config.base.Configure):
       flag = None
       self.pushLanguage(language)
       for testFlag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
-        self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-        if self.checkCompilerFlag(testFlag+os.path.abspath(os.getcwd())):
+        self.framework.log.write('Trying '+language+' linker flag '+testFlag+'\n')
+        if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
           break
         else:
-          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+          self.framework.log.write('Rejected '+language+' linker flag '+testFlag+'\n')
       self.popLanguage()
       if not flag is None:
         flagName = language.replace('+', 'x').upper()+'_LINKER_SLFLAG'
