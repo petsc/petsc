@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
@@ -44,9 +44,9 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRA(ierr);
 
   for ( i=0; i<n; i++ ) {
-    MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,x);
-    VecWAXPY(&mone,x,u,e);
-    VecNorm(e,NORM_2,&norm);
+    ierr = MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,x);CHKERRA(ierr);
+    ierr = VecWAXPY(&mone,x,u,e);CHKERRA(ierr);
+    ierr = VecNorm(e,NORM_2,&norm);CHKERRA(ierr);
     PetscPrintf(PETSC_COMM_SELF,"2-norm of error %g\n",norm);
   }
   ierr = MatDestroy(C); CHKERRA(ierr);
