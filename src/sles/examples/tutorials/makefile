@@ -284,7 +284,7 @@ runex14_2:
 	   $(RM) -f ex14_2.tmp
 
 runex15:
-	-@$(MPIRUN) ex15 -sles_view > ex15_1.tmp 2>&1; \
+	-@$(MPIRUN) -np 2 ex15 -sles_view -user_defined_pc > ex15_1.tmp 2>&1; \
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
