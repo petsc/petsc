@@ -28,9 +28,11 @@ homepage:
 	-/usr/bin/cp  ../readme /home/ftp/pub/petsc/installation
 	-/usr/bin/cp  tex/ftp_readme /home/ftp/pub/petsc/README
 	-/usr/bin/cp  ../Machines /home/ftp/pub/petsc
+	-/usr/bin/cp  ../Changes /home/ftp/pub/petsc
 	-chmod ug+w /home/ftp/pub/petsc/installation /home/ftp/pub/petsc/README
 	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
 	-chmod ug+w /home/ftp/pub/petsc/onepager.ps /home/ftp/pub/petsc/intro.ps
+	-chmod ug+w /home/ftp/pub/petsc/Changes
 	-/usr/bin/cp tex/petsc.html /mcs/www/petsc
 	-/usr/bin/cp tex/petsc_color.gif /mcs/www/petsc
 	-/usr/bin/cp tex/petsc.map /mcs/www/petsc
