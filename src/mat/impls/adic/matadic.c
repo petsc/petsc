@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.9 2001/07/26 20:04:28 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.10 2001/07/27 02:55:08 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -7,6 +7,9 @@
 #include "src/mat/matimpl.h"   /*I   "mat.h"  I*/
 #include "petscda.h"
 #include "petscsnes.h"
+EXTERN_C_BEGIN
+#include "adic_utils.h"
+EXTERN_C_END
 
 typedef struct {
   DA         da;
@@ -58,17 +61,49 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatGetDiagonal_DAD"
 int MatGetDiagonal_DAAD(Mat A,Vec d)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
-  int      ierr,rstart,rend,i;
-  Scalar   *aa;
+  Mat_DAAD    *a = (Mat_DAAD*)A->data;
+  int         ierr,nI,gI,gtdof;
+  Scalar      *aa,*ustart;
+  void        *ad_j,*ad_u,*ad_ustart;
+  MatStencil  stencil;
+  DALocalInfo info;
+
 
   PetscFunctionBegin;
-  ierr = VecGetOwnershipRange(d,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscMalloc(my_AD_GetDerivTypeSize(),&ad_j);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(a->da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+
+  /* copy the input vector values into the derivative version */
+  ierr = VecGetArray(a->localu,&ustart);CHKERRQ(ierr);
+  my_AD_SetValArray(ad_ustart,gtdof,ustart);
+  ierr = VecRestoreArray(a->localu,&ustart);CHKERRQ(ierr);
+
+  ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
   ierr = VecGetArray(d,&aa);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = DAComputeJacobiani1WithAdic(a->da,i,a->localu,aa+i-rstart,a->ctx);CHKERRQ(ierr);
+  nI = 0;
+  for (stencil.k = info.zs; stencil.k<info.zs+info.zm; stencil.k++) {
+    for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
+      for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
+	for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
+          /* zero the derivative part of ad_ustart and then set just the ith one to 1 */
+          my_AD_ResetIndep();
+          my_AD_ClearGradArray(ad_ustart,gtdof);
+          gI = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+          my_AD_SetIndepArrayElement(ad_ustart,gI);
+          my_AD_SetIndepDone();
+	  ierr   = (*a->da->adic_lfi)(&info,&stencil,ad_u,ad_j,a->ctx);CHKERRQ(ierr);
+          aa[nI] = *(Scalar*)my_AD_GetGradArray(ad_j);	
+	  nI++;
+	}
+      }
+    }
   }
   ierr = VecRestoreArray(d,&aa);CHKERRQ(ierr);
+
+  /* return space for derivative objects.  */
+  ierr = DARestoreAdicArray(a->da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = PetscFree(ad_j);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -78,8 +113,8 @@ int MatGetDiagonal_DAAD(Mat A,Vec d)
 int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
   Mat_DAAD    *a = (Mat_DAAD*)A->data;
-  int         ierr,rstart,rend,j,gtdof,nI,gI;
-  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
+  int         ierr,j,gtdof,nI,gI;
+  Scalar      *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
   Vec         localxx,dd;
   DALocalInfo info;
   MatStencil  stencil;
