@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.72 1998/05/29 20:40:07 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.73 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -68,6 +68,8 @@ extern int VecDuplicateVecs(Vec,int,Vec**);
 extern int VecDestroyVecs(Vec*,int); 
 extern int VecGetMap(Vec,Map*);
 
+extern int VecStrideNorm(Vec,int,NormType,double*);
+
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
 extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
@@ -131,8 +133,8 @@ extern int VecContourScale(Vec,double,double);
 */
 extern int VecCreateGhost(MPI_Comm,int,int,int,int*,Vec*);  
 extern int VecCreateGhostWithArray(MPI_Comm,int,int,int,int*,Scalar*,Vec*);  
-extern int VecGhostGetLocalRepresentation(Vec,Vec*);
-extern int VecGhostRestoreLocalRepresentation(Vec,Vec*);
+extern int VecGhostGetLocalForm(Vec,Vec*);
+extern int VecGhostRestoreLocalForm(Vec,Vec*);
 extern int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
 extern int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
