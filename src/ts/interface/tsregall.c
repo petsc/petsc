@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsregall.c,v 1.5 1996/08/08 14:45:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsregall.c,v 1.1 1996/09/30 18:36:07 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -9,7 +9,7 @@ extern int TSCreate_BEuler(TS);
 extern int TSCreate_Pseudo(TS);
 
 /*@C
-  TSRegisterAll - Registers all of the time steppers in the TS 
+  TSRegisterAll - Registers all of the timesteppers in the TS 
   package. 
 
   Adding new methods:
@@ -29,7 +29,7 @@ $       routine requires recompilation.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscsnes.a.
 
-.keywords: TS, time-stepper, register, all
+.keywords: TS, timestepper, register, all
 
 .seealso: TSRegister(), TSRegisterDestroy()
 @*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.2 1996/09/30 16:39:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1996/09/30 20:00:28 curfman Exp curfman $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -102,7 +102,7 @@ int main( int argc, char **argv )
   ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
 
   /*
-     Tell the time stepper context where to compute solutions
+     Tell the timestepper context where to compute solutions
   */
   ierr = TSSetSolution(ts,x); CHKERRA(ierr);
 

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.5 1996/09/14 12:37:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.2 1996/09/29 14:39:45 bsmith Exp curfman $";
 #endif
 /*
-       Code for Time Stepping with implicit backwards Euler.
+       Code for Timestepping with implicit backwards Euler.
 */
 #include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
@@ -26,16 +26,19 @@ typedef struct {
 
 /* ------------------------------------------------------------------------------*/
 /*@C
-    TSPseudoDefaultTimeStep - Default code to compute 
-      pseudo timestepping. Use with TSPseudoSetTimeStep().
+   TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
+   Use with TSPseudoSetTimeStep().
 
-  Input Parameters:
-.   ts - the time step context
-.   dtctx - unused timestep context
+   Input Parameters:
+.  ts - the timestep context
+.  dtctx - unused timestep context
 
-  Output Parameter:
-.   newdt - the time step to use for the next step
+   Output Parameter:
+.  newdt - the timestep to use for the next step
 
+.keywords: timestep, pseudo, default
+
+.seealso: TSPseudoSetTimeStep()
 @*/
 int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
@@ -54,14 +57,17 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 }
 
 /*@
-    TSPseudoSetTimeStep - Sets the user routine to be
-        called at each pseudo-time-step to update the time-step.
+   TSPseudoSetTimeStep - Sets the user-defined routine to be
+   called at each pseudo-timestep to update the timestep.
 
-  Input Parameters:
-.  ts - time step context
+   Input Parameters:
+.  ts - timestep context
 .  dt - function to compute timestep
 .  ctx - [optional] context required by function
 
+.keywords: timestep, pseudo, set
+
+.seealso: TSPseudoDefaultTimeStep()
 @*/
 int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
@@ -77,14 +83,16 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 }
 
 /*@
-      TSPseudoComputeTimeStep - Computes the next timestep for a currently running
-             pseudo-timestepping.
+    TSPseudoComputeTimeStep - Computes the next timestep for a currently running
+    pseudo-timestepping.
 
     Input Parameter:
-.      ts - time step context
+.   ts - timestep context
 
     Output Parameter:
-.     dt - newly computed time-step
+.   dt - newly computed timestep
+
+.keywords: timestep, pseudo, compute
 @*/
 int TSPseudoComputeTimeStep(TS ts,double *dt)
 {
@@ -100,14 +108,14 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
 /* ------------------------------------------------------------------------------*/
 /*@C
-    TSPseudoDefaultVerifyTimeStep - Default code to verify last timestep.
+   TSPseudoDefaultVerifyTimeStep - Default code to verify last timestep.
 
-  Input Parameters:
-.   ts - the time step context
-.   dtctx - unused timestep context
+   Input Parameters:
+.  ts - the timestep context
+.  dtctx - unused timestep context
 
-  Output Parameter:
-.   newdt - the time step to use for the next step
+   Output Parameter:
+.  newdt - the timestep to use for the next step
 
 @*/
 int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void* dtctx,double* newdt,int *flag)
@@ -117,10 +125,10 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void* dtctx,double* newdt,int
 }
 
 /*@
-    TSPseudoSetVerifyTimeStep - Sets the user routine to verify quality of last time step.
+   TSPseudoSetVerifyTimeStep - Sets the user routine to verify quality of last timestep.
 
-  Input Parameters:
-.  ts - time step context
+   Input Parameters:
+.  ts - timestep context
 .  dt - function to verify
 .  ctx - [optional] context required by function
 
@@ -139,15 +147,15 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
 }
 
 /*@
-      TSPseudoVerifyTimeStep - Verifies that the last time step was ok.
+    TSPseudoVerifyTimeStep - Verifies that the last timestep was OK.
 
-    Input Parameter:
-.      ts - time step context
-.      update - latest solution
+    Input Parameters:
+.   ts - timestep context
+.   update - latest solution
 
-    Output Parameter:
-.     dt - newly computed time-step (if it had to shrink)
-.     flag - indicates if current timestep was ok
+    Output Parameters:
+.   dt - newly computed timestep (if it had to shrink)
+.   flag - indicates if current timestep was ok
 
 @*/
 int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)

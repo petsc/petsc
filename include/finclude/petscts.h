@@ -1,7 +1,7 @@
 C
-C  $Id: ts.h,v 1.2 1996/09/27 21:56:34 bsmith Exp curfman $;
+C  $Id: ts.h,v 1.3 1996/09/30 20:19:11 curfman Exp curfman $;
 C
-C  Include file for Fortran use of the S (timestepping) package in PETSc
+C  Include file for Fortran use of the TS (timestepping) package in PETSc
 C
 #define TS            integer
 #define TSType        integer

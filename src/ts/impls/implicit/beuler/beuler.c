@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.11 1996/09/14 12:37:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.12 1996/09/28 23:11:34 curfman Exp curfman $";
 #endif
 /*
-       Code for Time Stepping with implicit backwards Euler.
+       Code for Timestepping with implicit backwards Euler.
 */
 #include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
@@ -19,7 +19,7 @@ typedef struct {
 
 /*
     Version for linear PDE where RHS does not depend on time. Has built a
-  single matrix that is to be used for all time steps.
+  single matrix that is to be used for all timesteps.
 */
 static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
