@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.98 1999/02/01 21:24:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.99 1999/04/01 17:04:52 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -23,7 +23,7 @@ BUILDEXAMPLES_8 =
 BUILDEXAMPLES_9 = 
 
 EXAMPLESC       = ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
-EXAMPLESF       = ex12.F ex10.f
+EXAMPLESF       = ex12.F
 DIRS	        = umin
 
 #
