@@ -21,6 +21,8 @@ class Configure:
     # Preprocessing, compiling, and linking
     self.language = []
     self.pushLanguage('C')
+    self.codeBegin = ''
+    self.codeEnd   = ''
     return
 
   def checkPython(self):
@@ -231,7 +233,15 @@ class Configure:
     if language == 'C' or language == 'C++':
       codeStr = '#include "confdefs.h"\n'+includes
       if not body is None:
-        codeStr += '\nint main() {\n'+body+';\n  return 0;\n}\n'
+        if self.codeBegin:
+          codeBegin = self.codeBegin
+        else:
+          codeBegin = '\nint main() {\n'
+        if self.codeEnd:
+          codeEnd   = self.codeEnd
+        else:
+          codeEnd   = ';\n  return 0;\n}\n'
+        codeStr += codeBegin+body+codeEnd
     elif language == 'F77':
       if not body is None:
         codeStr = '      program main\n'+body+'\n      end\n'
@@ -381,7 +391,7 @@ class Configure:
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
-  def checkRun(self, includes, body):
+  def checkRun(self, includes, body, cleanup = 1):
     if not self.checkLink(includes, body, cleanup = 0): return 0
     success = 0
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
@@ -393,9 +403,10 @@ class Configure:
     if not status:
       success = 1
     else:
-      self.framework.log.write('ERR (executable): '+output)
+      self.framework.log.write('ERR (executable): '+output+'\n')
+      self.framework.log.write('ret = '+str(status)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+    if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return success
 
   ######################################

@@ -297,7 +297,7 @@ class Linker(Processor):
       build.transform.Transform.handleFile(self, f, set.tag)
     library = self.getLibrary(set)
     self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
-    command = ' '.join([self.getProcessor()]+self.getFlags(set)+set)
+    command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
     output  = self.executeShellCommand(command, self.handleErrors)
     self.output.append(library)
     return self.output
