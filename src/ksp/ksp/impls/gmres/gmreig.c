@@ -56,10 +56,10 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 #if defined(PETSC_HAVE_ESSL)
   KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
   int         n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
-  int         idummy = N,i,*perm,clen,zero;
+  int         idummy = N,i,*perm,zero;
   PetscScalar *R = gmres->Rsvd;
   PetscScalar *cwork = R + N*N,sdummy;
-  PetscReal   *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
+  PetscReal   *work,*realpart = gmres->Dsvd ;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
