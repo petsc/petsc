@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.2 1998/04/09 21:17:11 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.3 1998/04/09 21:50:46 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -24,7 +24,9 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #define _ALL_SOURCE
 
+#if !defined(HAVE_XLF90)
 #define HAVE_XLF90
+#endif
 
 #define PREFER_BZERO
 
