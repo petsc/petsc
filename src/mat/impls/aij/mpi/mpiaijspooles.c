@@ -13,27 +13,12 @@
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_Spooles"
 int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_MPIAIJ           *mat = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ       *mat = (Mat_MPIAIJ*)A->data;
   Mat_MPISpooles   *lu;   
-  char                 buff[32],*ordertype[] = {"BestOfNDandMS","MMD","MS","ND"}; 
-  PetscTruth           flg;
-  double               *opcounts,  minops, cutoff, *val;
-  Graph                *graph ;
-  IVL                  *adjIVL;
-  DV                   *cumopsDV ;
-  InpMtx               *newA ; 
-  Mat_MPIAIJ           *aij =  (Mat_MPIAIJ*)A->data;  
-  Mat_SeqAIJ           *aa=(Mat_SeqAIJ*)(aij->A)->data,*bb=(Mat_SeqAIJ*)(aij->B)->data;
-  PetscScalar          *av=aa->a, *bv=bb->a; 
-  int                  *ai=aa->i, *aj=aa->j, *bi=bb->i,*bj=bb->j, nz,
-                       i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  int                  ierr,size,rank,M=A->M,N=A->N,m=A->m,root,nedges;
+  int              ierr,M=A->M,N=A->N;
 
   PetscFunctionBegin;	
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
-  A->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_Spooles; 
+  A->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_Spooles; 
 
   /* Create the factorization matrix F */  
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
