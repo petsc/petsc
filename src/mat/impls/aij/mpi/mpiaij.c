@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.127 1996/02/23 23:06:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.128 1996/02/27 23:21:05 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1091,14 +1091,15 @@ static int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
-  Scalar     *vworkA, *vworkB, **pvA, **pvB;
+  Scalar     *vworkA, *vworkB, **pvA, **pvB,*v_p;
   int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
+  int        *cmap, *idx_p;
 
   if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,"MatGetRow_MPIAIJ:Already active");
   mat->getrowactive = PETSC_TRUE;
 
-  if (!mat->rowvalues) {
+  if (!mat->rowvalues && (idx || v)) {
     /*
         allocate enough space to hold information from the longest row.
     */
@@ -1124,31 +1125,36 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   ierr = MatGetRow(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   nztot = nzA + nzB;
 
+  cmap  = mat->garray;
   if (v  || idx) {
     if (nztot) {
       /* Sort by increasing column numbers, assuming A and B already sorted */
-      int imark;
-      for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
+      int imark = -1;
       if (v) {
-        *v = mat->rowvalues;
+        *v = v_p = mat->rowvalues;
         for ( i=0; i<nzB; i++ ) {
-          if (cworkB[i] < cstart)   (*v)[i] = vworkB[i];
+          if (cmap[cworkB[i]] < cstart)   v_p[i] = vworkB[i];
           else break;
         }
         imark = i;
-        for ( i=0; i<nzA; i++ )     (*v)[imark+i] = vworkA[i];
-        for ( i=imark; i<nzB; i++ ) (*v)[nzA+i] = vworkB[i];
+        for ( i=0; i<nzA; i++ )     v_p[imark+i] = vworkA[i];
+        for ( i=imark; i<nzB; i++ ) v_p[nzA+i]   = vworkB[i];
       }
       if (idx) {
-        *idx = mat->rowindices;
-        for (i=0; i<nzA; i++) cworkA[i] += cstart;
-        for ( i=0; i<nzB; i++ ) {
-          if (cworkB[i] < cstart)   (*idx)[i] = cworkB[i];
-          else break;
+        *idx = idx_p = mat->rowindices;
+        if (imark > -1) {
+          for ( i=0; i<imark; i++ ) {
+            idx_p[i] = cmap[cworkB[i]];
+          }
+        } else {
+          for ( i=0; i<nzB; i++ ) {
+            if (cmap[cworkB[i]] < cstart)   idx_p[i] = cmap[cworkB[i]];
+            else break;
+          }
+          imark = i;
         }
-        imark = i;
-        for ( i=0; i<nzA; i++ )     (*idx)[imark+i] = cworkA[i];
-        for ( i=imark; i<nzB; i++ ) (*idx)[nzA+i] = cworkB[i];
+        for ( i=0; i<nzA; i++ )     idx_p[imark+i] = cstart + cworkA[i];
+        for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]];
       } 
     } 
     else {*idx = 0; *v=0;}
