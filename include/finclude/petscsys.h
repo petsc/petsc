@@ -1,11 +1,11 @@
 C
-C  $Id: sys.h,v 1.8 1997/09/26 02:22:28 bsmith Exp bsmith $;
+C  $Id: sys.h,v 1.9 1997/10/19 03:32:05 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
-#define PetscRandom     integer
-#define PetscDataType   integer
-#define PetscRandomType integer
+#define PetscRandom         integer
+#define PetscBynarySeekType integer
+#define PetscRandomType     integer
 C
 C     Random numbers
 C
