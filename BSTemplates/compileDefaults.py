@@ -10,6 +10,9 @@ import distutils.sysconfig
 import os
 import sys
 
+def guessProject(dir):
+  return os.path.basename(dir).lower()
+
 class UsingCompiler:
   '''This class handles all interaction specific to a compiled language'''
   def __init__(self, usingSIDL):
@@ -48,12 +51,20 @@ class UsingCompiler:
     compiler.includeDirs.append(sourceDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compiler.includeDirs.append(includeDir)
     return [self.getTagger(sourceDir), clientFilter, compiler]
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
     libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = dir):
+        if os.path.isfile(lib):
+          libraries.extend(lib)
     linker    = link.LinkSharedLibrary(extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
     return [link.TagLibrary(), linker]
@@ -64,6 +75,10 @@ class UsingCompiler:
     if not self.getLanguage() in self.usingSIDL.internalClientLanguages[package]:
       libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries[package])
+    for dir in self.usingSIDL.repositoryDirs:
+      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+        if os.path.isfile(lib):
+          libraries.extend(lib)
     linker    = link.LinkSharedLibrary(extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
     return [link.TagLibrary(), linker]
@@ -116,6 +131,10 @@ class UsingC (UsingCompiler):
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compiler.includeDirs.append(includeDir)
     return [compile.TagC(root = rootDir), compiler]
 
 class UsingCxx (UsingCompiler):
@@ -158,6 +177,10 @@ class UsingCxx (UsingCompiler):
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compileCxx.includeDirs.append(includeDir)
     targets = [compile.TagC(root = rootDir), iorFilter, compileC, compile.TagCxx(root = rootDir), serverFilter, compileCxx]
     return targets
 
