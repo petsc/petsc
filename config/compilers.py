@@ -420,9 +420,9 @@ class Configure(config.base.Configure):
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if self.framework.argDB.has_key('with-f90-header'):
-      self.addDefine('PETSC_HAVE_F90_H', self.framework.argDB['with-f90-header'])
+      self.addDefine('HAVE_F90_H', self.framework.argDB['with-f90-header'])
     if self.framework.argDB.has_key('with-f90-source'):
-      self.addDefine('PETSC_HAVE_F90_C', self.framework.argDB['with-f90-source'])
+      self.addDefine('HAVE_F90_C', self.framework.argDB['with-f90-source'])
     return
 
   def configure(self):
