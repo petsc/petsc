@@ -10,7 +10,7 @@ class Defaults:
     self.etagsFile    = etagsFile
 
   def doLibraryCheck(self):
-    return not self.sidlTargets.project == 'bs' and not self.sidlTargets.project == 'sidlruntime'
+    return not self.sidlTargets.project.getName() == 'bs' and not self.sidlTargets.project.getName() == 'sidlruntime'
 
   def getClientCompileTargets(self, lang, doCompile = 1, doLink = 1):
     compiler = []

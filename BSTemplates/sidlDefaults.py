@@ -13,16 +13,17 @@ class UsingSIDL (logging.Logger):
   def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None, bootstrapPackages = []):
     self.project  = project
     self.packages = packages
-    # The directory where XML is stored
+    rootDir       = project.getRoot()
+    # The repository root directory
     if repositoryDir:
       self.repositoryDir = repositoryDir
     else:
-      self.repositoryDir = os.getcwd()
+      self.repositoryDir = rootDir
     # The base path for generated server source
     if serverBaseDir:
       self.serverBaseDir = serverBaseDir
     else:
-      self.serverBaseDir = os.path.abspath('server')
+      self.serverBaseDir = os.path.join(rootDir, 'server')
     # The repositories used during compilation
     self.repositoryDirs  = []
     self.clientLanguages = sidlStructs.SIDLLanguageList()
@@ -60,18 +61,25 @@ class UsingSIDL (logging.Logger):
     self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
     return self.includeDirs
 
+  def getRuntimeProject(self):
+    for project in bs.argDB['installedprojects']+[self.project]:
+      if project.getName() == 'sidlruntime':
+        return project
+    return bs.Project('sidlruntime', 'bk://sidl.bkbits.net/')
+
   def setupExtraLibraries(self):
+    runtimeProject = self.getRuntimeProject()
     rootDir   = os.path.join(self.getRootDir(), 'lib')
     using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
-    serverLib = using.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), isArchive = 0, root = rootDir)
+    serverLib = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0, root = rootDir)
     self.extraLibraries['executable'].extend(serverLib)
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.extraLibraries[lang].extend(serverLib)
-      if not self.project == 'sidlruntime' and not lang == self.getBaseLanguage():
+      if not self.project == runtimeProject and not lang == self.getBaseLanguage():
         using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self)
-        self.extraLibraries[lang].extend(using.getClientLibrary('sidlruntime', lang, isArchive = 0, root = rootDir))
+        self.extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0, root = rootDir))
     for package in self.getPackages():
-      if not self.project == 'sidlruntime' or not package in self.bootstrapPackages:
+      if not self.project == runtimeProject or not package in self.bootstrapPackages:
         self.extraLibraries[package].extend(serverLib)
     return self.extraLibraries
 
@@ -164,9 +172,9 @@ class UsingSIDL (logging.Logger):
       lib<project>-<lang>-<package>-server.a    for archives
       lib<project>-<lang>-<package>-server.so   for dynamic libraries'''
     if isArchive:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server.a')])
     else:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.so')])
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server.so')])
 
 class TagSIDL (transform.GenericTag):
   def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):

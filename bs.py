@@ -22,25 +22,25 @@ class Project:
     return
 
   def __hash__(self):
-    return name.__hash__()
+    return self.name.__hash__()
 
   def __lt__(self, other):
-    return name.__lt__(other.getName())
+    return self.name.__lt__(other.getName())
 
   def __le__(self, other):
-    return name.__le__(other.getName())
+    return self.name.__le__(other.getName())
 
   def __eq__(self, other):
-    return name.__eq__(other.getName())
+    return self.name.__eq__(other.getName())
 
   def __ne__(self, other):
-    return name.__ne__(other.getName())
+    return self.name.__ne__(other.getName())
 
   def __gt__(self, other):
-    return name.__gt__(other.getName())
+    return self.name.__gt__(other.getName())
 
   def __ge__(self, other):
-    return name.__ge__(other.getName())
+    return self.name.__ge__(other.getName())
 
   def getName(self):
     return self.name
@@ -60,7 +60,7 @@ class BS (maker.Maker):
   def __init__(self, projectObj, clArgs = None):
     self.setupArgDB(clArgs)
     maker.Maker.__init__(self)
-    self.project          = projectObj.getName()
+    self.project          = projectObj
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
     # Put current project name into the database

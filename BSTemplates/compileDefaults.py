@@ -11,7 +11,10 @@ import os
 import sys
 
 def guessProject(dir):
-  return os.path.basename(dir).lower()
+  for project in bs.argDB['installedprojects']:
+    if project.getRoot() == dir:
+      return project
+  return bs.Project(os.path.basename(dir).lower(), '')
 
 class UsingCompiler:
   '''This class handles all interaction specific to a compiled language'''
@@ -31,14 +34,14 @@ class UsingCompiler:
     if not root: root = self.libDir
     if isArchive:  ext = '.a'
     else:          ext = '.so'
-    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-client'+ext)])
+    return fileset.FileSet([os.path.join(root, 'lib'+project.getName()+'-'+lang.lower()+'-client'+ext)])
 
   def getServerLibrary(self, project, lang, package, isArchive = 1, root = None):
     '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
     if not root: root = self.libDir
     if isArchive:  ext = '.a'
     else:          ext = '.so'
-    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-'+package+'-server'+ext)])
+    return fileset.FileSet([os.path.join(root, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server'+ext)])
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
@@ -372,7 +375,7 @@ class UsingJava (UsingCompiler):
         ext = '.so'
     else:
       ext = '.jar'
-    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-client'+ext)])
+    return fileset.FileSet([os.path.join(root, 'lib'+project.getName()+'-'+lang.lower()+'-client'+ext)])
 
   def getServerLibrary(self, project, lang, isJNI = 0):
     raise RuntimeError('No server for '+self.getLanguage())
