@@ -31,6 +31,15 @@ FCPPFLAGS	= ${PETSC_FCPPFLAGS}
 C_SH_LIB_PATH	= ${PETSC_C_SH_LIB_PATH}
 F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
+# The following variables define PETSc compile procedures
+#
+PETSC_COMPILE         = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE};
+PETSC_COMPILE_SINGLE  = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $$filename;
+PETSC_COMPILE_LIBTOOL = files="${SOURCEC} ${SSOURCE}"; \
+                        for filename in $$files; do \
+                            ${PETSC_COMPILE_SINGLE} \
+                        done;
+#
 # The following additional variables are used by PETSc targets and should not be redifined
 #
 # LIBNAME    - library name
@@ -151,6 +160,20 @@ HYPRE_DIRS         = src/sles/pc/impls/hypre src/vec/impls/hypre src/mat/impls/h
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
 
+PDT_PARSE          = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
+TAU_INSTR          = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
+PDT_PETSC_OPTS     = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"' \
+                     -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_ARCH='"${PETSC_ARCH}"'
+TAU_PETSC_OPTS     = -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\(\); 
+TAU_COMPILE_SINGLE = ${PDT_PARSE} $$filename ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${PDT_PETSC_OPTS}; \
+                     ${TAU_INSTR} $$name.c.pdb $$filename -o $$name.inst.c ${TAU_PETSC_OPTS} \
+                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o; \
+TAU_COMPILE        = files="${SOURCEC} ${SSOURCE}"; \
+                     for filename in $$files; do \
+                         name=`basename $$filename .c`; \
+                         ${TAU_COMPILE_SINGLE} \
+                         ${RM} $$name.c.pdb $$name.inst.c; \
+                     done;
 #
 # ----------------------------------------------------------------------------------------
 #
