@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.42 1995/12/21 18:30:34 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.43 1996/01/16 21:19:33 balay Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
 */
 #include <stdio.h>
-#include "petsc.h"     /*I petsc.h I*/
+#include "petsc.h"     /*I "petsc.h" I*/
 /* rs6000 needs _XOPEN_SOURCE to use tsearch */
 #if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE
