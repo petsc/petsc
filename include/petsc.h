@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.186 1997/11/12 04:08:43 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.187 1997/11/13 19:33:14 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -88,6 +88,7 @@ extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
+extern int  PetscClearMalloc();
 #define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
@@ -242,10 +243,12 @@ extern int  MPIFortranCommToCComm(int,MPI_Comm*);
 /*
       Simple PETSc parallel IO for ASCII printing
 */
+extern int  PetscFixFilename(char*);
 extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
+extern int  PetscErrorPrintf(char *,...);
 
 extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
