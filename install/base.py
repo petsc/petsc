@@ -27,8 +27,7 @@ class Base (maker.Maker):
         return project
     return None
 
-  def getMakeModule(self, root):
-    name = 'make'
+  def getMakeModule(self, root, name = 'make'):
     (fp, pathname, description) = imp.find_module(name, [root])
     try:
       return imp.load_module(name, fp, pathname, description)
