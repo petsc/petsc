@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.239 1997/04/03 17:08:06 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.240 1997/04/03 18:13:35 curfman Exp curfman $";
 #endif
 
 /*
@@ -1903,10 +1903,12 @@ $    MAT_COLUMNS_UNSORTED - not sorted by column
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.
 
-$    MAT_NO_NEW_NONZERO_LOCATIONS - no new nonzero locations
-$    MAT_YES_NEW_NONZERO_LOCATIONS - allow new nonzero locations
-$    MAT_NO_NEW_DIAGONALS - no new diagonals (for block diagonal format only)
-$    MAT_YES_NEW_DIAGONALS - allow new diagonals (for block diagonal format only)
+$    MAT_NO_NEW_NONZERO_LOCATIONS - additional insertions will not be
+        allowed if they generate a new nonzero
+$    MAT_YES_NEW_NONZERO_LOCATIONS - additional insertions will be allowed
+$    MAT_NO_NEW_DIAGONALS - additional insertions will not be allowed if
+         they generate a nonzero in a new diagonal (for block diagonal format only)
+$    MAT_YES_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 $    MAT_IGNORE_OFF_PROC_ENTRIES - drop off-processor entries
 $    MAT_NEW_NONZERO_LOCATION_ERROR - generate error for new matrix entry
 
