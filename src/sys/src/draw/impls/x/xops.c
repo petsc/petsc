@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.101 1997/12/01 01:55:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.102 1997/12/12 19:38:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -345,7 +345,6 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                         ((1.0 - ((double) py)/((double) win->h)-draw->port_yl))*
                         (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
-  /* Next line doesn't work, don't know why; maybe with the flush it will work now */
   XUndefineCursor(win->disp, win->win);
   XFlush( win->disp ); XSync(win->disp,False);
   PetscFunctionReturn(0);
@@ -669,7 +668,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   MPI_Comm_rank(comm,&rank);
 
   if (rank == 0) {
-    if (x < 0 || y < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
+    if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);

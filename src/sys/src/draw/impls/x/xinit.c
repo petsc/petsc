@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.39 1997/12/12 19:38:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.40 1997/12/20 04:37:38 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -51,48 +51,23 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 {
   PetscFunctionBegin;
-  if (q_default_visual) {
-    XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-    XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
-    if (!cmap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-    else       XiWin->cmap  = cmap;
-    PLogInfo(0,"Opening default visual X window\n");
-  } else {
-    XVisualInfo vinfo;
-    /* Try to match to some popular types */
-    /*
-       This does not work on the SGI machines for some reason, should fix it
 
-      if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
-      XiWin->vis    = vinfo.visual;
-      XiWin->depth  = 24;
-      nc            = 256;
-      PLogInfo(0,"Opening direct color 24 bit X window\n");
-    } else */
+  /*
+       As a test due to problems on SGI reported in petsc-maint 1534 change
+    to always use default visual
+    
+    q_default_visual is now a flag for default colormap
+  */
+  XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
+  XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+  if (cmap)                  XiWin->cmap  = cmap;
+  else if (q_default_visual) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
+  else                       XiWin->cmap = 0;
 
-     if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)){
-      XiWin->vis    = vinfo.visual;
-      XiWin->depth  = 8;
-      nc            = 256;
-      PLogInfo(0,"Opening pseudo color 8 bit X window\n");
-    } else if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
-			 DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)){
-      XiWin->vis    = vinfo.visual;
-      XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
-      nc            = (int) pow(2.0,(double) XiWin->depth);
-      PLogInfo(0,"Opening pseudo color %d bit X window\n",XiWin->depth);
-      cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-    } else {
-      XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-      XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
-      nc            = (int) pow(2.0,(double) XiWin->depth);
-      PLogInfo(0,"Opening basic color %d bit X window\n",XiWin->depth);
-      cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-    }
-    /* There are other types; perhaps this routine should accept a 
-       "hint" on which types to look for. */
-    XiWin->cmap = cmap;
+  if (pow(2.0,(double) XiWin->depth) < 256) {
+    SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
+  PLogInfo(0,"Always opening default visual X window\n");
 
   /* reset the number of colors from info on the display, the colormap */
   XiInitColors( XiWin, cmap, nc );
