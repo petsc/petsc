@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.52 1999/03/18 00:24:06 curfman Exp balay $ 
+# $Id: makefile,v 1.53 1999/03/19 17:22:32 balay Exp balay $ 
 
 ALL: ex1
 
@@ -35,7 +35,7 @@ EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h ex5fs.F
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme
-DIRS		 = 
+DIRS		 = ex10d
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
