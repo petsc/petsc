@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.25 1997/01/01 03:37:44 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.26 1997/01/06 20:24:32 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -118,8 +118,8 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
     ierr = MatGetSize(pmatin->A,&m,&m); CHKERRQ(ierr);
     ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRQ(ierr);
     ierr = VecCreateSeq(MPI_COMM_SELF,m,&y); CHKERRQ(ierr);
-    PLogObjectParent(pmat,x);
-    PLogObjectParent(pmat,y);
+    PLogObjectParent(pc,x);
+    PLogObjectParent(pc,y);
 
     pc->destroy       = PCDestroy_BJacobi_MPIAIJ;
     pc->apply         = PCApply_BJacobi_MPIAIJ;
