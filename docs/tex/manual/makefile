@@ -32,9 +32,9 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
-	tohtml -mapman www.cit manual.tex -notopnames \
+	/home/bsmith/bin/sun4/tohtml -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../www/petsc.cit -nobottomnav
-	tohtml -mapman www.cit manual.tex -notopnames \
+	/home/bsmith/bin/sun4/tohtml -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
@@ -60,7 +60,6 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | awk '{if ($$1 == "<b>Table") {print "<center>" $$0 "</center>"} else {print $$0} }' \
             > manual.html
 	-mv manual.html ../..
-	-cp petsc.gif components.gif directories.gif ghost.gif danumbering.gif ../..
 	-@chmod ug+w ../../manual.html www.cit ../../*.gif
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html manual_html.html
 
