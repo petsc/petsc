@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.48 1996/01/27 17:34:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.49 1996/02/08 18:27:31 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -46,6 +46,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Generate vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
@@ -111,6 +112,7 @@ int main(int argc,char **args)
   } 
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
+  ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);

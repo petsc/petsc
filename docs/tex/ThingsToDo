@@ -23,10 +23,9 @@ Additional Capabilities that PETSc Needs:
   - Fix PetscView demo log file to work with new profile format.
     Cleanup PetscView.
 
-  - Add parallel viewer for MPIROWBS matrix format (recall BS doesn't allow
-    matrices of dimension 0).
+  X Add parallel viewer for MPIROWBS matrix format.
 
-  - Add inode info to MatView() with info format.
+  X Add inode info to MatView() with info format.
 
   - Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
     and petsc/src/viewer/impls/matlab/send.c
