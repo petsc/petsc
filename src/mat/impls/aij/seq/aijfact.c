@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.20 1995/06/08 03:09:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.21 1995/06/14 17:24:03 bsmith Exp curfman $";
 #endif
 
 
@@ -17,9 +17,12 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz;
   int     *idnew, idx, row,m,fm, nnz, nzi,len;
  
-  if (n != aij->n) SETERRQ(1,"Mat must be square");
-  if (!isrow) {SETERRQ(1,"Must have row permutation");}
-  if (!iscol) {SETERRQ(1,"Must have column permutation");}
+  if (n != aij->n) 
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must be square.");
+  if (!isrow) 
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must have row permutation.");
+  if (!iscol) 
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must have column permutation.");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
@@ -214,7 +217,8 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
-  if (mat->factor != FACTOR_LU) SETERRQ(1,"Cannot solve with factor");
+  if (mat->factor != FACTOR_LU) 
+    SETERRQ(1,"MatSolve_AIJ: Cannot solve with factor.");
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
@@ -255,7 +259,8 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
-  if (mat->factor != FACTOR_LU) SETERRQ(1,"Cannot solve with factor");
+  if (mat->factor != FACTOR_LU) 
+    SETERRQ(1,"MatSolveAdd_AIJ: Cannot solve with factor.");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -299,7 +304,8 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
-  if (mat->factor != FACTOR_LU) SETERRQ(1,"Cannot solve with factor");
+  if (mat->factor != FACTOR_LU) 
+    SETERRQ(1,"MatSolveTrans_AIJ: Cannot solve with factor.");
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp = aij->solve_work;
@@ -353,7 +359,8 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
-  if (mat->factor != FACTOR_LU) SETERRQ(1,"Cannot solve with factor");
+  if (mat->factor != FACTOR_LU) 
+    SETERRQ(1,"MatSolveTransAdd_AIJ: Cannot solve with factor.");
   if (zz != xx) VecCopy(zz,xx);
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -409,9 +416,12 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz, *lfill,*ajfill,*ajtmpf;
   int     *idnew, idx, row,m,fm, nnz, nzi,len;
  
-  if (n != aij->n) SETERRQ(1,"Mat must be square");
-  if (!isrow) {SETERRQ(1,"Must have row permutation");}
-  if (!iscol) {SETERRQ(1,"Must have column permutation");}
+  if (n != aij->n) 
+    SETERRQ(1,"MatILUFactorSymbolic_AIJ: Matrix must be square.");
+  if (!isrow) 
+    SETERRQ(1,"MatILUFactorSymbolic_AIJ: Matrix must have row permutation.");
+  if (!iscol) SETERRQ(1,
+    "MatILUFactorSymbolic_AIJ: Matrix must have column permutation.");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);

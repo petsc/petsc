@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
+/* $Id: aij.h,v 1.9 1995/06/07 17:31:26 bsmith Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -6,23 +6,30 @@
 #if !defined(__AIJ_H)
 #define __AIJ_H
 
-/*  The i[] and j[] arrays start at 1 not zero to support Fortran 77 */
-/*  In Fortran j[i[k]+p-1] is the pth column in row k */
- 
-/*
-    singlemalloc indicates that a, i and j where all obtained with 
-  one big malloc 
+/*  
+  MATAIJ format - Compressed row storage (also called Yale sparse matrix
+  format), compatible with Fortran.  The i[] and j[] arrays start at 1,
+  not zero, to support Fortran 77.  For example, in Fortran 
+  j[i[k]+p-1] is the pth column in row k.
 */
+
 typedef struct {
-  int    sorted, roworiented, nonew, singlemalloc,assembled;
-  int    m,n;                    /* rows, columns */
-  int    nz,maxnz,mem;           /* nonzeros, allocated nonzeros, memory */
-  int    *diag,                  /* diagonal elements */
-         *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
-         *j;                     /* ilen is actual lenght of row */
-  Scalar *a;     
-  IS     row,col;
-  Scalar *solve_work;            /* work space used in MatSolve_AIJ */
+  int    sorted;           /* if true, rows are sorted by increasing columns */
+  int    roworiented;      /* if true, row-oriented storage */
+  int    nonew;            /* if true, don't allow new elements to be added */
+  int    singlemalloc;     /* if true a, i, and j have been obtained with
+                               one big malloc */
+  int    assembled;        /* if true, matrix is fully assembled */
+  int    m, n;             /* rows, columns */
+  int    nz, maxnz, mem;   /* nonzeros, allocated nonzeros, memory */
+  int    *diag;            /* pointers to diagonal elements */
+  int    *i;               /* pointer to beginning of each row */
+  int    *imax;            /* maximum space allocated for each row */
+  int    *ilen;            /* actual length of each row */
+  int    *j;               /* column values: j + i[k] - 1 is start of row k */
+  Scalar *a;               /* nonzero elements */
+  IS     row, col;         /* index sets, used for reorderings */
+  Scalar *solve_work;      /* work space used in MatSolve_AIJ */
 } Mat_AIJ;
 
 #endif
