@@ -1,12 +1,11 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.32 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.33 1998/05/08 00:19:22 bsmith Exp curfman $";
 #endif
 /*
-     Provides utility routines for manulating any type of PETSc object.
+     Provides utility routines for manipulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
-
 
 extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
 extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
@@ -17,8 +16,8 @@ extern int PetscObjectQueryFunction_Petsc(PetscObject,char *,void **);
 #undef __FUNC__  
 #define __FUNC__ "PetscHeaderCreate_Private"
 /*
-    Creates a base PETSc object header and fills in the default values.
-   Called by the macro PetscHeaderCreate()
+   PetscHeaderCreate_Private - Creates a base PETSc object header and fills
+   in the default values.  Called by the macro PetscHeaderCreate().
 */
 int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,int (*des)(PetscObject),
                               int (*vie)(PetscObject,Viewer))
@@ -42,7 +41,8 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
 #undef __FUNC__  
 #define __FUNC__ "PetscHeaderDestroy_Private"
 /*
-    Destroys a base PETSc object header. Called by macro PetscHeaderDestroy.
+    PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
+    the macro PetscHeaderDestroy().
 */
 int PetscHeaderDestroy_Private(PetscObject h)
 {
@@ -64,7 +64,6 @@ int PetscHeaderDestroy_Private(PetscObject h)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectReference"
 /*@C
@@ -75,11 +74,10 @@ int PetscHeaderDestroy_Private(PetscObject h)
    Collective on PetscObject
 
    Input Parameter:
-.  obj - the PETSc object. This must be cast with a (PetscObject), for example, 
+.  obj - the PETSc object. This must be cast with (PetscObject), for example, 
          PetscObjectReference((PetscObject) mat);
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
-
 @*/
 int PetscObjectReference(PetscObject obj)
 {
@@ -98,14 +96,13 @@ int PetscObjectReference(PetscObject obj)
    Not Collective
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+.  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectGetReference((PetscObject) mat,&cnt);
 
    Output Parameter:
 .  cnt - the reference count
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
-
 @*/
 int PetscObjectGetReference(PetscObject obj,int *cnt)
 {
@@ -125,11 +122,10 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
    Collective on PetscObject
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+.  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectDereference((PetscObject) mat);
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
-
 @*/
 int PetscObjectDereference(PetscObject obj)
 {
@@ -145,8 +141,10 @@ int PetscObjectDereference(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------------------- */
 /*
-       These are the versions private to the PETSc object data structures
+     The following routines are the versions private to the PETSc object
+     data structures.
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectGetComm_Petsc"
@@ -212,28 +210,26 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
    Not Collective
 
    Input Parameters:
-+  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
++  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectCompose((PetscObject) mat,...);
-.  name - name associated with child object 
--  ptr - the other PETSc object to associate with the PETSc object, this must also be 
+.  name - name associated with the child object 
+-  ptr - the other PETSc object to associate with the PETSc object; this must also be 
          cast with (PetscObject)
 
    Notes:
-   The second objects reference count is automatically increased by one when it is
+   The second object's reference count is automatically increased by one when it is
    composed.
 
    Replaces any previous object that had the same name.
 
-   If ptr is null and name has previously been composed using an object, that entry
-   is removed from the obj.
+   If ptr is null and name has previously been composed using an object, then that
+   entry is removed from the obj.
 
-   See PetscObjectContainerCreate() for how to create an object from a user pointer
-   that may then be composed with PETSc objects.
+   PetscObjectCompose() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object.  See 
+   PetscObjectContainerCreate() for info on how to create an object from a 
+   user-provided pointer that may then be composed with PETSc objects.
    
-   PetscObjectCompose() can be used with any PETSc object such at
-   Mat, Vec, KSP, SNES, etc, or any user provided object. 
-
 .keywords: object, composition
 
 .seealso: PetscObjectQuery(), PetscObjectContainerCreate()
@@ -275,20 +271,21 @@ int PetscObjectQuery(PetscObject obj,char *name,PetscObject *ptr)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    PetscObjectComposeFunction - Associates a function with a given PETSc object. 
                        
+   Collective on PetscObject
+
    Input Parameters:
 +  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
          PetscObjectCompose((PetscObject) mat,...);
-.  name - name associated with child object 
+.  name - name associated with the child function
 .  fname - name of the function
 -  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
 
    Notes:
-   PetscObjectComposeFunction() can be used with any PETSc object such at
-   Mat, Vec, KSP, SNES, etc, or any user-provided object. 
+   PetscObjectComposeFunction() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
 .keywords: object, composition
 
@@ -308,15 +305,14 @@ int PetscObjectComposeFunction_Private(PetscObject obj,char *name,char *fname,vo
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectQueryFunction"
 /*@C
-   PetscObjectQueryFunction  - Gets a function associated with a given object.
+   PetscObjectQueryFunction - Gets a function associated with a given object.
                        
    Collective on PetscObject
 
    Input Parameters:
-+  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
++  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectCompose((PetscObject) mat,...);
--  name - name associated with childfunction
+-  name - name associated with the child function
 
    Output Parameter:
 .  ptr - function pointer
@@ -470,7 +466,7 @@ int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
    Collective on PetscObjectContainer
 
    Input Parameter:
-.  obj - the object created with PetscObjectContainerCreate()
+.  obj - an object that was created with PetscObjectContainerCreate()
 
 .seealso: PetscObjectContainerCreate()
 @*/
