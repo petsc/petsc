@@ -8,13 +8,13 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A,B; 
-  int         ierr,i,j,ntypes = 9,size;
-  MatType     type[9] = {MATMPIAIJ, MATMPIROWBS, MATMPIBDIAG,MATMPIDENSE,
-                         MATMPIBAIJ,MATSEQDENSE,MATSEQAIJ,  MATSEQBDIAG,MATSEQBAIJ};
+  Mat         C,A,B,D; 
+  int         ierr,i,j,ntypes = 2,size;
+  MatType     type[9] = {MATSEQAIJ,MATSEQBAIJ,MATMPIROWBS};
   char        file[128];
   Vec         v;
   PetscViewer fd;
+  PetscTruth  equal;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
@@ -38,18 +38,21 @@ int main(int argc,char **args)
   for (i=0; i<ntypes; i++) {
     ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
     for (j=0; j<ntypes; j++) {
-      ierr = MatConvert(A,type[i],&B);CHKERRQ(ierr);
+      ierr = MatConvert(A,type[j],&B);CHKERRQ(ierr);
+      ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr);
+      ierr = MatEqual(A,D,&equal);CHKERRQ(ierr);
+      if (!equal){
+        MatView(A,PETSC_VIEWER_STDOUT_WORLD);
+        MatView(B,PETSC_VIEWER_STDOUT_WORLD);
+        MatView(D,PETSC_VIEWER_STDOUT_WORLD);
+        SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
+      }
       ierr = MatDestroy(B);CHKERRQ(ierr);
+      ierr = MatDestroy(D);CHKERRQ(ierr);
     }
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
-  if (size == 1) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testmat",PETSC_BINARY_CREATE,&fd);CHKERRQ(ierr);
-    ierr = MatView(C,fd);CHKERRQ(ierr);
-    ierr = VecView(v,fd);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-  }
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = VecDestroy(v);CHKERRQ(ierr);

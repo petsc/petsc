@@ -2640,6 +2640,7 @@ EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 
 EXTERN_C_BEGIN
 extern int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
+extern int MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -2725,6 +2726,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqsbaij_C",
                                      "MatConvert_SeqAIJ_SeqSBAIJ",
                                       MatConvert_SeqAIJ_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqbaij_C",
+                                     "MatConvert_SeqAIJ_SeqBAIJ",
+                                      MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);

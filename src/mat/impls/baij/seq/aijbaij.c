@@ -50,3 +50,40 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
 }
 EXTERN_C_END
 
+#include "src/mat/impls/aij/seq/aij.h"
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
+int MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,Mat *B)
+{
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data; 
+  Mat_SeqBAIJ *b;
+  int         ierr,*ai=a->i,m=A->M,n=A->N,i,*rowlengths;
+
+  PetscFunctionBegin;
+  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
+
+  ierr = PetscMalloc(m*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    rowlengths[i] = ai[i+1] - ai[i];
+  }
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,m,n,0,rowlengths,B);CHKERRQ(ierr);
+  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+
+  ierr = MatSetOption(*B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(*B,MAT_ROWS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  
+  b  = (Mat_SeqBAIJ*)(*B)->data;
+
+  ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->j,a->j,a->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->a,a->a,a->nz*sizeof(MatScalar));CHKERRQ(ierr);
+ 
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
