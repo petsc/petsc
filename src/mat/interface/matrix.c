@@ -5724,3 +5724,198 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
   ierr = PetscMemzero(info,sizeof(MatFactorInfo));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAP"
+/*@C
+   MatPtAP - Creates the matrix projection C = P^T * A * P
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+.  P - the projection matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P))
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+
+   Level: intermediate
+
+.seealso: MatPtAPSymbolic(),MatPtAPNumeric(),MatMatMult()
+@*/
+PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr, (*fA)(Mat,Mat,MatReuse,PetscReal,Mat *), (*fP)(Mat,Mat,MatReuse,PetscReal,Mat *);
+  Mat            Ptmp;
+  PetscTruth     flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(P,MAT_COOKIE,2);
+  PetscValidType(P,2);
+  MatPreallocated(P);
+  if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  /* This is a crappy hack */
+  ierr = PetscTypeCompare((PetscObject)P,MATSEQMAIJ,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatConvert(P,MATSEQAIJ,&Ptmp);CHKERRQ(ierr);
+    P    = Ptmp;
+  }
+
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptap;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",A->type_name);
+  fP = P->ops->ptap;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
+
+  ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*fA)(A,P,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
+
+  if (flg) {
+    ierr = MatDestroy(P);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatPtAPNumeric - Computes the matrix projection C = P^T * A * P
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+-  P - the projection matrix
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C must have been created by calling MatPtAPSymbolic and must be destroyed by
+   the user using MatDeatroy().
+
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  C will be of type MATAIJ.
+
+   Level: intermediate
+
+.seealso: MatPtAP(),MatPtAPSymbolic(),MatMatMultNumeric()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPNumeric"
+PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) 
+{
+  PetscErrorCode ierr,(*fA)(Mat,Mat,Mat), (*fP)(Mat,Mat,Mat);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(P,MAT_COOKIE,2);
+  PetscValidType(P,2);
+  MatPreallocated(P);
+  if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(C,MAT_COOKIE,3);
+  PetscValidType(C,3);
+  MatPreallocated(C);
+  if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (P->N!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->M);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
+  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
+  if (P->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->N);
+
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptapnumeric;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for A of type %s",A->type_name);
+  fP = P->ops->ptapnumeric;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPNumeric requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
+
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*fA)(A,P,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+-  P - the projection matrix
+
+   Output Parameters:
+.  C - the (i,j) structure of the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.  The product is computed using
+   this (i,j) structure by calling MatPtAPNumeric().
+
+   Level: intermediate
+
+.seealso: MatPtAP(),MatPtAPNumeric(),MatMatMultSymbolic()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPSymbolic"
+PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr, (*fA)(Mat,Mat,PetscReal,Mat*), (*fP)(Mat,Mat,PetscReal,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(P,MAT_COOKIE,2);
+  PetscValidType(P,2);
+  MatPreallocated(P);
+  if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
+  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
+
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptapsymbolic;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for A of type %s",A->type_name);
+  fP = P->ops->ptapsymbolic;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPSymbolic requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
+
+  ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*fA)(A,P,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}

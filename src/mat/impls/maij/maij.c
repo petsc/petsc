@@ -1710,6 +1710,50 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+#include "src/mat/impls/aij/seq/aij.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_MAIJ_SeqAIJ"
+PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
+{
+  Mat_SeqMAIJ       *b = (Mat_SeqMAIJ*)A->data;
+  Mat               a = b->AIJ;
+  Mat_SeqAIJ        *aij = (Mat_SeqAIJ*)a->data;
+  PetscErrorCode    ierr;
+  PetscInt          m,n,i,ncols,*ilen,nmax = 0,*icols,j,k,ii;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(a,&m,&n);CHKERRQ(ierr);    
+  ierr = PetscMalloc(4*m*sizeof(int),&ilen);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    nmax = PetscMax(nmax,aij->ilen[i]);
+    for (j=0; j<4; j++) {
+      ilen[4*i+j] = aij->ilen[i];
+    }
+  }
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,4*m,4*n,0,ilen,B);CHKERRQ(ierr);
+  ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = PetscFree(ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
+  ii   = 0;
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    for (j=0; j<4; j++) {
+      for (k=0; k<ncols; k++) {
+        icols[k] = 4*cols[k]+j;
+      }
+      ierr = MatSetValues_SeqAIJ(*B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ii++;
+    }
+    ierr = MatRestoreRow(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(icols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------------------------------- */
 /*MC
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation 
@@ -1795,6 +1839,7 @@ PetscErrorCode MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       } else {
         SETERRQ1(PETSC_ERR_SUP,"Cannot handle a dof of %D. Send request for code to petsc-maint@mcs.anl.gov\n",dof);
       }
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqmaij_seqaij_C","MatConvert_SeqMAIJ_SeqAIJ",MatConvert_SeqMAIJ_SeqAIJ);CHKERRQ(ierr);
     } else {
       Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
       IS         from,to;
