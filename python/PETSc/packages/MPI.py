@@ -387,9 +387,10 @@ class Configure(config.base.Configure):
 
   def fixSolaris(self):
     '''I hate this. MPI should report this somehow.'''
+    self.extraLib = []
     if self.arch.archBase.startswith('solaris'):
       if self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit']):
-        self.lib.extend([self.libraries.toString(l) for l in ['rt', 'nsl', 'aio']])
+        self.extraLib.extend([self.libraries.toString(l) for l in ['rt', 'nsl', 'aio']])
     return
 
   def configureLibrary(self):
@@ -406,7 +407,7 @@ class Configure(config.base.Configure):
       found        = 0
       for libraries in libraryGuesses:
         if self.checkLib(libraries):
-          self.lib = libraries
+          self.lib = libraries + self.extraLib
           for includeDir in includeGuesses:
             if self.checkInclude(includeDir):
               self.include = includeDir
