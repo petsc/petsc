@@ -10,7 +10,7 @@ Additional Capabilities that PETSc Needs:
 
    To do BEFORE the next release:
   --------------------------------
-  - Make a SNESMonitor() like the KSPMonitor() in kspimpl.h and 
+  X Make a SNESMonitor() like the KSPMonitor() in kspimpl.h and 
     insure that it is sued everywhere instead of calls to (*snes->monitor)
 
   - Make -snes_xmonitor stash the DrawLG in SNES and then have it 
@@ -19,6 +19,9 @@ Additional Capabilities that PETSc Needs:
   - Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
+
+  - Make a -ksp monitor that displays residual and true residual, like 
+    the -ksp_bsmonitor
 
   X Test MATMPIROWBS for nonsymmetric matrices by building another 
     set of ARCO matrices by removing small values from them.
