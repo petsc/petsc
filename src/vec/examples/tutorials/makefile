@@ -18,19 +18,20 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
                   ex6.PETSc runex6 ex6.rm clean
 TESTEXAMPLES_2  = ex3.PETSc runex3 ex3.rm clean
 TESTEXAMPLES_3  = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-		  ex4f.PETSc runex4f ex4f.rm ex7.PETSc runex7 ex7.rm clean
+		  ex4f.PETSc runex4f ex4f.rm ex3f.PETSc runex3f ex3f.rm \
+		  ex7.PETSc runex7 ex7.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm clean
 TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
                   ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex6.PETSc ex6.rm ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_2 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm \
+BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
 		  ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_4 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c
-EXAMPLESF       = ex1f.F ex2f.F ex4f.F ex7f.F
+EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -51,6 +52,10 @@ ex2f: ex2f.o  chkopts
 ex3: ex3.o  chkopts
 	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
 	$(RM) -f ex3.o
+
+ex3f: ex3f.o  chkopts
+	-$(FLINKER) -o ex3f ex3f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex3f.o
 
 ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
@@ -123,6 +128,11 @@ runex3:
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi;\
 	   $(RM) -f ex3_1.tmp
+runex3f:
+	-@$(MPIRUN)  -np 2 ex3f > ex3f_1.tmp 2>&1;\
+	   if (diff output/ex3f_1.out ex3f_1.tmp) then true; \
+	   else echo "Possible problem with ex3f_1, diffs above"; fi;\
+	   $(RM) -f ex3f_1.tmp
 runex4f:
 	-@$(MPIRUN) ex4f > ex4f_1.tmp 2>&1;\
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
