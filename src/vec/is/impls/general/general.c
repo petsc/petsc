@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.59 1997/05/23 18:39:44 balay Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.60 1997/07/09 20:49:09 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -15,7 +15,15 @@ typedef struct {
 } IS_General;
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy_General" /* ADIC Ignore */
+#define __FUNC__ "ISDuplicate_General" 
+int ISDuplicate_General(IS is, IS *newIS)
+{
+  IS_General *sub = (IS_General *)is->data;
+  return ISCreateGeneral(is->comm, sub->n, sub->idx, newIS);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ISDestroy_General" 
 int ISDestroy_General(PetscObject obj)
 {
   IS         is = (IS) obj;
@@ -28,7 +36,7 @@ int ISDestroy_General(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices_General" /* ADIC Ignore */
+#define __FUNC__ "ISGetIndices_General" 
 int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
@@ -36,7 +44,7 @@ int ISGetIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_General" /* ADIC Ignore */
+#define __FUNC__ "ISRestoreIndices_General" 
 int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
@@ -47,7 +55,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize_General" /* ADIC Ignore */
+#define __FUNC__ "ISGetSize_General" 
 int ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -55,7 +63,7 @@ int ISGetSize_General(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_General" /* ADIC Ignore */
+#define __FUNC__ "ISInvertPermutation_General" 
 int ISInvertPermutation_General(IS is, IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -72,7 +80,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView_General" /* ADIC Ignore */
+#define __FUNC__ "ISView_General" 
 int ISView_General(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
@@ -97,7 +105,7 @@ int ISView_General(PetscObject obj, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort_General" /* ADIC Ignore */
+#define __FUNC__ "ISSort_General" 
 int ISSort_General(IS is)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -110,7 +118,7 @@ int ISSort_General(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted_General" /* ADIC Ignore */
+#define __FUNC__ "ISSorted_General" 
 int ISSorted_General(IS is, PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -124,10 +132,11 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
                                ISSort_General,
-                               ISSorted_General };
+                               ISSorted_General,
+                               ISDuplicate_General };
 
 #undef __FUNC__  
-#define __FUNC__ "ISCreateGeneral" /* ADIC Ignore */
+#define __FUNC__ "ISCreateGeneral" 
 /*@C
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.

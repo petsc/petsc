@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.46 1997/04/09 23:59:50 bsmith Exp balay $";
+static char vcid[] = "$Id: index.c,v 1.47 1997/07/09 20:49:05 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: index.c,v 1.46 1997/04/09 23:59:50 bsmith Exp balay $
      /*I "is.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISIdentity" /* ADIC Ignore */
+#define __FUNC__ "ISIdentity" 
 /*@C
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -31,7 +31,7 @@ int ISIdentity(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSetIdentity" /* ADIC Ignore */
+#define __FUNC__ "ISSetIdentity" 
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -50,7 +50,7 @@ int ISSetIdentity(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISPermutation" /* ADIC Ignore */
+#define __FUNC__ "ISPermutation" 
 /*@C
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
@@ -74,7 +74,7 @@ int ISPermutation(IS is,PetscTruth *perm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSetPermutation" /* ADIC Ignore */
+#define __FUNC__ "ISSetPermutation" 
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -93,7 +93,7 @@ int ISSetPermutation(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy" /* ADIC Ignore */
+#define __FUNC__ "ISDestroy" 
 /*@C
    ISDestroy - Destroys an index set.
 
@@ -111,7 +111,7 @@ int ISDestroy(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation" /* ADIC Ignore */
+#define __FUNC__ "ISInvertPermutation" 
 /*@C
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
@@ -132,7 +132,7 @@ int ISInvertPermutation(IS is,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize" /* ADIC Ignore */
+#define __FUNC__ "ISGetSize" 
 /*@
    ISGetSize - Returns the global length of an index set. 
 
@@ -153,7 +153,7 @@ int ISGetSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices" /* ADIC Ignore */
+#define __FUNC__ "ISGetIndices" 
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 
    ISRestoreIndices() after having looked at the indices.  The user should 
@@ -183,7 +183,7 @@ int ISGetIndices(IS is,int **ptr)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices" /* ADIC Ignore */
+#define __FUNC__ "ISRestoreIndices" 
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
                       to ISGetIndices().
@@ -209,7 +209,7 @@ int ISRestoreIndices(IS is,int **ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView" /* ADIC Ignore */
+#define __FUNC__ "ISView" 
 /*@C
    ISView - Displays an index set.
 
@@ -230,7 +230,7 @@ int ISView(IS is, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort" /* ADIC Ignore */
+#define __FUNC__ "ISSort" 
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -248,7 +248,7 @@ int ISSort(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted" /* ADIC Ignore */
+#define __FUNC__ "ISSorted" 
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 
@@ -270,6 +270,32 @@ int ISSorted(IS is, PetscTruth *flg)
   PetscValidIntPointer(flg);
   return (*is->ops.sorted)(is, flg);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "ISDuplicate" 
+/*@C
+   ISDuplicate - Determines whether index set is the identity mapping.
+
+   Input Parmeters:
+.  is - the index set
+
+   Output Parameters:
+.  ident - PETSC_TRUE if an identity, else PETSC_FALSE
+
+.keywords: IS, index set, identity
+
+.seealso: ISCreateGeneral()
+@*/
+int ISDuplicate(IS is, IS *newIS)
+{
+  int ierr;
+
+  PetscValidHeaderSpecific(is, IS_COOKIE);
+  PetscValidPointer(newIS);
+  ierr = (*is->ops.duplicate)(is, newIS); CHKERRQ(ierr);
+  return 0;
+}
+
 
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
