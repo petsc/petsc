@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.47 2001/01/19 23:20:46 balay Exp bsmith $*/
+/*$Id: sbaij.c,v 1.48 2001/01/20 03:35:00 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -989,6 +989,7 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level
   */
   switch (a->bs) {
   case 1:
+    inA->ops->solve            = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     PetscLoginfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
   case 2:
