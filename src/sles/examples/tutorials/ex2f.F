@@ -1,60 +1,60 @@
 
-C    "$Id: ex2f.F,v 1.43 1997/09/22 15:20:51 balay Exp bsmith $";
-C
-C  Description: Solves a linear system in parallel with SLES (Fortran code).
-C               Also shows how to set a user-defined monitoring routine.
-C
-C  Program usage: mpirun ex2f [-help] [all PETSc options]
-C
-C/*T
-C  Concepts: SLES^Solving a system of linear equations (basic parallel example);
-C  Concepts: SLES^Setting a user-defined monitoring routine when solving a linear system;
-C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
-C  Routines: KSPBuildSolution(); KSPSetMonitor(); KSPSetTolerances();
-C  Routines: PetscRandomCreate(); PetscRandomGetValue(); PetscRandomDestroy();
-C  Processors: n
-CT*/
-C
-C -----------------------------------------------------------------------
+!    "$Id: ex2f.F,v 1.44 1997/11/28 16:20:38 bsmith Exp balay $";
+!
+!  Description: Solves a linear system in parallel with SLES (Fortran code).
+!               Also shows how to set a user-defined monitoring routine.
+!
+!  Program usage: mpirun ex2f [-help] [all PETSc options]
+!
+!/*T
+!  Concepts: SLES^Solving a system of linear equations (basic parallel example);
+!  Concepts: SLES^Setting a user-defined monitoring routine when solving a linear system;
+!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!  Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
+!  Routines: KSPBuildSolution(); KSPSetMonitor(); KSPSetTolerances();
+!  Routines: PetscRandomCreate(); PetscRandomGetValue(); PetscRandomDestroy();
+!  Processors: n
+!T*/
+!
+! -----------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  This program uses CPP for preprocessing, as indicated by the use of
-C  PETSc include files in the directory petsc/include/FINCLUDE.  This
-C  convention enables use of the CPP preprocessor, which allows the use
-C  of the #include statements that define PETSc objects and variables.
-C
-C  Use of the conventional Fortran include statements is also supported
-C  In this case, the PETsc include files are located in the directory
-C  petsc/include/finclude.
-C         
-C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must exlicitly list
-C  each file needed for the various PETSc components within their
-C  program (unlike the C/C++ interface).
-C
-C  See the Fortran section of the PETSc users manual for details.
-C
-C  The following include statements are required for SLES Fortran programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     pc.h     - preconditioners
-C     ksp.h    - Krylov subspace methods
-C     sles.h   - SLES interface
-C  Include the following to use PETSc random numbers:
-C     sys.h    - system routines
-C  Additional include statements may be needed if using additional
-C  PETSc routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  This program uses CPP for preprocessing, as indicated by the use of
+!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  convention enables use of the CPP preprocessor, which allows the use
+!  of the #include statements that define PETSc objects and variables.
+!
+!  Use of the conventional Fortran include statements is also supported
+!  In this case, the PETsc include files are located in the directory
+!  petsc/include/finclude.
+!         
+!  Since one must be very careful to include each file no more than once
+!  in a Fortran routine, application programmers must exlicitly list
+!  each file needed for the various PETSc components within their
+!  program (unlike the C/C++ interface).
+!
+!  See the Fortran section of the PETSc users manual for details.
+!
+!  The following include statements are required for SLES Fortran programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     mat.h    - matrices
+!     pc.h     - preconditioners
+!     ksp.h    - Krylov subspace methods
+!     sles.h   - SLES interface
+!  Include the following to use PETSc random numbers:
+!     sys.h    - system routines
+!  Additional include statements may be needed if using additional
+!  PETSc routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
@@ -62,28 +62,28 @@ C
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/sys.h"
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  Variables:
-C     sles     - linear solver context
-C     ksp      - Krylov subspace method context
-C     pc       - preconditioner context
-C     x, b, u  - approx solution, right-hand-side, exact solution vectors
-C     A        - matrix that defines linear system
-C     its      - iterations for convergence
-C     norm     - norm of error in solution
-C     rctx     - random number generator context
-C
-C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
-C  are mathematical objects that contain more than just an array of
-C  double precision numbers. I.e., vectors in PETSc are not just
-C        double precision x(*).
-C  However, local vector data can be easily accessed via VecGetArray().
-C  See the Fortran section of the PETSc users manual for details.
-C  
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  Variables:
+!     sles     - linear solver context
+!     ksp      - Krylov subspace method context
+!     pc       - preconditioner context
+!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     A        - matrix that defines linear system
+!     its      - iterations for convergence
+!     norm     - norm of error in solution
+!     rctx     - random number generator context
+!
+!  Note that vectors are declared as PETSc "Vec" objects.  These vectors
+!  are mathematical objects that contain more than just an array of
+!  double precision numbers. I.e., vectors in PETSc are not just
+!        double precision x(*).
+!  However, local vector data can be easily accessed via VecGetArray().
+!  See the Fortran section of the PETSc users manual for details.
+!  
       double precision  norm
 
       integer  i, j, II, JJ, ierr, m, n
@@ -95,18 +95,18 @@ C
       KSP      ksp
       PetscRandom rctx
 
-C  These variables are not currently used.
-C      PC               pc
-C      double precision tol
+!  These variables are not currently used.
+!      PC               pc
+!      double precision tol
 
-C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
-C  MUST be declared as external.
+!  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
+!  MUST be declared as external.
 
       external MyKSPMonitor
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m = 3
@@ -118,31 +118,31 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C      Compute the matrix and right-hand-side vector that define
-C      the linear system, Ax = b.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!      Compute the matrix and right-hand-side vector that define
+!      the linear system, Ax = b.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create parallel matrix, specifying only its global dimensions.
-C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partitioning of the matrix is
-C  determined by PETSc at runtime.
+!  Create parallel matrix, specifying only its global dimensions.
+!  When using MatCreate(), the matrix format can be specified at
+!  runtime. Also, the parallel partitioning of the matrix is
+!  determined by PETSc at runtime.
 
       call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
 
-C  Currently, all PETSc parallel matrix formats are partitioned by
-C  contiguous chunks of rows across the processors.  Determine which
-C  rows of the matrix are locally owned. 
+!  Currently, all PETSc parallel matrix formats are partitioned by
+!  contiguous chunks of rows across the processors.  Determine which
+!  rows of the matrix are locally owned. 
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Set matrix elements for the 2-D, five-point stencil in parallel.
-C   - Each processor needs to insert only elements that it owns
-C     locally (but any non-local elements will be sent to the
-C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
-C   - Note that MatSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C.
+!  Set matrix elements for the 2-D, five-point stencil in parallel.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Always specify global row and columns of matrix entries.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C.
 
       do 10, II=Istart,Iend-1
         v = -1.0
@@ -168,32 +168,32 @@ C     in Fortran as well as in C.
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
 
-C  Assemble matrix, using the 2-step process:
-C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
+!  Assemble matrix, using the 2-step process:
+!       MatAssemblyBegin(), MatAssemblyEnd()
+!  Computations can be done while messages are in transition,
+!  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Create parallel vectors.
-C   - Here, the parallel partitioning of the vector is determined by
-C     PETSc at runtime.  We could also specify the local dimensions
-C     if desired -- or use the more general routine VecCreate().
-C   - When solving a linear system, the vectors and matrices MUST
-C     be partitioned accordingly.  PETSc automatically generates
-C     appropriately partitioned matrices and vectors when MatCreate()
-C     and VecCreate() are used with the same communicator. 
-C   - Note: We form 1 vector from scratch and then duplicate as needed.
+!  Create parallel vectors.
+!   - Here, the parallel partitioning of the vector is determined by
+!     PETSc at runtime.  We could also specify the local dimensions
+!     if desired -- or use the more general routine VecCreate().
+!   - When solving a linear system, the vectors and matrices MUST
+!     be partitioned accordingly.  PETSc automatically generates
+!     appropriately partitioned matrices and vectors when MatCreate()
+!     and VecCreate() are used with the same communicator. 
+!   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C  Set exact solution; then compute right-hand-side vector.
-C  By default we use an exact solution of a vector with all
-C  elements of 1.0;  Alternatively, using the runtime option
-C  -random_sol forms a solution vector with random components.
+!  Set exact solution; then compute right-hand-side vector.
+!  By default we use an exact solution of a vector with all
+!  elements of 1.0;  Alternatively, using the runtime option
+!  -random_sol forms a solution vector with random components.
 
       call OptionsHasName(PETSC_NULL_CHARACTER,
      &             "-random_exact_sol",flg,ierr)
@@ -207,47 +207,47 @@ C  -random_sol forms a solution vector with random components.
       endif
       call MatMult(A,u,b,ierr)
 
-C  View the exact solution vector if desired
+!  View the exact solution vector if desired
 
       call OptionsHasName(PETSC_NULL_CHARACTER,
      &             "-view_exact_sol",flg,ierr)
       if (flg .eq. 1)
      &   call VecView(u,VIEWER_STDOUT_WORLD,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C         Create the linear solver and set various options
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!         Create the linear solver and set various options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create linear solver context
+!  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
-C  Set operators. Here the matrix that defines the linear system
-C  also serves as the preconditioning matrix.
+!  Set operators. Here the matrix that defines the linear system
+!  also serves as the preconditioning matrix.
 
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
 
-C  Set linear solver defaults for this problem (optional).
-C   - By extracting the KSP and PC contexts from the SLES context,
-C     we can then directly directly call any KSP and PC routines
-C     to set various options.
-C   - The following four statements are optional; all of these
-C     parameters could alternatively be specified at runtime via
-C     SLESSetFromOptions(). All of these defaults can be
-C     overridden at runtime, as indicated below.
+!  Set linear solver defaults for this problem (optional).
+!   - By extracting the KSP and PC contexts from the SLES context,
+!     we can then directly directly call any KSP and PC routines
+!     to set various options.
+!   - The following four statements are optional; all of these
+!     parameters could alternatively be specified at runtime via
+!     SLESSetFromOptions(). All of these defaults can be
+!     overridden at runtime, as indicated below.
 
-C     We comment out this section of code since the Jacobi
-C     preconditioner is not a good general default.
+!     We comment out this section of code since the Jacobi
+!     preconditioner is not a good general default.
 
-C      call SLESGetKSP(sles,ksp,ierr)
-C      call SLESGetPC(sles,pc,ierr)
-C      call PCSetType(pc,PCJACOBI,ierr)
-C      tol = 1.e-7
-C      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
-C     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+!      call SLESGetKSP(sles,ksp,ierr)
+!      call SLESGetPC(sles,pc,ierr)
+!      call PCSetType(pc,PCJACOBI,ierr)
+!      tol = 1.e-7
+!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
+!     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
-C  Set user-defined monitoring routine if desired
+!  Set user-defined monitoring routine if desired
 
       flg = 0
       call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',
@@ -257,25 +257,25 @@ C  Set user-defined monitoring routine if desired
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,ierr)
       endif
 
-C  Set runtime options, e.g.,
-C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-C  These options will override those specified above as long as
-C  SLESSetFromOptions() is called _after_ any other customization
-C  routines.
+!  Set runtime options, e.g.,
+!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+!  These options will override those specified above as long as
+!  SLESSetFromOptions() is called _after_ any other customization
+!  routines.
 
       call SLESSetFromOptions(sles,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                      Solve the linear system
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Solve the linear system
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                     Check solution and clean up
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                     Check solution and clean up
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Check the error
+!  Check the error
 
       call VecAXPY(neg_one,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
@@ -289,8 +289,8 @@ C  Check the error
   100 format('Norm of error ',e10.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       call SLESDestroy(sles,ierr)
       call VecDestroy(u,ierr)
@@ -298,25 +298,25 @@ C  are no longer needed.
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
-C  Always call PetscFinalize() before exiting a program.  This routine
-C    - finalizes the PETSc libraries as well as MPI
-C    - provides summary and diagnostic information if certain runtime
-C      options are chosen (e.g., -log_summary).  See PetscFinalize()
-C      manpage for more information.
+!  Always call PetscFinalize() before exiting a program.  This routine
+!    - finalizes the PETSc libraries as well as MPI
+!    - provides summary and diagnostic information if certain runtime
+!      options are chosen (e.g., -log_summary).  See PetscFinalize()
+!      manpage for more information.
 
       call PetscFinalize(ierr)
       end
-C --------------------------------------------------------------
-C
-C  MyKSPMonitor - This is a user-defined routine for monitoring
-C  the SLES iterative solvers.
-C
-C  Input Parameters:
-C    ksp   - iterative context
-C    n     - iteration number
-C    rnorm - 2-norm (preconditioned) residual value (may be estimated)
-C    dummy - optional user-defined monitor context (unused here)
-C
+! --------------------------------------------------------------
+!
+!  MyKSPMonitor - This is a user-defined routine for monitoring
+!  the SLES iterative solvers.
+!
+!  Input Parameters:
+!    ksp   - iterative context
+!    n     - iteration number
+!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
+!    dummy - optional user-defined monitor context (unused here)
+!
       subroutine MyKSPMonitor(ksp,n,rnorm,dummy)
 
       implicit none
@@ -330,14 +330,14 @@ C
       integer          ierr, n, dummy, rank
       double precision rnorm
 
-C  Build the solution vector
+!  Build the solution vector
 
       call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)
 
-C  Write the solution vector and residual norm to stdout
-C   - Note that the parallel viewer VIEWER_STDOUT_WORLD
-C     handles data from multiple processors so that the
-C     output is not jumbled.
+!  Write the solution vector and residual norm to stdout
+!   - Note that the parallel viewer VIEWER_STDOUT_WORLD
+!     handles data from multiple processors so that the
+!     output is not jumbled.
 
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (rank .eq. 0) write(6,100) n

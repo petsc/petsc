@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.25 1998/01/05 14:46:53 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.26 1998/01/05 14:56:37 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -135,7 +135,7 @@ proc scanfile { filename } {
     # for fortran examples take away the additional comments 
     set suffix [ file extension $filename ]
     if { $suffix == ".f" || $suffix == ".F" } {
-        regsub -all  "\nc|\nC" $databuff  "\n" databuff
+        regsub -all  "\nc|\nC|!" $databuff  "\n" databuff
     }
 
     # take care of the case where "; \n" might occur
