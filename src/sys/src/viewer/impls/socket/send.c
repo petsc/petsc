@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.33 1996/04/04 21:36:55 gropp Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.34 1996/04/10 04:30:20 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -67,6 +67,10 @@ extern int connect(int,struct sockaddr *,int);
 #endif
 #endif
 #if !defined(PARCH_alpha)
+/* 
+   Some IBM rs6000 machines have the sleep prototype already declared
+   in unistd.h, so just remove it below.
+ */
 extern int sleep(unsigned);
 #endif
 #if defined(__cplusplus)
