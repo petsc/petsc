@@ -290,9 +290,8 @@ int PCNNCreateCoarseMatrix (PC pc)
   /* Compute the first column, while completing the receiving. */
   for (i=0; i<n_neigh; i++) {
     MPI_Status stat;
-    int ind;
-    if (i==0) { ind = 0; }
-    else { ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRQ(ierr); ind++;}
+    int ind=0;
+    if (i>0) { ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRQ(ierr); ind++;}
     mat[ind*n_neigh+0] = 0.0;
     for (k=0; k<n_shared[ind]; k++) {
       mat[ind*n_neigh+0] += DZ_IN[ind][k] * pcis->work_N[shared[ind][k]];

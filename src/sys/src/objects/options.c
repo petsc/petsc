@@ -345,7 +345,7 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
   /* insert environmental options */
   {
     char *eoptions = 0,*second,*first;
-    int  len;
+    int  len=0;
     if (!rank) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
