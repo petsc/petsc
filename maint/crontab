@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.132 1999/03/26 16:12:07 balay Exp bsmith $ 
+# $Id: crontab,v 1.133 1999/05/10 00:41:02 bsmith Exp bsmith $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -21,7 +21,7 @@
 30  1 * * * /home/bsmith/petsc/maint/buildtest 7
 30  2 * * * /home/bsmith/petsc/maint/buildtest 8
 30  2 * * * /home/bsmith/petsc/maint/buildtest 9
-30  2 * * * /home/bsmith/petsc/maint/buildtest 10
+##30  2 * * * /home/bsmith/petsc/maint/buildtest 10
 ##30  1 * * * /home/bsmith/petsc/maint/buildtest 11
 #
 # Buildlinks on various machines
