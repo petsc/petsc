@@ -24,6 +24,8 @@
 /*       LS - A TEMPORARY VECTOR USED TO STORE THE NODES OF THE*/
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
+#undef __FUNCTION__  
+#define __FUNCTION__ "degree"
 int degree(int *root, int *xadj, int *adjncy, 
 	int *mask, int *deg, int *ccsize, int *ls)
 {

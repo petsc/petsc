@@ -32,6 +32,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FNROOT, RCM.*/
 /*****************************************************************/
+#undef __FUNCTION__  
+#define __FUNCTION__ "genrcm"
 int genrcm(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *mask, int *xls)
 {

@@ -22,6 +22,8 @@
 /*    UPDATED PARAMETER -*/
 /*       ADJNCY - BECOMES THE ADJNCY OF THE QUOTIENT GRAPH.*/
 /***************************************************************/
+#undef __FUNCTION__  
+#define __FUNCTION__ "qmdqt"
 int qmdqt(int *root, int *xadj, int *adjncy, 
 	int *marker, int *rchsze, int *rchset, int *nbrhd)
 {

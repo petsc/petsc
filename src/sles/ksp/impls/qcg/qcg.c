@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.28 1996/08/08 14:41:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.29 1996/08/15 15:02:15 curfman Exp balay $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -11,8 +11,12 @@ static char vcid[] = "$Id: qcg.c,v 1.28 1996/08/08 14:41:22 bsmith Exp curfman $
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/qcg/qcg.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ ""
 static int QuadraticRoots_Private(Vec,Vec,double*,double*,double*);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSolve_QCG"
 /* 
   KSPSolve_QCG - Use preconditioned conjugate gradient to compute 
   an approximate minimizer of the quadratic function 
@@ -265,6 +269,8 @@ int KSPSolve_QCG(KSP ksp,int *its)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSetUp_QCG"
 static int KSPSetUp_QCG(KSP ksp)
 {
   int ierr;
@@ -280,6 +286,8 @@ static int KSPSetUp_QCG(KSP ksp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDestroy_QCG"
 static int KSPDestroy_QCG(PetscObject obj)
 {
   KSP ksp = (KSP) obj;
@@ -292,6 +300,8 @@ static int KSPDestroy_QCG(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPCreate_QCG"
 int KSPCreate_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
@@ -311,6 +321,8 @@ int KSPCreate_QCG(KSP ksp)
   return 0;
 }
 /* ---------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "QuadraticRoots_Private"
 /* 
   QuadraticRoots_Private - Computes the roots of the quadratic,
          ||s + step*p|| - delta = 0 

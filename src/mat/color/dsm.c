@@ -5,6 +5,8 @@
 
 static int c_n1 = -1;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MINPACKdsm"
 int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
                int *mingrp,int *info,int *ipntr,int *jpntr,int *iwa,int *liwa)
 {
