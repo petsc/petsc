@@ -22,21 +22,33 @@ int __main()
 #endif
 
 #undef __FUNC__
-#define __FUNC__ "UnpackWork"
+#define __FUNC__ "UnpackWorks"
 /***************************************************************************/
 /*
    UnpackWork - Unpacks Fortran work arrays, converting from 5 
    component arrays to a single vector.  This routine converts 
-   local interior grid points only -- no ghost points and no
-   boundary points!
+   locally owned grid points only -- no ghost points!
+
+   Input Parameters:
+   app            - user-defined application context
+   v0,v1,v2,v3,v4 - work arrays (dimensions include ghost points)
+   X              - vector (dimension does not include ghost points)
+
+   Output Parameter:
+   X   - fully assembled vector
+
+   Note: 
+   This routine is called by ComputeFunction() and other routines
+   that require the transfer of data from Fortran work arrays to a
+   PETSc vector.
  */
 int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
                Scalar *v4,Vec X)
 {
-  int    i, j, k, jkx, jkv, ijkx, ijkv, ierr, ijkxt;
+  int    i, j, k, jkx, jkx_ng, jkv, ijkx, ijkv, ierr, ijkxt;
   int    gxs = app->gxs, gys = app->gys, gzs = app->gzs;
-  int    xs = app->xs, ys = app->ys, zs = app->zs;
-  int    xe = app->xe, ye = app->ye, ze = app->ze;
+  int    xs = app->xs, ys = app->ys, zs = app->zs, xm = app->xm;
+  int    xe = app->xe, ye = app->ye, ze = app->ze, ym = app->ym;
   int    gxm = app->gxm, gxmfp1 = app->gxmfp1, gym = app->gym, gymfp1 = app->gymfp1;
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
   Scalar val[5], *x;
@@ -122,18 +134,20 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
     ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
   } else {
-    /* Or alternatively place values directly in local vector arrays. 
-       Since all vector elements are local, this alternative assembly 
-       is simple (requiring no communication) and we thus save the
-       overhead of calling VecSetValues(). */
+    /* ... Or alternatively place values directly in the local vector array. 
+       Since all vector elements are local, this direct assembly is
+       simple (requiring no communication) and saves the overhead of
+       calling VecSetValues().  Note: The work arrays (v0,v1,v2,v3,v4)
+       include ghost points, while x does not! */
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);
     if (app->bctype == IMPLICIT) {
       for (k=zs; k<ze; k++) {
         for (j=ys; j<ye; j++) {
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx    = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=xs; i<xe; i++) {
-            ijkx   = jkx + i-gxs;
-            ijkxt  = nc * ijkx;
+            ijkx  = jkx + i-gxs;
+            ijkxt = nc * (jkx_ng + i-xs);
             x[ijkxt]   = v0[ijkx];
             x[ijkxt+1] = v1[ijkx];
             x[ijkxt+2] = v2[ijkx];
@@ -147,10 +161,11 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
       int gxei = app->gxei, gyei = app->gyei, gzei = app->gzei;
       for (k=gzsi; k<gzei; k++) {
         for (j=gysi; j<gyei; j++) {
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx    = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=gxsi; i<gxei; i++) {
             ijkx  = jkx + i-gxs;
-            ijkxt = nc * ijkx;
+            ijkxt = nc * (jkx_ng + i-xs);
             x[ijkxt]   = v0[ijkx];
             x[ijkxt+1] = v1[ijkx];
             x[ijkxt+2] = v2[ijkx];
@@ -162,11 +177,11 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
     } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
       for (k=zs; k<ze; k++) {
         for (j=ys; j<ye; j++) {
-  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkv    = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=xs; i<xe; i++) {
-            ijkv   = jkv + i+2-gxsf1;
-            ijkx   = nc * (jkx + i-gxs);
+            ijkv = jkv + i+2-gxsf1;
+            ijkx = nc * (jkx_ng + i-xs);
             x[ijkx]   = v0[ijkv];
             x[ijkx+1] = v1[ijkv];
             x[ijkx+2] = v2[ijkv];
@@ -183,8 +198,22 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
 #define __FUNC__ "PackWork"
 /***************************************************************************/
 /*
-   PackWork - Packs Fortran work arrays, including all ghost points
-   Converts from a single vector to 5 component arrays.
+   PackWork - Packs Fortran work arrays, including all ghost points.
+   Converts from a single PETSc vector to 5 component arrays.
+
+   Input Parameters:
+   app            - user-defined application context
+   v0,v1,v2,v3,v4 - work arrays (dimensions include ghost points)
+   X              - parallel vector
+   localX         - local work vector (dimension includes ghost points)
+
+   Output Parameter:
+   v0,v1,v2,v3,v4 - newly filled filled work arrays
+
+   Note: 
+   This routine is called by ComputeFunction() and other routines
+   that require the transfer of data from a PETSc vector to Fortran
+   work arrays.
  */
 int PackWork(Euler *app,Vec X,Vec localX,
              Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,Scalar *v4)
@@ -262,7 +291,15 @@ int PackWork(Euler *app,Vec X,Vec localX,
    PackWorkComponent - Packs Fortran work array, including all ghost points
    and boundary points.  Converts from a vector to 1 component array.  
 
-   Note:  This routine is used only for the parallel pressure BCs.
+.  v0     - work array (dimension includes ghost points)
+.  X      - parallel vector
+.  localX - local work vector (dimension includes ghost points)
+
+   Output Parameter:
+.  v0      - newly filled filled work array
+
+   Note:
+   This routine is used only for the parallel pressure BCs.
  */
 int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0)
 {
@@ -323,16 +360,27 @@ int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0)
 /***************************************************************************/
 /*
    UnpackWorkComponent - Unpacks Fortran work array, converting from 1
-   component array a vector.  This routine converts standard grid points
-   only -- no ghost points!  
+   component array a vector.  This routine converts locally owned grid
+   points only -- no ghost points!  
 
-   Note: This routine is used only for the parallel pressure BCs.
+   Input Parameters:
+   app - user-defined application context
+   v0  - work array (dimension includes ghost points)
+   X   - vector (dimension does not include ghost points)
+
+   Output Parameter:
+   X   - fully assembled vector
+
+   Note: 
+   This routine is used for applying parallel pressure BCs and output of
+   data for external viewing; it is called by BoundaryConditionsExplicit()
+   and MonitorDumpVRML().
  */
 int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
 {
-  int    i, j, k, jkx, jkv, ijkx, ijkv, ierr, *ltog, nloc;
-  int    xs = app->xs, ys = app->ys, zs = app->zs;
-  int    xe = app->xe, ye = app->ye, ze = app->ze;
+  int    i, j, k, jkx_ng, jkx, jkv, ijkx, ijkv, ierr, *ltog, nloc;
+  int    xs = app->xs, ys = app->ys, zs = app->zs, xm = app->xm;
+  int    xe = app->xe, ye = app->ye, ze = app->ze, ym = app->ym;
   int    gxs = app->gxs, gys = app->gys, gzs = app->gzs;
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
   int    gxm = app->gxm, gxmfp1 = app->gxmfp1, gym = app->gym, gymfp1 = app->gymfp1;
@@ -384,18 +432,19 @@ int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
     ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
   } else {
-    /* Or alternatively place values directly in local vector arrays. 
-       Since all vector elements are local, this alternative assembly 
-       is simple (requiring no communication) and we thus save the
-       overhead of calling VecSetValues(). */
+    /* ... Or alternatively place values directly in the local vector array. 
+       Since all vector elements are local, this direct assembly is
+       simple (requiring no communication) and saves the overhead of
+       calling VecSetValues().  Note: The work array v0 includes ghost
+       points, while x does not! */
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);
     if (app->bctype == IMPLICIT) {
       for (k=zs; k<ze; k++) {
         for (j=ys; j<ye; j++) {
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx    = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=xs; i<xe; i++) {
-            ijkx = jkx + i-gxs;
-            x[ijkx] = v0[ijkx];
+            x[jkx_ng + i-xs] = v0[jkx + i-gxs];
           }
         }
       }
@@ -404,22 +453,20 @@ int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
       int xei = app->xei, yei = app->yei, zei = app->zei;
       for (k=zsi; k<zei; k++) {
         for (j=ysi; j<yei; j++) {
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx    = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=xsi; i<xei; i++) {
-            ijkx = jkx + i-gxs;
-            x[ijkx] = v0[ijkx];
+            x[jkx_ng + i-xs] = v0[jkx + i-gxs];
           }
         }
       }
     } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
       for (k=zs; k<ze; k++) {
         for (j=ys; j<ye; j++) {
-  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx_ng = (j-ys)*xm + (k-zs)*xm*ym;
           for (i=xs; i<xe; i++) {
-            ijkv = jkv + i+2-gxsf1;
-            ijkx = jkx + i-gxs;
-            x[ijkx] = v0[ijkv];
+            x[jkx_ng + i-xs] = v0[jkv + i+2-gxsf1];
           }
         }
       }
@@ -509,5 +556,89 @@ int GridTest(Euler *app)
   ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
   ierr = DFVecView(app->P,view1); CHKERRQ(ierr);
 
+  return 0;
+}
+#undef __FUNC__
+#define __FUNC__ "UnpackWorkComponent"
+/***************************************************************************/
+/*
+  CheckSolution - Prints max/min of each component for interior of grid.
+  Uniprocessor only for now.
+ */
+int CheckSolution(Euler *app,Vec X)
+{
+  int    ierr, i, j, k, jkx, ijkx, nc = app->nc;
+  int    xm = app->xm, ym = app->ym, interior;
+  int    xs = app->xs, ys = app->ys, zs = app->zs;
+  int    xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
+  int    xei = app->xei, yei = app->yei, zei = app->zei;
+  int    imin[5], imax[5], jmin[5], jmax[5], kmin[5], kmax[5];
+  Scalar *x, xmax[5], xmin[5], tmin, tmax;
+
+  if (app->size > 1) {
+    PetscPrintf(app->comm,"CheckSolution: uniprocessor only!\n"); return 0;
+  }
+  if (app->bctype != IMPLICIT) SETERRQ(1,1,"Only implicit bctype supported");
+
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  interior = nc * ((ysi-ys)*xm + (zsi-zs)*xm*ym + xsi-xs);
+  xmin[0] = xmax[0] = x[interior];
+  xmin[1] = xmax[1] = x[interior + 1];
+  xmin[2] = xmax[2] = x[interior + 2];
+  xmin[3] = xmax[3] = x[interior + 3];
+  xmin[4] = xmax[4] = x[interior + 4];
+  for (i=0; i<nc; i++) {
+    imin[i] = imax[i] = xsi;
+    jmin[i] = jmax[i] = ysi;
+    kmin[i] = kmax[i] = zsi;
+  }
+  for (k=zsi; k<zei; k++) {
+    for (j=ysi; j<yei; j++) {
+      jkx = (j-ys)*xm + (k-zs)*xm*ym;
+      for (i=xsi; i<xei; i++) {
+        ijkx  = nc * (jkx + i-xs);
+        if (PetscAbsScalar(x[ijkx])   > PetscAbsScalar(xmax[0])) 
+           {xmax[0] = x[ijkx];  imax[0] = i; jmax[0] = j; kmax[0] = k;}
+        if (PetscAbsScalar(x[ijkx+1]) > PetscAbsScalar(xmax[1]))
+           {xmax[1] = x[ijkx+1];  imax[1] = i; jmax[1] = j; kmax[1] = k;}
+        if (PetscAbsScalar(x[ijkx+2]) > PetscAbsScalar(xmax[2]))
+           {xmax[2] = x[ijkx+2];  imax[2] = i; jmax[2] = j; kmax[2] = k;}
+        if (PetscAbsScalar(x[ijkx+3]) > PetscAbsScalar(xmax[3]))
+           {xmax[3] = x[ijkx+3];  imax[3] = i; jmax[3] = j; kmax[3] = k;}
+        if (PetscAbsScalar(x[ijkx+4]) > PetscAbsScalar(xmax[4]))
+           {xmax[4] = x[ijkx+4];  imax[4] = i; jmax[4] = j; kmax[4] = k;}
+
+        if (PetscAbsScalar(x[ijkx])   < PetscAbsScalar(xmin[0])) 
+           {xmin[0] = x[ijkx];  imin[0] = i; jmin[0] = j; kmin[0] = k;}
+        if (PetscAbsScalar(x[ijkx+1]) < PetscAbsScalar(xmin[1])) 
+           {xmin[1] = x[ijkx+1]; imin[1] = i; jmin[1] = j; kmin[1] = k;}
+        if (PetscAbsScalar(x[ijkx+2]) < PetscAbsScalar(xmin[2]))
+           {xmin[2] = x[ijkx+2]; imin[2] = i; jmin[2] = j; kmin[2] = k;}
+        if (PetscAbsScalar(x[ijkx+3]) < PetscAbsScalar(xmin[3]))
+           {xmin[3] = x[ijkx+3]; imin[3] = i; jmin[3] = j; kmin[3] = k;}
+        if (PetscAbsScalar(x[ijkx+4]) < PetscAbsScalar(xmin[4]))
+           {xmin[4] = x[ijkx+4]; imin[4] = i; jmin[4] = j; kmin[4] = k;}
+      }
+    }
+  }
+
+  /* Need to do communication to get global min and max */
+  tmin = PetscAbsScalar(xmin[0]);
+  tmax = PetscAbsScalar(xmax[0]);
+  for (i=1; i<nc; i++) {
+    if (PetscAbsScalar(xmax[i]) > PetscAbsScalar(tmax)) tmax = xmax[i];
+    if (PetscAbsScalar(xmin[i]) < PetscAbsScalar(tmin)) tmin = xmin[i];
+  }
+  PetscPrintf(app->comm,"  min=%g, max=%g, ratio=%g\n",tmin,tmax,tmin/tmax);
+  PetscPrintf(app->comm,"    density: min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
+      xmin[0],imin[0],jmin[0],kmin[0],xmax[0],imax[0],jmax[0],kmax[0],xmin[0]/xmax[0]);
+  PetscPrintf(app->comm,"    vel-u  : min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
+      xmin[1],imin[1],jmin[1],kmin[1],xmax[1],imax[1],jmax[1],kmax[1],xmin[1]/xmax[1]);
+  PetscPrintf(app->comm,"    vel-v  : min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
+      xmin[2],imin[2],jmin[2],kmin[2],xmax[2],imax[2],jmax[2],kmax[2],xmin[2]/xmax[2]);
+  PetscPrintf(app->comm,"    vel-w  : min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
+      xmin[3],imin[3],jmin[3],kmin[3],xmax[3],imax[3],jmax[3],kmax[3],xmin[3]/xmax[3]);
+  PetscPrintf(app->comm,"    energy : min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
+      xmin[4],imin[4],jmin[4],kmin[4],xmax[4],imax[4],jmax[4],kmax[4],xmin[4]/xmax[4]);
   return 0;
 }
