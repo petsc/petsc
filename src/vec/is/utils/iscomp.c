@@ -1,5 +1,6 @@
 /*$Id: iscomp.c,v 1.35 2001/03/23 23:21:16 balay Exp $*/
 
+#include "petscconfig.h"
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
