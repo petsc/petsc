@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.6 1999/01/12 23:14:11 bsmith Exp balay $ 
+# $Id: makefile,v 1.7 1999/02/02 21:23:40 balay Exp bsmith $ 
 
 ALL: lib 
-CFLAGS    =
+CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' \
+            -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 FFLAGS    =
-CPPFLAGS  = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' \
-	-DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
+CPPFLAGS  = 
 SOURCEC	  =  dl.c   reg.c
 SOURCEF	  =
 SOURCEH	  = 
