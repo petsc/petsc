@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.37 1997/01/01 03:41:16 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2.c,v 1.38 1997/04/10 00:06:41 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
