@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.8 1995/09/12 03:26:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.9 1995/09/21 20:11:31 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -20,20 +20,14 @@ extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
 
 /* -------------------------------------------------------------------- */
 
-extern int MatGetFormatFromOptions_Private(MPI_Comm,MatType *,int *);
 
 /* @
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().
 
    Input Parameters:
-.  comm - MPI communicator
-.  fd - file descriptor (not FILE pointer).  Use open() for this.
-.  outtype - type of output matrix
-.  ind - optional index set of matrix rows to be locally owned 
-   (or 0 for loading the entire matrix on each processor)
-.  ind2 - optional index set with new matrix ordering (size = global
-   number of rows)
+.  bview - Binary file viewer, created with ViewerFileOpenBinary()
+.  outtype - Type of matrix desired, for example MATSEQAIJ, MATMPIROWBS,..
 
    Output Parameters:
 .  newmat - new matrix
@@ -60,19 +54,21 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   *newmat = 0;
 
   PLogEventBegin(MAT_Load,bview,0,0,0);
-  ierr = MatGetFormatFromOptions_Private(vobj->comm,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetFormatFromOptions(vobj->comm,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
 
   PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
   if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-  if (type == MATMPIROWBS) {
-    ierr = MatLoad_MPIRowbs(bview,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATSEQAIJ) {
+  if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+  else if (type == MATMPIROWBS) {
+    ierr = MatLoad_MPIRowbs(bview,type,newmat); CHKERRQ(ierr);
+  }
+#endif
   else {
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
   }
