@@ -1,4 +1,4 @@
-/* $Id: petscversion.h,v 1.20 2000/03/27 16:22:43 balay Exp balay $ */
+/* $Id: petscversion.h,v 1.21 2000/03/27 16:27:49 balay Exp bsmith $ */
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 
@@ -18,9 +18,9 @@
 #define PETSC_VERSION_SUBMINOR 28
 #define PETSC_PATCH_LEVEL      0
 #define PETSC_VERSION_DATE     "March 27, 1999"
-#define PETSC_AUTHOR_INFO      "The PETSc Team:\
- Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n\
- Bug reports, questions: petsc-maint@mcs.anl.gov\n\
- Web page: http://www.mcs.anl.gov/petsc/\n"
+#define PETSC_AUTHOR_INFO      "\
+       The PETSc Team\
+    petsc-maint@mcs.anl.gov\n\
+ http://www.mcs.anl.gov/petsc/\n"
 
 #endif

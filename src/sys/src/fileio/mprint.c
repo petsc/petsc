@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.50 2000/05/05 22:13:54 balay Exp bsmith $*/
+/*$Id: mprint.c,v 1.51 2000/05/10 16:39:17 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -16,7 +16,7 @@ int         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedPrintf" 
+#define __FUNC__ /*<a name="PetscSynchronizedPrintf"></a>*/"PetscSynchronizedPrintf" 
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
     Output of the first processor is followed by that of the second, etc.
@@ -86,7 +86,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFPrintf" 
+#define __FUNC__ /*<a name="PetscSynchronizedFPrintf"></a>*/"PetscSynchronizedFPrintf" 
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the 
@@ -162,7 +162,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFlush" 
+#define __FUNC__ /*<a name="PetscSynchronizedFlush"></a>*/"PetscSynchronizedFlush" 
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
     involved in previous PetscSynchronizedPrintf() calls.
@@ -233,7 +233,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 /* ---------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFPrintf" 
+#define __FUNC__ /*<a name="PetscFPrintf"></a>*/"PetscFPrintf" 
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -363,7 +363,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscHelpPrintfDefault" 
+#define __FUNC__ /*<a name="PetscHelpPrintfDefault"></a>*/"PetscHelpPrintfDefault" 
 /*@C
     PetscHelpPrintfDefault - Prints to standard out, only from the first
     processor in the communicator.
@@ -414,7 +414,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscErrorPrintfDefault" 
+#define __FUNC__ /*<a name="PetscErrorPrintfDefault"></a>*/"PetscErrorPrintfDefault" 
 /*@C
     PetscErrorPrintfDefault - Prints error messages.
 
@@ -477,9 +477,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(stdout,"--------------------------------------------\
 ------------------------------\n");
     fprintf(stdout,"%s\n",PETSC_VERSION_NUMBER);
-    fprintf(stdout,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
-    fprintf(stdout,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
-    fprintf(stdout,"Web page: http://www.mcs.anl.gov/petsc/\n");
+    fprintf(stdout,"%s\n",PETSC_AUTHOR_INFO);
     fprintf(stdout,"See docs/copyright.html for copyright information.\n");
     fprintf(stdout,"See docs/changes.html for recent updates.\n");
     fprintf(stdout,"See docs/troubleshooting.html for hints about trouble shooting.\n");
@@ -510,7 +508,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFGets" 
+#define __FUNC__ /*<a name="PetscSynchronizedFGets"></a>*/"PetscSynchronizedFGets" 
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
 
