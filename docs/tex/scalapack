@@ -46,3 +46,8 @@ PDEs.
 > particular. PETSc currently employs parts of LAPACK, SPARSPAK, and
 > BlockSolve.
 >
+
+In fact, on the rare occasions that dense matrix operations are
+required PETSc calles Lapack (Scalapack perhaps in the future)
+routines without requiring the user to deal with the arcane 
+and old fashion Lapack calling sequences.
