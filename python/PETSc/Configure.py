@@ -1135,9 +1135,9 @@ fi
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
-    self.framework.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
-    self.framework.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
+    self.framework.getExecutable('gdb', getFullPath = 1)
+    self.framework.getExecutable('dbx', getFullPath = 1)
+    self.framework.getExecutable('xdb', getFullPath = 1)
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
@@ -1176,7 +1176,7 @@ fi
   def checkMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
+    self.framework.getExecutable('mkdir', getFullPath = 1)
     if hasattr(self.framework, 'mkdir'):
       self.mkdir = self.framework.mkdir
       if os.path.exists('.conftest'): os.rmdir('.conftest')
@@ -1191,14 +1191,14 @@ fi
     '''Check for the programs needed to build and run PETSc'''
     # We use the framework in order to remove the PETSC_ namespace
     self.checkMkdir()
-    self.framework.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
-    self.framework.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
-    self.framework.getExecutable('diff', getFullPath = 1, comment = 'Diff utility')
-    self.framework.getExecutable('ar',   getFullPath = 1, comment = 'Archive utility')
-    self.framework.getExecutable('make', comment = 'Build utility')
+    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
+    self.framework.getExecutable('sed',  getFullPath = 1)
+    self.framework.getExecutable('diff', getFullPath = 1)
+    self.framework.getExecutable('ar',   getFullPath = 1)
+    self.framework.getExecutable('make')
     self.framework.addSubstitution('AR_FLAGS', 'cr')
-    self.framework.getExecutable('ranlib', comment = 'Ranlib utility')
-    self.framework.addSubstitution('SET_MAKE', '', comment = 'Obsolete')
+    self.framework.getExecutable('ranlib')
+    self.framework.addSubstitution('SET_MAKE', '')
     self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
@@ -1208,12 +1208,12 @@ fi
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('MISSING_PROTOTYPES',     '', comment = 'C compiler')
-    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '', comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
     self.missingPrototypesExternC = ''
     if self.archBase == 'linux':
       self.missingPrototypesExternC += 'extern void *memalign(int, int);'
-    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC, comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC)
     return
 
   def configureMissingFunctions(self):
