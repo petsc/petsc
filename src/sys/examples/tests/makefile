@@ -24,25 +24,6 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F
 
-runex1:
-	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
-	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
-	   else echo "Possible problem with ex1_1, diffs above. This is a contrived error to test the code."; fi; \
-	   $(RM) -f ex1_1.tmp ex1_1.tmpz
-
-runex2:
-	-@$(MPIRUN) -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
-	   if (diff output/ex2_1.out ex2_1.tmpz) then true; \
-	   else echo "Possible problem with ex2_1, diffs above. This is a contrived error to test the code."; fi; \
-	   $(RM) -f ex2_1.tmp ex2_1.tmpz
-
-runex3:
-	-@$(MPIRUN) -np 1 ex3 -fp_trap > ex3_1.tmp 2>&1;\
-	   grep -v p0 ex3_1.tmp > ex3_1.tmpz ;	 \
-	   if (diff output/ex3_1.out ex3_1.tmpz) then true; \
-	   else echo "Possible problem with ex3_1, diffs above. This is a contrived error to test floating point traps."; fi; \
-	   $(RM) -f ex3_1.tmp ex3_1.tmpz
-
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
@@ -78,6 +59,32 @@ ex7f: ex7f.o
 ex8: ex8.o 
 	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
 	$(RM) -f ex8.o
+
+runex1:
+	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
+	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
+	   else echo "Possible problem with ex1_1, diffs above. This is a contrived error to test the code."; fi; \
+	   $(RM) -f ex1_1.tmp ex1_1.tmpz
+
+runex2:
+	-@$(MPIRUN) -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
+	   if (diff output/ex2_1.out ex2_1.tmpz) then true; \
+	   else echo "Possible problem with ex2_1, diffs above. This is a contrived error to test the code."; fi; \
+	   $(RM) -f ex2_1.tmp ex2_1.tmpz
+
+runex3:
+	-@$(MPIRUN) -np 1 ex3 -fp_trap > ex3_1.tmp 2>&1;\
+	   grep -v p0 ex3_1.tmp > ex3_1.tmpz ;	 \
+	   if (diff output/ex3_1.out ex3_1.tmpz) then true; \
+	   else echo "Possible problem with ex3_1, diffs above. This is a contrived error to test floating point traps."; fi; \
+	   $(RM) -f ex3_1.tmp ex3_1.tmpz
+
+runex8:
+	-@$(MPIRUN) -np 1 ex8 -tr_malloc_nan -fp_trap > ex8_1.tmp 2>&1;\
+	   grep -v p0 ex8_1.tmp > ex8_1.tmpz ;	 \
+	   if (diff output/ex8_1.out ex8_1.tmpz) then true; \
+	   else echo "Possible problem with ex8_1, diffs above. This is a contrived error to test for uninitialized memory."; fi; \
+	   $(RM) -f ex8_1.tmp ex8_1.tmpz
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
