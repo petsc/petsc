@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.83 1996/07/10 01:48:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.84 1996/07/23 14:17:02 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -262,9 +262,9 @@ int VecSet(Scalar *alpha,Vec x)
 .  x  - the vector
 
    Example of Usage:
-$    PetscRandomCreate(RANDOM_DEFAULT,&rctx);
+$    PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx);
 $    VecSetRandom(rctx,x);
-$    PetscRandomDestroy(&rctx);
+$    PetscRandomDestroy(rctx);
 
 .keywords: vector, set, random
 
