@@ -89,7 +89,7 @@ C2f77lib:
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	$(ITOOLSDIR)/doc/doctext -jumpfile $(ITOOLSDIR)/docs/routine.list \
-                -mpath $(PETSCLIB)/man/man$(MANSEC) -ext $(MANSEC)  \
+                -mpath $(PETSCLIB)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
 
 latexpages:
@@ -100,7 +100,7 @@ latexpages:
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	$(ITOOLSDIR)/doc/doctext -html \
-                -mpath $(PETSCLIB)/www/man$(MANSEC) -ext $(MANSEC)  \
+                -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
