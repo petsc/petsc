@@ -2877,8 +2877,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 
 #include "src/mat/utils/freespace.h"
 #include "petscbt.h"
+static PetscEvent logkey_seqstompinum = 0;
 #undef __FUNCT__  
-#define __FUNCT__ "MatMerge_SeqsToMPI"
+#define __FUNCT__ "MatMerge_SeqsToMPINumeric"
 /*@C
       MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
                  matrices from each processor
@@ -2902,7 +2903,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
-static PetscEvent logkey_seqstompinum = 0;
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -3022,7 +3022,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   ierr = PetscLogEventEnd(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 static PetscEvent logkey_seqstompisym = 0;
+#undef __FUNCT__  
+#define __FUNCT__ "MatMerge_SeqsToMPISymbolic"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -3047,6 +3050,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   }
   ierr = PetscLogEventBegin(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
 
+  /* make sure it is a PETSc comm */
+  ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
@@ -3267,11 +3272,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   *mpimat = B_mpi;
+
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscEvent logkey_seqstompi = 0;
+#undef __FUNCT__
+#define __FUNCT__ "MatMerge_SeqsToMPI"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
 {
   PetscErrorCode   ierr;
