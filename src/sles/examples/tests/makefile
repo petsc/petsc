@@ -47,7 +47,7 @@ ex6: ex6.o  chkopts
 	$(RM) ex6.o
 
 ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	-$(FLINKER) -o ex7 ex7.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex7.o
 
 ex8: ex8.o  chkopts
@@ -67,8 +67,12 @@ ex11: ex11.o  chkopts
 	$(RM) ex11.o
 
 ex12: ex12.o  chkopts
-	-$(CLINKER) -o ex12 ex12.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	-$(FLINKER) -o ex12 ex12.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex12.o
+
+ex13: ex13.o  chkopts
+	-$(CLINKER) -o ex13 ex13.o  $(PETSC_LIB)
+	$(RM) ex13.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;   \
