@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.45 1998/04/22 02:57:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.46 1998/04/22 04:02:54 bsmith Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -91,6 +91,27 @@ static int PCSetUp_Jacobi(PC pc)
 
   PetscFunctionBegin;
 
+  /*
+       For most preconditioners the code would begin here something like
+
+  if (pc->setupcalled == 0) { allocate space the first time this is ever called
+    ierr = VecDuplicate(pc->vec,&jac->diag); CHKERRQ(ierr);
+    PLogObjectParent(pc,jac->diag);
+  }
+
+       But this preconditioner we want to support both diagonal or square root
+    of diagonal (for symmetric application of the preconditioner), hence we do
+    not allocate the space here, since we won't know which one is needed, diag or
+    diagsqrt, until the user applies the preconditioner. But we don't want to 
+    allocate BOTH unless we need them both. The diag or diagsqrt are allocated in
+    PCSetUp_Jacobi_NonSymmetric() and PCSetUp_Jacobi_Symmetric()
+
+  */
+
+  /*
+       Here we set up the preconditioner; that is get the values from the matrix
+    and put them into a format to make them quick to apply as a preconditioner.
+  */
   diag     = jac->diag;
   diagsqrt = jac->diagsqrt;
 
