@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.90 1996/03/23 19:22:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.91 1996/03/23 20:44:35 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -255,7 +255,7 @@ static double  EventsStageTime[] = {0,0,0,0,0,0,0,0,0,0};
 #define TIME  2
 static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
 
-/*@
+/*@C
     PLogStageRegister - Attach a charactor string name to a logging stage.
 
  Input Parameters:
@@ -271,7 +271,7 @@ int PLogStageRegister(int stage, char *sname)
   return 0;
 }
 
-/*@
+/*@C
    PLogStagePush - Users can log up to 10 stages within a code by using
    -log_summary in conjunction with PLogStagePush() and PLogStagePop().
 
