@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.2 2000/09/25 17:23:06 bsmith Exp curfman $*/
+/*$Id: cholesky.c,v 1.3 2000/09/25 18:52:03 curfman Exp curfman $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -142,20 +142,22 @@ static int PCSetUp_Cholesky(PC pc)
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-    if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
+    if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
+    if (dir->row) {PLogObjectParent(pc,dir->row);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->info.fill);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+      if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
       ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
         ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
-      if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
+      if (dir->row) {PLogObjectParent(pc,dir->row);}
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -165,13 +167,14 @@ static int PCSetUp_Cholesky(PC pc)
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+        if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
         ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
           ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
-          ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+          ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
-        if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
+        if (dir->row) {PLogObjectParent(pc,dir->row);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
@@ -528,7 +531,7 @@ int PCCreate_Cholesky(PC pc)
   dir->info.damp        = 0.0;
   dir->col              = 0;
   dir->row              = 0;
-  ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;
