@@ -230,23 +230,6 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "SamgShellPCSetUpOnFem"
-int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
-{
-  int         ierr;
-  int         nnn; 
-  SamgShellPC *samg_ctx;
-
-  samg_ctx = (SamgShellPC*) ctx; 
-  ierr = MatGetSize(submat[0], &nnn, &nnn); CHKERRQ(ierr);
-  printf("\n Dim submatrix = %d\n\n",nnn); 
-  /*  ierr = SamgShellPCSetUp(samg_ctx,submat[0]); CHKERRQ(ierr);  */
-
-  return 0;
-}
-
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
 #define __FUNCT__ "MyMatView"
 int MyMatView(Mat mat,void *dummy)
 {

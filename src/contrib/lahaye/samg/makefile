@@ -4,6 +4,7 @@
 #requirespackage  'PETSC_HAVE_SAMG'
 #requiresscalar    real 
 #requiresprecision double
+#requireslanguage  CPP
 
 ALL: lib
 

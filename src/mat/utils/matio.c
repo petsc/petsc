@@ -82,7 +82,8 @@ static int MatLoadPrintHelp_Private(Mat A)
 .    -matload_type mpibdiag - parallel block diagonal type
 .    -matload_type mpirowbs - parallel rowbs type
 .    -matload_type seqdense - dense type
--    -matload_type mpidense - parallel dense type
+.    -matload_type mpidense - parallel dense type
+-    -matload_symmetric - matrix in file is symmetric
 
    More Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, ...) to specify
@@ -179,6 +180,10 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-matload_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSetOption(*newmat,MAT_SYMMETRIC);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
   PetscFunctionReturn(0);

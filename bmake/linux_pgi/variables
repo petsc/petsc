@@ -16,11 +16,11 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = pgcc -fPIC
-C_FC		   = pgf77 
+C_FC		   = pgf90 
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = pgcc
-C_FLINKER	   = pgf77
+C_FLINKER	   = pgf90
 C_CCV		   = ${C_CC} --version
 C_FCV              = unknown
 C_SYS_LIB	   = -ldl -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
@@ -33,7 +33,7 @@ O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = pgCC -fPIC
-CXX_FC		   = pgf77 
+CXX_FC		   = pgf90 
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = pgCC

@@ -28,8 +28,6 @@ extern int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,
                             Mat *submat,void *dummy);
 extern int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,
                            Mat *submat,void *dummy);
-extern int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,
-                                 Mat *submat,void *ctx);
 extern int KSPMonitorWriteConvHistOnFem(KSP ksp,int n,double rnorm,void* ctx);
 
 /*..Viewing and printing matrices and vectors..*/

@@ -127,9 +127,9 @@ PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 #
 # Location of the SAMG library
 #
-SAMG_LIB        = /home/petsc/software/20b1/samg/libamg_linux_pgf90.a
-PETSC_HAVE_SAMG = -DPETSC_HAVE_SAMG
-SAMG_MOD        = -module/home/petsc/software/20b1/samg/
+#SAMG_LIB        = /home/petsc/software/20b1/samg/libamg_linux_pgf90.a
+#PETSC_HAVE_SAMG = -DPETSC_HAVE_SAMG
+#SAMG_MOD        = -module/home/petsc/software/20b1/samg/
 #
 #  Location of SPAI;
 #

@@ -121,7 +121,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
       They need to be large enough or RAMG will return telling how
       large they should be
    */
-   nda    = 3*nna+5*nnu;
+   nda    = 3*nna+5*nnu + 10;
    ndia   = (int)(2.5*nnu);
    ndja   = nda;
    ndu    = 5*nnu; 
@@ -208,7 +208,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
               &ecg2, &ewt2, &nwt, &ntr, &ierr);
    if (ierr) {
      if (ierr == 2 || ierr == 1) {
-       (*PetscErrorPrintf)("Error from RAMG not enough array work space provided\n");
+       (*PetscErrorPrintf)("Error from RAMG setup, not enough array work space provided\n");
        (*PetscErrorPrintf)("A provided %d\n",nda);
        (*PetscErrorPrintf)("JA provided %d\n",ndja);
        (*PetscErrorPrintf)("IA provided %d\n",ndia);
@@ -216,7 +216,14 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        (*PetscErrorPrintf)("F provided %d\n",ndf);
        (*PetscErrorPrintf)("IG provided %d\n",ndig);
      }
-     SETERRQ1(PETSC_ERR_LIB,"Error in RAMG. Error number %d",ierr);
+     if (ierr == -12) {
+       (*PetscErrorPrintf)("Error from RAMG setup, could be matrix is symmetric but you have not\n");
+       (*PetscErrorPrintf)("indicated it with MatSetOption(mat,MAT_SYMMETRIC); or -matload_symmetric\n");
+     }
+     if (ierr == 14) {
+       (*PetscErrorPrintf)("Error from RAMG setup, diagonal element not positive\n");
+     }
+     SETERRQ1(PETSC_ERR_LIB,"Error in RAMG setup. Error number %d",ierr);
    }
 
    ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);  
@@ -315,7 +322,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    ierr = VecGetArray(r,&vals_getarray); CHKERRQ(ierr);
 
    /*..Set rhs of call to ramg..*/
-   memcpy(rhs, vals_getarray, numnodes * sizeof(*rhs)); 
+   ierr = PetscMemcpy(rhs, vals_getarray, numnodes * sizeof(*rhs));CHKERRQ(ierr);
   
    /*..Set initial solution of call to ramg to zero..*/
    for (I=0;I<numnodes;I++){
@@ -357,7 +364,15 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
-              &ecg2, &ewt2, &nwt, &ntr, &ierr);CHKERRQ(ierr);
+              &ecg2, &ewt2, &nwt, &ntr, &ierr);
+   if (ierr) {
+     if (ierr == -1) {
+       (*PetscErrorPrintf)("Error from RAMG, not enough array work space provided in NDA\n");
+       (*PetscErrorPrintf)("NDA provided %d\n",nda);
+     }
+
+     SETERRQ1(1,"Error from RAMG solve, number %d",ierr);
+   }
 
    /*..Create auxilary vector..*/ 
    ierr = PetscMalloc(numnodes * sizeof(int),&cols);CHKERRQ(ierr);
