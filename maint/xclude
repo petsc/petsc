@@ -4,6 +4,7 @@ petsc/docs/www/sec
 petsc/bmake/sun4_local
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
+petsc/bmake/freebsd_nolog
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
 petsc/src/contrib/RCS
@@ -14,7 +15,9 @@ petsc/src/contrib/dfvec/src/seq/RCS
 petsc/src/contrib/dfvec/src/mpi/RCS
 petsc/src/contrib/dfvec/examples/RCS
 petsc/src/contrib/dfvec/examples/ex6.c
+petsc/src/contrib/dfvec/examples/ex3.c
 petsc/src/contrib/dfvec/examples/ex4.c
+petsc/src/contrib/dfvec/examples/ex5.c
 petsc/src/contrib/dfvec/examples/ex20.c
 petsc/mis
 petsc/bmake/sun4_umpi
