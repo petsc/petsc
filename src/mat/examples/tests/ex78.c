@@ -1,4 +1,4 @@
-/*$Id: ex33h.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex78.c,v 1.1 2000/11/09 20:08:01 balay Exp hzhang $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -17,10 +17,10 @@ int main(int argc,char **args)
 {
   Mat    A;
   Vec    b,u,u_tmp;
-  char   Ain[128],bin[128],uin[128],fileout[128]; 
-  int    i,j,m,n,nz,ierr,*ib,col_i,row_i;
-  Scalar *val,*bval,*uval,zero=0.0;
-  double    *col,*row,res_norm,none=-1.0;
+  char   Ain[128],bin[128],uin[128]; 
+  int    i,m,n,nz,ierr,*ib,col_i,row_i;
+  Scalar *val,*bval,*uval,mone=-1.0;
+  double *col,*row,res_norm;
   FILE   *Afile,*bfile,*ufile;
   Viewer view;
   PetscTruth flg_A,flg_b,flg_u;
@@ -116,7 +116,7 @@ int main(int argc,char **args)
   if (flg_A & flg_b & flg_u){
     ierr = VecDuplicate(u,&u_tmp);CHKERRA(ierr); 
     ierr = MatMult(A,u,u_tmp);CHKERRA(ierr);
-    ierr = VecAXPY(&none,b,u_tmp);CHKERRA(ierr);
+    ierr = VecAXPY(&mone,b,u_tmp);CHKERRA(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRA(ierr);
     printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
 
