@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.122 2001/01/16 18:20:14 balay Exp balay $*/
+/*$Id: tr.c,v 1.123 2001/03/23 23:24:15 balay Exp curfman $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -64,6 +64,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   KSP                 ksp;
   SLES                sles;
   SNESConvergedReason reason;
+  PetscTruth          conv;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -94,9 +95,12 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   snes->ttol = fnorm*snes->rtol;
 
   /* Set the stopping criteria to use the More' trick. */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,SNES_EQ_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
+  if (!conv) {
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,SNES_EQ_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
+  }
  
   for (i=0; i<maxits; i++) {
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
