@@ -60,6 +60,8 @@ chkpetsc_dir:
           echo "You must set the variable PETSC_DIR to the petsc directory.2";\
           false ;\
           fi
+	-@if [ ! -d $(PDIR) ]; then \
+          echo $(PDIR) ; mkdir -p $(PDIR) ; fi
 
 # Checks that BOPT is set
 chkbopt:
@@ -87,7 +89,7 @@ runexamples:
 foo:
 
 # Builds library
-lib: $(SOURCE)
+lib: chkpetsc_dir $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
            $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
                                PETSC_VERSION=$(PETSC_VERSION) libc; fi
@@ -99,7 +101,7 @@ lib: $(SOURCE)
         fi
 
 # Builds library - fast version
-libfast: $(SOURCEC) $(SOURCEF)
+libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
 	     $(CC) -c $(CFLAGS) $(BASEOPT) $(SOURCEC) ;\
 	fi
