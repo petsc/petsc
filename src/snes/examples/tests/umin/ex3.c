@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.5 1995/09/11 01:53:02 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1995/09/12 02:58:54 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -63,9 +63,10 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  Ny = numtids; Nx = 1;
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
+  if (Nx*Ny != numtids && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != numtids");
 
   /* Set up user-defined work space */
   user.param = 5.0;
