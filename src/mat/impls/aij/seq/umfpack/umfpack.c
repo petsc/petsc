@@ -257,7 +257,7 @@ int MatSeqAIJFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 
   /* Control parameters used by numeric factorization */
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_PIVOT_TOLERANCE]);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_UMFPACK_42_OR_NEWER)
+#if !defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED_AMALGAMATION]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED2_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED2_AMALGAMATION]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED3_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED3_AMALGAMATION]);CHKERRQ(ierr);
