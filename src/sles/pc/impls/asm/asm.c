@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.128 2001/04/10 19:36:16 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.129 2001/04/10 22:35:59 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -940,7 +940,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
-          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains()
+          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubmatrices()
 @*/
 int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
 {
@@ -957,3 +957,43 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
   if (is) *is = osm->is;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMGetLocalSubmatrices"
+/*@C
+    PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
+    only) for the additive Schwarz preconditioner. 
+
+    Collective on PC 
+
+    Input Parameter:
+.   pc - the preconditioner context
+
+    Output Parameters:
++   n - the number of matrices for this processor (default value = 1)
+-   mat - the matrices
+         
+
+    Level: advanced
+
+.keywords: PC, ASM, set, local, subdomains, additive Schwarz, block Jacobi
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
+@*/
+int PCASMGetLocalSubmatrices(PC pc,int *n,Mat **mat)
+{
+  PC_ASM *osm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (!pc->setupcalled) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after SLESSetUP() or PCSetUp().");
+  }
+
+  osm = (PC_ASM*)pc->data;
+  if (n)   *n   = osm->n_local_true;
+  if (mat) *mat = osm->pmat;
+  PetscFunctionReturn(0);
+}
+
