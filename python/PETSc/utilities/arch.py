@@ -11,8 +11,25 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     desc = ['PETSc:']
-    desc.append('  PETSC_ARCH: '+str(self.arch))
-    desc.append('  PETSC_DIR: '+str(self.dir))
+    carch = str(self.arch)
+    cdir  = str(self.dir)
+    envarch = os.getenv('PETSC_ARCH')
+    envdir  = os.getenv('PETSC_DIR')
+    change=0
+    if not carch == envarch :
+      change=1
+      desc.append('  **\n  ** Configure has determined that your PETSC_ARCH must be specified as:')
+      desc.append('  **  ** PETSC_ARCH: '+str(self.arch+'\n  **'))
+    else:
+      desc.append('  PETSC_ARCH: '+str(self.arch))
+    if not cdir == envdir :
+      change=1
+      desc.append('  **\n  ** Configure has determined that your PETSC_DIR must be specified as:')
+      desc.append('  **  **  PETSC_DIR: '+str(self.dir+'\n  **'))
+    else:
+      desc.append('  PETSC_DIR: '+str(self.dir))
+    if change:
+      desc.append('  ** Please make the above changes to your environment or on the command line for make.\n  **')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
