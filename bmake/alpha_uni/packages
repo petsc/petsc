@@ -22,8 +22,11 @@
 #BLAS_LIB        = -ldxml
 #LAPACK_LIB      = 
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
-LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+#BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
+#LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+BLAS_LIB        = -lpetscblas
+LAPACK_LIB      = 
+
 #
 # Location of X-windows software
 #
