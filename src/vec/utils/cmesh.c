@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.38 1997/03/26 01:34:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.39 1997/04/10 00:00:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: cmesh.c,v 1.38 1997/03/26 01:34:23 bsmith Exp bsmith 
 int DrawScalePopup(Draw popup,double min,double max)
 {
   double   xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0,value;
-  int      i,c = 32,rank;
+  int      i,c = 16,rank;
   char     string[32];
   MPI_Comm comm;
 
@@ -20,7 +20,7 @@ int DrawScalePopup(Draw popup,double min,double max)
 
   for ( i=0; i<10; i++ ) {
     DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
-    yl += .1; yr += .1; c = (int) ((double) c + (200.-32.)/9.);
+    yl += .1; yr += .1; c = (int) ((double) c + (245.-16.)/9.);
   }
   for ( i=0; i<10; i++ ) {
     value = -min + i*(max-min)/9.0;
@@ -37,7 +37,7 @@ int DrawScalePopup(Draw popup,double min,double max)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTensorContour" /* ADIC Ignore */
-/*@
+/*@C
    DrawTensorContour - Draws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.
 
@@ -102,7 +102,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 
     ierr = VecGetArray(W,&v); CHKERRQ(ierr);
 
-    /* Scale the color values between 32 and 256 */
     ierr = VecMax(W,0,&max); CHKERRQ(ierr); ierr = VecMin(W,0,&min); CHKERRQ(ierr);
     if (max - min < 1.e-7) {min -= 5.e-8; max += 5.e-8;}
 
@@ -140,6 +139,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
           DrawLine(win,x[0],y[i],x[m-1],y[i],DRAW_BLACK);
         }
       }
+      ierr = DrawFlush(win); CHKERRQ(ierr);
 
       if (pause == -1) {
         DrawButton  button;
@@ -159,7 +159,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
       } else {break;}
      
       ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
-      ierr = DrawClear(win); CHKERRQ(ierr);
+      if (!rank) {ierr = DrawClear(win); CHKERRQ(ierr);}
+      ierr = DrawFlush(win); CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(W,&v); CHKERRQ(ierr);
     

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.27 1997/04/22 18:24:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.28 1997/05/02 16:00:57 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -254,9 +254,10 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 #define __FUNC__ "XiQuickWindowFromWindow" /* ADIC Ignore */
 int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
 {
-  Window       root;
-  int          d,ierr;
-  unsigned int ud;
+  Window            root;
+  int               d,ierr;
+  unsigned int      ud;
+  XWindowAttributes attributes;
 
   if (XiOpenDisplay( w, host )) {
     SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
@@ -264,16 +265,20 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
     run on your displaying machine.\n" );
   }
 
-  ierr = XiSetVisual( w, 1, (Colormap)0, 0 ); CHKERRQ(ierr);
-
   w->win = win;
+  XGetWindowAttributes(w->disp, w->win, &attributes);
+
+  ierr = XiSetVisual( w, 1, attributes.colormap, 0 ); CHKERRQ(ierr);
+
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
   w->x = w->y = 0;
 
+
+
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
-  ierr = XiUniformHues(w,nc-36); CHKERRQ(ierr);
+  ierr = XiUniformHues(w,nc-16); CHKERRQ(ierr);
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xcolor.c,v 1.22 1997/02/22 02:27:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.23 1997/05/02 16:00:57 bsmith Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -224,11 +224,6 @@ Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *vis
     Cmap    = DefaultColormap( display, screen );
   else {
     Cmap    = XCreateColormap( display, RootWindow(display,screen),visual, AllocAll );
-     if (XiGetVisualClass(XiWin) == PseudoColor || XiGetVisualClass(XiWin) == DirectColor ){
-      int i; 
-      for (i=0; i<XiWin->numcolors; i++ ) {XiWin->cmapping[i] = i;}
-      /* XFreeColors( XiWin->disp, XiWin->cmap, XiWin->cmapping,XiWin->numcolors, (unsigned long)0 );*/
-    } 
   }
   return Cmap;
 }

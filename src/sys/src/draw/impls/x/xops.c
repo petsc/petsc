@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.75 1997/04/02 21:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.76 1997/04/22 18:24:45 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -168,6 +168,9 @@ int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 static int DrawFlush_X(Draw Win )
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
+  if (XiWin->drw) {
+    XCopyArea( XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
+  }
   XFlush( XiWin->disp ); XSync(XiWin->disp,False);
   return 0;
 }
@@ -186,8 +189,7 @@ static int DrawSyncFlush_X(Draw Win )
     XSync(XiWin->disp,False);
     MPI_Barrier(Win->comm);
     if (!rank) {
-      XCopyArea( XiWin->disp, XiWin->drw, XiWin->win, XiWin->gc.set, 0, 0, 
-		 XiWin->w, XiWin->h, 0,0 );
+      XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
       XFlush( XiWin->disp );
     }
   }
@@ -470,6 +472,7 @@ $     for its windows, you must put the mouse into the graphics
 $     window to see  the correct colors. This options forces
 $     PETSc to use the default colormap which will usually result
 $     in bad contour plots.
+$  -draw_double_buffer: uses double buffering for smooth animation.
 
    Note:
    When finished with the drawing context, it should be destroyed
@@ -594,8 +597,15 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   Xwin->w      = w;
   Xwin->h      = h;
 
+
+
   ctx->data    = (void *) Xwin;
   *inctx       = ctx;
+
+  ierr = OptionsHasName(PETSC_NULL,"-draw_double_buffer",&flg);CHKERRQ(ierr);
+  if (flg) {
+     ierr = DrawSetDoubleBuffer(ctx); CHKERRQ(ierr);
+  } 
   return 0;
 }
 
