@@ -14,7 +14,7 @@
 #define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return -1;}
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveSparseMatrix"
-int ReceiveSparseMatrix(Matrix *plhs[],int t)
+int ReceiveSparseMatrix(mxArray *plhs[],int t)
 {
   int    *tr,*tc,compx = 0;
   int    *r,*c;

@@ -3,6 +3,7 @@
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 
    This code has not been tested on all machines, the function prototypes may not
 exist for certain systems. Only compiles as C code.
@@ -62,7 +63,7 @@ EXTERN int SOCKConnect_Private(int);
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int t,portnumber;
 
@@ -82,7 +83,7 @@ void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
 
-  plhs[0]  = mxCreateFull(1,1,mxREAL);
+  plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
  
   *mxGetPr(plhs[0]) = t;
   return;

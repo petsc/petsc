@@ -3,6 +3,7 @@
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 
   Since this is called from Matlab it cannot be compiled with C++.
+  Modified Sept 28, 2003 RFK: updated obsolete mx functions.
 */
 
 
@@ -24,7 +25,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ReadInVecs"
-int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
+int ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
 {
   int    cookie = 0,M,compx = 0,i;
   
@@ -34,21 +35,21 @@ int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
   if (PetscBinaryRead(t,&M,1,PETSC_INT))        ERROR("reading number rows"); 
   
   if (dim == 1) {
-    plhs[0]  = mxCreateFull(M,1,compx);
+    plhs[0]  = mxCreateDoubleMatrix(M,1,mxREAL);
   } else if (dim == 2) {
     if (dims[0]*dims[1] != M) {
       printf("ERROR: m %d * n %d != M %d\n",dims[0],dims[1],M);
       return -1;
     }
-    plhs[0]  = mxCreateFull(dims[0],dims[1],compx);
+    plhs[0]  = mxCreateDoubleMatrix(dims[0],dims[1],mxREAL);
   } else {
     plhs[0] = mxCreateNumericArray(dim,dims,mxDOUBLE_CLASS,mxREAL);
   }
 
   /* read in matrix */
-  if (!compx) {
+  if (!compx) { /* real */
     if (PetscBinaryRead(t,mxGetPr(plhs[0]),M,PETSC_DOUBLE)) ERROR("read dense matrix");
-  } else {
+  } else { /* complex, currently not used */
     for (i=0; i<M; i++) {
       if (PetscBinaryRead(t,mxGetPr(plhs[0])+i,1,PETSC_DOUBLE)) ERROR("read dense matrix");
       if (PetscBinaryRead(t,mxGetPi(plhs[0])+i,1,PETSC_DOUBLE)) ERROR("read dense matrix");
@@ -63,7 +64,7 @@ int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
 
 #undef __FUNCT__  
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   static int fd = -1,dims[4],dim = 1,dof;
   char       filename[256],buffer[1024];
@@ -73,7 +74,7 @@ void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
   /* check output parameters */
   if (nlhs != 1) ERROR("Receive requires one output argument.");
   if (fd == -1) {
-    if (!mxIsString(prhs[0])) ERROR("First arg must be string.");
+    if (!mxIsChar(prhs[0])) ERROR("First arg must be string.");
   
     /* open the file */
     mxGetString(prhs[0],filename,256);

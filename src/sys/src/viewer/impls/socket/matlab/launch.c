@@ -1,7 +1,7 @@
 /*$Id: launch.c,v 1.15 2001/03/23 23:19:53 balay Exp $*/
 /* 
   Usage: A = launch(programname,number processors); 
- 
+  Modified Sept 28, 2003 RFK: updated obsolete mx functions.
 */
 
 #include <stdio.h>
@@ -16,20 +16,20 @@ extern int system(const char *);
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int  np,child;
   char program[PETSC_MAX_PATH_LEN],executable[PETSC_MAX_PATH_LEN];
 
   if (nlhs == 1) {
-    plhs[0]  = mxCreateFull(1,1,0);
+    plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
     *mxGetPr(plhs[0]) = 1;
   }
 
   /* check output parameters */
   if (nlhs > 1) ERROR("Open requires at most one output argument.");
   if (!nrhs) ERROR("Open requires at least one input argument.");
-  if (!mxIsString(prhs[0])) ERROR("First arg must be string.");
+  if (!mxIsChar(prhs[0])) ERROR("First arg must be string.");
 
   if (nrhs == 1) np = 1;  
   else           np = (int)*mxGetPr(prhs[1]);

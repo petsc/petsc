@@ -4,6 +4,7 @@
  the receive.mex4 Matlab program. 
   
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 
   Since this is called from Matlab it cannot be compiled with C++.
 */
@@ -18,7 +19,7 @@
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveDenseMatrix"
-int ReceiveDenseMatrix(Matrix *plhs[],int t)
+int ReceiveDenseMatrix(mxArray *plhs[],int t)
 {
   int    m,n,compx = 0,i;
   
@@ -28,7 +29,7 @@ int ReceiveDenseMatrix(Matrix *plhs[],int t)
   if (PetscBinaryRead(t,&compx,1,PETSC_INT))   ERROR("reading if complex"); 
   
   /*allocate matrix */
-  plhs[0]  = mxCreateFull(m,n,compx);
+  plhs[0]  = mxCreateDoubleMatrix(m,n,compx);
   /* read in matrix */
   if (!compx) {
     if (PetscBinaryRead(t,mxGetPr(plhs[0]),n*m,PETSC_DOUBLE)) ERROR("read dense matrix");
@@ -43,7 +44,7 @@ int ReceiveDenseMatrix(Matrix *plhs[],int t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveIntDenseMatrix"
-int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
+int ReceiveDenseIntMatrix(mxArray *plhs[],int t)
 {
   int    m,compx = 0,i,*array;
   double *values;
@@ -53,7 +54,7 @@ int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
   ierr = PetscBinaryRead(t,&m,1,PETSC_INT); if (ierr) ERROR("reading number columns"); 
   
   /*allocate matrix */
-  plhs[0] = mxCreateFull(m,1,0);
+  plhs[0] = mxCreateDoubleMatrix(m,1,mxREAL);
 
   /* read in matrix */
   array = (int*) malloc(m*sizeof(int)); if (!array) ERROR("reading allocating space");
