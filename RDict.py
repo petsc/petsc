@@ -366,6 +366,7 @@ Arg class, which wraps the usual value.'''
       addr = self.getServerAddr(dir)
 
     import socket
+    import errno
     connected = 0
     s         = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     timeout   = 1
@@ -377,20 +378,22 @@ Arg class, which wraps the usual value.'''
         break
       except socket.error, e:
         self.writeLogLine('CLIENT: Failed to connect: '+str(e))
-        if e.errno == 111:
-          import time
-          time.sleep(timeout)
-          timeout *= 2
-          if timeout > 100: timeout = 100
-          continue
+        if e[0] == errno.ECONNREFUSED:
+          try:
+            import time
+            time.sleep(timeout)
+            timeout *= 2
+            if timeout > 100: timeout = 100
+          except KeyboardInterrupt:
+            break
+          # Try to spawn parent
+          if dir:
+            filename = os.path.join(dir, self.addrFilename)
+            if os.path.isfile(filename):
+              os.remove(filename)
+            self.startServer(filename)
       except Exception, e:
         self.writeLogLine('CLIENT: Failed to connect: '+str(e.__class__)+': '+str(e))
-      # Try to spawn parent
-      if dir:
-        filename = os.path.join(dir, self.addrFilename)
-        if os.path.isfile(filename):
-          os.remove(filename)
-        self.startServer(filename)
     if not connected:
       self.writeLogLine('CLIENT: Failed to connect to parent')
       return 0
