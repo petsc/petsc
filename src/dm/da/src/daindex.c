@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.8 1996/12/16 21:10:14 balay Exp balay $";
+static char vcid[] = "$Id: daindex.c,v 1.9 1997/01/06 20:30:32 balay Exp bsmith $";
 #endif
  
 /*
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: daindex.c,v 1.8 1996/12/16 21:10:14 balay Exp balay $
    The Fortran interface is slightly different from that given below.
    See the Fortran chapter of the users manual for details.
 
-.keywords: distributed array, get, global, indices, local to global
+.keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
           DAGlobalToLocal(), DALocalToLocal(),DAGetAO()  
@@ -57,7 +57,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
    for each node (rather than 1 component for the whole grid, then the next
    component, etc.)
 
-.keywords: distributed array, get, global, indices, local to global
+.keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
           DAGlobalToLocal(), DALocalToLocal(), DAGetGlobalIndices()

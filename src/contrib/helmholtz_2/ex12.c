@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.16 1997/01/05 18:57:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.17 1997/01/05 18:58:20 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -234,7 +234,7 @@ int main(int argc,char **args)
      grid points on a processor edge.
   */
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
-                    user.m_xi,N_eta,N_xi,1,1,&user.da); CHKERRA(ierr);
+                    user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&user.phi); CHKERRA(ierr);
   ierr = VecGetLocalSize(user.phi,&user.m_ldim); CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b); CHKERRA(ierr);

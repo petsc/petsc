@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.222 1997/02/03 05:57:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.223 1997/02/04 21:24:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2198,7 +2198,7 @@ int MatGetArray(Mat mat,Scalar **v)
    The Fortran interface is slightly different from that given below.
    See the users manual and petsc/src/mat/examples for details.
 
-.keywords: matrix, array, elements, values, resrore
+.keywords: matrix, array, elements, values, restore
 
 .seealso: MatGetArray()
 @*/

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.66 1997/01/08 19:10:12 gropp Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.67 1997/02/04 21:26:39 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -121,6 +121,8 @@ $         DA_YPERIODIC, DA_XYPERIODIC
          (or PETSC_DECIDE to have calculated)
 .  w - number of degrees of freedom per node
 .  s - stencil width
+.  lx, ly - arrays containing the number of nodes in each cell along
+$           the x and y coordinates, or PETSC_NULL
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -138,7 +140,7 @@ $  -da_view : call DAView() at the conclusion of DACreate2d()
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M,int N,int m,int n,int w,int s,DA *inra)
+                int M,int N,int m,int n,int w,int s,int *lx,int *ly,DA *inra)
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
@@ -191,38 +193,65 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* 
      Determine locally owned region 
-     [x or y]s is the first local node number, [x or y] is the number of local nodes 
+     xs is the first local node number, x is the number of local nodes 
   */
-  if (flg1) {  /* Block Comm type Distribution */
+  if (lx != PETSC_NULL) { /* user sets distribution */
+    x  = lx[rank % m];
+    xs = 0;
+    for ( i=0; i<(rank % m); i++ ) {
+      xs += lx[i];
+    }
+    left = xs;
+    for ( i=(rank % m); i<m; i++ ) {
+      left += lx[i];
+    }
+    if (left != M) {
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lx across processors not equal to M");
+    }
+  }
+  else if (flg1) {  /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
     x  = (rank%m + 1)*M/m - xs;
-    ys = (rank/m)*N/n;
-    y  = (rank/m + 1)*N/n - ys;
     if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
   }
   else if (flg2) { 
     x = (M + rank%m)/m;
-    y = (N + rank/m)/n;
-    
     if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if (M/m == x) { xs = (rank % m)*x; }
     else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
+  } 
+  else { /* Normal PETSc distribution */
+    x = M/m + ((M % m) > (rank % m));
+    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+    else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+  }
+
+  /* 
+     Determine locally owned region 
+     ys is the first local node number, y is the number of local nodes 
+  */
+  if (ly != PETSC_NULL) { /* user sets distribution */
+     ;
+  }
+  else if (flg1) {  /* Block Comm type Distribution */
+    ys = (rank/m)*N/n;
+    y  = (rank/m + 1)*N/n - ys;
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
+  }
+  else if (flg2) { 
+    y = (N + rank/m)/n;
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if (N/n == y) { ys = (rank/m)*y;  }
     else          { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
   }
   else { /* Normal PETSc distribution */
-    x = M/m + ((M % m) > (rank % m));
     y = N/n + ((N % n) > (rank/m));
-    
-    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
     if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
-    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-    else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
     else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
   }
+
   xe = xs + x;
   ye = ys + y;
 
@@ -669,8 +698,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     IS  ispetsc, isnatural;
     int *lidx,lict = 0, Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
 
-    ierr = ISCreateStride(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);
-           CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
     lidx = (int *) PetscMalloc(Nlocal*sizeof(int)); CHKPTRQ(lidx);
     for (j=ys; j<ye; j++) {
@@ -796,10 +824,11 @@ int DARefine(DA da, DA *daref)
 
   M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
   if (da->dim == 1) {
-    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_DECIDE,&da2); CHKERRQ(ierr);
+    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_NULL,&da2); CHKERRQ(ierr);
   }
   else if (da->dim == 2) {
-    ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,&da2); CHKERRQ(ierr);
+    ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,PETSC_NULL,
+                      PETSC_NULL,&da2); CHKERRQ(ierr);
   }
   else if (da->dim == 3) {
     ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.15 1997/01/06 20:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.16 1997/02/04 21:25:45 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
 
   /* Set up the ghost point communication pattern */ 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_DECIDE,&appctx.da);CHKERRA(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRA(ierr);
   ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
   ierr = VecGetLocalSize(global,&m); CHKERRA(ierr);
   ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);

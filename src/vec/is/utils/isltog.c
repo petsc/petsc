@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.4 1996/12/16 22:20:18 balay Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.5 1997/01/06 20:21:40 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: isltog.c,v 1.4 1996/12/16 22:20:18 balay Exp balay $"
    Output Parameters:
 .    mapping - new mapping data structure
 
-.keywords: IS, local to global mapping
+.keywords: IS, local-to-global mapping
 
 .seealso: ISLocalToGlobalMappingDestroy(), 
 @*/
@@ -43,7 +43,7 @@ int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *map
    Input Parameters:
 .    mapping - mapping data structure
 
-.keywords: IS, local to global mapping
+.keywords: IS, local-to-global mapping
 
 .seealso: ISLocalToGlobalMappingCreate(), 
 @*/
@@ -117,6 +117,6 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
           ISLocalToGlobalMappingApplyIS(),AOCreateDebug(),AOApplicationToPetsc(),
           AOPetscToApplication()
 
-.keywords: local to global, mapping
+.keywords: local-to-global, mapping
 M*/
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.5 1996/08/08 14:47:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.6 1997/02/04 21:26:55 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -26,7 +26,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degress of freedom per node
 .  s - stencil width
-.  lc - number of nodes in X direction on this processor
+.  lc - array containing number of nodes in X direction on each processor, or PETSC_NULL
 
    Output Parameter:
 .  sda - the resulting array object
@@ -35,7 +35,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,SDA *sda)
+int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
 {
   int        ierr,ntmp,*idx;
   DA         da;
@@ -92,6 +92,8 @@ $         DA_YPERIODIC, DA_XYPERIODIC
          (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
+.  lx, ly - arrays containing the number of nodes in each cell along
+$           the x and y coordinates, or PETSC_NULL
 
    Output Parameter:
 .  inra - the resulting array object
@@ -101,7 +103,7 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M, int N, int m,int n, int w, int s, SDA *sda)
+                int M, int N, int m,int n, int w, int s, int *lx, int *ly, SDA *sda)
 {
   int        ierr,ntmp,*idx;
   DA         da;
@@ -114,7 +116,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscInitialize(&argc,&args,0,0);
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
-  ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,&da);CHKERRQ(ierr);
+  ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */

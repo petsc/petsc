@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltog.c,v 1.5 1996/12/16 21:10:43 balay Exp balay $";
+static char vcid[] = "$Id: daltog.c,v 1.6 1997/01/06 20:30:32 balay Exp bsmith $";
 #endif
  
 /*
@@ -22,7 +22,7 @@ static char vcid[] = "$Id: daltog.c,v 1.5 1996/12/16 21:10:43 balay Exp balay $"
    Output Parameter:
 .  g - the global vector
 
-.keywords: distributed array, local to global
+.keywords: distributed array, local-to-global
 
 .seealso: DAGlobalToLocalBegin(), DACreate2d()
 @*/

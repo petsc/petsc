@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.18 1997/01/01 03:41:24 bsmith Exp bsmith $";
+C "$Id: ex5f.F,v 1.19 1997/01/06 20:43:11 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -199,7 +199,7 @@ C  Create distributed array (DA) to manage parallel grid and vectors
          SETERRA(1,0,' ')
       endif
       call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
-     &                my,Nx,Ny,1,1,da,ierr)
+     &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
       user(3) = da
 
 C

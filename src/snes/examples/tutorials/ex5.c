@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.73 1997/01/27 18:18:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.74 1997/02/03 06:01:57 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -125,7 +125,7 @@ int main( int argc, char **argv )
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
 
   /*
      Visualize the distribution of the array across the processors

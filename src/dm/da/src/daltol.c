@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltol.c,v 1.6 1996/12/16 21:11:02 balay Exp balay $";
+static char vcid[] = "$Id: daltol.c,v 1.7 1997/01/06 20:30:32 balay Exp bsmith $";
 #endif
  
 /*
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: daltol.c,v 1.6 1996/12/16 21:11:02 balay Exp balay $"
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
-.keywords: distributed array, local to local, begin
+.keywords: distributed array, local-to-local, begin
 
 .seealso: DALocalToLocalEnd(), DALocalToGlobal(), DAGlobalToLocal()
 @*/
@@ -51,7 +51,7 @@ int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
-.keywords: distributed array, local to local, end
+.keywords: distributed array, local-to-local, end
 
 .seealso: DALocalToLocalBegin(), DALocalToGlobal(), DAGlobalToLocal()
 @*/

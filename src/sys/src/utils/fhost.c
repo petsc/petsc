@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.12 1996/12/16 21:18:13 balay Exp balay $";
+static char vcid[] = "$Id: fhost.c,v 1.13 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: fhost.c,v 1.12 1996/12/16 21:18:13 balay Exp balay $"
 .   name - contains host name.  Must be long enough to hold the name
            This is the fully qualified name, including the domain.
 
-.keywords: syetem, get, host, name
+.keywords: system, get, host, name
 
 .seealso: PetscGetUserName()
 @*/

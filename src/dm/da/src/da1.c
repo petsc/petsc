@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.53 1997/01/06 20:43:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.54 1997/02/04 21:26:39 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -104,7 +104,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degrees of freedom per node
 .  s - stencil width  
-.  lc - number of nodes in the X direction on this processor, or PETSC_DECIDE
+.  lc - array containing number of nodes in the X direction on each processor, or PETSC_NULL
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -116,7 +116,7 @@ $  -da_view : call DAView() at the conclusion of DACreate1d()
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d()
 @*/
-int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *inra)
+int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int        i,*idx,nn,j,count,left,flg1,flg2,gdim;
@@ -148,7 +148,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *in
      Determine locally owned region 
      xs is the first local node number, x is the number of local nodes 
   */
-  if (lc == PETSC_DECIDE) {
+  if (lc == PETSC_NULL) {
     ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
@@ -167,9 +167,19 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *in
       else                 {xs = rank * (int)(M/m) + rank;}
     }
   } else {
-     x  =  lc;
-     MPI_Scan(&x,&xs,1,MPI_INT,MPI_SUM,comm);
-     xs -= lc;
+    x  = lc[rank];
+    xs = 0;
+    for ( i=0; i<rank; i++ ) {
+      xs += lc[i];
+    }
+    /* verify that data user provided is consistent */
+    left = xs;
+    for ( i=rank; i<size; i++ ) {
+      left += lc[i];
+    }
+    if (left != M) {
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lc across processors not equal to M");
+    }
   }
 
   /* From now on x,s,xs,xe,Xs,Xe are the exact location in the array */

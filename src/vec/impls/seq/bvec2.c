@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.85 1997/01/06 20:21:57 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.86 1997/01/12 04:32:45 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -120,6 +120,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 
   ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
   ierr = DrawLGGetDraw(lg,&win); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(win);CHKERRQ(ierr);
   ierr = DrawLGReset(lg); CHKERRQ(ierr);
   xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
   for ( i=0; i<n; i++ ) {

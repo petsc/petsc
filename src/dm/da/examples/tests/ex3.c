@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.23 1996/07/04 13:04:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1997/02/04 21:26:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -20,8 +20,8 @@ int main(int argc,char **argv)
   Draw      draw;
   Vec       local, global, copy;
   Scalar    *localptr, *copyptr;
-  double    a, h, k, localnodes = PETSC_DECIDE;
-  int       localsize, j, i, mybase, myend, width, xbase;
+  double    a, h, k;
+  int       localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -34,34 +34,35 @@ int main(int argc,char **argv)
   */
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg); CHKERRA(ierr);
   if (flg) {
-    localnodes = 2;
-    if (rank == size - 1) {
-      localnodes = M - 2*(size-1);
-    }
+    localnodes = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(localnodes);
+    for ( i=0; i<size-1; i++ ) { localnodes[i] = 2;}
+    localnodes[size-1] = M - 2*(size-1);
   }
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,PETSC_DECIDE,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da); CHKERRA(ierr);
+  if (localnodes) PetscFree(localnodes);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
   /* Set up display to show combined wave graph */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"Entire Solution",20,480,1000,200,
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"Entire Solution",20,480,800,200,
                          &viewer);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
+  /* determine starting point of each processor */
+  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
+
   /* set up display to show my portion of the wave */
-  xbase = (int) (rank*(1000.0/size) + 20);
-  width = (int) (1000.0/size);
+  xbase = (int) ((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
+  width = (int) ((myend-mybase)*800./M);
   ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Local Portion of Solution",xbase,200,
                          width,200,&viewer_private);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer_private,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
 
-  /* determine starting point of each processor */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
 
   /* Initialize the array */
   ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);

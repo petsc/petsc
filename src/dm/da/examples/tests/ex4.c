@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.24 1996/06/30 18:18:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.25 1996/07/08 22:23:55 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -13,8 +13,9 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 int main(int argc,char **argv)
 {
   int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;
-  int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
+  int            s=1, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
   int            Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog, testorder = 0;
+  int            *lx = PETSC_NULL, *ly = PETSC_NULL;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
   Viewer         viewer;
@@ -38,9 +39,23 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg); CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
   ierr = OptionsHasName(PETSC_NULL,"-testorder",&testorder); CHKERRA(ierr);
+  /*
+      Test putting two nodes in x and y on each processor, exact last processor 
+      in x and y gets the rest.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg); CHKERRA(ierr);
+  if (flg) {
+    if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");
+    lx = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(lx);
+    for ( i=0; i<m-1; i++ ) { lx[i] = 4;}
+    lx[m-1] = M - 4*(m-1);
+  }
+
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da); CHKERRA(ierr);
+  if (lx) PetscFree(lx);
+
   ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.38 1996/10/03 21:21:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1997/01/01 03:41:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
 
   /* Set up distributed array and vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
-         user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
+         user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);

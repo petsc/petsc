@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.5 1996/03/19 21:29:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.6 1997/02/04 21:26:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -37,14 +37,14 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3); CHKERRA(ierr);
   if (flg2) {
-    ierr = DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,&da);
+    ierr = DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);
     CHKERRA(ierr);
   } else if (flg3) {
     ierr = DACreate3d(MPI_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,&da);
     CHKERRA(ierr);
   }
   else {
-    ierr = DACreate1d(MPI_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_DECIDE,&da);CHKERRA(ierr);
+    ierr = DACreate1d(MPI_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
   }
 
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);

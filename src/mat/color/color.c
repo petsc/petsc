@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.12 1997/02/03 05:59:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.13 1997/02/04 21:24:58 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -332,7 +332,7 @@ $    -mat_coloring if
 
    The user can define additional coloringings; see MatColoringRegister().
 
-.keywords: matrix, coloringing
+.keywords: matrix, coloring
 
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister()
 @*/

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2f.c,v 1.4 1996/11/07 15:12:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.5 1997/02/04 21:26:55 bsmith Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -48,12 +48,12 @@ void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
 
 void sdacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
-                  int *s,SDA *inra, int *__ierr )
+                  int *s,int *lx,int *ly,SDA *inra, int *__ierr )
 {
   SDA da;
   *__ierr = SDACreate2d(
 	    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,
-            *stencil_type,*M,*N,*m,*n,*w,*s,&da);
+            *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
@@ -62,7 +62,7 @@ void sdacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 {
   SDA da;
   *__ierr = SDACreate1d(
-	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,*lc,&da);
+	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,lc,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.67 1997/01/12 04:32:47 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.68 1997/01/22 18:41:31 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -192,6 +192,8 @@ static int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   DrawLG      lg;
 
   ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
+  ierr = DrawLGGetDraw(lg,&draw); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Comm_size(xin->comm,&size);
   if (!rank) {
@@ -236,7 +238,6 @@ static int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
     }
 #endif
   }
-  DrawLGGetDraw(lg,&draw);
   DrawSyncFlush(draw);
   DrawPause(draw);
   return 0;
@@ -262,8 +263,7 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
     return VecView_MPI_Draw_LG(xin, v );
   }
 
-  MPI_Comm_size(xin->comm,&size); 
-
+  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   xmin = 1.e20; xmax = -1.e20;
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -280,6 +280,7 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   }
   MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
   MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
+  MPI_Comm_size(xin->comm,&size); 
   MPI_Comm_rank(xin->comm,&rank);
   ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
   PLogObjectParent(draw,axis);
