@@ -268,7 +268,6 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-extern PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer,PetscErrorCode (*)(void*));
 /*
    PCDestroy_ML - Destroys the private context for the ML preconditioner
    that was created with PCCreate_ML().
@@ -294,11 +293,10 @@ static PetscErrorCode PCDestroy_ML(PC pc)
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
-  /* detach pc and PC_ML and dereference container ??? */
+  /* detach pc and PC_ML and dereference container */
   ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",0);CHKERRQ(ierr); 
   ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
 
-  ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_PC_ML);CHKERRQ(ierr); 
   ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -448,9 +446,10 @@ PetscErrorCode PCCreate_ML(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNew(PC_ML,&pc_ml);CHKERRQ(ierr);
-  /* ierr = PetscMemzero(pc_ml,sizeof(PC_ML));CHKERRQ(ierr); */
+  ierr = PetscMemzero(pc_ml,sizeof(PC_ML));CHKERRQ(ierr); 
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
+  ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_PC_ML);CHKERRQ(ierr); 
   ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",(PetscObject)container);CHKERRQ(ierr);
   
   pc_ml->PCSetUp   = pc->ops->setup;
@@ -688,7 +687,18 @@ PetscErrorCode MatConvert_ML_SeqAIJ(FineGridCtx *ml,Mat *newmat)
   
   PetscFunctionBegin;
   if ( mat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mat->getrow = NULL");
+#ifdef TEST
+  /* ---- new --------- */
+  PetscInt *ai,*aj;
+  PetscScalar *aa;
+  ML_Matrix_DCSR *matdata = (ML_Matrix_DCSR*)mat->data;
+  
+  ai = matdata->mat_ia; 
+  aj = matdata->mat_ja;
+  aa = matdata->mat_a;
 
+  /* -------- endof new ---------*/
+#endif /* TEST */
   ierr = MatCreate(PETSC_COMM_SELF,m,n,PETSC_DECIDE,PETSC_DECIDE,newmat);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
   for (i=0; i<m; i++){

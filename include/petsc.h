@@ -1084,6 +1084,7 @@ EXTERN PetscErrorCode PetscObjectContainerGetPointer(PetscObjectContainer,void *
 EXTERN PetscErrorCode PetscObjectContainerSetPointer(PetscObjectContainer,void *);
 EXTERN PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer);
 EXTERN PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
+EXTERN PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer, PetscErrorCode (*)(void*));
 
 /*
    For incremental debugging
