@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.189 2000/04/09 04:36:25 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.190 2000/04/10 04:25:49 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -24,8 +24,8 @@ extern int MatZeroRows_SeqAIJ(Mat,IS,Scalar*);
 */
 #if defined(PETSC_USE_MAT_SINGLE)
 extern int MatSetValues_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlock_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlock_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+extern int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+extern int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
 #else
 #define MatSetValues_MPIBAIJ_MatScalar MatSetValues_MPIBAIJ
 #define MatSetValuesBlocked_MPIBAIJ_MatScalar MatSetValuesBlocked_MPIBAIJ
@@ -970,20 +970,6 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatView_MPIBAIJ_Binary"
-static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
-{
-  Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)mat->data;
-  int          ierr;
-
-  PetscFunctionBegin;
-  if (baij->size == 1) {
-    ierr = MatView(baij->A,viewer);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatView_MPIBAIJ_ASCIIorDraworSocket"
 static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
@@ -1086,8 +1072,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatView_MPIBAIJ"
