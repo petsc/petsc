@@ -28,6 +28,7 @@ class Configure(config.base.Configure):
       return '\n'.join(desc)+'\n'
     else:
       return ''
+
   def configureHelp(self, help):
     import nargs
     help.addArgument('MPI', '-with-mpi=<bool>',              nargs.ArgBool(None, 1, 'Activate MPI'))
@@ -354,6 +355,8 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+      self.libraries.libraries.extend([(['rt','aio'],'exit')])
     functionalMPI = []
     nonsharedMPI  = []
 
