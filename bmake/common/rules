@@ -561,6 +561,7 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/docs/tex/doctext; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
