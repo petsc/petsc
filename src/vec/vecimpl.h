@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: vecimpl.h,v 1.9 1995/06/07 16:34:54 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -50,6 +50,9 @@ struct _Vec {
   void          *data;
 };
 
+/* 
+   These scatters are for purely local.
+*/
 
 typedef struct {
   int n,*slots;
@@ -60,14 +63,14 @@ typedef struct {
 } VecScatterStride;
 
 /*
-    I would like to use MPI_Type_indexed() but MPI doesn't seem
-  to provide any direct support for ScatterAdd, thus we pack our own instead.
+   This is the parallel scatter
 */
 typedef struct { 
-  int          n,nbelow,nself;  /* number of processors (including self) */
-  int          *starts,*indices,*procs;
-  MPI_Request  *requests;
-  Scalar       *values;
+  int               n,nbelow,nself;  /* number of processors */
+  int               *starts,*indices,*procs;
+  MPI_Request       *requests;
+  Scalar            *values;
+  VecScatterGeneral local;
 } VecScatterMPI;
 
 struct _VecScatterCtx {
