@@ -283,6 +283,19 @@ class Configure(config.base.Configure):
     self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
     self.framework.getExecutable('sed',  getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
+    # check if diff supports -w option for ignoring whitespace
+    f = file('diff1', 'w')
+    f.write('diff\n')
+    f.close()
+    f = file('diff2', 'w')
+    f.write('diff  \n')
+    f.close()
+    (out,err,status) = Configure.executeShellCommand(getattr(self.framework, 'diff')+' -w diff1 diff2')
+    os.unlink('diff1')
+    os.unlink('diff2')
+    if not status:    
+      self.framework.addSubstitution('DIFF',getattr(self.framework, 'diff')+' -w')
+    
     self.framework.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self.framework, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
