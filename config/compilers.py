@@ -11,12 +11,30 @@ class Configure(config.base.Configure):
     return
 
   def configureHelp(self, help):
+    help.addOption('Compilers', '-with-cpp=<prog>', 'Specify the C preprocessor')
     help.addOption('Compilers', '-with-cc=<prog>', 'Specify the C compiler')
     help.addOption('Compilers', '-with-cxx=<prog>', 'Specify the C++ compiler')
     help.addOption('Compilers', '-with-fc=<prog>', 'Specify the Fortran compiler')
     #help.addOption('Compilers', '-with-f90=<prog>', 'Specify the Fortran 90 compiler')
     help.addOption('Compilers', '-with-f90-header=<file>', 'Specify the C header for the F90 interface')
     help.addOption('Compilers', '-with-f90-source=<file>', 'Specify the C source for the F90 interface')
+
+    help.addOption('Compilers', '-CPP=<prog>', 'Specify the C preprocessor')
+    help.addOption('Compilers', '-CPPFLAGS=<string>', 'Specify the C preprocessor options')
+    help.addOption('Compilers', '-CXXPP=<prog>', 'Specify the C++ preprocessor')
+    help.addOption('Compilers', '-CC=<prog>', 'Specify the C compiler')
+    help.addOption('Compilers', '-CFLAGS=<string>', 'Specify the C compiler options')
+    help.addOption('Compilers', '-CXX=<prog>', 'Specify the C++ compiler')
+    help.addOption('Compilers', '-CXXFLAGS=<string>', 'Specify the C++ compiler options')
+    help.addOption('Compilers', '-FC=<prog>', 'Specify the Fortran compiler')
+    help.addOption('Compilers', '-FFLAGS=<string>', 'Specify the Fortran compiler options')
+    help.addOption('Compilers', '-LDFLAGS=<string>', 'Specify the linker options')
+
+    self.framework.argDB['CPPFLAGS'] = ''
+    self.framework.argDB['CFLAGS']   = ''
+    self.framework.argDB['CXXFLAGS'] = ''
+    self.framework.argDB['FFLAGS']   = ''
+    self.framework.argDB['LDFLAGS']  = ''
     return
 
   def checkCCompiler(self):
@@ -25,8 +43,19 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CC'):
       self.CC = self.framework.argDB['CC']
     else:
-      self.CC = 'gcc'
+      if not self.getExecutables(['gcc', 'cc', 'xlC', 'xlc', 'pgcc'], resultName = 'CC'):
+        raise RuntimeError('Could not find a C compiler. Please set with the option --with-cc or -CC')
+    self.framework.argDB['CC'] = self.CC
     self.addSubstitution('CC', self.CC)
+
+    if self.framework.argDB.has_key('with-cpp'):
+      self.CPP = self.framework.argDB['with-cpp']
+    elif self.framework.argDB.has_key('CPP'):
+      self.CPP = self.framework.argDB['CPP']
+    else:
+      self.CPP = self.CC+' -E'
+    self.framework.argDB['CPP'] = self.CPP
+    self.addSubstitution('CPP', self.CPP)
     return
 
   def checkFormatting(self):
@@ -40,8 +69,19 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CXX'):
       self.CXX = self.framework.argDB['CXX']
     else:
-      self.CXX = 'g++'
+      if not self.getExecutables(['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl'], resultName = 'CXX'):
+        raise RuntimeError('Could not find a C++ compiler. Please set with the option --with-cxx or -CXX')
+    self.framework.argDB['CXX'] = self.CXX
     self.addSubstitution('CXX', self.CXX)
+
+    if self.framework.argDB.has_key('with-cxxcpp'):
+      self.CXXCPP = self.framework.argDB['with-cxxcpp']
+    elif self.framework.argDB.has_key('CXXCPP'):
+      self.CXXCPP = self.framework.argDB['CXXCPP']
+    else:
+      self.CXXCPP = self.CXX+' -E'
+    self.framework.argDB['CXXCPP'] = self.CXXCPP
+    self.addSubstitution('CXXCPP', self.CXXCPP)
     return
 
   def checkCxxNamespace(self):
@@ -58,7 +98,9 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('FC'):
       self.FC = self.framework.argDB['FC']
     else:
-      self.FC = 'g77'
+      if not self.getExecutables(['g77', 'f77', 'pgf77'], resultName = 'FC'):
+        raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option --with-fc or -FC')
+    self.framework.argDB['FC'] = self.FC
     self.addSubstitution('FC', self.FC)
     return
 
@@ -128,7 +170,10 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('F90'):
       self.F90 = self.framework.argDB['F90']
     else:
-      self.F90 = 'f90'
+      if not self.getExecutables(['f90', 'pgf90', 'ifc'], resultName = 'FC'):
+        #raise RuntimeError('Could not find a Fortran 90 compiler. Please set with the option --with-f90 or -F90')
+        self.F90 = 'f90'
+    self.framework.argDB['F90'] = self.F90
     self.addSubstitution('F90', self.F90)
     return
 

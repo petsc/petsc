@@ -20,12 +20,7 @@ class Configure:
     # Interaction with the shell
     self.shell = '/bin/sh'
     # Preprocessing, compiling, and linking
-    self.language     = []
-    self.setupPreprocessor()
-    self.setupCCompiler()
-    self.setupCXXCompiler()
-    self.setupF77Compiler()
-    self.setupLinker()
+    self.language = []
     self.pushLanguage('C')
     return
 
@@ -60,7 +55,7 @@ class Configure:
     return
 
   def addArgumentSubstitution(self, name, arg):
-    '''Designate that "@name@" should be replaced by argDB["arg"] in all files which experience substitution'''
+    '''Designate that "@name@" should be replaced by "arg" in all files which experience substitution'''
     self.argSubst[name] = arg
     return
 
@@ -113,58 +108,39 @@ class Configure:
       raise RuntimeError('Unknown language: '+language)
     return
 
-  def setupCCompiler(self):
+  def checkCCompilerSetup(self):
     if not self.framework.argDB.has_key('CC'):
-      if not self.getExecutables(['gcc', 'cc', 'xlC', 'xlc', 'pgcc'], resultName = 'CC'):
-        raise RuntimeError('Could not find a C compiler. Please set with the option -CC')
-      self.framework.argDB['CC'] = self.CC
-    if not self.framework.argDB.has_key('CFLAGS'):
-      self.framework.argDB['CFLAGS'] = '-g -Wall'
-    return self.framework.argDB['CC']
-
-  def setupCXXCompiler(self):
-    if not self.framework.argDB.has_key('CXX'):
-      if not self.getExecutables(['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl'], resultName = 'CXX'):
-        raise RuntimeError('Could not find a C++ compiler. Please set with the option -CXX')
-      self.framework.argDB['CXX'] = self.CXX
-    if not self.framework.argDB.has_key('CXXFLAGS'):
-      self.framework.argDB['CXXFLAGS'] = '-g -Wall'
-    return self.framework.argDB['CXX']
-
-  def setupF77Compiler(self):
-    if not self.framework.argDB.has_key('FC'):
-      if not self.getExecutables(['g77', 'f77', 'pgf77'], resultName = 'FC'):
-        raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option -FC')
-      self.framework.argDB['FC'] = self.FC
-    if not self.framework.argDB.has_key('FFLAGS'):
-      self.framework.argDB['FFLAGS'] = '-g'
-    return self.framework.argDB['FC']
-
-  def setupPreprocessor(self):
+      raise RuntimeError('Could not find a C compiler. Make sure the compiler module is loaded.')
     if not self.framework.argDB.has_key('CPP'):
-      self.framework.argDB['CPP'] = self.setupCCompiler()+' -E'
-    if not self.framework.argDB.has_key('CXXCPP'):
-      self.framework.argDB['CXXCPP'] = self.setupCXXCompiler()+' -E'
-    if not self.framework.argDB.has_key('CPPFLAGS'):
-      self.framework.argDB['CPPFLAGS'] = ''
-    return self.framework.argDB['CPP']
+      raise RuntimeError('Could not find a C preprocessor. Make sure the compiler module is loaded.')
+    return
 
-  def setupLinker(self):
-    if not self.framework.argDB.has_key('LDFLAGS'):
-      self.framework.argDB['LDFLAGS'] = ''
+  def checkCxxCompilerSetup(self):
+    if not self.framework.argDB.has_key('CXX'):
+      raise RuntimeError('Could not find a C++ compiler. Make sure the compiler module is loaded.')
+    if not self.framework.argDB.has_key('CXXCPP'):
+      raise RuntimeError('Could not find a C++ preprocessor. Make sure the compiler module is loaded.')
+    return
+
+  def checkF77CompilerSetup(self):
+    if not self.framework.argDB.has_key('FC'):
+      raise RuntimeError('Could not find a Fortran 77 compiler. Make sure the compiler module is loaded.')
     return
 
   def getCompiler(self):
     language = self.language[-1]
     if language == 'C':
+      self.checkCCompilerSetup()
       self.compilerName   = 'CC'
       self.compilerSource = 'conftest.c'
       self.compilerObj    = 'conftest.o'
     elif language == 'C++':
+      self.checkCxxCompilerSetup()
       self.compilerName   = 'CXX'
       self.compilerSource = 'conftest.cc'
       self.compilerObj    = 'conftest.o'
     elif language == 'F77':
+      self.checkF77CompilerSetup()
       self.compilerName   = 'FC'
       self.compilerSource = 'conftest.f'
       self.compilerObj    = 'conftest.o'
