@@ -42,6 +42,10 @@ dnl that must be present.  Initialize configure (this will process the
 dnl command line)
 AC_INIT(../include/petsc.h)
 dnl
+dnl  Turn off printing tests to screen
+dnl
+exec 6>/dev/null
+dnl
 dnl Insist on autoconf 2.13 or later
 AC_PREREQ(2.13)
 AC_CONFIG_AUX_DIR(config)
@@ -57,7 +61,6 @@ dnl pick a shorter name.
 if test -z "$PETSC_ARCH" ; then
     AC_CANONICAL_HOST
     PETSC_ARCH="$host"
-    echo "PETSC_ARCH must be defined; guessing $PETSC_ARCH"
 fi
 dnl AC_SUBST causes @PETSC_ARCH@ in the output files to be replaced with the
 dnl value of the variable PETSC_ARCH.  AC_SUBST is implicit in many of the
@@ -105,6 +108,10 @@ AC_ARG_ENABLE(installsite, installsite - Install bmake site files,install_sitefi
 install_sitefiles=0)
 dnl
 AC_ARG_WITH(matlab,Include matlab interface,MATLABPATH=$withval)
+dnl
+dnl   
+dnl
+AC_ARG_WITH(bmakedir, bmakedir=dir - Use BMAKEDIR,BMAKEDIR=$withval)
 dnl
 AC_ARG_WITH(blas, blas=library - Use system-provided BLAS,BLAS_LIB=$withval)
 AC_SUBST(BLAS_LIB)
@@ -349,7 +356,7 @@ export CC
 export FC
 FC_LIB=`bin/config/findftnlibs | tr '\012' ' '`
 if test -n "$FC_LIB" ; then
-    echo "Fortran linker needs $FC_LIB"
+    echo "Fortran linker needs $FC_LIB" 1>&6
 fi
 AC_SUBST(FC_LIB)
 # End of Fortran name checks
@@ -498,7 +505,7 @@ dnl Fortran BLAS should define
 dnl AC_DEFINE(HAVE_SLOW_NRM2)
 dnl
 dnl Special routines
-echo "checking for special routines for floating-point exceptions"
+echo "checking for special routines for floating-point exceptions" 1>&6
 case $PETSC_ARCH in
     sun4*|solaris) 
           # Despite the documentation, the IEEE functions are in libm,
@@ -538,43 +545,20 @@ AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:
 dnl
 dnl Change all DEFINE to PETSC_DEFINE
 dnl
-mv -f bmake/config/petscconf.h bmake/config/petscconf.unmodified
-cat bmake/config/petscconf.unmodified | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.h
-touch bmake/config/petscfix.h    
 dnl
-dnl If the user asked us, move the files into the bmake area in their own
+dnl Move the files into the bmake area in their own
 dnl directory
 dnl
-if test $install_sitefiles = 1 ; then 
-    if test ! -d $PETSC_DIR/bmake/$PETSC_ARCH ; then
-        mkdir $PETSC_DIR/bmake/$PETSC_ARCH
-    else 
-	# Check that this is a config directory; else move it aside
-	if test ! -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig ; then
-	     if test -d $PETSC_DIR/bmake/$PETSC_ARCH.bak ; then
-		if test -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig ; then
-		    rm -rf $PETSC_DIR/bmake/$PETSC_ARCH.bak
-		fi
-	     fi
- 	    if test ! -d $PETSC_DIR/bmake/$PETSC_ARCH.bak ; then 
-                mv -f $PETSC_DIR/bmake/$PETSC_ARCH $PETSC_DIR/bmake/$PETSC_ARCH.bak
-		mkdir $PETSC_DIR/bmake/$PETSC_ARCH
-	    fi
-	fi
-    fi
-    echo "Moving created files to $PETSC_DIR/bmake/$PETSC_ARCH"
-    mv bmake/config/base.site      $PETSC_DIR/bmake/$PETSC_ARCH/base.site
-    mv bmake/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
-    mv bmake/config/base           $PETSC_DIR/bmake/$PETSC_ARCH/base
-    mv bmake/config/petscconf.h    $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h
-    mv bmake/config/petscfix.h     $PETSC_DIR/bmake/$PETSC_ARCH/petscfix.h
-
-    # If we move the petscconf.h into the lib directory, we need to
-    # fix the make all target to NOT delete it
-    # Leave a marker that configure setup this directory
-    rm -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
-    date > $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
-else
-    echo "Leaving configuration files in bmake/config"
+if test -z "$BMAKEDIR" ; then
+  BMAKEDIR=default
+else 
+  echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
 fi
-
+dnl echo "Moving created files to bmake/$BMAKEDIR"
+rm  -rf                                                                                  bmake/$BMAKEDIR
+mkdir                                                                                    bmake/$BMAKEDIR
+mv  -f bmake/config/base.site                                                            bmake/$BMAKEDIR/base.site
+mv  -f bmake/config/base_variables                                                       bmake/$BMAKEDIR/base_variables
+mv  -f bmake/config/base                                                                 bmake/$BMAKEDIR/base
+cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' >  bmake/$BMAKEDIR/petscconf.h
+touch                                                                                    bmake/$BMAKEDIR/petscfix.h    
