@@ -18,8 +18,8 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   PetscFunctionBegin;
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,N*sizeof(PetscInt));CHKERRQ(ierr);
 
   if (bs == 1) {
     for (d=0; d<lmbd->nd; d++) {
@@ -54,7 +54,7 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
   ec   = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;

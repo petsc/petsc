@@ -74,9 +74,9 @@ typedef struct {
   PassiveScalar  ptime;
   PassiveScalar  cfl_max,max_time;
   PassiveScalar  fnorm_ratio;
-  int            ires,iramp,itstep;
-  int            max_steps,print_freq;
-  int            LocalTimeStepping;                         
+  PetscInt       ires,iramp,itstep;
+  PetscInt       max_steps,print_freq;
+  PetscInt       LocalTimeStepping;                         
   PetscTruth     use_parabolic;
 } TstepCtx;
 
@@ -97,8 +97,8 @@ typedef struct {
 
 
 typedef struct {
-  int          mglevels;
-  int          cycles;                       /* numbers of time steps for integration */ 
+  PetscInt     mglevels;
+  PetscInt     cycles;                       /* numbers of time steps for integration */ 
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscTruth   draw_contours;                /* indicates drawing contours of solution */
   PetscTruth   PreLoading;
@@ -110,28 +110,27 @@ typedef struct {
   Parameter    *param;
 } AppCtx;
 
-extern int FormInitialGuess(DMMG,Vec);
-extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
-extern int Update(DMMG *);
-extern int Initialize(DMMG *);
-extern int ComputeTimeStep(SNES,void*);
-extern int AddTSTermLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode FormInitialGuess(DMMG,Vec);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+extern PetscErrorCode Update(DMMG *);
+extern PetscErrorCode Initialize(DMMG *);
+extern PetscErrorCode ComputeTimeStep(SNES,void*);
+extern PetscErrorCode AddTSTermLocal(DALocalInfo*,Field**,Field**,void*);
 
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG       *dmmg;               /* multilevel grid structure */
-  AppCtx     *user;                /* user-defined work context */
-  TstepCtx   tsCtx;
-  Parameter  param;
-  int        mx,my,its;
-  int        i,ierr;
-  MPI_Comm   comm;
-  SNES       snes;
-  DA         da;
+  DMMG           *dmmg;               /* multilevel grid structure */
+  AppCtx         *user;                /* user-defined work context */
+  TstepCtx       tsCtx;
+  Parameter      param;
+  PetscInt       mx,my,i;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  DA             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -248,16 +247,15 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "Initialize"
 /* ------------------------------------------------------------------- */
-int Initialize(DMMG *dmmg)
+PetscErrorCode Initialize(DMMG *dmmg)
 {
-  AppCtx    *user = (AppCtx*)dmmg[0]->user;
-  DA        da;
-  TstepCtx  *tsCtx = user->tsCtx;
-  Parameter *param = user->param;
-  int       i,j,mx,ierr,xs,ys,xm,ym;
-  int       mglevel;
-  PetscReal grashof,dx;
-  Field     **x;
+  AppCtx         *user = (AppCtx*)dmmg[0]->user;
+  DA             da;
+  Parameter      *param = user->param;
+  PetscInt       i,j,mx,xs,ys,xm,ym,mglevel;
+  PetscErrorCode ierr;
+  PetscReal      grashof,dx;
+  Field          **x;
 
   da = (DA)(dmmg[param->mglevels-1]->dm);
   grashof = user->param->grashof;
@@ -328,35 +326,35 @@ int Initialize(DMMG *dmmg)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
-  AppCtx    *user = (AppCtx*)dmmg->user;
-  TstepCtx  *tsCtx = user->tsCtx;
-  int       ierr;
-  ierr = VecCopy(user->Xold, X);CHKERRQ(ierr);
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  TstepCtx       *tsCtx = user->tsCtx;
+  PetscErrorCode ierr;
 
+  ierr = VecCopy(user->Xold, X);CHKERRQ(ierr);
   /* calculate the residual on fine mesh */
   if (user->tsCtx->fnorm_ini == 0.0) {
     tsCtx->ires = 0;
-    ierr = SNESComputeFunction(snes,user->Xold,user->func);
+    ierr = SNESComputeFunction(dmmg->snes,user->Xold,user->func);
     ierr = VecNorm(user->func,NORM_2,&tsCtx->fnorm_ini);CHKERRQ(ierr);
     tsCtx->ires = 1;
     tsCtx->cfl = tsCtx->cfl_ini;
   }
-
   return 0;
 } 
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AddTSTermLocal"
-int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
+PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
 {
   AppCtx         *user = (AppCtx*)ptr;
   TstepCtx       *tsCtx = user->tsCtx;
   DA             da = info->da;
-  int            ierr,i,j, xints,xinte,yints,yinte;
+  PetscErrorCode ierr;
+  PetscInt       i,j, xints,xinte,yints,yinte;
   PetscReal      hx,hy,dhx,dhy,hxhy;
   PassiveScalar  dtinv;
   PassiveField   **xold;
@@ -390,15 +388,15 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
-  AppCtx       *user = (AppCtx*)ptr;
-  TstepCtx     *tsCtx = user->tsCtx;
-  int          ierr,i,j;
-  int          xints,xinte,yints,yinte;
-  PetscReal    hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal    grashof,prandtl,lid;
-  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  PetscErrorCode ierr;
+  PetscInt       xints,xinte,yints,yinte,i,j;
+  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
+  PetscReal      grashof,prandtl,lid;
+  PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
   grashof = user->param->grashof;  
@@ -528,10 +526,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocali"
-int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
+PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
  {
   AppCtx      *user = (AppCtx*)ptr;
-  int         i,j,c;
+  PetscInt    i,j,c;
   PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
   PassiveReal grashof,prandtl,lid;
   PetscScalar u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
@@ -636,21 +634,19 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "Update"
-int Update(DMMG *dmmg)
+PetscErrorCode Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 {
- 
  AppCtx         *user = (AppCtx *) ((dmmg[0])->user);
  TstepCtx 	*tsCtx = user->tsCtx;
  Parameter      *param = user->param;
  SNES           snes;
- int 		ierr,its;
+ PetscErrorCode ierr;
  PetscScalar 	fratio;
  PetscScalar 	time1,time2,cpuloc;
- int 		max_steps;
+ PetscInt       max_steps,its;
  PetscTruth     print_flag = PETSC_FALSE;
- FILE 		*fptr = 0;
- int		nfailsCum = 0,nfails = 0;
+ PetscInt       nfailsCum = 0,nfails = 0;
 
   PetscFunctionBegin;
 
@@ -721,14 +717,14 @@ int Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "ComputeTimeStep"
-int ComputeTimeStep(SNES snes,void *ptr)
+PetscErrorCode ComputeTimeStep(SNES snes,void *ptr)
 /*---------------------------------------------------------------------*/
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  TstepCtx     *tsCtx = user->tsCtx;
-  Vec	       func = user->func;
-  PetscScalar  inc = 1.1,  newcfl;
-  int          ierr;
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  Vec	         func = user->func;
+  PetscScalar    inc = 1.1,  newcfl;
+  PetscErrorCode ierr;
   /*int	       iramp = tsCtx->iramp;*/
  
   PetscFunctionBegin; 

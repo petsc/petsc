@@ -74,7 +74,7 @@ PETSC_EXTERN_CXX_BEGIN
    Not Collective
 
    Synopsis:
-   void SETERRQ(int errorcode,char *message)
+   void SETERRQ(PetscErrorCode errorcode,char *message)
 
 
    Input Parameters:
@@ -103,7 +103,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ1(int errorcode,char *formatmessage,arg)
+   void SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
 
 
    Input Parameters:
@@ -130,7 +130,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ2(int errorcode,char *formatmessage,arg1,arg2)
+   void SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
 
    Input Parameters:
@@ -158,7 +158,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ3(int errorcode,char *formatmessage,arg1,arg2,arg3)
+   void SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
 
    Input Parameters:
@@ -193,7 +193,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void CHKERRQ(int errorcode)
+   void CHKERRQ(PetscErrorCode errorcode)
 
 
    Input Parameters:
@@ -237,7 +237,7 @@ M*/
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), 
           PetscTrValid()
 M*/
-#define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
+#define CHKMEMQ {PetscErrorCode _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;

@@ -19,9 +19,9 @@
 PetscErrorCode SNESInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
-  char             *className;
+  char              *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
@@ -73,7 +73,6 @@ PetscErrorCode PetscDLLibraryRegister(char *path)
   PetscErrorCode ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded

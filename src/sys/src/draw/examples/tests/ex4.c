@@ -7,7 +7,8 @@ static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 #define __FUNCT__ "zoomfunction"
 PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
 {
-  int  ierr,i; 
+  PetscErrorCode ierr;
+  int            i; 
 
   for (i=0; i<256; i++) {
     ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
@@ -19,8 +20,9 @@ PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscDraw draw;
-  int  ierr,x = 0,y = 0,width = 256,height = 256; 
+  PetscDraw      draw;
+  int            x = 0,y = 0,width = 256,height = 256; 
+  PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

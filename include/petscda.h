@@ -209,7 +209,7 @@ typedef struct {
       DAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DA
 
    Synopsis:
-   void  DAForEachPointBegin2d(DALocalInfo *info,int i,int j);
+   void  DAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
    
    Level: intermediate
 

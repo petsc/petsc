@@ -16,13 +16,15 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
   For multiple degrees of freedom per node use ISCreateBlock()
   instead of ISCreateGeneral().
 */
-int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
+PetscErrorCode GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 {
-  AO       ao;
-  int      M,N,P,nslice,rank,*sliceindices,count,ierr,i,j;
-  MPI_Comm comm;
-  Vec      vglobal;
-  IS       isfrom,isto;
+  AO             ao;
+  PetscInt       M,N,P,nslice,*sliceindices,count,i,j;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  Vec            vglobal;
+  IS             isfrom,isto;
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -49,7 +51,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
     on each processor. Just list them in the global natural ordering.
 
   */
-  ierr = PetscMalloc((nslice+1)*sizeof(int),&sliceindices);CHKERRQ(ierr);
+  ierr = PetscMalloc((nslice+1)*sizeof(PetscInt),&sliceindices);CHKERRQ(ierr);
   count = 0;
   if (rank < P) {
     for (j=0; j<N; j++) {
@@ -68,12 +70,9 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nslice,sliceindices,&isfrom);CHKERRQ(ierr);
   /* This is to gather into the local vector */
   ierr = ISCreateStride(PETSC_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
-
   ierr = VecScatterCreate(vglobal,isfrom,*vslice,isto,scatter);CHKERRQ(ierr);
-
   ierr = ISDestroy(isfrom);CHKERRQ(ierr); 
   ierr = ISDestroy(isto);CHKERRQ(ierr);
-
   ierr = PetscFree(sliceindices);CHKERRQ(ierr);
   return 0;
 }
@@ -83,9 +82,10 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            rank,M = 3,N = 5,P=3,s=1;
-  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
-  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscMPIInt    rank;
+  PetscInt       m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
+  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscErrorCode ierr;
   PetscTruth     flg;
   DA             da;
   Vec            local,global,vslice;

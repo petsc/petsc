@@ -2,7 +2,7 @@
 
 /* Logging support */
 PetscCookie TS_COOKIE = 0;
-PetscEvent    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
+PetscEvent  TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"
@@ -21,9 +21,9 @@ PetscEvent    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS
 */
 static PetscErrorCode TSSetTypeFromOptions(TS ts)
 {
-  PetscTruth opt;
-  const char *defaultType;
-  char       typeName[256];
+  PetscTruth     opt;
+  const char     *defaultType;
+  char           typeName[256];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -37,7 +37,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
   } else {
     ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
@@ -71,8 +71,8 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 @*/
 PetscErrorCode TSSetFromOptions(TS ts)
 {
-  PetscReal  dt;
-  PetscTruth opt;
+  PetscReal      dt;
+  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -84,21 +84,21 @@ PetscErrorCode TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ts->initial_time_step = ts->time_step = dt;
   }
 
   /* Monitor options */
     ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&opt);CHKERRQ(ierr);
-    if (opt == PETSC_TRUE) {
+    if (opt) {
       ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&opt);CHKERRQ(ierr);
-    if (opt == PETSC_TRUE) {
+    if (opt) {
       ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&opt);CHKERRQ(ierr);
-    if (opt == PETSC_TRUE) {
+    if (opt) {
       ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
@@ -148,24 +148,24 @@ PetscErrorCode TSSetFromOptions(TS ts)
 @*/
 PetscErrorCode TSViewFromOptions(TS ts,const char title[])
 {
-  PetscViewer viewer;
-  PetscDraw   draw;
-  PetscTruth  opt;
-  char        typeName[1024];
-  char        fileName[PETSC_MAX_PATH_LEN];
-  size_t      len;
+  PetscViewer    viewer;
+  PetscDraw      draw;
+  PetscTruth     opt;
+  char           typeName[1024];
+  char           fileName[PETSC_MAX_PATH_LEN];
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscOptionsGetString(ts->prefix, "-ts_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
       ierr = PetscViewerCreate(ts->comm, &viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
       ierr = PetscOptionsGetString(ts->prefix, "-ts_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
-      if (opt == PETSC_TRUE) {
+      if (opt) {
         ierr = PetscViewerSetFilename(viewer, fileName);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFilename(viewer, ts->name);CHKERRQ(ierr);
@@ -178,10 +178,10 @@ PetscErrorCode TSViewFromOptions(TS ts,const char title[])
     }
   }
   ierr = PetscOptionsHasName(ts->prefix, "-ts_view_draw", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-    if (title != PETSC_NULL) {
+    if (title) {
       ierr = PetscDrawSetTitle(draw, (char *)title);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectName((PetscObject) ts);CHKERRQ(ierr);
@@ -361,7 +361,7 @@ PetscErrorCode TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,v
           matrix evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
+$     func (TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
 
 +  t - current timestep
 .  A - matrix A, where U_t = A(t) U
@@ -573,8 +573,8 @@ PetscErrorCode TSSetRHSBoundaryConditions(TS ts,PetscErrorCode (*f)(TS,PetscReal
 PetscErrorCode TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  char       *type;
-  PetscTruth iascii,isstring;
+  char           *type;
+  PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -686,7 +686,7 @@ PetscErrorCode TSGetApplicationContext(TS ts,void **usrP)
 
 .keywords: TS, timestep, get, iteration, number
 @*/
-PetscErrorCode TSGetTimeStepNumber(TS ts,int* iter)
+PetscErrorCode TSGetTimeStepNumber(TS ts,PetscInt* iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -831,7 +831,8 @@ PetscErrorCode TSGetSolution(TS ts,Vec *v)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) {
+PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) 
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->problem_type = type;
@@ -861,7 +862,8 @@ PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) {
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type) {
+PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type) 
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   PetscValidIntPointer(type,2);
@@ -928,7 +930,7 @@ PetscErrorCode TSSetUp(TS ts)
 PetscErrorCode TSDestroy(TS ts)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1041,7 +1043,7 @@ PetscErrorCode TSGetKSP(TS ts,KSP *ksp)
 
 .keywords: TS, timestep, get, maximum, iterations, time
 @*/
-PetscErrorCode TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
+PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1080,7 +1082,7 @@ PetscErrorCode TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
 
 .keywords: TS, timestep, set, maximum, iterations
 @*/
-PetscErrorCode TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
+PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1443,7 +1445,7 @@ PetscErrorCode TSDefaultPostStep(TS ts)
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
+$    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 +    ts - the TS context
 .    steps - iteration number
@@ -1461,7 +1463,7 @@ $    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSDefaultMonitor(), TSClearMonitor()
 @*/
-PetscErrorCode TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
+PetscErrorCode TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1503,7 +1505,7 @@ PetscErrorCode TSClearMonitor(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultMonitor"
-PetscErrorCode TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode TSDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1532,7 +1534,7 @@ PetscErrorCode TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-PetscErrorCode TSStep(TS ts,int *steps,PetscReal *ptime)
+PetscErrorCode TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   PetscErrorCode ierr;
 
@@ -1559,10 +1561,10 @@ PetscErrorCode TSStep(TS ts,int *steps,PetscReal *ptime)
 /*
      Runs the user provided monitor routines, if they exists.
 */
-PetscErrorCode TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
+PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 {
   PetscErrorCode ierr;
-  int i,n = ts->numbermonitors;
+  PetscInt i,n = ts->numbermonitors;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -1605,7 +1607,7 @@ PetscErrorCode TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 @*/
 PetscErrorCode TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
-  PetscDraw win;
+  PetscDraw      win;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1620,9 +1622,9 @@ PetscErrorCode TSLGMonitorCreate(const char host[],const char label[],int x,int 
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSLGMonitor"
-PetscErrorCode TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
+PetscErrorCode TSLGMonitor(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
-  PetscDrawLG lg = (PetscDrawLG) monctx;
+  PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscReal      x,y = ptime;
   PetscErrorCode ierr;
 
@@ -1664,7 +1666,7 @@ PetscErrorCode TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
 @*/
 PetscErrorCode TSLGMonitorDestroy(PetscDrawLG drawlg)
 {
-  PetscDraw draw;
+  PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1919,10 +1921,10 @@ PetscErrorCode TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
 
 .seealso: TSSetMonitor(), TSDefaultMonitor(), VecView()
 @*/
-PetscErrorCode TSVecViewMonitor(TS ts,int step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode TSVecViewMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   if (!viewer) {

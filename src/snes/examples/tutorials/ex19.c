@@ -71,9 +71,9 @@ typedef struct {
   PetscScalar u,v,omega,temp;
 } Field;
 
-extern int FormInitialGuess(DMMG,Vec);
-extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+extern PetscErrorCode FormInitialGuess(DMMG,Vec);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
 typedef struct {
    PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -84,13 +84,13 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG       *dmmg;               /* multilevel grid structure */
-  AppCtx     user;                /* user-defined work context */
-  int        mx,my,its;
-  int        ierr;
-  MPI_Comm   comm;
-  SNES       snes;
-  DA         da;
+  DMMG           *dmmg;               /* multilevel grid structure */
+  AppCtx         user;                /* user-defined work context */
+  PetscInt       mx,my,its;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  SNES           snes;
+  DA             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -190,13 +190,14 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
-  AppCtx    *user = (AppCtx*)dmmg->user;
-  DA        da = (DA)dmmg->dm;
-  int       i,j,mx,ierr,xs,ys,xm,ym;
-  PetscReal grashof,dx;
-  Field     **x;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  DA             da = (DA)dmmg->dm;
+  PetscInt       i,j,mx,xs,ys,xm,ym;
+  PetscErrorCode ierr;
+  PetscReal      grashof,dx;
+  Field          **x;
 
   grashof = user->grashof;
 
@@ -238,14 +239,14 @@ int FormInitialGuess(DMMG dmmg,Vec X)
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 } 
-int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j;
-  int          xints,xinte,yints,yinte;
-  PetscReal    hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal    grashof,prandtl,lid;
-  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       xints,xinte,yints,yinte,i,j;
+  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
+  PetscReal      grashof,prandtl,lid;
+  PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
   grashof = user->grashof;  
@@ -372,10 +373,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 /*
     This is an experimental function and can be safely ignored.
 */
-int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
+PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
  {
   AppCtx      *user = (AppCtx*)ptr;
-  int         i,j,c;
+  PetscInt    i,j,c;
   PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
   PassiveReal grashof,prandtl,lid;
   PetscScalar u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;

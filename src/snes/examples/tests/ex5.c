@@ -58,33 +58,34 @@ T*/
 typedef struct {
    PetscReal   param;          /* test problem parameter */
    PetscReal   param2;         /* test problem parameter */
-   int         mx,my;          /* discretization in x, y directions */
+   PetscInt    mx,my;          /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
-   int         rank;           /* processor rank */
+   PetscMPIInt rank;           /* processor rank */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES       snes;                /* nonlinear solver */
-  Vec        x,r;                /* solution, residual vectors */
-  Mat        J;                   /* Jacobian matrix */
-  AppCtx     user;                /* user-defined work context */
-  int        its;                 /* iterations for convergence */
-  int        Nx,Ny;              /* number of preocessors in x- and y- directions */
-  PetscTruth matrix_free;         /* flag - 1 indicates matrix-free version */
-  int        size;                /* number of processors */
-  int        m,N,ierr;
-  PetscReal  bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  PetscReal  bratu_kappa_max = 10000,bratu_kappa_min = 0.;
+  SNES           snes;                /* nonlinear solver */
+  Vec            x,r;                /* solution, residual vectors */
+  Mat            J;                   /* Jacobian matrix */
+  AppCtx         user;                /* user-defined work context */
+  PetscInt       its;                 /* iterations for convergence */
+  PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
+  PetscTruth     matrix_free;         /* flag - 1 indicates matrix-free version */
+  PetscMPIInt    size;                /* number of processors */
+  PetscInt       m,N;
+  PetscErrorCode ierr;
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal      bratu_kappa_max = 10000,bratu_kappa_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
@@ -235,12 +236,13 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
-  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  *x;
-  Vec          localX = user->localX;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  PetscErrorCode ierr;
+  PetscReal      one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    *x;
+  Vec            localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -306,14 +308,15 @@ int FormInitialGuess(AppCtx *user,Vec X)
    Output Parameter:
 .  F - function vector
  */
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
-  PetscReal   two = 2.0,one = 1.0,half = 0.5;
-  PetscReal   lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar u,ux,uxx,uyy,*x,*f,kappa;
-  Vec         localX = user->localX,localF = user->localF; 
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  PetscReal      two = 2.0,one = 1.0,half = 0.5;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    u,ux,uxx,uyy,*x,*f,kappa;
+  Vec            localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -396,15 +399,16 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat     jac = *B;                /* Jacobian matrix */
-  Vec     localX = user->localX;   /* local vector */
-  int     *ltog;                   /* local-to-global mapping */
-  int     ierr,i,j,row,mx,my,col[5];
-  int     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
+  Mat            jac = *B;                /* Jacobian matrix */
+  Vec            localX = user->localX;   /* local vector */
+  PetscErrorCode ierr;
+  PetscInt       *ltog;                   /* local-to-global mapping */
+  PetscInt       i,j,row,mx,my,col[5];
+  PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);

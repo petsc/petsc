@@ -42,7 +42,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,I,J,*blks,m = 8,n;
   PetscMPIInt    rank,size;
-  PetscMPIInt    its,nlocal,first,Istart,Iend;
+  PetscInt       its,nlocal,first,Istart,Iend;
   PetscScalar    v,one = 1.0,none = -1.0;
   PetscTruth     isbjacobi,flg;
 
@@ -123,7 +123,7 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  ierr = PetscMalloc(m*sizeof(int),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&blks);CHKERRQ(ierr);
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);

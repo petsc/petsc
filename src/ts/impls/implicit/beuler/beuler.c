@@ -17,15 +17,15 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Constant_Matrix"
-static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  TS_BEuler   *beuler = (TS_BEuler*)ts->data;
-  Vec         sol = ts->vec_sol,update = beuler->update;
-  Vec         rhs = beuler->rhs;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
+  Vec            sol = ts->vec_sol,update = beuler->update;
+  Vec            rhs = beuler->rhs;
   PetscErrorCode ierr;
-  int i,max_steps = ts->max_steps,its;
-  PetscScalar mdt = 1.0/ts->time_step;
-  KSP         ksp;
+  PetscInt       i,max_steps = ts->max_steps,its;
+  PetscScalar    mdt = 1.0/ts->time_step;
+  KSP            ksp;
 
   PetscFunctionBegin;
   ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
@@ -60,15 +60,15 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,Pets
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Variable_Matrix"
-static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  TS_BEuler    *beuler = (TS_BEuler*)ts->data;
-  Vec          sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
+  Vec            sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   PetscErrorCode ierr;
-  int i,max_steps = ts->max_steps,its;
-  PetscScalar  mdt = 1.0/ts->time_step,mone = -1.0;
-  MatStructure str;
-  KSP          ksp;
+  PetscInt       i,max_steps = ts->max_steps,its;
+  PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
+  MatStructure   str;
+  KSP            ksp;
 
   PetscFunctionBegin;
   ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
@@ -114,12 +114,12 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,Pets
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Nonlinear"
-static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec       sol = ts->vec_sol;
+  Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
-  int i,max_steps = ts->max_steps,its,lits;
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -148,7 +148,7 @@ static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 #define __FUNCT__ "TSDestroy_BEuler"
 static PetscErrorCode TSDestroy_BEuler(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -170,10 +170,10 @@ static PetscErrorCode TSDestroy_BEuler(TS ts)
 #define __FUNCT__ "TSBEulerFunction"
 PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
-  TS     ts = (TS) ctx;
-  PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  TS             ts = (TS) ctx;
+  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   PetscErrorCode ierr;
-  int i,n;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
   /* apply user-provided function */
@@ -202,9 +202,9 @@ PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNCT__ "TSBEulerJacobian"
 PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS           ts = (TS) ctx;
+  TS             ts = (TS) ctx;
   PetscErrorCode ierr;
-  PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscScalar    mone = -1.0,mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
@@ -226,7 +226,7 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
 #define __FUNCT__ "TSSetUp_BEuler_Linear_Constant_Matrix"
 static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
 
@@ -250,7 +250,7 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 #define __FUNCT__ "TSSetUp_BEuler_Linear_Variable_Matrix"
 static PetscErrorCode TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -264,7 +264,7 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 #define __FUNCT__ "TSSetUp_BEuler_Nonlinear"
 static PetscErrorCode TSSetUp_BEuler_Nonlinear(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -281,7 +281,6 @@ static PetscErrorCode TSSetUp_BEuler_Nonlinear(TS ts)
 static PetscErrorCode TSSetFromOptions_BEuler_Linear(TS ts)
 {
   PetscFunctionBegin;
-  
   PetscFunctionReturn(0);
 }
 
@@ -290,7 +289,6 @@ static PetscErrorCode TSSetFromOptions_BEuler_Linear(TS ts)
 static PetscErrorCode TSSetFromOptions_BEuler_Nonlinear(TS ts)
 {
   PetscFunctionBegin;
-  
   PetscFunctionReturn(0);
 }
 
@@ -316,7 +314,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_BEuler"
 PetscErrorCode TSCreate_BEuler(TS ts)
 {
-  TS_BEuler  *beuler;
+  TS_BEuler      *beuler;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -13,13 +13,14 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         rank,size,M = 14,ierr,time_steps = 20,w=1,s=1;
-  DA          da;
-  PetscViewer viewer;
-  Vec         local,global,copy;
-  PetscScalar *localptr,*copyptr;
-  PetscReal   h,k;
-  int         localsize,j,i,mybase,myend;
+  PetscMPIInt    rank,size;
+  PetscInt       M = 14,time_steps = 20,w=1,s=1,localsize,j,i,mybase,myend;
+  PetscErrorCode ierr;
+  DA             da;
+  PetscViewer    viewer;
+  Vec            local,global,copy;
+  PetscScalar    *localptr,*copyptr;
+  PetscReal      h,k;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

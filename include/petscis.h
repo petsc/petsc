@@ -161,8 +161,8 @@ EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,Petsc
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
 struct _p_ISColoring {
-  int             refct;
-  int             n;                /* number of colors */
+  PetscInt        refct;
+  PetscInt        n;                /* number of colors */
   IS              *is;              /* for each color indicates columns */
   MPI_Comm        comm;
   ISColoringValue *colors;          /* for each column indicates color */

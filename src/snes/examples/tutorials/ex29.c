@@ -301,7 +301,7 @@ PetscErrorCode Gnuplot(DA da, Vec X, double mtime)
   PetscErrorCode ierr;
   Field          **x;
   FILE           *f;
-  char           fname[100];
+  char           fname[PETSC_MAX_PATH_LEN];
   PetscMPIInt    rank;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

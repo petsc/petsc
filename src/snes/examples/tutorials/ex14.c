@@ -59,8 +59,8 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -70,9 +70,9 @@ int main(int argc,char **argv)
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
-  int                    its;                  /* iterations for convergence */
+  PetscInt               its;                  /* iterations for convergence */
   PetscTruth             matrix_free,coloring;
-  int                    ierr;
+  PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring;
 
@@ -205,11 +205,12 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  int          i,j,k,Mx,My,Mz,ierr,xs,ys,zs,xm,ym,zm;
-  PetscReal    lambda,temp1,hx,hy,hz,tempk,tempj;
-  PetscScalar  ***x;
+  PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
+  PetscErrorCode ierr;
+  PetscReal      lambda,temp1,hx,hy,hz,tempk,tempj;
+  PetscScalar    ***x;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
@@ -276,13 +277,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
    Output Parameter:
 .  F - function vector
  */
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
-  PetscReal    two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
-  PetscScalar  u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
-  Vec          localX;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
+  PetscReal      two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
+  PetscScalar    u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
+  Vec            localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -369,15 +371,16 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat          jac = *B;                /* Jacobian matrix */
-  Vec          localX;
-  int          ierr,i,j,k,Mx,My,Mz;
-  MatStencil   col[7],row;
-  int          xs,ys,zs,xm,ym,zm;
-  PetscScalar  lambda,v[7],hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc,***x;
+  AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
+  Mat            jac = *B;                /* Jacobian matrix */
+  Vec            localX;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,My,Mz;
+  MatStencil     col[7],row;
+  PetscInt       xs,ys,zs,xm,ym,zm;
+  PetscScalar    lambda,v[7],hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc,***x;
 
   PetscFunctionBegin;
 

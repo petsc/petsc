@@ -11,7 +11,7 @@ typedef struct {
 #define __FUNCT__ "TSSetUp_Euler"
 static PetscErrorCode TSSetUp_Euler(TS ts)
 {
-  TS_Euler *euler = (TS_Euler*)ts->data;
+  TS_Euler       *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -21,13 +21,13 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Euler"
-static PetscErrorCode TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Euler(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  TS_Euler *euler = (TS_Euler*)ts->data;
-  Vec      sol = ts->vec_sol,update = euler->update;
+  TS_Euler       *euler = (TS_Euler*)ts->data;
+  Vec            sol = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
-  int i,max_steps = ts->max_steps;
-  PetscScalar   dt = ts->time_step;
+  PetscInt       i,max_steps = ts->max_steps;
+  PetscScalar    dt = ts->time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -51,7 +51,7 @@ static PetscErrorCode TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
 #define __FUNCT__ "TSDestroy_Euler"
 static PetscErrorCode TSDestroy_Euler(TS ts)
 {
-  TS_Euler *euler = (TS_Euler*)ts->data;
+  TS_Euler       *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_Euler"
 PetscErrorCode TSCreate_Euler(TS ts)
 {
-  TS_Euler *euler;
+  TS_Euler       *euler;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

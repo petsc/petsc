@@ -684,7 +684,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc = 0;
-  ierr = PetscMalloc(n_f*m_f*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(n_f*m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
 

@@ -1653,7 +1653,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d
   b->Mbs = Mbs;
   b->Nbs = Mbs; 
 
-  ierr = MPI_Allgather(&b->mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&b->mbs,1,MPIU_INT,b->rowners+1,1,MPIU_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0]    = 0;
   for (i=2; i<=b->size; i++) {
     b->rowners[i] += b->rowners[i-1];
@@ -2186,7 +2186,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     }
   }
 
-  ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
 
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Can only do square matrices");
@@ -2206,7 +2206,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
   /* determine ownership of all rows */
   mbs        = Mbs/size + ((Mbs % size) > rank);
   m          = mbs*bs;
-  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
   browners   = rowners + size + 1;
   ierr       = MPI_Allgather(&mbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
@@ -2221,12 +2221,12 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     ierr = PetscMalloc((M+extra_rows)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
     for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
-    ierr = PetscMalloc(size*sizeof(PetscInt),&sndcounts);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sndcounts);CHKERRQ(ierr);
     for (i=0; i<size; i++) sndcounts[i] = browners[i+1] - browners[i];
-    ierr = MPI_Scatterv(rowlengths,sndcounts,browners,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Scatterv(rowlengths,sndcounts,browners,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = PetscFree(sndcounts);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Scatterv(0,0,0,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Scatterv(0,0,0,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
   }
   
   if (!rank) {   /* procs[0] */
@@ -2259,14 +2259,14 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
       ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      ierr = MPI_Send(cols,nz,MPI_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     /* read in the stuff for the last proc */
     if (size != 1) {
       nz   = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
       ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) cols[nz+i] = M+i;
-      ierr = MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(cols,nz+extra_rows,MPIU_INT,size-1,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {  /* procs[i], i>0 */
@@ -2278,8 +2278,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     ierr   = PetscMalloc(nz*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     /* receive message of column indices*/
-    ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
+    ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Get_count(&status,MPIU_INT,&maxnz);CHKERRQ(ierr);
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 

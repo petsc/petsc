@@ -133,7 +133,6 @@ int main(int argc,char **args)
   /* PetscPrintf(PETSC_COMM_SELF,"\n The Matrix: \n");
   MatView(A, PETSC_VIEWER_DRAW_WORLD);
   MatView(A, PETSC_VIEWER_STDOUT_WORLD); */ 
-
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n"); */
@@ -148,13 +147,15 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
 
   /* Test MatReordering() */
-  ierr = PetscMalloc(mbs*sizeof(int),&ip_ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc(mbs*sizeof(PetscInt),&ip_ptr);CHKERRQ(ierr);
+
   for (i=0; i<mbs; i++) ip_ptr[i] = i;
   if(reorder){
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
     /* i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i; */
     /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i; */
   }  
+
   ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
   

@@ -8,7 +8,9 @@ static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting 
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            i,j,rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  PetscInt       i,j,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
   PetscTruth     flg;
   DA             da;
   PetscViewer    viewer;

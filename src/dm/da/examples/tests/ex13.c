@@ -9,10 +9,10 @@ static char help[] = "Tests loading DA vector from file.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  int M = PETSC_DECIDE,N = PETSC_DECIDE;
-  DA          da;
-  Vec         global;
-  PetscViewer bviewer;
+  PetscInt       M = PETSC_DECIDE,N = PETSC_DECIDE;
+  DA             da;
+  Vec            global;
+  PetscViewer    bviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

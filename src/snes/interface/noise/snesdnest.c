@@ -6,7 +6,7 @@
 
 /*  Noise estimation routine, written by Jorge More'.  Details are below. */
 
-/* Subroutine */ int dnest_(int *nf, double *fval,double *h__,double *fnoise, double *fder2, double *hopt, int *info, double *eps)
+/* Subroutine */ PetscErrorCode dnest_(PetscInt *nf, double *fval,double *h__,double *fnoise, double *fder2, double *hopt, PetscInt *info, double *eps)
 {
     /* Initialized data */
 
@@ -14,18 +14,18 @@
 	    .0046,.0024,.0012,6.1e-4,3.1e-4,1.6e-4,8e-5 };
 
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
     double d__1, d__2, d__3, d__4;
 
 
     /* Local variables */
     static double emin, emax;
-    static int dsgn[6];
+    static PetscInt dsgn[6];
     static double f_max, f_min, stdv;
-    static int i__, j;
+    static PetscInt i__, j;
     static double scale;
-    static int mh;
-    static int cancel[6], dnoise;
+    static PetscInt mh;
+    static PetscInt cancel[6], dnoise;
     static double err2, est1, est2, est3, est4;
 
 /*     ********** */
@@ -207,7 +207,7 @@
 	}
     }
     if (*info != 0) {
-	return 0;
+	PetscFunctionReturn(0);
     }
 /*     Determine the noise level. */
 /* Computing MIN */
@@ -225,7 +225,7 @@
 	    *info = 4;
 	    *hopt = *h__ * 10;
 	}
-	return 0;
+	PetscFunctionReturn(0);
     }
 /* Computing MIN */
     d__1 = PetscMin(eps[3],eps[4]);
@@ -242,7 +242,7 @@
 	    *info = 4;
 	    *hopt = *h__ * 10;
 	}
-	return 0;
+	PetscFunctionReturn(0);
     }
 /*     Noise not detected; decide if h is too small or too large. */
     if (! cancel[3]) {
@@ -251,7 +251,7 @@
 	} else {
 	    *info = 3;
 	}
-	return 0;
+	PetscFunctionReturn(0);
     }
     if (! cancel[2]) {
 	if (dsgn[2]) {
@@ -259,12 +259,12 @@
 	} else {
 	    *info = 3;
 	}
-	return 0;
+	PetscFunctionReturn(0);
     }
 /*     If there is cancelllation on the third and fourth column */
 /*     then h is too small */
     *info = 2;
-    return 0;
+    PetscFunctionReturn(0);
 /*      if (cancel .or. dsgn(3)) then */
 /*         info = 2 */
 /*      else */

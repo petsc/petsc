@@ -18,11 +18,11 @@ static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\
 #include "petscda.h"
 #include "petscksp.h"
 
-extern int ComputeJacobian(DMMG,Mat);
-extern int ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 typedef struct {
-  int         k;
+  PetscInt    k;
   PetscScalar e;
 } AppCtx;
 
@@ -30,12 +30,12 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr;
-  DMMG        *dmmg;
-  PetscScalar mone = -1.0;
-  PetscReal   norm;
-  DA          da;
-  AppCtx      user;
+  PetscErrorCode ierr;
+  DMMG           *dmmg;
+  PetscScalar    mone = -1.0;
+  PetscReal      norm;
+  DA             da;
+  AppCtx         user;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -66,10 +66,11 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-int ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 {
-  int         ierr,mx,idx[2];
-  PetscScalar h,v[2];
+  PetscErrorCode ierr;
+  PetscInt       mx,idx[2];
+  PetscScalar    h,v[2];
 
   PetscFunctionBegin;
   ierr   = DAGetInfo((DA)dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -85,13 +86,14 @@ int ComputeRHS(DMMG dmmg,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-int ComputeJacobian(DMMG dmmg,Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA           da = (DA)dmmg->dm;
-  int          ierr,i,mx,xm,xs;
-  PetscScalar  v[3],h,xlow,xhigh;
-  MatStencil   row,col[3];
-  AppCtx       *user = (AppCtx*)dmmg->user;
+  DA             da = (DA)dmmg->dm;
+  PetscErrorCode ierr;
+  PetscInt       i,mx,xm,xs;
+  PetscScalar    v[3],h,xlow,xhigh;
+  MatStencil     row,col[3];
+  AppCtx         *user = (AppCtx*)dmmg->user;
 
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   ierr = DAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);

@@ -133,7 +133,8 @@ PetscErrorCode SNESSolve_LS(SNES snes)
 { 
   SNES_LS        *neP = (SNES_LS*)snes->data;
   PetscErrorCode ierr;
-  PetscInt       maxits,i,lits,lsfail;
+  PetscInt       maxits,i,lits;
+  PetscTruth     lssucceed;
   MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal      fnorm,gnorm,xnorm,ynorm;
   Vec            Y,X,F,G,W,TMP;
@@ -192,8 +193,8 @@ PetscErrorCode SNESSolve_LS(SNES snes)
        and evaluate G(Y) = function(Y)) 
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
-    ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%D\n",fnorm,gnorm,ynorm,lsfail);
+    ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
@@ -206,7 +207,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     SNESLogConvHistory(snes,fnorm,lits);
     SNESMonitor(snes,i+1,fnorm);
 
-    if (lsfail) {
+    if (!lssucceed) {
       PetscTruth ismin;
 
       if (++snes->numFailures >= snes->maxFailures) {
@@ -317,7 +318,7 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
--  flag - set to 0, indicating a successful line search
+-  flag - PETSC_TRUE on success, PETSC_FALSE on failure
 
    Options Database Key:
 .  -snes_ls basic - Activates SNESNoLineSearch()
@@ -329,15 +330,15 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
           SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-PetscErrorCode SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+PetscErrorCode SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  PetscScalar mone = -1.0;
-  SNES_LS     *neP = (SNES_LS*)snes->data;
-  PetscTruth  change_y = PETSC_FALSE;
+  PetscScalar    mone = -1.0;
+  SNES_LS        *neP = (SNES_LS*)snes->data;
+  PetscTruth     change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 0; 
+  *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);  /* ynorm = || y || */
   ierr = VecAYPX(&mone,x,y);CHKERRQ(ierr);            /* y <- y - x      */
@@ -376,7 +377,7 @@ PetscErrorCode SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Ve
 +  g - residual evaluated at new iterate y
 .  gnorm - not changed
 .  ynorm - not changed
--  flag - set to 0, indicating a successful line search
+-  flag - set to PETSC_TRUE indicating a successful line search
 
    Options Database Key:
 .  -snes_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
@@ -404,7 +405,7 @@ $     -snes_no_convergence_test -snes_max_it <its>
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
           SNESSetLineSearch(), SNESNoLineSearch()
 @*/
-PetscErrorCode SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+PetscErrorCode SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
   PetscScalar mone = -1.0;
@@ -412,7 +413,7 @@ PetscErrorCode SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
   PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 0; 
+  *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,x,y);CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
@@ -448,7 +449,7 @@ PetscErrorCode SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
--  flag - 0 if line search succeeds; -1 on failure.
+-  flag - PETSC_TRUE if line search succeeds; PETSC_FALSE on failure.
 
    Options Database Key:
 $  -snes_ls cubic - Activates SNESCubicLineSearch()
@@ -463,7 +464,7 @@ $  -snes_ls cubic - Activates SNESCubicLineSearch()
 
 .seealso: SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   /* 
      Note that for line search purposes we work with with the related
@@ -478,14 +479,14 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   PetscScalar cinitslope,clambda;
 #endif
   PetscErrorCode ierr;
-  int count;
+  PetscInt count;
   SNES_LS     *neP = (SNES_LS*)snes->data;
   PetscScalar mone = -1.0,scale;
   PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
-  *flag   = 0;
+  *flag   = PETSC_TRUE;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -496,7 +497,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
     *gnorm = fnorm;
     ierr   = VecCopy(x,y);CHKERRQ(ierr);
     ierr   = VecCopy(f,g);CHKERRQ(ierr);
-    *flag  = -1;
+    *flag  = PETSC_FALSE;
     goto theend1;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
@@ -561,7 +562,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
-      *flag = -1; break;
+      *flag = PETSC_FALSE; break;
     }
     t1 = .5*((*gnorm)*(*gnorm) - fnorm*fnorm) - lambda*initslope;
     t2 = .5*(gnormprev*gnormprev  - fnorm*fnorm) - lambdaprev*initslope;
@@ -638,7 +639,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
--  flag - 0 if line search succeeds; -1 on failure.
+-  flag - PETSC_TRUE if line search succeeds; PETSC_FALSE on failure.
 
    Options Database Key:
 .  -snes_ls quadratic - Activates SNESQuadraticLineSearch()
@@ -652,7 +653,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 
 .seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   /* 
      Note that for line search purposes we work with with the related
@@ -665,14 +666,14 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
   PetscScalar cinitslope,clambda;
 #endif
   PetscErrorCode ierr;
-  int count;
+  PetscInt count;
   SNES_LS     *neP = (SNES_LS*)snes->data;
   PetscScalar mone = -1.0,scale;
   PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
-  *flag   = 0;
+  *flag   = PETSC_TRUE;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -683,7 +684,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
     *gnorm = fnorm;
     ierr   = VecCopy(x,y);CHKERRQ(ierr);
     ierr   = VecCopy(f,g);CHKERRQ(ierr);
-    *flag  = -1;
+    *flag  = PETSC_FALSE;
     goto theend2;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
@@ -721,7 +722,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
-      *flag = -1; break;
+      *flag = PETSC_FALSE; break;
     }
     lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
     if (lambdatemp > .5*lambda)  lambdatemp = .5*lambda;
@@ -790,7 +791,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
    Calling sequence of func:
 .vb
    func (SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
-         PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,*flag)
+         PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 .ve
 
     Input parameters for func:
@@ -807,8 +808,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 .   y - new iterate (contains search direction on input)
 .   gnorm - 2-norm of g
 .   ynorm - 2-norm of search length
--   flag - set to 0 if the line search succeeds; a nonzero integer 
-           on failure.
+-   flag - set to PETSC_TRUE if the line search succeeds; PETSC_FALSE on failure.
 
     Level: advanced
 
@@ -817,9 +817,9 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), 
           SNESSetLineSearchCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
 @*/
-PetscErrorCode SNESSetLineSearch(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
+PetscErrorCode SNESSetLineSearch(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*),void *lsctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void*);
+  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*),void*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -829,7 +829,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec
   PetscFunctionReturn(0);
 }
 
-typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -991,7 +991,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
   SNES_LS    *ls = (SNES_LS *)snes->data;
   const char *lses[] = {"basic","basicnonorms","quadratic","cubic"};
   PetscErrorCode ierr;
-  int indx;
+  PetscInt indx;
   PetscTruth flg;
 
   PetscFunctionBegin;

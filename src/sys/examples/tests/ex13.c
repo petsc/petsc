@@ -7,8 +7,9 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv) 
 {
-  int      ierr,rank,size;
-  MPI_Comm newcomm;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  MPI_Comm       newcomm;
 
   MPI_Init(&argc,&argv);
 
@@ -40,7 +41,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  printf("rank = %3d\n",rank);
+  printf("rank = %3d\n",(int)rank);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
 

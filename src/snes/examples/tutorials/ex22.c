@@ -40,19 +40,19 @@ typedef struct {
   PetscViewer  fu_lambda_viewer;
 } UserCtx;
 
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int Monitor(SNES,int,PetscReal,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr;
-  UserCtx user;
-  DA      da;
-  DMMG    *dmmg;
-  VecPack packer;
+  PetscErrorCode ierr;
+  UserCtx        user;
+  DA             da;
+  DMMG           *dmmg;
+  VecPack        packer;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -115,15 +115,16 @@ typedef struct {
    VecPackScatter()) BUT the global, nonghosted version of FU (via VecPackGetAccess()).
 
 */
-int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  DMMG    dmmg = (DMMG)dummy;
-  int     ierr,xs,xm,i,N,nredundant;
-  ULambda *u_lambda,*fu_lambda;
-  PetscScalar  d,h,*w,*fw;
-  Vec     vu_lambda,vfu_lambda;
-  DA      da;
-  VecPack packer = (VecPack)dmmg->dm;
+  DMMG           dmmg = (DMMG)dummy;
+  PetscErrorCode ierr;
+  PetscInt       xs,xm,i,N,nredundant;
+  ULambda        *u_lambda,*fu_lambda;
+  PetscScalar    d,h,*w,*fw;
+  Vec            vu_lambda,vfu_lambda;
+  DA             da;
+  VecPack        packer = (VecPack)dmmg->dm;
 
   PetscFunctionBegin;
   ierr = VecPackGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
@@ -170,9 +171,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 /* 
     Computes the exact solution
 */
-int u_solution(void *dummy,int n,PetscScalar *x,PetscScalar *u)
+PetscErrorCode u_solution(void *dummy,PetscInt n,PetscScalar *x,PetscScalar *u)
 {
-  int i;
+  PetscInt i;
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
     u[2*i] = x[i]*x[i] - 1.25*x[i] + .25;
@@ -180,14 +181,14 @@ int u_solution(void *dummy,int n,PetscScalar *x,PetscScalar *u)
   PetscFunctionReturn(0);
 }
 
-int ExactSolution(VecPack packer,Vec U) 
+PetscErrorCode ExactSolution(VecPack packer,Vec U) 
 {
-  PF      pf;
-  Vec     x;
-  Vec     u_global;
-  PetscScalar  *w;
-  DA      da;
-  int     m,ierr;
+  PF             pf;
+  Vec            x,u_global;
+  PetscScalar    *w;
+  DA             da;
+  PetscErrorCode ierr;
+  PetscInt       m;
 
   PetscFunctionBegin;
   ierr = VecPackGetEntries(packer,&m,&da);CHKERRQ(ierr);
@@ -208,16 +209,17 @@ int ExactSolution(VecPack packer,Vec U)
 }
 
 
-int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
+PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
-  DMMG         dmmg = (DMMG)dummy;
-  UserCtx      *user = (UserCtx*)dmmg->user;
-  int          ierr,m,N;
-  PetscScalar  mone = -1.0,*w,*dw;
-  Vec          u_lambda,U,F,Uexact;
-  VecPack      packer = (VecPack)dmmg->dm;
-  PetscReal    norm;
-  DA           da;
+  DMMG           dmmg = (DMMG)dummy;
+  UserCtx        *user = (UserCtx*)dmmg->user;
+  PetscErrorCode ierr;
+  PetscInt       m,N;
+  PetscScalar    mone = -1.0,*w,*dw;
+  Vec            u_lambda,U,F,Uexact;
+  VecPack        packer = (VecPack)dmmg->dm;
+  PetscReal      norm;
+  DA             da;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);

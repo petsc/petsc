@@ -9,7 +9,7 @@
 typedef struct {
   PetscInt N;
   PetscInt *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
-                    /* petsc[j] is the partner for the jth app slot */
+                         /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
 
 /*
@@ -33,7 +33,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",aodebug->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<aodebug->N; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3d  %3d    %3d  %3d\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
       SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
@@ -237,7 +237,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],
   ierr  = PetscMalloc(2*size * sizeof(PetscMPIInt), &lens);CHKERRQ(ierr);
   disp  = lens + size;
   nnapp = napp;
-  ierr  = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for(i = 0; i < size; i++) {
     disp[i] = N;

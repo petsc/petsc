@@ -8,13 +8,14 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         M = 13,ierr,dof=1,s=1,wrap=0,i,n,j;
-  DA          da;
-  PetscViewer viewer;
-  Vec         local,locala,global,coors;
-  PetscScalar *x,*alocal;
-  PetscDraw   draw;
-  char        fname[16];
+  PetscInt       M = 13,dof=1,s=1,wrap=0,i,n,j;
+  PetscErrorCode ierr;
+  DA             da;
+  PetscViewer    viewer;
+  Vec            local,locala,global,coors;
+  PetscScalar    *x,*alocal;
+  PetscDraw      draw;
+  char           fname[16];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

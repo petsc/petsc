@@ -8,12 +8,13 @@ static char help[] = "Tests DA interpolation for coarse DA on a subset of proces
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int       M = 14,ierr,dof = 1,s = 1,ratio = 2,dim = 2;
-  DA        da_c,da_f;
-  Vec       v_c,v_f;
-  Mat       I;
+  PetscInt       M = 14,dof = 1,s = 1,ratio = 2,dim = 2;
+  PetscErrorCode ierr;
+  DA             da_c,da_f;
+  Vec            v_c,v_f;
+  Mat            I;
   PetscScalar    one = 1.0;
-  MPI_Comm  comm_f, comm_c;
+  MPI_Comm       comm_f, comm_c;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

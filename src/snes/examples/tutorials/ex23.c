@@ -26,17 +26,17 @@ typedef struct {
   PetscViewer  fu_viewer;
 } UserCtx;
 
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr;
-  UserCtx user;
-  DA      da;
-  DMMG    *dmmg;
+  PetscErrorCode ierr;
+  UserCtx        user;
+  DA             da;
+  DMMG           *dmmg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -85,13 +85,14 @@ int main(int argc,char **argv)
      BUT the global, nonghosted version of FU
 
 */
-int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  DMMG    dmmg = (DMMG)dummy;
-  int     ierr,xs,xm,i,N;
-  PetscScalar  *u,*fu,d,h;
-  Vec     vu;
-  DA      da = (DA) dmmg->dm;
+  DMMG           dmmg = (DMMG)dummy;
+  PetscErrorCode ierr;
+  PetscInt       xs,xm,i,N;
+  PetscScalar    *u,*fu,d,h;
+  Vec            vu;
+  DA             da = (DA) dmmg->dm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
@@ -118,9 +119,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscFunctionReturn(0);
 }
 
-int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
+PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
-  int          i,N = info->mx;
+  PetscInt     i,N = info->mx;
   PetscScalar  d,h;
 
   PetscFunctionBegin;

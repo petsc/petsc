@@ -30,7 +30,7 @@ struct _TSOps {
       (*reform)(TS),
       (*reallocate)(TS),
       (*setup)(TS),
-      (*step)(TS,int *, PetscReal *),
+      (*step)(TS,PetscInt *, PetscReal *),
       (*setfromoptions)(TS),
       (*printhelp)(TS, char *),
       (*destroy)(TS),
@@ -43,19 +43,19 @@ struct _p_TS {
   Vec           vec_sol, vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
-  PetscErrorCode (*monitor[MAXTSMONITORS])(TS,int,PetscReal,Vec,void*); /* returns control to user after */
+  PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
   PetscErrorCode (*mdestroy[MAXTSMONITORS])(void*);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
-  int  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+  PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
   /* Identifies this as a grid TS structure */
   PetscTruth  isGTS;                                 /* This problem arises from an underlying grid */
   PetscTruth *isExplicit;                            /* Indicates which fields have explicit time dependence */
-  int        *Iindex;                                /* The index of the identity for each time dependent field */
+  PetscInt   *Iindex;                                /* The index of the identity for each time dependent field */
 
   /* ---------------------Linear Iteration---------------------------------*/
   KSP ksp;
-  Mat  A, B;                                         /* user provided matrix and preconditioner */
+  Mat A, B;                                         /* user provided matrix and preconditioner */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
@@ -65,27 +65,27 @@ struct _p_TS {
 
 
   /* --- Data that is unique to each particular solver --- */
-  int   setupcalled;            /* true if setup has been called */
-  void *data;                   /* implementationspecific data */
-  void *user;                   /* user context */
+  PetscInt setupcalled;            /* true if setup has been called */
+  void     *data;                   /* implementationspecific data */
+  void     *user;                   /* user context */
 
   /* ------------------  Parameters -------------------------------------- */
-  int       max_steps;              /* max number of steps */
+  PetscInt  max_steps;              /* max number of steps */
   PetscReal max_time;               /* max time allowed */
   PetscReal time_step;              /* current time increment */
   PetscReal time_step_old;          /* previous time increment */
   PetscReal initial_time_step;      /* initial time increment */
-  int       steps;                  /* steps taken so far */
+  PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time taken so far */
-  int       linear_its;             /* total number of linear solver iterations */
-  int       nonlinear_its;          /* total number of nonlinear solver iterations */
+  PetscInt  linear_its;             /* total number of linear solver iterations */
+  PetscInt  nonlinear_its;          /* total number of nonlinear solver iterations */
 
   /* ------------------- Default work-area management ------------------ */
-  int  nwork;              
-  Vec *work;
+  PetscInt nwork;              
+  Vec      *work;
 };
 
-EXTERN PetscErrorCode TSMonitor(TS,int,PetscReal,Vec);
+EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 EXTERN PetscErrorCode TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 
 #endif

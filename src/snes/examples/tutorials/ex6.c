@@ -29,22 +29,24 @@ T*/
 /* 
    User-defined routines
 */
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*);
-int MatrixFreePreconditioner(void*,Vec,Vec);
+PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+PetscErrorCode MatrixFreePreconditioner(void*,Vec,Vec);
 
 int main(int argc,char **argv)
 {
-  SNES         snes;                /* SNES context */
-  KSP          ksp;                /* KSP context */
-  PC           pc;                  /* PC context */
-  Vec          x,r,F;               /* vectors */
-  Mat          J,JPrec;             /* Jacobian,preconditioner matrices */
-  int          ierr,it,n = 5,i,size;
-  int          *Shistit = 0,Khistl = 200,Shistl = 10;
-  PetscReal    h,xp = 0.0,*Khist = 0,*Shist = 0;
-  PetscScalar  v,pfive = .5;
-  PetscTruth   flg;
+  SNES           snes;                /* SNES context */
+  KSP            ksp;                /* KSP context */
+  PC             pc;                  /* PC context */
+  Vec            x,r,F;               /* vectors */
+  Mat            J,JPrec;             /* Jacobian,preconditioner matrices */
+  PetscErrorCode ierr;
+  PetscInt       it,n = 5,i;
+  PetscMPIInt    size;
+  PetscInt       *Shistit = 0,Khistl = 200,Shistl = 10;
+  PetscReal      h,xp = 0.0,*Khist = 0,*Shist = 0;
+  PetscScalar    v,pfive = .5;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -118,7 +120,7 @@ int main(int argc,char **argv)
     ierr = PetscMalloc(Khistl*sizeof(PetscReal),&Khist);CHKERRQ(ierr);
     ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscMalloc(Shistl*sizeof(PetscReal),&Shist);CHKERRQ(ierr);
-    ierr = PetscMalloc(Shistl*sizeof(int),&Shistit);CHKERRQ(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(PetscInt),&Shistit);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRQ(ierr);
   }
 
@@ -141,7 +143,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %d\n\n",it);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %D\n\n",it);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -178,10 +180,11 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscScalar *xx,*ff,*FF,d;
-  int    i,ierr,n;
+  PetscScalar    *xx,*ff,*FF,d;
+  PetscErrorCode ierr;
+  PetscInt       i,n;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
@@ -213,10 +216,11 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 .  B - different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
 {
-  PetscScalar *xx,A[3],d;
-  int    i,n,j[3],ierr;
+  PetscScalar    *xx,A[3],d;
+  PetscInt       i,n,j[3];
+  PetscErrorCode ierr;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -259,7 +263,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *d
    Output Parameter:
 .  y - preconditioned vector
 */
-int MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
+PetscErrorCode MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   ierr = VecCopy(x,y);CHKERRQ(ierr);  

@@ -42,7 +42,7 @@ options are:\n\
 /* User-defined application contexts */
 
 typedef struct {
-   int        mx,my;            /* number grid points in x and y direction */
+   PetscInt        mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */
@@ -55,7 +55,7 @@ typedef struct {
    GridCtx     coarse;
    KSP        ksp_coarse;
    KSP        ksp_fine;
-   int         ratio;
+   PetscInt         ratio;
    Mat         R;               /* restriction fine to coarse */
    Vec         Rscale;
    PetscTruth  redundant_build; /* build coarse matrix redundantly */
@@ -67,9 +67,9 @@ typedef struct {
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
 
-extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormInterpolation(AppCtx *);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormInterpolation(AppCtx *);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -78,14 +78,14 @@ extern int FormInterpolation(AppCtx *);
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES          snes;                      
-  AppCtx        user;                      
-  int           ierr, its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, nlocal,Nlocal;
-  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  KSP          ksp;
-  PC            pc;
-  KSP           ksp;
+  SNES           snes;                      
+  AppCtx         user;                      
+  PetscErrorCode ierr;
+  PetscInt       its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal,Nlocal;
+  PetscMPIInt    size;
+  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  KSP            ksp;
+  PC             pc;
 
   /*
       Initialize PETSc, note that default options in ex11options can be 
@@ -176,7 +176,6 @@ int main( int argc, char **argv )
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
   if (user.redundant_build) {
     PC  rpc;
-    KSP rksp;
     ierr = KSPGetPC(user.ksp_coarse,&rpc);CHKERRQ(ierr);
     ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRQ(ierr);
   }
@@ -233,12 +232,13 @@ int main( int argc, char **argv )
 }/* --------------------  Form initial approximation ----------------- */
 #undef __FUNC__
 #define __FUNC__ "FormInitialGuess1"
-int FormInitialGuess1(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  PetscScalar  *x;
-  Vec     localX = user->fine.localX;
+  PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
+  PetscErrorCode ierr;
+  double         one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  PetscScalar    *x;
+  Vec            localX = user->fine.localX;
 
   mx = user->fine.mx;       my = user->fine.my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -273,13 +273,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
  /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNC__
 #define __FUNC__ "FormFunction"
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  PetscScalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->fine.localX, localF = user->fine.localF; 
+  AppCtx         *user = (AppCtx *) ptr;
+  PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
+  PetscErrorCode ierr;
+  double         two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
+  PetscScalar    u, uxx, uyy, *x,*f;
+  Vec            localX = user->fine.localX, localF = user->fine.localF; 
 
   mx = user->fine.mx;       my = user->fine.my;       lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -324,13 +325,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Grid"
-int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
+PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 {
-  Mat     jac = *J;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
-  int     nloc, *ltog, grow;
-  PetscScalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
-  Vec     localX = grid->localX;
+  Mat            jac = *J;
+  PetscErrorCode ierr;
+  PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5], nloc, *ltog, grow;
+  PetscScalar    two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
+  Vec            localX = grid->localX;
 
   mx = grid->mx;            my = grid->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -384,11 +385,12 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 */
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Coarse"
-int FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
+PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 {
-  Mat     jac = *J;
-  int     ierr, i, j, row, mx, my, col[5];
-  PetscScalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
+  Mat            jac = *J;
+  PetscErrorCode ierr;
+  PetscInt       i, j, row, mx, my, col[5];
+  PetscScalar    two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
 
   mx = grid->mx;            my = grid->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -427,14 +429,13 @@ int FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNC__
 #define __FUNC__ "FormJacobian"
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
-  int        ierr;
-  KSP       ksp;
-  PC         pc;
-  PetscTruth ismg;
-  KSP        ksp;
+  AppCtx         *user = (AppCtx *) ptr;
+  PetscErrorCode ierr;
+  KSP            ksp;
+  PC             pc;
+  PetscTruth     ismg;
 
   *flag = SAME_NONZERO_PATTERN;
   ierr = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
@@ -476,16 +477,17 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       Forms the interpolation (and restriction) operator from 
 coarse grid to fine.
 */
-int FormInterpolation(AppCtx *user)
+PetscErrorCode FormInterpolation(AppCtx *user)
 {
-  int      ierr,i,j,i_start,m_fine,j_start,m,n,M,Mx = user->coarse.mx,My = user->coarse.my,*idx;
-  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
-  int      row,i_start_ghost,j_start_ghost,cols[4],mx = user->fine.mx, m_c,my = user->fine.my;
-  int      c0,c1,c2,c3,nc,ratio = user->ratio,i_end,i_end_ghost,m_c_local,m_fine_local;
-  int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col;
-  PetscScalar   v[4],x,y, one = 1.0;
-  Mat      mat;
-  Vec      Rscale;
+  PetscErrorCode ierr;
+  PetscInt       i,j,i_start,m_fine,j_start,m,n,*idx;
+  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
+  PetscInt       row,i_start_ghost,j_start_ghost,cols[4], m_c;
+  PetscInt       nc,ratio = user->ratio,m_c_local,m_fine_locaol;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col;
+  PetscScalar    v[4],x,y, one = 1.0;
+  Mat            mat;
+  Vec            Rscale;
   
   ierr = DAGetCorners(user->fine.da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->fine.da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);

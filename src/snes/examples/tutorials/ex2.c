@@ -24,10 +24,10 @@ T*/
 /* 
    User-defined routines
 */
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormInitialGuess(Vec);
-extern int Monitor(SNES,int,PetscReal,void *);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormInitialGuess(Vec);
+extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
 
 /*
    User-defined context for monitoring
@@ -40,13 +40,15 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES         snes;                   /* SNES context */
-  Vec          x,r,F,U;             /* vectors */
-  Mat          J;                      /* Jacobian matrix */
-  MonitorCtx   monP;                   /* monitoring context */
-  int          ierr,its,n = 5,i,maxit,maxf,size;
-  PetscScalar  h,xp,v,none = -1.0;
-  PetscReal    abstol,rtol,stol,norm;
+  SNES           snes;                   /* SNES context */
+  Vec            x,r,F,U;             /* vectors */
+  Mat            J;                      /* Jacobian matrix */
+  MonitorCtx     monP;                   /* monitoring context */
+  PetscErrorCode ierr;
+  PetscInt       its,n = 5,i,maxit,maxf;
+  PetscMPIInt    size;
+  PetscScalar    h,xp,v,none = -1.0;
+  PetscReal      abstol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -190,10 +192,10 @@ int main(int argc,char **argv)
    Input/Output Parameter:
 .  x - the solution vector
 */
-int FormInitialGuess(Vec x)
+PetscErrorCode FormInitialGuess(Vec x)
 {
-   int    ierr;
-   PetscScalar pfive = .50;
+   PetscErrorCode ierr;
+   PetscScalar    pfive = .50;
    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
    return 0;
 }
@@ -218,11 +220,12 @@ int FormInitialGuess(Vec x)
    a vector containing the right-hand-side of the discretized PDE.
  */
 
-int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-   Vec    g = (Vec)ctx;
-   PetscScalar *xx,*ff,*gg,d;
-   int    i,ierr,n;
+   Vec            g = (Vec)ctx;
+   PetscScalar    *xx,*ff,*gg,d;
+   PetscErrorCode ierr;
+   PetscInt       i,n;
 
   /*
      Get pointers to vector data.
@@ -271,10 +274,11 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  flag - flag indicating matrix structure
 */
 
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  PetscScalar *xx,A[3],d;
-  int    i,n,j[3],ierr;
+  PetscScalar    *xx,A[3],d;
+  PetscErrorCode ierr;
+  PetscInt       i,n,j[3];
 
   /*
      Get pointer to vector data
@@ -337,11 +341,11 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-int Monitor(SNES snes,int its,PetscReal fnorm,void *ctx)
+PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
 {
-  int        ierr;
-  MonitorCtx *monP = (MonitorCtx*) ctx;
-  Vec        x;
+  PetscErrorCode ierr;
+  MonitorCtx     *monP = (MonitorCtx*) ctx;
+  Vec            x;
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D, SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);

@@ -29,14 +29,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;  /* approx solution, RHS, exact solution */
-  Mat         A;        /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscReal   norm;     /* norm of solution error */
-  int         ntimes,i,j,k,I,J,Istart,Iend,ierr;
-  int         m = 8,n = 7,its;
-  PetscTruth  flg;
-  PetscScalar v,one = 1.0,neg_one = -1.0,rhs;
+  Vec            x,b,u;  /* approx solution, RHS, exact solution */
+  Mat            A;        /* linear system matrix */
+  KSP            ksp;     /* linear solver context */
+  PetscReal      norm;     /* norm of solution error */
+  PetscErrorCode ierr;
+  PetscInt       ntimes,i,j,k,I,J,Istart,Iend;
+  PetscInt       m = 8,n = 7,its;
+  PetscTruth     flg;
+  PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

@@ -7,9 +7,9 @@ static char help[] = "Demonstrates us of color map\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscDraw draw;
-  int       ierr;
-  int       x = 0,y = 0,width = 256,height = 256,i; 
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+  int            x = 0,y = 0,width = 256,height = 256,i; 
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

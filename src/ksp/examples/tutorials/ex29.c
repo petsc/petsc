@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   PetscScalar    mone = -1.0;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
-  PetscInt       l;
+  PetscInt       l,bc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -62,10 +62,11 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
-    user.nu = 0.1;
-    ierr = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
-    user.bcType = DIRICHLET;
-    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],(int*)&user.bcType,PETSC_NULL);CHKERRQ(ierr);
+    user.nu     = 0.1;
+    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+    bc          = (PetscInt)DIRICHLET;
+    ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+    user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);

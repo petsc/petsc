@@ -7,8 +7,9 @@ static char help[] = "Tests repeatedly setting a window type.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscDraw draw;
-  int  ierr,x = 0,y = 0,width = 300,height = 300;
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+  int            x = 0,y = 0,width = 300,height = 300;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

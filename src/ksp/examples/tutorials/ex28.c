@@ -5,19 +5,20 @@ static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 #include "petscda.h"
 #include "petscksp.h"
 
-extern int ComputeJacobian(DMMG,Mat);
-extern int ComputeRHS(DMMG,Vec);
-extern int ComputeInitialSolution(DMMG*);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeInitialSolution(DMMG*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr,i;
-  DMMG        *dmmg;
-  PetscScalar mone = -1.0;
-  PetscReal   norm;
-  DA          da;
+  PetscErrorCode ierr;
+  PetscInt       i;
+  DMMG           *dmmg;
+  PetscScalar    mone = -1.0;
+  PetscReal      norm;
+  DA             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -35,12 +36,6 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
     ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-
-
-
-
-
-
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecAXPY(&mone,DMMGGetb(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
@@ -54,11 +49,12 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeInitialSolution"
-int ComputeInitialSolution(DMMG *dmmg)
+PetscErrorCode ComputeInitialSolution(DMMG *dmmg)
 {
-  int         ierr,mx,col[2],xs,xm,i;
-  PetscScalar Hx,val[2];
-  Vec         x = DMMGGetx(dmmg);
+  PetscErrorCode ierr;
+  PetscInt       mx,col[2],xs,xm,i;
+  PetscScalar    Hx,val[2];
+  Vec            x = DMMGGetx(dmmg);
 
   PetscFunctionBegin;
   ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -77,10 +73,11 @@ int ComputeInitialSolution(DMMG *dmmg)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-int ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 {
-  int         ierr,mx;
-  PetscScalar h;
+  PetscErrorCode ierr;
+  PetscInt       mx;
+  PetscScalar    h;
 
   PetscFunctionBegin;
   ierr = DAGetInfo((DA)dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -92,13 +89,14 @@ int ComputeRHS(DMMG dmmg,Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-int ComputeJacobian(DMMG dmmg,Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA           da = (DA)dmmg->dm;
-  int          ierr,i,mx,xm,xs;
-  PetscScalar  v[7],Hx;
-  MatStencil   row,col[7];
-  PetscScalar  lambda;
+  DA             da = (DA)dmmg->dm;
+  PetscErrorCode ierr;
+  PetscInt       i,mx,xm,xs;
+  PetscScalar    v[7],Hx;
+  MatStencil     row,col[7];
+  PetscScalar    lambda;
 
   ierr = PetscMemzero(col,7*sizeof(MatStencil));CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
