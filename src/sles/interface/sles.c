@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.94 1998/01/14 02:42:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.95 1998/03/12 23:20:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -269,9 +269,7 @@ int SLESDestroy(SLES sles)
    Input Parameters:
 .  sles - the SLES context
 .  b - the right hand side
-
-   Output Parameters:
-.  x - the approximate solution
+.  x - location to hold solution
 
    Note:
    For basic use of the SLES solvers the user need not explicitly call
