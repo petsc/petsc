@@ -29,10 +29,11 @@ X11_LIB        = /usr/local/X11R6/lib/libX11.a
 # from below. If you are using the secure server you should put in the appropriate
 # port number below instead of 1861
 #
-MPI_LIB        = /home/petsc/mpich/lib/freebsd/ch_p4/libmpi.a
+MPI_LIB        = /home/petsc/mpich/lib/freebsd/ch_shmem/libmpi.a
 MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun -p4ssport 4132 \
-                  -machinefile $(PETSC_DIR)/maint/hosts.local
+MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_shmem/mpirun 
+#MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun -p4ssport 4132 \
+#                  -machinefile $(PETSC_DIR)/maint/hosts.local
 #
 # Optional location of BlockSolve, if you do not have BlockSolve, then
 # remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there
