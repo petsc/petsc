@@ -361,7 +361,7 @@ class Configure(config.base.Configure):
     # if yes, then force IBM Fortran to add _ for subroutine names
     # so cab access BLAS/LAPACK from Fortran
     if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
-      self.setcompilers.pushLanguage('F77')
+      self.setcompilers.pushLanguage('FC')
       if self.setcompilers.getCompiler().find('xlf') >= 0 or self.setcompilers.getCompiler().find('xlF') >= 0:
         # should check if compiler is already using underscore and that -qextname works 
         self.compilers.fortranMangling = 'underscore'

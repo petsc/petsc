@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
     
       # compiler values
-      self.setCompilers.pushLanguage('F77')
+      self.setCompilers.pushLanguage('FC')
       self.addMakeMacro('FC',self.setCompilers.getCompiler())
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())    
       self.setCompilers.popLanguage()
@@ -118,13 +118,13 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FC_SUFFIX','o')
 
       # executable linker values
-      self.setCompilers.pushLanguage('F77')
+      self.setCompilers.pushLanguage('FC')
       self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
       # -rpath or -R or -L etc
-      if not self.setCompilers.F77SharedLinkerFlag: value = '-L'
-      else: value = self.setCompilers.F77SharedLinkerFlag
+      if not self.setCompilers.FCSharedLinkerFlag: value = '-L'
+      else: value = self.setCompilers.FCSharedLinkerFlag
       self.addMakeMacro('FC_LINKER_SLFLAG',value)    
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')

@@ -63,12 +63,12 @@ class Configure(config.base.Configure):
     if options:
       lang      = self.framework.argDB['with-language'].upper().replace('+','x')
       langflags = lang+'FLAGS'
-      for language, flags in [(lang,langflags), ('F77', 'FFLAGS')]:
+      for language, flags in [(lang,langflags), ('FC', 'FFLAGS')]:
         # Calling getCompiler() will raise an exception if a language is missing
         self.pushLanguage(language)
         try:
           # Check compiler version
-          if language == 'F77':
+          if language == 'FC':
             versionName = 'F_VERSION'
           else:
             versionName = language.upper()+'_VERSION'

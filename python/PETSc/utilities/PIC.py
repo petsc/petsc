@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
     if 'FC' in self.framework.argDB:
-      languages.append('F77')
+      languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:

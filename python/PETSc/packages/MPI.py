@@ -114,7 +114,7 @@ class Configure(config.base.Configure):
       self.framework.log.write('MPI can link with C++\n')
     
     if 'FC' in self.framework.argDB:
-      self.pushLanguage('F77')
+      self.pushLanguage('FC')
       self.sourceExtension = '.F'
       if not self.checkMPILink('', '          integer comm,size,ierr\n          call MPI_Comm_size(comm, size, ierr)\n'):
         self.framework.log.write('MPI cannot link Fortran using MPI_Comm_size(), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')

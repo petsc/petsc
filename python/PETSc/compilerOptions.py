@@ -212,7 +212,7 @@ class compilerOptions(config.base.Configure):
       flags = self.getCFlags(compiler, bopt)
     elif language == 'Cxx':
       flags = self.getCxxFlags(compiler, bopt)
-    elif language in ['Fortran', 'F77']:
+    elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
     return flags
 
@@ -239,7 +239,7 @@ class compilerOptions(config.base.Configure):
           flags = compiler+' -version'
         else:
           flags = compiler+' --version'
-      elif language in ['Fortran', 'F77']:
+      elif language in ['Fortran', 'FC']:
         if compiler.endswith('xlf') or compiler.endswith('xlf90'):
           flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
         elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('fort'):

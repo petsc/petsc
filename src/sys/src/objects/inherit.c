@@ -225,7 +225,7 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
 PetscErrorCode PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
 {
   PetscFunctionBegin;
-  if (lang == PETSC_LANGUAGE_CPP) {
+  if (lang == PETSC_LANGUAGE_CXX) {
     obj->cpp = vob;
   } else {
     SETERRQ(PETSC_ERR_SUP,"No support for this language yet");
@@ -240,7 +240,7 @@ PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang
   PetscFunctionBegin;
   if (lang == PETSC_LANGUAGE_C) {
     *vob = (void*)obj;
-  } else if (lang == PETSC_LANGUAGE_CPP) {
+  } else if (lang == PETSC_LANGUAGE_CXX) {
     if (obj->cpp) {
       *vob = obj->cpp;
     } else {
@@ -365,7 +365,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj,const char name[],PetscObject *p
 +  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectCompose((PetscObject)mat,...);
--  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
+-  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CXX
 
    Output Parameter:
 .  ptr - the language specific interface
@@ -394,7 +394,7 @@ PetscErrorCode PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void 
 +  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectCompose((PetscObject)mat,...);
-.  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
+.  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CXX
 -  ptr - the language specific interface
 
    Level: developer
