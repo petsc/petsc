@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 2001/02/09 19:23:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.13 2001/02/09 19:26:35 bsmith Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -10,8 +10,10 @@
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
 lib:
+	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH}
 libfast:
+	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH}
 
 matlabcodes: receive openport closeport launch readinvecs
