@@ -14,10 +14,15 @@ BLASLAPACK_LIB = -L/u/ac/balay/software/fblaslapack/linux64 -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /usr/local/vmi/mpich
-MPI_LIB        = -L${MPI_HOME}/lib/gcc -lmpich -lvmiquiet -lpthread
+#MPI_HOME       = /usr/local/vmi/mpich
+#MPI_LIB        = -L${MPI_HOME}/lib/gcc -lmpich -lvmiquiet -lpthread
+#MPI_INCLUDE    = -I${MPI_HOME}/include
+#MPIRUN         =  /home/balay/bin/mpirun
+#
+MPI_HOME       = /u/ac/balay/software/mpich-1.2.2.3/linux64
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  /home/balay/bin/mpirun
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.

@@ -35,7 +35,7 @@ T*/
 #include "petscmg.h"
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocal(DALocalInfo*,double**,double**,void*);
+extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
