@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.5 2000/01/11 21:03:54 bsmith Exp balay $*/
+/*$Id: zf90vec.c,v 1.6 2000/05/05 22:27:06 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscis.h"
@@ -28,78 +28,71 @@
 
 EXTERN_C_BEGIN
 
-void vecgetarrayf90_(Vec x,array1d *ptr,int *__ierr)
+void vecgetarrayf90_(Vec *x,array1d *ptr,int *__ierr)
 {
   Scalar *fa;
   int    len;
-  Vec    xin = (Vec)PetscToPointer(x);
-  *__ierr = VecGetArray(xin,&fa);      if (*__ierr) return;
-  *__ierr = VecGetLocalSize(xin,&len); if (*__ierr) return;
+  *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
+  *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayScalar(fa,len,ptr);
 }
-void vecrestorearrayf90_(Vec x,array1d *ptr,int *__ierr)
+void vecrestorearrayf90_(Vec *x,array1d *ptr,int *__ierr)
 {
   Scalar *fa;
-  Vec    xin = (Vec)PetscToPointer(x);
   *__ierr = PetscF90Get1dArrayScalar(ptr,&fa);if (*__ierr) return;
   *__ierr = PetscF90Destroy1dArrayScalar(ptr);if (*__ierr) return;
-  *__ierr = VecRestoreArray(xin,&fa);         if (*__ierr) return;
+  *__ierr = VecRestoreArray(*x,&fa);
 }
 
 /* --------------------------------------------------------------- */
 
-void isgetindicesf90_(IS x,array1d *ptr,int *__ierr)
+void isgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   int    len;
-  IS    xin = (IS)PetscToPointer(x);
-  *__ierr = ISGetIndices(xin,&fa);      if (*__ierr) return;
-  *__ierr = ISGetSize(xin,&len); if (*__ierr) return;
+  *__ierr = ISGetIndices(*x,&fa); if (*__ierr) return;
+  *__ierr = ISGetSize(*x,&len);   if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayInt(fa,len,ptr);
 }
-void isrestoreindicesf90_(IS x,array1d *ptr,int *__ierr)
+void isrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
-  IS     xin = (IS)PetscToPointer(x);
   *__ierr = PetscF90Get1dArrayInt(ptr,&fa);if (*__ierr) return;
   *__ierr = PetscF90Destroy1dArrayInt(ptr);if (*__ierr) return;
-  *__ierr = ISRestoreIndices(xin,&fa);         if (*__ierr) return;
+  *__ierr = ISRestoreIndices(*x,&fa);
 }
 
 
-void isblockgetindicesf90_(IS x,array1d *ptr,int *__ierr)
+void isblockgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   int    len;
-  IS    xin = (IS)PetscToPointer(x);
-  *__ierr = ISBlockGetIndices(xin,&fa);      if (*__ierr) return;
-  *__ierr = ISBlockGetSize(xin,&len); if (*__ierr) return;
+  *__ierr = ISBlockGetIndices(*x,&fa);      if (*__ierr) return;
+  *__ierr = ISBlockGetSize(*x,&len);        if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayInt(fa,len,ptr);
 }
-void isblockrestoreindicesf90_(IS x,array1d *ptr,int *__ierr)
+void isblockrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
-  IS     xin = (IS)PetscToPointer(x);
   *__ierr = PetscF90Get1dArrayInt(ptr,&fa);if (*__ierr) return;
   *__ierr = PetscF90Destroy1dArrayInt(ptr);if (*__ierr) return;
-  *__ierr = ISBlockRestoreIndices(xin,&fa);         if (*__ierr) return;
+  *__ierr = ISBlockRestoreIndices(*x,&fa);
 }
 
 /* ---------------------------------------------------------------*/
 
-void vecduplicatevecsf90_(Vec v,int *m,array1d *ptr,int *__ierr)
+void vecduplicatevecsf90_(Vec *v,int *m,array1d *ptr,int *__ierr)
 {
   Vec *lV;
   PetscFortranAddr *newvint;
   int i;
-  *__ierr = VecDuplicateVecs((Vec)PetscToPointer(v),*m,&lV);
-  if (*__ierr) return;
+  *__ierr = VecDuplicateVecs(*v,*m,&lV); if (*__ierr) return;
   newvint = (PetscFortranAddr*)PetscMalloc((*m)*sizeof(PetscFortranAddr)); 
   if (!newvint) {*__ierr = PETSC_ERR_MEM; return;}
   for (i=0; i<*m; i++) {
-    newvint[i] = PetscFromPointer(lV[i]);
+    newvint[i] = lV[i];
   }
-  PetscFree(lV); 
+  ierr = PetscFree(lV); if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayPetscFortranAddr(newvint,*m,ptr);
 }
 
@@ -110,12 +103,11 @@ void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr)
 
   *__ierr = PetscF90Get1dArrayPetscFortranAddr(ptr,&vecs);if (*__ierr) return;
   for (i=0; i<*m; i++) {
-    *__ierr = VecDestroy((Vec)PetscToPointer(&vecs[i]));
+    *__ierr = VecDestroy(&vecs[i]);
     if (*__ierr) return;
-    PetscRmPointer(vecs[i]); 
   }
   *__ierr = PetscF90Destroy1dArrayPetscFortranAddr(ptr);if (*__ierr) return;
-  PetscFree(vecs);
+  ierr = PetscFree(vecs); if (*__ierr) return;
 }
 
 EXTERN_C_END
