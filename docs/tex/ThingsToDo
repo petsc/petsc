@@ -15,6 +15,8 @@ Meta priorities:
             state somewhere that these are currently supported onlythrough BS95 
             but more symmetric stuff is in the works?
 
+ - Fix VecScatterView()
+
  * Satish - Make sure one can run block Jacobi on several matrices with number of rows
    on all matrices but first zero for both AIJ and BAIJ matrices.
 
