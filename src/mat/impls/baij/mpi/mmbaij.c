@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.10 1996/12/17 23:44:00 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.11 1997/01/06 20:25:27 balay Exp balay $";
 #endif
 
 
@@ -22,7 +22,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  indices = (int *) PetscMalloc( Nbs*sizeof(int) ); CHKPTRQ(indices);
+  indices = (int *) PetscMalloc( (Nbs+1)*sizeof(int) ); CHKPTRQ(indices);
   PetscMemzero(indices,Nbs*sizeof(int));
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
