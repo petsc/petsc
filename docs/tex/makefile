@@ -6,21 +6,25 @@ manual.dvi: manual.tex routines.red
 	makeindex manual
 	sed 's/_/\\_/g' < manual.ind > index.tex
 	latex manual
-	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
+	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
+                    *.idx index.tex
 
 manual.ps: 
 	dvips manual
 	mv manual.ps ..
-	chmod g+w ../manual.ps
+	-@chmod g+w ../manual.ps
 
 manual.html: manual.tex
-	tohtml -mapman ../www/www.cit manual.tex
-	tohtml  -mapman ../www/www.cit manual.tex
+	tohtml -mapman ../www/www.cit manual.tex -notopnames
+	tohtml -mapman ../www/www.cit manual.tex -notopnames
+	chmod g+w manual.hux latex.err 
 	mv *.html ..
 	mv *.xbm ..
+	-@chmod g+w ../*.html ../*.xbm
 
 clean:
-	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err
+	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
+                          *.ilg *.idx *.ind
 
 routines.red: routines.tex rsum/rsum1.tex rsum/rsum2.tex rsum/rsum3.tex \
               rsum/rsum4.tex rsum/rsum5.tex rsum/rsum6.tex rsum/rsum7.tex \
@@ -38,9 +42,9 @@ routines.red: routines.tex rsum/rsum1.tex rsum/rsum2.tex rsum/rsum3.tex \
 
 routines.dvi: routines.red
 	latex routines 
-	chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
+	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
 routines.ps: routines.dvi 
 	dvips routines.dvi
-	chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
+	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
