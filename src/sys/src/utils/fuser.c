@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.15 1998/05/08 16:12:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fuser.c,v 1.16 1998/05/18 18:59:33 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: fuser.c,v 1.15 1998/05/08 16:12:54 bsmith Exp bsmith 
 #if !defined(PARCH_nt)
 #include <sys/param.h>
 #include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
@@ -27,6 +29,9 @@ static char vcid[] = "$Id: fuser.c,v 1.15 1998/05/08 16:12:54 bsmith Exp bsmith 
 #endif
 #if defined(HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
+#endif
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
 #endif
 #include "pinclude/petscfix.h"
 

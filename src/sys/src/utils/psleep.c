@@ -1,21 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psleep.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: psleep.c,v 1.15 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
-/*
-     Provides utility routines for manulating any type of PETSc object.
-*/
-#include "petsc.h"  /*I   "petsc.h"    I*/
+
+#include "petsc.h"                 /*I   "petsc.h"    I*/
+#include <unistd.h>
+#include "pinclude/petscfix.h"
 
 #if defined (PARCH_nt)
 #include <stdlib.h>
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void sleep(int);
-#if defined(__cplusplus)
-}
 #endif
 
 #undef __FUNC__  
