@@ -19,6 +19,46 @@ CEXAMPLES = ex1 ex2 ex3 ex4 ex8 ex9 ex10
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex8.c ex9.c ex10.c
 LINCLUDE  = $(SOURCEH)
 
+ex1: ex1.o  chkopts
+	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
+	$(RM) ex1.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
+	$(RM) ex2.o
+
+ex3: ex3.o  chkopts
+	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
+	$(RM) ex3.o
+
+ex4: ex4.o  chkopts
+	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
+	$(RM) ex4.o
+
+ex5: ex5.o  chkopts
+	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
+	$(RM) ex5.o
+
+ex6: ex6.o  chkopts
+	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
+	$(RM) ex6.o
+
+ex7: ex7.o  chkopts
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
+	$(RM) ex7.o
+
+ex8: ex8.o  chkopts
+	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
+	$(RM) ex8.o
+
+ex9: ex9.o  chkopts
+	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
+	$(RM) ex9.o
+
+ex10: ex10.o  chkopts
+	-$(CLINKER) -o ex10 ex10.o  $(PETSC_LIB)
+	$(RM) ex10.o
+
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -30,25 +70,25 @@ runex1_2:
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
 runex1_3:
-	-@$(MPIRUN) -np 1 ex1 -pc_method sor -pc_sor_symmetric -ksp_monitor >\
+	-@$(MPIRUN) -np 1 ex1 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
            ex1_3.tmp 2>&1;   \
            if (diff output/ex1_3.out ex1_3.tmp) then true; \
            else echo "Possible problem with ex1_3, diffs above"; fi; \
            $(RM) -f ex1_3.tmp
 runex1_4:
-	-@$(MPIRUN) -np 2 ex1 -pc_method sor -pc_sor_symmetric -ksp_monitor >\
+	-@$(MPIRUN) -np 2 ex1 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
            ex1_4.tmp 2>&1;   \
            if (diff output/ex1_4.out ex1_4.tmp) then true; \
            else echo "Possible problem with ex1_4, diffs above"; fi; \
            $(RM) -f ex1_4.tmp
 runex1_5:
-	-@$(MPIRUN) -np 1 ex1 -pc_method eisenstat -ksp_monitor >\
+	-@$(MPIRUN) -np 1 ex1 -pc_method eisenstat -ksp_smonitor >\
            ex1_5.tmp 2>&1;   \
            if (diff output/ex1_5.out ex1_5.tmp) then true; \
            else echo "Possible problem with ex1_5, diffs above"; fi; \
            $(RM) -f ex1_5.tmp
 runex1_6:
-	-@$(MPIRUN) -np 2 ex1 -pc_method eisenstat -ksp_monitor >\
+	-@$(MPIRUN) -np 2 ex1 -pc_method eisenstat -ksp_smonitor >\
            ex1_6.tmp 2>&1;   \
            if (diff output/ex1_6.out ex1_6.tmp) then true; \
            else echo "Possible problem with ex1_6, diffs above"; fi; \
@@ -136,45 +176,5 @@ runex8_2:
            if (diff output/ex8_2.out ex8_2.tmp) then true; \
            else echo "Possible problem with ex8_2, diffs above"; fi; \
            $(RM) -f ex8_2.tmp
-
-ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
-	$(RM) ex1.o
-
-ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-	$(RM) ex2.o
-
-ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
-	$(RM) ex3.o
-
-ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
-	$(RM) ex4.o
-
-ex5: ex5.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
-	$(RM) ex5.o
-
-ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
-	$(RM) ex6.o
-
-ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
-	$(RM) ex7.o
-
-ex8: ex8.o  chkopts
-	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
-	$(RM) ex8.o
-
-ex9: ex9.o  chkopts
-	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
-	$(RM) ex9.o
-
-ex10: ex10.o  chkopts
-	-$(CLINKER) -o ex10 ex10.o  $(PETSC_LIB)
-	$(RM) ex10.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

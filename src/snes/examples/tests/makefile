@@ -16,6 +16,34 @@ CEXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 LINCLUDE  = $(SOURCEH)
 
+ex1: ex1.o  chkopts
+	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
+	$(RM) ex1.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
+	$(RM) ex2.o
+
+ex3: ex3.o  chkopts
+	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
+	$(RM) ex3.o
+
+ex4: ex4.o  chkopts
+	-$(CLINKER) -o ex4 ex4.o $(PETSC_LIB)
+	$(RM) ex4.o
+
+ex5: ex5.o  chkopts
+	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
+	$(RM) ex5.o
+
+ex6: ex6.o  chkopts
+	-$(CLINKER) -o ex6 ex6.o $(PETSC_LIB)
+	$(RM) ex6.o
+
+ex7: ex7.o  chkopts
+	-$(CLINKER) -o ex7 ex7.o $(PETSC_LIB)
+	$(RM) ex7.o
+
 runex3:
 	-@$(MPIRUN) ex3 -nox -snes_smonitor > ex3_1.tmp 2>&1;   \
            if (diff output/ex3_1.out ex3_1.tmp) then true; \
@@ -51,33 +79,5 @@ runex6:
            if (diff output/ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
-
-ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
-	$(RM) ex1.o
-
-ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
-	$(RM) ex2.o
-
-ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
-	$(RM) ex3.o
-
-ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o $(PETSC_LIB)
-	$(RM) ex4.o
-
-ex5: ex5.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
-	$(RM) ex5.o
-
-ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o $(PETSC_LIB)
-	$(RM) ex6.o
-
-ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o $(PETSC_LIB)
-	$(RM) ex7.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
