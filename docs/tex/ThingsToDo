@@ -12,10 +12,10 @@ Additional Capabilities that PETSc Needs:
 
  - Subdivide html manpage sections, e.g. elementary, advanced and developer.
 
- - Remove Unix man pages from next PETSc release. 
-
  - Aim for more exhaustive PETSc testing.  See
          /home/MPI/mpich/examples/test/rlist.srt:
+
+ - Add verify timestep for all TS styles.
 
  - Features in TS wanted by Carl:
       - Crank-Nicholson
@@ -554,3 +554,6 @@ Additional Capabilities that PETSc Needs:
          properly set.
 
  X Fix fortran interface for TS. and read David Keyes comments.
+
+ X Remove Unix man pages from next PETSc release. 
+
