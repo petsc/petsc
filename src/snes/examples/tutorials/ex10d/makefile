@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 1999/03/24 20:09:58 balay Exp bsmith $ 
+# $Id: makefile,v 1.5 1999/04/18 17:13:25 bsmith Exp bsmith $ 
 
 ALL: ex10
 
@@ -9,7 +9,7 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/ex10/ex10d/
 TESTEXAMPLES_6	 = ex10.PETSc runex10 ex10.rm
 BUILDEXAMPLES_6	 = ex10.PETSc ex10.rm
-DOCS		 = readme
+DOCS		 = 
 DIRS		 = 
 EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
