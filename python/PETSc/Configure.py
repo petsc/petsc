@@ -326,7 +326,7 @@ class Configure(config.base.Configure):
         if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
           self.addDefine('HAVE_WSAGETLASTERROR',1)
     if not self.functions.haveFunction('lseek'):
-      if self.checkLink('char _lseek(void);','_lseek'):
+      if self.checkLink('char _lseek(void);','_lseek()'):
         self.addDefine('HAVE__LSEEK',1)
     return
 
