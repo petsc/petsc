@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.21 1996/08/05 03:50:20 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.22 1996/09/12 16:28:47 bsmith Exp curfman $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -30,6 +30,7 @@ typedef struct _PetscRandom*   PetscRandom;
 
 extern int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
 extern int PetscRandomGetValue(PetscRandom,Scalar*);
+extern int PetscRandomSetInterval(PetscRandom,Scalar,Scalar);
 extern int PetscRandomDestroy(PetscRandom);
 
 extern int PetscGetFullPath(char*,char*,int);
