@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.10 1995/10/11 20:23:49 curfman Exp curfman $ */
+/* $Id: plapack.h,v 1.11 1995/10/12 02:31:54 curfman Exp curfman $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -130,6 +130,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLaxpy_  CAXPY
 #define BLasum_  SCASUM
 #define LAgetrf_ CGETRF
+#define LAgetf2_ CGETF2
 #elif defined(FORTRANCAPS)
 #define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
@@ -142,6 +143,7 @@ Cray T3D.  Yet another reason to hate ...
 #elif !defined(FORTRANUNDERSCORE)
 #define LAgeqrf_ zgeqrf
 #define LAgetrf_ zgetrf
+#define LAgetf2_ zgetf2
 #define BLdot_   zdotc
 #define BLnrm2_  dznrm2
 #define BLscal_  zscal
@@ -152,6 +154,7 @@ Cray T3D.  Yet another reason to hate ...
 #else
 #define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
+#define LAgetf2_ zgetf2_
 #define BLdot_   zdotc_
 #define BLnrm2_  dznrm2_
 #define BLscal_  zscal_
@@ -188,6 +191,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LApotrs_ ZPOTRS
 #define LAgemv_  ZGEMV
 #define LAgetrf_ ZGETRF
+#define LAgetf2_ ZGETF2
 #define LAgetrs_ ZGETRS
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
