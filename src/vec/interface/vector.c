@@ -652,6 +652,7 @@ PetscErrorCode VecScale (const PetscScalar *alpha,Vec x)
   PetscValidScalarPointer(alpha,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidType(x,2);
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
 
@@ -811,6 +812,7 @@ PetscErrorCode VecSet(const PetscScalar *alpha,Vec x)
   PetscValidScalarPointer(alpha,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidType(x,2);
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
@@ -878,6 +880,7 @@ PetscErrorCode VecSetRandom(PetscRandom rctx,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_COOKIE,1);
   PetscValidType(x,2);
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
 
   if (!rctx) {
     MPI_Comm    comm;
@@ -1054,6 +1057,8 @@ PetscErrorCode VecSwap(Vec x,Vec y)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
@@ -2909,6 +2914,7 @@ PetscErrorCode VecReciprocal(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
+  if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (!vec->ops->reciprocal) {
     SETERRQ(PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   }
@@ -3259,6 +3265,7 @@ PetscErrorCode VecConjugate(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
   ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
