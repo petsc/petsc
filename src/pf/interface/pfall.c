@@ -1,11 +1,11 @@
-/*$Id: pfall.c,v 1.11 2001/03/23 23:25:49 balay Exp balay $*/
+/*$Id: pfall.c,v 1.12 2001/03/28 19:43:05 balay Exp balay $*/
 
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
 EXTERN int PFCreate_Constant(PF,void*);
 EXTERN int PFCreate_String(PF,void*);
-EXTERN int PFCreate_Quick(PF,void(*)());
+EXTERN int PFCreate_Quick(PF,void*);
 EXTERN int PFCreate_Identity(PF,void*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
 EXTERN int PFCreate_Matlab(PF,void*);
