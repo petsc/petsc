@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.184 1996/09/07 15:35:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.185 1996/09/14 03:07:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -1623,9 +1623,9 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->inode.limit        = a->inode.limit;
   c->inode.max_limit    = a->inode.max_limit;
   if (a->inode.size){
-    c->inode.size       = (int *) PetscMalloc( m *sizeof(int) ); CHKPTRQ(c->inode.size);
+    c->inode.size       = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(c->inode.size);
     c->inode.node_count = a->inode.node_count;
-    PetscMemcpy( c->inode.size, a->inode.size, m*sizeof(int));
+    PetscMemcpy( c->inode.size, a->inode.size, (m+1)*sizeof(int));
   } else {
     c->inode.size       = 0;
     c->inode.node_count = 0;
