@@ -15,6 +15,4 @@ LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
 MANSEC   = x
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

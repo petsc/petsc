@@ -46,11 +46,11 @@ deletelatexpages:
 etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
-	etags -a -f TAGS src/*/*.h src/*/*.c src/*/src/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
-	etags -a -f TAGS docs/tex/manual.tex src/sys/error/*.c
+	etags -a -f TAGS docs/tex/manual.tex 
 	etags -a -f TAGS include/*.h pinclude/*.h
-	etags -a -f TAGS src/*/impls/*.c src/sys/*.c
+	etags -a -f TAGS src/*/impls/*.c 
 	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS bmake/common docs/tex/routin.tex
@@ -60,5 +60,3 @@ etags:
 	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/*.* bmake/NeXT/NeXT* bmake/alpha/alpha*
 	chmod g+w TAGS
-
-runexamples:

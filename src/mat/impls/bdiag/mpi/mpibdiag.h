@@ -13,9 +13,11 @@
 typedef struct {
   int           *rowners,*cowners;  /* ranges owned by each processor */
   int           m,n,M,N;            /* local rows, cols, global rows, cols */
-  int           rstart,rend,cstart,cend;
+  int           rstart,rend;
   int           brstart,brend;
   Mat           A;
+  int           *gdiag;             /* global matrix diagonal numbers */
+  int           gnd;                /* number of global diagonals */
   int           numtids,mytid;
 /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
@@ -25,8 +27,6 @@ typedef struct {
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
   int           rmax;
-  int           *colmap;    /* indicates local col number of off proc column*/
-  int           *garray;
 /*  Used in Matrix-vector product */
   Vec           lvec;
   VecScatterCtx Mvctx;

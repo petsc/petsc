@@ -12,9 +12,10 @@ OBJSF    =
 LIBBASE  = libpetscdraw
 CEXAMPLES= ex1 ex2 ex3 ex4
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
+REXAMPLES=runex1
 LINCLUDE = $(SOURCEH)
 
-runexamples:
+runex1:
 	-@echo "Run examples in src/draw/examples manually"
 
 ex1: ex1.o 

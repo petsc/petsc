@@ -17,86 +17,107 @@ CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
            ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c
+REXAMPLES= runex1 runex2 runex3 runex4 runex5 runex6 runex7 runex8 runex9\
+           runex10 runex11 runex12 runex13 runex14 runex15 runex16 runex19\
+           runex20 runex21 runex22
 LINCLUDE = $(SOURCEH)
 
-runexamples:
-	-@echo "Examples in src/mat/examples -----------"
+runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
+runex2:
 	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;   \
            if (diff ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp
+runex3:
 	-@$(MPIRUN)  ex3 > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp
+runex4:
 	-@$(MPIRUN)  ex4 > ex4_1.tmp 2>&1;   \
            if (diff ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
            $(RM) -f ex4_1.tmp
+runex5:
 	-@$(MPIRUN)  ex5 > ex5_1.tmp 2>&1;   \
            if (diff ex5_1.out ex5_1.tmp) then true; \
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
+runex6:
 	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;   \
            if (diff ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
+runex7:
 	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;   \
            if (diff ex7_1.out ex7_1.tmp) then true; \
            else echo "Possible problem with ex7_1, diffs above"; fi; \
            $(RM) -f ex7_1.tmp
+runex8:
 	-@$(MPIRUN)  ex8 > ex8_1.tmp 2>&1;   \
            if (diff ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            $(RM) -f ex8_1.tmp
+runex9:
 	-@$(MPIRUN)  -np 2 ex9 > ex9_1.tmp 2>&1;   \
            if (diff ex9_1.out ex9_1.tmp) then true; \
            else echo "Possible problem with ex9_1, diffs above"; fi; \
            $(RM) -f ex9_1.tmp
+runex10:
 	-@$(MPIRUN)  ex10 > ex10_1.tmp 2>&1;   \
            if (diff ex10_1.out ex10_1.tmp) then true; \
            else echo "Possible problem with ex10_1, diffs above"; fi; \
            $(RM) -f ex10_1.tmp
+runex11:
 	-@$(MPIRUN)  ex11 > ex11_1.tmp 2>&1;   \
            if (diff ex11_1.out ex11_1.tmp) then true; \
            else echo "Possible problem with ex11_1, diffs above"; fi; \
            $(RM) -f ex11_1.tmp
+runex12:
 	-@$(MPIRUN)  -np 2 ex12 > ex12_1.tmp 2>&1;   \
            if (diff ex12_1.out ex12_1.tmp) then true; \
            else echo "Possible problem with ex12_1, diffs above"; fi; \
            $(RM) -f ex12_1.tmp
+runex13:
 	-@$(MPIRUN)  ex13 > ex13_1.tmp 2>&1;   \
            if (diff ex13_1.out ex13_1.tmp) then true; \
            else echo "Possible problem with ex13_1, diffs above"; fi; \
            $(RM) -f ex13_1.tmp
+runex14:
 	-@$(MPIRUN)  ex14 > ex14_1.tmp 2>&1;   \
            if (diff ex14_1.out ex14_1.tmp) then true; \
            else echo "Possible problem with ex14_1, diffs above"; fi; \
            $(RM) -f ex14_1.tmp
+runex15:
 	-@$(MPIRUN)  ex15 > ex15_1.tmp 2>&1;   \
            if (diff ex15_1.out ex15_1.tmp) then true; \
            else echo "Possible problem with ex15_1, diffs above"; fi; \
            $(RM) -f ex15_1.tmp
+runex16:
 	-@$(MPIRUN)  ex16 > ex16_1.tmp 2>&1;   \
            if (diff ex16_1.out ex16_1.tmp) then true; \
            else echo "Possible problem with ex16_1, diffs above"; fi; \
            $(RM) -f ex16_1.tmp
+runex19:
 	-@$(MPIRUN)  -np 4 ex19 > ex19_1.tmp 2>&1;   \
            if (diff ex19_1.out ex19_1.tmp) then true; \
            else echo "Possible problem with ex19_1, diffs above"; fi; \
            $(RM) -f ex19_1.tmp
+runex20:
 	-@$(MPIRUN)  ex20 > ex20_1.tmp 2>&1;   \
            if (diff ex20_1.out ex20_1.tmp) then true; \
            else echo "Possible problem with ex20_1, diffs above"; fi; \
-           $(RM) -f ex21_1.tmp
+           $(RM) -f ex20_1.tmp
+runex21:
 	-@$(MPIRUN)  ex21 > ex21_1.tmp 2>&1;   \
            if (diff ex21_1.out ex21_1.tmp) then true; \
            else echo "Possible problem with ex21_1, diffs above"; fi; \
            $(RM) -f ex21_1.tmp
+runex22:
 	-@$(MPIRUN)  ex22 > ex22_1.tmp 2>&1;   \
            if (diff ex22_1.out ex22_1.tmp) then true; \
            else echo "Possible problem with ex22_1, diffs above"; fi; \

@@ -85,6 +85,8 @@ int main(int argc,char **args)
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
+  MatView(C,SYNC_STDOUT_VIEWER);
+
   /* Change matrix (keeping same nonzero structure) and solve again */
   ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
   ierr = MatZeroEntries(C); CHKERRA(ierr);

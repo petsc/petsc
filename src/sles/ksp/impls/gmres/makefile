@@ -15,6 +15,4 @@ LIBBASE  = libpetscksp
 LINCLUDE = 
 MANSEC   = 5
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

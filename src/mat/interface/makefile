@@ -15,6 +15,4 @@ LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)
 MANSEC   = 2
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -10,12 +10,11 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1
+EXAMPLES = 
+REXAMPLES=
 CEXAMPLES= ex1
 EXAMPLESC= ex1.c
 LINCLUDE = $(SOURCEH)
-
-runexamples:
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)

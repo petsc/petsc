@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.32 1995/05/30 19:00:28 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.33 1995/05/31 00:05:49 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -221,6 +221,40 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat mat,MatAssemblyType mode)
     if (vs->diag_ind == -1) 
        PSETERR(1,"No diagonal term!  Must set diagonal entry, even if zero.");
   }
+  return 0;
+}
+
+static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  BSspmat      *l = mrow->A;
+  int          i, ierr, N, *rz, m = mrow->m - 1;
+
+  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
+  ierr = ISGetIndices(is,&rz); CHKERR(ierr);
+  if (diag) {
+    for ( i=0; i<N; i++ ) {
+      if (rz[i] < 0 || rz[i] > m) SETERR(1,"Index out of range.");
+      if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
+        l->rows[rz[i]]->length = 1;
+        l->rows[rz[i]]->nz[0] = *diag;
+        l->rows[rz[i]]->col[0] = rz[i];
+      }
+      else {
+        ierr = MatSetValues(mat,1,&rz[i],1,&rz[i],diag,INSERTVALUES);
+        CHKERR(ierr);
+      }
+    }
+  }
+  else {
+    for ( i=0; i<N; i++ ) {
+      if (rz[i] < 0 || rz[i] > m) SETERR(1,"Index out of range.");
+      l->rows[rz[i]]->length = 0;
+    }
+  }
+  ISRestoreIndices(is,&rz);
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 
@@ -495,6 +529,142 @@ static int MatZeroEntries_MPIRowbs(Mat mat)
     vs = A->rows[i];
     for (j=0; j< vs->length; j++) vs->nz[j] = 0.0;
   }
+  return 0;
+}
+
+/* again this uses the same basic stratagy as in the assembly and 
+   scatter create routines, we should try to do it systemamatically 
+   if we can figure out the proper level of generality. */
+
+/* the code does not do the diagonal entries correctly unless the 
+   matrix is square and the column and row owerships are identical.
+   This is a BUG. The only way to fix it seems to be to access 
+   aij->A and aij->B directly and not through the MatZeroRows() 
+   routine. 
+*/
+
+static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
+{
+  Mat_MPIRowbs   *l = (Mat_MPIRowbs *) A->data;
+  int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
+  int            *procs,*nprocs,j,found,idx,nsends,*work;
+  int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
+  int            *rvalues,tag = 67,count,base,slen,n,*source;
+  int            *lens,imdex,*lrows,*values;
+  MPI_Comm       comm = A->comm;
+  MPI_Request    *send_waits,*recv_waits;
+  MPI_Status     recv_status,*send_status;
+  IS             istmp;
+
+  if (!l->assembled) 
+    SETERR(1,"MatZeroRows_MPIRowbs: Must assemble matrix first");
+  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
+
+  /*  first count number of contributors to each processor */
+  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
+  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) MALLOC((N+1)*sizeof(int)); CHKPTR(owner); /* see note*/
+  for ( i=0; i<N; i++ ) {
+    idx = rows[i];
+    found = 0;
+    for ( j=0; j<numtids; j++ ) {
+      if (idx >= owners[j] && idx < owners[j+1]) {
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+      }
+    }
+    if (!found) SETERR(1,"Index out of range.");
+  }
+  nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
+
+  /* inform other processors of number of messages and max length*/
+  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[mytid]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
+  nmax = work[mytid];
+  FREE(work);
+
+  /* post receives:   */
+  rvalues = (int *) MALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
+  CHKPTR(rvalues);
+  recv_waits = (MPI_Request *) MALLOC((nrecvs+1)*sizeof(MPI_Request));
+  CHKPTR(recv_waits);
+  for ( i=0; i<nrecvs; i++ ) {
+    MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
+              comm,recv_waits+i);
+  }
+
+  /* do sends:
+      1) starts[i] gives the starting index in svalues for stuff going to 
+         the ith processor
+  */
+  svalues = (int *) MALLOC( (N+1)*sizeof(int) ); CHKPTR(svalues);
+  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTR(send_waits);
+  starts = (int *) MALLOC( (numtids+1)*sizeof(int) ); CHKPTR(starts);
+  starts[0] = 0; 
+  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=0; i<N; i++ ) {
+    svalues[starts[owner[i]]++] = rows[i];
+  }
+  ISRestoreIndices(is,&rows);
+
+  starts[0] = 0;
+  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  count = 0;
+  for ( i=0; i<numtids; i++ ) {
+    if (procs[i]) {
+      MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
+                comm,send_waits+count++);
+    }
+  }
+  FREE(starts);
+
+  base = owners[mytid];
+
+  /*  wait on receives */
+  lens = (int *) MALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTR(lens);
+  source = lens + nrecvs;
+  count = nrecvs; slen = 0;
+  while (count) {
+    MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);
+    /* unpack receives into our local space */
+    MPI_Get_count(&recv_status,MPI_INT,&n);
+    source[imdex]  = recv_status.MPI_SOURCE;
+    lens[imdex]  = n;
+    slen += n;
+    count--;
+  }
+  FREE(recv_waits); 
+  
+  /* move the data into the send scatter */
+  lrows = (int *) MALLOC( (slen+1)*sizeof(int) ); CHKPTR(lrows);
+  count = 0;
+  for ( i=0; i<nrecvs; i++ ) {
+    values = rvalues + i*nmax;
+    for ( j=0; j<lens[i]; j++ ) {
+      lrows[count++] = values[j] - base;
+    }
+  }
+  FREE(rvalues); FREE(lens);
+  FREE(owner); FREE(nprocs);
+    
+  /* actually zap the local rows */
+  ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  CHKERR(ierr);  FREE(lrows);
+  ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag); CHKERR(ierr);
+  ierr = ISDestroy(istmp); CHKERR(ierr);
+
+  /* wait on sends */
+  if (nsends) {
+    send_status = (MPI_Status *) MALLOC( nsends*sizeof(MPI_Status) );
+    CHKPTR(send_status);
+    MPI_Waitall(nsends,send_waits,send_status);
+    FREE(send_status);
+  }
+  FREE(send_waits); FREE(svalues);
+
   return 0;
 }
 
@@ -778,7 +948,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatGetDiagonal_MPIRowbs,0,0,
        MatAssemblyBegin_MPIRowbs,MatAssemblyEnd_MPIRowbs,
        0,
-       MatSetOption_MPIRowbs,MatZeroEntries_MPIRowbs,0,0,
+       MatSetOption_MPIRowbs,MatZeroEntries_MPIRowbs,MatZeroRows_MPIRowbs,0,
        0,0,0,MatCholeskyFactorNumeric_MPIRowbs,
        MatGetSize_MPIRowbs,MatGetLocalSize_MPIRowbs,
        MatGetOwnershipRange_MPIRowbs,

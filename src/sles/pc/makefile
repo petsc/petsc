@@ -14,6 +14,4 @@ LIBBASE  = libpetscsles
 LINCLUDE = $(SOURCEH)
 DIRS     = utils src impls  examples
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

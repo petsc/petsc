@@ -170,7 +170,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
 
-/*  MatView(*newmat,STDOUT_VIEWER); */
+  MatView(*newmat,STDOUT_VIEWER);
   
   return 0;
 }

@@ -17,8 +17,6 @@ LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = 
 
-runexamples:
-
 receive: openport closeport receive.o receivesparse.o  receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o $(MATLABLIB)
 	$(RM) -f receive.o receivesparse.o  receivedense.o 

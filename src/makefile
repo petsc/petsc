@@ -15,5 +15,3 @@ DIRS     = inline is vec ksp sys pc mat sles  draw grid stencil \
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
-runexamples:
-

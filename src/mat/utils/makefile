@@ -20,6 +20,4 @@ LINCLUDE = $(SOURCEH)
 DIRS     = complex
 MANSEC   = 2
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

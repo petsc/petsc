@@ -17,4 +17,3 @@ MANSEC   = 6
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
-runexamples:

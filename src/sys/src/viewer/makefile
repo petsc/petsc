@@ -16,4 +16,3 @@ DIRS     = impls examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
-runexamples:

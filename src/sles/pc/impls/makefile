@@ -14,6 +14,4 @@ LIBBASE  = libpetscsles
 LINCLUDE = $(SOURCEH)
 DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

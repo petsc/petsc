@@ -15,8 +15,6 @@ CEXAMPLES= ex1 ex2 ex3
 EXAMPLESC= ex1.c ex2.c ex3.c
 LINCLUDE = $(SOURCEH)
 
-runexamples:
-
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o

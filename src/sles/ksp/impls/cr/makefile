@@ -14,6 +14,4 @@ OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -15,7 +15,5 @@ LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
 DIRS     = ls tr test
 
-runexamples:
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

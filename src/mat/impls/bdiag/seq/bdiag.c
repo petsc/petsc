@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.14 1995/05/26 19:25:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.15 1995/05/29 00:02:34 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -549,6 +549,7 @@ static int MatGetDiagonal_BDiag(Mat matin,Vec v)
   Scalar *x, *dvmain;
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != mat->m) SETERR(1,"Nonconforming matrix and vector");
+  if (mat->mainbd == -1) SETERR(1,"Main diagonal is not set.");
   dvmain = mat->diagv[mat->mainbd];
   if (mat->nb == 1) {
     for (i=0; i<mat->m; i++) x[i] = dvmain[i];
@@ -568,8 +569,27 @@ static int MatZero_BDiag(Mat A)
 
 static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
 {
-  /* Mat_BDiag *l = (Mat_BDiag *) A->data; */
+  Mat_BDiag *l = (Mat_BDiag *) A->data;
+  int     i, j, ierr, N, *rows, m = l->m - 1, nz, *col;
+  Scalar  *dvmain, *val;
 
+  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
+  for ( i=0; i<N; i++ ) {
+    if (rows[i] < 0 || rows[i] > m) SETERR(1,"Index out of range.");
+    ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERR(ierr);
+    MEMSET(val,0,nz*sizeof(Scalar));
+    ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERTVALUES); CHKERR(ierr);
+    ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERR(ierr);
+  }
+  if (diag) {
+    if (l->mainbd == -1) SETERR(1,"Main diagonal does not exist.");
+    dvmain = l->diagv[l->mainbd];
+    for ( i=0; i<N; i++ ) dvmain[rows[i]] = *diag;
+  }
+  ISRestoreIndices(is,&rows);
+  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 
@@ -673,8 +693,6 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
 .  nb - each element of a diagonal is an nb x nb dense matrix
 .  diag - array of block diagonal numbers, values are
 $     diag = row/nb - col/nb (integer division)
-   NOTE:  currently, diagonals MUST be listed in descending order!
-   You must store the main diagonal, even if it has zero values.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
    if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
    control memory allocation.
@@ -700,13 +718,16 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
 {
   Mat       bmat;
   Mat_BDiag *mat;
-  int       i, j, temp, sizetot;
+  int       i, j, nda, temp, sizetot;
+  Scalar    *dtemp;
 
   int mytid;
 
 #define  MIN(a,b) ((a) < (b) ? (a) : (b))
   *newmat       = 0;
   if ((n%nb) || (m%nb)) SETERR(1,"Invalid block size.");
+  if (!nd) nda = nd + 1;
+  else nda = nd;
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
   PLogObjectCreate(bmat);
   bmat->data    = (void *) (mat = NEW(Mat_BDiag)); CHKPTR(mat);
@@ -724,18 +745,28 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->ndim   = 0;
   mat->mainbd = -1;
 
-  mat->diag   = (int *)MALLOC( (2+nb)*nd * sizeof(int) ); CHKPTR(mat->diag);
-  mat->bdlen  = mat->diag + nd;
-  mat->colloc = mat->bdlen + nd;
+  mat->diag   = (int *)MALLOC( (2+nb)*nda * sizeof(int) ); CHKPTR(mat->diag);
+  mat->bdlen  = mat->diag + nda;
+  mat->colloc = mat->bdlen + nda;
   sizetot = 0;
+  if (diagv) { /* user allocated space */
+    mat->user_alloc = 1;
+    for (i=0; i<nd; i++) mat->diagv[i] = diagv[i];
+  }
+  else mat->user_alloc = 0;
 
   /* Sort diagonals in decreasing order. */
   for (i=0; i<nd; i++) {
     for (j=i+1; j<nd; j++) {
       if (diag[i] < diag[j]) {
-        temp = diag[i];
+        temp = diag[i];   
         diag[i] = diag[j];
         diag[j] = temp;
+        if (diagv) {
+          dtemp = diagv[i];
+          diagv[i] = diagv[j];
+          diagv[j] = dtemp;
+        }
       }
     }
   }
@@ -756,29 +787,25 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     if (diag[i] == 0) mat->mainbd = i;
     printf("[%d] i=%d, diag=%d, dlen=%d\n",mytid,i,diag[i],mat->bdlen[i]);
   }
-  if ((mat->mainbd == -1 && (nd != 0) ))
-    SETERR(1,"No main diagonal.  Must set main diagonal, even if empty.")
   sizetot *= nb*nb;
+  if (nda != nd) sizetot += 1;
   mat->maxnz  = sizetot;
-  mat->dvalue = (Scalar *)MALLOC(nb*nd * sizeof(Scalar)); CHKPTR(mat->dvalue);
-  mat->diagv  = (Scalar **)MALLOC(nd * sizeof(Scalar*)); CHKPTR(mat->diagv);
-  mat->mem    = (nd*(nb+2)) * sizeof(int) + nb*nd * sizeof(Scalar)
-                 + nd * sizeof(Scalar*) + sizeof(Mat_BDiag)
+  mat->dvalue = (Scalar *)MALLOC(nb*nda * sizeof(Scalar)); CHKPTR(mat->dvalue);
+  mat->diagv  = (Scalar **)MALLOC(nda * sizeof(Scalar*)); CHKPTR(mat->diagv);
+  mat->mem    = (nda*(nb+2)) * sizeof(int) + nb*nda * sizeof(Scalar)
+                 + nda * sizeof(Scalar*) + sizeof(Mat_BDiag)
                  + sizetot * sizeof(Scalar);
 
-  if (diagv) mat->user_alloc = 1; /* user allocated space */
-  else       mat->user_alloc = 0;
   if (!mat->user_alloc) {
     Scalar *d;
-    d = (Scalar *)MALLOC(sizetot * sizeof(Scalar)); CHKPTR(d);
+    d = mat->diagv[0] = (Scalar *)MALLOC(sizetot * sizeof(Scalar)); CHKPTR(d);
     MEMSET(d,0,sizetot*sizeof(Scalar));
     for (i=0; i<nd; i++) {
       mat->diagv[i] = d;
       d += nb*nb*mat->bdlen[i];
     }
-  } else {
-    for (i=0; i<nd; i++) mat->diagv[i] = diagv[i];
-  }
+  } /* otherwise diagonals set on input */
+
   mat->nz        = mat->maxnz; /* Currently not keeping track of exact count */
   mat->assembled = 0;
   mat->nonew     = 1; /* Currently all memory must be preallocated! */

@@ -12,12 +12,13 @@ OBJSF    =
 LIBBASE  = libpetscvec
 CEXAMPLES= ex1 ex2
 EXAMPLESC= ex1.c ex2.c
+REXAMPLES= runex1
 SYSLIB   = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscmat -lpetscvec \
            -lpetscdraw -lpetscsys $(BS_LIB) $(LAPACK_LIB) \
            $(BLAS_LIB) $(FC_LIB) $(X11_LIB) $(MPI_LIB) $(SYS_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
-runexamples:
+runex1:
 	@echo "There are no externally runable examples in this directory"
 	
 ex1: ex1.o 
