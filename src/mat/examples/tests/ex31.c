@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.18 2000/09/02 02:48:23 bsmith Exp balay $*/
+/*$Id: ex31.c,v 1.19 2000/09/06 22:19:21 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = MatView(C,viewer);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);
-  PLogEventEnd(MATRIX_GENERATE,0,0,0,0);
+  ierr = PLogEventEnd(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* PART 2:  Read in matrix in binary format */
 
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = MatLoad(viewer,MATMPIAIJ,&C);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-  PLogEventEnd(MATRIX_READ,0,0,0,0);
+  ierr = PLogEventEnd(MATRIX_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Free data structures */

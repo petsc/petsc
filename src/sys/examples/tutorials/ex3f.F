@@ -1,5 +1,5 @@
 !
-!    "$Id: ex3f.F,v 1.10 1998/06/05 20:32:58 balay Exp balay $";
+!    "$Id: ex3f.F,v 1.11 2000/09/06 22:19:13 balay Exp bsmith $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.
@@ -59,59 +59,59 @@
       call PLogEventRegister(USER_EVENT7,'User event 7','Red:',ierr)
       call PLogEventRegister(USER_EVENT8,'User event 8','Red:',ierr)
       call PLogEventRegister(USER_EVENT9,'User event 9','Red:',ierr)
-      call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
+      call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                                           &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
       call PLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
+      call PLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                            &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT2,PETSC_NULL_OBJECT,                &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
-      call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT2,PETSC_NULL_OBJECT,                  &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT3,PETSC_NULL_OBJECT,                &
+      call PLogEventBegin(USER_EVENT2,PETSC_NULL_OBJECT,                          &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
       call PLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT3,PETSC_NULL_OBJECT,                  &
+      call PLogEventEnd(USER_EVENT2,PETSC_NULL_OBJECT,                            &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT4,PETSC_NULL_OBJECT,                &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
-      call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT4,PETSC_NULL_OBJECT,                  &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT5,PETSC_NULL_OBJECT,                &
+      call PLogEventBegin(USER_EVENT3,PETSC_NULL_OBJECT,                          &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
       call PLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT5,PETSC_NULL_OBJECT,                  &
+      call PLogEventEnd(USER_EVENT3,PETSC_NULL_OBJECT,                            &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT6,PETSC_NULL_OBJECT,                &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
-      call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT6,PETSC_NULL_OBJECT,                  &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT7,PETSC_NULL_OBJECT,                &
+      call PLogEventBegin(USER_EVENT4,PETSC_NULL_OBJECT,                          &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
       call PLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT7,PETSC_NULL_OBJECT,                  &
+      call PLogEventEnd(USER_EVENT4,PETSC_NULL_OBJECT,                            &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT8,PETSC_NULL_OBJECT,                &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
-      call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT8,PETSC_NULL_OBJECT,                  &
-     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT9,PETSC_NULL_OBJECT,                &
+      call PLogEventBegin(USER_EVENT5,PETSC_NULL_OBJECT,                          &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
       call PLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT9,PETSC_NULL_OBJECT,                  &
+      call PLogEventEnd(USER_EVENT5,PETSC_NULL_OBJECT,                            &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogEventBegin(USER_EVENT6,PETSC_NULL_OBJECT,                          &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogFlops(imax,ierr)
+      call PetscSleep(1,ierr)
+      call PLogEventEnd(USER_EVENT6,PETSC_NULL_OBJECT,                            &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogEventBegin(USER_EVENT7,PETSC_NULL_OBJECT,                          &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogFlops(imax,ierr)
+      call PetscSleep(1,ierr)
+      call PLogEventEnd(USER_EVENT7,PETSC_NULL_OBJECT,                            &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogEventBegin(USER_EVENT8,PETSC_NULL_OBJECT,                          &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogFlops(imax,ierr)
+      call PetscSleep(1,ierr)
+      call PLogEventEnd(USER_EVENT8,PETSC_NULL_OBJECT,                            &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogEventBegin(USER_EVENT9,PETSC_NULL_OBJECT,                          &
+     &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call PLogFlops(imax,ierr)
+      call PetscSleep(1,ierr)
+      call PLogEventEnd(USER_EVENT9,PETSC_NULL_OBJECT,                            &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
 !
 !    We disable the logging of an event.

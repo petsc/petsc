@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.47 2000/05/17 16:00:34 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.48 2000/09/02 02:49:57 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -252,6 +252,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   Scalar    mdt = 1.0/ts->time_step,mone = -1.0;
 
   PetscFunctionBegin;
+  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
@@ -282,6 +283,7 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
   int       ierr,M,m;
 
   PetscFunctionBegin;
+  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
   if (ts->Ashell) { /* construct new shell matrix */
@@ -301,6 +303,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
   int       ierr,M,m;
 
   PetscFunctionBegin;
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
@@ -319,10 +322,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
 #define __FUNC__ /*<a name="TSSetFromOptions_BEuler_Linear"></a>*/"TSSetFromOptions_BEuler_Linear"
 static int TSSetFromOptions_BEuler_Linear(TS ts)
 {
-  int ierr;
-
   PetscFunctionBegin;
-  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -331,10 +331,7 @@ static int TSSetFromOptions_BEuler_Linear(TS ts)
 #define __FUNC__ /*<a name="TSSetFromOptions_BEuler_Nonlinear"></a>*/"TSSetFromOptions_BEuler_Nonlinear"
 static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 {
-  int ierr;
-
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
