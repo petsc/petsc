@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.15 2000/05/04 16:24:51 bsmith Exp balay $ 
+# $Id: makefile,v 1.16 2000/05/18 16:49:16 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' -DPETSC_ARCH='"${PETSC_ARCH"' \
+CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' -DPETSC_ARCH='"${PETSC_ARCH}"' \
             -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c random.c sortd.c sorti.c \
