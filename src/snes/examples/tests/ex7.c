@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.32 1996/07/08 22:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.33 1997/03/26 01:37:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -37,8 +37,8 @@ int main( int argc, char **argv )
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
@@ -46,7 +46,7 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
 
   /* create explict matrix preconditioner */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&B); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B); CHKERRA(ierr);
   user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
@@ -74,7 +74,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);

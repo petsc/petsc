@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.38 1996/08/15 12:48:18 bsmith Exp $";
+static char vcid[] = "$Id: ex17.c,v 1.1 1996/12/10 13:57:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatSolveTrans().\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   for ( i=0; i<m; i++ ) {
@@ -36,10 +36,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = ISCreateStride(MPI_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRA(ierr);
   ierr = MatZeroRows(C,isrow,&five); CHKERRA(ierr);
 
-  ierr = VecCreateSeq(MPI_COMM_SELF,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = ISView(row,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Norm of error %g\n",norm);
+  PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
 
   ierr = ISDestroy(row); CHKERRA(ierr);
   ierr = ISDestroy(col); CHKERRA(ierr);

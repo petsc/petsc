@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.3 1996/10/24 15:37:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1997/03/03 17:25:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
@@ -51,7 +51,7 @@ int slesex(int argc,char **args)
   int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar  v, one = 1.0, none = -1.0;
 
-  ierr = PetscSetCommWorld(MPI_COMM_SELF); CHKERRA(ierr);
+  ierr = PetscSetCommWorld(PETSC_COMM_SELF); CHKERRA(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.213 1997/04/03 17:07:50 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.214 1997/04/04 23:54:18 balay Exp bsmith $";
 #endif
 
 /*
@@ -1485,7 +1485,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         }
       }
     }
-    ierr = ISCreateGeneral(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);
@@ -1600,7 +1600,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
    during matrix assembly can be increased by more than a factor of 50.
 
    Input Parameters:
-.  comm - MPI communicator, set to MPI_COMM_SELF
+.  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)

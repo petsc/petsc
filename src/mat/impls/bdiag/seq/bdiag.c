@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.132 1997/04/05 00:08:05 balay Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.133 1997/04/05 01:06:17 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2120,7 +2120,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
 
    Input Parameters:
-.  comm - MPI communicator, set to MPI_COMM_SELF
+.  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  nd - number of block diagonals (optional)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex56.c,v 1.5 1997/03/31 20:17:34 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.6 1997/03/31 20:21:11 balay Exp bsmith $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked for MatBAIJ";
 
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   
   if (size == 1) {
-    ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
   } else {
     ierr = MatCreateMPIBAIJ(MPI_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,1,
                             PETSC_NULL,1,PETSC_NULL,&A); CHKERRA(ierr);

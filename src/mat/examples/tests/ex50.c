@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex50.c,v 1.1 1996/12/10 13:58:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex50.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
   fclose(file);
 
-  PetscPrintf(MPI_COMM_SELF,"Reading matrix complete.\n");
+  PetscPrintf(PETSC_COMM_SELF,"Reading matrix complete.\n");
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = VecView(b,view); CHKERRA(ierr);

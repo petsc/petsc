@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex30.c,v 1.2 1997/03/21 16:13:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex30.c,v 1.3 1997/03/26 01:36:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -27,17 +27,17 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg1); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-lf",&lf,&flg1); CHKERRA(ierr);
 
-  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&viewer1); CHKERRA(ierr);
-  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,0,400,0,400,400,&viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2); CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag",&flg2); CHKERRA(ierr);
   if (flg2) {
     bs = 1;
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1); CHKERRA(ierr);
-    ierr = MatCreateSeqBDiag(MPI_COMM_SELF,m*n,m*n,0,bs,PETSC_NULL,PETSC_NULL,&C);
+    ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,m*n,m*n,0,bs,PETSC_NULL,PETSC_NULL,&C);
            CHKERRA(ierr);
   } else {
-    ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);
   }
 
   /* Create the matrix. (This is five-point stencil with some extra elements) */

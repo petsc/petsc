@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.67 1997/03/12 22:33:45 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.68 1997/03/13 16:33:44 curfman Exp bsmith $";
 #endif
 
 /*
@@ -363,7 +363,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -961,7 +961,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
     a->cowners[i] += a->cowners[i-1];
   }
 
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,m,N,data,&a->A); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,m,N,data,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */

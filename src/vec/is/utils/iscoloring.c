@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iscoloring.c,v 1.5 1997/01/06 20:21:40 balay Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.6 1997/02/22 02:22:18 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -127,7 +127,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
   }
   is  = (IS *) PetscMalloc( nc*sizeof(IS) ); CHKPTRQ(is);
   for ( i=0; i<nc; i++ ) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF,mcolors[i],ii[i],is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,mcolors[i],ii[i],is+i); CHKERRQ(ierr);
   }
 
   (*iscoloring)->n    = nc;

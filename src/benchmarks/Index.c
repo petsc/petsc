@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: Index.c,v 1.12 1996/10/17 19:07:38 balay Exp bsmith $";
+static char vcid[] = "$Id: Index.c,v 1.13 1997/03/09 18:00:35 bsmith Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -29,7 +29,7 @@ int test1()
   Scalar      *x, *y;
   PetscRandom r;
 
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
   x    = (Scalar *)PetscMalloc(20000*sizeof(Scalar)); CHKPTRA(x);
   y    = (Scalar *)PetscMalloc(20000*sizeof(Scalar)); CHKPTRA(y);
 
@@ -120,7 +120,7 @@ int test2()
   Scalar       x[20000], y[20000];
   PetscRandom  r;
 
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
 
   /* Take care of paging effects */
   t1 = PetscGetTime(); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.18 1996/11/07 15:07:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.19 1997/01/01 03:35:13 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for ISGeneral routines.
@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   /*
      Test IS of size 0 
   */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,0,&n,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,&is); CHKERRA(ierr);
   ierr = ISGetSize(is,&n); CHKERRA(ierr);
   if (n != 0) SETERRQ(1,0,0);
   ierr = ISDestroy(is); CHKERRA(ierr);
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   for ( i=0; i<n; i++ ) {
     indices[i] = rank + i;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is); CHKERRA(ierr);
   ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
     if (ii[i] != indices[i]) SETERRA(1,0,0);
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   for ( i=0; i<n; i++ ) {
     indices[i] = n - i - 1;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is); CHKERRA(ierr);
   PetscFree(indices);
   ierr = ISSetPermutation(is); CHKERRA(ierr);
   ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);

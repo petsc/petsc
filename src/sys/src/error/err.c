@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.59 1997/03/09 21:40:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.60 1997/03/20 02:10:58 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -356,7 +356,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   if (viewer) {
     ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
   } else {
-    comm = MPI_COMM_SELF;
+    comm = PETSC_COMM_SELF;
   }
 
   for ( i=0; i<n; i++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.114 1997/03/26 01:36:07 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.115 1997/04/05 00:29:53 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -386,7 +386,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp); CHKERRQ(ierr);  
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp); CHKERRQ(ierr);  
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -990,7 +990,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   }
 
   /* Form local matrix */
-  ierr = MatCreateSeqBDiag(MPI_COMM_SELF,b->m,b->n,k,bs,ldiag,ldiagv,&b->A);CHKERRQ(ierr); 
+  ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,b->m,b->n,k,bs,ldiag,ldiagv,&b->A);CHKERRQ(ierr); 
   PLogObjectParent(B,b->A);
   PetscFree(ldiag); if (ldiagv) PetscFree(ldiagv);
 

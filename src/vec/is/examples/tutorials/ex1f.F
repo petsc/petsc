@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f.F,v 1.8 1996/11/08 21:12:53 balay Exp curfman $";
+C  "$Id: ex1f.F,v 1.9 1997/04/04 16:27:21 curfman Exp bsmith $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
@@ -34,7 +34,7 @@ C  its own index set with its own list of integers.
       indices(3) = rank + 3 
       indices(4) = rank + 4 
       indices(5) = rank + 5 
-      call ISCreateGeneral(MPI_COMM_SELF,5,indices,is,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,5,indices,is,ierr)
 
 C  Print the index set to stdout
 

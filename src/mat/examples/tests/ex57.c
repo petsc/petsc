@@ -25,11 +25,11 @@ int main(int argc,char **args)
 
   ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -fin option");
-  ierr = ViewerFileOpenBinary(MPI_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg); CHKERRA(ierr);
   if (!flg) PetscPrintf(MPI_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
-  ierr = ViewerFileOpenBinary(MPI_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
 
   ierr = MatLoad(fdin,mtype,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fdin); CHKERRA(ierr);
@@ -39,12 +39,12 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg); CHKERRQ(ierr);
   
-  ierr = ISCreateStride(MPI_COMM_SELF,size,start,1,&isrow); CHKERRQ(ierr);
-  ierr = ISCreateStride(MPI_COMM_SELF,size,start,1,&iscol); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol); CHKERRQ(ierr);
   ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B); CHKERRQ(ierr);
   ierr = MatView(B[0],fdout); CHKERRQ(ierr);
 
-  ierr = VecCreate(MPI_COMM_SELF,size,&b); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,size,&b); CHKERRQ(ierr);
   ierr = MatView(B[0],fdout); CHKERRQ(ierr);
   ierr = ViewerDestroy(fdout); CHKERRA(ierr);
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.47 1997/03/26 01:37:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.48 1997/04/07 20:11:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -190,9 +190,9 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc); CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,nloc,n,n,n,(void*)mfctx,J); CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)SNESMatrixFreeMult_Private); CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)SNESMatrixFreeDestroy_Private); CHKERRQ(ierr);
+  ierr = MatCreateShell(comm,nloc,n,n,n,mfctx,J); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)SNESMatrixFreeMult_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)SNESMatrixFreeDestroy_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)SNESMatrixFreeView_Private); CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);

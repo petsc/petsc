@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.57 1997/03/06 01:48:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.58 1997/03/26 01:35:31 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -94,7 +94,7 @@ static int PCSetUp_ASM(PC pc)
       }
       for ( i=0; i<n_local_true; i++){
         size       =  ((sz/bs)/n_local_true + (( (sz/bs) % n_local_true) > i))*bs;
-        ierr       =  ISCreateStride(MPI_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
+        ierr       =  ISCreateStride(PETSC_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
         start      += size;
         osm->is[i] =  isl;
       }
@@ -115,16 +115,16 @@ static int PCSetUp_ASM(PC pc)
     /* create the local work vectors and scatter contexts */
     for ( i=0; i<n_local_true; i++ ) {
       ierr = ISGetSize(osm->is[i],&m); CHKERRQ(ierr);
-      ierr = VecCreateSeq(MPI_COMM_SELF,m,&osm->x[i]); CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]); CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]); CHKERRQ(ierr);
-      ierr = ISCreateStride(MPI_COMM_SELF,m,0,1,&isl); CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,osm->is[i],osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);
     }
     for ( i=n_local_true; i<n_local; i++ ) {
-      ierr = VecCreateSeq(MPI_COMM_SELF,0,&osm->x[i]); CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&osm->x[i]); CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]); CHKERRQ(ierr);
-      ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);   
     }
@@ -133,7 +133,7 @@ static int PCSetUp_ASM(PC pc)
        Create the local solvers.
     */
     for ( i=0; i<n_local_true; i++ ) {
-      ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
+      ierr = SLESCreate(PETSC_COMM_SELF,&sles); CHKERRQ(ierr);
       PLogObjectParent(pc,sles);
       ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
       ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
@@ -539,7 +539,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
           idx[loc++] = count++;
         }
       }
-      ierr = ISCreateGeneral(MPI_COMM_SELF,nidx,idx,(*is)+loc_outter++); CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outter++); CHKERRQ(ierr);
       PetscFree(idx);
       /* ISView((*is)[loc_outter-1],0); */
       xstart += width;

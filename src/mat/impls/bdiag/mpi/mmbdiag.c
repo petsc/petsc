@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.25 1997/01/06 20:25:01 balay Exp balay $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.26 1997/04/05 00:29:59 balay Exp bsmith $";
 #endif
 
 /*
@@ -65,10 +65,10 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   PetscFree(indices);
 
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
   PetscFree(garray);
 
   /* create temporary global vector to generate scatter context */

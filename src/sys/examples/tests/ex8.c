@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.2 1997/02/11 15:32:14 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.3 1997/02/13 00:38:43 balay Exp bsmith $";
 #endif
 
 static char *help = "Tests the option -trmalloc_nan which initializes the memory \n\
@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   y += x[0];
   
-  PetscPrintf(MPI_COMM_SELF,"y = %f \n",y);
+  PetscPrintf(PETSC_COMM_SELF,"y = %f \n",y);
   PetscFree(x);
   PetscFinalize();
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.37 1996/08/15 12:45:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.38 1996/11/27 22:51:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -23,12 +23,12 @@ int main(int argc,char **argv)
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* create two vector */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,2,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,2,idx2,&is2); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,&is2); CHKERRA(ierr);
 
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_SELF,"-------\n");
+  PetscPrintf(PETSC_COMM_SELF,"-------\n");
   ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);

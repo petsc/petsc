@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.25 1997/02/05 22:05:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.26 1997/03/26 01:38:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   /* set up display to show my portion of the wave */
   xbase = (int) ((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
   width = (int) ((myend-mybase)*800./M);
-  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Local Portion of Solution",xbase,200,
+  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
                          width,200,&viewer_private);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer_private,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);

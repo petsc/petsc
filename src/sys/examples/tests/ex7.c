@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.10 1996/04/13 15:14:31 curfman Exp $";
+static char vcid[] = "$Id: ex7.c,v 1.2 1997/02/07 23:25:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,7 +15,7 @@ int main( int argc, char **argv )
   int size;
 
   MPI_Init( &argc, &argv );
-  PetscSetCommWorld(MPI_COMM_SELF);
+  PetscSetCommWorld(PETSC_COMM_SELF);
   PetscInitialize(&argc, &argv,PETSC_NULL,help);
    
   MPI_Comm_size(PETSC_COMM_WORLD,&size);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.63 1996/12/07 16:10:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.64 1997/01/01 03:39:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -105,8 +105,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  PetscPrintf(MPI_COMM_SELF,"m = %d, N=%d\n", m, N );
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,PETSC_NULL,&mat); CHKERRQ(ierr); 
+  PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n", m, N );
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
   K = (double **) PetscMalloc(81*sizeof(double *)); CHKPTRQ(K);
@@ -161,7 +161,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
     if (nz) rowkeep[ict++] = i;
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
   submat = *submatb; PetscFree(submatb);
   PetscFree(rowkeep);

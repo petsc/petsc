@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdaij.c,v 1.8 1997/01/06 20:24:23 balay Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.9 1997/02/22 02:25:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -164,7 +164,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
   }
   is  = (IS *) PetscMalloc( ncolors*sizeof(IS) ); CHKPTRQ(is);
   for ( i=0; i<ncolors; i++ ) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF,sizes[i],ii[i],is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,sizes[i],ii[i],is+i); CHKERRQ(ierr);
   }
 
   *iscoloring         = (ISColoring) PetscMalloc(sizeof(struct _ISColoring));CHKPTRQ(*iscoloring);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex40.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex40.c,v 1.3 1997/03/26 01:36:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
   /* Read the matrix again as a sequential matrix */
-  ierr = ViewerFileOpenBinary(MPI_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
   
@@ -47,7 +47,7 @@ int main(int argc,char **args)
 
   /* Create the random Index Sets */
   ierr = MatGetSize(A,&m, &n); CHKERRA(ierr);
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
   for ( i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(r,&rand); CHKERRA(ierr);
     start = (int)(rand*m);
@@ -55,8 +55,8 @@ int main(int argc,char **args)
     end  = (int)(rand*m);
     size =  end - start;
     if ( start > end) { start = end; size = -size ;}
-    ierr = ISCreateStride(MPI_COMM_SELF,size,start,1,is1+i); CHKERRA(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,size,start,1,is2+i); CHKERRA(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,is1+i); CHKERRA(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,is2+i); CHKERRA(ierr);
   }
   ierr = MatIncreaseOverlap(A,nd,is1,ov); CHKERRA(ierr);
   ierr = MatIncreaseOverlap(B,nd,is2,ov); CHKERRA(ierr);
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);
+    PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);
   }
 
   /* Free allocated memory */

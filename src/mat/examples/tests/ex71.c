@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.23 1996/03/21 16:43:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1996/07/08 22:22:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **args)
 
   ierr = MatView(A,viewer); CHKERRA(ierr);
 
-  ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecView(x,viewer); CHKERRA(ierr);
   

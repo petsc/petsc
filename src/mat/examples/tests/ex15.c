@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.38 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex15.c,v 1.1 1996/12/10 13:57:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = MatGetReordering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
@@ -50,11 +50,11 @@ int main(int argc,char **args)
   ierr = VecScale(&alpha,y); CHKERRA(ierr);
 
   ierr = MatNorm(C,NORM_FROBENIUS,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Frobenius norm of matrix %g\n",norm);
+  PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);
   ierr = MatNorm(C,NORM_1,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"One  norm of matrix %g\n",norm);
+  PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);
   ierr = MatNorm(C,NORM_INFINITY,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Infinity norm of matrix %g\n",norm);
+  PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);
 
   ierr = MatLUFactor(C,perm,iperm,1.0); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
@@ -65,8 +65,8 @@ int main(int argc,char **args)
   ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  if (norm < 1.e-12) PetscPrintf(MPI_COMM_SELF,"Norm of error < 1.e-12\n");
-  else  PetscPrintf(MPI_COMM_SELF,"Norm of error %g\n",norm);
+  if (norm < 1.e-12) PetscPrintf(PETSC_COMM_SELF,"Norm of error < 1.e-12\n");
+  else  PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
 
   /* Test MatSolveAdd */
   ierr = MatSolveAdd(C,b,y,x); CHKERRA(ierr);
@@ -75,8 +75,8 @@ int main(int argc,char **args)
   ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
 
-  if (norm < 1.e-12) PetscPrintf(MPI_COMM_SELF,"Norm of error < 1.e-12\n");
-  else   PetscPrintf(MPI_COMM_SELF,"Norm of error %g\n",norm);
+  if (norm < 1.e-12) PetscPrintf(PETSC_COMM_SELF,"Norm of error < 1.e-12\n");
+  else   PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
 
   ierr = ISDestroy(perm); CHKERRA(ierr);
   ierr = ISDestroy(iperm); CHKERRA(ierr);

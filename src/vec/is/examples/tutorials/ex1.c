@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.5 1996/09/28 14:09:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1996/11/07 15:07:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   indices[2] = rank + 3; 
   indices[3] = rank + 4; 
   indices[4] = rank + 5; 
-  ierr = ISCreateGeneral(MPI_COMM_SELF,5,indices,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,&is); CHKERRA(ierr);
   /*
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]

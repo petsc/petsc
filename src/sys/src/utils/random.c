@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.26 1997/02/22 02:23:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.27 1997/03/26 01:35:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -132,7 +132,7 @@ $                                component is 0
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r);
+$    PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);
 $    PetscRandomGetValue(r,&value1);
 $    PetscRandomGetValue(r,&value2);
 $    PetscRandomGetValue(r,&value3);

@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.5 1996/09/28 14:09:59 curfman Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.6 1997/01/01 03:35:16 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateStride(MPI_COMM_SELF,n,first,step,&set); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set); CHKERRA(ierr);
   ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /*

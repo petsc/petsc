@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.58 1997/03/13 16:36:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.59 1997/03/26 01:38:09 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -201,13 +201,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStride(MPI_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
-  ierr = ISCreateStride(MPI_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
@@ -216,7 +216,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  ierr=ISCreateStride(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  ierr=ISCreateStride(PETSC_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   idx = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
@@ -303,7 +303,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   {
     IS is;
     
-    ierr = ISCreateStride(MPI_COMM_SELF,da->xe-da->xs,da->base,1,&is);
+    ierr = ISCreateStride(PETSC_COMM_SELF,da->xe-da->xs,da->base,1,&is);
            CHKERRQ(ierr);
     ierr = AOCreateDebugIS(comm,is,is,&da->ao); CHKERRQ(ierr);
     ierr = ISDestroy(is); CHKERRQ(ierr);

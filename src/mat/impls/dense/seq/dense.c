@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.125 1997/03/13 16:33:41 curfman Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.126 1997/04/03 17:06:53 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1117,7 +1117,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
    of the matrix operations use the BLAS and LAPACK routines.
 
    Input Parameters:
-.  comm - MPI communicator, set to MPI_COMM_SELF
+.  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.6 1997/02/05 21:56:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.7 1997/02/22 02:22:18 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -89,7 +89,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
   for ( i=0; i<n; i++ ) {
     idxout[i] = idxmap[idxin[i]];
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idxout,newis); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis); CHKERRQ(ierr);
   PetscFree(idxout);
   return 0;
 }

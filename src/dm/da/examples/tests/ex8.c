@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.3 1997/03/04 21:36:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.4 1997/03/26 01:38:15 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -43,7 +43,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   /* 
      Generate the local vector to hold this processors slice
   */
-  ierr = VecCreateSeq(MPI_COMM_SELF,nslice,vslice); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nslice,vslice); CHKERRQ(ierr);
   ierr = DAGetDistributedVector(da,&vglobal); CHKERRQ(ierr);
 
   /*
@@ -68,9 +68,9 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   
   /* Create the "from" and "to" index set */
   /* This is to scatter from the global vector */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,nslice,sliceindices,&isfrom);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nslice,sliceindices,&isfrom);CHKERRQ(ierr);
   /* This is to gather into the local vector */
-  ierr = ISCreateStride(MPI_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(vglobal,isfrom,*vslice,isto,scatter); CHKERRQ(ierr);
 

@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.9 1996/11/25 23:31:41 balay Exp bsmith $";
+C "$Id: ex1f.F,v 1.10 1997/01/01 03:41:24 bsmith Exp bsmith $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -107,12 +107,12 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create vectors for solution and nonlinear function
 
-      call VecCreateSeq(MPI_COMM_SELF,2,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,2,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 C  Create Jacobian matrix data structure
 
-      call MatCreate(MPI_COMM_SELF,2,2,J,ierr)
+      call MatCreate(PETSC_COMM_SELF,2,2,J,ierr)
 
 C  Set function evaluation routine and vector
 

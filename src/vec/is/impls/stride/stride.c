@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.53 1997/02/22 02:22:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.54 1997/03/13 16:32:22 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -20,7 +20,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
   int       ierr;
 
   if (is->isidentity) {
-    ierr = ISCreateStride(MPI_COMM_SELF,isstride->n,0,1,perm); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm); CHKERRQ(ierr);
     ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
   } else {
     int *ii,*indices,i,n = isstride->n;
@@ -30,7 +30,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
       ii[indices[i]] = i;
     }
     ierr = ISRestoreIndices(is,&indices); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,perm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,perm); CHKERRQ(ierr);
     PetscFree(ii);
     ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
   }

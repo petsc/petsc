@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.212 1997/04/05 16:44:21 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.213 1997/04/07 15:27:32 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -30,7 +30,7 @@ PETSc currently provides two basic vector types: sequential and parallel
 one can
 use the command \findex{VecCreateSeq()} \findex{Vec}
 \begin{verbatim}
-   ierr = VecCreateSeq(MPI_COMM_SELF,int m,Vec *x);
+   ierr = VecCreateSeq(PETSC_COMM_SELF,int m,Vec *x);
 \end{verbatim}
 To create a parallel vector one can either specify the number of 
 components that will be stored on each processor or let PETSc decide. 
@@ -413,9 +413,9 @@ elements it needed, or none by creating an index set with no entries.
    Scalar     *values;
    int        idx_from[] = {100,200}, idx_to[] = {0,1};
 
-   VecCreateSeq(MPI_COMM_SELF,2,&x);
-   ISCreateGeneral(MPI_COMM_SELF,2,idx_from,&from);
-   ISCreateGeneral(MPI_COMM_SELF,2,idx_to,&to);
+   VecCreateSeq(PETSC_COMM_SELF,2,&x);
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,&from);
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,&to);
    VecScatterCreate(p,from,x,to,&scatter);
    VecScatterBegin(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
    VecScatterEnd(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
@@ -1019,7 +1019,7 @@ To create a sequential AIJ sparse matrix, {\tt A},
 \findex{MatCreateSeqAIJ()} with {\tt m} rows and {\tt n} columns,
 one uses the command
 \begin{verbatim}
-   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,int m,int n,int nz,int *nzz,Mat *A);
+   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nzz,Mat *A);
 \end{verbatim}
 where {\tt nz} or {\tt nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set {\tt nz=0} and {\tt
@@ -1292,7 +1292,7 @@ usual Fortran77 style.  To create a sequential, dense PETSc matrix,
 {\tt A} of dimensions {\tt m} by {\tt n}, the user should
 call \findex{MatCreateSeqDense()}
 \begin{verbatim}
-   ierr = MatCreateSeqDense(MPI_COMM_SELF,int m,int n,Scalar *data,Mat *A);
+   ierr = MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,Scalar *data,Mat *A);
 \end{verbatim}
 The variable {\tt data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
@@ -7001,7 +7001,7 @@ discretized on regular grids.
 The routine for creating a uniprocessor block diagonal matrix with {\tt m} 
 rows, {\tt n} columns, and a block size of {\tt nb} is
 \begin{verbatim}
-   ierr = MatCreateSeqBDiag(MPI_COMM_SELF,int m,int n,int nd,int nb,int *diag,
+   ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,int m,int n,int nd,int nb,int *diag,
                                    Scalar **diagv,Mat *A);
 \end{verbatim}
 The \findex{MatCreateSeqBDiag} argument {\tt nd} is the number of 
@@ -7043,7 +7043,7 @@ block diagonals as described above.  The routine for creating a
 parallel block diagonal matrix with {\tt m} local rows, {\tt M} global
 rows, {\tt n} global columns, and a block size of {\tt nb} is
 \begin{verbatim}
-   ierr = MatCreateMPIBDiag(MPI_COMM_SELF,int m,int M,int N,int nd,int nb,int *diag,
+   ierr = MatCreateMPIBDiag(PETSC_COMM_SELF,int m,int M,int N,int nd,int nb,int *diag,
                             Scalar **diagv,Mat *A);
 \end{verbatim}
 Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc

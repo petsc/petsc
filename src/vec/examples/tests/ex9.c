@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.33 1996/08/15 12:45:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.34 1996/11/27 22:51:04 bsmith Exp bsmith $";
 #endif
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n";
@@ -25,11 +25,11 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,3,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,3,idx2,&is2); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,&is2); CHKERRA(ierr);
 
   /* fill local part of parallel vector */
   for ( i=n*rank; i<n*(rank+1); i++ ) {
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
   if (!rank) {
-    PetscPrintf(MPI_COMM_SELF,"scattered vector\n"); 
+    PetscPrintf(PETSC_COMM_SELF,"scattered vector\n"); 
     ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   }
   ierr = ISDestroy(is1); CHKERRA(ierr);

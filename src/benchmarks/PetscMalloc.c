@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscMalloc.c,v 1.7 1996/03/19 21:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: PetscMalloc.c,v 1.8 1997/03/09 18:00:35 bsmith Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -16,7 +16,7 @@ int main( int argc, char **argv)
   
   PetscInitialize(&argc, &argv,0,0);
   
-  ierr = PetscRandomCreate( MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  ierr = PetscRandomCreate( PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
   for (i=0; i<1000; i++) {
     ierr    = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
     rand1[i] = (int ) (value* 144327);

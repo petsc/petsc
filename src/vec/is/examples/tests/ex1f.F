@@ -1,5 +1,5 @@
 C
-C static char vcid[] = "$Id: ex1f.F,v 1.4 1996/09/23 23:13:36 bsmith Exp bsmith $"
+C static char vcid[] = "$Id: ex1f.F,v 1.5 1996/11/07 15:07:18 bsmith Exp bsmith $"
 C
 C  Formatted test for IS general routines
 C
@@ -19,7 +19,7 @@ C
 
 C     Test IS of size 0 
 
-       call ISCreateGeneral(MPI_COMM_SELF,0,n,is,ierr) 
+       call ISCreateGeneral(PETSC_COMM_SELF,0,n,is,ierr) 
             CHKERRA(ierr)
        call ISGetSize(is,n,ierr) 
             CHKERRA(ierr)
@@ -36,7 +36,7 @@ C     Create large IS and test ISGetIndices(,ierr)
       do 10, i=1,n
         indices(i) = rank + i
  10   continue
-      call ISCreateGeneral(MPI_COMM_SELF,n,indices,is,ierr) 
+      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr) 
             CHKERRA(ierr)
       call ISGetIndices(is,ii,iis,ierr) 
             CHKERRA(ierr)
@@ -124,7 +124,7 @@ C     Inverting permutation
         indices(i) = n - i
  30   continue
 
-      call ISCreateGeneral(MPI_COMM_SELF,n,indices,is,ierr) 
+      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr) 
             CHKERRA(ierr)
       call ISSetPermutation(is,ierr) 
             CHKERRA(ierr)

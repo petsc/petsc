@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.18 1997/01/06 20:25:07 balay Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.19 1997/02/22 02:25:40 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -36,8 +36,8 @@ int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col)
   PetscFree( nbrhd ); PetscFree( qsize );
   PetscFree( qlink ); PetscFree(iperm);
   for (i=0; i<nrow; i++) perm[i]--;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,nrow,perm,row); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
   PetscFree(perm);
   return 0;
 }

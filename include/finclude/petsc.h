@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.38 1997/01/08 20:58:03 balay Exp balay $;
+C  $Id: petsc.h,v 1.39 1997/01/08 21:03:10 balay Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -64,12 +64,12 @@ C
 C
 C PETSc world communicator
 C
-      MPI_Comm PETSC_COMM_WORLD
+      MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
 
       common   /petscfortran/  PETSC_NULL,
      *         VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF,
      *         VIEWER_STDOUT_WORLD,PETSC_NULL_CHARACTER,
-     *         PETSC_COMM_WORLD
+     *         PETSC_COMM_WORLD,PETSC_COMM_SELF
 C
 C     Macro for templating between real and complex
 C

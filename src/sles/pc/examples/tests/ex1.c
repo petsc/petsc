@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.23 1996/02/08 18:26:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.24 1996/03/19 21:25:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the creation of a PC context.\n\n";
@@ -20,9 +20,9 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
 
   /* Vector and matrix must be set before calling PCSetUp */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&u);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
   ierr = PCSetVector(pc,u); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 

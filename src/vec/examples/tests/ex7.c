@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.31 1996/08/15 12:45:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.32 1996/11/27 22:51:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
@@ -21,16 +21,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create two vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(MPI_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,3,idx1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES); CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"----\n");
+  PetscPrintf(PETSC_COMM_SELF,"----\n");
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex47.c,v 1.1 1996/12/10 13:58:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex47.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -54,8 +54,8 @@ int main(int argc,char **args)
   if (!tflg) SETERRA(1,0,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
-   ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
-   ierr = VecCreateSeq(MPI_COMM_SELF,m,&y); CHKERRA(ierr);
+   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRA(ierr);
+   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRA(ierr);
 
   ierr = MatGetDiagonal(A,x); CHKERRA(ierr);
   ierr = MatGetDiagonal(B,y); CHKERRA(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
 
   /* Test MatDiagonalScale() */
   
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
   ierr = VecSetRandom(r,x); CHKERRA(ierr);
   ierr = VecSetRandom(r,y); CHKERRA(ierr);
 
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = VecNorm(y,NORM_2,&norm2); CHKERRA(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) { 
-    PetscPrintf(MPI_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);  
+    PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);  
     SETERRA(1,0,"MatDiagonalScale() failed");
   }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.44 1997/04/04 19:10:53 curfman Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.45 1997/04/04 20:00:07 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -329,3 +329,65 @@ $     call ISRestoreIndicesF90(x,xx_v,ierr)
 
 .keywords:  IS, index set, restore, indices, f90
 M*/
+
+/*MC
+    ISBlockGetIndicesF90 - Accesses the elements of an index set from Fortran90.
+    The users should call ISBlockRestoreIndicesF90() after having looked at the
+    indices.  The user should NOT change the indices.
+
+    Input Parameter:
+.   x - index set
+
+    Output Parameters:
+.   xx_v - the Fortran90 pointer to the array
+.   ierr - error code
+
+    Synopsis:
+    ISBlockGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Example of Usage: 
+$     Scalar, pointer xx_v(:)
+$     ....
+$     call ISBlockGetIndicesF90(x,xx_v,ierr)
+$     a = xx_v(3)
+$     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
+           ISRestoreIndices()
+
+.keywords:  IS, index set, get, indices, f90
+M*/
+
+/*MC
+    ISBlockRestoreIndicesF90 - Restores an index set to a usable state after
+    a call to ISBlockGetIndicesF90().
+
+    Input Parameters:
+.   x - index set
+.   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Synopsis:
+    ISBlockRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Example of Usage: 
+$     Scalar, pointer xx_v(:)
+$     ....
+$     call ISBlockGetIndicesF90(x,xx_v,ierr)
+$     a = xx_v(3)
+$     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+   
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.seealso:  ISBlockGetIndicesF90(), ISGetIndices(), ISRestoreIndices(), ISRestoreIndicesF90()
+
+.keywords:  IS, index set, restore, indices, f90
+M*/
+
+

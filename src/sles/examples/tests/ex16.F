@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.10 1996/08/31 16:05:14 curfman Exp bsmith $";
+C      "$Id: ex16.F,v 1.11 1997/01/01 03:39:04 bsmith Exp bsmith $";
 
        implicit none
 
@@ -79,7 +79,7 @@ C      print*, 'Time for solve = ',time
   100 format('Residual norm ',e10.4,' iterations ',i5)
 
 C Create system 2 by striping off some rows of the matrix
-      call ISCreateStride(MPI_COMM_SELF,5,0,1,isrow, ierr)
+      call ISCreateStride(PETSC_COMM_SELF,5,0,1,isrow, ierr)
       call MatZeroRows(A,isrow,five,ierr)
 
 C Solve system-2

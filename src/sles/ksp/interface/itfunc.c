@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.81 1997/02/22 02:22:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.82 1997/03/26 01:34:39 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -173,7 +173,7 @@ int KSPSolve(KSP ksp, int *its)
       Draw      draw;
       DrawSP    drawsp;
 
-      ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Iteratively Computed Eigenvalues",
+      ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
                              PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);
              CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
@@ -208,7 +208,7 @@ int KSPSolve(KSP ksp, int *its)
       Draw      draw;
       DrawSP    drawsp;
 
-      ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
+      ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
              CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.6 1997/01/21 18:42:14 bsmith Exp curfman $"
+C "$Id: ex1f.F,v 1.7 1997/04/03 18:56:51 curfman Exp bsmith $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -91,7 +91,7 @@ C
 C
 C      Create vectors to hold the solution and function value
 C
-       call VecCreateSeq(MPI_COMM_SELF,N,x,ierr)
+       call VecCreateSeq(PETSC_COMM_SELF,N,x,ierr)
        call VecDuplicate(x,r,ierr) 
 
 C
@@ -101,7 +101,7 @@ C    the Performance chapter of the users manual for information on
 C    preallocating memory in sparse matrices.
 C
 
-      call MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,PETSC_NULL,J,ierr) 
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,J,ierr) 
 
 C
 C     Create timestepper context 

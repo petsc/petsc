@@ -1,5 +1,5 @@
 
-C      "$Id: ex4f90.F,v 1.3 1997/04/04 14:44:26 bsmith Exp curfman $";
+C      "$Id: ex4f90.F,v 1.4 1997/04/04 16:30:01 curfman Exp bsmith $";
 
 C  Description:  Illustrates the use of VecSetValues() to set
 C  multiple values at once; demonstrates VecGetArrayF90().
@@ -46,7 +46,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create initial vector and duplicate it
 
-       call VecCreateSeq(MPI_COMM_SELF,n,x,ierr)
+       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
        call VecDuplicate(x,y,ierr)
 
 C  Fill work arrays with vector entries and locations.  Note that

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.128 1997/04/02 21:22:09 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.129 1997/04/02 23:28:10 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -108,6 +108,7 @@ static int PLogCloseHistoryFile(FILE **fd)
 int      PetscInitializedCalled = 0;
 int      PetscGlobalRank = -1, PetscGlobalSize = -1;
 MPI_Comm PETSC_COMM_WORLD = 0;
+MPI_Comm PETSC_COMM_SELF  = 0;
 
 /* ---------------------------------------------------------------------------*/
 int    PetscCompare          = 0;
@@ -335,7 +336,7 @@ $  -log_info : Print verbose information to the screen.
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *help)
 {
-  int        ierr,flag,flg;
+  int        ierr,flag,flg,dummy_tag;
 
   if (PetscInitializedCalled) return 0;
 
@@ -359,6 +360,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 
   PetscInitializedCalled = 1;
 
+
   MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
 #if defined(PETSC_COMPLEX)
@@ -375,7 +377,14 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
   ierr = OptionsCreate_Private(argc,args,file); CHKERRQ(ierr);
-  ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
+  ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr); 
+
+  /*
+       Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     attribute.
+  */
+  PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
     int size;
@@ -511,6 +520,11 @@ int PetscFinalize()
   PLogEventRegisterDestroy_Private();
   OptionsDestroy_Private();
   NRDestroyAll(); 
+  /*
+       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     attribute.
+  */
+  PetscCommFree_Private(&PETSC_COMM_SELF);
   if (flg1) {
     PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);

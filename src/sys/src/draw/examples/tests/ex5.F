@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.14 1996/08/27 20:24:52 curfman Exp bsmith $";
+C    "$Id: ex5.F,v 1.15 1996/09/12 16:27:09 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/draw.h"
@@ -25,7 +25,7 @@ C
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-height',height,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-      call DrawOpenX(MPI_COMM_SELF,PETSC_NULL_CHARACTER,
+      call DrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
 
       call DrawLGCreate(draw,1,lg,ierr)

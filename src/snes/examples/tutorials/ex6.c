@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.44 1997/01/01 03:41:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.45 1997/01/28 20:24:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
 
@@ -75,8 +75,8 @@ int main( int argc, char **argv )
      Create matrix data structures; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&J); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,PETSC_NULL,&JPrec); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec); CHKERRA(ierr);
 
   /*
      Note that in this case we create separate matrices for the Jacobian
@@ -121,7 +121,7 @@ int main( int argc, char **argv )
 
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

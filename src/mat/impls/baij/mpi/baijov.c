@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.16 1997/01/06 20:25:27 balay Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.17 1997/02/22 02:26:01 bsmith Exp bsmith $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -38,7 +38,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
       if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF, isz, nidx, (is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);
@@ -76,7 +76,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
       idx_local +=bs;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,nidx,(is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,nidx,(is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
   return 0;
@@ -101,7 +101,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
         nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
   return 0;
@@ -461,7 +461,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   }
   
   for (i=0; i<imax; ++i) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
   }
   
   PetscFree(pa);
@@ -1194,7 +1194,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   else {
     *submat = submats = (Mat *)PetscMalloc(ismax*sizeof(Mat)); CHKPTRQ(submats);
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);
+      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);
              CHKERRQ(ierr);
     }
   }

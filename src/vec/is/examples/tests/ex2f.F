@@ -1,5 +1,5 @@
 C
-C  "$Id: ex2f.F,v 1.6 1996/11/07 15:07:18 bsmith Exp bsmith $"
+C  "$Id: ex2f.F,v 1.7 1997/01/01 03:35:13 bsmith Exp bsmith $"
 C
 C  Formatted Test for IS stride routines
 C
@@ -15,7 +15,7 @@ C
 
 C     Test IS of size 0 
 
-      call ISCreateStride(MPI_COMM_SELF,0,0,2,is,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,0,0,2,is,ierr)
       call ISGetSize(is,n,ierr)
       if (n .ne. 0) then 
         SETERRA(1,0,0)
@@ -37,7 +37,7 @@ C     Test IS of size 0
 
 C     Test ISGetIndices()
 
-      call ISCreateStride(MPI_COMM_SELF,10000,-8,3,is,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,10000,-8,3,is,ierr)
       call ISGetSize(is,n,ierr)
       call ISGetIndices(is,ii,iis,ierr)
       do 10, i=1,10000

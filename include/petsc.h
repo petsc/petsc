@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.154 1997/04/02 21:03:40 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.155 1997/04/05 15:27:50 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -50,6 +50,7 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 typedef enum { SCALAR_DOUBLE, SCALAR_SINGLE } ScalarPrecision;
 
 extern MPI_Comm PETSC_COMM_WORLD;
+extern MPI_Comm PETSC_COMM_SELF;
 extern int      PetscInitializedCalled;
 extern int      PetscSetCommWorld(MPI_Comm);
 

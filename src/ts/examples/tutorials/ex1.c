@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.7 1997/01/21 18:42:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1997/04/03 18:56:57 curfman Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
   /* 
       Create vectors to hold the solution and function value
   */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
   /*
@@ -96,7 +96,7 @@ int main( int argc, char **argv )
     the Performance chapter of the users manual for information on 
     preallocating memory in sparse matrices.
   */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J); CHKERRA(ierr);
 
   /* 
      Create timestepper context 

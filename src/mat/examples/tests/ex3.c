@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.28 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex3.c,v 1.1 1996/12/10 13:57:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
@@ -19,11 +19,11 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-omega",&omega,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,n,n,PETSC_NULL,&C); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&u); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&e); CHKERRA(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&e); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
@@ -48,7 +48,7 @@ int main(int argc,char **args)
     MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,x);
     VecWAXPY(&mone,x,u,e);
     VecNorm(e,NORM_2,&norm);
-    PetscPrintf(MPI_COMM_SELF,"2-norm of error %g\n",norm);
+    PetscPrintf(PETSC_COMM_SELF,"2-norm of error %g\n",norm);
   }
   ierr = MatDestroy(C); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);

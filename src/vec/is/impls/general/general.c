@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.56 1997/02/22 02:21:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.57 1997/03/13 16:32:21 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -65,7 +65,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   return 0;

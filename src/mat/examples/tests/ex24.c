@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.19 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex24.c,v 1.1 1996/12/10 13:57:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests copying an AIJ matrix.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;

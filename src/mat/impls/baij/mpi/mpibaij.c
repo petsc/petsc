@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.64 1997/04/03 17:07:41 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.65 1997/04/05 00:29:36 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1364,7 +1364,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -1603,10 +1603,10 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->cend_bs   = b->cend * bs;
   
   if (d_nz == PETSC_DEFAULT) d_nz = 5;
-  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m,n,d_nz,d_nnz,&b->A); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,n,d_nz,d_nnz,&b->A); CHKERRQ(ierr);
   PLogObjectParent(B,b->A);
   if (o_nz == PETSC_DEFAULT) o_nz = 0;
-  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m,N,o_nz,o_nnz,&b->B); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,N,o_nz,o_nnz,&b->B); CHKERRQ(ierr);
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */

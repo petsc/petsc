@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/11/30 05:41:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/12/05 14:03:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
@@ -20,14 +20,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* create stiffness matrix */
-  ierr = MatCreate(MPI_COMM_SELF,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,N,N,&C); CHKERRA(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&u); CHKERRA(ierr); 
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u); CHKERRA(ierr); 
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);

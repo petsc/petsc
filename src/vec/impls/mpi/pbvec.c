@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.74 1997/03/13 16:32:42 curfman Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.75 1997/04/09 17:28:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -255,7 +255,7 @@ int VecCreateGhost(MPI_Comm comm,int n,int nghost,int N,Vec *lv,Vec *vv)
   }
   ierr = VecCreateMPI_Private(comm,n,nghost,N,size,rank,0,vv); CHKERRQ(ierr);
   ierr = VecGetArray(*vv,&array); CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,nghost,array,lv); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nghost,array,lv); CHKERRQ(ierr);
   ierr = VecRestoreArray(*vv,&array); CHKERRQ(ierr);
   return 0;
 }

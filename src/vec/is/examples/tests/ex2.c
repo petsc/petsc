@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.4 1996/11/07 15:07:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.5 1997/01/01 03:35:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   /*
      Test IS of size 0 
   */
-  ierr = ISCreateStride(MPI_COMM_SELF,0,0,2,&is); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,0,0,2,&is); CHKERRA(ierr);
   ierr = ISGetSize(is,&n); CHKERRA(ierr);
   if (n != 0) SETERRA(1,0,0);
   ierr = ISStrideGetInfo(is,&start,&stride); CHKERRA(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   /*
      Test ISGetIndices()
   */
-  ierr = ISCreateStride(MPI_COMM_SELF,10000,-8,3,&is); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,10000,-8,3,&is); CHKERRA(ierr);
   ierr = ISGetSize(is,&n); CHKERRA(ierr);
   ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
   for (i=0; i<10000; i++) {

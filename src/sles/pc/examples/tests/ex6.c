@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex39.c,v 1.13 1996/08/01 14:33:53 balay Exp $";
+static char vcid[] = "$Id: ex39.c,v 1.1 1996/12/10 13:57:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-x1",&x1,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-x2",&x2,&flg); CHKERRA(ierr);
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);
@@ -64,14 +64,14 @@ int main(int argc,char **args)
     ierr = MatIncreaseOverlap(C, Nsub1, is1, ol);                    CHKERRA(ierr);
     ierr = PCASMCreateSubdomains2D( m+1, m+1,x1, x2, 1, ol, &Nsub2, &is2); CHKERRA(ierr);
     
-    PetscPrintf(MPI_COMM_SELF,"flg == 1 => both index sets are same\n");
+    PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");
     if( Nsub1 != Nsub2){
-      PetscPrintf(MPI_COMM_SELF,"Error: No of indes sets don't match\n");
+      PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");
     }
     
     for (i=0; i<Nsub1; ++i) {
       ISEqual(is1[i], is2[i], (PetscTruth*)&flg);
-      PetscPrintf(MPI_COMM_SELF,"i =  %d, flg = %d \n",i, flg);
+      PetscPrintf(PETSC_COMM_SELF,"i =  %d, flg = %d \n",i, flg);
       
     }
     for (i=0; i<Nsub1; ++i) ISDestroy(is1[i]);     

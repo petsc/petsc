@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.92 1997/01/12 04:33:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.93 1997/02/22 02:24:10 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -313,14 +313,14 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
       PetscFPrintf(pc->comm,fd,
        "    Local solve info for each block is in the following KSP and PC objects:\n");
       PetscSequentialPhaseBegin(pc->comm,1);
-      PetscFPrintf(MPI_COMM_SELF,fd,
+      PetscFPrintf(PETSC_COMM_SELF,fd,
        "Proc %d: number of local blocks = %d, first local block number = %d\n",
         rank,jac->n_local,jac->first_local);
       for (i=0; i<jac->n_local; i++) {
-        PetscFPrintf(MPI_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);
+        PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);
         ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
            /* This shouldn't really be STDOUT */
-        if (i != jac->n_local-1) PetscFPrintf(MPI_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");
+        if (i != jac->n_local-1) PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");
       }
       fflush(fd);
       PetscSequentialPhaseEnd(pc->comm,1);

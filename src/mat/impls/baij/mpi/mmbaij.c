@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.11 1997/01/06 20:25:27 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.12 1997/04/05 00:18:13 balay Exp bsmith $";
 #endif
 
 
@@ -58,22 +58,22 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     for ( j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
   }
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(MPI_COMM_SELF,ec*bs,&baij->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec); CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
 
-  /* ierr = ISCreateGeneral(MPI_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
+  /* ierr = ISCreateGeneral(PETSC_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
   for ( i=0,col=0; i<ec; i++ ) {
     garray[i] = bs*garray[i];
   }
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
   for ( i=0,col=0; i<ec; i++ ) {
     garray[i] = garray[i]/bs;
   }
 
   stmp = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(stmp);
   for ( i=0; i<ec; i++ ) { stmp[i] = bs*i; } 
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   PetscFree(stmp);
 
   /* create temporary global vector to generate scatter context */
@@ -145,7 +145,7 @@ int DisAssemble_MPIBAIJ(Mat A)
   for ( i=0; i<mbs; i++ ) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,baij->bs,m,n,0,nz,&Bnew); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew); CHKERRQ(ierr);
   PetscFree(nz);
   
   rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.71 1997/01/27 18:16:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.72 1997/02/22 02:25:00 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1520,9 +1520,9 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
     for (j = start_val; j<end_val; ++j, ++col) permc[col]= j;
   }
 
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
   ISSetPermutation(*rperm);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
  
   ierr  = ISRestoreIndices(ris,&ridx); CHKERRQ(ierr);

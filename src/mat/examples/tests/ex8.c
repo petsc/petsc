@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.41 1996/08/22 20:07:33 curfman Exp $";
+static char vcid[] = "$Id: ex8.c,v 1.1 1996/12/10 13:58:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(MPI_COMM_SELF,m*n,m*n,&C);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,m*n,m*n,&C);CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",
+  PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",
     (int)info.nz_used,(int)info.nz_allocated);
 
   ierr = MatDestroy(C); CHKERRA(ierr);

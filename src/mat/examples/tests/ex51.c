@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex51.c,v 1.1 1996/12/10 13:58:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex51.c,v 1.2 1997/04/02 21:40:47 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -26,9 +26,9 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg); CHKERRA(ierr);
   M    = m*bs;
 
-  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,M,M,1,PETSC_NULL,&A); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,M,M,15,PETSC_NULL, &B); CHKERRA(ierr);
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL, &B); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
 
   rows  = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRA(rows);
   cols  = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRA(cols);
@@ -72,15 +72,15 @@ int main(int argc,char **args)
       idx[j*bs] = bs*(int)(PetscReal(rval)*m);
       for ( k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    ierr = ISCreateGeneral(MPI_COMM_SELF,size*bs,idx,is1+i); CHKERRA(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,size*bs,idx,is2+i); CHKERRA(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is1+i); CHKERRA(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is2+i); CHKERRA(ierr);
   }
   ierr = MatIncreaseOverlap(A,nd,is1,ov); CHKERRA(ierr);
   ierr = MatIncreaseOverlap(B,nd,is2,ov); CHKERRA(ierr);
 
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_SELF,"i=%d, flg =%d\n",i,flg);
+    PetscPrintf(PETSC_COMM_SELF,"i=%d, flg =%d\n",i,flg);
   }
 
   for (i=0; i<nd; ++i) { 
@@ -94,7 +94,7 @@ int main(int argc,char **args)
   /* Test MatMult() */
   for ( i=0; i<nd; i++) {
     ierr = MatGetSize(submatA[i],&mm,&nn); CHKERRA(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,mm,&xx); CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx); CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s1); CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s2); CHKERRA(ierr);
     for ( j=0; j<3; j++ ) {
@@ -105,7 +105,7 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm); CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(MPI_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
+        PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
       }
     }
     VecDestroy(xx);
@@ -119,7 +119,7 @@ int main(int argc,char **args)
   /* Test MatMult() */
   for ( i=0; i<nd; i++) {
     ierr = MatGetSize(submatA[i],&mm,&nn); CHKERRA(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,mm,&xx); CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx); CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s1); CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s2); CHKERRA(ierr);
     for ( j=0; j<3; j++ ) {
@@ -130,7 +130,7 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm); CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(MPI_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
+        PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
       }
     }
     VecDestroy(xx);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.37 1996/03/19 21:25:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.38 1996/07/08 22:18:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -24,14 +24,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create and initialize vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&u); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u); CHKERRA(ierr);
   ierr = VecSet(&one,ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   /* Solve the problem */
   ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
   ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
+  PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.27 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex22.c,v 1.1 1996/12/10 13:57:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests matrix reordering routines.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); 
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); 
 
   /* create the matrix for the five point stencil, YET AGAIN */
   for ( i=0; i<m; i++ ) {

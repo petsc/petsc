@@ -1,5 +1,5 @@
 C
-C "$Id: ex7f.F,v 1.1 1996/09/23 23:22:12 bsmith Exp bsmith $";
+C "$Id: ex7f.F,v 1.2 1996/09/30 22:57:59 bsmith Exp bsmith $";
 C
 C
 C     Formatted test for PetscSetCommWorld()
@@ -10,7 +10,7 @@ C
       integer size,ierr
 
       call MPI_Init(ierr)
-      call PetscSetCommWorld(MPI_COMM_SELF,ierr)
+      call PetscSetCommWorld(PETSC_COMM_SELF,ierr)
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
    
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)

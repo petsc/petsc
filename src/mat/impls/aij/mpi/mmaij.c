@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.34 1996/12/17 18:18:08 balay Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.35 1997/01/06 20:24:32 balay Exp bsmith $";
 #endif
 
 
@@ -53,11 +53,11 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscFree(indices);
   
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(MPI_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ec,garray,&from); CHKERRQ(ierr);
-  ierr = ISCreateStride(MPI_COMM_SELF,ec,0,1,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&from); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to); CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
@@ -118,7 +118,7 @@ int DisAssemble_MPIAIJ(Mat A)
   for ( i=0; i<m; i++ ) {
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
   PetscFree(nz);
   for ( i=0; i<m; i++ ) {
     for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.96 1997/04/03 17:07:34 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.97 1997/04/04 23:56:28 balay Exp bsmith $";
 #endif
 
 /*
@@ -2026,7 +2026,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    during matrix assembly can be increased by more than a factor of 50.
 
    Input Parameters:
-.  comm - MPI communicator, set to MPI_COMM_SELF
+.  comm - MPI communicator, set to PETSC_COMM_SELF
 .  bs - size of block
 .  m - number of rows
 .  n - number of columns

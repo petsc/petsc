@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.31 1996/08/15 12:48:18 bsmith Exp $";
+static char vcid[] = "$Id: ex12.c,v 1.1 1996/12/10 13:57:43 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   Imax = n*rank; if (Imax>= n*m -m - 1) Imax = m*n - m - 1;
-  ierr = ISCreateStride(MPI_COMM_SELF,m,Imax,1,&is); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is); CHKERRA(ierr);
   ierr = MatZeroRows(C,is,0); CHKERRA(ierr);
 
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);

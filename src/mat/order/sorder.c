@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.41 1997/02/20 18:24:44 balay Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.42 1997/02/22 02:25:40 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -39,8 +39,8 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
        to provide it to everyone.
     */
     ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,end-start,start,1,irow); CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,end-start,start,1,icol); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,irow); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,icol); CHKERRQ(ierr);
     ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
     ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
     return 0;
@@ -59,13 +59,13 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
   /*
     We actually create general index sets because this avoids mallocs to
     to obtain the indices in the MatSolve() routines.
-    ierr = ISCreateStride(MPI_COMM_SELF,n,0,1,irow); CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,n,0,1,icol); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol); CHKERRQ(ierr);
   */
   ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) ii[i] = i;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,irow); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,icol); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol); CHKERRQ(ierr);
   PetscFree(ii);
 
   ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
@@ -98,8 +98,8 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 
   ierr = PetscSortIntWithPermutation(n, lens, permr); CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,irow); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,icol); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol); CHKERRQ(ierr);
   PetscFree(lens);
   return 0;
 }
@@ -271,8 +271,8 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   }
 
   if (mat->M == 0) {
-    ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,cperm); CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,rperm); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm); CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm); CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm); CHKERRQ(ierr);
     ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);

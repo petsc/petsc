@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.4 1996/09/30 20:10:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1997/01/01 03:41:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -58,13 +58,13 @@ int main( int argc, char **argv )
   /*
      Create vectors for solution and nonlinear function
   */
-  ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
   /*
      Create Jacobian matrix data structure
   */
-  ierr = MatCreate(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector.
@@ -112,7 +112,7 @@ int main( int argc, char **argv )
   */
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
+  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.93 1997/03/13 16:32:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.94 1997/03/26 01:34:27 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -289,7 +289,7 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
         where the user provides the array space to store the vector values.
 
    Input Parameter:
-.  comm - the communicator, should be MPI_COMM_SELF
+.  comm - the communicator, should be PETSC_COMM_SELF
 .  n - the vector length 
 .  array - memory where the vector elements are to be stored.
 
@@ -319,7 +319,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
   PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+n*sizeof(Scalar));
@@ -344,7 +344,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
    VecCreateSeq - Creates a standard, sequential array-style vector.
 
    Input Parameter:
-.  comm - the communicator, should be MPI_COMM_SELF
+.  comm - the communicator, should be PETSC_COMM_SELF
 .  n - the vector length 
 
    Output Parameter:
@@ -366,7 +366,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
   PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+n*sizeof(Scalar));

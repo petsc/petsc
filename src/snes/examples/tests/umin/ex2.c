@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.36 1996/09/30 14:38:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.37 1997/01/01 03:41:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -84,14 +84,14 @@ int main(int argc,char **argv)
   }
 
   /* Allocate vectors */
-  ierr = VecCreate(MPI_COMM_SELF,user.ndim,&user.y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,user.ndim,&user.y); CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&user.s); CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&g); CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&x); CHKERRA(ierr);
   ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_SELF,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_SELF,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
    */
   ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatCreateShell(MPI_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,
+    ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,
            (void*)&user,&H); CHKERRA(ierr);
     if (user.problem == 1) {
       ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
-    ierr = MatCreate(MPI_COMM_SELF,user.ndim,user.ndim,&H); CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
@@ -139,8 +139,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
-  PetscPrintf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
+  PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   if (user.work) PetscFree(user.work); 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.13 1997/02/22 02:22:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: block.c,v 1.14 1997/03/13 16:32:23 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -89,7 +89,7 @@ int ISInvertPermutation_Block(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateBlock(MPI_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   return 0;

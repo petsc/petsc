@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.47 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex4.c,v 1.1 1996/12/10 13:57:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,m,n,&mat); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,m,n,&mat); CHKERRA(ierr);
   for (i=0; i<m; i++ ) {
     value = (double) i+1; tmp = i % 5; 
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   ierr = MatView(mat,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
-  ierr = ISCreateStride(MPI_COMM_SELF,3,2,1,&irkeep); CHKERRA(ierr);
-  ierr = ISCreateStride(MPI_COMM_SELF,5,4,1,&ickeep); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irkeep); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,5,4,1,&ickeep); CHKERRA(ierr);
   ierr = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRA(ierr);
   submat = *submatrices; PetscFree(submatrices);
   printf("\nsubmatrix:\n");

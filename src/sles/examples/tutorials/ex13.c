@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.3 1997/01/04 18:08:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex13.c,v 1.4 1997/04/02 14:59:21 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -164,19 +164,19 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
   /* 
      Create the sparse matrix. Preallocate 5 nonzeros per row.
   */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,0,&userctx->A); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A); CHKERRQ(ierr);
 
   /* 
      Create vectors.
   */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&userctx->b); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&userctx->b); CHKERRQ(ierr);
   ierr = VecDuplicate(userctx->b,&userctx->x); CHKERRQ(ierr);
 
   /* 
      Create linear solver context. This will be used repeatedly for all 
      the linear solves needed.
   */
-  ierr = SLESCreate(MPI_COMM_SELF,&userctx->sles); CHKERRQ(ierr);
+  ierr = SLESCreate(PETSC_COMM_SELF,&userctx->sles); CHKERRQ(ierr);
 
   return 0;
 }

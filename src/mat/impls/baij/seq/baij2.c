@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.12 1997/01/06 20:25:20 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.13 1997/02/22 02:25:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -62,7 +62,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
       for (k=0; k<bs; k++ )
         nidx2[j*bs+k] = nidx[j]*bs+k;
     }
-    ierr = ISCreateGeneral(MPI_COMM_SELF, isz*bs, nidx2, (is+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);
@@ -176,7 +176,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
     if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"MatGetSubmatrices_SeqBAIJ:");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF, count, iary,&is1); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is1); CHKERRQ(ierr);
   
   PetscMemzero(vary,(a->mbs)*sizeof(int));
   for ( i=0; i<ncols; i++) vary[icol[i]/bs]++;
@@ -185,7 +185,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
     if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"MatGetSubmatrices_SeqBAIJ:");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF, count, iary,&is2); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is2); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
   PetscFree(vary);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.50 1997/01/01 03:37:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.51 1997/03/26 01:35:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -119,22 +119,22 @@ int main(int Argc, char **Args)
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
                             PETSC_DEFAULT,smooths); CHKERRA(ierr);
 
-    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x); CHKERRA(ierr);
     X[levels - 1 - i] = x;
     ierr = MGSetX(pcmg,levels - 1 - i,x); CHKERRA(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x); CHKERRA(ierr);
     B[levels -1 - i] = x;
     ierr = MGSetRhs(pcmg,levels - 1 - i,x); CHKERRA(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x); CHKERRA(ierr);
     R[levels - 1 - i] = x;
     ierr = MGSetR(pcmg,levels - 1 - i,x); CHKERRA(ierr);
   } 
   /* create coarse level vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetX(pcmg,0,x); CHKERRA(ierr); X[0] = x;
-  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetRhs(pcmg,0,x); CHKERRA(ierr); B[0] = x;
-  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
@@ -151,12 +151,12 @@ int main(int Argc, char **Args)
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
+  PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
 
   ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERRA(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
+  PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
   PetscFree(N);
   ierr = VecDestroy(solution); CHKERRA(ierr);
@@ -313,7 +313,7 @@ int Create1dLaplacian(int n,Mat *mat)
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,mat); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat); CHKERRQ(ierr);
   
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES); CHKERRQ(ierr);
@@ -348,7 +348,7 @@ int CalculateSolution(int n,Vec *solution)
   int    i, ierr;
   double h,x = 0.0;
   Scalar uu;
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,solution); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution); CHKERRQ(ierr);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 

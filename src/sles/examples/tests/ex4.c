@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.42 1996/08/15 12:48:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.43 1996/12/08 20:51:12 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);
@@ -58,7 +58,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&u); CHKERRA(ierr); 
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u); CHKERRA(ierr); 
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex42.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex42.c,v 1.3 1997/03/26 01:36:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -41,13 +41,13 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
   /* Read the matrix again as a seq matrix */
-  ierr = ViewerFileOpenBinary(MPI_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
   
   /* Create the Random no generator */
   ierr = MatGetSize(A,&m, &n); CHKERRA(ierr);  
-  ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
 
   /* Create the IS corresponding to subdomains */
   is1    = (IS *) PetscMalloc( nd*sizeof(IS **) ); CHKPTRA(is1);
@@ -67,8 +67,8 @@ int main(int argc,char **args)
       idx[j] = (int)(rand*m);
     }
     ierr = PetscSortInt(size,idx); CHKERRA(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,size,idx,is1+i); CHKERRA(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,size,idx,is2+i); CHKERRA(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is1+i); CHKERRA(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i); CHKERRA(ierr);
   }
 
   ierr = MatIncreaseOverlap(A, nd, is1, ov); CHKERRA(ierr);
@@ -85,7 +85,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
     ierr = MatEqual(submatA[i], submatB[i],(PetscTruth*)&flg);CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);
+    PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);
   }
 
   /* Free Allocated Memory */

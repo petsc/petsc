@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.24 1996/03/19 21:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.25 1997/03/26 01:36:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  ierr = DrawOpenX(MPI_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
   ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
   ierr = DrawLGGetAxis(lg,&axis); CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);

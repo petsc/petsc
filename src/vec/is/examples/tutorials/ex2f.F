@@ -1,5 +1,5 @@
 
-C      "$Id: ex2f.F,v 1.6 1996/09/30 19:37:48 bsmith Exp balay $";
+C      "$Id: ex2f.F,v 1.7 1996/11/08 21:13:09 balay Exp bsmith $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a stride index set;
@@ -31,7 +31,7 @@ C  Create stride index set, starting at 3 with a stride of 2
 C    Note each processor is generating its own index set 
 C    (in this case they are all identical)
 
-      call ISCreateStride(MPI_COMM_SELF,n,first,step,set,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,n,first,step,set,ierr)
       call ISView(set,VIEWER_STDOUT_SELF,ierr)
 
 C  Extract the indice values from the set. Demonstrates how a Fortran code can  

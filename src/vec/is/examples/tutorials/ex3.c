@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.5 1996/09/28 14:09:50 curfman Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.6 1997/01/01 03:35:16 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,n,inputindices,&set); CHKERRA(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set); CHKERRA(ierr);
   ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /*

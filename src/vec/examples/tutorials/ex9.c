@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.3 1997/03/26 01:34:35 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.4 1997/04/06 14:17:02 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateMPIGhost().\n\n";
@@ -77,8 +77,8 @@ int main(int argc,char **argv)
     ifrom[0] = 0;  ifrom[1] = 5; 
   }
   ito[0] = 6; ito[1] = 7;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,2,ifrom,&isfrom);CHKERRA(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,2,ito,&isto);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ifrom,&isfrom);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ito,&isto);CHKERRA(ierr);
   ierr = VecScatterCreate(gx,isfrom,lx,isto,&scatter);CHKERRA(ierr);
   ierr = ISDestroy(isfrom); CHKERRA(ierr);
   ierr = ISDestroy(isto); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex28.c,v 1.11 1996/08/01 14:34:00 balay Exp $";
+static char vcid[] = "$Id: ex28.c,v 1.1 1996/12/10 13:57:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
@@ -38,7 +38,7 @@ int main(int argc, char **args)
 
   ierr = MatGetReordering(A,ORDER_NATURAL,&rowperm,&colperm); CHKERRA(ierr);
   ierr = MatReorderForNonzeroDiagonal(A,1.e-12,rowperm,colperm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"column and row perms\n");
+  PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");
   ierr = ISView(rowperm,0); CHKERRA(ierr);
   ierr = ISView(colperm,0); CHKERRA(ierr);
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,1.0,&LU); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 C
-C      "$Id: ex3f90.F,v 1.2 1997/01/22 18:41:18 bsmith Exp curfman $"; */
+C      "$Id: ex3f90.F,v 1.3 1997/04/04 16:29:39 curfman Exp bsmith $"; */
 C
 C
 C/*T
@@ -46,7 +46,7 @@ C    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
 C    Note each processor is generating its own index set 
 C    (in this case they are all identical)
 C
-      call ISCreateBlock(MPI_COMM_SELF,bs,n,inputindices,set,ierr) 
+      call ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,set,ierr) 
       call ISView(set,VIEWER_STDOUT_SELF,ierr) 
 
 C

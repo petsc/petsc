@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.55 1997/03/01 15:57:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.56 1997/03/13 16:36:03 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,8 +23,8 @@ Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDER
 #define __FUNC__ "ViewerInitialize_Private" /* ADIC Ignore */
 int ViewerInitialize_Private()
 {
-  ViewerFileOpenASCII(MPI_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
-  ViewerFileOpenASCII(MPI_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
+  ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
+  ViewerFileOpenASCII(PETSC_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
   ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);
   ViewerFileOpenASCII(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);
   return 0;
@@ -124,7 +124,7 @@ int ViewerGetFormat(Viewer viewer,int *format)
    processors send their data to the first processor to print. 
 
    Each processor can instead write its own independent output by
-   specifying the communicator MPI_COMM_SELF.
+   specifying the communicator PETSC_COMM_SELF.
 
    As shown below, ViewerFileOpenASCII() is useful in conjunction with 
    MatView() and VecView()
@@ -142,7 +142,7 @@ $    MatView(matrix,viewer);
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
-  if (comm == MPI_COMM_SELF) {
+  if (comm == PETSC_COMM_SELF) {
     PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm);
   } else {
     PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm);

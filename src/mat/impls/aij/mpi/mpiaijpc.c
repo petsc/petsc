@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.27 1997/01/28 22:38:05 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.28 1997/02/22 02:25:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -101,7 +101,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
   /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
     char *prefix;
-    ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
+    ierr = SLESCreate(PETSC_COMM_SELF,&sles); CHKERRQ(ierr);
     PLogObjectParent(pc,sles);
     ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
@@ -116,8 +116,8 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
   is so KSP may generate seq vectors for the local solves
 */
     ierr = MatGetSize(pmatin->A,&m,&m); CHKERRQ(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRQ(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,m,&y); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRQ(ierr);
     PLogObjectParent(pc,x);
     PLogObjectParent(pc,y);
 

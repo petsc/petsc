@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.16 1997/04/03 18:32:37 curfman Exp curfman $";
+static char vcid[] = "$Id: color.c,v 1.17 1997/04/04 01:54:21 curfman Exp bsmith $";
 #endif
  
 /*
@@ -177,13 +177,13 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
   
   ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
   for ( i=0; i<start; i++ ) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
   }
   for ( i=start; i<end; i++ ) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF,1,&i,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&i,is+i); CHKERRQ(ierr);
   }
   for ( i=end; i<N; i++ ) {
-    ierr = ISCreateGeneral(MPI_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.20 1997/02/13 18:26:03 curfman Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.21 1997/03/14 03:15:07 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -821,9 +821,9 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
     /* 
        Create an index set to define certain rows numbers that we then set
        to zero. Note that each processor creates its own local index set using
-       the communicator MPI_COMM_SELF.
+       the communicator PETSC_COMM_SELF.
     */
-    ierr = ISCreateGeneral(MPI_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
     ierr = MatZeroRows(submat[i],is,&one); CHKERRQ(ierr);
     ierr = ISDestroy(is); CHKERRQ(ierr);
 
