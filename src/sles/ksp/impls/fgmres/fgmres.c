@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.6 1999/12/11 23:12:12 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.7 1999/12/12 04:10:31 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -227,7 +227,7 @@ int FGMREScycle(int *  itcount, KSP ksp)
     /* CHANGE THE PRECONDITIONER? */ 
     /* ModifyPC is the callback function that can be used to
        change the PC or its attributes before its applied */
-    (*fgmres->modifypc)( ksp, ksp->its, max_it, loc_it, max_k, res_norm);
+    (*fgmres->modifypc)( ksp, ksp->its, loc_it, res_norm,fgmres->modifyctx);
    
   
     /* apply PRECONDITIONER to direction vector and store with 
@@ -411,6 +411,9 @@ int KSPDestroy_FGMRES(KSP ksp)
   if (fgmres->sol_temp) {ierr = VecDestroy( fgmres->sol_temp ); CHKERRQ(ierr);}
   if (fgmres->Rsvd) {ierr = PetscFree( fgmres->Rsvd );CHKERRQ(ierr);}
   if (fgmres->Dsvd) {ierr = PetscFree( fgmres->Dsvd );CHKERRQ(ierr);}
+  if (fgmres->modifydestroy) {
+    ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
+  }
   ierr = PetscFree( fgmres ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -738,9 +741,9 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESIROrthogonalization ); CHKERRQ(ierr);}
   
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcnochange", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCNoChange); CHKERRQ(ierr);} 
+  if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcsles", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCSLES); CHKERRQ(ierr);} 
+  if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
 
   PetscFunctionReturn(0);
 }
@@ -751,11 +754,13 @@ extern int KSPComputeEigenvalues_GMRES( KSP, int, double *, double *, int * );
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPFGMRESSetModifyPC_FGMRES" 
-int KSPFGMRESSetModifyPC_FGMRES( KSP ksp, int (*fcn)(KSP, int, int, int, int, double) )
+int KSPFGMRESSetModifyPC_FGMRES(KSP ksp, int (*fcn)(KSP, int, int, double,void*),void *ctx,int (*d)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific( ksp, KSP_COOKIE );
-  ((KSP_FGMRES *)ksp->data)->modifypc = fcn;
+  ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
+  ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
+  ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -763,6 +768,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 extern int KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 extern int KSPGMRESSetRestart_GMRES(KSP,int);
+extern int KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -813,6 +819,8 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;
   fgmres->Rsvd                = 0;
   fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
+  fgmres->modifyctx           = PETSC_NULL;
+  fgmres->modifydestroy       = PETSC_NULL;
 
   PetscFunctionReturn(0);
 }
