@@ -1,25 +1,30 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.6 1995/08/31 20:38:13 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.2 1995/09/02 20:19:23 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
 ex2:\n\
-This program demonstrates use of the SNES package to solve an unconstrained\n\
-minimization problem on a single processor.  This example is based on the\n\
-Minimal Surface Area problem (dmsa) from the MINPACK-2 test suite.  The\n\
-command line options are:\n\
+This program demonstrates use of the SNES package to solve unconstrained\n\
+minimization problems on a single processor.  These examples are based on\n\
+problems from the MINPACK-2 test suite.  The command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\
-  -my yg, where yg = number of grid points in the 2nd coordinate direction\n";
+  -my yg, where yg = number of grid points in the 2nd coordinate direction\n\
+  -p problem_number, where the possible problem numbers are:\n\
+     1: Elastic-Plastic Torsion (dept)\n\
+     2: Minimal Surface Area (dmsa)\n\
+  -snes_mf: use matrix-free methods\n\
+  -par param, where param = angle of twist per unit length (problem 1 only)\n\n";
 
 #if !defined(PETSC_COMPLEX)
 
-#include "petsc.h"
 #include "snes.h"
 #include <string.h>
 #include <math.h>
 
 /* User-defined application context */
    typedef struct {
+      int     problem;   /* test problem number */
+      double  param;     /* nonlinearity parameter */
       int     mx;        /* discretization in x-direction */
       int     my;        /* discretization in y-direction */
       int     ndim;      /* problem dimension */
@@ -29,16 +34,25 @@ command line options are:\n\
       double  hx, hy;
    } AppCtx;
 
+/* Flag to indicate evaluation of function and/or gradient */
 typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
 
+/* General routines */
 int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormMinimizationFunction(SNES,Vec,double*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
-int FormInitialGuess(SNES,Vec,void*);
-int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+
+/* For Elastic-Plastic Torsion test problem */
+int HessianProduct1(void*,Vec,Vec);
+int FormInitialGuess1(SNES,Vec,void*);
+int EvalFunctionGradient1(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+
+/* For Minimal Surface Area test problem */
+int HessianProduct2(void*,Vec,Vec);
+int FormInitialGuess2(SNES,Vec,void*);
+int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int BoundaryValues(AppCtx*);
-int HessianProduct(void*,Vec,Vec);
 
 int main(int argc,char **argv)
 {
@@ -58,6 +72,11 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   /* Set up user-defined work space */
+  user.problem = 1;
+  OptionsGetInt(0,"-p",&user.problem);
+  user.param = 5.0;
+  OptionsGetDouble(0,"-par",&user.param);
+  if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
   OptionsGetInt(0,"-my",&my);
   OptionsGetInt(0,"-mx",&mx);
   user.ndim = mx * my;
@@ -65,7 +84,12 @@ int main(int argc,char **argv)
   user.my = my;
   user.hx = one/(double)(mx+1);
   user.hy = one/(double)(my+1);
-  user.work = (double*)PETSCMALLOC(2*(mx+my+4)*sizeof(double)); CHKPTRQ(user.work);
+  if (user.problem == 2) {
+    user.work = (double*)PETSCMALLOC(2*(mx+my+4)*sizeof(double)); 
+    CHKPTRQ(user.work);
+  } else {
+    user.work = 0;
+  }
 
   /* Allocate vectors */
   ierr = VecCreate(MPI_COMM_SELF,user.ndim,&user.y); CHKERRA(ierr);
@@ -79,7 +103,13 @@ int main(int argc,char **argv)
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,(void *)&user); CHKERRA(ierr);
+  if (user.problem == 1) {
+    ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user);
+    CHKERRA(ierr);
+  } else if (user.problem == 2) {
+    ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user);
+    CHKERRA(ierr);
+  }
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
@@ -88,7 +118,11 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-snes_mf")) {
     ierr = MatShellCreate(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
-    ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
+    if (user.problem == 1) {
+      ierr = MatShellSetMult(H,HessianProduct1); CHKERRA(ierr);
+    } else if (user.problem == 2) {
+      ierr = MatShellSetMult(H,HessianProduct2); CHKERRA(ierr);
+    }
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); 
            CHKERRA(ierr);
 
@@ -112,7 +146,7 @@ int main(int argc,char **argv)
   printf("number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
-  PETSCFREE(user.work); 
+  if (user.work) PETSCFREE(user.work); 
   ierr = VecDestroy(user.s); CHKERRA(ierr);
   ierr = VecDestroy(user.y); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
@@ -125,9 +159,316 @@ int main(int argc,char **argv)
 }
 /* -------------------------------------------------------------------- */
 /*
-    Form initial guess for nonlinear solver
+    FormMinimizationFunction - Evaluates function f(x).
  */
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+
+int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
+{
+  AppCtx *user = (AppCtx *) ptr;
+  int ierr;
+
+  if (user->problem == 1) {
+    ierr = EvalFunctionGradient1(snes,x,f,NULL,FunctionEval,user); 
+    CHKERRQ(ierr);
+  } else if (user->problem == 2) {
+    ierr = EvalFunctionGradient2(snes,x,f,NULL,FunctionEval,user); 
+    CHKERRQ(ierr);
+  } else SETERRQ(1,"FormMinimizationFunction: Invalid problem number.");
+  return 0;
+}
+/* -------------------------------------------------------------------- */
+/*
+    FormGradient - Evaluates gradient g(x).
+ */
+
+int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
+{
+  AppCtx *user = (AppCtx *) ptr;
+  int ierr;
+
+  if (user->problem == 1) {
+    ierr = EvalFunctionGradient1(snes,x,NULL,g,GradientEval,user); 
+    CHKERRQ(ierr);
+  } else if (user->problem == 2) {
+    ierr = EvalFunctionGradient2(snes,x,NULL,g,GradientEval,user); 
+    CHKERRQ(ierr);
+  } else SETERRQ(1,"FormGradient: Invalid problem number.");
+  return 0;
+}
+/* -------------------------------------------------------------------- */
+/*
+   FormHessian - Forms Hessian matrix by computing a column at a time.
+ */
+int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
+                void *ptr)
+{
+  AppCtx     *user = (AppCtx *) ptr;
+  int        i, j, ierr, ndim;
+  Scalar     *y, zero = 0.0, one = 1.0;
+  double     gamma1;
+  SNESMethod method;
+
+  ndim = user->ndim;
+  ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
+  user->xvec = X; /* Set location of vector */
+
+  for (j=0; j<ndim; j++) {   /* loop over columns */
+
+    ierr = VecSetValues(user->s,1,&j,&one,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+
+    if (user->problem == 1) {
+      ierr = HessianProduct1(ptr,user->s,user->y); CHKERRQ(ierr);
+    } else if (user->problem == 2) {
+      ierr = HessianProduct2(ptr,user->s,user->y); CHKERRQ(ierr);
+    }
+
+    ierr = VecSetValues(user->s,1,&j,&zero,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+
+    ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
+    for (i=0; i<ndim; i++) {
+      if (y[i] != zero) {
+        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERTVALUES); CHKERRQ(ierr);
+      }
+    }
+    ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
+  }
+
+  /* Modify diagonal if necessary */
+  ierr = SNESGetMethodFromContext(snes,&method); CHKERRQ(ierr);
+  if (method == SNES_UM_NLS) {
+    SNESGetLineSearchDampingParameter(snes,&gamma1);
+    printf("  gamma1 = %g\n",gamma1);
+    for (i=0; i<ndim; i++) {
+      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADDVALUES); CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+/* -------------------------------------------------------------------- */
+/*
+  MatrixFreeHessian
+ */
+int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
+                      void *ptr)
+{
+  AppCtx     *user = (AppCtx *) ptr;
+
+  /* Sets location of vector for use in computing matrix-vector products
+     of the form H(X)*y  */
+  user->xvec = X;   
+  return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*               Elastic-Plastic Torsion Test Problem                 */
+/* ------------------------------------------------------------------ */
+
+/* --------------------  Form initial approximation ----------------- */
+
+int FormInitialGuess1(SNES snes,Vec X,void *ptr)
+{
+  AppCtx *user = (AppCtx *) ptr;
+  int    ierr, i, j, k, nx = user->mx, ny = user->my;
+  double hx = user->hx, hy = user->hy, temp;
+  Scalar *x;
+
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  for (j=1; j<=ny; j++) {
+    temp = PETSCMIN(j,ny-j+1)*hy;
+    for (i=1; i<=nx; i++) {
+      k = nx*(j-1) + i-1;
+      x[k] = PETSCMIN((PETSCMIN(i,nx-i+1))*hx,temp);
+    }
+  }
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  return 0;
+}
+/* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
+
+int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
+                         AppCtx *user)
+{
+  int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
+  int    ind, i, j, k;
+  double hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
+  double zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
+  Scalar val, *x;
+
+  cdiv3 = user->param/three;
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+
+  if (fg & GradientEval) {
+    ierr = VecSet((Scalar*)&zero,gvec); CHKERRQ(ierr);
+  }
+
+  /* Compute function and gradient over the lower triangular elements */
+  for (j=0; j<ny1; j++) {
+    for (i=0; i<nx1; i++) {
+      k = nx*(j-1) + i-1;
+      v = zero;
+      vr = zero;
+      vt = zero;
+      if (i >= 1 && j >= 1) v = x[k];
+      if (i < nx && j > 0) vr = x[k+1];
+      if (i > 0 && j < ny) vt = x[k+nx];
+      dvdx = (vr-v)/hx;
+      dvdy = (vt-v)/hy;
+      if (fg & FunctionEval) {
+        fquad += dvdx*dvdx + dvdy*dvdy;
+        flin -= cdiv3*(v+vr+vt);
+      }
+      if (fg & GradientEval) {
+        if (i != 0 && j != 0) {
+          ind = k; val = - dvdx/hx - dvdy/hy - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+        if (i != nx && j != 0) {
+          ind = k+1; val =  dvdx/hx - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+        if (i != 0 && j != ny) {
+          ind = k+nx; val = dvdy/hy - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+
+  /* Compute function and gradient over the upper triangular elements */
+  for (j=1; j<=ny1; j++) {
+    for (i=1; i<=nx1; i++) {
+      k = nx*(j-1) + i-1;
+      vb = zero;
+      vl = zero;
+      v = zero;
+      if (i <= nx && j > 1) vb = x[k-nx];
+      if (i > 1 && j <= ny) vl = x[k-1];
+      if (i <= nx && j <= ny) v = x[k];
+      dvdx = (v-vl)/hx;
+      dvdy = (v-vb)/hy;
+      if (fg & FunctionEval) {
+        fquad = fquad + dvdx*dvdx + dvdy*dvdy;
+        flin = flin - cdiv3*(vb+vl+v);
+      } if (fg & GradientEval) {
+        if (i != nx1 && j != 1) {
+          ind = k-nx; val = - dvdy/hy - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+        if (i != 1 && j != ny1) {
+          ind = k-1; val =  - dvdx/hx - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+        if (i != nx1 && j != ny1) {
+          ind = k; val =  dvdx/hx + dvdy/hy - cdiv3;
+          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  area = p5*hx*hy;
+  if (fg & FunctionEval) {   /* Scale the function */
+    *f = area*(p5*fquad+flin);
+  } if (fg & GradientEval) { /* Scale the gradient */
+    ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
+    ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
+  }
+  return 0;
+}
+/* --------------------------------------------------------------------- */
+/* 
+   HessianProduct - Computes the matrix-vector product: y = f''(x)*s
+ */
+int HessianProduct1(void *ptr,Vec svec,Vec y)
+{
+  AppCtx *user = (AppCtx *) ptr;
+  int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
+  int    i, j, k, ierr, ind;
+  double p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
+  double v, vb, vl, vr, vt, hxhx, hyhy;
+  Scalar val, area, *x, *s;
+
+  hxhx = one/(hx*hx);
+  hyhy = one/(hy*hy);
+
+  ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
+  ierr = VecSet((Scalar*)&zero,y); CHKERRQ(ierr);
+
+  /* Compute f''(x)*s over the lower triangular elements */
+  for (j=0; j<ny1; j++) {
+    for (i=0; i<nx1; i++) {
+       k = nx*(j-1) + i-1;
+       v = zero;
+       vr = zero;
+       vt = zero;
+       if (i != 0 && j != 0) v = s[k];
+       if (i != nx && j != 0) {
+         vr = s[k+1];
+         ind = k+1; val = hxhx*(vr-v);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != 0 && j != ny) {
+         vt = s[k+nx];
+         ind = k+nx; val = hyhy*(vt-v);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != 0 && j != 0) {
+         ind = k; val = hxhx*(v-vr) + hyhy*(v-vt);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+     }
+   }
+
+  /* Compute f''(x)*s over the upper triangular elements */
+  for (j=1; j<=ny1; j++) {
+    for (i=1; i<=nx1; i++) {
+       k = nx*(j-1) + i-1;
+       v = zero;
+       vl = zero;
+       vb = zero;
+       if (i != nx1 && j != ny1) v = s[k];
+       if (i != nx1 && j != 1) {
+         vb = s[k-nx];
+         ind = k-nx; val = hyhy*(vb-v);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != 1 && j != ny1) {
+         vl = s[k-1];
+         ind = k-1; val = hxhx*(vl-v);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != nx1 && j != ny1) {
+         ind = k; val = hxhx*(v-vl) + hyhy*(v-vb);
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+    }
+  }
+  ierr = VecRestoreArray(svec,(Scalar**)&s); CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
+
+  /* Scale result by area */
+  area = p5*hx*hy;
+  ierr = VecScale(&area,y); CHKERRQ(ierr);
+  return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*                 Minimal Surface Area Test Problem                  */
+/* ------------------------------------------------------------------ */
+
+/* --------------------  Form initial approximation ----------------- */
+
+int FormInitialGuess2(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
@@ -157,32 +498,10 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   return 0;
 }
-/* -------------------------------------------------------------------- */
-/*
-    Evaluate function f(x)
- */
 
-int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
-{
-  AppCtx *user = (AppCtx *) ptr;
-  return EvalFunctionGradient(snes,x,f,NULL,FunctionEval,user); 
-}
-/* -------------------------------------------------------------------- */
-/*
-    Evaluate gradient g(x)
- */
+/* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
-int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
-{
-  AppCtx *user = (AppCtx *) ptr;
-  return EvalFunctionGradient(snes,x,NULL,g,GradientEval,user); 
-}
-/* -------------------------------------------------------------------- */
-/*
-    Evaluate function f(x) and/or gradient g(x)
- */
-
-int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
+int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
   int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
@@ -304,94 +623,29 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
   return 0;
 }
-/* -------------------------------------------------------------------- */
-/*
-   FormHessian - Forms Hessian matrix by computing a column at a time.
- */
-int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
-                void *ptr)
-{
-  AppCtx     *user = (AppCtx *) ptr;
-  int        i, j, ierr, ndim;
-  Scalar     *y, zero = 0.0, one = 1.0;
-  double     gamma1;
-  SNESMethod method;
-
-  ndim = user->ndim;
-  ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
-  user->xvec = X; /* Set location of vector */
-
-  for (j=0; j<ndim; j++) {   /* loop over columns */
-
-    ierr = VecSetValues(user->s,1,&j,&one,INSERTVALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
-
-    ierr = HessianProduct(ptr,user->s,user->y); CHKERRQ(ierr);
-
-    ierr = VecSetValues(user->s,1,&j,&zero,INSERTVALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
-
-    ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
-    for (i=0; i<ndim; i++) {
-      if (y[i] != zero) {
-        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERTVALUES); CHKERRQ(ierr);
-      }
-    }
-    ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
-  }
-
-  /* Modify diagonal if necessary */
-  ierr = SNESGetMethodFromContext(snes,&method); CHKERRQ(ierr);
-  if (method == SNES_UM_NLS) {
-    SNESGetLineSearchDampingParameter(snes,&gamma1);
-    printf("  gamma1 = %g\n",gamma1);
-    for (i=0; i<ndim; i++) {
-      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADDVALUES); CHKERRQ(ierr);
-    }
-  }
-  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
-}
-/* -------------------------------------------------------------------- */
-/*
-   FormHessian - Forms Hessian matrix by computing a column at a time.
- */
-int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
-                      void *ptr)
-{
-  AppCtx     *user = (AppCtx *) ptr;
-
-  /* Sets location of vector for use in computing matrix-vector products
-     of the form H(X)*y  */
-  user->xvec = X;   
-  return 0;
-}
-/* ------------------------------------------------------------------- */
+/* --------------------------------------------------------------------- */
 /* 
-   HessianProduct - Computes the matrix-vector product: y = f''(x)*s
+   HessianProduct2 - Computes the matrix-vector product: y = f''(x)*s
  */
-int HessianProduct(void *ptr,Vec svec,Vec y)
+int HessianProduct2(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
   int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    i, j, k, ierr, ind;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
   double dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt;
-  double *bottom, *top, *left, *right, *s, *x;
+  double *bottom, *top, *left, *right;
   double dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
   double v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zerod = 0.0;
-  Scalar val, area, zero = 0.0;
+  Scalar val, area, zero = 0.0, *s, *x;
 
   bottom = user->work;
   top    = &user->work[nx+2];
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
 
-  ierr = VecGetArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
-  ierr = VecGetArray(svec,(Scalar**)&s); CHKERRQ(ierr);
+  ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
@@ -519,8 +773,9 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
 }
 /* ------------------------------------------------------------------- */
 /* 
-   BoundaryValues - Computes Enneper's boundary conditions: bottom, 
-   top, left, right.  Enneper's boundary values are obtained by defining
+   BoundaryValues - For Minimal Surface Area problem.  Computes Enneper's 
+   boundary conditions (bottom, top, left, right) which are obtained by 
+   defining:
      bv(x,y) = u**2 - v**2, where u and v are the unique solutions of
      x = u + u*(v**2) - (u**3)/3, y = -v - (u**2)*v + (v**3)/3. 
  */
