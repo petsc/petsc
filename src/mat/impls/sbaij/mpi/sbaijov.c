@@ -86,62 +86,6 @@ static int MatCompressIndicesGeneral_MPISBAIJ(Mat C,int imax,const IS is_in[],IS
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCompressIndicesSorted_MPISBAIJ"
-static int MatCompressIndicesSorted_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
-{
-  Mat_MPISBAIJ  *baij = (Mat_MPISBAIJ*)C->data;
-  int          ierr,bs=baij->bs,i,j,k,val,n,*idx,*nidx,*idx_local;
-  PetscTruth   flg;
-#if defined (PETSC_USE_CTABLE)
-  int maxsz;
-#else
-  int Nbs=baij->Nbs;
-#endif
-  PetscFunctionBegin;
-  printf(" ... MatCompressIndicesSorted_MPISBAIJ is called ...\n");
-  for (i=0; i<imax; i++) {
-    ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
-  }
-#if defined (PETSC_USE_CTABLE)
-  /* Now check max size */
-  for (i=0,maxsz=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRQ(1,"Indices are not block ordered");
-    n = n/bs; /* The reduced index size */
-    if (n > maxsz) maxsz = n;
-  }
-  ierr = PetscMalloc((maxsz+1)*sizeof(int),&nidx);CHKERRQ(ierr);   
-#else
-  ierr = PetscMalloc((Nbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
-#endif
-  /* Now check if the indices are in block order */
-  for (i=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRQ(1,"Indices are not block ordered");
-
-    n = n/bs; /* The reduced index size */
-    idx_local = idx;
-    for (j=0; j<n ; j++) {
-      val = idx_local[0];
-      if (val%bs != 0) SETERRQ(1,"Indices are not block ordered");
-      for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRQ(1,"Indices are not block ordered");
-      }
-      nidx[j] = val/bs;
-      idx_local +=bs;
-    }
-    ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,nidx,(is_out+i));CHKERRQ(ierr);
-  }
-  ierr = PetscFree(nidx);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatExpandIndices_MPISBAIJ"
 static int MatExpandIndices_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
 {
@@ -210,7 +154,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   int         **idx,*n,len,*idx_i,*nidx,*nidx_i,isz,col;
-  int         size,rank,Mbs,i,j,k,ierr,nrqs,msz,*outdat,*indat;
+  int         size,rank,Mbs,i,j,k,ierr,nrqs,*outdat,*indat;
   int         tag1,tag2,flag,proc_id;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*s_waits2,r_req;
