@@ -1,69 +1,7 @@
-# $Id: base,v 1.33 1998/12/04 23:41:49 balay Exp bsmith $ 
-
-#
-#     See the file .... for a complete explanation of all these fields
-#
-AR               = ar
-RM               = rm -f
-RANLIB           = ranlib
-OMAKE            = make 
-SHELL            = /bin/sh
-# ######################### C and Fortran compiler ########################
-#
-C_CC             = cc
-C_FC             = f77 -w
-C_CLINKER        = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_CCV            = unknown
-C_SYS_LIB        = -lfor -lutil -lFutil -lots
-# ---------------------------- BOPT=g options ----------------------------
-G_COPTFLAGS      = -g
-G_FOPTFLAGS      = -g
-# ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O2 -Olimit 2000
-O_FOPTFLAGS      = -O2 
-# ########################## C++ compiler ##################################
-#
-CXX_CC           = cxx -x cxx
-CXX_FC           = f77 -w
-CXX_CLINKER      = cxx ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_CCV          = unknown
-CXX_SYS_LIB      = -lfor -lutil -lFutil -lots
-# ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g
-GCXX_FOPTFLAGS   = -g
-# ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O2
-OCXX_FOPTFLAGS   = -O2
-# -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g
-GCOMP_FOPTFLAGS  = -g
-# --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O2
-OCOMP_FOPTFLAGS  = -O2
-# ########################### PETSc install options ###########################
-#
-G_PETSCFLAGS     = -DUSE_PETSC_LOG -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK 
-O_PETSCFLAGS     = -DUSE_PETSC_LOG -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O
-GCXX_PETSCFLAGS  = -DUSE_PETSC_LOG -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_g \
-		   -DUSE_PETSC_STACK
-OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
-GCOMP_PETSCFLAGS = -DUSE_PETSC_LOG -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX  -DUSES_TEMPLATED_COMPLEX
-OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG \
-		   -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX
-
-##################################################################################
-#
-#   PETSc installers should very rarely ever need to edit anything below this 
-#
-##################################################################################
-
-PARCH    = alpha
+# $Id: base,v 1.34 1999/01/25 22:02:56 bsmith Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 
 libc: ${OBJSC}
 	ar crl ${LIBNAME} ${OBJSC}

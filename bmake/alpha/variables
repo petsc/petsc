@@ -1,4 +1,4 @@
-# $Id: base,v 1.34 1999/01/25 22:02:56 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:37:10 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -63,29 +63,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG \
 
 PARCH    = alpha
 
-include ${PETSC_DIR}/bmake/common
-
-libc: ${OBJSC}
-	ar crl ${LIBNAME} ${OBJSC}
-libf: ${OBJSF}
-	ar crl ${LIBNAME} ${OBJSF}
-
-#######
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -shared  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX}  > /dev/null 2>&1; \
-	    fi; \
-	  fi; \
-	done
+include ${PETSC_DIR}/bmake/common_variables
