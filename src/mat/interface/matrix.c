@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.237 1997/04/02 22:40:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.238 1997/04/03 01:38:43 curfman Exp balay $";
 #endif
 
 /*
@@ -195,7 +195,7 @@ int MatDestroy(Mat mat)
 .  m - the matrix to check 
 
    Output Parameter:
-   flg - flag indicating matrix status, either
+   flg - flag indicating matrix status, eMAT_IGNORE_OFF_PROC_ENTRIESither
 $     PETSC_TRUE if matrix is valid;
 $     PETSC_FALSE otherwise.
 
@@ -1896,7 +1896,7 @@ $    MAT_SYMMETRIC,
 $    MAT_STRUCTURALLY_SYMMETRIC,
 $    MAT_NO_NEW_DIAGONALS,
 $    MAT_YES_NEW_DIAGONALS,
-$    MAT_IGNORE_OFF_PROCESSOR_ENTRIES
+$    MAT_IGNORE_OFF_PROC_ENTRIES
 $    MAT_NEW_NONZERO_LOCATION_ERROR
 $    and possibly others.  
 
@@ -1919,7 +1919,7 @@ $    and possibly others.
    that will generate a new entry in the nonzero structure generates 
    an error. Supported for AIJ and BAIJ formats.
 
-   MAT_IGNORE_OFF_PROCESSOR_ENTRIES indicates entries destined for 
+   MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for 
    other processors are dropped, rather than stashed.
    
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero

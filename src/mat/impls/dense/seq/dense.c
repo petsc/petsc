@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.124 1997/03/12 22:30:47 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.125 1997/03/13 16:33:41 curfman Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -908,7 +908,7 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_NEW_NONZERO_LOCATION_ERROR ||
            op == MAT_NO_NEW_DIAGONALS ||
            op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
+           op == MAT_IGNORE_OFF_PROC_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqDense:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}

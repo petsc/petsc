@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.62 1997/03/30 03:05:54 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.63 1997/04/01 14:34:09 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1154,7 +1154,7 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
     a->roworiented = 0;
     MatSetOption(a->A,op);
     MatSetOption(a->B,op);
-  } else if (op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES) {
+  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}

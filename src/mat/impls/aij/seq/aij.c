@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.211 1997/03/13 16:33:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.212 1997/03/26 01:35:45 bsmith Exp balay $";
 #endif
 
 /*
@@ -682,7 +682,7 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
+           op == MAT_IGNORE_OFF_PROC_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}

@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.30 1997/02/03 06:04:14 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.31 1997/03/26 01:39:08 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -42,7 +42,7 @@ C
      *        MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
      *        MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,
      *        MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,
-     *        MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROCESSOR_ENTRIES,
+     *        MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES,
      *        MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED,
      *        MAT_NEW_NONZERO_LOCATION_ERROR
       
@@ -57,7 +57,7 @@ C
      *           MAT_INODE_LIMIT_2=69,MAT_INODE_LIMIT_3=70,
      *           MAT_INODE_LIMIT_4=71,
      *           MAT_INODE_LIMIT_5=72,
-     *           MAT_IGNORE_OFF_PROCESSOR_ENTRIES=73,
+     *           MAT_IGNORE_OFF_PROC_ENTRIES=73,
      *           MAT_ROWS_UNSORTED=74,
      *           MAT_COLUMNS_UNSORTED=75,
      *           MAT_NEW_NONZERO_LOCATION_ERROR=76)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.196 1997/03/29 00:59:34 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.197 1997/03/30 03:06:02 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1087,7 +1087,7 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
     a->roworiented = 0;
     MatSetOption(a->A,op);
     MatSetOption(a->B,op);
-  } else if (op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES) {
+  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}
