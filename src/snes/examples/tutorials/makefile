@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.64 1999/09/02 14:54:09 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.65 1999/09/02 20:02:56 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -300,8 +300,8 @@ runex12:
 runex12_2:
 	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_DIR}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_2.tmp 2>&1; \
             egrep '(Unable To Connect|Warning)' ex12_2.tmp ; \
-              if [ "$$?" != 1 ]; then cat ex12_2.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_2"; fi;
-	${RM} -f ex12_2.tmp ex12_2.tmp2
+              if [ "$$?" != 1 ]; then cat ex12_2.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_2"; fi; \
+         ${RM} -f ex12_2.tmp ex12_2.tmp2
 runex14:
 	-@${MPIRUN} -np 4 ex14 -Nx 2 -Ny 2 -Nz 1 -mx 8 -my 8 -mz 8 -snes_smonitor > ex14_1.tmp 2>&1; \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \

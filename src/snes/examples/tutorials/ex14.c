@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.3 1999/07/08 14:27:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.4 1999/09/02 14:54:09 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -323,7 +323,7 @@ int ApplicationInitialGuess(AppCtx *user,Scalar *x)
 {
   int     i, j, k, row, mx, my, mz, ierr;
   int     xs, ys, zs, xm, ym, zm, gxm, gym, gzm, gxs, gys, gzs;
-  double  one = 1.0, lambda, temp1, hx, hy, hz, temp_k, temp_jk;
+  double  one = 1.0, lambda, temp1, hx, hy, h_z, temp_k, temp_jk;
 
   mx     = user->mx;
   my     = user->my;
@@ -331,7 +331,7 @@ int ApplicationInitialGuess(AppCtx *user,Scalar *x)
   lambda = user->param;
   hx     = one/(double)(mx-1);
   hy     = one/(double)(my-1);
-  hz     = one/(double)(mz-1);
+  h_z     = one/(double)(mz-1);
   temp1  = lambda/(lambda + one);
 
   /*
@@ -348,7 +348,7 @@ int ApplicationInitialGuess(AppCtx *user,Scalar *x)
      Compute initial guess over the locally owned part of the grid
   */
   for (k=zs; k<zs+zm; k++) {
-    temp_k = (double)PetscMin(k,mz-k-1)*hz;
+    temp_k = (double)PetscMin(k,mz-k-1)*h_z;
     for (j=ys; j<ys+ym; j++) {
       temp_jk = PetscMin((double)(PetscMin(j,my-j-1))*hy,temp_k);
       for (i=xs; i<xs+xm; i++) {
@@ -452,7 +452,7 @@ int ApplicationFunction(AppCtx *user,Scalar *x,Scalar *f)
 { 
   int     ierr, i, j, k, row, mx, my, mz;
   int     xs, ys, zs, xm, ym, zm, gxm, gym, gzm, gxs, gys, gzs;
-  double  two = 2.0, one = 1.0, lambda, hx, hy, hz, hxhzdhy, hyhzdhx, hxhydhz;
+  double  two = 2.0, one = 1.0, lambda, hx, hy, h_z, hxhzdhy, hyhzdhx, hxhydhz;
   Scalar  u_north, u_south, u_east, u_west, u_up, u_down, u;
   Scalar  u_xx, u_yy, u_zz, sc;
 
@@ -462,11 +462,11 @@ int ApplicationFunction(AppCtx *user,Scalar *x,Scalar *f)
   lambda  = user->param;
   hx      = one / (double)(mx-1);
   hy      = one / (double)(my-1);
-  hz      = one / (double)(mz-1);
-  sc      = hx*hy*hz;
-  hxhzdhy = hx*hz/hy;
-  hyhzdhx = hy*hz/hx;
-  hxhydhz = hx*hy/hz;
+  h_z      = one / (double)(mz-1);
+  sc      = hx*hy*h_z;
+  hxhzdhy = hx*h_z/hy;
+  hyhzdhx = hy*h_z/hx;
+  hxhydhz = hx*hy/h_z;
 
   /*
      Get local grid boundaries
@@ -496,7 +496,7 @@ int ApplicationFunction(AppCtx *user,Scalar *x,Scalar *f)
         u_xx    = (-u_east + two*u - u_west)*hyhzdhx;
         u_yy    = (-u_north + two*u - u_south)*hxhzdhy;
         u_zz    = (-u_up + two*u - u_down)*hxhydhz;
-        f[row]  = u_xx + u_yy + u_zz - sc*lambda*exp(u);
+        f[row]  = u_xx + u_yy + u_zz - sc*lambda*PetscExpScalar(u);
       }
     }
   }
@@ -548,7 +548,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Vec     localX = user->localX;   /* local vector */
   int     ierr, i, j, k, row, mx, my, mz, col[7];
   int     xs, ys, zs, xm, ym, zm, gxm, gym, gzm, gxs, gys, gzs;
-  Scalar  two = 2.0, one = 1.0, lambda, v[7], hx, hy, hz, hxhzdhy, hyhzdhx, hxhydhz, sc, *x;
+  Scalar  two = 2.0, one = 1.0, lambda, v[7], hx, hy, h_z, hxhzdhy, hyhzdhx, hxhydhz, sc, *x;
 
   mx	  = user->mx; 
   my	  = user->my;
@@ -556,11 +556,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   lambda  = user->param;
   hx      = one / (double)(mx-1);
   hy      = one / (double)(my-1);
-  hz      = one / (double)(mz-1);
-  sc      = hx*hy*hz;
-  hxhzdhy = hx*hz/hy;
-  hyhzdhx = hy*hz/hx;
-  hxhydhz = hx*hy/hz;
+  h_z      = one / (double)(mz-1);
+  sc      = hx*hy*h_z;
+  hxhzdhy = hx*h_z/hy;
+  hyhzdhx = hy*h_z/hx;
+  hxhydhz = hx*hy/h_z;
 
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -607,7 +607,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         v[0] = -hxhydhz; col[0] = row - gxm*gym;
         v[1] = -hxhzdhy; col[1] = row - gxm;
         v[2] = -hyhzdhx; col[2] = row - 1;
-        v[3] = two*(hyhzdhx + hxhzdhy + hxhydhz) - sc*lambda*exp(x[row]); col[3] = row;
+        v[3] = two*(hyhzdhx + hxhzdhy + hxhydhz) - sc*lambda*PetscExpScalar(x[row]); col[3] = row;
         v[4] = -hyhzdhx; col[4] = row + 1;
         v[5] = -hxhzdhy; col[5] = row + gxm;
         v[6] = -hxhydhz; col[6] = row + gxm*gym;
