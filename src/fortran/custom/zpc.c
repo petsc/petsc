@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.21 1998/09/21 02:17:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.22 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -16,6 +16,7 @@ static char vcid[] = "$Id: zpc.c,v 1.21 1998/09/21 02:17:07 bsmith Exp bsmith $"
 #define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
 #define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
 #define pcbjacobigetsubsles_       PCBJACOBIGETSUBSLES
+#define pcasmgetsubsles_           PCASMGETSUBSLES
 #define mggetcoarsesolve_          MGGETCOARSESOLVE
 #define mggetsmoother_             MGGETSMOOTHER
 #define mggetsmootherup_           MGGETSMOOTHERUP
@@ -33,6 +34,7 @@ static char vcid[] = "$Id: zpc.c,v 1.21 1998/09/21 02:17:07 bsmith Exp bsmith $"
 #define pcsetoptionsprefix_        pcsetoptionsprefix
 #define pcappendoptionsprefix_     pcappendoptionsprefix
 #define pcbjacobigetsubsles_       pcbjacobigetsubsles
+#define pcasmgetsubsles_           pcasmgetsubsles
 #define mggetcoarsesolve_          mggetcoarsesolve
 #define mggetsmoother_             mggetsmoother
 #define mggetsmootherup_           mggetsmootherup
@@ -128,6 +130,16 @@ void pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *_
   SLES *tsles;
   int  i;
   *__ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
+  for ( i=0; i<*n_local; i++ ){
+    sles[i] = tsles[i];
+  }
+}
+
+void pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *__ierr )
+{
+  SLES *tsles;
+  int  i;
+  *__ierr = PCASMGetSubSLES(*pc,n_local,first_local,&tsles);
   for ( i=0; i<*n_local; i++ ){
     sles[i] = tsles[i];
   }

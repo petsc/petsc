@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.93 1999/01/31 16:08:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.94 1999/01/31 21:35:07 curfman Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -477,13 +477,13 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
   PC_ASM   *jac;
 
   PetscFunctionBegin;
-  jac                    = (PC_ASM *) pc->data;
-  *n_local               = jac->n_local_true;
-  *first_local           = -1; /* need to determine global number of local blocks*/
-  *sles                  = jac->sles;
-  jac->same_local_solves = 0; /* Assume that local solves are now different;
-                                 not necessarily true though!  This flag is 
-                                 used only for PCView_ASM() */
+  jac                           = (PC_ASM *) pc->data;
+  if (n_local)     *n_local     = jac->n_local_true;
+  if (first_local) *first_local = -1; /* need to determine global number of local blocks*/
+  *sles                         = jac->sles;
+  jac->same_local_solves        = 0; /* Assume that local solves are now different;
+                                      not necessarily true though!  This flag is 
+                                      used only for PCView_ASM() */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -742,8 +742,8 @@ int PCASMSetType(PC pc,PCASMType type)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor
-.  first_local - the global number of the first block on this processor
++  n_local - the number of blocks on this processor or PETSC_NULL
+.  first_local - the global number of the first block on this processor or PETSC_NULL
 -  sles - the array of SLES contexts
 
    Note:  
