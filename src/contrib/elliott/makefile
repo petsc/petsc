@@ -1,9 +1,7 @@
-# $Id: makefile,v 1.3 1998/06/13 05:20:01 balay Exp balay $ 
+# $Id: makefile,v 1.4 1998/06/15 16:22:59 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS   =
-FFLAGS   =
 CFLAGS   =
 FFLAGS   =
 CPPFLAGS =

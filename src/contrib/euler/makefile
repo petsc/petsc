@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.33 1998/06/13 21:51:22 curfman Exp curfman $ 
+# $Id: makefile,v 1.34 1998/06/14 22:27:08 curfman Exp balay $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -48,11 +48,13 @@
 #    matrix and vector assembly options
 #
 # Additional compiler/preprocessor flags
-# CPPFLAGS     - Basic compiler flags, as specified by petsc/bmake/common
-# USERCPPFLAGS - Additional compiler/preprocessor flags for Fortran
-#
-# USERCPPFLAGS  =
-CFLAGS    = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
+# CFLAGS/FFLAGS    -  Additional compiler flags if required by the application
+# CPPFLAGS/FPPFLAGS - Additional preprocessor flags for c/fortran
+# 
+CFLAGS    = 
+FFLAGS    =
+CPPFLAGS  =
+FPPFLAGS  =
 LOCDIR    = src/contrib/euler/
 
 
