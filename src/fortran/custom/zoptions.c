@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.23 1996/04/18 14:25:22 bsmith Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.24 1996/04/18 18:15:58 balay Exp bsmith $";
 #endif
 
 /*
@@ -142,7 +142,7 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
   *err = ierr;
 }
 
-void petscgetarchtype_(char *str,int *__ierr,int len)
+void petscgetarchtype_(CHAR str,int *__ierr,int len)
 {
 #if defined(USES_CPTOFCD)
   char *tstr = _fcdtocp(str); int len1 = _fcdlen(str);
