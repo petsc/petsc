@@ -112,11 +112,15 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
    to print the singular values at each iteration of the linear solve.
 
+   The preconditoner operator, rhs vector, solution vectors should be
+   set before this routine is called. i.e use SLESSetOperators(),SLESSolve() or
+   SLESSetOperators(),KSPSetRhs(),KSPSetSolution()
+
    Level: advanced
 
 .keywords: KSP, compute, eigenvalues, explicitly
 
-.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
+.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), SLESSetOperators(), SLESSolve(), KSPSetRhs(), KSPSetSolution()
 @*/
 int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
 {
