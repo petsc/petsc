@@ -112,7 +112,7 @@ class Maker:
     if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def executeShellCommand(self, command, checkCommand = None):
-    self.debugPrint('sh: '+command, 4, 'shell')
+    self.debugPrint('sh: '+command, 3, 'shell')
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)

@@ -25,8 +25,8 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(BS.LinkCheckerI.Checker.openLibrary)
   if (!dlopen(fullpath.c_str(), RTLD_LOCAL | RTLD_LAZY)) {
-    const char   *errorMsg = dlerror();
-    BS::LinkError error    = BS::LinkError::_create();
+    std::string   errorMsg(dlerror());
+    BS::LinkError error = BS::LinkError::_create();
 
     error.setMessage(errorMsg);
     throw error;

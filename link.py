@@ -3,8 +3,6 @@ import action
 import fileset
 import transform
 
-import BS.LinkCheckerI.Checker
-
 import os
 
 class TagLibrary (transform.GenericTag):
@@ -31,7 +29,13 @@ class LinkSharedLibrary (action.Action):
     return base+'.so'
 
   def checkLibrary(self, source):
-    BS.LinkCheckerI.Checker.Checker().openLibrary(source)
+    try:
+      import BS.LinkCheckerI.Checker
+      BS.LinkCheckerI.Checker.Checker().openLibrary(source)
+    except BS.LinkError.Exception, e:
+      raise RuntimeError(e.getMessage())
+    except ImportError:
+      pass
 
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
@@ -48,12 +52,15 @@ class LinkSharedLibrary (action.Action):
     for lib in self.extraLibraries.getFiles():
       (dir, file) = os.path.split(lib)
       (base, ext) = os.path.splitext(file)
-      command += ' -L'+dir+' -l'+base[3:]
+      if dir:
+        command += ' -L'+dir+' -l'+base[3:]
+      else:
+        command += ' -l'+base[3:]
     self.executeShellCommand(command)
-    self.updateSourceDB(source)
     os.chdir(oldDir)
     self.cleanupDir(linkDir, remove = 1)
     self.checkLibrary(sharedLibrary)
+    self.updateSourceDB(source)
     return self.products
 
   def setExecute(self, set):
