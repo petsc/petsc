@@ -42,7 +42,7 @@ Runtime options include:\n\
   -use_jratio                : Use ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
   -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
-  -post                      : Print post-processing info (currently uniproc version only)\n\
+  -post                      : Print post-processing info\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -explicit                  : use explicit formulation of boundary conditions\n\
@@ -203,19 +203,6 @@ int main(int argc,char **argv)
            app->f1,app->g1,app->h1,
            app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
            &app->angle,&app->jfreq); CHKERRA(ierr);
-   /*
-    ierr = julianne_(&time1,&solve_with_julianne,0,&app->cfl,
-           &rtol,&app->eps_jac,app->b1,app->b2,
-           app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
-           app->r,app->ru,app->rv,app->rw,app->e,app->p,
-           app->dr,app->dru,app->drv,app->drw,app->de,
-           app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,
-           app->f1,app->g1,app->h1,
-           app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-           &app->angle,&app->jfreq); CHKERRA(ierr);
-   */
     tsolve = PetscGetTime() - time1;
     PLogEventEnd(init3,0,0,0,0);
     PetscPrintf(comm,"Julianne solution time = %g seconds\n",tsolve);
@@ -243,19 +230,6 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
- /*
-  ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
-         &rtol,&app->eps_jac,app->b1,
-         app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
-         app->r,app->ru,app->rv,app->rw,app->e,app->p,
-         app->dr,app->dru,app->drv,app->drw,app->de,
-         app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,
-         app->f1,app->g1,app->h1,
-         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-         &app->angle,&app->jfreq); CHKERRA(ierr);
-*/
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -287,16 +261,10 @@ int main(int argc,char **argv)
   ierr = KSPSetTolerances(app->ksp,app->ksp_rtol_max,PETSC_DEFAULT,
          PETSC_DEFAULT,app->ksp_max_it); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(app->ksp,app->ksp_max_it+1); CHKERRA(ierr);
-  /* ierr = KSPGMRESSetOrthogonalization(app->ksp,
-         KSPGMRESUnmodifiedGramSchmidtOrthogonalization); CHKERRA(ierr); */
+  ierr = KSPGMRESSetOrthogonalization(app->ksp,
+         KSPGMRESUnmodifiedGramSchmidtOrthogonalization); CHKERRA(ierr); 
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,3000,100000); CHKERRA(ierr);
-
-  /* If using ILU(0) preconditioner and matrix-free version, then use in-place factorization */
-  if (app->matrix_free) {
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCILUSetUseInPlace(pc); CHKERRA(ierr);
-  }
 
   /* Either use my own adaptive method for choosing KSP relative convergence tolerance, or
      use the Eisenstat-Walker method */
@@ -311,6 +279,33 @@ int main(int argc,char **argv)
 
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+
+  /* If using ILU(0) preconditioner and matrix-free version, then use in-place 
+     factorization.  Note:  All of this section could be replaced by the options
+     -pc_ilu_in_place and -sub_pc_ilu_in_place */
+
+  if (app->matrix_free) {
+    PCType pctype;
+    SLES   *subsles;
+    PC     subpc;
+    int    i, nl, fl;
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+    ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
+    if (pctype == PCILU) {
+      ierr = PCILUSetUseInPlace(pc); CHKERRA(ierr);
+    }
+    else if (pctype == PCASM || pctype == PCBJACOBI) {
+      if (pctype == PCASM) {
+        ierr = PCASMGetSubSLES(pc,&nl,&fl,&subsles); CHKERRQ(ierr);
+      } else {  
+      ierr = PCBJacobiGetSubSLES(pc,&nl,&fl,&subsles); CHKERRQ(ierr);
+      }
+      for (i=0; i<nl; i++)  {
+        ierr = SLESGetPC(subsles[i],&subpc); CHKERRA(ierr);
+        ierr = PCILUSetUseInPlace(subpc); CHKERRA(ierr);
+      }
+    }
+  }
 
   /* We use just a few iterations if doing the "dummy" logging phase.  We
      call this after SNESSetFromOptions() to override any runtime options */
@@ -421,7 +416,8 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = UserDestroyEuler(app); CHKERRA(ierr);
 
-  /* Conclude profiling this stage */
+  /* Conclude profiling this stage; need a barrier before beginning profiling
+     of the next stage */
   PLogStagePop();
   MPI_Barrier(comm);
 
@@ -759,21 +755,6 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	   app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
 	   app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
 
-	   /*      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
-	      app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
-	      app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-	      app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,
-	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-	   app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-	   app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	   app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-	   app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	   app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr); */
-
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
       ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
@@ -791,21 +772,6 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
 	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
 	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
-   /*      ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
-	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
-	     app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
-	     app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-	     app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-	     app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr); */
     }
  } else {
     /* Either assemble the matrix directly (the more efficient route) ... */
@@ -819,13 +785,6 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
 	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
-     /*      ierr = jform2_(&app->eps_jac,&app->eps_jac_inv,
-	      app->ltog,&app->nloc,&fortmat,app->diag,
-	      app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr); */
 
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
@@ -836,13 +795,6 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
 	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
-     /*      ierr = jform_(&app->eps_jac,&app->eps_jac_inv,
-	      app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
-	      app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr); */
     }
   }
 
@@ -1079,18 +1031,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
-
-	   /*    ierr = residbc_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
-           app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-           app->sadai,app->sadaj,app->sadak,
-           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz,
-           app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr); */
   }
 
   /* Compute function components for interior grid points. */
@@ -1103,15 +1043,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->matrix_free_mult); CHKERRQ(ierr);
- /*  ierr = resid_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
-         app->dr,app->dru,app->drv,app->drw,app->de,
-         app->br,app->bl,app->be,
-         app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,
-         app->f1,app->g1,app->h1,
-         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-         &app->matrix_free_mult); CHKERRQ(ierr); */
 
   /* Compute pseudo-transient continuation array, dt.  Really need to
      recalculate dt only when the iterates change.  */
@@ -1120,10 +1051,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,&app->ts_type);
-    /*    eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-         app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,&app->ts_type); */
   }
   PLogEventEnd(app->event_localf,0,0,0,0);
 
@@ -1150,14 +1077,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
-   /*       ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dr, app->dru, app->drv,
-           app->drw, app->de, app->ltog, &app->nloc,
-	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr); */
     } else {
       /* Build Fvec(X) directly, without using VecSetValues() */
       ierr = VecGetArray(Fvec,&farray); CHKERRQ(ierr);
@@ -1168,14 +1087,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
-	   /*      ierr = rbuild_direct_(farray, &app->sctype, app->dt, app->dr, app->dru, app->drv,
-           app->drw, app->de,
-	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr); */
     }
   } else if (app->bctype == EXPLICIT) {
     /* Scale if necessary; then build Function */
@@ -1363,7 +1274,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
   app->cfl_max_incr          = 2.0;      /* maximum CFL increase at any given step */
   app->cfl_max_decr          = 0.1;      /* maximum CFL decrease at any given step */
-  app->f_reduction           = 0.01;     /* fnorm reduction ratio before beginning to advance CFL */
+  app->f_reduction           = 0.1;     /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
