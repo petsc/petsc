@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f.F,v 1.7 1998/03/30 22:03:29 balay Exp balay $";
+!    "$Id: ex13f.F,v 1.8 1998/04/15 18:02:05 balay Exp balay $";
 !
 !
 !/*T
@@ -203,7 +203,8 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 
 !  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,5,0,A,ierr)
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,5,                  &
+     &     PETSC_NULL_INTEGER,A,ierr)
 
 !  Create vectors
 
