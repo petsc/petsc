@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.47 2001/01/16 18:17:47 balay Exp balay $*/
+/*$Id: baijfact2.c,v 1.48 2001/03/23 23:22:07 balay Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2271,7 +2271,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
     ierr          = PetscMalloc(((*fact)->m+1+b->bs)*sizeof(Scalar),&b->solve_work);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
   } else { /* general case perform the symbolic factorization */
     ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
     ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
