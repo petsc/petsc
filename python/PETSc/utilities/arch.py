@@ -91,10 +91,10 @@ class Configure(config.base.Configure):
         self.arch = self.framework.host_os
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
-    self.addDefine('ARCH', self.archBase)
+    self.addDefine('ARCH', self.hostOsBase)
     self.addDefine('ARCH_NAME', '"'+self.arch+'"')
     self.framework.argDB['PETSC_ARCH']      = self.arch
-    self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
+    self.framework.argDB['PETSC_ARCH_BASE'] = self.hostOsBase
     self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
     return
 
