@@ -29,7 +29,6 @@ petsc/bmake/rs6000_p4
 petsc/bin/configure
 petsc/bin/config.status
 petsc/src/snes/impls/trdl
-petsc/src/snes/examples/umin/ex5.c
 petsc/src/mat/examples/matrices
 petsc/src/grid
 petsc/src/stencil
