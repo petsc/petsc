@@ -199,7 +199,7 @@ class Configure(config.base.Configure):
       args.append('--with-fc=0')
     if not self.framework.argDB['with-shared']:
       args.append('--with-shared=0')
-    if not --with-mpi-dir in self.framework.argDB:
+    if not 'with-mpi-dir' in self.framework.argDB:
       args.extend(['--with-mpi-include='+self.mpi.include[0], '--with-mpi-lib='+str(self.mpi.lib).replace(' ','').replace("'","")])
     if self.framework.argDB['with-mpi-shared']:
       args.append('--with-mpi-shared')
