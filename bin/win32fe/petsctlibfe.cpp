@@ -1,4 +1,4 @@
-/* $Id: tlibfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: tlibfe.cpp,v 1.6 2001/04/17 15:24:24 buschelm Exp $ */
 #include <fstream>
 #include "Windows.h"
 #include "tlibfe.h"
@@ -7,10 +7,9 @@ using namespace PETScFE;
 using namespace std;
 
 void tlib::Execute() {
+  archiver::Execute();
   if (!helpfound) {
-    archiver::Execute();
-    string temp;
-    temp = *file.begin();
+    string temp = file.front();
     temp = temp.substr(0,temp.rfind("."));
     temp = temp.substr(1) + ".BAK";
     bool deleteme = FALSE;
@@ -27,7 +26,10 @@ void tlib::Execute() {
 
 void tlib::Help(void) {
   tool::Help();
-  string help = *archivearg.begin();
+  cout << "  Note: tlib operators +, -+, *, etc. are not supported by win32fe." << endl;
+  cout << "        Instead, use the flags -a, -u, -e, etc. accordingly." << endl << endl;
+  cout << "  =======================================================================" << endl << endl;
+  string help = archivearg.front();
   system(help.c_str());
 }
 

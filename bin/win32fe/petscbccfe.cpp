@@ -1,4 +1,4 @@
-/* $Id: bccfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: bccfe.cpp,v 1.10 2001/04/17 15:24:24 buschelm Exp $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
@@ -13,7 +13,7 @@ bcc::bcc() {
 void bcc::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
   if (!verbose) {
-    string temp = *compilearg.begin();
+    string temp = compilearg.front();
     compilearg.pop_front();
     compilearg.push_front("-q");
     compilearg.push_front(temp);
@@ -49,7 +49,7 @@ void bcc::Compile(void) {
 void bcc::Link(void) {
   if (OutputFlag==compilearg.end()) {
     linkarg.pop_front();
-    string tempstr = "-e" + *file.begin();
+    string tempstr = "-e" + file.front();
     tempstr.replace(tempstr.rfind("."),string::npos,".exe");
     linkarg.push_front(tempstr);
   }
@@ -105,8 +105,8 @@ void bcc::Help(void) {
   cout << "        The following additional options are enabled for bcc32." << endl << endl;
   cout << "  -l:<flag>    enables <flag> for the linker, ilink32.exe" << endl;
   cout << "  -l:-<flag>   disables <flag> for the linker, ilink32.exe" << endl << endl;
-  cout << "  ======================================================================" << endl << endl;
-  string help = *(compilearg.begin());
+  cout << "  =======================================================================" << endl << endl;
+  string help = compilearg.front();
   system(help.c_str());
 }
 
@@ -139,7 +139,7 @@ void bcc::Foundo(LI &i){
 void bcc::FixOutput(void) {
   if (OutputFlag!=compilearg.end()) {
     string temp = *OutputFlag;
-    if (*linkarg.begin()=="-c") {
+    if (linkarg.front()=="-c") {
       temp[1] = 'o';
     } else {
       temp[1] = 'e';

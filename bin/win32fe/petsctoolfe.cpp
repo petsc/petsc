@@ -1,4 +1,4 @@
-/* $Id: toolfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: toolfe.cpp,v 1.7 2001/04/17 15:24:24 buschelm Exp $ */
 #include "Windows.h"
 #include "toolfe.h"
 
@@ -55,16 +55,21 @@ void tool::Help(void) {
   cout << "  --use <arg>: <arg> Specifies the variant of <tool> to use" << endl;
   cout << "  --verbose:   Echo to stdout the translated commandline" << endl;
   cout << "  --help:      Output this help message and help for <tool>" << endl << endl;
-  cout << "win32fe will map the following <tool options> to their native options:" << endl;
-  cout << "  -c:          Compile Only, generates an object file with .o extension" << endl;
-  cout << "  -l<library>: Link the file lib<library>.lib" << endl;
-  cout << "  -o <file>:   Output=<file> context dependent" << endl;
-  cout << "  -D<macro>:   Define <macro>" << endl;
-  cout << "  -I<path>:    Add <path> to the include path" << endl;
-  cout << "  -L<path>:    Add <path> to the link path" << endl;
-  cout << "  -help:       <tool> specific help for win32fe" << endl << endl;
+  cout << "For compilers:" << endl;
+  cout << "  win32fe will map the following <tool options> to their native options:" << endl;
+  cout << "    -c:          Compile Only, generates an object file with .o extension" << endl;
+  cout << "    -l<library>: Link the file lib<library>.lib" << endl;
+  cout << "    -o <file>:   Output=<file> context dependent" << endl;
+  cout << "    -D<macro>:   Define <macro>" << endl;
+  cout << "    -I<path>:    Add <path> to the include path" << endl;
+  cout << "    -L<path>:    Add <path> to the link path" << endl;
+  cout << "    -help:       <tool> specific help for win32fe" << endl << endl;
   cout << "Ex: win32fe cl -Zi -c foo.c --verbose -Iinclude" << endl << endl;
-  cout << "========================================================================" << endl << endl;
+  cout << "For archivers:" << endl;
+  cout << "  The first file specified will be the archive name." << endl;
+  cout << "  All subsequent files will be inserted into the archive." << endl << endl;
+  cout << "Ex: win32fe tlib -u libfoo.lib foo.o bar.o" << endl << endl;
+  cout << "=========================================================================" << endl << endl;
 }
 
 void tool::FoundUse(LI &i) {

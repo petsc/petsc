@@ -1,8 +1,8 @@
-/* $Id: petsctlibfe.h,v 1.2 2001/03/23 19:33:28 buschelm Exp $ */
+/* $Id: tlibfe.h,v 1.3 2001/04/11 07:51:10 buschelm Exp $ */
 #ifndef PETScTlibFE_h
 #define PETScTlibFE_h
 
-#include "petscarchiverfe.h"
+#include "archiverfe.h"
 
 namespace PETScFE {
 

@@ -1,36 +1,49 @@
-/* $Id: libfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: libfe.cpp,v 1.5 2001/04/17 15:24:24 buschelm Exp $ */
 #include <fstream>
 #include "libfe.h"
 
 using namespace PETScFE;
   
 void lib::Execute(void) {
+  tool::Execute();
   if (!helpfound) {
-    string temp = *file.begin();
-    { /* Open file stream */ 
-      ifstream LibraryExists(temp.c_str());
-      if (temp.substr(temp.rfind("."))==".lib") {
-        if (!LibraryExists) temp = "-out:" + *file.begin();
-      } else {
-        temp = "-out:" + *file.begin();
-        if (LibraryExists) temp = temp + " " + *file.begin();
-      }
-    } /* Close file stream */ 
-    file.pop_front();
-    file.push_front(temp);
     if (!verbose) {
-      string libexe = *archivearg.begin();
+      string libexe = archivearg.front();
       archivearg.pop_front();
       archivearg.push_front("-nologo");
       archivearg.push_front(libexe);
     }
+    string archivename = file.front();
+    file.pop_front();
+    archivearg.push_back("-out:" + archivename);
+    { /* Open file stream */ 
+      ifstream ArchiveExists(archivename.c_str());
+      if (ArchiveExists) archivearg.push_back(archivename);
+    } /* Close file stream */
+    LI li = archivearg.begin();
+    string header = *li++;
+    Merge(header,archivearg,li);
+    li = file.begin();
+    string archive;
+    while (li != file.end()) {
+      archive = header;
+      Merge(archive,file,li);
+      if (verbose) cout << archive << endl;
+      system(archive.c_str());
+      if (archivearg.back()!=archivename)
+        Merge(header,archivearg,archivearg.insert(archivearg.end(),archivename));
+    }
   }
-  archiver::Execute();
 }
 
 void lib::Help(void) {
   tool::Help();
-  string help = *archivearg.begin();
+  cout << "  Note: win32fe will check to see if the library exists, and will modify" << endl;
+  cout << "        the arguments to lib accordingly.  As a result, specifying" << endl;
+  cout << "        -out:<libname> is unnecessary and may lead to unexpected results." << endl << endl;
+  cout << "  =======================================================================" << endl << endl;
+  
+  string help = archivearg.front();
   help += " -? 2>&1"; 
   system(help.c_str());
 }

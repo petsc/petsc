@@ -1,4 +1,4 @@
-/* $Id: clfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: clfe.cpp,v 1.10 2001/04/17 15:24:24 buschelm Exp $ */
 #include <stdlib.h>
 #include "clfe.h"
 #include "Windows.h"
@@ -12,7 +12,7 @@ cl::cl() {
 void cl::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
   if (!verbose) {
-    string temp = *compilearg.begin();
+    string temp = compilearg.front();
     compilearg.pop_front();
     compilearg.push_front("-nologo");
     compilearg.push_front(temp);
@@ -28,7 +28,7 @@ void cl::Parse(void) {
 
 void cl::Help(void) {
   tool::Help();
-  string help = *compilearg.begin();
+  string help = compilearg.front();
   help += " -? 2>&1";
   system(help.c_str());
 }
@@ -90,7 +90,7 @@ void cl::FixFx(void) {
   if (OutputFlag!=compilearg.end()) {
     string temp = *OutputFlag;
     compilearg.erase(OutputFlag);
-    if (*linkarg.begin()=="-c") {
+    if (linkarg.front()=="-c") {
       temp[2]='o';
     } else {
       temp[2]='e';

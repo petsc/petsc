@@ -1,4 +1,4 @@
-/* $Id: archiverfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: archiverfe.cpp,v 1.7 2001/04/17 15:24:24 buschelm Exp $ */
 #include <stdlib.h>
 #include <process.h>
 #include "archiverfe.h"
@@ -31,28 +31,27 @@ void archiver::Parse(void) {
 void archiver::Execute(void) {
   tool::Execute();
   if (!helpfound) {
-    int lenarchive,lenfiles;
+    string archive;
+    archivearg.push_back(file.front());
+    file.pop_front();
     LI li = archivearg.begin();
-    string archive = *li++;
-    string files,callarchive;
-    Merge(archive,archivearg,li);
+    string header = *li++;
+    Merge(header,archivearg,li);
     li = file.begin();
     while (li != file.end()) {
-      /* Invoke archiver several times to limit arg length <1024 chars */
-      Merge(files,file,li);
-      callarchive = archive + " " +files;
-      files = "";
-      if (verbose) {
-        cout << callarchive << endl;
-      }
-      system(callarchive.c_str());
+      /* Invoke archiver several times to limit arg length <512 chars */
+      archive = header;
+      Merge(archive,file,li);
+      if (verbose)
+        cout << archive << endl;
+      system(archive.c_str());
     }
   }
 }
 
 void archiver::Help(void) {
   tool::Help();
-  string help = *archivearg.begin();
+  string help = archivearg.front();
   help += " -help";
   system(help.c_str());
 }

@@ -1,8 +1,8 @@
-/* $Id: petscarchiverfe.h,v 1.2 2001/04/16 22:12:48 buschelm Exp buschelm $ */
+/* $Id: archiverfe.h,v 1.3 2001/04/16 22:17:30 buschelm Exp $ */
 #ifndef PETScArchiverFE_h_
 #define PETScArchiverFE_h_
 
-#include "petsctoolfe.h"
+#include "toolfe.h"
 
 namespace PETScFE {
 

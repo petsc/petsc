@@ -1,4 +1,4 @@
-/* $Id: compilerfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
+/* $Id: compilerfe.cpp,v 1.7 2001/04/17 15:24:24 buschelm Exp $ */
 #include <stdlib.h>
 #include "compilerfe.h"
 
@@ -60,7 +60,7 @@ void compiler::Execute(void) {
 
 void compiler::Help(void) {
   tool::Help();
-  string help = *compilearg.begin();
+  string help = compilearg.front();
   help += " -help";
   system(help.c_str());
 }
