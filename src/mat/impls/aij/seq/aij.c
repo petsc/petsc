@@ -854,7 +854,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   PetscScalar       *v,alpha;
   PetscInt          n,i,*idx,*ii,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
-  PetscTruth        usecprow; 
+  PetscTruth        usecprow = cprow.use; 
 #endif
 
   PetscFunctionBegin;
@@ -865,12 +865,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   fortranmulttransposeaddaij_(&m,x,a->i,a->j,a->a,y);
 #else
-  if (cprow.use && cprow.checked){
-    usecprow = PETSC_TRUE;
-  } else {
-    usecprow = PETSC_FALSE;
-  }
-
   if (usecprow){
     m    = cprow.nrows;
     ii   = cprow.i;
@@ -937,7 +931,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
-  if (usecprow && a->compressedrow.checked){ /* use compressed row format */
+  if (usecprow){ /* use compressed row format */
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -996,7 +990,10 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
   fortranmultaddaij_(&m,x,ii,aj,aa,y,z);
 #else
-  if (usecprow && a->compressedrow.checked){ /* use compressed row format */
+  if (usecprow){ /* use compressed row format */
+    if (zz != yy){
+      ierr = PetscMemcpy(z,y,m*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;

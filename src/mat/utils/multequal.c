@@ -43,6 +43,7 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
   
+  *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
@@ -52,9 +53,8 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
     r1 -= r2;
     if (r1<-tol || r1>tol) {
       *flg = PETSC_FALSE;
-    } else {
-      *flg = PETSC_TRUE;
-    }
+      break;
+    } 
   }
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -103,6 +103,7 @@ PetscErrorCode MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
   ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
   
+  *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
     ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
@@ -113,8 +114,7 @@ PetscErrorCode MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
     r1 -= r2;
     if (r1<-tol || r1>tol) {
       *flg = PETSC_FALSE;
-    } else {
-      *flg = PETSC_TRUE;
+      break;
     }
   }
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
