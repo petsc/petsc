@@ -1,15 +1,19 @@
 C
-C  $Id: is.h,v 1.8 1996/08/05 04:15:45 bsmith Exp $;
+C  $Id: ts.h,v 1.1 1996/08/05 22:30:45 bsmith Exp bsmith $;
 C
-C  Include file for Fortran use of the IS (index set) package in PETSc
+C  Include file for Fortran use of the S (time stepping) package in PETSc
 C
-#define IS       integer
-#define ISType   integer
+#define TS            integer
+#define TSType        integer
+#define TSProblemType integer 
 
-      integer IS_SEQ,IS_STRIDE_SEQ, IS_BLOCK_SEQ
+      integer TS_EULER, TS_BEULER, TS_PSEUDO
 
-      parameter (IS_SEQ = 0, IS_STRIDE_SEQ = 1, IS_BLOCK_SEQ = 2)
+      parameter (TS_EULER = 0, TS_BEULER = 1,TS_PSEUDO = 2)
 
+      integer TS_LINEAR, TS_NONLINEAR
+
+      parameter (TS_LINEAR = 0, TS_NONLINEAR = 1)
 C
-C  End of Fortran include file for the IS package in PETSc
+C  End of Fortran include file for the TS package in PETSc
 

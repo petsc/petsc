@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.24 1996/08/30 14:35:15 bsmith Exp curfman $;
+C  $Id: mat.h,v 1.25 1996/09/24 15:27:39 curfman Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -13,6 +13,7 @@ C
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
 #define MatInfo             Double
+#define MatStructure        integer
 
 C
 C  Matrix types

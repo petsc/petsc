@@ -1,5 +1,5 @@
 C
-C  $Id: plog.h,v 1.2 1996/08/19 21:04:51 curfman Exp curfman $;
+C  $Id: plog.h,v 1.3 1996/08/19 23:02:39 curfman Exp bsmith $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -66,6 +66,8 @@ C
        parameter (MAT_View = 29)
        integer    MAT_ILUFactor
        parameter (MAT_ILUFactor = 30)
+       integer    MAT_GetColoring
+       parameter (MAT_GetColoring = 31)
        integer    MAT_GetSubMatrices
        parameter (MAT_GetSubMatrices = 32)
        integer    MAT_GetValues
@@ -158,6 +160,8 @@ C
        parameter (SNES_HessianEval = 86)
        integer    TS_Step
        parameter (TS_Step = 90)
+       integer    TS_PseudoComputeTimeStep
+       parameter (TS_PseudoComputeTimeStep = 91)
        integer    Petsc_Barrier
        parameter (Petsc_Barrier = 100)
        integer    DFVec_RefineVector
