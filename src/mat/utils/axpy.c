@@ -28,8 +28,7 @@
  @*/
 int MatAXPY(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int         m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
-  PetscScalar *val,*vals;
+  int         m1,m2,n1,n2,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_COOKIE); 
