@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.382 2000/09/28 21:10:52 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.383 2000/10/24 20:25:24 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1584,15 +1584,15 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(fact);
-  if (!mat->ops->choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!(*fact)->ops->choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,"");
   if (mat->M != (*fact)->M || mat->N != (*fact)->N) {
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat *fact: global dim %d should = %d %d should = %d",
             mat->M,(*fact)->M,mat->N,(*fact)->N);
   }
 
   ierr = PLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->choleskyfactornumeric)(mat,fact);CHKERRQ(ierr);
+  ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,fact);CHKERRQ(ierr);
   ierr = PLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1881,7 +1881,7 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
   PetscCheckSameComm(mat,x);
   if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
   if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,"x and b must be different vectors");
-  if (!mat->ops->solvetranspose) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->solvetranspose) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s",mat->type_name);
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->M,x->N);
   if (mat->N != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->N,b->N);
 
