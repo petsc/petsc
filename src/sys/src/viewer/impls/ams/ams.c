@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.6 1998/10/09 19:25:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.7 1998/10/14 19:31:42 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -24,7 +24,7 @@ Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
 #define __FUNC__ "ViewerInitializeAMSWorld_Private"
 int ViewerInitializeAMSWorld_Private(void)
 {
-  int  ierr,port = -1;
+  int  ierr;
 
   PetscFunctionBegin;
   if (VIEWER_AMS_WORLD_PRIVATE) PetscFunctionReturn(0);
@@ -36,8 +36,7 @@ int ViewerInitializeAMSWorld_Private(void)
 #define __FUNC__ "ViewerDestroy_AMS"
 static int ViewerDestroy_AMS(Viewer viewer)
 {
-  int      ierr,rank;
-  MPI_Comm comm;
+  int      ierr;
 
   PetscFunctionBegin;
   PLogObjectDestroy((PetscObject)viewer);

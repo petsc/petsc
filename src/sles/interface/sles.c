@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.103 1998/11/20 15:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.104 1998/11/20 23:15:22 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: sles.c,v 1.103 1998/11/20 15:29:41 bsmith Exp bsmith 
 #define __FUNC__ "SLESPublish_Petsc"
 static int SLESPublish_Petsc(PetscObject object)
 {
-  SLES          v = (SLES) object;
   int          ierr;
   
   PetscFunctionBegin;
