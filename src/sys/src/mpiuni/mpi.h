@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.33 1996/09/24 19:56:05 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.34 1996/10/03 17:42:20 bsmith Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -381,7 +381,8 @@ typedef char*   MPI_Errhandler;
 #define MPI_Op_create(function, commute, op) MPI_SUCCESS
 #define MPI_Op_free( op) MPI_SUCCESS
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
-          (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), MPI_SUCCESS)
+          (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
+          MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
 #define MPI_Reduce_scatter( sendbuf,  recvbuf, recvcounts, \
 		        datatype, op, comm) \
                         MPI_Abort(MPI_COMM_WORLD,0)
@@ -399,7 +400,9 @@ typedef char*   MPI_Errhandler;
 #define MPI_Group_excl(group, n, ranks, newgroup) MPI_SUCCESS
 #define MPI_Group_range_incl(group, n, ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_range_excl(group, n, ranges, newgroup) MPI_SUCCESS
-#define MPI_Group_free(group) MPI_SUCCESS
+#define MPI_Group_free(group) \
+                      (MPIUNI_TMP = (void *) (group), \
+                       MPI_SUCCESS)
 #define MPI_Comm_size(comm, size) \
                       (MPIUNI_TMP = (void *) (comm), \
                        *(size)=1, \
