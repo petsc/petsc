@@ -1,6 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: $";
-#endif
+
+/* cannot have vcid because included in other files */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -8,20 +7,20 @@ static char vcid[] = "$Id: $";
 #include "sys/flog.h"
 
 
-static int VeiDVPmdot( int nv, Vec xin, Vec *y, Scalar *z )
+static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
-  DvPVector *x = (DvPVector *)xin->data;
+  Vec_MPI *x = (Vec_MPI *)xin->data;
   Scalar *work;
   work = (Scalar *)MALLOC( nv * sizeof(Scalar) );  CHKPTR(work);
-  VeiDVmdot(  nv, xin, y, work );
+  VecMDot_Seq(  nv, xin, y, work );
   MPI_Allreduce((void *) work,(void *)z,nv,MPI_SCALAR,MPI_SUM,x->comm );
   FREE(work);
   return 0;
 }
 
-static int VeiDVPnorm(  Vec xin, double *z )
+static int VecNorm_MPI(  Vec xin, double *z )
 {
-  DvPVector *x = (DvPVector *) xin->data;
+  Vec_MPI *x = (Vec_MPI *) xin->data;
   double sum, work = 0.0;
   Scalar  *xx = x->array;
   register int n = x->n;
@@ -39,12 +38,12 @@ static int VeiDVPnorm(  Vec xin, double *z )
 }
 
 
-static int VeiDVPmax( Vec xin, int *idx, double *z )
+static int VecMax_MPI( Vec xin, int *idx, double *z )
 {
-  DvPVector *x = (DvPVector *) xin->data;
+  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   /* Find the local max */
-  VeiDVmax( xin, idx, &work );
+  VecMax_Seq( xin, idx, &work );
 
   /* Find the global max */
   if (!idx) {
