@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.7 2000/09/06 19:53:50 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.8 2000/09/07 14:06:03 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1110,6 +1110,7 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   int         *jl,*il,jmin,jmax,ierr,nexti,ik;
   
   PetscFunctionBegin;
+  printf("call MatNorm_SeqSBAIJ\n");
   if (type == NORM_FROBENIUS) {
     for (k=0; k<mbs; k++){
       jmin = a->i[k]; jmax = a->i[k+1];
