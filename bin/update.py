@@ -101,8 +101,6 @@ def updatePatches():
   except:
     raise RuntimeError('Unable to apply patch from '+patches1+' with '+patch) 
   log.write(output1+'\n')
-  if status1 or output1.find('FAILED') >= 0:
-    raise RuntimeError('Error applying '+patches1+' update.\n')
   if patches1 == 'patches1':
     os.unlink(patches1)
     
@@ -111,8 +109,6 @@ def updatePatches():
   except:
     raise RuntimeError('Unable to apply patch from '+patches2+' with '+patch) 
   log.write(output1+'\n')
-  if status1 or output1.find('FAILED') >= 0:
-    raise RuntimeError('Error applying '+patches2+' update.\n')
   if patches2 == 'patches2':
     os.unlink(patches2)
 
