@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   for ( i=0; i<n; i++ ) {
     v = (double) i;
-    VecSetValues(x,1,&i,&v,InsertValues);
+    VecSetValues(x,1,&i,&v,INSERTVALUES);
   }
   VecAssemblyBegin(x);
   VecAssemblyEnd(x);

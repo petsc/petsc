@@ -32,12 +32,12 @@ int main(int argc,char **argv)
   ierr = VecSet(&two,y);CHKERRA(ierr);
 
   if (mytid == 1) {
-    idx = 2; ierr = VecSetValues(y,1,&idx,&three,InsertValues); CHKERRA(ierr);  
-    idx = 0; ierr = VecSetValues(y,1,&idx,&two,InsertValues); CHKERRA(ierr); 
-    idx = 0; ierr = VecSetValues(y,1,&idx,&one,InsertValues); CHKERRA(ierr); 
+    idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERTVALUES); CHKERRA(ierr);  
+    idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERTVALUES); CHKERRA(ierr); 
+    idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERTVALUES); CHKERRA(ierr); 
   }
   else {
-    idx = 7; ierr = VecSetValues(y,1,&idx,&three,InsertValues);CHKERRA(ierr); 
+    idx = 7; ierr = VecSetValues(y,1,&idx,&three,INSERTVALUES);CHKERRA(ierr); 
   } 
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.31 1995/05/02 17:59:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.32 1995/05/02 21:11:26 curfman Exp bsmith $";
 #endif
 
 /*
@@ -279,7 +279,7 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
   int    i,j;
  
   if (!mat->roworiented) {
-    if (addv == InsertValues) {
+    if (addv == INSERTVALUES) {
       for ( j=0; j<n; j++ ) {
         if (indexn[j] < 0) {*v += m; continue;}
         for ( i=0; i<m; i++ ) {
@@ -299,7 +299,7 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
     }
   }
   else {
-    if (addv == InsertValues) {
+    if (addv == INSERTVALUES) {
       for ( i=0; i<m; i++ ) {
         if (indexm[i] < 0) {*v += n; continue;}
         for ( j=0; j<n; j++ ) {
@@ -596,7 +596,7 @@ static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
         vwork[nznew++] = val[j * mat->m];
       }
     }
-    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,InsertValues); 
+    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERTVALUES); 
            CHKERR(ierr);
   }
   ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERR(ierr);

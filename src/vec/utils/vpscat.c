@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.12 1995/04/15 03:26:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: vpscat.c,v 1.13 1995/05/02 21:20:00 curfman Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -194,7 +194,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       MPI_Get_count(&rstatus,MPI_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERR(1,"Bad message");
 
-      if (addv == InsertValues) {
+      if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -227,7 +227,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPI_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERR(1,"Bad message");
-      if (addv == InsertValues) {
+      if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -257,7 +257,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPI_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERR(1,"Bad message");
-      if (addv == InsertValues) {
+      if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -370,7 +370,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPI_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERR(1,"Bad message");
-      if (addv == InsertValues) {
+      if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -398,7 +398,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPI_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERR(1,"Bad message");
-      if (addv == InsertValues) {
+      if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.12 1995/05/02 18:01:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.13 1995/05/02 21:44:45 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -45,9 +45,9 @@ int main( int argc, char **argv )
   /* store right hand side to PDE; and exact solution */
   for ( i=0; i<n; i++ ) {
     v = 6.0*xp + pow(xp,6.0);
-    VecSetValues(F,1,&i,&v,InsertValues);
+    VecSetValues(F,1,&i,&v,INSERTVALUES);
     v= xp*xp*xp;
-    VecSetValues(U,1,&i,&v,InsertValues);
+    VecSetValues(U,1,&i,&v,INSERTVALUES);
     xp += h;
   }
 
@@ -117,15 +117,15 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag, void *dummy)
   int    i,n,j,ierr;
   VecGetArray(x,&xx); VecGetSize(x,&n);
   d = (double)(n - 1); d = d*d;
-  i = 0; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,InsertValues);
+  i = 0; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
-    j = i - 1; MatSetValues(*jac,1,&i,1,&j,&A,InsertValues);
-    j = i + 1; MatSetValues(*jac,1,&i,1,&j,&A,InsertValues);
+    j = i - 1; MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES);
+    j = i + 1; MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES);
     A = -2.0*d + 2.0*xx[i];
-    j = i + 1; MatSetValues(*jac,1,&i,1,&i,&A,InsertValues);
+    j = i + 1; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
   }
-  i = n-1; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,InsertValues);
+  i = n-1; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   *flag = MAT_SAME_NONZERO_PATTERN;

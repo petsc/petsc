@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.2 1995/05/02 16:06:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.3 1995/05/02 18:01:16 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -52,7 +52,7 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
     VecGetArray(j2,&y);
     for ( j=start; j<end; j++ ) {
       if (y[j-start]) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,InsertValues); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERTVALUES); CHKERR(ierr);
       }
     }
     VecRestoreArray(j2,&y);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.9 1995/04/19 01:28:27 curfman Exp curfman $";
+static char vcid[] = "$Id: adebug.c,v 1.10 1995/04/21 18:44:43 curfman Exp bsmith $";
 #endif/*
 */
 #include "petsc.h"
@@ -58,7 +58,7 @@ int PetscAttachDebugger()
   char *program = OptionsGetProgramName();
   if (!program) {
     fprintf(stderr,"Cannot determine program name\n");
-    fprintf(stderr,"Program probably does not have a OptionsCreate()\n");
+    fprintf(stderr,"Program probably does not have a OptionsCreate_Private()\n");
     return 1;
   }
   child = fork(); 

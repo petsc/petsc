@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.28 1995/04/28 06:44:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.29 1995/05/02 17:58:59 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -202,7 +202,7 @@ int VecScale(Scalar *alpha,Vec x)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
   PLogEventBegin(VEC_Scale,x,0,0,0);
-  ierr = (*x->ops->scal)(alpha,x); CHKERR(ierr);
+  ierr = (*x->ops->scale)(alpha,x); CHKERR(ierr);
   PLogEventEnd(VEC_Scale,x,0,0,0);
   return 0;
 }
@@ -404,7 +404,7 @@ int VecPDiv(Vec x,Vec y,Vec w)
 int VecCreate(Vec v,Vec *newv) 
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return   (*v->ops->create_vector)(v,newv);
+  return   (*v->ops->create)(v,newv);
 }
 /*@
    VecDestroy - Destroys  a vector created with VecCreate().
@@ -443,7 +443,7 @@ int VecDestroy(Vec v)
 int VecGetVecs(Vec v,int m,Vec **V)  
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return (*v->ops->obtain_vectors)( v, m,V );
+  return (*v->ops->getvecs)( v, m,V );
 }
 
 /*@
@@ -461,7 +461,7 @@ int VecFreeVecs(Vec *vv,int m)
 {
   if (!vv) SETERR(1,"Null vectors");
   VALIDHEADER(*vv,VEC_COOKIE);
-  return (*(*vv)->ops->release_vectors)( vv, m );
+  return (*(*vv)->ops->freevecs)( vv, m );
 }
 
 /*@
@@ -474,23 +474,23 @@ int VecFreeVecs(Vec *vv,int m)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
-.  iora - either InsertValues or AddValues
+.  iora - either INSERTVALUES or AddValues
 
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Calls to VecSetValues() with the InsertValues and AddValues 
+   Calls to VecSetValues() with the INSERTVALUES and AddValues 
    options cannot be mixed without intervening calls to the assembly
    routines.
 
 .keywords: vector, set, values
 
-.seealso:  VecAssemblyBegin(), VecEndAsembly()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->insertvalues)( x, ni,ix, y,iora );
+  return (*x->ops->setvalues)( x, ni,ix, y,iora );
 }
 
 /*@
@@ -509,7 +509,9 @@ int VecAssemblyBegin(Vec vec)
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
   PLogEventBegin(VEC_BeginAssembly,vec,0,0,0);
-  if (vec->ops->beginassm) {ierr = (*vec->ops->beginassm)(vec); CHKERR(ierr);}
+  if (vec->ops->assemblybegin) {
+    ierr = (*vec->ops->assemblybegin)(vec); CHKERR(ierr);
+  }
   PLogEventEnd(VEC_BeginAssembly,vec,0,0,0);
   return 0;
 }
@@ -530,7 +532,9 @@ int VecAssemblyEnd(Vec vec)
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
   PLogEventBegin(VEC_EndAssembly,vec,0,0,0);
-  if (vec->ops->endassm) {ierr = (*vec->ops->endassm)(vec); CHKERR(ierr);}
+  if (vec->ops->assemblyend) {
+    ierr = (*vec->ops->assemblyend)(vec); CHKERR(ierr);
+  }
   PLogEventEnd(VEC_EndAssembly,vec,0,0,0);
   return 0;
 }
@@ -726,7 +730,7 @@ int VecGetSize(Vec x,int *size)
 int VecGetLocalSize(Vec x,int *size)
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->localsize)(x,size);
+  return (*x->ops->getlocalsize)(x,size);
 }
 
 /*@
@@ -748,7 +752,7 @@ int VecGetLocalSize(Vec x,int *size)
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->getrange)(x,low,high);
+  return (*x->ops->getownershiprange)(x,low,high);
 }
 
 /* Default routines for obtaining and releasing; */

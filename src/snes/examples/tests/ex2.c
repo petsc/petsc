@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.9 1995/05/02 16:06:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1995/05/02 21:44:18 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -84,7 +84,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
   VecGetArray(x,&xx);
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  MatSetValues(*jac,2,idx,2,idx,A,InsertValues);
+  MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES);
   *flag = 0;
   return 0;
 }

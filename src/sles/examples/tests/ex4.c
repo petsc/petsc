@@ -97,8 +97,8 @@ int main(int argc,char **args)
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,InsertValues); CHKERRA(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,InsertValues); CHKERRA(ierr);
+     ierr = VecSetValues(u,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
+     ierr = VecSetValues(b,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
   }    
   FREE(rows);
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
   for ( i=0; i<N; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,InsertValues); CHKERRA(ierr);
+     ierr = VecSetValues(ustar,1,&i,&val,INSERTVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
   ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);

@@ -36,15 +36,15 @@ int main(int argc,char **argv)
 
   for ( i=0; i<N; i++ ) {
     value = (Scalar) i;
-    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&value,INSERTVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is2,y,is1,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is2,y,is1,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(x,is2,y,is1,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is2,y,is1,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is2,y,is1,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,SYNC_STDOUT_VIEWER);

@@ -33,15 +33,15 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   
   VecView(y,STDOUT_VIEWER);
 
-  ierr = VecScatterBegin(y,is1,x,is2,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(y,is1,x,is2,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(y,is1,x,is2,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
   printf("-------\n");VecView(x,STDOUT_VIEWER);

@@ -34,7 +34,8 @@ int main(int Argc, char **Args)
 {
   int         x_mesh = 15,levels = 3,cycles = 1;
   int         i,smooths = 1;
-  int         *N, use_jacobi = 0, am = Multiplicative;
+  int         *N, use_jacobi = 0;
+  MGMethod    am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
   double      e[3]; /* l_2 error, max error, residual */
@@ -51,8 +52,8 @@ int main(int Argc, char **Args)
   OptionsGetInt(1,0,"-c",&cycles);  
   OptionsGetInt(1,0,"-smooths",&smooths);  
   if (OptionsHasName(1,0,"-help")) {fprintf(stderr,"%s",help); exit(0);}
-  if (OptionsHasName(1,0,"-a")) {am = Additive;}
-  if (OptionsHasName(1,0,"-f")) {am = FullMultigrid;}
+  if (OptionsHasName(1,0,"-a")) {am = MGADDITIVE;}
+  if (OptionsHasName(1,0,"-f")) {am = MGFULL;}
   if (OptionsHasName(1,0,"-j")) {use_jacobi = 1;}
          
   N = (int *) MALLOC(levels*sizeof(int)); CHKPTR(N);
@@ -263,12 +264,12 @@ int Create1dLaplacian(int n,Mat *mat)
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERR(ierr);
   
   idx= n-1;
-  MatSetValues(*mat,1,&idx,1,&idx,&two,InsertValues);
+  MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES);
   for ( i=0; i<n-1; i++ ) {
-    MatSetValues(*mat,1,&i,1,&i,&two,InsertValues);
+    MatSetValues(*mat,1,&i,1,&i,&two,INSERTVALUES);
     idx = i+1;
-    MatSetValues(*mat,1,&idx,1,&i,&mone,InsertValues);
-    MatSetValues(*mat,1,&i,1,&idx,&mone,InsertValues);
+    MatSetValues(*mat,1,&idx,1,&i,&mone,INSERTVALUES);
+    MatSetValues(*mat,1,&i,1,&idx,&mone,INSERTVALUES);
   }
   ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
@@ -283,7 +284,7 @@ int CalculateRhs(Vec u)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = 2.0*h*h; 
-    ierr = VecSetValues(u,1,&i,&uu,InsertValues); CHKERR(ierr);
+    ierr = VecSetValues(u,1,&i,&uu,INSERTVALUES); CHKERR(ierr);
   }
 
   return 0;
@@ -297,7 +298,7 @@ int CalculateSolution(int n,Vec *solution)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 
-    ierr = VecSetValues(*solution,1,&i,&uu,InsertValues); CHKERR(ierr);
+    ierr = VecSetValues(*solution,1,&i,&uu,INSERTVALUES); CHKERR(ierr);
   }
 
   return 0;

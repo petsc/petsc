@@ -41,15 +41,15 @@ int main(int argc,char **argv)
   /* this is redundant but tests assembly */
   for ( i=0; i<n; i++ ) {
     value = (Scalar) (i + 10*mytid);
-    ierr = VecSetValues(y,1,&i,&value,InsertValues); CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&value,INSERTVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(y,is2,x,is1,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(y,is2,x,is1,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(y,is2,x,is1,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(y,is2,x,is1,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(x,SYNC_STDOUT_VIEWER);

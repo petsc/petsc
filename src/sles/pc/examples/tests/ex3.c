@@ -35,12 +35,12 @@ int main(int argc,char **args)
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,InsertValues); CHKERRA(ierr);
+    ierr = MatSetValues(mat,1,&i,3,col,value,INSERTVALUES); CHKERRA(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERTVALUES); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERTVALUES); CHKERRA(ierr);
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 

@@ -54,7 +54,7 @@ extern int VecDestroy(Vec);
 extern int VecGetVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
 
-typedef enum {NotSetValues, InsertValues, AddValues} InsertMode;
+typedef enum {NOTSETVALUES, INSERTVALUES, AddValues} InsertMode;
 
 extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);

@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   /* fill local part of parallel vector */
   for ( i=n*mytid; i<n*(mytid+1); i++ ) {
     value = (Scalar) i;
-    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&value,INSERTVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
@@ -45,9 +45,9 @@ int main(int argc,char **argv)
   ierr = VecSet(&mone,y); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
 
   ierr = VecDestroy(x);CHKERRA(ierr);

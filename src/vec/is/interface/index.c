@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.7 1995/03/24 18:47:44 curfman Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.8 1995/04/16 19:21:10 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -72,7 +72,7 @@ int ISInvertPermutation(IS is,IS *isout)
 {
   VALIDHEADER(is,IS_COOKIE);
   if (!is->isperm) SETERR(1,"Cannot invert nonpermutation");
-  return (*is->ops->invert)(is,isout);
+  return (*is->ops->invertpermutation)(is,isout);
 }
 
 /*@
@@ -91,7 +91,7 @@ int ISInvertPermutation(IS is,IS *isout)
 int ISGetSize(IS is,int *size)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->size)(is,size);
+  return (*is->ops->getsize)(is,size);
 }
 /*@
    ISGetLocalSize - Returns local length of an index set.
@@ -109,7 +109,7 @@ int ISGetSize(IS is,int *size)
 int ISGetLocalSize(IS is,int *size)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->localsize)(is,size);
+  return (*is->ops->getlocalsize)(is,size);
 }
 
 /*@ 
@@ -134,7 +134,7 @@ int ISGetLocalSize(IS is,int *size)
 int ISGetIndices(IS is,int **ptr)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->indices)(is,ptr);
+  return (*is->ops->getindices)(is,ptr);
 } 
 
 /*@ 

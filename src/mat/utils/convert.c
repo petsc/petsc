@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.9 1995/05/02 21:55:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.10 1995/05/02 23:24:22 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -132,7 +132,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
 /*  for (i=0; i<m; i++) { */
   for (i=0; i<1; i++) {
     ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
-    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,InsertValues); 
+    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERTVALUES); 
            CHKERR(ierr);
     ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
   }
@@ -167,7 +167,7 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
     ig   = i + rstart;
     ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
     ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
-		InsertValues); CHKERR(ierr);
+		INSERTVALUES); CHKERR(ierr);
     ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERR(ierr);
   }
   ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);

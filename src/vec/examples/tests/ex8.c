@@ -29,13 +29,13 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,3,1,2,&is2); CHKERRA(ierr);
 
-  ierr = VecSetValues(x,6,loc,vals,InsertValues); CHKERRA(ierr);
+  ierr = VecSetValues(x,6,loc,vals,INSERTVALUES); CHKERRA(ierr);
   VecView(x,STDOUT_VIEWER); printf("----\n");
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
+  ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,ScatterAll,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   VecView(y,STDOUT_VIEWER);

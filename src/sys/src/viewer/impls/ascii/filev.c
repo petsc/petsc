@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.8 1995/04/27 20:16:07 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.9 1995/04/27 23:19:43 curfman Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -14,7 +14,7 @@ struct _Viewer {
 
 Viewer STDOUT_VIEWER,STDERR_VIEWER,SYNC_STDOUT_VIEWER;
 
-int ViewerInitialize()
+int ViewerInitialize_Private()
 {
   ViewerFileOpen("stderr",&STDERR_VIEWER);
   ViewerFileOpen("stdout",&STDOUT_VIEWER);
