@@ -832,7 +832,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pet
   PetscInt       *pti,*ptj,*ptJ,*ajj,*pjj; 
   PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz,cstart=a->cstart,cend=a->cend,col;  
   PetscInt       *ci,*cj,*ptaj; 
-  PetscInt       an=A->N,am=A->m,pN=P_loc->N;
+  PetscInt       aN=A->N,am=A->m,pN=P_loc->N;
   PetscInt       i,j,k,ptnzi,arow,anzj,prow,pnzj,cnzi;
   PetscInt       pm=P_loc->m,nlnk,*lnk;
   MatScalar      *ca;
@@ -859,20 +859,20 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pet
   ierr = PetscMalloc((pN+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
-  ierr = PetscMalloc((4*an+1)*sizeof(PetscInt),&ptadenserow_loc);CHKERRQ(ierr);
-  ierr = PetscMemzero(ptadenserow_loc,(4*an+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ptasparserow_loc = ptadenserow_loc + an;
-  ptadenserow_oth  = ptasparserow_loc + an;
-  ptasparserow_oth = ptadenserow_oth + an;
+  ierr = PetscMalloc((4*aN+1)*sizeof(PetscInt),&ptadenserow_loc);CHKERRQ(ierr);
+  ierr = PetscMemzero(ptadenserow_loc,(4*aN+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ptasparserow_loc = ptadenserow_loc + aN;
+  ptadenserow_oth  = ptasparserow_loc + aN;
+  ptasparserow_oth = ptadenserow_oth + aN;
 
   /* create and initialize a linked list */
   nlnk = pN+1;
   ierr = PetscLLCreate(pN,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* Set initial free space to be nnz(A) scaled by aspect ratio of P (P->M=A->N). */
+  /* Set initial free space to be nnz(A) scaled by fill*P->N/P->M. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   nnz           = adi[am] + aoi[am];
-  ierr          = GetMoreSpace((PetscInt)(fill*nnz/A->N)*pN,&free_space);
+  ierr          = GetMoreSpace((PetscInt)(fill*nnz*pN/aN+1),&free_space);
   current_space = free_space;
 
   /* determine symbolic info for each row of C: */

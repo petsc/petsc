@@ -80,7 +80,7 @@ PetscErrorCode MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -129,7 +129,7 @@ PetscErrorCode MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -177,7 +177,7 @@ PetscErrorCode MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {

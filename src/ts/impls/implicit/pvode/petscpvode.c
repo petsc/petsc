@@ -421,7 +421,7 @@ PetscErrorCode TSView_PVode(TS ts,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);

@@ -2954,13 +2954,13 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
   for (ii=0; ii<m; ii++) {
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
 #if defined(PETSC_USE_BOPT_g)
-    if (i[ii+1] - i[ii] < 0) SETERRQ2(1,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
 #endif    
   }
 #if defined(PETSC_USE_BOPT_g)
   for (ii=0; ii<aij->i[m]; ii++) {
-    if (j[ii] < 0) SETERRQ2(1,"Negative column index at location = %d index = %d",ii,j[ii]);
-    if (j[ii] > n - 1) SETERRQ2(1,"Column index to large at location = %d index = %d",ii,j[ii]);
+    if (j[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
+    if (j[ii] > n - 1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);
   }
 #endif    
 

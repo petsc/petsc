@@ -971,7 +971,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -256,7 +256,7 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

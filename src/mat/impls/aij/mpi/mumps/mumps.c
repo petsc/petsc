@@ -397,7 +397,7 @@ PetscErrorCode MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {   
-    SETERRQ1(1,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
+    SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
   }
 
   /* convert mumps solution x_seq to petsc mpi x */
@@ -437,7 +437,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   ierr = MPI_Comm_size(F->comm,&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && lu->id.ICNTL(13) != 1){
-    SETERRQ1(1,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
   }
   if (nneg){  
     if (!lu->myid){
@@ -608,7 +608,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   dmumps_c(&lu->id); 
 #endif
     if (lu->id.INFOG(1) < 0) { 
-      SETERRQ1(1,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+      SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
     }
   }
 
@@ -635,11 +635,11 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {
-    SETERRQ2(1,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
+    SETERRQ2(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
   }
 
   if (lu->myid==0 && lu->id.ICNTL(16) > 0){
-    SETERRQ1(1,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
+    SETERRQ1(PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
   
   (*F)->assembled  = PETSC_TRUE;

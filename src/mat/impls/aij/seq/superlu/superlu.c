@@ -249,7 +249,7 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %d\n",info);
     }
   } else if (info < 0){
-    SETERRQ2(1, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info);
+    SETERRQ2(PETSC_ERR_LIB, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info);
   }
 
   if ( lu->options.PrintStat ) {
@@ -322,7 +322,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %d\n",info);
     }
   } else { /* info < 0 */
-    SETERRQ2(1, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info); 
+    SETERRQ2(PETSC_ERR_LIB, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info); 
   }
 
   if ( lu->options.PrintStat ) {

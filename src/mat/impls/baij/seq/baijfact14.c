@@ -10,16 +10,16 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   PetscErrorCode ierr;
-  int i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row;
-  int                *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
-  MatScalar          *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
-  MatScalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
-  MatScalar          *ba = b->a,*aa = a->a;
+  PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row;
+  PetscInt       *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
+  MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
+  MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
+  MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
+  MatScalar      *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(9*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);

@@ -270,7 +270,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -321,7 +321,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
 
   PetscFunctionBegin;
 
-  if (pc->setupcalled > 0) SETERRQ(1,"Cannot set number of blocks after PCSetUp()/KSPSetUp() has been called");
+  if (pc->setupcalled > 0) SETERRQ(PETSC_ERR_ORDER,"Cannot set number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
@@ -469,7 +469,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[]
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot get subsolvers for this preconditioner");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get subsolvers for this preconditioner");
   }
   PetscFunctionReturn(0);
 }

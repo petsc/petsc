@@ -97,7 +97,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -935,7 +935,7 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 
   csize = 4*size;
   do {
-    if (csize % 4) SETERRQ4(1,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
+    if (csize % 4) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
     csize   = csize/4;
   
     m = (int)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
@@ -1490,7 +1490,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #undef __FUNCT__
@@ -1498,7 +1498,7 @@ PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #endif
@@ -1634,12 +1634,12 @@ PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
-    SETERRQ(1,"Requires ADIC to be installed and cannot use complex numbers");
+    SETERRQ(PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
 #endif
   } else if (da->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
+    SETERRQ(PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
   }
   PetscFunctionReturn(0);
 }

@@ -225,7 +225,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       ksp->dscalefix2 = PETSC_FALSE;
     } else {
-      SETERRQ(1,"No support for diagonal scaling of linear system if preconditioner matrix not actual matrix");
+      SETERRQ(PETSC_ERR_SUP,"No support for diagonal scaling of linear system if preconditioner matrix not actual matrix");
     }
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   if (!ksp->reason) {
-    SETERRQ(1,"Internal error, solver returned without setting converged reason");
+    SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   }
   if (ksp->printreason) {
     if (ksp->reason > 0) {

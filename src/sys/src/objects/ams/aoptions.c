@@ -393,7 +393,7 @@ PetscErrorCode PetscOptionsEList(const char opt[],const char ltext[],const char 
       }
     }
     ierr = PetscFree(svalue);CHKERRQ(ierr);
-    SETERRQ3(1,"Unknown option %s for -%s%s",svalue,amspub.prefix?amspub.prefix:"",opt+1);
+    SETERRQ3(PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,amspub.prefix?amspub.prefix:"",opt+1);
   } else if (set) {
     ierr = PetscFree(svalue);CHKERRQ(ierr);
     *set = PETSC_FALSE;

@@ -127,7 +127,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char st
   */
 
   if (mengine->buffer[4] == '?') {
-    SETERRQ2(1,"Error in evaluating Matlab command:%s\n%s",string,mengine->buffer);
+    SETERRQ2(PETSC_ERR_LIB,"Error in evaluating Matlab command:%s\n%s",string,mengine->buffer);
   }
 
   /*

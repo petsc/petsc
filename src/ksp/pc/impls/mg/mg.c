@@ -323,7 +323,7 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       }
     }
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -481,7 +481,7 @@ PetscErrorCode MGSetLevels(PC pc,int levels,MPI_Comm *comms)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (pc->data) {
-    SETERRQ(1,"Number levels already set for MG\n\
+    SETERRQ(PETSC_ERR_ORDER,"Number levels already set for MG\n\
     make sure that you call MGSetLevels() before KSPSetFromOptions()");
   }
   ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);

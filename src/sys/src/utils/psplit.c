@@ -90,7 +90,7 @@ PetscErrorCode PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   } else {
     PetscInt tmp;
     ierr = MPI_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (tmp != *N) SETERRQ3(1,"Sum of local lengths %d does not equal global length %d, my local length %d",tmp,*N,*n);
+    if (tmp != *N) SETERRQ3(PETSC_ERR_ARG_SIZ,"Sum of local lengths %d does not equal global length %d, my local length %d",tmp,*N,*n);
 #endif
   }
 

@@ -403,7 +403,7 @@ PetscErrorCode PetscShowMemoryUsage(PetscViewer viewer,const char message[])
 {
   PetscLogDouble allocated,maximum,resident;
   PetscErrorCode ierr;
-  int            rank;
+  PetscMPIInt    rank;
   MPI_Comm       comm;
 
   PetscFunctionBegin;

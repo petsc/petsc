@@ -11,23 +11,23 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat A,Mat *B)
 {
-  Mat         C = *B;
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   PetscErrorCode ierr;
-  int  i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int         *ajtmpold,*ajtmp,nz,row;
-  int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
-  MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar   x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15;
-  MatScalar   x16,x17,x18,x19,x20,x21,x22,x23,x24,x25;
-  MatScalar   p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15;
-  MatScalar   p16,p17,p18,p19,p20,p21,p22,p23,p24,p25;
-  MatScalar   m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15;
-  MatScalar   m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
-  MatScalar   p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,p36;
-  MatScalar   x26,x27,x28,x29,x30,x31,x32,x33,x34,x35,x36;
-  MatScalar   m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
-  MatScalar   *ba = b->a,*aa = a->a;
+  PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row;
+  PetscInt       *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
+  MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
+  MatScalar      x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15;
+  MatScalar      x16,x17,x18,x19,x20,x21,x22,x23,x24,x25;
+  MatScalar      p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15;
+  MatScalar      p16,p17,p18,p19,p20,p21,p22,p23,p24,p25;
+  MatScalar      m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15;
+  MatScalar      m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
+  MatScalar      p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,p36;
+  MatScalar      x26,x27,x28,x29,x30,x31,x32,x33,x34,x35,x36;
+  MatScalar      m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
+  MatScalar      *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(36*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);

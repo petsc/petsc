@@ -13,34 +13,34 @@
 #define SEQBAIJHEADER \
   PetscTruth       sorted;       /* if true, rows are sorted by increasing columns */                \
   PetscTruth       roworiented;  /* if true, row-oriented input, default */                          \
-  int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */            \
+  PetscInt         nonew;        /* 1 don't add new nonzeros, -1 generate error on new */            \
   PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with                      \
                                         one big malloc */                                            \
-  int              bs,bs2;       /* block size, square of block size */                              \
-  int              mbs,nbs;      /* rows/bs, columns/bs */                                           \
-  int              nz,maxnz;     /* nonzeros, allocated nonzeros */                                  \
-  int              *diag;        /* pointers to diagonal elements */                                 \
-  int              *i;           /* pointer to beginning of each row */                              \
-  int              *imax;        /* maximum space allocated for each row */                          \
-  int              *ilen;        /* actual length of each row */                                     \
-  int              *j;           /* column values: j + i[k] - 1 is start of row k */                 \
+  PetscInt         bs,bs2;       /* block size, square of block size */                              \
+  PetscInt         mbs,nbs;      /* rows/bs, columns/bs */                                           \
+  PetscInt         nz,maxnz;     /* nonzeros, allocated nonzeros */                                  \
+  PetscInt         *diag;        /* pointers to diagonal elements */                                 \
+  PetscInt         *i;           /* pointer to beginning of each row */                              \
+  PetscInt         *imax;        /* maximum space allocated for each row */                          \
+  PetscInt         *ilen;        /* actual length of each row */                                     \
+  PetscInt         *j;           /* column values: j + i[k] - 1 is start of row k */                 \
   MatScalar        *a;           /* nonzero elements */                                              \
   IS               row,col,icol; /* index sets, used for reorderings */                              \
   PetscScalar      *solve_work;  /* work space used in MatSolve */                                   \
-  int              reallocs;     /* number of mallocs done during MatSetValues()                     \
+  PetscInt         reallocs;     /* number of mallocs done during MatSetValues()                     \
                                     as more values are set then were preallocated */                 \
   PetscScalar      *mult_work;   /* work array for matrix vector product*/                           \
   PetscScalar      *saved_values;                                                                    \
                                                                                                      \
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */    \
                                                                                                      \
-  int              setvalueslen;   /* only used for single precision */                              \
+  PetscInt         setvalueslen;   /* only used for single precision */                              \
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied   \
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */          \
                                                                                                      \
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */           \
                                                                                                      \
-  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
+  PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
   Mat              XtoY;             /* used by MatAXPY() */                                         \
   PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
   PetscTruth       idiagvalid;       /* if above has correct/current values */
@@ -56,9 +56,9 @@ EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
 
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactor_SeqBAIJ(Mat,IS,IS,MatFactorInfo*);
-EXTERN PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
-EXTERN PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
-EXTERN PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
+EXTERN PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat,PetscInt,IS*,PetscInt);
+EXTERN PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 EXTERN PetscErrorCode MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatScale_SeqBAIJ(const PetscScalar*,Mat);

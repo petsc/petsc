@@ -230,7 +230,7 @@ PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
   PetscFunctionBegin;
   if (ports) { 
     if (port < 0 || port > ports->nports-1) {
-      SETERRQ2(1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     }
     ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }

@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB:
+    if not 'with-'+package in self.framework.argDB or self.framework.argDB['with-64-bit-int']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

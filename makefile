@@ -395,7 +395,7 @@ deletemanualpages: chk_loc
         fi
 
 allcleanhtml: 
-	-${RM} include/adic/*.h.html include/esi/petsc/*.h.html
+	-${RM} include/adic/*.h.html 
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc

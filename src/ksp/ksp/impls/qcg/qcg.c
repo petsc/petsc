@@ -28,7 +28,7 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (delta < 0.0) SETERRQ(1,"Tolerance must be non-negative");
+  if (delta < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,delta);CHKERRQ(ierr);
@@ -170,9 +170,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   if (ksp->transpose_solve) {
-    SETERRQ(1,"Currently does not support transpose solve");
+    SETERRQ(PETSC_ERR_SUP,"Currently does not support transpose solve");
   }
 
   ksp->its = 0;

@@ -176,7 +176,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -269,7 +269,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   if (ctx->usesnes) {
     eval_fct = SNESComputeFunction;
     F    = ctx->current_f;
-    if (!F) SETERRQ(1,"You must call MatAssembly() even on matrix-free matrices");
+    if (!F) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You must call MatAssembly() even on matrix-free matrices");
     ierr = (*eval_fct)(snes,w,y);CHKERRQ(ierr);
   } else {
     F = ctx->funcvec;
@@ -313,7 +313,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
   PetscFunctionBegin;
   if (!ctx->funci) {
-    SETERRQ(1,"Requirers calling MatSNESMFSetFunctioni() first");
+    SETERRQ(PETSC_ERR_ORDER,"Requires calling MatSNESMFSetFunctioni() first");
   }
 
   w    = ctx->w;

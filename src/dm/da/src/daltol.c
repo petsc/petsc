@@ -60,7 +60,7 @@ PetscErrorCode DALocalToLocalCreate(DA da)
 	}
       }
     }
-  } else SETERRQ1(1,"DA has invalid dimension %d",da->dim);
+  } else SETERRQ1(PETSC_ERR_ARG_CORRUPT,"DA has invalid dimension %d",da->dim);
 
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscFree(idx);CHKERRQ(ierr);

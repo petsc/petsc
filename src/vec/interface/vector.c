@@ -110,10 +110,6 @@ PetscErrorCode VecSetFromOptions(Vec vec)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = VecESISetFromOptions(vec);CHKERRQ(ierr);
-#endif
-
   ierr = VecViewFromOptions(vec, vec->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3097,7 +3093,7 @@ PetscErrorCode VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscIn
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ3(1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
+  if (m*n != N) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar*),a);CHKERRQ(ierr);
@@ -3190,7 +3186,7 @@ PetscErrorCode VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
   PetscValidPointer(a,4);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m != N) SETERRQ2(1,"Local array size %d does not match 1d array dimensions %d",N,m);
+  if (m != N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local array size %d does not match 1d array dimensions %d",N,m);
   ierr = VecGetArray(x,a);CHKERRQ(ierr);
   *a  -= mstart;
   PetscFunctionReturn(0);
@@ -3316,7 +3312,7 @@ PetscErrorCode VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mst
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n*p != N) SETERRQ4(1,"Local array size %d does not match 3d array dimensions %d by %d by %d",N,m,n,p);
+  if (m*n*p != N) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Local array size %d does not match 3d array dimensions %d by %d by %d",N,m,n,p);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);

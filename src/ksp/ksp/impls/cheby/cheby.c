@@ -25,8 +25,8 @@ PetscErrorCode KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,Petsc
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
   PetscFunctionBegin;
-  if (emax <= emin) SETERRQ2(1,"Maximum eigenvalue must be larger than minimum: max %g min %g",emax,emin);
-  if (emax*emin <= 0.0) SETERRQ2(1,"Both eigenvalues must be of the same sign: max %g min %g",emax,emin);
+  if (emax <= emin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %g",emax,emin);
+  if (emax*emin <= 0.0) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %g min %g",emax,emin);
   chebychevP->emax = emax;
   chebychevP->emin = emin;
   PetscFunctionReturn(0);
@@ -96,7 +96,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

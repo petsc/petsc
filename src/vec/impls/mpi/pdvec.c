@@ -527,7 +527,7 @@ PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
         ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);cur += len;
       }
       if (cur != N) {
-        SETERRQ2(1, "? %d %d", cur, N);
+        SETERRQ2(PETSC_ERR_PLIB, "? %d %d", cur, N);
       }
       ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs);CHKERRQ(ierr); 
     } else {

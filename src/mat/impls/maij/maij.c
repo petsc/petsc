@@ -1790,7 +1790,7 @@ PetscErrorCode MatCreateMAIJ(Mat A,int dof,Mat *maij)
         B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_16;
         B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_16;
       } else {
-        SETERRQ1(1,"Cannot handle a dof of %d. Send request for code to petsc-maint@mcs.anl.gov\n",dof);
+        SETERRQ1(PETSC_ERR_SUP,"Cannot handle a dof of %d. Send request for code to petsc-maint@mcs.anl.gov\n",dof);
       }
     } else {
       Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;

@@ -179,11 +179,11 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
   }
   if (lu->StatPrint) {
@@ -365,11 +365,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
   }
 

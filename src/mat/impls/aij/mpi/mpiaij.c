@@ -866,7 +866,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
       column_values[cnt++] = B->a[j];
     }
   }
-  if (cnt != A->nz + B->nz) SETERRQ2(1,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
+  if (cnt != A->nz + B->nz) SETERRQ2(PETSC_ERR_PLIB,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
 
   /* store the column values to the file */
   if (!rank) {
@@ -1018,7 +1018,7 @@ PetscErrorCode MatView_MPIAIJ(Mat mat,PetscViewer viewer)
   if (iascii || isdraw || isbinary || issocket) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -2237,7 +2237,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
     ierr   = MPI_Scan(&nlocal,&rend,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     rstart = rend - nlocal;
     if (rank == size - 1 && rend != n) {
-      SETERRQ2(1,"Local column sizes %d do not add up to total number of columns %d",rend,n);
+      SETERRQ2(PETSC_ERR_ARG_SIZ,"Local column sizes %d do not add up to total number of columns %d",rend,n);
     }
 
     /* next, compute all the lengths */
@@ -2696,7 +2696,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"No support ISColoringType %d",coloring->ctype);
+    SETERRQ1(PETSC_ERR_SUP,"No support ISColoringType %d",coloring->ctype);
   }
 
   PetscFunctionReturn(0);
@@ -2913,6 +2913,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
+static PetscEvent logkey_seqstompinum = 0;
 PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -2931,6 +2932,11 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   PetscObjectContainer container;
   
   PetscFunctionBegin;
+  if (!logkey_seqstompinum) {
+    ierr = PetscLogEventRegister(&logkey_seqstompinum,"MatMerge_SeqsToMPINumeric",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -3024,10 +3030,10 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
-
+  ierr = PetscLogEventEnd(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+static PetscEvent logkey_seqstompisym = 0;
 PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -3048,13 +3054,18 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   PetscObjectContainer container;
 
   PetscFunctionBegin;
+  if (!logkey_seqstompisym) {
+    ierr = PetscLogEventRegister(&logkey_seqstompisym,"MatMerge_SeqsToMPISymbolic",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
 
-  /* determine the number of messages to send, their lengths */
+  /* determine row ownership */
   /*---------------------------------------------------------*/
   ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
   if (m == PETSC_DECIDE) {
@@ -3068,6 +3079,9 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   
   if (m == PETSC_DECIDE) {ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr); }
   ierr = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
+
+  /* determine the number of messages to send, their lengths */
+  /*---------------------------------------------------------*/
   len_s  = merge->len_s;
 
   len = 0;  /* length of buf_si[] */
@@ -3075,7 +3089,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   for (proc=0; proc<size; proc++){
     len_si[proc] = 0;
     if (proc == rank){
-      len_si[proc] = len_s[proc] = 0;  
+      len_s[proc] = 0;  
     } else {
       len_si[proc] = owners[proc+1] - owners[proc] + 1;
       len_s[proc] = ai[owners[proc+1]] - ai[owners[proc]]; /* num of rows to be sent to [proc] */
@@ -3240,22 +3254,17 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
 
   /* create symbolic parallel matrix B_mpi */
   /*---------------------------------------*/
-  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,&B_mpi);CHKERRQ(ierr);
+  if (n==PETSC_DECIDE) {
+    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,N,&B_mpi);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,&B_mpi);CHKERRQ(ierr);
+  }
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((len+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
-  ierr = PetscMemzero(ba,(len+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  for (i=0;i<m;i++) {
-    k = i + +owners[rank];
-    bnzi = bi[i+1] - bi[i]; 
-    ierr = MatSetValues(B_mpi,1,&k,bnzi,bj+bi[i],ba,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(ba);CHKERRQ(ierr); 
-
+  /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
+  B_mpi->assembled     = PETSC_FALSE; 
   B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI; 
   merge->bi            = bi;
   merge->bj            = bj;
@@ -3268,7 +3277,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   *mpimat = B_mpi;
-
+  ierr = PetscLogEventEnd(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3335,6 +3344,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   } else if (scall == MAT_REUSE_MATRIX){
     Aw = *A_loc;
     mat=(Mat_SeqAIJ*)Aw->data; 
+    nnz_max = 0;
     for (i=0; i<am; i++){
       j = mat->i[i+1] - mat->i[i];
       if (j > nnz_max) nnz_max = j;

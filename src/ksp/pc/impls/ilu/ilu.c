@@ -164,7 +164,7 @@ PetscErrorCode PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
   ilu->reusefill = flag;
-  if (flag) SETERRQ(1,"Not yet supported");
+  if (flag) SETERRQ(PETSC_ERR_SUP,"Not yet supported");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -762,7 +762,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," lvls=%d,order=%s",(int)ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -903,7 +903,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  if (!ilu->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }

@@ -1739,7 +1739,7 @@ PetscErrorCode SNESSolve(SNES snes,Vec x)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscCheckSameComm(snes,1,x,2);
-  if (!snes->solve) SETERRQ(1,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
+  if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}

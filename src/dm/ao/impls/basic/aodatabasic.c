@@ -239,7 +239,7 @@ PetscErrorCode AODataView_Basic(AOData ao,PetscViewer viewer)
   } else if (isbinary) {
     ierr = AODataView_Basic_Binary(ao,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -772,7 +772,7 @@ PetscErrorCode AODataKeyGetActive_Basic(AOData aodata,const char name[],const ch
 
   PetscFunctionBegin;
   ierr = AODataSegmentFind_Private(aodata,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot locate segment");
 
   bt = (PetscBT) segment->data;
   bs = segment->bs;
@@ -813,7 +813,7 @@ PetscErrorCode AODataKeyGetActiveLocal_Basic(AOData aodata,const char name[],con
 
   PetscFunctionBegin;
   ierr = AODataSegmentFind_Private(aodata,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot locate segment");
 
   bt = (PetscBT) segment->data;
   bs = segment->bs;

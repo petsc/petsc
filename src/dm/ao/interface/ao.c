@@ -120,7 +120,7 @@ PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
   PetscValidHeaderSpecific(is,IS_COOKIE,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,"Cannot translate block index sets");
+  if (flag) SETERRQ(PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
   PetscValidHeaderSpecific(is,IS_COOKIE,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,"Cannot translate block index sets");
+  if (flag) SETERRQ(PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);

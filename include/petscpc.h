@@ -57,8 +57,6 @@ E*/
 #define PCRAMG       "ramg"
 #define PCSAMG       "samg"
 #define PCPBJACOBI   "pbjacobi"
-#define PCESI        "esi"
-#define PCPETSCESI   "petscesi"
 #define PCMAT        "mat"
 #define PCHYPRE      "hypre"
 
@@ -146,7 +144,6 @@ M*/
 
 EXTERN PetscErrorCode PCDestroy(PC);
 EXTERN PetscErrorCode PCSetFromOptions(PC);
-EXTERN PetscErrorCode PCESISetFromOptions(PC);
 EXTERN PetscErrorCode PCGetType(PC,PCType*);
 
 EXTERN PetscErrorCode PCGetFactoredMatrix(PC,Mat*);

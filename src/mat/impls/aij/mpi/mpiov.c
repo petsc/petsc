@@ -626,7 +626,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
         jsendbuf[cnt++] = garray[*b_jsendbuf++];
       }
     }
-    if (cnt != sendcount) SETERRQ2(1,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
+    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
 
     /*--------------------------------------------------------------------
        Gather all column indices to all processors
@@ -695,7 +695,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
       b_sendj++;
     }
   }
-  if (cnt != sendcount) SETERRQ2(1,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
+  if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
    
   /* ----------------------------------------------------------------- 
      Gather all numerical values to all processors 

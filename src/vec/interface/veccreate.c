@@ -52,7 +52,6 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
-  v->esivec       = PETSC_NULL;
 
   *vec = v; 
   PetscFunctionReturn(0);
