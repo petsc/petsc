@@ -1,32 +1,32 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa3.c,v 1.8 1997/01/06 20:25:20 balay Exp $";
+static char vcid[] = "$Id: dgefa4.c,v 1.1 1997/06/10 03:18:18 bsmith Exp bsmith $";
 #endif
 /*
-    Inverts 3 by 3 matrix using partial pivoting.
+    Inverts 5 by 5 matrix using partial pivoting.
 */
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "Kernel_A_gets_inverse_A_3"
-int Kernel_A_gets_inverse_A_3(Scalar *a)
+#define __FUNC__ "Kernel_A_gets_inverse_A_5"
+int Kernel_A_gets_inverse_A_5(Scalar *a)
 {
-    int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;
+    int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[5],*ipvt = ipvt_l-1,kb,k3;
     int     k4,j3;
-    Scalar  *aa,*ax,*ay,work_l[9],*work = work_l-1,stmp;
+    Scalar  *aa,*ax,*ay,work_l[25],*work = work_l-1,stmp;
     double  tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 
     /* Parameter adjustments */
-    a       -= 4;
+    a       -= 6;
 
-    for (k = 1; k <= 2; ++k) {
+    for (k = 1; k <= 4; ++k) {
 	kp1 = k + 1;
-        k3  = 3*k;
+        k3  = 5*k;
         k4  = k3 + k;
 /*        find l = pivot index */
 
-	i__2 = 4 - k;
+	i__2 = 5 - k;
         aa = &a[k4];
         max = PetscAbsScalar(aa[0]);
         l = 1;
@@ -52,7 +52,7 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 /*           compute multipliers */
 
 	stmp = -1. / a[k4];
-	i__2 = 3 - k;
+	i__2 = 5 - k;
         aa = &a[1 + k4]; 
         for ( ll=0; ll<i__2; ll++ ) {
           aa[ll] *= stmp;
@@ -61,23 +61,23 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 /*           row elimination with column indexing */
 
 	ax = &a[k4+1]; 
-        for (j = kp1; j <= 3; ++j) {
-            j3   = 3*j;
+        for (j = kp1; j <= 5; ++j) {
+            j3   = 5*j;
 	    stmp = a[l + j3];
 	    if (l != k) {
 	      a[l + j3] = a[k + j3];
 	      a[k + j3] = stmp;
             }
 
-	    i__3 = 3 - k;
+	    i__3 = 5 - k;
             ay = &a[1+k+j3];
             for ( ll=0; ll<i__3; ll++ ) {
               ay[ll] += stmp*ax[ll];
             }
 	}
     }
-    ipvt[3] = 3;
-    if (a[12] == 0.) {
+    ipvt[5] = 5;
+    if (a[30] == 0.) {
 	SETERRQ(3,0,"Zero pivot,final row");
     }
 
@@ -87,8 +87,8 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 
    /*     compute inverse(u) */
 
-    for (k = 1; k <= 3; ++k) {
-        k3    = 3*k;
+    for (k = 1; k <= 5; ++k) {
+        k3    = 5*k;
         k4    = k3 + k;
 	a[k4] = 1.0 / a[k4];
 	stmp  = -a[k4];
@@ -96,10 +96,10 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
         aa    = &a[k3 + 1]; 
         for ( ll=0; ll<i__2; ll++ ) aa[ll] *= stmp;
 	kp1 = k + 1;
-	if (3 < kp1) continue;
+	if (5 < kp1) continue;
         ax = aa;
-        for (j = kp1; j <= 3; ++j) {
-            j3        = 3*j;
+        for (j = kp1; j <= 5; ++j) {
+            j3        = 5*j;
 	    stmp      = a[k + j3];
 	    a[k + j3] = 0.0;
             ay        = &a[j3 + 1];
@@ -111,30 +111,34 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 
    /*    form inverse(u)*inverse(l) */
 
-    for (kb = 1; kb <= 2; ++kb) {
-	k   = 3 - kb;
-        k3  = 3*k;
+    for (kb = 1; kb <= 4; ++kb) {
+	k   = 5 - kb;
+        k3  = 5*k;
 	kp1 = k + 1;
         aa  = a + k3;
-	for (i = kp1; i <= 3; ++i) {
+	for (i = kp1; i <= 5; ++i) {
 	    work[i] = aa[i];
 	    aa[i]   = 0.0;
 	}
-	for (j = kp1; j <= 3; ++j) {
+	for (j = kp1; j <= 5; ++j) {
 	    stmp  = work[j];
-            ax    = &a[3*j + 1];
+            ax    = &a[5*j + 1];
             ay    = &a[k3 + 1];
             ay[0] += stmp*ax[0];
             ay[1] += stmp*ax[1];
             ay[2] += stmp*ax[2];
+            ay[3] += stmp*ax[3];
+            ay[4] += stmp*ax[4];
 	}
 	l = ipvt[k];
 	if (l != k) {
             ax = &a[k3 + 1]; 
-            ay = &a[3*l + 1];
+            ay = &a[5*l + 1];
             stmp = ax[0]; ax[0] = ay[0]; ay[0] = stmp;
             stmp = ax[1]; ax[1] = ay[1]; ay[1] = stmp;
             stmp = ax[2]; ax[2] = ay[2]; ay[2] = stmp;
+            stmp = ax[3]; ax[3] = ay[3]; ay[3] = stmp;
+            stmp = ax[4]; ax[4] = ay[4]; ay[4] = stmp;
 	}
     }
     return 0;

@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.45 1997/05/23 16:59:49 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.46 1997/05/23 18:38:01 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -257,10 +258,10 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS              iscol = b->col, isrow = b->row, isicol;
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int             *ajtmpold, *ajtmp, nz, row, v_pivots[5];
-  int             *diag_offset = b->diag,bs = 5,idx,*ai=a->i,*aj=a->j;
+  int             *ajtmpold, *ajtmp, nz, row;
+  int             *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
-  Scalar          p1,p2,p3,p4,v_work[5],m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
+  Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
   Scalar          x17,x18,x19,x20,x21,x22,x23,x24,x25,p10,p11,p12,p13,p14;
   Scalar          p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
@@ -413,7 +414,7 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
+    ierr = Kernel_A_gets_inverse_A_5(w); CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -438,10 +439,10 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS              iscol = b->col, isrow = b->row, isicol;
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int             *ajtmpold, *ajtmp, nz, row, v_pivots[4];
-  int             *diag_offset = b->diag,bs = 4,idx,*ai=a->i,*aj=a->j;
+  int             *ajtmpold, *ajtmp, nz, row;
+  int             *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
-  Scalar          p1,p2,p3,p4,v_work[4],m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
+  Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
   Scalar          p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   Scalar          m13,m14,m15,m16;
@@ -560,7 +561,7 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
+    ierr = Kernel_A_gets_inverse_A_4(w); CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
