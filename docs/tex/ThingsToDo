@@ -7,9 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  Add support for VecReciprocal() in the vec function table (Scott Kohn et al.)
+  Update sles/examples/tutorials/ex14.c to match new stuff in ex14f.F
 
-  Annouce petsc release to news groups and freshmeat
+  Announce petsc release to news groups and freshmeat
 
   Write snes/examples/tutorials ex2f.F (Fortran example of setting user-defined monitor)
 
@@ -533,6 +533,8 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Add support for VecReciprocal() in the vec function table (Scott Kohn et al.)
 
   X Add some indication to window indicating that it is awaiting input.
 
