@@ -37,13 +37,13 @@ int VecRegisterAll(const char path[])
   PetscFunctionBegin;
   VecRegisterAllCalled = PETSC_TRUE;
 
-  ierr = VecRegisterDynamic(VEC_SEQ,      path, "VecCreate_Seq",      VecCreate_Seq);                     CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VEC_MPI,      path, "VecCreate_MPI",      VecCreate_MPI);                     CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VEC_SHARED,   path, "VecCreate_Shared",   VecCreate_Shared);                  CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VEC_FETI,     path, "VecCreate_FETI",     VecCreate_FETI);                    CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSEQ,      path, "VecCreate_Seq",      VecCreate_Seq);                     CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);                     CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);                  CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECFETI,     path, "VecCreate_FETI",     VecCreate_FETI);                    CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ESI) && defined(__cplusplus)
-  ierr = VecRegisterDynamic(VEC_ESI,      path, "VecCreate_ESI",      VecCreate_ESI);                     CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VEC_PETSCESI, path, "VecCreate_PetscESI", VecCreate_PetscESI);                CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECESI,      path, "VecCreate_ESI",      VecCreate_ESI);                     CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECPETSCESI, path, "VecCreate_PetscESI", VecCreate_PetscESI);                CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

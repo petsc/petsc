@@ -35,9 +35,9 @@ static int VecSetTypeFromOptions(Vec vec)
   } else {
     ierr = MPI_Comm_size(vec->comm, &numProcs);                                                           CHKERRQ(ierr);
     if (numProcs > 1) {
-      defaultType = VEC_MPI;
+      defaultType = VECMPI;
     } else {
-      defaultType = VEC_SEQ;
+      defaultType = VECSEQ;
     }
   }
 
