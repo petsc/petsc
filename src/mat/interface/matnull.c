@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.34 2000/08/03 16:06:11 balay Exp bsmith $*/
+/*$Id: matnull.c,v 1.35 2001/01/15 21:45:27 bsmith Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -28,7 +28,7 @@
 
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove()
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), PCNullSpaceAttach()
 @*/
 int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *SP)
 {
