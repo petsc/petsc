@@ -8,17 +8,17 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes). 
 #
-FC_LIB         = -lF77 -lU77 -lI77 -lisam
+FC_LIB         =  -lftn
+# For IRIX Release less than,6.2 the above should probably be replaced by
+# FC_LIB         = -lF77 -lU77 -lI77 -lisam
 # FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
-# For IRIX Release 6.2 the above should probably be replaced by
-# FC_LIB         =  -lftn
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(BS_DIR)/readme for information on retrieving a subset.
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
-LAPACK_LIB     = /usr/local/pub/lib/lapack_sgi.a
+LAPACK_LIB     = /u/ac/barrys/blaslapack/lapack.a
 #
 # Location of X-windows software
 #
@@ -29,8 +29,11 @@ X11_LIB        = -lX11
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there. You cannot use Blocksolve with complex
 #
-BS_INCLUDE = -I/u/usi/usilcm/BlockSolve95/include
-BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
+BS_INCLUDE = 
+BS_LIB     =
+#
+# BS_INCLUDE = -I/u/usi/usilcm/BlockSolve95/include
+# BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -38,16 +41,16 @@ BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -
 #  you should remove the -DUSES_INT_MPI_COMM. If you are using SGI's
 #  version of MPI you MUST retain it.
 #
-MPI_LIB        = /usr/local/pub/mpich/lib/IRIX64/ch_shmem/libmpi.a 
-MPI_INCLUDE    = -I/usr/local/pub/mpich/include -DUSES_INT_MPI_COMM
-MPIRUN         = /usr/local/pub/mpich/bin/mpirun
+MPI_LIB        = -lmpi
+MPI_INCLUDE    = -DUSES_INT_MPI_COMM
+MPIRUN         =  /usr/bin/mpirun
 #
 # PCONF - indicates which external packages are available at your site
-#    Make sure that -DHAVE_BLOCKSOLVE is not listed below unless
-#    BlockSolve95 has been installed.
+#    Make sure that -DHAVE_BLOCKSOLVE is listed below if BlockSolve95 
+#    has been installed.
 #
-PCONF         =   -DHAVE_BLOCKSOLVE
+PCONF         =
 #
 # If you are using shared libraries, you must make this point
 # to the directories where all your shared libraries are stored.
-DYLIBPATH     = /home/bsmith/lapack
+DYLIBPATH     = 
