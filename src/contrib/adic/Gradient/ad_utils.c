@@ -72,5 +72,23 @@ double *PetscADGetGradArray(DERIV_TYPE *deriv)
   return deriv->grad;
 }
 
+void   ad_AD_Init(int  arg0) {
+    ad_AD_GradInit(arg0);
+
+}
+void   ad_AD_Final() {
+    ad_AD_GradFinal();
+
+}
+
+void   admf_AD_Init(int  arg0) {
+    ad_AD_GradInit(arg0);
+
+}
+void   admf_AD_Final() {
+    ad_AD_GradFinal();
+
+}
+
 EXTERN_C_END
 
