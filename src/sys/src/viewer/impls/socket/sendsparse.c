@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
 

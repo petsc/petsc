@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
   at a socket address, called by the receive.mex4 Matlab program.
