@@ -262,21 +262,31 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rz);CHKERRQ(ierr);
-  if (diag) {
+  if (a->keepzeroedrows) {
     for (i=0; i<N; i++) {
-      if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Out of range");
-      if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
-        l->rows[rz[i]]->length = 1;
-        l->rows[rz[i]]->nz[0]  = *diag;
-        l->rows[rz[i]]->col[0] = a->rstart + rz[i];
-      } else {
+      if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
+      ierr = PetscMemzero(l->rows[rz[i]]->nz,l->rows[rz[i]]->length*sizeof(PetscScalar));CHKERRQ(ierr);
+      if (diag) {
         ierr = MatSetValues(A,1,&rz[i],1,&rz[i],diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   } else {
-    for (i=0; i<N; i++) {
-      if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Out of range");
-      l->rows[rz[i]]->length = 0;
+    if (diag) {
+      for (i=0; i<N; i++) {
+        if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Out of range");
+        if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
+          l->rows[rz[i]]->length = 1;
+          l->rows[rz[i]]->nz[0]  = *diag;
+          l->rows[rz[i]]->col[0] = a->rstart + rz[i];
+        } else {
+          ierr = MatSetValues(A,1,&rz[i],1,&rz[i],diag,INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      for (i=0; i<N; i++) {
+        if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Out of range");
+        l->rows[rz[i]]->length = 0;
+      }
     }
   }
   A->same_nonzero = PETSC_FALSE;
@@ -1381,7 +1391,7 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
     break;
   case MAT_KEEP_ZEROED_ROWS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_KEEP_ZEROED_ROWS");
+    a->keepzeroedrows    = PETSC_TRUE;
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
@@ -1552,6 +1562,8 @@ int MatCreate_MPIRowbs(Mat A)
   a->vecs_permscale     = PETSC_FALSE;
   A->insertmode         = NOT_SET_VALUES;
   a->blocksolveassembly = 0;
+  a->keepzeroedrows     = PETSC_FALSE;
+
   ierr = MPI_Comm_rank(comm,&a->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 

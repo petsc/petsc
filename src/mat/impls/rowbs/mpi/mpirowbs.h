@@ -37,6 +37,7 @@ typedef struct {
   int         factor;
   int         bs_color_single;    /* Indicates blocksolve should bypass cliques in coloring */
   int         reallocs;           /* number of mallocs during MatSetValues() */
+  PetscTruth  keepzeroedrows;     /* keeps matrix structure same in calls to MatZeroRows()*/
 
   /* BlockSolve data */
   MPI_Comm   comm_mpirowbs;     /* use a different communicator for BlockSolve */
