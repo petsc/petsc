@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.41 2000/05/10 16:40:36 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.42 2000/05/16 22:56:32 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -137,7 +137,7 @@ int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
-  PLogInfo(0,"Using Matlab for SeqAIJ LU factorization and solves");
+  PLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
