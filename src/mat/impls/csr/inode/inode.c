@@ -1529,14 +1529,14 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (info->shiftpd){
           sctx.pv = PetscRealPart(rtmp1[row]);
           for (j=1; j<3; j++){
-            tmp = PetscRealPart(rtmp2[row+j]);
-            if (PetscRealPart(sctx.pv) > tmp) sctx.pv = tmp;
+            rs = PetscRealPart(rtmp2[row+j]);
+            if (PetscRealPart(sctx.pv) > rs) sctx.pv = rs;
           }
         } else {
           sctx.pv = PetscAbsScalar(rtmp1[row]);
           for (j=1; j<3; j++){
-            tmp = PetscAbsScalar(rtmp2[row+j]);
-            if (PetscRealPart(sctx.pv) > tmp) sctx.pv = tmp;
+            rs = PetscAbsScalar(rtmp2[row+j]);
+            if (PetscRealPart(sctx.pv) > rs) sctx.pv = rs;
           }
         }
         rs           = 0.0;
