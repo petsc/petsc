@@ -1,27 +1,24 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscvec
-LOCDIR        = sec/da/examples/
-EXAMPLES_1    = ex1 ex4
-RUNEXAMPLES_1 = runex1 runex4
-EXAMPLES_2    = ex2 ex3 ex5 ex6 ex7
-RUNEXAMPLES_2 = runex2 runex3 runex5 runex6
-EXAMPLES_3    =
-RUNEXAMPLES_3 =	 
-EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6
-RUNEXAMPLES_4 =	 
-EXAMPLES_5    =
-RUNEXAMPLES_5 =	 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
-EXAMPLESF     = 
+CFLAGS	       = $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscvec
+LOCDIR         = sec/da/examples/
+TESTEXAMPLES_1 = ex1 runex1 clean ex4 runex4 clean
+TESTEXAMPLES_2 = ex2 runex2 clean ex3 runex3 clean ex5 runex5 clean  \
+		ex6 runex6 clean ex7 clean
+TESTEXAMPLES_3 =
+TESTEXAMPLES_4 = ex1 runex1 clean ex2 runex2 clean ex3 runex3 clean \
+		ex4 runex4 clean ex5 runex5 clean ex6 runex6 clean
+TESTEXAMPLES_5 =
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLESF      = 
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
