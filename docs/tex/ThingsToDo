@@ -6,7 +6,7 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
-
+  - MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
 
   -  a basic member function like viewpublic and destroypublic for object validation
 
