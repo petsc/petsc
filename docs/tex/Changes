@@ -39,6 +39,10 @@ add to it).
 
   MAT
 
+   Added an additional argument to MatCopy(); SAME_NONZERO_PATTERN or DIFFERENT_NONZERO_PATTERN
+
+   Added an additional argument to MatDuplicate() MAT_COPY_VALUES or MAT_DO_NOT_COPY_VALUES
+
    Added MatSeqAIJSetColumnIndices() and MatSeqBAIJSetColumnIndices().
 
    If the option MAT_IGNORE_OFF_PROC_ENTRIES is used the MatAssemblyBegin()
