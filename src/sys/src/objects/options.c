@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.142 1997/10/03 14:45:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.143 1997/10/04 16:20:01 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -867,16 +867,16 @@ int OptionsCheckInitial_Private()
 /*@
     PetscGetProgramName - Gets the name of the running program. 
 
-  Output Parameter:
+    Input Parameter:
 .   len - length of the string name
 
-  Output Parameter:
+    Output Parameter:
 .   name - the name of the running program
 
-  Notes: The name of the program is copied into the charactor array you 
-         provide. In some machines the program name includes its entire
-         path so one should generally use a len of at least 256.
-
+    Notes:
+    The name of the program is copied into the user-provided character
+    array of length len.  On some machines the program name includes 
+    its entire path, so one should generally set len >= 256.
 @*/
 int PetscGetProgramName(char *name,int len)
 {
