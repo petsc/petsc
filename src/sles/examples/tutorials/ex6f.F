@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.11 1996/08/27 17:47:53 curfman Exp curfman $";
+C    "$Id: ex20.F,v 1.12 1996/08/27 18:17:45 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -45,13 +45,13 @@ C
       integer Istart, Iend, flg, nsteps
       Scalar  v
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m      = 3
       n      = 3
       nsteps = 2
-      call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-nsteps',nsteps,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-nsteps',nsteps,flg,ierr)
 
 C  Create parallel matrix, specifying only its global dimensions.
 C  When using MatCreate(), the matrix format can be specified at
@@ -174,7 +174,7 @@ C First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then
         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
         pflag = 0
-        call OptionsHasName(PETSC_NULL_CHAR,"-mat_view",pflag,ierr)
+        call OptionsHasName(PETSC_NULL_CHARACTER,"-mat_view",pflag,ierr)
         if (pflag .ne. 0) then
           if (rank .eq. 0) write(6,100)
         endif

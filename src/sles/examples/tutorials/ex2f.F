@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.24 1996/08/22 21:24:42 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.25 1996/08/27 17:48:02 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -9,6 +9,15 @@ C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C  Routines: SLESSolve(); SLESView(); SLESGetKSP(), KSPSetMonitor();
 C  Routines: KSPBuildSolution();
 C  Processors: n
+C
+C -----------------------------------------------------------------------
+
+      program main
+      implicit none
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C                    Include files
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
@@ -21,7 +30,7 @@ C  Additional include statements may be needed if using additional
 C  PETSc routines in a Fortran program, e.g.,
 C     viewer.h - viewers
 C     is.h     - index sets
-
+C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
@@ -29,13 +38,17 @@ C     is.h     - index sets
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
 C
-C  Variable declarations:
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C                   Variable declarations
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-C  A - matrix that defines linear system
-C  sles - SLES context
-C  ksp - KSP context
-C  x, b, u - approx solution, RHS, exact solution vectors
-C  norm - norm of error in solution
+C  Variables:
+C     sles     - linear solver context
+C     ksp      - Krylov subspace method context
+C     x, b, u  - approx solution, right-hand-side, exact solution vectors
+C     A        - matrix that defines linear system
+C     its      - iterations for convergence
+C     norm     - norm of error in solution
 C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
@@ -54,15 +67,24 @@ C  MUST be declared as external.
 
       external MyKSPMonitor
 
-      one  = 1.0
-      none = -1.0
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C                 Beginning of program
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m = 3
       n = 3
-      call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
+      one  = 1.0
+      none = -1.0
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C      Compute the matrix and right-hand-side vector that define
+C      the linear system, Ax = b.
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 C  Create parallel matrix.  Here we use the MATMPIAIJ matrix format.
 C   - We specify only the global matrix dimensions, and PETSc
@@ -132,6 +154,10 @@ C  Set exact solution; then compute right-hand-side vector.
       call VecSet(one,u,ierr)
       call MatMult(A,u,b,ierr)
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C         Create the linear solver and set various options
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 C  Create linear solver context
 
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
@@ -145,7 +171,8 @@ C  also serves as the preconditioning matrix.
 C  Set user-defined monitoring routine if desired
 
       flg = 0
-      call OptionsHasName(PETSC_NULL_CHAR,"-my_ksp_monitor",flg,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,"-my_ksp_monitor",
+     &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,ierr)
@@ -155,9 +182,15 @@ C  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
       call SLESSetFromOptions(sles,ierr)
 
-C  Solve linear system
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C                      Solve the linear system
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C                     Check solution and clean up
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 C  Check the error
 
