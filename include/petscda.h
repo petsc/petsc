@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.61 2001/02/17 21:45:08 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.62 2001/02/17 21:45:19 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -11,11 +11,38 @@
 
 #define DA_COOKIE PETSC_COOKIE+14
 
+/*S
+     DA - Abstract PETSc object that manages distributed field data for a single structured grid
+
+   Level: beginner
+
+  Concepts: distributed array
+
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter
+S*/
 typedef struct _p_DA* DA;
+
+/*E
+    DAStencilType - Determines if the stencil extends only along the coordinate directions, or also
+      to the northest, northwest etc
+
+   Level: beginner
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA
+E*/
 typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
+
+/*E
+    DAPeriodicType - Is the domain periodic in one or more directions
+
+   Level: beginner
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA
+E*/
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
                DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
                DAPeriodicType;
+
 #define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAZPeriodic(pt) ((pt)==DA_ZPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
@@ -77,18 +104,24 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
 #include "petscmat.h"
-EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
-EXTERN int   DAGetColoringMPIBAIJ(DA,ISColoring *,Mat *);
+EXTERN int   DAGetColoring(DA,MatType,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
 
-/*
-   The VecPack routines allow one to manage a nonlinear solver that works on a vector that consists
-  of several distinct parts. This is mostly used for LNKS solvers, that is design optimization problems 
-  that are written as a nonlinear system
-*/
+/*S
+     VecPack - Abstract PETSc object that manages treating several distinct vectors as if they
+        were one.   The VecPack routines allow one to manage a nonlinear solver that works on a
+        vector that consists of several distinct parts. This is mostly used for LNKS solvers, 
+        that is design optimization problems that are written as a nonlinear system
+
+   Level: beginner
+
+  Concepts: multi-component, LNKS solvers
+
+.seealso:  VecPackCreate(), VecPackDestroy()
+S*/
 typedef struct _p_VecPack *VecPack;
 
 EXTERN int VecPackCreate(MPI_Comm,VecPack*);
@@ -110,18 +143,36 @@ EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
 
 #include "petscsnes.h"
 
+/*S
+     DM - Abstract PETSc object that manages an abstract grid object
+          
+   Level: intermediate
+
+  Concepts: grids, grid refinement
+
+   Notes: The DA object and the VecPack object are examples of DMs
+
+.seealso:  VecPackCreate(), DA, VecPack
+S*/
 typedef struct _p_DM* DM;
+
 EXTERN int DMView(DM,PetscViewer);
 EXTERN int DMDestroy(DM);
 EXTERN int DMCreateGlobalVector(DM,Vec*);
-EXTERN int DMGetColoring(DM,ISColoring*,Mat*);
+EXTERN int DMGetColoring(DM,MatType,ISColoring*,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
 
-/*
-     Data structure to easily manage multi-level non-linear solvers on regular grids managed by DA
-*/
+/*S
+     DM -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
+          
+   Level: intermediate
+
+  Concepts: multigrid, Newton-multigrid
+
+.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate()
+S*/
 typedef struct _p_DMMG *DMMG;
 struct _p_DMMG {
   DM         dm;                   /* grid information for this level */
@@ -151,7 +202,6 @@ struct _p_DMMG {
 };
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
 EXTERN int DMMGDestroy(DMMG*);
-EXTERN int DMMGSetDA(DMMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
 EXTERN int DMMGSetUp(DMMG*);
 EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
 EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
