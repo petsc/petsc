@@ -29,7 +29,7 @@ EXTERN int MatCreate_MPIAIJ_Spooles(Mat);
 EXTERN int MatCreate_MPISBAIJ_Spooles(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SuperLU(Mat);
+EXTERN int MatCreate_SeqAIJ_SuperLU(Mat);
 #endif
 EXTERN_C_END
   

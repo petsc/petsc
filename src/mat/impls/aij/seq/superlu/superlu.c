@@ -330,7 +330,7 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpsuperLU = PETSC_TRUE;
+  lu->CleanUpSuperLU = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
