@@ -48,9 +48,13 @@ class Configure(config.base.Configure):
     '''
     if libraries:
       oldLibs = self.framework.argDB['LIBS']
-      if not isinstance(libraries, list): libraries
+      if not isinstance(libraries, list):
+        libraries = list(libraries)
       for library in libraries:
-        self.framework.argDB['LIBS'] += ' -l'+library
+        if not library[0] == '-':
+          self.framework.argDB['LIBS'] += ' -l'+library
+        else:
+          self.framework.argDB['LIBS'] += library
     if self.checkLink(includes, body):
       self.addDefine(self.getDefineName(funcName), 1)
     if libraries:
