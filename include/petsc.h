@@ -1,9 +1,9 @@
-/* $Id: petsc.h,v 1.60 1995/10/05 13:53:05 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.61 1995/10/11 15:20:50 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.8 Released ?, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.8 Released Oct. 13, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4) && !defined(__cplusplus)
