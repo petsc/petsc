@@ -135,10 +135,11 @@ class PythonModuleFixup (transform.Transform):
     if not ext       == '.c':      return
     package     = base[:-7]
     moduleName  = os.path.join(dir, package+'module.so')
-    self.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
-    if os.path.exists(moduleName) or os.path.islink(moduleName):
-      os.remove(moduleName)
-    os.symlink(self.libName, moduleName)
+    if not os.path.exists(moduleName) or not os.path.samefile(self.libName, moduleName):
+      self.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
+      if os.path.exists(moduleName) or os.path.islink(moduleName):
+        os.remove(moduleName)
+      os.symlink(self.libName, moduleName)
 
   def execute(self):
     #self.copySIDLInterface()
