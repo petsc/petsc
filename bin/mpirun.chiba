@@ -102,9 +102,9 @@ while [ $# -gt 0 ] ; do
     shift
     case $arg in 
     -start_in_debugger|-on_error_attach_debugger) 
-      shared="no"
+      shared="yes"
       nolocal=""
-      local="yes"
+      local="no"
       newprogargs="$newprogargs $arg"
     ;;
     -f|-f0|-f1|-options_file) 
@@ -147,7 +147,7 @@ cp $programname $rundir
 if [ "$infiles" != "" ] ; then cp $infiles $rundir; fi
 cp ${PETSC_DIR}/bin/urlget $rundir
 cp ${PETSC_DIR}/bin/urlget.py $rundir
-cp ${PETSC_DIR}/bin/parseargs.py $rundir
+cp ${PETSC_DIR}/bin/ $rundir
 #
 # Check if this should be a myrinet job:
 #
@@ -200,10 +200,10 @@ fi
 if [ $usemyrinet = "yes" ] ; then
   pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
   /soft/apps/packages/mpich-gmpg-1.2..4pre3.1/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
-  cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+  cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 else
   /soft/apps/packages/mpich-1.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
-  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 fi
 
 if [ $showtimes = "yes" ] ; then
@@ -336,7 +336,7 @@ fi
 #
 if [ $local = "no" ] ; then
   pushd $rundir > /dev/null
-  rm -rf $programbase $shortinfiles urlget parseargs.py urlget.py
+  rm -rf $programbase $shortinfiles urlget  urlget.py
   rm -rf [0-9]*
   popd > /dev/null
   if [ "`ls $rundir/*`" != "" ] ; then
