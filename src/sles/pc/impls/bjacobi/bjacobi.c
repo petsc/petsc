@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.17 1995/05/16 00:38:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.18 1995/05/18 22:45:11 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -13,20 +13,18 @@ static char vcid[] = "$Id: bjacobi.c,v 1.17 1995/05/16 00:38:45 curfman Exp bsmi
 #include "pcimpl.h"
 #include "bjacobi.h"
 
-int PCSetUp_BJacobiMPIAIJ(PC);
+extern int PCSetUp_BJacobiMPIAIJ(PC);
+extern int PCSetUp_BJacobiMPIRow(PC);
 
 static int PCSetUp_BJacobi(PC pc)
 {
   Mat        mat = pc->mat;
-  if (mat->type == MATMPIAIJ) {
-    return PCSetUp_BJacobiMPIAIJ(pc);
-  }
+  if (mat->type == MATMPIAIJ)      return PCSetUp_BJacobiMPIAIJ(pc);
+  else if (mat->type == MATMPIROW) return PCSetUp_BJacobiMPIRow(pc);
   SETERR(1,"Cannot use block Jacobi on this matrix type\n");
 }
 
-int PCApply_BJacobiMPIAIJ(PC,Vec,Vec);
-
-/* default destroy, if it has never been setup */
+/* Default destroy, if it has never been setup */
 static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
@@ -85,7 +83,10 @@ int PCPrintHelp_BJacobi(PC pc)
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
   fprintf(stderr, " %spc_bjacobi_truelocal: use blocks from the local linear\
-  system matrix \n      instead of the preconditioning matrix\n",p);
+ system matrix \n      instead of the preconditioning matrix\n",p);
+  fprintf(stderr," %ssub : prefix to control options for individual blocks.\
+ Add before the \n      usual KSP and PC option names (i.e., -sub_ksp_method\
+ <meth>)\n",p);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.16 1995/05/16 00:42:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.17 1995/05/18 22:46:31 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -95,18 +95,27 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
 }
 
 /* 
-  MatConvert_AIJ - Converts from MATAIJ format to another sequential format.
+  MatConvert_AIJ - Converts from MATAIJ format to another format. For
+  parallel formats, the new matrix distribution is determined by PETSc.
  */
 int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
 { 
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   Scalar  *vwork;
-  int     i, ierr, nz, m = aij->m, n = aij->n, *cwork;
+  int     i, ierr, nz, m = aij->m, n = aij->n, *cwork, rstart, rend;
 
   if (mat->type != MATAIJ) SETERR(1,"Input matrix must be MATAIJ.");
   switch (newtype) {
     case MATROW:
       ierr = MatCreateSequentialRow(mat->comm,m,n,0,aij->ilen,newmat);
+      CHKERR(ierr); break;
+    case MATMPIROW:
+      ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+             m,n,0,0,0,0,newmat); /* Could do smarter memory allocation */
+      CHKERR(ierr); break;
+    case MATMPIAIJ:
+      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+             m,n,0,0,0,0,newmat); /* Could do smarter memory allocation */
       CHKERR(ierr); break;
     case MATDENSE:
       ierr = MatCreateSequentialDense(mat->comm,m,n,newmat);
@@ -120,14 +129,32 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
       for (i=0; i<n; i++) cr[i] = i;
       OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
+      CHKERR(ierr); 
       ierr = MatCreateSequentialBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
+      CHKERR(ierr); 
+      FREE(rr), FREE(diag);
+      break;
+    }
+    case MATMPIBDIAG:
+    { int nb = 1; /* Default block size = 1 */
+      int ndiag, *diag, *rr, *cr;
+      rr = (int *) MALLOC( (m+n) * sizeof(int) ); CHKPTR(rr);
+      cr = rr + m;
+      for (i=0; i<m; i++) rr[i] = i;
+      for (i=0; i<n; i++) cr[i] = i;
+      OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
+      ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
+      CHKERR(ierr); 
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,ndiag,nb,
+             diag,0,newmat); CHKERR(ierr); 
       FREE(rr), FREE(diag);
       CHKERR(ierr); break;
     }
     default:
-      SETERR(1,"Only MATROW, MATDENSE, and MATBDIAG are currently supported.");
+      SETERR(1,"Matrix type is not currently supported.");
   }
-  for (i=0; i<m; i++) {
+  ierr = MatGetOwnershipRange(*newmat,&rstart,&rend); CHKERR(ierr);
+  for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
     ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERTVALUES); 
            CHKERR(ierr);
