@@ -72,7 +72,7 @@ PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
 MCC             = gcc
 MATLABCOMMAND   = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
 # #include <stdlib.h> INSIDE an extern "C" {} :-(. You can fix this by moving the 

@@ -6,13 +6,14 @@
 #define EQ 
 
 /* turning this on causes instability?!? */
-#undef UPWINDING 
+/* #define UPWINDING  */
 
 static char help[] = "Hall MHD with in two dimensions with time stepping and multigrid.\n\n\
 -da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3\n\
 -mg_coarse_pc_lu_damping\n\
 -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric\n\
 -mg_levels_ksp_type richardson\n\
+-mg_coarse_pc_type sor -mg_coarse_pc_sor_symmetric\n\
 -snes_atol 1.e-10\n\
 -ksp_atol 1.e-10\n\
 -max_st 5\n\
@@ -79,7 +80,10 @@ typedef struct {
   int            ires,itstep;
   int            max_steps,print_freq;
   PassiveScalar  t;
+
   PetscTruth     ts_monitor;           /* print information about each time step */
+  PetscReal      dump_time;            /* time to dump solution to a file */
+  PetscViewer    socketviewer;         /* socket to dump solution at each timestep for visualization */
 } TstepCtx;
 
 typedef struct {
@@ -92,7 +96,7 @@ typedef struct {
 
 typedef struct {
   int          mglevels;
-  int          cycles;           /* numbers of time steps for integration */ 
+  int          cycles;           /* number of time steps for integration */ 
   PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
   PetscTruth   draw_contours;    /* flag - 1 indicates drawing contours */
   PetscTruth   PreLoading;
@@ -120,10 +124,11 @@ int main(int argc,char **argv)
   AppCtx     *user;       /* user-defined work context (one for each level) */
   TstepCtx   tsCtx;       /* time-step parameters (one total) */
   Parameter  param;       /* physical parameters (one total) */
-  int        i,ierr,m,n;
+  int        i,ierr,m,n,mx,my;
   MPI_Comm   comm;
   DA         da;
-  PetscTruth defaultnonzerostructure = PETSC_FALSE;
+  PetscTruth defaultnonzerostructure = PETSC_FALSE,flg;
+  PetscReal  dt_ratio;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -197,15 +202,19 @@ int main(int argc,char **argv)
     /* Initialize stuff related to time stepping */
     /*======================================================================*/
 
+    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+
     tsCtx.fnorm_ini   = 0;  
     tsCtx.max_steps   = 10000;   
     tsCtx.max_time    = 1.0e+12;
-    tsCtx.dt          = .1;  
+    /* use for dt = min(dx,dy); multiplied by dt_ratio below */
+    tsCtx.dt          = PetscMin(lx/mx,ly/my);  
     tsCtx.fnorm_ratio = 1.0e+10;
     tsCtx.t           = 0;
     tsCtx.dt_out      = 10;
     tsCtx.print_freq  = tsCtx.max_steps; 
     tsCtx.ts_monitor  = PETSC_FALSE;
+    tsCtx.dump_time   = -1.0;
 
     ierr = PetscOptionsGetInt(PETSC_NULL, "-max_st", &tsCtx.max_steps,
                               PETSC_NULL);
@@ -219,12 +228,27 @@ int main(int argc,char **argv)
                               PETSC_NULL);
     CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetScalar(PETSC_NULL, "-deltat", &tsCtx.dt,
+    dt_ratio = 1.0;
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-dt_ratio", &dt_ratio,
                                  PETSC_NULL);
     CHKERRQ(ierr);
+    tsCtx.dt *= dt_ratio;
+
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-ts_monitor", &tsCtx.ts_monitor);
     CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-dump", &tsCtx.dump_time,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    tsCtx.socketviewer = 0;
+    ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);
+    CHKERRQ(ierr);
+    if (flg && !PreLoading) {
+      ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
+    }
+ 
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.
@@ -277,6 +301,7 @@ int main(int argc,char **argv)
       CHKERRQ(ierr);
       ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"dx %g dy %g dt %g ratio dt/min(dx,dy) %g\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
 
     
@@ -371,17 +396,27 @@ int Gnuplot(DA da, Vec X, double time)
 /* ------------------------------------------------------------------- */
 int Initialize(DMMG *dmmg)
 {
-  AppCtx    *appCtx = (AppCtx*)dmmg[0]->user;
-  Parameter *param = appCtx->param;
-  DA        da;
-  int       i,j,mx,my,ierr,xs,ys,xm,ym;
-  PetscReal two = 2.0,one = 1.0;
-  PetscReal hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PetscReal d_e,rho_s,de2,xx,yy;
-  Field     **x, **localx;
-  Vec       localX;
+  AppCtx     *appCtx = (AppCtx*)dmmg[0]->user;
+  Parameter  *param = appCtx->param;
+  DA         da;
+  int        i,j,mx,my,ierr,xs,ys,xm,ym;
+  PetscReal  two = 2.0,one = 1.0;
+  PetscReal  hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PetscReal  d_e,rho_s,de2,xx,yy;
+  Field      **x, **localx;
+  Vec        localX;
+  PetscTruth flg;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_BINARY_RDONLY,&viewer);CHKERRQ(ierr);
+    ierr = VecLoadIntoVector(viewer,dmmg[param->mglevels-1]->x);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   d_e   = param->d_e;
   rho_s = param->rho_s;
   de2   = sqr(param->d_e);
@@ -667,8 +702,9 @@ int Update(DMMG *dmmg)
 
     snes = DMMGGetSNES(dmmg);
 
-#ifdef SAVE_JACOBIAN
+#ifdef SAVE_JACOBIAN 
 
+    if (tsCtx->itstep == 665000)
     {
       SLES sles;
       PC pc;
@@ -697,11 +733,20 @@ int Update(DMMG *dmmg)
 
       ierr = PetscViewerDestroy(viewer);
       CHKERRQ(ierr);
+      SETERRQ(1,"Done saving Jacobian");
     }
 
 #endif
 
     tsCtx->t += tsCtx->dt;
+
+    /* save restart solution if requested at a particular time, then exit */
+    if (tsCtx->dump_time > 0.0 && tsCtx->t >= tsCtx->dump_time) {
+      Vec v;
+      ierr = SNESGetSolution(snes,&v);CHKERRQ(ierr);
+      ierr = VecView(v,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+      SETERRQ1(1,"Saved solution at time %d",tsCtx->t);
+    }
 
     if (ts_monitor) {
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -713,6 +758,13 @@ int Update(DMMG *dmmg)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Time Step %d time = %g Newton steps %d linear steps %d fnorm %g\n",
 			 tsCtx->itstep, tsCtx->t, its, lits, tsCtx->fnorm);
       CHKERRQ(ierr);
+
+      /* send solution over to Matlab, to be visualized (using ex29.m) */
+      if (!user->param->PreLoading && tsCtx->socketviewer){
+        Vec v;
+        ierr = SNESGetSolution(snes,&v);CHKERRQ(ierr);
+        ierr = VecView(v,tsCtx->socketviewer);CHKERRQ(ierr);
+      }
     }
 
     if (!param->PreLoading) {
