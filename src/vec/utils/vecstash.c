@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.1 1999/03/16 21:00:08 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.2 1999/03/17 19:13:22 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -95,9 +95,9 @@ int VecStashScatterEnd_Private(VecStash *stash)
     PetscFree(send_status);
   }
 
-  /* Now update nmaxold to be app 10% more than nmax, this way the
+  /* Now update nmaxold to be app 10% more than max n, this way the
      wastage of space is reduced the next time this stash is used */
-  stash->oldnmax    = (int)(stash->nmax * 1.1) + 5;
+  stash->oldnmax    = (int)(stash->n * 1.1) + 5;
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
@@ -151,6 +151,11 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
 int VecStashSetInitialSize_Private(VecStash *stash,int max)
 {
   PetscFunctionBegin;
+  if (stash->rank >2 ) {
+    printf("[%d]max = %d\n",stash->rank,max);
+  } else {
+    printf("[%d]max = %d\n",stash->rank,max);
+  }
   stash->oldnmax = max;
   stash->nmax    = 0;
   PetscFunctionReturn(0);
@@ -179,6 +184,7 @@ static int VecStashExpand_Private(VecStash *stash,int incr)
   if (stash->nmax == 0) newnmax = stash->oldnmax;
   else                  newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
+  printf("[%d]oldnmax = %d, nmax=%d, newnmax = %d, bs = %d\n",stash->rank,stash->oldnmax,stash->nmax,newnmax,bs);
 
   n_array = (Scalar *)PetscMalloc((newnmax)*(sizeof(int)+bs*sizeof(Scalar)));CHKPTRQ(n_array);
   n_idx   = (int *) (n_array + bs*newnmax);

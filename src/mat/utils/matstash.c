@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.24 1999/03/11 23:21:51 balay Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.25 1999/03/17 20:22:59 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -96,9 +96,9 @@ int StashScatterEnd_Private(Stash *stash)
     PetscFree(send_status);
   }
 
-  /* Now update nmaxold to be app 10% more than nmax, this way the
+  /* Now update nmaxold to be app 10% more than max n used, this way the
      wastage of space is reduced the next time this stash is used */
-  stash->oldnmax    = (int)(stash->nmax * 1.1) + 5;
+  stash->oldnmax    = (int)(stash->n * 1.1) + 5;
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
