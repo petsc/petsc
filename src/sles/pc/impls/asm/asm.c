@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.76 1998/04/24 21:21:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.77 1998/05/29 20:36:48 bsmith Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -651,10 +651,15 @@ int PCCreate_ASM(PC pc)
   PLogObjectMemory(pc,sizeof(PC_ASM));
   PetscMemzero(osm,sizeof(PC_ASM)); 
   osm->n                 = PETSC_DECIDE;
+  osm->n_local           = 0;
   osm->n_local_true      = PETSC_DECIDE;
   osm->overlap           = 1;
   osm->is_flg            = PETSC_FALSE;
   osm->sles              = 0;
+  osm->scat              = 0;
+  osm->is                = 0;
+  osm->mat               = 0;
+  osm->pmat              = 0;
   osm->type              = PC_ASM_RESTRICT;
   osm->same_local_solves = 1;
 
