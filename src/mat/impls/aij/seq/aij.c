@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.136 1996/01/18 23:58:30 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.137 1996/01/19 14:56:18 balay Exp bsmith $";
 #endif
 
 /*
@@ -1172,9 +1172,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   ai    = a->i;
   aj    = a->j+shift;
 
-  table = (int *) PetscMalloc(m * sizeof(int));
-  nidx  = (int *) PetscMalloc(m * sizeof(int));
-
+  table = (int *) PetscMalloc(2*m*sizeof(int)); CHKPTRQ(table); nidx = table + m;
   
   if (ov < 0)  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ: illegal overlap value used");
   for ( i=0; i<is_max; i++ ) {
@@ -1191,14 +1189,16 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
       if(!table[idx[j]]++) { nidx[isz++] = idx[j];}
     }
     
-    for ( j=0,k=0 ; j<ov ; ++j){ /* for each overlap*/
-      for ( n=isz ; k<n ; ++k){
+    k = 0;
+    for ( j=0; j<ov; j++){ /* for each overlap*/
+      n = isz;
+      for ( ; k<n ; k++){ /* do only those rows in nidx[k] not yet done */
         row   = nidx[k];
         start = ai[row];
         end   = ai[row+1];
-        for ( l = start; l<end ; ++l){
+        for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if(!table[val]++) { nidx[isz++] = val;}
+          if (!table[val]++) {nidx[isz++] = val;}
         }
       }
     }
@@ -1206,7 +1206,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     ierr = ISDestroy(is[i]); CHKERRQ(ierr);
     ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
-  PetscFree (table); PetscFree(nidx);
+  PetscFree(table);
   return 0;
 }
 
