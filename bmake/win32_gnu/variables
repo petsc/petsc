@@ -1,60 +1,60 @@
-# $Id: base_variables,v 1.6 1999/05/12 03:24:58 bsmith Exp balay $ 
+# $Id: base_variables,v 1.7 1999/08/04 21:01:17 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
-AR               = ar
-RM               = rm -f
-OMAKE            = make
-RANLIB           = ranlib
-SHELL            = /bin/sh
+AR		   = ar
+RM		   = rm -f
+OMAKE		   = make
+RANLIB		   = ranlib
+SHELL		   = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = gcc -D__USE_FIXED_PROTOTYPES__
-C_FC             = g77 -Wno-globals
-C_CC_SLFLAG      = -L
-C_FC_SLFLAG      = -L
-C_CLINKER        = gcc
-C_FLINKER        = g77
-C_CCV            = gcc --version
-C_SYS_LIB        = -ladvapi32 -lg2c
-# ------------------------- BOPT=g_c++ options ------------------------------
-G_COPTFLAGS      = -g
-G_FOPTFLAGS      = -g
-# ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O4 -Wshadow -fomit-frame-pointer
-O_FOPTFLAGS      = -O4
+C_CC		   = gcc -D__USE_FIXED_PROTOTYPES__
+C_FC		   = g77 -Wno-globals
+C_CLINKER_SLFLAG   = -L
+C_FLINKER_SLFLAG   = -L
+C_CLINKER	   = gcc
+C_FLINKER	   = g77
+C_CCV		   = gcc --version
+C_SYS_LIB	   = -ladvapi32 -lg2c
+# ------------------------- BOPT - g_c++ options ------------------------------
+G_COPTFLAGS	   = -g
+G_FOPTFLAGS	   = -g
+# ----------------------------- BOPT - O options -----------------------------
+O_COPTFLAGS	   = -O4 -Wshadow -fomit-frame-pointer
+O_FOPTFLAGS	   = -O4
 # ########################## C++ compiler ##################################
-CXX_CC           = g++
-CXX_FC           = g77 -Wno-globals
-CXX_CC_SLFLAG    = -L
-CXX_FC_SLFLAG    = -L
-CXX_CLINKER      = g++
-CXX_FLINKER      = g77
-CXX_CCV          = gcc --version
-CXX_SYS_LIB      = -ladvapi32 -lg2c -lstdc++
-# ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g 
-GCXX_FOPTFLAGS   = -g
-# ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O
-OCXX_FOPTFLAGS   = -O
-# -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g 
-GCOMP_FOPTFLAGS  = -g
-# --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O
-OCOMP_FOPTFLAGS  = -O
+CXX_CC		   = g++
+CXX_FC		   = g77 -Wno-globals
+CXX_CLINKER_SLFLAG = -L
+CXX_FLINKER_SLFLAG = -L
+CXX_CLINKER	   = g++
+CXX_FLINKER	   = g77
+CXX_CCV		   = gcc --version
+CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++
+# ------------------------- BOPT - g_c++ options ------------------------------
+GCXX_COPTFLAGS	   = -g 
+GCXX_FOPTFLAGS	   = -g
+# ------------------------- BOPT - O_c++ options ------------------------------
+OCXX_COPTFLAGS	   = -O
+OCXX_FOPTFLAGS	   = -O
+# -------------------------- BOPT - g_complex options ------------------------
+GCOMP_COPTFLAGS	   = -g 
+GCOMP_FOPTFLAGS	   = -g
+# --------------------------- BOPT - O_complex options -------------------------
+OCOMP_COPTFLAGS	   = -O
+OCOMP_FOPTFLAGS	   = -O
 
 # ########################### PETSc install options ###########################
 #
-G_PETSCFLAGS     = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
-O_PETSCFLAGS     = -DINLINE_FOR -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE_LOG
-GCXX_PETSCFLAGS  = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
-OCXX_PETSCFLAGS  = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
-GCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
-                   -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
-OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
-                   -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
+O_PETSCFLAGS	   = -DINLINE_FOR -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE_LOG
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
+                     -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
 
 ##################################################################################
 #
@@ -62,6 +62,6 @@ OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
 #
 ##################################################################################
 
-PARCH    = nt_gnu
+PARCH		   = nt_gnu
 
 include ${PETSC_DIR}/bmake/common_variables
