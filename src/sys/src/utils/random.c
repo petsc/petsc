@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.10 1996/03/20 22:54:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.11 1996/03/21 00:07:32 curfman Exp balay $";
 #endif
 
 /*
@@ -57,11 +57,11 @@ int PetscRandomDestroy(PetscRandom r)
 #if defined(__cplusplus)
 extern "C" {
 extern double drand48();
-extern void   srand48();
+extern void   srand48(long);
 }
 #else
 extern double drand48();
-extern void   srand48();
+extern void   srand48(long);
 #endif
 
 /*@C
