@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.149 2000/04/12 04:23:03 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.150 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -265,14 +265,15 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     Factorization code for AIJ format. 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqAIJ"
-int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
+#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ""></a>*/"MatLUFactorSymbolic_SeqAIJ"
+int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
   int        *r,*ic,ierr,i,n = a->m,*ai = a->i,*aj = a->j;
   int        *ainew,*ajnew,jmax,*fill,*ajtmp,nz,shift = a->indexshift;
   int        *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscReal  f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
@@ -294,6 +295,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
   ainew    = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
   ainew[0] = -shift;
   /* don't know how many column pointers are needed so estimate */
+  if (info) f = info->fill; else f = 1.0;
   jmax  = (int)(f*ai[n]+(!shift));
   ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
@@ -429,7 +431,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
 EXTERN int Mat_AIJ_CheckInode(Mat);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ"></a>*/"MatLUFactorNumeric_SeqAIJ"
 int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -542,8 +544,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 }
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactor_SeqAIJ"
-int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,PetscReal f)
+#define __FUNC__ /*<a name="MatLUFactor_SeqAIJ"></a>*/"MatLUFactor_SeqAIJ"
+int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
   Mat_SeqAIJ     *mat = (Mat_SeqAIJ*)A->data;
   int            ierr,refct;
@@ -552,7 +554,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,PetscReal f)
   MatOps         Aops;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic(A,row,col,f,&C);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */

@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.367 2000/05/16 17:02:11 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.368 2000/05/16 17:12:43 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1153,8 +1153,9 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
    See, e.g., SLESCreate().
 
    This is currently only supported for the SeqAIJ matrix format using code
-   from Yousef Saad's SPARSEKIT2 package. That code is copyright by Yousef
-   Saad with the GNU copyright.
+   from Yousef Saad's SPARSEKIT2  package (translated to C with f2c) and/or
+   Matlab. SPARSEKIT2 is copyrighted by Yousef Saad with the GNU copyright
+   and thus can be distributed with PETSc.
 
 .keywords: matrix, factor, LU, in-place
 
