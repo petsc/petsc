@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.52 1999/03/23 17:56:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.53 1999/03/23 17:57:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -49,7 +49,7 @@ int main( int argc, char **argv )
   Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
   int      ierr, its, n = 5, i, size, flg;
   int      *sres_hist_its = 0, res_hist_len = 200, sres_hist_len = 10;
-  double   h, xp = 0.0, *res_hist = 0, *sres_hist =;
+  double   h, xp = 0.0, *res_hist = 0, *sres_hist = 0;
   Scalar   v, pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
