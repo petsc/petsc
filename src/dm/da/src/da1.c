@@ -114,8 +114,6 @@ EXTERN int DAPublish_Petsc(PetscObject);
    Level: beginner
 
    Notes:
-   If you are having problems with running out of memory than run with the option -da_noao
-
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
    and DACreateLocalVector() and calls to VecDuplicate() if more are needed.

@@ -33,5 +33,9 @@ General
   change the --with-mpich --with-f-b ... to --with-mpich-download and change
   the -if-needed to be a different flag for -download
 
+  add DAVecGatherAll and DAVecGather
+  
+  change VecConvertMPI..... to gather style
+
 
 

@@ -170,6 +170,9 @@ int DAView_Binary(DA da,PetscViewer viewer)
    Use DAGetCorners() and DAGetGhostCorners() to get the starting
    and ending grid points (ghost points) in each direction.
 
+   When drawing the DA grid it only draws the logical grid and does not
+   respect the grid coordinates set with DASetCoordinates()
+
 .keywords: distributed array, view, visualize
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),

@@ -28,7 +28,7 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates()
+.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostCoordinates(), DAGetCoordinateDA()
 @*/
 int DASetCoordinates(DA da,Vec c)
 {
@@ -68,7 +68,7 @@ int DASetCoordinates(DA da,Vec c)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates()
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
 int DAGetCoordinates(DA da,Vec *c)
 {
@@ -77,6 +77,121 @@ int DAGetCoordinates(DA da,Vec *c)
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
   *c = da->coordinates;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetCoordinateDA"
+/*@
+   DAGetCoordinateDA - Gets the DA that scatters between global and local DA coordinates
+
+   Collective on DA
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  dac - coordinate DA
+
+   Note: You should not destroy or keep around this vector after the DA is destroyed.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetGhostedCoordinates()
+@*/
+int DAGetCoordinateDA(DA da,DA *cda)
+{
+  DAStencilType  st;
+  int            size,ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
+  if (da->dim == 1) {
+    if (da->w == 1) {
+      da->da_coordinates = da;
+    } else {
+      int            s,m,*lc,l;
+      DAPeriodicType pt;
+      ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = DACreate1d(da->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = PetscFree(lc);CHKERRQ(ierr);
+    }
+  } else if (da->dim == 2) {
+    ierr = DAGetInfo(da,0,0,0,0,0,0,0,0,0,0,&st);CHKERRQ(ierr);
+    if (da->w == 2 && st == DA_STENCIL_BOX) {
+      da->da_coordinates = da;
+    } else {
+      int            i,s,m,*lc,*ld,l,k,n,M,N;
+      DAPeriodicType pt;
+      ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&ld);CHKERRQ(ierr);
+      /* only first M values in lc matter */
+      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      /* every Mth value in ld matters */
+      ierr = MPI_Allgather(&k,1,MPI_INT,ld,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      for ( i=0; i<N; i++) {
+        ld[i] = ld[M*i];
+      }
+      ierr = DACreate2d(da->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = PetscFree(lc);CHKERRQ(ierr);
+      ierr = PetscFree(ld);CHKERRQ(ierr);
+    }
+  }
+  *cda = da->da_coordinates;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetGhostedCoordinates"
+/*@
+   DAGetGhostedCoordinates - Gets the node coordinates associated with a DA.
+
+   Collective on DA the first time it is called
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  c - coordinate vector
+
+   Note:
+    Each process has only the coordinates for its local AND ghost nodes
+
+    For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
+    and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+    You should not destroy or keep around this vector after the DA is destroyed.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
+@*/
+int DAGetGhostedCoordinates(DA da,Vec *c)
+{
+  PetscFunctionBegin;
+ 
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(c,2);
+  if (!da->coordinates) SETERRQ(1,"You must call DASetCoordinates() before this call");
+  if (!da->ghosted_coordinates) {
+    DA  dac;
+    int ierr;
+    ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
+    ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
+  }
+  *c = da->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
 

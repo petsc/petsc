@@ -42,7 +42,9 @@ int DAView_2d(DA da,PetscViewer viewer)
  
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    if (!da->coordinates) {
+      ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    }
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
     /* first processor draw all node lines */

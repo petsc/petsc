@@ -134,6 +134,8 @@ int DADestroy(DA da)
   }
 
   if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
+  if (da->ghosted_coordinates) {ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);}
+  if (da->da_coordinates && da != da->da_coordinates) {ierr = DADestroy(da->da_coordinates);CHKERRQ(ierr);}
 
   if (da->dfill) {ierr = PetscFree(da->dfill);CHKERRQ(ierr);}
   if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);

@@ -33,10 +33,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  PetscScalar    v[2],x,*coors = 0;
+  PetscScalar    v[2],x,*coors = 0,*ccoors;
   Mat            mat;
   DAPeriodicType pt;
-  Vec            vcoors;
+  Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -65,8 +65,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
   if (vcoors) {
-    ierr = VecGetArray(vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -83,7 +85,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
          in x direction; since they have no right neighbor
     */
     if (coors) {
-      x = coors[i-i_start] - coors[i_c*ratio-i_start];
+      x = (coors[i] - ccoors[i_c])/(ccoors[i_c+1] - ccoors[i_c]);
     } else {
       x  = ((double)(i - i_c*ratio))/((double)ratio);
     }
@@ -101,7 +103,8 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
   }
   if (vcoors) {
-    ierr = VecRestoreArray(vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -184,7 +187,7 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 }
 
 
-/*   dof degree of freedom per node, nonperiodic */
+typedef struct {PetscScalar x,y;} Coor2d;
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_2D_Q1"
 int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
@@ -197,6 +200,8 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
+  Coor2d         **coors,**ccoors;
+  Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
 
@@ -287,6 +292,13 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
+  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
+  if (vcoors) {
+    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+  }
+
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
@@ -301,8 +313,13 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
       */
-      x  = ((double)(i - i_c*ratioi))/((double)ratioi);
-      y  = ((double)(j - j_c*ratioj))/((double)ratioj);
+      if (coors) {
+        x = (coors[j][i].x - ccoors[j_c][i_c].x)/(ccoors[j_c][i_c+1].x - ccoors[j_c][i_c].x);
+        y = (coors[j][i].y - ccoors[j_c][i_c].y)/(ccoors[j_c+1][i_c].y - ccoors[j_c][i_c].y);
+      } else {
+        x  = ((double)(i - i_c*ratioi))/((double)ratioi);
+        y  = ((double)(j - j_c*ratioj))/((double)ratioj);
+      }
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
@@ -326,6 +343,10 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       }
       ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
     }
+  }
+  if (vcoors) {
+    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
