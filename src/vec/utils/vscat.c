@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.72 1996/11/19 16:29:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.73 1996/11/27 22:50:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: vscat.c,v 1.72 1996/11/19 16:29:24 bsmith Exp bsmith 
    This code was written by Cameron Cooper, Occidental College, Fall 1995,
    will working at ANL as a SERS student.
 */
-static int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   if (mode == SCATTER_REVERSE) {
     Vec_MPI              *yy = (Vec_MPI *) y->data;
@@ -88,7 +88,7 @@ static int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mod
   return 0;
 }
 
-static int VecScatterDestroy_MPI_ToAll(PetscObject obj)
+int VecScatterDestroy_MPI_ToAll(PetscObject obj)
 {
   VecScatter           ctx = (VecScatter) obj;
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
@@ -102,7 +102,7 @@ static int VecScatterDestroy_MPI_ToAll(PetscObject obj)
   return 0;
 }
 
-static int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
+int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll *) in->todata, *sto;
   int                  size, i;
@@ -132,7 +132,7 @@ static int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 
 /* --------------------------------------------------------------------------------------*/
 /* Scatter: sequential general to sequential general */
-static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -157,7 +157,7 @@ static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,V
 }
 
 /* Scatter: sequential general to sequential stride 1 */
-static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -187,7 +187,7 @@ static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMod
 }
 
 /* Scatter: sequential general to sequential stride */
-static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -215,7 +215,7 @@ static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,V
 }
 
 /* Scatter: sequential stride 1 to sequential general */
-static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General *) ctx->todata;
@@ -245,7 +245,7 @@ static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMod
 }
 
 /* Scatter: sequential stride to sequential general */
-static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General *) ctx->todata;
@@ -273,7 +273,7 @@ static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,V
 }
 
 /* Scatter: sequential stride to sequential stride */
-static int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
@@ -316,7 +316,7 @@ static int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,V
   return 0;
 }
 
-static int VecScatterDestroy_SGtoSG(PetscObject obj)
+int VecScatterDestroy_SGtoSG(PetscObject obj)
 {
   VecScatter ctx = (VecScatter) obj;
   PetscFree(ctx->todata); PetscFree(ctx->fromdata); 
@@ -326,7 +326,7 @@ static int VecScatterDestroy_SGtoSG(PetscObject obj)
 }
 
 /* Scatter: parallel to sequential vector, sequential strides for both. */
-static int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
+int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
 {
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride *) in->todata, *out_to;
   VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride *) in->fromdata, *out_from;

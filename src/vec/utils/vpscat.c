@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.65 1996/11/07 15:07:35 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.66 1996/11/12 23:27:23 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -63,7 +63,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   exact copy of values into their current location. We check this here and
   then know that we need not perform that portion of the scatter.
 */
-static int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
+ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
                                            VecScatter_Seq_General *gen_from)
 {
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
@@ -110,7 +110,7 @@ static int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
      the naming can be a little confusing.
 
 */
-static int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
@@ -182,7 +182,7 @@ static int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode
   return 0;
 }
 
-static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *y = (Vec_MPI *)yin->data;
@@ -238,7 +238,7 @@ static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,V
 /*
     Special scatters for fixed block sizes
 */
-static int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+ int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_from;
 
@@ -255,7 +255,7 @@ static int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
   return 0;
 }
 
-static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
@@ -348,7 +348,7 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mo
   return 0;
 }
 
-static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *y = (Vec_MPI *)yin->data;
@@ -408,7 +408,7 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode
 }
 
 /* --------------------------------------------------------------------------------------*/
-static int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
+ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General *) in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General *) in->fromdata,*out_to,*out_from;
@@ -488,7 +488,7 @@ static int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 }
 /* ---------------------------------------------------------------------------------*/
 
-static int VecScatterDestroy_PtoP_5(PetscObject obj)
+ int VecScatterDestroy_PtoP_5(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
@@ -541,7 +541,7 @@ static int VecScatterDestroy_PtoP_5(PetscObject obj)
   return 0;
 }
 
-static int VecScatterDestroy_PtoP(PetscObject obj)
+ int VecScatterDestroy_PtoP(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
