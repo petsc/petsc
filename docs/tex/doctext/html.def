@@ -13,8 +13,8 @@
 key        %n%p<CODE>%1</CODE>
 synopsis   %n<PRE>%1</PRE>
 definition %n<B>%1</B>%n
-section    %n<H2><FONT COLOR="#CC3333">%1</FONT></H2>%n
-s_synopsis %n<H2><FONT COLOR="#CC3333">Synopsis</FONT></H2>%n<PRE>%n
+section    %n<H3><FONT COLOR="#CC3333">%1</FONT></H3>%n
+s_synopsis %n<H3><FONT COLOR="#CC3333">Synopsis</FONT></H3>%n<PRE>%n
 e_synopsis %n</PRE>%n
 em_dash    
 eop        %n</BODY></HTML>%n
