@@ -371,10 +371,11 @@ $     NORM_INFINITY denotes max_i |x_i|
           VecNormBegin(), VecNormEnd()
 
 @*/
-static int id_norm1=0,id_norm2=0,id_normInf=0,id_normF=0,id_norm12=0;
 int VecNorm(Vec x,NormType type,PetscReal *val)  
 {
-  PetscTruth flg; int type_id,ierr; char *type_name;
+  static int id_norm1=0,id_norm2=0,id_normInf=0,id_normF=0,id_norm12=0;
+  PetscTruth flg;
+  int        type_id, ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
