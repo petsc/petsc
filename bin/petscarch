@@ -109,9 +109,6 @@ fi
         exit 0
       fi
   fi
-  
-  echo 'If doing manual configuration of PETSc (that is you are NOT using config/configure.py but are editing'
-  echo 'the configuration files in bmake/${PETSC_ARCH}/ directly) select one of the following PETSC_ARCH choices'
-  ls -d ${PETSC_DIR}/bmake/${LARCH}* | sed -e "s?${PETSC_DIR}/bmake/\([_a-zA-Z0-9]*\)?   \1?g"
+  echo $LARCH
   exit 0
 
