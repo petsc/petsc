@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.61 2000/10/05 21:22:02 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.62 2000/10/30 18:38:48 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -655,7 +655,7 @@ int Update(SNES snes,void *ctx)
 
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
-  if (nfailsCum >= 2) SETERRQ(1,1,"Unable to find a Newton Step");
+  if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
   if (print_flag){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                        tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
@@ -868,7 +868,7 @@ int GetLocalOrdering(GRID *grid)
       ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
     }
     fptr = fopen(spart_file,"r");
-    if (!fptr) SETERRQ1(1,1,"Cannot open file %s\n",part_file);
+    if (!fptr) SETERRQ1(1,"Cannot open file %s\n",part_file);
     for (inode = 0; inode < nnodes; inode++) {
       fscanf(fptr,"%d\n",&node1); 
       v2p[inode] = node1;
@@ -2043,7 +2043,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 
 #else
    if (size > 1) {
-     SETERRQ(1,1,"Parallel case not supported in non-interlaced case\n");
+     SETERRQ(1,"Parallel case not supported in non-interlaced case\n");
    }
    ICALLOC(nnodes*4,&val_diag);
    ICALLOC(nnodes*4,&val_offd);
@@ -2338,7 +2338,7 @@ int write_fine_grid(GRID *grid)
 /* call the output frame.out */
 
    if (!(output = fopen("frame.out","a"))){
-      SETERRQ(1,1,"can't open frame.out");
+      SETERRQ(1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n"); 
    fprintf(output,"\n");
@@ -2437,7 +2437,7 @@ int EventCountersBegin(int *gen_start,Scalar* time_start_counters)
 {
  int ierr;
  if ((*gen_start = start_counters(event0,event1)) < 0)
-   SETERRQ(1,1,"Error in start_counters\n");
+   SETERRQ(1,"Error in start_counters\n");
  ierr = PetscGetTime(time_start_counters);CHKERRQ(ierr);
  return 0;
 }
@@ -2449,10 +2449,10 @@ int EventCountersEnd(int gen_start,Scalar time_start_counters)
  long long _counter0,_counter1;
 
  if ((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0)
-   SETERRQ(1,1,"Error in read_counter\n");
+   SETERRQ(1,"Error in read_counter\n");
  ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
  if (gen_read != gen_start) {
-   SETERRQ(1,1,"Lost Counters!! Aborting ...\n");
+   SETERRQ(1,"Lost Counters!! Aborting ...\n");
  }
  counter0 += _counter0;
  counter1 += _counter1;
