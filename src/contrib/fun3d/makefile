@@ -15,16 +15,17 @@ SOURCEC	         =
 SOURCEF	         =
 SOURCEH	         =
 OBJSC	         = 
-OBJSF	         = user.o userJac.o
+OBJSF            =
 CLEANFILES       = flow.exe flow.o flow history.out
 LOCDIR           = src/contrib/fun3d/
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
+FLOW_OBJSF       = user.o userJac.o
 #
 include $(PETSC_DIR)/bmake/common/base
 
-flow: flow.o $(OBJSF) chkopts
-	-$(CLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_SNES_LIB)
+flow: flow.o $(FLOW_OBJSF) chkopts
+	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_SNES_LIB)
 
 puns3d: puns3d.a.o
 	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_DM_LIB)
