@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2000/12/18 20:06:00 balay Exp $ 
+# $Id: base.site,v 1.1 2001/03/09 19:52:32 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -8,9 +8,8 @@
 #
 # Location of BLAS and LAPACK.  
 #
-BLAS_LIB       = 
-LAPACK_LIB     = -lpetscblas
-
+BLAS_LIB       = -Lc:/cblaslapack -lcblas
+LAPACK_LIB     = -Lc:/cblaslapack -lclapack
 #
 # Location of MPI (Message Passing Interface) software  
 #

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.6 2001/03/22 03:06:07 balay Exp balay $ 
+# $Id: base_variables,v 1.7 2001/03/23 21:17:41 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -14,7 +14,7 @@ SED		   = sed
 MKDIR              = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057
+C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057 -w8004
 C_FC		   = ${WIN32FE} bcf77
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
@@ -30,7 +30,7 @@ G_FOPTFLAGS	   =
 O_COPTFLAGS	   = -O
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
-CXX_CC		   = ${WIN32FE} bcc32 -P -w-8019 -w-8060 -w-8057
+CXX_CC		   = ${WIN32FE} bcc32 -P -w-8019 -w-8060 -w-8057 -w8004
 CXX_FC		   = ${WIN32FE} bcf77
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L

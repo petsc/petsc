@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.78 2001/01/16 18:22:02 balay Exp balay $*/
+/*$Id: zstart.c,v 1.79 2001/03/23 23:25:54 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -25,8 +25,6 @@ extern PetscTruth PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
-#endif
-
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 2001/03/22 18:59:11 balay Exp balay $ 
+# $Id: base_variables,v 1.2 2001/03/23 23:18:37 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
@@ -22,7 +22,7 @@ C_CLINKER        = ${WIN32FE} icl
 C_FLINKER        = ${WIN32FE} ifl
 C_CCV            = icl 2>&1| head -1
 C_FCV            = ifl 2>&1| head -1
-C_SYS_LIB        =  kernel32.lib user32.lib  gdi32.lib advapi32.lib
+C_SYS_LIB        = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -MT -Z7 -W2
 G_FOPTFLAGS      = -MT -Z7 -W0
@@ -40,7 +40,7 @@ CXX_CLINKER      = ${WIN32FE} icl
 CXX_FLINKER      = ${WIN32FE} ifl
 CXX_CCV          = icl 2>&1| head -1
 CXX_FCV          = ifl 2>&1| head -1
-CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib
+CXX_SYS_LIB      = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -MT -Z7 -W2
 GCXX_FOPTFLAGS   = -MT -Z7 -W0
