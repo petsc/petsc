@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.29 1996/07/08 22:22:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.30 1996/08/01 14:35:15 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -78,7 +78,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
       else if (real(dx) < 0.0 && abs(dx) < 1.e-16) dx = -1.e-1;
 #endif
       dx *= epsilon;
-      wscale = -1.0/dx;
+      wscale = 1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADD_VALUES); 
     } 
     else {
@@ -92,7 +92,6 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 #else
     MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);
 #endif
-    scale = -scale;
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
     VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;
