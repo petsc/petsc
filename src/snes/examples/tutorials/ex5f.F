@@ -1,5 +1,5 @@
-
-C "$Id: ex5f.F,v 1.32 1997/08/07 14:42:34 bsmith Exp bsmith $";
+C
+C "$Id: ex5f.F,v 1.33 1997/08/22 15:18:29 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -209,8 +209,8 @@ C        - Note that the Fortran interface to DAGetGlobalIndices() differs from
 C          the C version.  See the Fortran chapter of the users manual for details.
 
         call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog_a(ltog_i),
-     &       isltog,ierr)
+        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,
+     &       ltog_a(ltog_i),isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
         call ISLocalToGlobalMappingDestroy(isltog,ierr)
 
