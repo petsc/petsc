@@ -145,7 +145,9 @@ lib: chkpetsc_dir $(SOURCE)
         	$(RANLIB)  $(LIBNAME); \
 	        $(RM) -f $(OBJS); \
         fi
-
+#
+#  Does not work for some machines with .F fortran files.
+#
 # Builds library - fast version
 libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
