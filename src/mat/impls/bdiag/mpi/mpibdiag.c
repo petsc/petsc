@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.118 1997/05/23 18:37:56 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.119 1997/07/09 20:54:42 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -520,6 +520,7 @@ int MatDestroy_MPIBDiag(PetscObject obj)
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
                   mbd->M,mbd->N,ms->bs,ms->nd);
 #endif
+  ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
   PetscFree(mbd->rowners); 
   PetscFree(mbd->gdiag);
   ierr = MatDestroy(mbd->A); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.252 1997/07/09 20:53:23 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.253 1997/07/26 18:03:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1011,10 +1011,10 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->M != (*fact)->M || mat->N != (*fact)->N)
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Mat *fact: global dim");
-  if (!mat->ops.lufactornumeric) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!(*fact)->ops.lufactornumeric) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0); 
-  ierr = (*mat->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
+  ierr = (*(*fact)->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {

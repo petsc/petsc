@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.73 1997/07/09 20:55:26 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.74 1997/07/28 16:13:24 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -833,6 +833,7 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   PLogObjectState(obj,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
 
+  ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
   PetscFree(baij->rowners); 
   ierr = MatDestroy(baij->A); CHKERRQ(ierr);
   ierr = MatDestroy(baij->B); CHKERRQ(ierr);

@@ -1,56 +1,57 @@
 
-C    "$Id: ex19.F,v 1.26 1997/07/10 15:51:00 balay Exp $";
+C    "$Id: ex20.F,v 1.1 1997/07/22 16:18:29 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/sys.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/viewer.h"
 C
-C  This example demonstrates basic use of the PETSc Fortran interface
-C  to vectors.
+C  This example demonstrates writing an array to a file in binary format
+C  that may be read in by PETSc's VecLoad() routine.
 C
-       integer          n, ierr,flg
-       Scalar           one, two, three, dot
-       Double           norm,rdot
-       Vec              x,y,w
+       implicit none
+       integer          n, ierr,i,fd,veccookie
+       Scalar           array(5)
+       Vec              x
+       Viewer           v
 
-       n     = 20
-       one   = 1.0
-       two   = 2.0
-       three = 3.0
+       n         = 5
+       veccookie = 1211211 + 3
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
-       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-C Create a vector, then duplicate it
-       call VecCreate(MPI_COMM_WORLD,n,x,ierr)
-       call VecDuplicate(x,y,ierr)
-       call VecDuplicate(x,w,ierr)
+       do 10, i=1,5
+         array(i) = i
+ 10    continue
 
-       call VecSet(one,x,ierr)
-       call VecSet(two,y,ierr)
+C   Open binary file for writing
+       call PetscBinaryOpen('testfile',BINARY_CREATE,fd,ierr)
+C   Write the Vec header
+       call PetscBinaryWrite(fd,veccookie,1,BINARY_INT,0,ierr)
+C   Write the array length
+       call PetscBinaryWrite(fd,n,1,BINARY_INT,0,ierr)
+C   Write the array
+       call PetscBinaryWrite(fd,array,n,BINARY_DOUBLE,0,ierr)
+C   Close the file
+       call PetscBinaryClose(fd,ierr)
 
-       call VecDot(x,y,dot,ierr)
-       rdot = PetscReal(dot)
-       write(6,100) rdot
-  100  format('Result of inner product ',f10.4)
-
-       call VecScale(two,x,ierr)
-       call VecNorm(x,NORM_2,norm,ierr)
-       write(6,110) norm
-  110  format('Result of scaling ',f10.4)
-
-       call VecCopy(x,w,ierr)
-       call VecNorm(w,NORM_2,norm,ierr)
-       write(6,120) norm
-  120  format('Result of copy ',f10.4)
-
-       call VecAXPY(three,x,y,ierr)
-       call VecNorm(y,NORM_2,norm,ierr)
-       write(6,130) norm
-  130  format('Result of axpy ',f10.4)
+C
+C  Open the file for reading by PETSc
+C
+       call ViewerFileOpenBinary(MPI_COMM_SELF,'testfile',BINARY_RDONLY,
+     &                           v,ierr)
+C
+C  Load the vector
+C
+       Call VecLoad(v,x,ierr)
+       call ViewerDestroy(v,ierr)
+C
+C  Print the vector
+C
+       call VecView(x,VIEWER_STDOUT_SELF,ierr)
+C
 
        call VecDestroy(x,ierr)
-       call VecDestroy(y,ierr)
-       call VecDestroy(w,ierr)
        call PetscFinalize(ierr)
        end
 

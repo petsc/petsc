@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.14 1997/04/10 00:03:26 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.15 1997/07/09 20:55:07 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -20,7 +20,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   aj    = a->j;
   bs    = a->bs;
 
-  if (ov < 0)  SETERRQ(1,0,"illegal overlap value used");
+  if (ov < 0)  SETERRQ(1,0,"Negative overlap specified");
 
   table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
@@ -31,7 +31,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     isz  = 0;
     PetscMemzero(table,(m/BITSPERBYTE +1)*sizeof(char));
                  
-                /* Extract the indices, assume there can be duplicate entries */
+    /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
 

@@ -1,5 +1,5 @@
 C
-C  $Id: sys.h,v 1.4 1996/04/16 04:58:49 bsmith Exp balay $;
+C  $Id: sys.h,v 1.5 1996/04/16 13:16:14 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
@@ -14,7 +14,7 @@ C
       parameter (RANDOM_DEFAULT=0, RANDOM_DEFAULT_REAL=1,
      *           RANDOM_DEFAULT_IMAGINARY=2)     
 C
-C Not used from Fortran 
+C
 C
       integer BINARY_INT, BINARY_DOUBLE,BINARY_SCALAR, BINARY_SHORT,
      *        BINARY_FLOAT,BINARY_CHAR

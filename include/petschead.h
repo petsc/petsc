@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.47 1997/05/23 18:34:01 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.48 1997/07/10 03:47:21 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -36,23 +36,24 @@ extern int PetscRegisterCookie(int *);
   void*       child;                        \
   int         (*childcopy)(void *,void**);  \
   int         (*childdestroy)(void *);      \
-  void*       fortran_func_pointers[5];
+  void**      fortran_func_pointers;
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
-#define PetscHeaderCreate(h,tp,cook,t,com)                         \
-      {h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));         \
-       PetscMemzero(h,sizeof(struct tp));                          \
-       (h)->cookie = cook;                                         \
-       (h)->type   = t;                                            \
-       (h)->prefix = 0;                                            \
+#define PetscHeaderCreate(h,tp,cook,t,com)                                        \
+      {h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));                        \
+       PetscMemzero(h,sizeof(struct tp));                                         \
+       (h)->cookie = cook;                                                        \
+       (h)->type   = t;                                                           \
+       (h)->prefix = 0;                                                           \
        PetscCommDup_Private(com,&(h)->comm,&(h)->tag);}
-#define PetscHeaderDestroy(h)                                      \
-       {PetscCommFree_Private(&(h)->comm);                         \
-        (h)->cookie = PETSCFREEDHEADER;                            \
-        if ((h)->prefix) PetscFree((h)->prefix);                   \
-        if ((h)->child) (*(h)->childdestroy)((h)->child);          \
+#define PetscHeaderDestroy(h)                                                     \
+       {PetscCommFree_Private(&(h)->comm);                                        \
+        (h)->cookie = PETSCFREEDHEADER;                                           \
+        if ((h)->prefix) PetscFree((h)->prefix);                                  \
+        if ((h)->child) (*(h)->childdestroy)((h)->child);                         \
+        if ((h)->fortran_func_pointers) PetscFree((h)->fortran_func_pointers);    \
         PetscFree(h);          }
 
 /* 

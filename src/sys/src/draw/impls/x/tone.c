@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.12 1997/05/02 16:00:57 bsmith Exp balay $";
+static char vcid[] = "$Id: tone.c,v 1.13 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -127,6 +127,11 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }
+  return 0;
+}
+#else
+int dummy_tone()
+{
   return 0;
 }
 #endif

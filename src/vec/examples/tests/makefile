@@ -38,7 +38,7 @@ BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
 		  ex11.c ex12.c ex13.c ex14.c ex17.c ex18.c 
-EXAMPLESF       = ex19.F
+EXAMPLESF       = ex19.F ex20.F
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -117,7 +117,7 @@ ex19: ex19.o  chkopts
 	$(RM) -f ex19.o
 
 ex20: ex20.o  chkopts
-	-$(CLINKER) -o ex20 ex20.o  $(SLES_LIB)
+	-$(FLINKER) -o ex20 ex20.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex20.o
 
 ex21: ex21.o  chkopts

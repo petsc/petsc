@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.133 1997/07/02 22:24:44 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.134 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -911,11 +911,11 @@ static int OptionsInsertFile_Private(char *file)
 int OptionsCreate_Private(int *argc,char ***args,char* file)
 {
   int  ierr,rank;
-  char pfile[128];
+  char pfile[256];
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!file) {
-    if ((ierr = PetscGetHomeDirectory(120,pfile))) return ierr;
+    ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
     PetscStrcat(pfile,"/.petscrc");
     file = pfile;
   }

@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.34 1997/05/23 18:34:24 balay Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.35 1997/07/09 20:59:19 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "pinclude/pviewer.h"
-#include <stdio.h>
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

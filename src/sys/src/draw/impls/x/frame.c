@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.11 1997/02/22 02:27:19 bsmith Exp balay $";
+static char vcid[] = "$Id: frame.c,v 1.12 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -116,6 +116,12 @@ int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
     LoPix = XiGetColor( XiWin, Lo, 1 );
     /* HasColor = 1; */
   }
+  return 0;
+}
+
+#else
+int dummy_frame()
+{
   return 0;
 }
 #endif

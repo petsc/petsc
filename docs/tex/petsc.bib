@@ -1,3 +1,30 @@
+@TECHREPORT{parasha,
+        AUTHOR="M. Parasha and J. C. Browne",
+        TITLE="Dagh: A Data-Management Infrastructure for Parallel
+                  Adaptive Mesh Refinment Techniques",
+        INSTITUTION="Department of Computer Science, University of
+                  Texas at Austin",
+        YEAR="1995"
+                }
+
+@Article{parti,
+  author =       {R. Das and M. Uysal and J. Saltz and Y. S. Hwang}, 
+  title =        {Communications Optimizations for Irregular
+                  Scientific Computations on Distributed Memory Architectures},
+  journal =      {Journal of Parallel and Distributed Computing},
+  year =         {1994},
+  volume =       {22},
+  pages =        {462--479}
+}
+
+@Article{mparti,
+  author =       {G. Agrawal and A. Sussman and J. Saltz}, 
+  title =        {An Integrated Runtime and Compile-time Approach for
+                  Parallelizing Structured and Block Structured Applications},
+  journal =      {IEEE Transactions on Parallel and Disttibuted Systems},
+  year =         {to appear}
+}
+
 @Article{gropp-lusk-doss-skjellum,
   author =       { William Gropp and Ewing Lusk and Nathan Doss and Anthony
                   Skjellum}, 
@@ -59,8 +86,8 @@
       }
 		  
 @TechReport( petsc-user-ref,
-    Author = "Satish Balay and William Gropp and Lois Curfman McInnes
-		  and Barry Smith",
+    Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
     Title  = "{PETS}c 2.0 Users Manual",
     Institution = "Argonne National Laboratory",
     Month  = Oct,
@@ -96,6 +123,15 @@
   month =	 Dec
 }
 
+@Unpublished{ kelp-web-page,
+  author =       "Scott Baden", 
+  title = 	 "{KeLP} home page",
+  note = 	 "http://www-cse.ucsd.edu\-/groups\-/hpcl\-/scg\-/kelp.html",
+  year =	 1997,
+  month =	 "July"
+}
+
+
 @Article{ MPI-final, 
 	Title = "{MPI}: A Message-Passing Interface Standard",
         Journal = "International J. Supercomputing Applications",
@@ -115,10 +151,10 @@
 
 
 @Unpublished{ petsc-web-page,
-  Author = "Satish Balay and William Gropp and Lois Curfman McInnes
-		  and Barry Smith",
+  Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
   title = 	 "{PETSc} home page",
-  note = 	 "http://www.mcs.anl.gov/petsc/petsc.html",
+  note = 	 "http://www.mcs.anl.gov\-/petsc\-/petsc.html",
   year =	 1997,
   month =	 Jul
 }
@@ -179,7 +215,14 @@
     Year=        "1992",
     Key=         "p4-Manual" )
 
-@inproceedings{parti,
+@inproceedings{kelp,
+    Author    =      "Stephan J. Fink and Scott B. Baden and Scott R. Kohn",
+    title= "Flexible Communication Mechanisms for Dynamic Structured Applications",
+    BOOKTITLE = "Irregular '96",
+    YEAR      = "1996"
+}
+
+@inproceedings{oldparti,
     Author    =      "Gagan Agrawal and Alan Sussman and Joel Saltz",
     Title     =       "Compiler and Runtime Support for Unstructured and Block
                   Structured Problems",
@@ -187,6 +230,16 @@
     pages     = "578--587",
     YEAR      = "1993"
 }
+
+@inproceedings{parti2,
+    Author    =      "S. S. Mukherjee and S. D. Sharmann and
+                      M. DF. Hill and J. R. Larus and A. Rogers and J. Saltz",
+    Title     =       "Efficient Support for Irregular Applications on
+                  Distributed Memory Machines",
+    BOOKTITLE = "PPoPP 95",
+    YEAR      = "1995"
+}
+
 
 @inproceedings{disz-lusk:wamtrace,
 	AUTHOR = "Terrence Disz and Ewing Lusk",
@@ -1095,3 +1148,24 @@ year = {1977}
  BOOKTITLE= "Proceedings of Parallel CFD'97",
  note =     "To appear"
 }
+
+@INPROCEEDINGS{Quinlan1,
+ AUTHOR=    "M. Lemke and D. Quinlan",
+ TITLE=     "P++, a {C}++ Virtual Shared Grids Based Programming
+             Environment for Architecture-Independent Development of
+                  Structured Grid Applications",
+ BOOKTITLE= "CONPAR/VAPP V, in Lecture Notes in Computer Science",
+ PUBLISHER= "Springer Verlag",
+ YEAR=      "1992"
+}
+
+
+@INPROCEEDINGS{Quinlan2,
+ AUTHOR=    "R. Parsons and D. Quinlan",
+ TITLE=     "A++/{P}++ Array Classes for Architecture Independent Finite
+            Difference Computations",
+ BOOKTITLE= "Proceedings of the Second Annual Object-Oriented Numerics
+             Conference",
+ YEAR=      "1994"
+}
+

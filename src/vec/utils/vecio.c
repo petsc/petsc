@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.31 1997/07/09 20:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.32 1997/07/22 13:25:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -39,6 +39,19 @@ static char vcid[] = "$Id: vecio.c,v 1.31 1997/07/09 20:49:32 balay Exp bsmith $
 $    int    VEC_COOKIE
 $    int    number of rows
 $    Scalar *values of all nonzeros
+
+   Note for Cray users, the int's stored in the binary file are 32 bit
+integers; not 64 as they are represented in the memory, so if you
+write your own routines to read/write these binary files from the Cray
+you need to adjust the integer sizes that you read in, see
+PetscReadBinary() and PetscWriteBinary() to see how this may be
+done.
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, nt and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscReadBinary()
+and PetscWriteBinary() to see how this may be done.
 
 .keywords: vector, load, binary, input
 

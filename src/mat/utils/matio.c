@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.43 1997/07/02 22:26:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.44 1997/07/10 03:44:59 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -116,6 +116,19 @@ $    int    total number of nonzeros
 $    int    *number nonzeros in each row
 $    int    *column indices of all nonzeros (starting index is zero)
 $    Scalar *values of all nonzeros
+
+   Note for Cray users, the int's stored in the binary file are 32 bit
+integers; not 64 as they are represented in the memory, so if you
+write your own routines to read/write these binary files from the Cray
+you need to adjust the integer sizes that you read in, see
+PetscReadBinary() and PetscWriteBinary() to see how this may be
+done.
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, nt and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscReadBinary()
+and PetscWriteBinary() to see how this may be done.
 
 .keywords: matrix, load, binary, input
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.83 1997/06/05 12:51:49 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.84 1997/07/09 20:50:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -248,7 +248,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     else {
         /* We SHOULD probably abort the gmres step
            here.  This happens when the solution is exactly reached. */
-      hapend = 1;
+      hapend = 1;  
     }
     ierr = GMRESUpdateHessenberg( ksp, it, &res ); CHKERRQ(ierr);
     it++;

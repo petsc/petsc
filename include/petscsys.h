@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.26 1997/04/02 21:03:40 bsmith Exp balay $ */
+/* $Id: sys.h,v 1.27 1997/05/23 18:33:50 balay Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -44,6 +44,8 @@ typedef enum { BINARY_INT, BINARY_DOUBLE, BINARY_SHORT, BINARY_FLOAT,
 #define BINARY_SCALAR BINARY_DOUBLE /* not correct if compiled with complex */
 extern int PetscBinaryRead(int,void*,int,PetscBinaryType);
 extern int PetscBinaryWrite(int,void*,int,PetscBinaryType,int);
+extern int PetscBinaryOpen(char *,int,int *);
+extern int PetscBinaryClose(int);
 
 extern int PetscSetDebugger(char *,int,char *);
 extern int PetscAttachDebugger();

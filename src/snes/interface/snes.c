@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.124 1997/06/18 12:52:42 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.125 1997/07/09 20:59:37 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -128,6 +128,9 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 
    Input Parameter:
 .  snes - the SNES context
+
+   Notes:  To see all options, run your program with the -help option;
+           or consult the users manual.
 
 .keywords: SNES, nonlinear, set, options, database
 
@@ -277,7 +280,11 @@ int SNESPrintHelp(SNES snes)
   PetscPrintf(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
   PetscPrintf(snes->comm," SNES Monitoring Options: Choose any of the following\n");
   PetscPrintf(snes->comm,"   %ssnes_cancelmonitors: cancels all monitors hardwired in code\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor, prints\n\
+    residual norm at each iteration.\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_smonitor: same as the above, but prints fewer digits of the\n\
+    residual norm for small residual norms. This is useful to conceal\n\
+    meaningless digits that may be different on different machines.\n",p);
   PetscPrintf(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);
   if (snes->type == SNES_NONLINEAR_EQUATIONS) {
     PetscPrintf(snes->comm,

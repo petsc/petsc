@@ -305,6 +305,14 @@ ex57: ex57.o chkopts
 	-$(CLINKER) -o ex57 ex57.o $(PETSC_LIB)
 	$(RM) ex57.o
 
+ex58f: ex58f.o chkopts
+	-$(FLINKER) -o ex58f ex58f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex58f.o
+
+ex60: ex60.o chkopts
+	-$(CLINKER) -o ex60 ex60.o $(PETSC_LIB)
+	$(RM) ex60.o
+
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
 MATSHAPES = A B

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.24 1997/05/02 19:09:16 bsmith Exp balay $";
+static char vcid[] = "$Id: xcolor.c,v 1.25 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -457,5 +457,10 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,
 int XiGetNumcolors( Draw_X *XiWin )
 {
   return XiWin->numcolors;
+}
+#else
+int dummy_xcolor()
+{
+  return 0;
 }
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.209 1997/07/09 20:54:04 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.210 1997/07/16 22:00:13 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -742,9 +742,11 @@ int MatDestroy_MPIAIJ(PetscObject obj)
   Mat        mat = (Mat) obj;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
+  ierr = StashDestroy_Private(&aij->stash); CHKERRQ(ierr);
   PetscFree(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERRQ(ierr);
   ierr = MatDestroy(aij->B); CHKERRQ(ierr);
@@ -931,7 +933,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x + shift; /* shift by one for index start of 1 */
   ls = ls + shift;
-  if (!A->diag) {if ((ierr = MatMarkDiag_SeqAIJ(AA))) return ierr;}
+  if (!A->diag) {ierr = MatMarkDiag_SeqAIJ(AA); CHKERRQ(ierr);}
   diag = A->diag;
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.21 1997/02/22 02:27:19 bsmith Exp balay $";
+static char vcid[] = "$Id: text.c,v 1.22 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -147,6 +147,11 @@ int XiMatchFontSize( XiFont *font, int w, int h )
   font->font_w        = nfonts[imax].w;
   font->font_h        = nfonts[imax].h;
   font->font_descent  = nfonts[imax].descent;
+  return 0;
+}
+#else
+int dummy_text()
+{
   return 0;
 }
 #endif

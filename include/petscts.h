@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.13 1997/05/23 18:09:16 balay Exp balay $ */
+/* $Id: ts.h,v 1.14 1997/05/23 18:33:48 balay Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -10,7 +10,7 @@
 typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO, TS_CVODE, TS_NEW} TSType;
+typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO, TS_PVODE, TS_NEW} TSType;
 typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
@@ -65,6 +65,23 @@ extern int TSView(TS,Viewer);
 
 extern int TSSetApplicationContext(TS,void *);
 extern int TSGetApplicationContext(TS,void **);
+
+/*
+       PETSc interface to PVode
+*/
+typedef enum { PVODE_ADAMS, PVODE_BDF } TSPVodeMethod;
+
+extern int TSPVodeSetPCType(TS,PCType);
+extern int TSPVodeGetPC(TS,PC*);
+
+extern int TSPVodeKSPSetType(TS,KSPType); 
+extern int TSPVodeSetMethod(TS,TSPVodeMethod);
+extern int TSPVodeSetRHSFunction(TS,double,Vec,Vec,void *);
+extern int TSPVodeSetRHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void *);
+extern int TSComputeRHSJacobianForPVODE(TS,double,Vec,Mat*,
+                                        Mat*,MatStructure*,void*); 
+extern int TSComputeRHSFunctionForPVODE(TS,double,Vec,Vec,void*);
+extern int TSPVodeGetUserData(TS, void*);
 
 #endif
 
