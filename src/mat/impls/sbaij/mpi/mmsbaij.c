@@ -1,4 +1,4 @@
-/*$Id: mmsbaij.c,v 1.32 2000/04/12 04:23:40 bsmith Exp $*/
+/*$Id: mmsbaij.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply
@@ -222,7 +222,7 @@ int DisAssemble_MPISBAIJ(Mat A)
 #else
         atmp = a+j*bs2;
 #endif
-        ierr = MatSetValues_SeqBAIJ(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
+        ierr = MatSetValues_SeqSBAIJ(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
         col++;
       }
     }

@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.45 2000/04/12 04:23:40 bsmith Exp $*/
+/*$Id: sbaijov.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -1362,10 +1362,6 @@ static int MatGetSubMatrices_MPISBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     ierr = MatAssemblyBegin(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag3);CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

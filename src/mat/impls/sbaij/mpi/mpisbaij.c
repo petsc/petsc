@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.195 2000/04/20 03:27:54 bsmith Exp $*/
+/*$Id: mpisbaij.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -534,7 +534,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
+              ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];              
             }
           }
@@ -770,7 +770,7 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
         if (idxn[j] >= baij->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
         if (idxn[j] >= bscstart && idxn[j] < bscend){
           col = idxn[j] - bscstart;
-          ierr = MatGetValues_SeqBAIJ(baij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
+          ierr = MatGetValues_SeqSBAIJ(baij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
         } else {
           if (!baij->colmap) {
             ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
@@ -784,7 +784,7 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
           if((data < 0) || (baij->garray[data/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
             col  = data + idxn[j]%bs;
-            ierr = MatGetValues_SeqBAIJ(baij->B,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
+            ierr = MatGetValues_SeqSBAIJ(baij->B,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
           } 
         }
       }
@@ -1040,7 +1040,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew)  {
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr);
+      ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr);
     }
   }
 
@@ -1058,7 +1058,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   }
 #endif
   if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatCreateHashTable_MPIBAIJ_Private(mat,baij->ht_fact);CHKERRQ(ierr);
+    ierr = MatCreateHashTable_MPISBAIJ_Private(mat,baij->ht_fact);CHKERRQ(ierr);
     mat->ops->setvalues        = MatSetValues_MPISBAIJ_HT;
     mat->ops->setvaluesblocked = MatSetValuesBlocked_MPISBAIJ_HT;
   }
@@ -1854,7 +1854,7 @@ int MatZeroRows_MPISBAIJ(Mat A,IS is,Scalar *diag)
        Contributed by: Mathew Knepley
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows_SeqBAIJ(l->B,istmp,0);CHKERRQ(ierr); 
+  ierr = MatZeroRows_SeqSBAIJ(l->B,istmp,0);CHKERRQ(ierr); 
   if (diag && (l->A->M == l->A->N)) {
     ierr = MatZeroRows_SeqSBAIJ(l->A,istmp,diag);CHKERRQ(ierr);
   } else if (diag) {
