@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.27 1997/08/21 03:10:01 bsmith Exp curfman $ */
+/* $Id: pvec2.c,v 1.28 1997/09/09 19:09:17 curfman Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -66,20 +66,19 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   register int n = x->n;
 
   if (type == NORM_2) {
-#if defined(PETSC_COMPLEX)
-    int i;
-    for (i=0; i<n; i++ ) {
-      work += real(conj(xx[i])*xx[i]);
-    }
+
+#if defined(USE_FORTRAN_KERNELS)
+  fortrannormsqr_(xx,&n,&work);
 #else
     /* int i; for ( i=0; i<n; i++ ) work += xx[i]*xx[i];   */
     switch (n & 0x3) {
-      case 3: work += xx[0]*xx[0]; xx++;
-      case 2: work += xx[0]*xx[0]; xx++;
-      case 1: work += xx[0]*xx[0]; xx++; n -= 4;
+      case 3: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 2: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 1: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++; n -= 4;
     }
     while (n>0) {
-      work += xx[0]*xx[0]+xx[1]*xx[1]+xx[2]*xx[2]+xx[3]*xx[3];
+      work += PetscReal(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
+                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
       xx += 4; n -= 4;
     } 
     /*
@@ -88,17 +87,19 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     */
     /*
     switch (n & 0x7) {
-      case 7: work += xx[0]*xx[0]; xx++;
-      case 6: work += xx[0]*xx[0]; xx++;
-      case 5: work += xx[0]*xx[0]; xx++;
-      case 4: work += xx[0]*xx[0]; xx++;
-      case 3: work += xx[0]*xx[0]; xx++;
-      case 2: work += xx[0]*xx[0]; xx++;
-      case 1: work += xx[0]*xx[0]; xx++; n -= 8;
+      case 7: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 6: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 5: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 4: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 3: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 2: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++;
+      case 1: work += PetscReal(xx[0]*PetscConj(xx[0])); xx++; n -= 8;
     }
     while (n>0) {
-      work += xx[0]*xx[0]+xx[1]*xx[1]+xx[2]*xx[2]+xx[3]*xx[3]+
-              xx[4]*xx[4]+xx[5]*xx[5]+xx[6]*xx[6]+xx[7]*xx[7];
+      work += PetscReal(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
+                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3])+
+                        xx[4]*PetscConj(xx[4])+xx[5]*PetscConj(xx[5])+
+                        xx[6]*PetscConj(xx[6])+xx[7]*PetscConj(xx[7]));
       xx += 8; n -= 8;
     } 
     */

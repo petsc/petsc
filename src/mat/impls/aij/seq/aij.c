@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.233 1997/08/22 15:13:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.234 1997/08/28 14:23:17 curfman Exp bsmith $";
 #endif
 
 /*
@@ -12,6 +13,7 @@ static char vcid[] = "$Id: aij.c,v 1.233 1997/08/22 15:13:29 bsmith Exp curfman 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
+#include "src/inline/dot.h"
 #include "src/inline/bitarray.h"
 
 /*
@@ -836,6 +838,9 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   idx  = a->j;
   v    = a->a + shift; /* shift for Fortran start by 1 indexing */
   ii   = a->i;
+#if defined(USE_FORTRAN_KERNELS)
+  fortranmultaij_(&m,x,ii,idx,v,y);
+#else
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
@@ -845,6 +850,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
      }
     y[i] = sum;
   }
+#endif
   PLogFlops(2*a->nz - m);
   return 0;
 }

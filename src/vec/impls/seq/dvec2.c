@@ -1,9 +1,11 @@
-/* $Id: dvec2.c,v 1.42 1997/08/08 15:09:02 curfman Exp bsmith $ */
+
+/* $Id: dvec2.c,v 1.43 1997/08/22 15:10:36 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
+#include "petsc.h"
 #include "src/inline/dot.h"
 #include "src/inline/setval.h"
 #include "src/inline/axpy.h"
@@ -11,25 +13,78 @@
 #include "src/vec/impls/dvecimpl.h"   
 #include "pinclude/pviewer.h"
 
-/*
-int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
-{
-  Vec_Seq *x = (Vec_Seq *)xin->data;
-  register int n = x->n, i;
-  Scalar   sum,*xx = x->array, *yy;
-
-  for (i=0; i<nv; i++) {
-    sum = 0.0;
-    yy = ((Vec_Seq *)(y[i]->data))->array;
-    DOT(sum,xx,yy,n);
-    z[i] = sum;
-  }
-  PLogFlops(nv*(2*x->n-1));
-  return 0;
-}
-*/
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
+#if defined(USE_FORTRAN_KERNELS)
+int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+{
+  Vec_Seq *xv = (Vec_Seq *)xin->data;
+  register int n = xv->n,i,j,nv_rem,j_rem;
+  Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
+  Vec      *yy;
+
+  sum0 = 0;
+  sum1 = 0;
+  sum2 = 0;
+
+  i      = nv;
+  nv_rem = nv&0x3;
+  yy     = yin;
+  j      = n;
+  x      = xv->array;
+
+  switch (nv_rem) {
+  case 3:
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    yy2   = ((Vec_Seq *)(yy[2]->data))->array;
+    fortranmdot3_(x,yy0,yy1,yy2,&n,&sum0,&sum1,&sum2);
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    break;
+  case 2:
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    fortranmdot2_(x,yy0,yy1,&n,&sum0,&sum1);
+    z[0] = sum0;
+    z[1] = sum1;
+    break;
+  case 1:
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    fortranmdot1_(x,yy0,&n,&sum0);
+    z[0] = sum0;
+    break;
+  case 0:
+    break;
+  }
+  z  += nv_rem;
+  i  -= nv_rem;
+  yy += nv_rem;
+
+  while (i >0) {
+    sum0 = 0;
+    sum1 = 0;
+    sum2 = 0;
+    sum3 = 0;
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    yy2   = ((Vec_Seq *)(yy[2]->data))->array;
+    yy3   = ((Vec_Seq *)(yy[3]->data))->array;
+    yy  += 4;
+    fortranmdot4_(x,yy0,yy1,yy2,yy3,&n,&sum0,&sum1,&sum2,&sum3);
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    z[3] = sum3;
+    z   += 4;
+    i   -= 4;
+  }
+  PLogFlops(nv*(2*xv->n-1));
+  return 0;
+}
+
+#else
 int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
@@ -37,6 +92,15 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
+/*
+  for (i=0; i<nv; i++) {
+    sum = 0.0;
+    yy = ((Vec_Seq *)(y[i]->data))->array;
+    DOT(sum,xx,yy,n);
+    z[i] = sum;
+  }
+*/
+
   sum0 = 0;
   sum1 = 0;
   sum2 = 0;
@@ -213,7 +277,9 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   PLogFlops(nv*(2*xv->n-1));
   return 0;
 }
+#endif
 
+/* ----------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "VecMTDot_Seq"
 int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
@@ -223,7 +289,7 @@ int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
-  /*
+/*
   for (i=0; i<nv_rem; i++) {
     sum = 0.0;
     y = ((Vec_Seq *)(yin[i]->data))->array;
@@ -525,6 +591,8 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   }
   return 0;
 } */
+
+
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY_Seq"
 int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
@@ -545,8 +613,7 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
     alpha2 = alpha[2]; 
     y     += 3;
     alpha += 3;
-    APXY2(xx,alpha0,alpha1,yy0,yy1,n);
-    APXY(xx,alpha2,yy2,n);
+    APXY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
     break;
   case 2: 
     yy0 = ((Vec_Seq *)(y[0]->data))->array;

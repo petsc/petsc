@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.8 1997/09/13 01:26:17 curfman Exp bsmith $ */
+/* $Id: axpy.h,v 1.9 1997/09/15 16:23:05 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -13,14 +13,39 @@
 
 #ifndef APXY
 
+#include "include/pinclude/plapack.h"
+
 #if defined(USE_FORTRAN_KERNELS)
 
-#define APXY(U,a1,p1,n)  {int __i;Scalar _a1=a1;\
-  for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
-#define APXY2(U,a1,a2,p1,p2,n) {int __i;\
-  for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmaxpy4_ FORTRANMAXPY4
+#define fortranmaxpy3_ FORTRANMAXPY3
+#define fortranmaxpy2_ FORTRANMAXPY2
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranmaxpy4_ fortranmaxpy4
+#define fortranmaxpy3_ fortranmaxpy3
+#define fortranmaxpy2_ fortranmaxpy2
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+extern void fortranmaxpy4_(void *, void *,void *,void *,void *,void *,
+                           void *, void *,void *,int *);
+extern void fortranmaxpy3_(void *, void *,void *,void *,void *,void *,void *,int *);
+extern void fortranmaxpy2_(void *, void *,void *,void *,void *,int *);
+#if defined(__cplusplus)
+}
+#endif
+
+#define APXY(U,a1,p1,n)  {int one=1;\
+  BLaxpy_(&n,&a1,p1,&one,U,&one);}
+#define APXY2(U,a1,a2,p1,p2,n) { \
+  fortranmaxpy2_(U,&a1,&a2,p1,p2,&n);}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n) { \
+  fortranmaxpy3_(U,&a1,&a2,&a3,p1,p2,p3,&n);}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){ \
-  fortranmaxpy_(U,a1,a2,a3,a4,p1,p2,p3,p4,&n);}
+  fortranmaxpy4_(U,&a1,&a2,&a3,&a4,p1,p2,p3,p4,&n);}
 
 #elif defined(USE_UNROLL_KERNELS)
 
@@ -40,6 +65,15 @@
   n -= 4;case 0: break;}\
   while (n>0) {U[0]+=a1*p1[0]+a2*p2[0];U[1]+=a1*p1[1]+a2*p2[1];\
                U[2]+=a1*p1[2]+a2*p2[2];U[3]+=a1*p1[3]+a2*p2[3];U+=4;p1+=4;p2+=4;n -= 4;}}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n) {\
+  switch (n & 0x3) {\
+  case 3: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++;\
+  case 2: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++;\
+  case 1: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++;\
+  n -= 4;case 0:break;}while (n>0) {U[0]+=a1*p1[0]+a2*p2[0]+a3*p3[0];\
+  U[1]+=a1*p1[1]+a2*p2[1]+a3*p3[1];\
+  U[2]+=a1*p1[2]+a2*p2[2]+a3*p3[2];\
+  U[3]+=a1*p1[3]+a2*p2[3]+a3*p3[3];U+=4;p1+=4;p2+=4;p3+=4;n-=4;}}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
   switch (n & 0x3) {\
   case 3: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
@@ -56,6 +90,8 @@
   while (n--) *U++ += a1 * *p1++;}
 #define APXY2(U,a1,a2,p1,p2,n)  {\
   while (n--) *U++ += a1 * *p1++ + a2 * *p2++;}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n) {\
+  while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++;}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
   while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;}
 
@@ -67,6 +103,8 @@
   double fone=1.0,aa[2];\
 aa[0]=a1;aa[1]=a2;\
   dgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one,1);}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n){APXY2(U,a1,a2,p1,p2,n);\
+  APXY(U,a3,a4,p3,n);}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\
   APXY2(U,a3,a4,p3,p4,n);}
 
@@ -78,6 +116,8 @@ aa[0]=a1;aa[1]=a2;\
   if (n & 0x1) U[__i] += a1 * p1[__i];}
 #define APXY2(U,a1,a2,p1,p2,n) {int __i;\
   for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n){int __i;\
+  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
@@ -87,8 +127,11 @@ aa[0]=a1;aa[1]=a2;\
   for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
 #define APXY2(U,a1,a2,p1,p2,n) {int __i;\
   for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n){int __i;\
+  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
+
 #endif
 
 

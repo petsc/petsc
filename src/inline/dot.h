@@ -1,6 +1,45 @@
-/* $Id: dot.h,v 1.3 1996/03/22 00:44:58 curfman Exp bsmith $ */
+/* $Id: dot.h,v 1.4 1997/09/15 16:23:05 bsmith Exp bsmith $ */
 
 #ifndef DOT
+
+#if defined(USE_FORTRAN_KERNELS)
+
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmdot4_   FORTRANMDOT4
+#define fortranmdot3_   FORTRANMDOT3
+#define fortranmdot2_   FORTRANMDOT2
+#define fortranmdot1_   FORTRANMDOT1
+#define fortrannormsqr_ FORTRANNORMSQR
+#define fortranmultaij_ FORTRANMULTAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranmdot4_   fortranmdot4
+#define fortranmdot3_   fortranmdot3
+#define fortranmdot2_   fortranmdot2
+#define fortranmdot1_   fortranmdot1
+#define fortrannormsqr_ fortrannormsqr
+#define fortranmultaij_ fortranmultaij
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+extern void fortranmdot4_(void *, void *,void *,void *,void *,int *,
+                           void *, void *,void *,void *);
+extern void fortranmdot3_(void *,void *,void *,void *,int *,
+                           void *, void *,void *);
+extern void fortranmdot2_(void *,void *,void *,int *,
+                           void *, void *);
+extern void fortranmdot1_(void *,void *,int *,
+                           void *);
+extern void fortrannormsqr_(void *,int *,void *);
+extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
+/* ------------------------------------------------------------------- */
+
 
 #if !defined(PETSC_COMPLEX)
 
