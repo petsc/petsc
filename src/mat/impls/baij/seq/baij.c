@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.176 1999/05/06 13:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.177 1999/05/12 03:29:44 bsmith Exp balay $";
 #endif
 
 /*
@@ -419,7 +419,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = ViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {

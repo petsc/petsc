@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.37 1999/05/04 20:37:10 balay Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.38 1999/05/12 03:33:45 bsmith Exp balay $";
 #endif
 
 /*
@@ -125,7 +125,7 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
   ierr = MPI_Comm_size(ao->comm,&size);CHKERRQ(ierr);
 
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     ierr = AODataGetInfo(ao,&nkeys,&keynames);CHKERRQ(ierr);
     for ( i=0; i<nkeys; i++) {
@@ -136,7 +136,7 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
         ierr = PetscDataTypeGetName(dtype,&stype);CHKERRQ(ierr);
         if (dtype == PETSC_CHAR) {
           ierr = AODataSegmentGet(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
-          ierr = ViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);
+          ierr = ViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);CHKERRQ(ierr);
           ierr = AODataSegmentRestore(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
         } else {
           ierr = ViewerASCIIPrintf(viewer,"      %s: (%d) %s\n",segnames[j],bs,stype);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
 {
   AODataSegment    *segment,*iseg;
   AODataKey        *key;
-  int              N,size,rank,ierr,*lens,i,*disp,*akeys,datasize,*fkeys,len,flag,Nb,j;
+  int              N,size,ierr,*lens,i,*disp,*akeys,datasize,*fkeys,len,flag,Nb,j;
   MPI_Datatype     mtype;
   char             *adata;
   MPI_Comm         comm = aodata->comm;
@@ -363,7 +363,6 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   } else {
     /* transmit all lengths to all processors */
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     lens = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(lens);
     disp = lens + size;
     ierr = MPI_Allgather(&n,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -450,7 +449,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
         }
         fkeys[akeys[i]] = 1;
         for ( j=0; j<bs; j++ ) {
-          if (adata[i*bs+j]) BTSet(fdata3,i*bs+j); 
+          if (adata[i*bs+j]) { BTSet(fdata3,i*bs+j); }
         }
       }
       for ( i=0; i<N; i++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.12 1999/01/31 16:11:14 bsmith Exp balay $";
+static char vcid[] = "$Id: aoreduced.c,v 1.13 1999/05/04 20:37:10 balay Exp balay $";
 #endif
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
@@ -62,7 +62,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
     if (found[i] < 0) continue;
     if (!BTLookupSet(mask,found[i] - imin)) {out[count++] = found[i];}
   }
-  BTDestroy(mask);
+  ierr = BTDestroy(mask);CHKERRQ(ierr);
   PetscFree(found);
 
   ierr = ISCreateGeneral(ao->comm,count,out,is);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.17 1999/05/04 20:34:35 balay Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.18 1999/05/12 03:31:29 bsmith Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -50,7 +50,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   ierr = VecDuplicate(ksp->vec_sol,&out);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(in,&start,&end);
+  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   rows = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(rows);
   for ( i=0; i<m; i++ ) {rows[i] = start + i;}
 

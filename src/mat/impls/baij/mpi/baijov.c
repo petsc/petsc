@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.32 1999/01/12 23:15:45 bsmith Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.33 1999/05/04 20:32:41 balay Exp balay $";
 #endif
 
 /*
@@ -764,7 +764,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
 
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
-    ierr = ISSorted(iscol[i],(PetscTruth*)&j);
+    ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
     if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.116 1999/05/06 14:42:32 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.117 1999/05/12 03:28:02 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1824,8 +1824,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = VecGetMap(xin,&map);
-  ierr = MapGetGlobalRange(map,&owners);
+  ierr = VecGetMap(xin,&map);CHKERRQ(ierr);
+  ierr = MapGetGlobalRange(map,&owners);CHKERRQ(ierr);
 
   ierr = VecGetSize(yin,&lengthy);CHKERRQ(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.58 1999/05/04 20:34:46 balay Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.59 1999/05/11 19:15:43 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -31,7 +31,7 @@ static int KSPSetUp_BCGS(KSP ksp)
 #define __FUNC__ "KSPSolve_BCGS"
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
-  int       i = 0, maxit, cerr = 0,ierr;
+  int       i, maxit, cerr = 0,ierr;
   Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2,zero = 0.0, tmp;
   Vec       X,B,V,P,R,RP,T,S, BINVF;
   double    dp = 0.0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fmg.c,v 1.12 1999/01/31 16:08:17 bsmith Exp balay $";
+static char vcid[] = "$Id: fmg.c,v 1.13 1999/05/04 20:34:08 balay Exp balay $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -68,7 +68,7 @@ int MGKCycle_Private(MG *mg)
   }
   
   /* work our way up through the levels */
-  ierr = VecSet(&zero, mg[0]->x ); 
+  ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr); 
   for ( i=0; i<l-1; i++ ) {
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
     ierr = VecSet(&zero, mg[i+1]->x );CHKERRQ(ierr);

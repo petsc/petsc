@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.187 1999/05/16 14:48:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.188 1999/06/04 16:12:18 balay Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -149,7 +149,7 @@ int SNESSetTypeFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
-  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
+  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetType(snes,(SNESType) method);CHKERRQ(ierr);
   }

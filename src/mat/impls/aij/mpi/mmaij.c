@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.45 1999/05/04 20:31:51 balay Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.46 1999/05/12 03:29:11 bsmith Exp balay $";
 #endif
 
 
@@ -122,7 +122,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   PLogObjectMemory(mat,(ec+1)*sizeof(int));
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecDestroy(gvec);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -149,7 +149,7 @@ int DisAssemble_MPIAIJ(Mat A)
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  ierr = VecGetSize(aij->lvec,&ec); /* needed for PLogObjectMemory below */
+  ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PLogObjectMemory below */
   ierr = VecDestroy(aij->lvec);CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {

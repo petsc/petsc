@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.22 1999/05/04 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.23 1999/05/12 03:34:00 bsmith Exp balay $";
 #endif
 
 /* 
@@ -265,7 +265,7 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
     ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);
+    ierr = VecDestroy(natural);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

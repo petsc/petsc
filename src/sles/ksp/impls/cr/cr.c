@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.47 1999/05/04 20:34:45 balay Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.48 1999/05/11 19:15:42 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -24,7 +24,7 @@ static int KSPSetUp_CR(KSP ksp)
 #define __FUNC__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
-  int          i = 0, maxit,pres, cerr = 0, ierr;
+  int          i, maxit,pres, cerr = 0, ierr;
   MatStructure pflag;
   double       dp;
   Scalar       lambda, alpha0, alpha1; 

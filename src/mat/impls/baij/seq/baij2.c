@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.45 1999/05/08 13:55:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.46 1999/05/12 03:29:44 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -87,7 +87,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   Mat          C;
 
   PetscFunctionBegin;
-  ierr = ISSorted(iscol,(PetscTruth*)&i);
+  ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);

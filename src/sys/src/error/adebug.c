@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.91 1999/06/04 00:11:20 balay Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.92 1999/06/04 00:12:24 balay Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -342,7 +342,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   if (!dir)  dir = " ";
   if (!mess) mess = " ";
 
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
 
   ierr = PetscAttachDebugger();
@@ -374,10 +374,15 @@ int PetscStopForDebugger(void)
   char  program[256],hostname[256];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(program,256);CHKERRQ(ierr);
-  
+
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = PetscGetHostName(hostname,256);
+  if (ierr) {
+    (*PetscErrorPrintf)("PETSC ERROR: Cannot determine hostname; just continuing program\n");
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscGetProgramName(program,256);
   if (ierr) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
     PetscFunctionReturn(0);

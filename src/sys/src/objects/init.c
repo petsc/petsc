@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.40 1999/05/06 17:59:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.41 1999/05/12 03:27:11 bsmith Exp balay $";
 #endif
 /*
 
@@ -515,7 +515,7 @@ int OptionsCheckInitial_Alice(void)
         PLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
       }
     }
-#if defined (PETSC_HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
     ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1);CHKERRQ(ierr);
     if (flg1) PLogMPEBegin();
 #endif
@@ -589,10 +589,10 @@ int OptionsCheckInitial_Alice(void)
     ierr = (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
-#if defined (PETSC_USE_LOG)
+#if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
-#if defined (PETSC_HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
@@ -889,7 +889,7 @@ int AliceFinalize(void)
 #if defined(PETSC_USE_LOG)
   {
     char mname[64];
-#if defined (PETSC_HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1){
@@ -940,7 +940,7 @@ int AliceFinalize(void)
     }
   }
 
-#if (PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   flg2 = 0;
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2);CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {

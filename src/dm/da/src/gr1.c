@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.11 1999/05/04 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.12 1999/05/12 03:34:00 bsmith Exp balay $";
 #endif
 
 /* 
@@ -108,8 +108,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   if (rank == size-1) {
     xmax = PetscReal(xg[n-1]);
   }
-  MPI_Bcast(&xmin,1,MPI_DOUBLE,0,comm);
-  MPI_Bcast(&xmax,1,MPI_DOUBLE,size-1,comm);
+  ierr = MPI_Bcast(&xmin,1,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&xmax,1,MPI_DOUBLE,size-1,comm);CHKERRQ(ierr);
 
   for ( j=0; j<step; j++ ) {
     ierr = ViewerDrawGetDraw(v,j,&draw);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.36 1999/04/16 16:07:07 bsmith Exp balay $";
+static char vcid[] = "$Id: color.c,v 1.37 1999/05/04 20:32:47 balay Exp balay $";
 #endif
  
 /*
@@ -353,7 +353,7 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);
 
   PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }

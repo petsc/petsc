@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.49 1999/05/04 20:34:50 balay Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.50 1999/05/11 19:15:46 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -29,7 +29,7 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNC__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int       i = 0, maxit,  cerr = 0, ierr;
+  int       i, maxit,  cerr = 0, ierr;
   Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
   Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
   double    dp = 0.0;

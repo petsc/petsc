@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.8 1999/04/19 22:11:10 bsmith Exp balay $";
+static char vcid[] = "$Id: vnake.c,v 1.9 1999/05/04 20:30:38 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -89,7 +89,7 @@ int VecSetFromOptions(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
 
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsGetString(vec->prefix,"-vec_type",vtype,256,&flg);
+  ierr = OptionsGetString(vec->prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecSetType(vec,vtype);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.119 1999/05/04 20:30:48 balay Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.120 1999/05/12 03:28:25 bsmith Exp balay $ 
 #endif
 
 /*
@@ -207,7 +207,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
     for ( j=1; j<size; j++ ) {
       ierr = MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
-      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0); 
+      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0);CHKERRQ(ierr);
     }
     PetscFree(values);
     ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
@@ -507,12 +507,12 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValuesBlocked_MPI"
-int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode addv)
+int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar yin[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank, *owners = xin->map->range, start = owners[rank];
   int      end = owners[rank+1], i, row,bs = xin->bs,j,ierr;
-  Scalar   *xx = x->array;
+  Scalar   *xx = x->array,*y = (Scalar*)yin;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_BOPT_g)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.89 1999/05/11 19:15:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.90 1999/05/12 03:31:43 bsmith Exp balay $";
 #endif
 
 /*
@@ -110,7 +110,7 @@ int KSPSetUp_CG(KSP ksp)
 #define __FUNC__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
-  int          ierr, i = 0,maxit,eigs,pres, cerr;
+  int          ierr, i,maxit,eigs,pres, cerr;
   Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
   double       dp = 0.0;
   Vec          X,B,Z,R,P;

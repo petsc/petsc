@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.12 1998/12/17 22:13:03 bsmith Exp balay $";
+static char vcid[] = "$Id: sda2.c,v 1.13 1999/05/04 20:37:56 balay Exp balay $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -260,8 +260,8 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
   PetscFunctionBegin;
-  ierr = VecPlaceArray(gvec,g);
-  ierr = VecPlaceArray(lvec,l);
+  ierr = VecPlaceArray(gvec,g);CHKERRQ(ierr);
+  ierr = VecPlaceArray(lvec,l);CHKERRQ(ierr);
   ierr = DALocalToLocalBegin(da,gvec,mode,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -290,8 +290,8 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
   PetscFunctionBegin;
-  ierr = VecPlaceArray(gvec,g);
-  ierr = VecPlaceArray(lvec,l);
+  ierr = VecPlaceArray(gvec,g);CHKERRQ(ierr);
+  ierr = VecPlaceArray(lvec,l);CHKERRQ(ierr);
   ierr = DALocalToLocalEnd(da,gvec,mode,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

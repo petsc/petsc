@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.168 1999/05/04 20:32:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.169 1999/05/12 03:29:33 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -494,7 +494,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerGetFormat(viewer,&format);
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
       ierr = ViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
@@ -836,8 +836,8 @@ int MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,rstart,1,&localc); 
-  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,0,1,&localr); 
+  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,rstart,1,&localc);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,0,1,&localr);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(matin->A,localr,localc,PETSC_DECIDE,reuse,a);CHKERRQ(ierr);
   ierr = ISDestroy(localr);CHKERRQ(ierr);
   ierr = ISDestroy(localc);CHKERRQ(ierr);

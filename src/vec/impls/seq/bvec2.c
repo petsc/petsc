@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.158 1999/05/04 20:30:44 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.159 1999/05/12 03:28:22 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -84,7 +84,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
 
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
     fprintf(fd,"%s = [\n",outputname);
@@ -278,10 +278,10 @@ int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValuesBlocked_Seq"
-int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode m)
+int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar yin[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  Scalar   *xx = x->array;
+  Scalar   *xx = x->array, *y = (Scalar*) yin;
   int      i,bs = xin->bs,start,j;
 
   /*

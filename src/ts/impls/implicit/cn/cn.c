@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.12 1998/12/03 04:04:02 bsmith Exp balay $";
+static char vcid[] = "$Id: cn.c,v 1.13 1999/05/04 20:36:47 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -259,9 +259,9 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
   for ( i=0; i<n; i++ ) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
-  ierr = VecRestoreArray(ts->vec_sol,&un);
-  ierr = VecRestoreArray(x,&unp1);
-  ierr = VecRestoreArray(y,&Funp1);
+  ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -433,7 +433,7 @@ int TSCreate_CN(TS ts )
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set rhs matrix for linear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
+    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
       if (mtype == MATSHELL) {
         ts->Ashell = ts->A;
@@ -456,7 +456,7 @@ int TSCreate_CN(TS ts )
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian for nonlinear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
+    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
     if (mtype == MATSHELL) {
       ts->Ashell = ts->A;
     }

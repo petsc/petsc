@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.22 1999/04/21 18:17:35 bsmith Exp balay $";
+static char vcid[] = "$Id: composite.c,v 1.23 1999/05/04 20:34:22 balay Exp balay $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -278,7 +278,6 @@ int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
   PetscFunctionBegin;
   jac  = (PC_Composite *) pc->data;
   next = jac->head;
-  i    = 0;
   for ( i=0; i<n; i++ ) {
     if (!next->next) {
       SETERRQ(1,1,"Not enough PCs in composite preconditioner");
@@ -444,13 +443,11 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCCreate_Composite"
 int PCCreate_Composite(PC pc)
 {
-  int            rank,size,ierr;
+  int            ierr;
   PC_Composite   *jac = PetscNew(PC_Composite);CHKPTRQ(jac);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Composite));
-  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->destroy            = PCDestroy_Composite;

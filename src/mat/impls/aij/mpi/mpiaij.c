@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.293 1999/05/05 15:56:51 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.294 1999/05/12 03:29:11 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -742,16 +742,16 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       int     flg;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-      ierr = MatGetInfo(mat,MAT_LOCAL,&info); 
+      ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
       PetscSequentialPhaseBegin(mat->comm,1);
       if (flg) fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
          rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);
       else fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
          rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);
-      ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);
+      ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used);
-      ierr = MatGetInfo(aij->B,MAT_LOCAL,&info); 
+      ierr = MatGetInfo(aij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
       fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used); 
       fflush(fd);
       PetscSequentialPhaseEnd(mat->comm,1);

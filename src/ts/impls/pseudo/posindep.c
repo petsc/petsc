@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.33 1999/04/19 22:16:38 bsmith Exp balay $";
+static char vcid[] = "$Id: posindep.c,v 1.34 1999/05/04 20:36:50 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -241,9 +241,9 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   for ( i=0; i<n; i++ ) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
-  ierr = VecRestoreArray(ts->vec_sol,&un);
-  ierr = VecRestoreArray(x,&unp1);
-  ierr = VecRestoreArray(y,&Funp1);
+  ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -269,12 +269,12 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   }
 
   /* shift and scale Jacobian, if not a shell matrix */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL);
+  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (mtype != MATSHELL) {
     ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL);
+  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
@@ -612,7 +612,7 @@ int TSCreate_Pseudo(TS ts )
   if (!ts->A) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian");
   }
-  ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
+  ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (mtype == MATSHELL) {
     ts->Ashell = ts->A;
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.9 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: daload.c,v 1.10 1999/05/04 20:37:25 balay Exp balay $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: daload.c,v 1.9 1999/04/19 22:17:13 bsmith Exp balay $
 @*/
 int DALoad(Viewer viewer,int M,int N, int P,DA *da)
 {
-  int         rank, size,ierr,info[8],nmax = 8,flag,fd,i;
+  int        ierr,info[8],nmax = 8,flag,fd,i;
   ViewerType  vtype;
   MPI_Comm    comm;
   char        fieldnametag[32],fieldname[64];
@@ -36,8 +36,6 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = OptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) {

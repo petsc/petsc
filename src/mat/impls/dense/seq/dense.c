@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.169 1999/05/06 14:42:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.170 1999/05/12 03:28:59 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -650,7 +650,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     PetscFunctionReturn(0);  /* do nothing for now */
   } 

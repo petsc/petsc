@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.45 1999/04/19 22:16:17 bsmith Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.46 1999/05/04 20:36:38 balay Exp balay $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -195,7 +195,7 @@ int TSSetTypeFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
-  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
+  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetType(ts,type);CHKERRQ(ierr);
   }

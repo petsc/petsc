@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.19 1999/02/08 21:39:11 balay Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.20 1999/05/04 20:31:35 balay Exp balay $";
 #endif
 
 /*
@@ -107,9 +107,9 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
     /* Check if the col indices are sorted */
   for ( i=0; i<ismax; i++ ) {
-    ierr = ISSorted(isrow[i],(PetscTruth*)&j);
+    ierr = ISSorted(isrow[i],(PetscTruth*)&j);CHKERRQ(ierr);
     if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"ISrow is not sorted");
-    ierr = ISSorted(iscol[i],(PetscTruth*)&j);
+    ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
     if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IScol is not sorted");
   }
 

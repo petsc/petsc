@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.29 1999/04/19 22:13:11 bsmith Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.30 1999/05/04 20:32:57 balay Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -192,7 +192,7 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->apply)(matp,partitioning);CHKERRQ(ierr);
   PLogEventEnd(MAT_Partitioning,matp,0,0,0); 
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningView(matp,VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
     ierr = ISView(*partitioning,VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
@@ -469,7 +469,7 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
 
   PetscFunctionBegin;
 
-  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",method,256,&flag);
+  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",method,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningSetType(part,method);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.45 1999/05/04 20:35:07 balay Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.46 1999/05/11 19:16:01 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -31,7 +31,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 #define __FUNC__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
-  int       i=0, maxit, m, conv=0, cerr=0, ierr;
+  int       i, maxit, m, conv=0, cerr=0, ierr;
   Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   double    dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;

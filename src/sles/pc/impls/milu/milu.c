@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.10 1999/04/21 18:19:12 bsmith Exp balay $";
+static char vcid[] = "$Id: milu.c,v 1.11 1999/05/04 20:38:00 balay Exp balay $";
 #endif
 
 /*
@@ -114,7 +114,7 @@ static int PCSetup_mILU(PC pc)
     ierr = VecDuplicate(diag,&piv);CHKERRQ(ierr);
     do {
       ierr = PCSetUp(base_pc);CHKERRQ(ierr);
-      ierr = PCGetFactoredMatrix(base_pc,&lu);
+      ierr = PCGetFactoredMatrix(base_pc,&lu);CHKERRQ(ierr);
       ierr = MatGetDiagonal(lu,piv);CHKERRA(ierr);
       ierr = VecGetArray(piv,&elt);CHKERRA(ierr);
       bd = 0; for (t=0; t<lsize; t++) if (PetscReal(elt[t]) < 0.0) bd++;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.86 1999/04/21 18:17:09 bsmith Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.87 1999/05/04 20:33:53 balay Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -225,7 +225,7 @@ int PCSetTypeFromOptions(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);
+  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSetType(pc,method);CHKERRQ(ierr);
   }
@@ -271,7 +271,7 @@ int PCSetFromOptions(PC pc)
   if (pc->ops->setfromoptions) {
     ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = PCPrintHelp(pc);CHKERRQ(ierr);
   }

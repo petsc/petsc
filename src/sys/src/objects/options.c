@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.212 1999/05/06 17:59:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.213 1999/05/12 03:27:11 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -401,10 +401,10 @@ int OptionsDestroy(void)
 
 .seealso: OptionsInsert()
 @*/
-int OptionsSetValue(const char name[],const char value[])
+int OptionsSetValue(const char iname[],const char value[])
 {
   int  len, N, n, i,ierr;
-  char **names;
+  char **names, *name = (char*) iname;
 
   PetscFunctionBegin;
   if (!options) OptionsInsert(0,0,0);
@@ -480,10 +480,10 @@ int OptionsSetValue(const char name[],const char value[])
 
 .seealso: OptionsInsert()
 @*/
-int OptionsClearValue(const char name[])
+int OptionsClearValue(const char iname[])
 {
   int  N, n, i,ierr;
-  char **names;
+  char **names,*name=(char*)iname;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -514,9 +514,10 @@ int OptionsClearValue(const char name[])
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsSetAlias"
-int OptionsSetAlias(const char newname[],const char oldname[])
+int OptionsSetAlias(const char inewname[],const char ioldname[])
 {
-  int ierr,len,n = options->Naliases;
+  int  ierr,len,n = options->Naliases;
+  char *newname = (char *)inewname, *oldname = (char*)ioldname;
 
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliased must have -: Instead %s",newname);

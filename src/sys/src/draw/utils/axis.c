@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.58 1999/05/25 20:02:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.59 1999/05/25 20:11:16 bsmith Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -447,31 +447,31 @@ int PetscADefLabel(double val,double sep,char **p )
     ierr = PetscRint(val,&rval);CHKERRQ(ierr);
     if (rval == val) {
 	if (w > 0) sprintf( fmat, "%%%dd", w );
-	else {ierr = PetscStrcpy( fmat, "%d" );}
+	else {ierr = PetscStrcpy( fmat, "%d" );CHKERRQ(ierr);}
 	sprintf( buf, fmat, (int)val );
-        ierr = PetscStripInitialZero(buf);
-        ierr = PetscStripAllZeros(buf);
-        ierr = PetscStripTrailingZeros(buf);
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     } else {
 	/* The code used here is inappropriate for a val of 0, which
 	   tends to print with an excessive numer of digits.  In this
 	   case, we should look at the next/previous values and 
 	   use those widths */
 	if (w > 0) sprintf( fmat, "%%%d.%dlf", w + 1, d );
-	else {ierr = PetscStrcpy( fmat, "%lf" );}
+	else {ierr = PetscStrcpy( fmat, "%lf" );CHKERRQ(ierr);}
 	sprintf( buf, fmat, val );
-        ierr = PetscStripInitialZero(buf);
-        ierr = PetscStripAllZeros(buf);
-        ierr = PetscStripTrailingZeros(buf);
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     }
   } else {
     sprintf( buf, "%e", val );
     /* remove the extraneous 0's before the e */
-    ierr = PetscStripZeros(buf);
-    ierr = PetscStripZerosPlus(buf);
-    ierr = PetscStripInitialZero(buf);
-    ierr = PetscStripAllZeros(buf);
-    ierr = PetscStripTrailingZeros(buf);
+    ierr = PetscStripZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
+    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
   }
   *p =buf;
   PetscFunctionReturn(0);

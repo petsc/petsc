@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.336 1999/05/04 20:31:24 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.337 1999/05/12 03:28:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -199,7 +199,7 @@ int MatView(Mat mat,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF;
   }
 
-  ierr = ViewerGetType(viewer,&vtype);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
@@ -2809,8 +2809,8 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
   if (!mat->ops->zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
 
   ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
-  ierr =  (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
-  ierr = ISDestroy(newis);
+  ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
+  ierr = ISDestroy(newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.97 1999/04/21 18:17:32 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.98 1999/05/04 20:34:18 balay Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -322,15 +322,15 @@ static int PCDestroy_ASM(PC pc)
 
   PetscFunctionBegin;
   for ( i=0; i<osm->n_local; i++ ) {
-    ierr = VecScatterDestroy(osm->scat[i]);
-    ierr = VecDestroy(osm->x[i]);
-    ierr = VecDestroy(osm->y[i]);
+    ierr = VecScatterDestroy(osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
   }
   if (osm->n_local_true > 0 && !osm->inplace) {
     ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
   }
   for ( i=0; i<osm->n_local_true; i++ ) {
-    ierr = SLESDestroy(osm->sles[i]);
+    ierr = SLESDestroy(osm->sles[i]);CHKERRQ(ierr);
   }
   if (osm->is_flg) {
     for ( i=0; i<osm->n_local_true; i++ ) {ierr = ISDestroy(osm->is[i]);CHKERRQ(ierr);}

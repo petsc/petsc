@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.164 1999/05/08 17:03:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.165 1999/05/12 03:31:29 bsmith Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -438,7 +438,7 @@ int KSPSetTypeFromOptions(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);
+  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetType(ksp,method);CHKERRQ(ierr);
   }
@@ -522,7 +522,7 @@ int KSPSetFromOptions(KSP ksp)
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    int rank = 0;
+    int rank;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ int KSPSetFromOptions(KSP ksp)
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg);CHKERRQ(ierr); 
   if (flg) {
-    int rank = 0;
+    int rank;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,0,0);CHKERRQ(ierr);
@@ -567,7 +567,7 @@ int KSPSetFromOptions(KSP ksp)
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    int    rank = 0;
+    int    rank;
     DrawLG lg;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
@@ -582,7 +582,7 @@ int KSPSetFromOptions(KSP ksp)
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
-    int    rank = 0;
+    int    rank;
     DrawLG lg;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.9 1999/05/04 20:35:11 balay Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.10 1999/05/11 19:16:06 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -34,11 +34,11 @@ int KSPSetUp_BiCG(KSP ksp)
 #define __FUNC__ "KSPSolve_BiCG"
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
-  int          ierr, i = 0,maxit,pres, cerr;
-  Scalar       dpi, a = 1.0,beta,betaold = 1.0,b, mone = -1.0, ma; 
+  int          ierr,i,maxit,pres, cerr;
+  Scalar       dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
   double       dp;
   Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
   MatStructure pflag;
 
   PetscFunctionBegin;

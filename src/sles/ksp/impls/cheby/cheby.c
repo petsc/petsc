@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.73 1999/05/04 20:34:58 balay Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.74 1999/05/11 19:15:50 bsmith Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -67,7 +67,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 #define __FUNC__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i = 0,pres,cerr,ierr;
+  int              k,kp1,km1,maxit,ktmp,i,pres,cerr,ierr;
   Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0, tmp;
   double           rnorm;
   Vec              x,b,p[3],r;
@@ -121,9 +121,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    ierr = MatMult(Amat,p[k],r);                 /*  r = b - Ap[k]    */
-    ierr = VecAYPX(&mone,b,r);                       
-    ierr = PCApply(ksp->B,r,p[kp1]);             /*  p[kp1] = B^{-1}z  */
+    ierr = MatMult(Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
+    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);                       
+    ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (ksp->calc_res) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.321 1999/05/04 20:31:42 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.322 1999/05/12 03:29:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -328,7 +328,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   PetscFunctionBegin;  
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
