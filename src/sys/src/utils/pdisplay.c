@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.13 2000/01/11 20:59:39 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.14 2000/01/18 15:35:14 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -72,7 +72,7 @@ int PetscSetDisplay(void)
   char       *str,display[128];
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(PETSC_NULL,"-display",display,128,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
