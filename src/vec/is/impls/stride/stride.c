@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.41 1996/03/19 21:22:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.42 1996/07/08 22:16:09 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -80,10 +80,6 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   int         i,n = sub->n,ierr;
   FILE        *fd;
   ViewerType  vtype;
-
-  if (!viewer) {
-    viewer = VIEWER_STDOUT_SELF; 
-  }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 

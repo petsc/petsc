@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.44 1996/03/19 21:22:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.45 1996/07/08 22:16:08 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -57,10 +57,6 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   int         i,n = sub->n,*idx = sub->idx,ierr;
   FILE        *fd;
   ViewerType  vtype;
-
-  if (!viewer) {
-    viewer = VIEWER_STDOUT_SELF; 
-  }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
