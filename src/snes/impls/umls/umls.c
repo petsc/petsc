@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.30 1996/03/19 20:12:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.31 1996/03/19 21:43:21 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -198,12 +198,12 @@ $   0  otherwise,
 
    where
 $  atol     - absolute function tolerance,
-$             set with SNESSetAbsoluteTolerance()
+$             set with SNESSetTolerances()
 $  epsmch   - machine epsilon
 $  fmin     - lower bound on function value,
 $             set with SNESSetMinimizationFunctionTolerance()
 $  max_func - maximum number of function evaluations,
-$             set with SNESSetMaxFunctionEvaluations()
+$             set with SNESSetTolerances()
 $  nfunc    - number of function evaluations
 @*/
 int SNESConverged_UMLS(SNES snes,double xnorm,double gnorm,double f,

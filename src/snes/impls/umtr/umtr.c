@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.34 1996/03/18 00:42:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.35 1996/03/19 21:29:14 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -222,15 +222,16 @@ $  0  otherwise,
 $    ared     - actual reduction
 $    delta    - trust region paramenter
 $    deltatol - trust region size tolerance,
+$               set with SNESSetTrustRegionTolerance()
 $    epsmch   - machine epsilon
 $    fmin     - lower bound on function value,
 $               set with SNESSetMinimizationFunctionTolerance()
 $    nfunc    - number of function evaluations
 $    maxfunc  - maximum number of function evaluations, 
-$               set with SNESSetMaxFunctionEvaluations()
+$               set with SNESSetTolerances()
 $    pred     - predicted reduction
 $    rtol     - relative function tolerance, 
-$               set with SNESSetRelativeTolerance()
+$               set with SNESSetTolerances()
 @*/
 int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
                        void *dummy)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.45 1996/03/18 00:42:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.46 1996/03/19 21:29:10 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -274,12 +274,12 @@ $    delta    - trust region paramenter
 $    deltatol - trust region size tolerance,
 $               set with SNESSetTrustRegionTolerance()
 $    maxf - maximum number of function evaluations,
-$           set with SNESSetMaxFunctionEvaluations()
+$           set with SNESSetTolerances()
 $    nfct - number of function evaluations,
 $    atol - absolute function norm tolerance,
-$           set with SNESSetAbsoluteTolerance()
+$           set with SNESSetTolerances()
 $    xtol - relative function norm tolerance,
-$           set with SNESSetRelativeTolerance()
+$           set with SNESSetTolerances()
 
 .keywords: SNES, nonlinear, default, converged, convergence
 
