@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fpath.c,v 1.9 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.10 1997/02/27 16:17:17 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -87,7 +87,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 #define __FUNC__ "PetscGetFullPath" /* ADIC Ignore */
 int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
-  __fullpath(fullpath,path,flen);
+  _fullpath(fullpath,path,flen);
   return 0;
 }
 #else
