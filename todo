@@ -4,11 +4,6 @@
   ----
   Bugs  ALWAYS Priority 0
   ----
-  count for PSSetUpOnBlocks() is wrong, since it always has to call in, since it
-  does not know if the setup was done.
-
-   Added VecScatterGetMerged() that tells if the update is done in the begin or end or middle
-   and fix MatMultTranspose_xxx to handle both beginning and end. Currently gives wrong answer with beginning.
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 

@@ -376,6 +376,7 @@ EXTERN PetscErrorCode VecScatterDestroy(VecScatter);
 EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
+EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscTruth*);
 
 EXTERN PetscErrorCode VecGetArray_Private(Vec,PetscScalar*[]);
 EXTERN PetscErrorCode VecRestoreArray_Private(Vec,PetscScalar*[]);
