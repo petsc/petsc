@@ -43,7 +43,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatConvert(mat,MATMPIADJ,&newmat);CHKERRQ(ierr);
+    ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
     adj  = (Mat_MPIAdj *)newmat->data;
   }
 

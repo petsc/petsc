@@ -176,7 +176,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATSAME,fact);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

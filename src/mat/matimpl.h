@@ -101,7 +101,7 @@ struct _MatOps {
   PetscErrorCode (*zerorowslocal)(Mat,IS,const PetscScalar *);
   /*70*/
   PetscErrorCode (*getrowmax)(Mat,Vec);
-  PetscErrorCode (*convert)(Mat,const MatType,Mat*);
+  PetscErrorCode (*convert)(Mat,const MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
@@ -148,7 +148,7 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-EXTERN PetscErrorCode MatConvert_Basic(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_Basic(Mat,const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);

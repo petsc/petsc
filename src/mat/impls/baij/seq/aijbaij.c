@@ -4,7 +4,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
-PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
@@ -53,7 +53,7 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat
   B->bs = A->bs;
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == A) {
+  if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;
@@ -66,7 +66,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
-PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
@@ -101,7 +101,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == A) {
+  if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;

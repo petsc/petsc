@@ -39,9 +39,9 @@ int main(int argc,char **args)
   ierr = MatGetSize(MA,&M,&N);CHKERRQ(ierr);
 
   if (size == 1){
-    ierr = MatConvert(MA,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert(MA,MATMPIAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   }
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&xx);CHKERRQ(ierr);

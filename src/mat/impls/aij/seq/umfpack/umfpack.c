@@ -33,7 +33,7 @@ EXTERN PetscErrorCode MatDuplicate_UMFPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
-PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,Mat *newmat)
+PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -42,7 +42,7 @@ PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,Mat *newmat)
   Mat_UMFPACK *lu=(Mat_UMFPACK*)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the original function pointers */
@@ -80,7 +80,7 @@ PetscErrorCode MatDestroy_UMFPACK(Mat A)
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
   }
-  ierr = MatConvert_UMFPACK_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert_UMFPACK_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -338,7 +338,7 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
-PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATUMFPACK */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
@@ -347,7 +347,7 @@ PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,Mat *newmat)
   Mat_UMFPACK *lu;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -432,7 +432,7 @@ PetscErrorCode MatCreate_UMFPACK(Mat A)
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and UMFPACK types */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATUMFPACK);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_UMFPACK(A,MATUMFPACK,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_UMFPACK(A,MATUMFPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -2,8 +2,8 @@
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvertTo_MPIAdj(Mat,MatType,Mat*);
-EXTERN PetscErrorCode MatConvertTo_AIJ(Mat,MatType,Mat*);
+EXTERN PetscErrorCode MatConvertTo_MPIAdj(Mat,MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvertTo_AIJ(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  

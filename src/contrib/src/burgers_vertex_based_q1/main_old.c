@@ -183,8 +183,8 @@ void *dappctx)
 
   /* put in the linear part */
   /* could have a flag later to recompute this */
-    ierr = MatConvert(A, MATSAME, jac);CHKERRQ(ierr);
-    ierr = MatConvert(A, MATSAME, B);CHKERRQ(ierr); 
+    ierr = MatConvert(A, MATSAME, MAT_INITIAL_MATRIX, jac);CHKERRQ(ierr);
+    ierr = MatConvert(A, MATSAME, MAT_INITIAL_MATRIX, B);CHKERRQ(ierr); 
 
   /* the nonlinear part */
   /* Will be putting in lots of values. Think about changing the structure.  Check with MatConvert */

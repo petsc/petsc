@@ -2629,7 +2629,7 @@ PetscFList MatConvertList              = 0;
 .seealso: MatConvertRegisterAll(), MatConvert()
 
 @*/
-PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatType,Mat*))
+PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatType,MatReuse,Mat*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -2667,7 +2667,7 @@ PetscErrorCode MatConvertRegister(const char sname[],const char path[],const cha
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
+PetscErrorCode MatConvert(Mat mat,const MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode         ierr;
   PetscTruth             sametype,issame,flg;
@@ -2691,10 +2691,13 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
   
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
-  if ((sametype || issame) && mat->ops->duplicate) {
+  if ((reuse==MAT_REUSE_MATRIX) && (mat != *M)) {
+    SETERRQ(PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for inplace convertion currently");
+  }
+  if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat,const MatType,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat,const MatType,MatReuse,Mat*)=PETSC_NULL;
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.
@@ -2733,7 +2736,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
         }
       }
     }
-    ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
+    ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
   }
   B = *M;
   if (ltog && !B->mapping) {

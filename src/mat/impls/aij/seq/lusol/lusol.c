@@ -181,7 +181,7 @@ typedef struct  {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
-PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -190,7 +190,7 @@ PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat)
   Mat_LUSOL      *lusol=(Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   B->ops->duplicate        = lusol->MatDuplicate;
@@ -233,7 +233,7 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
     ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
   }
 
-  ierr = MatConvert_LUSOL_SeqAIJ(A,MATSEQAIJ,&A);
+  ierr = MatConvert_LUSOL_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -479,7 +479,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
-PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscInt       m, n;
@@ -491,7 +491,7 @@ PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat)
   if (m != n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square");
   }
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 		
@@ -561,7 +561,7 @@ PetscErrorCode MatCreate_LUSOL(Mat A)
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and LUSOL types */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATLUSOL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_LUSOL(A,MATLUSOL,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_LUSOL(A,MATLUSOL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

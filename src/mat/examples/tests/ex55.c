@@ -97,7 +97,7 @@ int main(int argc,char **args)
  
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
-    ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
+    ierr = MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) { 
@@ -105,8 +105,8 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_WORLD," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
       }
 
-      ierr = MatConvert(A,type[j],&B);CHKERRQ(ierr);
-      ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr); 
+      ierr = MatConvert(A,type[j],MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr); 
 
       if (bs == 1){
         ierr = MatEqual(A,D,&equal);CHKERRQ(ierr);
@@ -120,17 +120,20 @@ int main(int argc,char **args)
           SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
         }
       } else { /* bs > 1 */
-        ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
+        ierr = MatMultEqual(A,B,10,&equal);
+		CHKERRQ(ierr);
         if (!equal) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
       }
       ierr = MatDestroy(B);CHKERRQ(ierr);
-      ierr = MatDestroy(D);CHKERRQ(ierr); 
+      ierr = MatDestroy(D);CHKERRQ(ierr);
+      B = PETSC_NULL;
+      D = PETSC_NULL;
     }
     /* Test in-place convert */
     if (size == 1){ /* size > 1 is not working yet! */
     j = (i+1)%ntypes;
     /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
-    ierr = MatConvert(A,type[j],&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,type[j],MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(A);CHKERRQ(ierr);

@@ -2038,7 +2038,7 @@ PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reu
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern int MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,Mat*);
+extern int MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  

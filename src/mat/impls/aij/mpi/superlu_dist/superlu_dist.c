@@ -53,14 +53,14 @@ EXTERN PetscErrorCode MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
-PetscErrorCode MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode   ierr;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST *)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the original function pointers */
@@ -118,9 +118,9 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatConvert_SuperLU_DIST_Base(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SuperLU_DIST_Base(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   
@@ -590,7 +590,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
-PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
@@ -602,7 +602,7 @@ PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,Mat *newmat
   Mat_SuperLU_DIST *lu;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -706,9 +706,9 @@ PetscErrorCode MatCreate_SuperLU_DIST(Mat A)
   } else {
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     A_diag = ((Mat_MPIAIJ *)A->data)->A;
-    ierr   = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,&A_diag);CHKERRQ(ierr);
+    ierr   = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,&A);CHKERRQ(ierr);
+  ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

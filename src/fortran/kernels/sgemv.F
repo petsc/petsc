@@ -7,7 +7,7 @@
       subroutine MSGemv(bs,ncols,A,x,y)
       implicit none
       integer          bs,ncols
-      MatScalar        a(bs,ncols)
+      MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
       integer          i,j
@@ -28,7 +28,7 @@
       subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
       integer          bs,ncols
-      MatScalar        a(bs,ncols)
+      MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
       integer          i,j
@@ -45,7 +45,7 @@
       subroutine MSGemvm(bs,ncols,A,x,y)
       implicit none
       integer          bs,ncols
-      MatScalar        a(bs,ncols)
+      MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
       integer          i,j
@@ -62,7 +62,7 @@
       subroutine MSGemvt(bs,ncols,A,x,y)
       implicit none
       integer          bs,ncols
-      MatScalar        a(bs,ncols)
+      MatScalar        A(bs,ncols)
       PetscScalar      x(bs),y(ncols)
 
       integer          i,j

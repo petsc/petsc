@@ -138,7 +138,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatConvert_Shell(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_Shell(Mat,const MatType,MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_Shell"

@@ -38,7 +38,7 @@ PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
       ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
     }
   }
-  ierr = MatConvert_Spooles_Base(A,lu->basetype,&A);
+  ierr = MatConvert_Spooles_Base(A,lu->basetype,MAT_REUSE_MATRIX,&A);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -587,7 +587,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
-PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert a MATMPIAIJ matrix */
   /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
@@ -596,7 +596,7 @@ PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *new
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
@@ -679,8 +679,8 @@ PetscErrorCode MatCreate_MPIAIJSpooles(Mat A)
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   A_diag = ((Mat_MPIAIJ *)A->data)->A;
-  ierr   = MatConvert_SeqAIJ_SeqAIJSpooles(A_diag,MATSEQAIJSPOOLES,&A_diag);CHKERRQ(ierr);
-  ierr   = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
+  ierr   = MatConvert_SeqAIJ_SeqAIJSpooles(A_diag,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+  ierr   = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

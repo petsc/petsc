@@ -48,7 +48,7 @@ typedef struct {
 
 EXTERN PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,Mat*);
+PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
@@ -150,7 +150,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) \
+PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) \
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -158,7 +158,7 @@ PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) \
   void           (*f)(void);
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   B->ops->duplicate              = mumps->MatDuplicate;
@@ -233,9 +233,9 @@ PetscErrorCode MatDestroy_AIJMUMPS(Mat A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size==1) {
-    ierr = MatConvert_MUMPS_Base(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MUMPS_Base(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_MUMPS_Base(A,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MUMPS_Base(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -250,9 +250,9 @@ PetscErrorCode MatDestroy_SBAIJMUMPS(Mat A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size==1) {
-    ierr = MatConvert_MUMPS_Base(A,MATSEQSBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MUMPS_Base(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_MUMPS_Base(A,MATMPISBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MUMPS_Base(A,MATMPISBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -724,7 +724,7 @@ PetscErrorCode MatAssemblyEnd_AIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_AIJMUMPS"
-PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat)
+PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -733,7 +733,7 @@ PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat)
   Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -837,9 +837,9 @@ PetscErrorCode MatCreate_AIJMUMPS(Mat A)
   } else {
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     A_diag = ((Mat_MPIAIJ *)A->data)->A;
-    ierr   = MatConvert_AIJ_AIJMUMPS(A_diag,MATAIJMUMPS,&A_diag);CHKERRQ(ierr);
+    ierr   = MatConvert_AIJ_AIJMUMPS(A_diag,MATAIJMUMPS,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
   }
-  ierr = MatConvert_AIJ_AIJMUMPS(A,MATAIJMUMPS,&A);CHKERRQ(ierr);
+  ierr = MatConvert_AIJ_AIJMUMPS(A,MATAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -878,7 +878,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJMUMPS(Mat  B,int bs,int d_nz,
   */
   ierr = (*mumps->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
   A    = ((Mat_MPISBAIJ *)B->data)->A;
-  ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -886,7 +886,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SBAIJ_SBAIJMUMPS"
-PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -896,7 +896,7 @@ PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newm
   void           (*f)(void);
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr); 
   }
 
@@ -1017,7 +1017,7 @@ PetscErrorCode MatCreate_SBAIJMUMPS(Mat A)
   } else {
     ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   }
-  ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

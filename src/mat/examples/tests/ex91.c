@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(Atrans);CHKERRQ(ierr);
 
   /* create a SeqSBAIJ matrix sA (= A) */
-  ierr = MatConvert(A,MATSEQSBAIJ,&sA);CHKERRQ(ierr); 
+  ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
  
   /* Test sA==A through MatMult() */
   for (i=0; i<nd; i++) {
