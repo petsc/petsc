@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.115 1998/03/09 20:42:49 balay Exp balay $ 
+# $Id: buildtest,v 1.116 1998/03/13 15:54:41 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -27,7 +27,7 @@ if ($day == Sun) then
   set M =(snake  maple      violet     snowy         tri63       ptera        lava        quad        maverick    yukon       homer        )
   set B =(O      O_complex  g          g_c++         O_c++       Opg          O           O_c++       g           g_complex   g            ) 
   set A =(hpux   solaris    IRIX       freebsd       rs6000_p4   alpha        solaris_uni rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     noshared      noshared    shared       shared      shared      shared      shared      noshared     )
+  set S =(shared shared     shared     noshared      noshared    shared       shared      shared      shared      shared      noshared     )
   set J1=(1      1          1          1             1           1            4           4           2           1           1            )
   set J2=(0      2          2          2             2           2            9           9           3           2           2            )
   set J3=(0      3          3          3             3           3            0           0           6           3           3            )
@@ -66,7 +66,7 @@ if ($day == Wed) then
   set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++      Opg_complex O           g           O            )
   set A =(hpux   solaris    IRIX       freebsd       rs6000_p4   alpha_uni   solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
+  set S =(shared shared     shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
   set J1=(3      1          1          1             1           4           4            1           1           1           1            )
   set J2=(0      2          2          2             2           9           9            2           2           2           2            )
   set J3=(0      3          3          3             3           0           0            3           3           3           3            )
@@ -79,7 +79,7 @@ if ($day == Thu) then
   set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
   set B =(O      g_complex  g_c++      O_c++         Opg         g           Opg_complex  g_c++       g           O           g_c++        )
   set A =(hpux   solaris    IRIX       freebsd       rs6000_gnu  alpha       solaris      rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
+  set S =(shared shared     shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(0      2          2          2             2           2           2            2           2           2           2            )
   set J3=(3      3          3          3             3           6           3            3           3           3           3            )
@@ -92,7 +92,7 @@ if ($day == Fri) then
   set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
   set B =(g      O_c++      g_complex  O_complex     g           O           Opg          g_complex   g_c++       O           g            )
   set A =(hpux   solaris    IRIX       freebsd       rs6000_gnu  alpha_uni   solaris      rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
+  set S =(shared shared     shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
   set J1=(0      1          1          1             1           4           1            1           1           1           1            )
   set J2=(2      2          2          2             2           9           2            2           2           2           2            )
   set J3=(0      3          3          3             3           0           3            3           3           3           3            )
@@ -105,7 +105,7 @@ if ($day == Sat) then
   set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
   set B =(O      O          O          Opg_complex   O           Opg         g_complex    Opg         O_complex   O_c++       Opg          )
   set A =(hpux   solaris    IRIX       freebsd       rs6000_gnu  alpha_nolog solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     noshared      noshared    shared      shared       shared      shared      shared      noshared     )
+  set S =(shared shared     shared     noshared      noshared    shared      shared       shared      shared      shared      noshared     )
   set J1=(1      1          1          1             1           1           4            1           1           1           1            )
   set J2=(0      2          2          2             2           2           9            2           2           2           2            )
   set J3=(0      3          3          3             3           6           11           3           3           3           6            )
