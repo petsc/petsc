@@ -243,6 +243,7 @@ int SNESSetFromOptions(SNES snes)
     } else if (!snes->type_name) {
       ierr = SNESSetType(snes,deft);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->atol,&snes->atol,0);CHKERRQ(ierr);

@@ -166,9 +166,12 @@ int DisAssemble_MPIBAIJ(Mat A)
   Mat          B = baij->B,Bnew;
   Mat_SeqBAIJ  *Bbaij = (Mat_SeqBAIJ*)B->data;
   int          ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  int          bs2=baij->bs2,*nz,ec,m = A->m;
+  int          bs2 = baij->bs2,*nz,ec,m = A->m;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
+#if defined(PETSC_USE_MAT_SINGLE)
+  int          k;
+#endif
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */

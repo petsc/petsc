@@ -131,11 +131,11 @@ PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
 #LUSOL_LIB
 #
 #
-# Location of DSCPACK
+# Location of DSCPACKS
 #
 DSCPACK_INCLUDE     = -I/home/petsc/software/DSCPACK-S/DSC_LIB -DDBL_R_NUM
 DSCPACK_LIB         = /home/petsc/software/DSCPACK-S/DSC_LIB/dsclibdbl.a
-PETSC_HAVE_DSCPACK  = -DPETSC_HAVE_DSCPACK
+PETSC_HAVE_DSCPACKS  = -DPETSC_HAVE_DSCPACKS
 
 
 RAMG_LIB        = /home/petsc/software/ramg/libramg_solaris.a

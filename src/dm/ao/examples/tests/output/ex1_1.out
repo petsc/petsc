@@ -1,9 +1,9 @@
 Number of elements in ordering 5
-   App.   PETSc
-0   0    0
-1   1    1
-2   2    2
-3   3    3
-4   4    4
+PETSc->App  App->PETSc
+  0    0      0    0
+  1    1      1    1
+  2    2      2    2
+  3    3      3    3
+  4    4      4    4
 [0] 2,1,3,4 PetscToApplication 2 1 3 4
 [0] 0,3,4 ApplicationToPetsc 0 3 4

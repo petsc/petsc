@@ -20,7 +20,7 @@ static int KSPSetUp_BCGS(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPBCGS");
   }
-  ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -30,7 +30,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
   int         i,maxit,ierr;
   PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
-  Vec         X,B,V,P,R,RP,T,S,BINVF;
+  Vec         X,B,V,P,R,RP,T,S;
   PetscReal   dp = 0.0;
 
   PetscFunctionBegin;
@@ -44,10 +44,9 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   T       = ksp->work[3];
   S       = ksp->work[4];
   P       = ksp->work[5];
-  BINVF   = ksp->work[6];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
+  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NO_NORM) {

@@ -197,6 +197,7 @@ EXTERN int PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN int PetscDrawAxisDestroy(PetscDrawAxis);
 EXTERN int PetscDrawAxisDraw(PetscDrawAxis);
 EXTERN int PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN int PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscTruth);
 EXTERN int PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 EXTERN int PetscDrawAxisSetLabels(PetscDrawAxis,char*,char*,char*);
 

@@ -88,12 +88,11 @@
 #define RS(a)    (fgmres->rs_origin + (a)) /* RS will be length (max_k+2) - rt side */
 
 /* vector names */
-#define VEC_OFFSET     3                              
+#define VEC_OFFSET     2
 #define VEC_SOLN       ksp->vec_sol                  /* solution */ 
 #define VEC_RHS        ksp->vec_rhs                  /* right-hand side */
 #define VEC_TEMP       fgmres->vecs[0]               /* work space */  
 #define VEC_TEMP_MATOP fgmres->vecs[1]               /* work space */
-#define VEC_BINVF      fgmres->vecs[2]               /* inv(B) * F */ /* CUR. NOT USED */ 
 #define VEC_VV(i)      fgmres->vecs[VEC_OFFSET+i]    /* use to access
                                                         othog basis vectors */
 #define PREVEC(i)      fgmres->prevecs[i]            /* use to access 

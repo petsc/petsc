@@ -10,8 +10,9 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB         = -L/Users/petsc/software/f2cblaslapack/macx -lf2clapack -lf2cblas
-PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
+#BLASLAPACK_LIB         = -L/Users/petsc/software/f2cblaslapack/macx -lf2clapack -lf2cblas
+#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
+BLASLAPACK_LIB         = -L/Users/petsc/software/fblaslapack/macx -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #

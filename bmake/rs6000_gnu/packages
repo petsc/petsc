@@ -27,9 +27,9 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.l
 #
 # Location of X-windows software
 #
-#X11_INCLUDE    = 
-#X11_LIB        = 
-#PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # ESSL: IBM math library - 
 # The library location should be given in BLASLAPACK_LIB above

@@ -5,7 +5,7 @@
 %  <a name="websites"></a><H3><center>Web sites featuring PETSc related work</center></H3>
 %
 @Unpublished{prometheus,
-   author = "Mark Adams",
+   author = "Mark F. Adams",
   title = 	"Prometheus - scalable unstructured finite element solver",
   Institution = "Berkeley",
   url = 	"http://www.cs.berkeley.edu/\~{ }madams/prometheus/"
@@ -43,12 +43,6 @@
   title = 	"Electromagnetics",
   Institution = "LLNL",
   url = 	"http://www.llnl.gov/casc/emsolve"
-}
-@Unpublished{prometueus-web-page,
-  Author =   "Mark Adams",
-  Institution = "Berkeley",
-  title = 	"Prometheus for Structural Mechanics Web page",
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/#Prometheus"
 }
 @Unpublished{fe-software-web-page,
   Institution = "Kuleuven",
@@ -145,6 +139,12 @@
 %  <a name="cfd"><H3><center>CFD</center></H3>
 %
 
+@Unpublished{PETSc-FEM,
+   author = "Mario Storti and Norberto Nigro",
+  title = 	"PETSc-FEM: A General Purpose, Parallel, Multi-Physics FEM Program",
+  Institution = "Centro Internacional de Metodos Computacionales en Ingenieria (CIMEC)",
+  url = 	"http://minerva.arcride.edu.ar/petscfem/"
+}
 @INPROCEEDINGS{lepotmeersessers2001,
  AUTHOR=    "I. Lepot and F. Meers and J.A. Essers",
  TITLE=     "Multilevels Parallel High Order Schemes for Invisid Flow Computations on 3D Unstructured Meshes",
@@ -310,7 +310,7 @@
 %  <a name="wave"><H3><center>Wave propagation and the Helmholtz equation</center></H3>
 %
 @Article{DeGersem99,
-  author =       "H. De Gersem and D. Lahaye and S. Vandewalle and
+  author =       "H. De Gersem and Domenico Lahaye and S. Vandewalle and
                   K. Hameyer",
   title  =       "Comparison of Quasi Minimal Residual and Bi-Conjugate 
                   Gradient Iterative Methods to Solve Complex Symmetric 
@@ -629,16 +629,51 @@
   }
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
-@Article{adams,
-  author =       "Mark F. Adams",
-  title  =       "Evaluation of Three Unstructured Multigrid Methods on 3D Finite Element Problems in 
-                  Solid Mechanics",
-  journal =      "SIAM J. Sci. Comput",
-  notes =        "to appear",
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
+@article{ckm01,
+  author =  "X.-C. Cai and D. E. Keyes and L. Marcinkowski",
+  url="http://www.cs.colorado.edu/homes/cai/public_html/papers/10page.ps",
+  title="Nonlinear additive Schwarz preconditioners and applications in computational fluid dynamics",
+  journal="International Journal of Numerical Methods in Fluid Mechanics",
+  notes={submitted}
 }
+@inproceedings{cky01,
+  author="X.-C. Cai and D. E. Keyes and D. P. Young",
+  url="http://www.cs.colorado.edu/homes/cai/public_html/papers/dd13_1d.ps"
+  title="A nonlinear additive Schwarz preconditioned inexact Newton method for shocked duct flow",
+  book="Proceedings of the 13th International Conference on Domain Decomposition Methods"
+}
+@article{ck02,
+  author="X.-C. Cai and D. E. Keyes",
+  url="http://www.cs.colorado.edu/homes/cai/public_html/papers/aspin.ps",
+  title="Nonlinearly preconditioned inexact Newton algorithms",
+  journal="SIAM J. Sci. Comput.",
+  notes="to appear"
+}                                    
+@InProceedings{Adams-01, 
+  author =   {Mark F. Adams}, 
+  title =   {A Distributed Memory Unstructured {G}auss-{S}eidel Algorithm for Multigrid Smoothers}, 
+  booktitle = {ACM/IEEE Proceedings of SC2001: High Performance Networking and Computing}, 
+  address = {Denver, Colorado}, 
+  month = {November}, 
+  year = {2001} 
+} 
+@BOOK{1dl,
+      AUTHOR="Domenico Lahaye",
+      TITLE="Algebraic Multigrid for Two Dimensional Time-Harmonic Magnetic Field Computations",
+      YEAR="2001",
+      PUBLISHER="Katholieke Universiteit Leuven",
+      NOTES="Thesis"
+      }
+@Article{Adams-00a, 
+  author =   {Mark F. Adams}, 
+  title =   {Evaluation of Three Unstructured Multigrid Methods on 3{D} Finite Element Problems in Solid Mechanics}, 
+  journal =   {International Journal for Numerical Methods in Engineering}, 
+  year =   {To Appear}, 
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
+} 
+
 @Article{Lahaye00,
-  author =       "Lahaye, D. and De Gersem, H. and 
+  author =       "Domenico Lahaye and De Gersem, H. and 
                   Vandewalle, S. and Hameyer, K.",
   title  =       "Algebraic Multigrid for Complex Symmetric Systems", 
   journal =      @IEEEMAGN, 
@@ -647,16 +682,18 @@
   number =       "4", 
   pages =        "1535--1538", 
 }
-@Article{Adams-00a,
-  author = 	{Adams, M.~F.},
-  title = 	{Parallel Multigrid Solvers for 3D Unstructured Finite Element 
-Problems in Large Deformation Elasticity and Plasticity},
-  journal = 	{International Journal for Numerical Methods in Engineering},
+@Article{Adams-00a, 
+  author =   {Mark F. Adams}, 
+  title =   {Parallel Multigrid Solvers for 3D Unstructured Finite Element Problems in Large Deformation Elasticity and Plasticity}, 
+  journal =   {International Journal for Numerical Methods in Engineering}, 
+  year =   {2000}, 
+  volume =   {48}, 
+  number = {8}, 
+  pages = {1241-1262}, 
   url = 	"http://www.cs.berkeley.edu/\~{ }madams/NMEMFA.ps",
-  year = 	{To appear}
-}
+} 
 @InProceedings{Adams-99c, 
-  author =   {Adams, M. F. and J. Demmel}, 
+  author =   {Mark F. Adams and J. Demmel}, 
   title =   {Parallel Multigrid Solver Algorithms and 
                   Implementations for 3{D} Unstructured Finite Element 
                   Problem}, 
@@ -684,7 +721,7 @@ Problems in Large Deformation Elasticity and Plasticity},
   institution =  "University of California, Berkeley",
   title =        "A Parallel Maximal Independent Set Algorithm",
   bibdate =      "March 11, 1998",
-  author =       "Mark Adams and James Demmel",
+  author =       "Mark F. Adams and James Demmel",
   abstract =     "The parallel construction of maximal independent sets
                  is a useful building block for many algorithms in the
                  computational sciences, including graph coloring and
@@ -707,8 +744,17 @@ Problems in Large Deformation Elasticity and Plasticity},
 %
 %  <a name="other"><H3><center>Other</center></H3>
 %
+@techreport{tang2001,
+ Author      = "X. Z. Tang and G. Y. Fu and S. C. Jardin and L. L. Lowe and W. Park and H. R. Strauss",
+ TITLE       = "Resistive Magnetohydrodynamics Simulation of Fusion Plasmas",
+ year        = 2001,
+ INSTITUTION = "Princeton Plasma Physics Laboratory",
+ number     = "PPPL-3532",
+ URL        = "http://www.pppl.gov/pub_report/2001/PPPL-3532.pdf",
+ note       = "Presented at 10th Society for Industrial and Applied Mathematics (SIAM) Conference on Parallel Processing for Scientific Computing, Portsmouth, Virginia, March 12-14, 2001." 
+}
 @techreport{hammond2002,
- Author      = "Glenn E. Hammond and Albert J. Valocchi and Peter C. Lictner",
+ Author      = "Glenn E. Hammond and Albert J. Valocchi and Peter C. Lichtner",
  TITLE       = "Modeling Multicomponent Reactive Transport on Parallel Computers Using Jacobian-Free Newton Krylov with Operator-Split Preconditioner",
  year        = 2002,
  INSTITUTION = "University of Illinois at Urbana-Champaign, Los Alamos National Laboratory",

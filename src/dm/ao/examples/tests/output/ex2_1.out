@@ -1,4 +1,4 @@
 Number of elements in ordering 2
-   App.   PETSc
-0   1    1
-1   0    0
+PETSc->App  App->PETSc
+  0    1      0    1
+  1    0      1    0

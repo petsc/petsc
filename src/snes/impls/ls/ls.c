@@ -2,6 +2,39 @@
 
 #include "src/snes/impls/ls/ls.h"
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecMaxScale_SNES"
+/*
+            max { p[i]/x[i] }
+*/
+int VecMaxScale_SNES(Vec p,Vec x,PetscReal *m)
+{
+  int         ierr,i,n;
+  PetscScalar *pa,*xa;
+  PetscReal   t;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(p,&n);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)p,&comm);CHKERRQ(ierr);
+
+  ierr = VecGetArray(p,&pa);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
+  t = 0.0;
+  for ( i=0; i<n; i++) {
+    if (xa[i] != 0.0) {
+      t = PetscMax(PetscAbsScalar(pa[i]/xa[i]),t);
+    } else {
+      t = PetscMax(PetscAbsScalar(pa[i]),t);
+    }
+  }
+  ierr = MPI_Allreduce(&t,m,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(p,&pa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the function,
     but not a zero. In the case when one cannot compute J^T F we use the fact that
@@ -473,7 +506,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
         
-  PetscReal     steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2;
+  PetscReal     steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
   PetscReal     maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar   cinitslope,clambda;
@@ -508,7 +541,8 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
     ierr = VecScale(&scale,y);CHKERRQ(ierr);
     *ynorm = maxstep;
   }
-  minlambda = steptol/(*ynorm);
+  ierr      = VecMaxScale_SNES(y,x,&rellength);CHKERRQ(ierr);
+  minlambda = steptol/rellength;
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
@@ -554,11 +588,11 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
 
   /* Fit points with cubic */
   count = 1;
-  while (1) {
+  while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(w,y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
     t1 = .5*((*gnorm)*(*gnorm) - fnorm*fnorm) - lambda*initslope;
@@ -655,7 +689,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm,and fnorm = || f ||_2.
    */
-  PetscReal  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
+  PetscReal  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg,rellength;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cinitslope,clambda;
 #endif
@@ -684,7 +718,8 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
     ierr = VecScale(&scale,y);CHKERRQ(ierr);
     *ynorm = maxstep;
   }
-  minlambda = steptol/(*ynorm);
+  ierr      = VecMaxScale_SNES(y,x,&rellength);CHKERRQ(ierr);
+  minlambda = steptol/rellength;
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
@@ -708,11 +743,11 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   /* Fit points with quadratic */
   lambda = 1.0;
   count = 1;
-  while (1) {
+  while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(w,y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
     lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);

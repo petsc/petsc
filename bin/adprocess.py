@@ -24,6 +24,7 @@ import re
 from exceptions import *
 from sys import *
 from string import *
+from parseargs import *
 
 #
 #  Copies structs from filename to filename.tmp
@@ -122,7 +123,6 @@ def getfunctionF(filename,functionname):
         g.close()
 
 def main():
-    from parseargs import *
 
     arg_len = len(argv)
     if arg_len < 2: 

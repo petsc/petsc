@@ -49,6 +49,9 @@ typedef struct {
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
+  /* for factorization codes to hide stuff */
+  void          *spptr;
+
   /* Some variables to make MatSetValues and others more efficient */
   int           rstart_bs,rend_bs; 
   int           cstart_bs,cend_bs;

@@ -967,6 +967,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIBAIJ"
 int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
@@ -978,6 +979,9 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
+#if defined(PETSC_HAVE_DSCPACK)
+  PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;
   if (!baij->donotstash) {
@@ -1063,6 +1067,10 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
     baij->rowvalues = 0;
   }
+#if defined(PETSC_HAVE_DSCPACK)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(mat);CHKERRQ(ierr); }
+#endif
   PetscFunctionReturn(0);
 }
 
