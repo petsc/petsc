@@ -317,7 +317,7 @@ class Configure:
     '''Return True if an error occurred
        - An error is signaled by a nonzero return code, or output on stderr'''
     (out, err, ret) = self.preprocess(codeStr)
-    return not ret or not len(err)
+    return not ret and not len(err)
 
   def filterCompileOutput(self, output):
     return self.framework.filterCompileOutput(output)

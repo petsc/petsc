@@ -105,7 +105,7 @@ class Configure(config.base.Configure):
 
   def checkFreeReturnType(self):
     '''Checks whether free returns void or int, and defines HAVE_FREE_RETURN_INT'''
-    if self.checkCompile('#include <stdlib.h>\n', 'int free(void *); void *p; return free(p);\n'):
+    if self.checkCompile('#include <stdlib.h>\n', 'int ierr; void *p; ierr = free(p); return 0;\n'):
       self.addDefine('HAVE_FREE_RETURN_INT', 1)
     return
 
