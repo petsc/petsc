@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.11 1998/02/03 21:13:12 balay Exp balay $ 
+# $Id: urlget.py,v 1.12 1998/02/17 22:20:33 balay Exp bsmith $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -21,7 +21,7 @@ def urltofile(url) :
     from string import *
     from urlparse import *
     url_split = urlparse(urlunparse(urlparse(url)))
-    return replace(join(url_split[0:3],'@'),'/','!')
+    return replace(join(url_split[0:3],'@'),'/','_')
     
 # Get the timestamp of the URL from the ftp server
 # and convert it to a timestamp useable by utime()
