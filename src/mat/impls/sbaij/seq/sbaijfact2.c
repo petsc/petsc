@@ -1307,7 +1307,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0,*levtmp;
   int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  int         incrlev,*lev,lev_ik,shift;
+  int         incrlev,*lev,lev_ik;
   PetscTruth  perm_identity;
 
   PetscFunctionBegin;
@@ -1324,12 +1324,11 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
  
   /* initialization */  
   /* Don't know how many column pointers are needed so estimate. 
-     Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
+     Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
   ierr  = ISGetIndices(perm,&rip);CHKERRQ(ierr);
   umax  = (int)(f*ai[mbs] + 1); 
   ierr  = PetscMalloc(umax*sizeof(int),&lev);CHKERRQ(ierr);
   umax += mbs + 1; 
-  shift = mbs + 1;
   ierr  = PetscMalloc((mbs+1)*sizeof(int),&iu);CHKERRQ(ierr);
   ierr  = PetscMalloc(umax*sizeof(int),&ju);CHKERRQ(ierr);
   iu[0] = mbs+1; 

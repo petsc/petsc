@@ -279,13 +279,13 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (icc->levels == 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d level of fill\n",(int)icc->levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d level of fill\n",icc->levels);CHKERRQ(ierr);
     } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d levels of fill\n",(int)icc->levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d levels of fill\n",icc->levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->fill);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," lvls=%g",icc->levels);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," lvls=%d",icc->levels);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCICC",((PetscObject)viewer)->type_name);
   }
