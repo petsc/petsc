@@ -42,10 +42,12 @@ class Configure(config.base.Configure):
     if not hasattr(self.framework, 'bk'):
       self.framework.log.write('Cannot find bk program.\nContinuing configure without update.\n')
       return
-
+    
+    import re
     self.framework.log.write('Checking if can downloading latest source with bk\n')
     (status1,output1) = commands.getstatusoutput('bk sfiles -lgpC')
-    (status2,output2) = commands.getstatusoutput('bk changes -L -v | grep -v "Pseudo-terminal"')
+    (status2,output2) = commands.getstatusoutput('bk changes -L -v')
+    output2 = re.sub('Pseudo-terminal will not be allocated because stdin is not a terminal.','',output2)
     if output1 or output2:
       self.framework.log.write('Cannot pull latest source code, you have changed files or bk change sets\n')
       self.framework.log.write(output1+'\n'+output2+'\n')
