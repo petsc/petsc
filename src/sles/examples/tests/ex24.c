@@ -1,13 +1,10 @@
-/*$Id: ex24.c,v 1.17 2000/05/05 22:16:17 balay Exp $*/
+/*$Id: ex24.c,v 1.1 2000/09/21 17:45:17 bsmith Exp bsmith $*/
 
 static char help[] = 
-"Tests binary I/O of matrice. Tests CG, MINRES and SYMMLQ on symmetric matrice with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
+"Tests CG, MINRES and SYMMLQ on symmetric matrice with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
 #include "petscsles.h"
 
-/* Note:  Most applications would not read and write the same matrix within
-  the same program.  This example is intended only to demonstrate
-  both input and output. */
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -16,12 +13,7 @@ int main(int argc,char **args)
   Mat         C;
   Scalar      v,one = 1.0,zero = 0.0,none = -1.0, alpha = - 3.0;
   int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size,its,k;
-  int         d_nz=3, o_nz=3;
   double      err_norm,res_norm;
-  Viewer      viewer;
-  int         MATRIX_GENERATE,MATRIX_READ;
-  MatType     mtype;
-  PetscTruth  io=PETSC_FALSE; /* set it to PETSC_TRUE if I/O is tested */
   Vec         x,b,u,u_tmp;
   PetscRandom r;
   SLES        sles;
@@ -35,14 +27,9 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   N = m*n;
 
-  /* PART 1:  Generate matrix, then write it in binary format */
-  if (io){
-    ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRA(ierr);
-    PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
-  }
+
   /* Generate matrix */
-  ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,1,PETSC_DECIDE,PETSC_DECIDE,N,N,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);
-  CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -59,29 +46,6 @@ int main(int argc,char **args)
   /* ierr = MatShift(&alpha, C); CHKERRA(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
-  if (io){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n");CHKERRA(ierr);
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
-    ierr = MatView(C,viewer);CHKERRA(ierr); 
-    ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-    ierr = MatDestroy(C);CHKERRA(ierr);
-    PLogEventEnd(MATRIX_GENERATE,0,0,0,0);
-
-    /* PART 2:  Read in matrix in binary format */
-
-    /* All processors wait until test matrix has been dumped */
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
-
-    ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
-    PLogEventBegin(MATRIX_READ,0,0,0,0);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n");CHKERRA(ierr);
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
-    ierr = MatLoad(viewer,MATMPISBAIJ,&C);CHKERRA(ierr);
-    ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-    PLogEventEnd(MATRIX_READ,0,0,0,0);
-  }
-  /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
- 
   /* PART 3: Setup and solve for system */
     
   /* Create vectors.  */
