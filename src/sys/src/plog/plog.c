@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.232 2000/04/09 04:34:52 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.233 2000/04/12 04:21:43 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -456,7 +456,7 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
     Not Collective
 
     Input Parameters:
-+   stage - the stage from 0 to 9 inclusive
++   stage - the stage from 0 to 9 inclusive (use PETSC_DETERMINE for current stage)
 -   sname - the name to associate with that stage
 
     Notes:
@@ -473,11 +473,9 @@ int PLogStageRegister(int stage,const char sname[])
   char *str;
 
   PetscFunctionBegin;
-  if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10: Instead %d",stage);
-  ierr = PetscStrlen(sname,&n);CHKERRQ(ierr);
-  str  = (char*)PetscMalloc((n+1)*sizeof(char));CHKPTRQ(str);
-  ierr = PetscStrcpy(str,sname);CHKERRQ(ierr);
-  EventsStageName[stage] = str;
+  if (stage == PETSC_DETERMINE) stage = EventsStage;
+  if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 and < 10: Instead %d",stage);
+  ierr = PetscStrallocpy(sname,&EventsStageName[stage]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
