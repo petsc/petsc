@@ -154,7 +154,7 @@ class Configure(config.base.Configure):
     else:
       self.arch = self.framework.argDB['PETSC_ARCH']
     if not self.arch.startswith(self.host_os):
-      raise RuntimeError('PETSC_ARCH ('+self.arch+') does not have our guess ('+self.host_os+') as a prefix!')
+      raise RuntimeError('PETSC_ARCH ('+self.arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
     self.addSubstitution('ARCH', self.arch)
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.addDefine('ARCH', self.archBase)
