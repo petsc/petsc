@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.45 1996/06/13 21:55:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.46 1996/07/02 18:05:21 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -268,6 +268,66 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   return MPI_SUCCESS;
 }
 
+/*@
+    PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
+        processors that share the object MUST call this EXACTLY the same
+        number of times.
+
+  Input Parameter:
+.  obj - the PETSc object
+
+  Output Parameter:
+.  tag - the new tag
+
+.seealso: PetscObjectRestoreNewTag
+@*/
+int PetscObjectGetNewTag(PetscObject obj,int *tag)
+{
+  int ierr,*tagvalp,flag;
+
+  PetscValidHeader(obj);
+  PetscValidIntPointer(tag);
+
+  ierr = MPI_Attr_get(obj->comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(1,"PetscObjectRestoreNewTag:Bad comm in PETSc object");
+
+  if (*tagvalp < 1) SETERRQ(1,"PetscCommDup_Private:Out of tags for object");
+  *tag = tagvalp[0]--;
+  tagvalp[1]++;
+  return 0;
+}
+
+/*@
+    PetscObjectRestoreNewTag - Restores new tag from a PETSc object. All 
+        processors that share the object MUST call this EXACTLY the same
+        number of times.
+
+  Input Parameter:
+.  obj - the PETSc object
+
+  Output Parameter:
+.  tag - the new tag
+
+.seealso: PetscObjectGetNewTag
+@*/
+int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
+{
+  int ierr,*tagvalp,flag;
+
+  PetscValidHeader(obj);
+  PetscValidIntPointer(tag);
+
+  ierr = MPI_Attr_get(obj->comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(1,"PetscObjectRestoreNewTag:Bad comm in PETSc object");
+
+  if (*tagvalp == *tag - 1) {
+    tagvalp[0]++;
+    tagvalp[1]--;
+  }
+
+  return 0;
+}
+
 /*
   PetscCommDup_Private - Duplicates only if communicator is not a PETSc 
                          communicator.
@@ -317,13 +377,10 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     *comm_out = comm_in;
   }
 
-  if (*tagvalp < 1) {
-    /* Error, out of tags.Another solution would be to do an MPI_Comm_dup. */
-    return MPI_ERR_INTERN;
-  }
+  if (*tagvalp < 1) SETERRQ(1,"PetscCommDup_Private:Out of tags for object");
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
-  return MPI_SUCCESS;
+  return 0;
 }
 
 /*
