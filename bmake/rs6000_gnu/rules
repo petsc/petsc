@@ -18,7 +18,7 @@ SHELL    = /bin/sh
 # you are running on plain IBM RS6000 workstations and replace 
 # with one of the above.
 #
-CLINKER  = xlc $(COPTFLAGS) 
+CLINKER  = /usr/local/gcc-2.7.2/bin/gcc $(COPTFLAGS) 
 #
 # Fortran programs MUST be linked statically (no shared libraries) for them
 # to run on systems that haven't licensed a Fortran runtime or compiler.
