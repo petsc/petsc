@@ -30,7 +30,8 @@ petsc/src/contrib/pc/spai/src/RCS
 petsc/include/ec.h
 petsc/src/contrib/pfull
 petsc/src/contrib/agglom
-petsc/src/dm/usg
+petsc/src/dm/usg/utils/RCS
+petsc/src/dm/usg/RCS
 petsc/src/contrib/esi
 petsc/bin/configure.in.old
 petsc/bin/petscconf.h.in.sav
@@ -50,7 +51,6 @@ petsc/bin/petscdemo
 petsc/docs/manualpages/sec
 petsc/src/blaslapack
 petsc/src/apps
-petsc/src/usg
 petsc/src/contrib/flash
 petsc/src/contrib/elliott
 petsc/src/contrib/odu
