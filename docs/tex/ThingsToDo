@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Make an implementation of Vec on top of http://www.vsipl.org/
+
   Change tutorial examples that use DACreateLocalVector() to use DAGet/RestoreLocalVector()
 
   add manual page info for all enums and public structs with /*S and /*E
