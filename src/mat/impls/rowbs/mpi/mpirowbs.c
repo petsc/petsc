@@ -2664,7 +2664,10 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
     }
   } else {
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,nrow[i],ncol[i],0,lens[i],submats+i);CHKERRQ(ierr);
+      /* Here we want to explicitly generate SeqAIJ matrices */
+      ierr = MatCreate(PETSC_COMM_SELF,nrow[i],ncol[i],nrow[i],ncol[i],submats+i);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],MATSEQAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(submats[i],0,lens[i]);CHKERRQ(ierr);
     }
   }
 

@@ -44,19 +44,22 @@ int main(int argc,char **args)
 
   /*
      Create the linear system matrix (A).
-      - Here we use a block diagonal matrix format (MATMPIBDIAG) and
+      - Here we use a block diagonal matrix format (MATBDIAG) and
         specify only the global size.  The parallel partitioning of
         the matrix will be determined at runtime by PETSc.
   */
-  ierr = MatCreateMPIBDiag(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
-         0,1,PETSC_NULL,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATBDIAG);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(A,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBDiagSetPreallocation(A,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Create a different preconditioner matrix (B).  This is usually
      done to form a cheaper (or sparser) preconditioner matrix
      compared to the linear system matrix.
-      - Here we use MatCreate(), so that the matrix format and
-        parallel partitioning will be determined at runtime.
+      - Here we use MatCreate() followed by MatSetFromOptions(),
+        so that the matrix format and parallel partitioning will be
+        determined at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&B);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);

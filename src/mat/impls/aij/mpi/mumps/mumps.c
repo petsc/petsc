@@ -636,7 +636,7 @@ int MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
 
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATAIJMUMPS);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -662,7 +662,7 @@ int MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) 
 
   /* Create the factorization matrix */ 
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATAIJMUMPS);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 

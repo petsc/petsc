@@ -1795,6 +1795,7 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
+  /* Explicitly create 2 MATSEQAIJ matrices. */
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
@@ -1867,7 +1868,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PetscFunctionBegin;
   *newmat       = 0;
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(mat,matin->type_name);CHKERRQ(ierr);
   a    = (Mat_MPIAIJ*)mat->data;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = matin->factor;

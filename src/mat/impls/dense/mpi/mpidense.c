@@ -556,6 +556,7 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else {
       ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
+    /* Since this is a temporary matrix, MATMPIDENSE instead of A->type_name here is probably acceptable. */
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
     PetscLogObjectParent(mat,A);
@@ -1208,7 +1209,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   PetscFunctionBegin;
   *newmat       = 0;
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&mat);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(mat,A->type_name);CHKERRQ(ierr);
   ierr              = PetscNew(Mat_MPIDense,&a);CHKERRQ(ierr);
   mat->data         = (void*)a;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -1239,7 +1240,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
-int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
+int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,const MatType type,Mat *newmat)
 {
   int          *rowners,i,size,rank,m,ierr,nz,j;
   PetscScalar  *array,*vals,*vals_ptr;
@@ -1259,7 +1260,7 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
   }
 
   ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetArray(*newmat,&array);CHKERRQ(ierr);
 
@@ -1334,7 +1335,7 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
        Handle case where matrix is stored on disk as a dense matrix 
   */
   if (nz == MATRIX_BINARY_FORMAT_DENSE) {
-    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat);CHKERRQ(ierr);
+    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,type,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1422,7 +1423,7 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
     ourlens[i] -= offlens[i];
   }
   ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   A = *newmat;
   for (i=0; i<m; i++) {

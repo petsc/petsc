@@ -70,7 +70,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
   ierr = MatCreate(A->comm,m,n,m,n,&B);
-  ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJSpooles;

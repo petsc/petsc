@@ -513,10 +513,15 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     PetscScalar  *vals;
     Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*)mbd->A->data;
 
+    /* Here we are constructing a temporary matrix, so we will explicitly set the type to MPIBDiag */
     if (!rank) {
-      ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->bs,mbd->gdiag,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,M,M,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,Ambd->bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->bs,PETSC_NULL,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,0,Ambd->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     PetscLogObjectParent(mat,A);
 
@@ -931,7 +936,9 @@ int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScal
   }
 
   /* Form local matrix */
-  ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,B->m,B->n,k,bs,ldiag,ldiagv,&b->A);CHKERRQ(ierr); 
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
+  ierr = MatSetType(b->A,MATSEQBDIAG);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
   ierr = PetscFree(ldiag);CHKERRQ(ierr);
   if (ldiagv) {ierr = PetscFree(ldiagv);CHKERRQ(ierr);}
@@ -1339,7 +1346,9 @@ int MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newmat)
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 
-  ierr = MatCreateMPIBDiag(comm,m,M+extra_rows,N+extra_rows,PETSC_NULL,bs,PETSC_NULL,PETSC_NULL,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,m,M+extra_rows,N+extra_rows,newmat);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
+  ierr = MatMPIBDiagSetPreallocation(*newmat,0,bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   A = *newmat;
 
   if (!rank) {

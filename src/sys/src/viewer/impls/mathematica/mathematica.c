@@ -1545,7 +1545,9 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
       ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &nnz, &len);
       if (len != numBdRows) SETERRQ(PETSC_ERR_PLIB, "Invalid boundary gradient matrix");
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, numBdRows, numBdCols, PETSC_DEFAULT, nnz, &ml->grads[level]); CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,numBdRows,numBdCols,numBdRows,numBdCols,&ml->grads[level]);CHKERRQ(ierr);
+      ierr = MatSetType(ml->grads[level],MATSEQAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(ml->grads[level],PETSC_DEFAULT,nnz);CHKERRQ(ierr);
       grad = (Mat_SeqAIJ *) ml->grads[level]->data;
       PetscMemcpy(grad->ilen, nnz, numBdRows * sizeof(int));
       MLDisownIntegerList(link, nnz, len);

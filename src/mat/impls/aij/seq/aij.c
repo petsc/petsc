@@ -2751,7 +2751,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionBegin;
   *B = 0;
   ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   c    = (Mat_SeqAIJ*)C->data;
 
   C->factor         = A->factor;

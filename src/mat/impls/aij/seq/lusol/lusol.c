@@ -402,7 +402,7 @@ int MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
   /************************************************************************/
 
   ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,m,n,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATLUSOL);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;

@@ -194,7 +194,10 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(jl);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqSBAIJ(A->comm,bs,bs*mbs,bs*mbs,0,PETSC_NULL,B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,bs*mbs,bs*mbs,bs*mbs,bs*mbs,B);CHKERRQ(ierr);
+  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+
   /* PetscLogObjectParent(*B,iperm); */
   b = (Mat_SeqSBAIJ*)(*B)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
@@ -354,7 +357,10 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(jl);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqSBAIJ(A->comm,bs,bs*mbs,bs*mbs,0,PETSC_NULL,B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,bs*mbs,bs*mbs,bs*mbs,bs*mbs,B);CHKERRQ(ierr);
+  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+
   /* PetscLogObjectParent(*B,iperm); */
   b = (Mat_SeqSBAIJ*)(*B)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);

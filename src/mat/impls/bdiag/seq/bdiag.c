@@ -272,7 +272,9 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 
   /* Determine diagonals; then create submatrix */
   bs = a->bs; /* Default block size remains the same */
-  ierr = MatCreateSeqBDiag(A->comm,newr,newc,0,bs,0,0,&newmat);CHKERRQ(ierr); 
+  ierr = MatCreate(A->comm,newr,newc,newr,newc,&newmat);CHKERRQ(ierr);
+  ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(newmat,0,bs,PETSC_NULL,PETSC_NULL);
 
   /* Fill new matrix */
   for (i=0; i<newr; i++) {
@@ -665,7 +667,9 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
   Mat          mat;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqBDiag(A->comm,A->m,A->n,a->nd,bs,a->diag,PETSC_NULL,matout);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,matout);CHKERRQ(ierr);
+  ierr = MatSetType(*matout,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(*matout,a->nd,bs,a->diag,PETSC_NULL);CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
   mat = *matout;
@@ -735,8 +739,9 @@ int MatLoad_SeqBDiag(PetscViewer viewer,const MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreateSeqBDiag(comm,M+extra_rows,M+extra_rows,nd,bs,diag,
-                           PETSC_NULL,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,M+extra_rows,M+extra_rows,M+extra_rows,M+extra_rows,A);
+  ierr = MatSetType(*A,type);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(*A,nd,bs,diag,PETSC_NULL);CHKERRQ(ierr);
   B = *A;
 
   /* read column indices and nonzeros */

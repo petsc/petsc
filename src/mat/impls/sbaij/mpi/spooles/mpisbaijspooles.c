@@ -72,7 +72,7 @@ int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 
   /* Create the factorization matrix */  
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);
-  ierr = MatSetType(B,MATMPIAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
   B->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJSpooles;

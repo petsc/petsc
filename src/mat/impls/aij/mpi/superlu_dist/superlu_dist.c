@@ -408,7 +408,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,A->m,A->n,M,N,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSUPERLU_DIST);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 

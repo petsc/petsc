@@ -667,7 +667,7 @@ int MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
     ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
-    ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSetType(*A,type);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B    = *A;
     a    = (Mat_SeqDense*)B->data;
@@ -693,7 +693,7 @@ int MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
 
     /* create our matrix */   
     ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
-    ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSetType(*A,type);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B = *A;
     a = (Mat_SeqDense*)B->data;

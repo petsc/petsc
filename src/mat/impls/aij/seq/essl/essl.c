@@ -124,7 +124,7 @@ int MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,A->m,A->n,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATESSL);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->solve           = MatSolve_Essl;
