@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.94 1998/09/25 03:16:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.95 1998/10/09 19:26:14 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -433,7 +433,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
-  Mat     jac = *J;                /* Jacobian matrix */
+  Mat     jac = *B;                /* Jacobian matrix */
   Vec     localX = user->localX;   /* local vector */
   int     ierr, i, j, row, mx, my, col[5];
   int     xs, ys, xm, ym, gxs, gys, gxm, gym;
