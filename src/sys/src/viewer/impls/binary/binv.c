@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.49 1998/10/29 23:17:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.50 1998/10/31 03:11:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -72,7 +73,7 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 #define __FUNC__ "ViewerDestroy_BinaryFile"
 int ViewerDestroy_BinaryFile(Viewer v)
 {
-  int    rank,ierr;
+  int    rank;
 
   PetscFunctionBegin;
   MPI_Comm_rank(v->comm,&rank);
@@ -115,8 +116,8 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
 {  
   int        rank,ierr;
   Viewer     v;
-  const char *fname,bname[1024];
-  static int id = 0;
+  const char *fname;
+  char       bname[1024];
   PetscTruth found;
 
   PetscFunctionBegin;
@@ -201,6 +202,10 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
 #endif
   PetscFunctionReturn(0);
 }
+
+
+
+
 
 
 
