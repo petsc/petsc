@@ -154,22 +154,36 @@ class UsingCxx (base.Base):
     target.appendGraph(linker)
     return target
 
+##  def getClientCompileTarget(self):
+##    '''All purposes are in Cxx, so only a Cxx compiler is necessary for the stubs and cartilage.'''
+##    if len(self.usingSIDL.staticPackages):
+##      return build.buildGraph.BuildGraph()
+##    (target, compiler) = self.getGenericCompileTarget(['client'])
+##    sharedTag    = self.language.lower()+' client shared library'
+##    importTag    = self.language.lower()+' client import library'
+##    linker       = build.buildGraph.BuildGraph()
+##    sharedLinker = build.processor.SharedLinker(self.sourceDB, self, None, compiler.output.tag, sharedTag)
+##    sharedLinker.extraLibraries.extend(self.extraLibraries)
+##    importLinker = build.processor.ImportSharedLinker(self.sourceDB, self, None, compiler.output.tag, importTag)
+##    sharedAdder  = build.processor.LibraryAdder([importTag, 'old '+importTag], sharedLinker, prepend = 1)
+##    linker.addVertex(importLinker)
+##    linker.addEdges(sharedAdder,  [importLinker])
+##    linker.addEdges(sharedLinker, [sharedAdder])
+##    linker.addEdges(build.transform.Remover([compiler.output.tag, compiler.output.tag+' import']), [sharedLinker])
+##    target.appendGraph(linker)
+##    return target
+
   def getClientCompileTarget(self):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary for the stubs and cartilage.'''
     if len(self.usingSIDL.staticPackages):
       return build.buildGraph.BuildGraph()
     (target, compiler) = self.getGenericCompileTarget(['client'])
     sharedTag    = self.language.lower()+' client shared library'
-    importTag    = self.language.lower()+' client import library'
     linker       = build.buildGraph.BuildGraph()
     sharedLinker = build.processor.SharedLinker(self.sourceDB, self, None, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    importLinker = build.processor.ImportSharedLinker(self.sourceDB, self, None, compiler.output.tag, importTag)
-    sharedAdder  = build.processor.LibraryAdder([importTag, 'old '+importTag], sharedLinker, prepend = 1)
-    linker.addVertex(importLinker)
-    linker.addEdges(sharedAdder,  [importLinker])
-    linker.addEdges(sharedLinker, [sharedAdder])
-    linker.addEdges(build.transform.Remover([compiler.output.tag, compiler.output.tag+' import']), [sharedLinker])
+    linker.addVertex(sharedLinker)
+    linker.addEdges(build.transform.Remover([compiler.output.tag]), [sharedLinker])
     target.appendGraph(linker)
     return target
 
