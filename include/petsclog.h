@@ -275,6 +275,10 @@ EXTERN PetscErrorCode StageLogGetActive(StageLog, int, PetscTruth *);
 EXTERN PetscErrorCode StageLogSetVisible(StageLog, int, PetscTruth);
 EXTERN PetscErrorCode StageLogGetVisible(StageLog, int, PetscTruth *);
 EXTERN PetscErrorCode StageLogGetStage(StageLog, const char [], int *);
+EXTERN PetscErrorCode StageLogGetClassRegLog(StageLog, ClassRegLog *);
+EXTERN PetscErrorCode StageLogGetEventRegLog(StageLog, EventRegLog *);
+EXTERN PetscErrorCode StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
+EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 /*
      This does not work for MPI-Uni because our include/mpiuni/mpi.h file

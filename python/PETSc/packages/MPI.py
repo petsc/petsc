@@ -444,12 +444,12 @@ class Configure(config.base.Configure):
       sel.addSubstitution('MPIRUN', self.mpirun)
       return
     if 'with-mpirun' in self.framework.argDB:
-      self.mpirun = self.framework.argDB['with-mpirun']
+      mpirun = self.framework.argDB['with-mpirun']
     else:
-      self.mpirun = 'mpirun'
+      mpirun = 'mpirun'
     path = []
-    if os.path.dirname(self.mpirun):
-      path.append(os.path.dirname(self.mpirun))
+    if os.path.dirname(mpirun):
+      path.append(os.path.dirname(mpirun))
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin'))
     for inc in self.include:
@@ -460,7 +460,7 @@ class Configure(config.base.Configure):
     if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
-    self.getExecutable('mpirun', path = path, useDefaultPath = 1)
+    self.getExecutable(mpirun, path = path, useDefaultPath = 1, resultName = 'mpirun')
     return
 
   def setOutput(self):
