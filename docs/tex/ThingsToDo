@@ -7,6 +7,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Where to put material that's currently in the file petsc/MatrixBlocking?
+    Users manual?
+
+  - Reduce executable sizes 
+
   - Change from function,ctx model to functoid model, i.e. function object.
 
   - Change config stuff to use petscconf.h
