@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.272 1999/03/16 20:24:09 balay Exp balay $ 
+# $Id: makefile,v 1.273 1999/03/18 22:16:37 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -181,6 +181,7 @@ deletelibs: chkopts_basic
 #     To locate later occurrences, use M-,
 # Builds all etags files
 alletags:
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_complete
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_noexamples
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_examples
