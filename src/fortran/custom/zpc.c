@@ -25,6 +25,7 @@
 #define mggetsmootherup_           MGGETSMOOTHERUP
 #define mggetsmootherdown_         MGGETSMOOTHERDOWN
 #define pcshellsetapply_           PCSHELLSETAPPLY
+#define pcshellsetapplytranspose_  PCSHELLSETAPPLYTRANSPOSE
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcgettype_                 PCGETTYPE
 #define pcsettype_                 PCSETTYPE
@@ -64,6 +65,7 @@
 #define mggetsmootherdown_         mggetsmootherdown
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapply_           pcshellsetapply
+#define pcshellsetapplytranspose_  pcshellsetapplytranspose
 #define pcgettype_                 pcgettype
 #define pcsettype_                 pcsettype
 #define pcgetoptionsprefix_        pcgetoptionsprefix
@@ -146,10 +148,24 @@ static int ourshellapply(void *ctx,Vec x,Vec y)
 }
 
 void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,int*),void *ptr,
-                      int *ierr)
+                                    int *ierr)
 {
   f1 = apply;
   *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
+}
+
+static void (PETSC_STDCALL *f3)(void *,Vec*,Vec*,int*);
+static int ourshellapplytranspose(void *ctx,Vec x,Vec y)
+{
+  int              ierr = 0;
+  (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,int*),
+                                             int *ierr)
+{
+  f3 = applytranspose;
+  *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);
 }
 
 static void (PETSC_STDCALL *f9)(void *,int*);
