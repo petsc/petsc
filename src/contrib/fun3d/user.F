@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.17 2000/01/24 03:57:28 bsmith Exp bsmith $
+c  $Id: user.F,v 1.18 2000/01/27 16:33:35 bsmith Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -529,8 +529,8 @@ c============================================================================
 #include "include/finclude/petscdef.h"
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar rms(3000),clw(3000),cdw(3000),
-     &       cmw(3000),xres(3000)
+      Scalar rms(1001),clw(1001),cdw(1001),
+     &       cmw(1001),xres(1001)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/history/rms,clw,cdw,cmw,xres
@@ -791,8 +791,8 @@ c=====================================================================72
       integer nnodes,nnode_glo,irank,icount
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  rms(3000),clw(3000),cdw(3000),
-     &        cmw(3000),xres(3000)
+      Scalar  rms(1001),clw(1001),cdw(1001),
+     &        cmw(1001),xres(1001)
       Scalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,
      &        nstage,ncyct,iramp,nitfo
@@ -920,8 +920,8 @@ c=====================================================================72
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar rms(3000),clw(3000),cdw(3000),
-     &       cmw(3000),xres(3000)
+      Scalar rms(1001),clw(1001),cdw(1001),
+     &       cmw(1001),xres(1001)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -1413,8 +1413,8 @@ c=============================================================================
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar  rms(3000),clw(3000),cdw(3000),
-     &        cmw(3000),xres(3000)
+      Scalar  rms(1001),clw(1001),cdw(1001),
+     &        cmw(1001),xres(1001)
       Scalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,
      &        nstage,ncyct,iramp,nitfo
@@ -2656,8 +2656,8 @@ c
      &        nstage,ncyct,iramp,nitfo
       Scalar  gtol
       integer icycle,nsrch,ilu0,ifcn
-      Scalar  rms(3000),clw(3000),cdw(3000),
-     &        cmw(3000),xres(3000)
+      Scalar  rms(1001),clw(1001),cdw(1001),
+     &        cmw(1001),xres(1001)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
