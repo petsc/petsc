@@ -9,6 +9,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
+    all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
   - Fix fortran interface for TS.
 
