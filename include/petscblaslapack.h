@@ -385,6 +385,8 @@ EXTERN void      LAgeqrf_(int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,
 #if defined(PETSC_USES_CPTOFCD)
 
 #if defined(PETSC_USE_COMPLEX)
+EXTERN void   ZORMQR(_fcd,_fcd,int*,int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   ZTRTRS(_fcd,_fcd,_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   ZPOTRF(_fcd,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
 EXTERN void   ZPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
@@ -393,6 +395,8 @@ EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,Pets
 EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
 EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
 #else
+EXTERN void   DORMQR(_fcd,_fcd,int*,int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   DTRTRS(_fcd,_fcd,_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   DPOTRF(_fcd,int*,PetscScalar*,int*,int*);
 EXTERN void   DGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
 EXTERN void   DPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
