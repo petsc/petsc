@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
       except RuntimeError:
         pass
     if success==0:
-      for flag in ['-TP']:
+      for flag in ['-TP','-P']:
         try:
           self.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
           break
