@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.173 1999/04/20 19:13:33 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.174 1999/05/04 20:32:27 balay Exp bsmith $";
 #endif
 
 /*
@@ -1428,13 +1428,16 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat         B;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr,flg,mbs=m/bs,nbs=n/bs,bs2=bs*bs,size;
+  int         i,len,ierr,flg,mbs,nbs,bs2,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
+  mbs  = m/bs;
+  nbs  = n/bs;
+  bs2  = bs*bs;
 
   if (mbs*bs!=m || nbs*bs!=n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Number rows, cols must be divisible by blocksize");
