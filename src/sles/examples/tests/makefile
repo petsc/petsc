@@ -63,6 +63,10 @@ ex11: ex11.o  chkopts
 	-$(CLINKER) -o ex11 ex11.o  $(PETSC_LIB)
 	$(RM) ex11.o
 
+ex12: ex12.o  chkopts
+	-$(CLINKER) -o ex12 ex12.o  $(PETSC_LIB)
+	$(RM) ex12.o
+
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -170,7 +174,7 @@ runex4_5:
            else echo "Possible problem with ex4_5, diffs above"; fi; \
            $(RM) -f ex4_5.tmp
 runex5:
-	-@$(MPIRUN) -np 2 ex5 -ksp_smonitor > ex5_1.tmp 2>&1; \
+	-@$(MPIRUN) -np 2 ex5 -ksp_smonitor -noslesview> ex5_1.tmp 2>&1; \
            if (diff output/ex5_1.out ex5_1.tmp) then true; \
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
