@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.72 1996/03/19 21:27:41 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.73 1996/04/04 00:27:58 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -134,6 +134,7 @@ $  -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
 $  -mat_dense    : dense type, (Seq or MPI depending on comm)
 $  -mat_seqdense : dense type, uses MatCreateSeqDense()
 $  -mat_mpidense : dense type, uses MatCreateMPIDense()
+$  -mat_seqbaij  : Block AIJ type, uses MatCreateSeaBAIJ
 
    Notes:
    The default matrix type is AIJ, using MatCreateSeqAIJ() and
@@ -144,8 +145,8 @@ $  -mat_mpidense : dense type, uses MatCreateMPIDense()
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatConvert()
-          MatGetTypeFromOptions()
+          MatCreateMPIRowbs(), MatCreateSeqBAIJ,
+          MatConvert(), MatGetTypeFromOptions()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
