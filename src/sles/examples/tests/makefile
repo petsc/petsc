@@ -201,6 +201,10 @@ runex5:
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp
+#
+#   The arco sparse matrices, as well as a few others are available at
+# ftp://info.mcs.anl.gov/pub/petsc/testmatrices
+#
 runex6:
 	-@$(MPIRUN) ex6 -ksp_preonly  -pc_type lu \
 	   -f ../../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
