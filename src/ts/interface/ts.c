@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.21 2000/03/01 16:15:30 bsmith Exp curfman $ */
+/* $Id: ts.c,v 1.22 2000/03/05 16:07:49 curfman Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -1013,7 +1013,7 @@ int TSStep(TS ts,int *steps,double *time)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
   PLogEventBegin(TS_Step,ts,0,0,0);
-  ierr = (*(ts)->step)(ts,steps,time);CHKERRQ(ierr);
+  ierr = (*ts->step)(ts,steps,time);CHKERRQ(ierr);
   PLogEventEnd(TS_Step,ts,0,0,0);
   ierr = OptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg) {

@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.53 2000/03/01 03:16:59 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.54 2000/03/01 03:25:19 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -97,7 +97,6 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
       Solve the Px=r and put the result in xx 
   */
   ierr = PCApply(pc,rr,xx);CHKERRQ(ierr);
-  ts->linear_its++;
 
   PetscFunctionReturn(0);
 }
@@ -186,9 +185,10 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
+    ts->nonlinear_its = cvode->iopt[NNI];
+    ts->linear_its    = cvode->iopt[SPGMR_NLI];
   }
 
-  ts->nonlinear_its = cvode->iopt[NNI];
   *steps           += ts->steps;
   *time             = t;
 

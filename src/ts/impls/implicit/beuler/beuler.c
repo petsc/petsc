@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.41 2000/01/11 21:02:59 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.42 2000/03/01 03:06:16 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -42,7 +42,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
-    ts->linear_its += PetscAbsInt(its);
+    ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     }
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
     ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
-    ts->linear_its += PetscAbsInt(its);
+    ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
     ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
     ierr = SNESSolve(ts->snes,beuler->update,&its);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
+    ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecCopy(beuler->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
