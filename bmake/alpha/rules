@@ -29,7 +29,7 @@ libf: $(OBJSF)
 
 .F.a: 
 	$(RM) $*.f
-	cpp $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	cpp  $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o
