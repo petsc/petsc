@@ -196,19 +196,13 @@ class Configure(config.base.Configure):
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a','libm.a'], 1)
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a','libm.a'], 1)
     # Try Microsoft Windows location
-    MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL')
-    if self.framework.argDB['with-64-bit-pointers']:
-      MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
-    else:
-      MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
-    yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
-    # Try MKL61 on windows (copy code from above)
-    MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL61')
-    if self.framework.argDB['with-64-bit-pointers']:
-      MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
-    else:
-      MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
-    yield ('Microsoft Windows, Intel MKL61 library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
+    for MKL_Version in ['MKL70','MKL61','MKL']:
+      MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', MKL_Version)
+      if self.framework.argDB['with-64-bit-pointers']:
+        MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
+      else:
+        MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
+      yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
     # Try PETSc location
     if self.arch.dir and aelf.arch.arch:
       dir1 = os.path.abspath(os.path.join(self.arch.dir, '..', 'blaslapack', 'lib'))
