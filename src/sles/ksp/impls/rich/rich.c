@@ -29,7 +29,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   Vec             x,b,r,z;
   Mat             Amat,Pmat;
   KSP_Richardson  *richardsonP = (KSP_Richardson*)ksp->data;
-  PetscTruth      exists,pres,diagonalscale;
+  PetscTruth      exists,diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
@@ -54,7 +54,6 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
   z       = ksp->work[1];
   scale   = richardsonP->scale;
-  pres    = ksp->use_pres;
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
@@ -68,20 +67,20 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     ksp->its++;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-    if (ksp->calc_res && !ksp->avoidnorms && !pres) {
+    if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       KSPMonitor(ksp,i,rnorm);
     }
 
     ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
 
-    if (ksp->calc_res && !ksp->avoidnorms && pres) {
+    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
       KSPMonitor(ksp,i,rnorm);
     }
 
     ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
-    if (ksp->calc_res) {
+    if (ksp->normtype != KSP_NO_NORM) {
       ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
       ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -94,10 +93,10 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
-  if (ksp->calc_res && !ksp->reason) {
+  if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
-    if (!ksp->avoidnorms) {
-      if (!pres) {
+    if (ksp->normtype != KSP_NO_NORM) {
+      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM){
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
         ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);   /*   z <- B r          */
@@ -181,7 +180,6 @@ int KSPCreate_Richardson(KSP ksp)
   PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));
   ksp->data                        = (void*)richardsonP;
   richardsonP->scale               = 1.0;
-  ksp->calc_res                    = PETSC_TRUE;
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
   ksp->ops->destroy                = KSPDefaultDestroy;

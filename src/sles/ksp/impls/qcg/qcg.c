@@ -481,7 +481,6 @@ int KSPCreate_QCG(KSP ksp)
   PetscLogObjectMemory(ksp,sizeof(KSP_QCG));
   ksp->data                      = (void*)cgP;
   ksp->pc_side                   = PC_SYMMETRIC;
-  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_QCG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_QCG;
   ksp->ops->solve                = KSPSolve_QCG;

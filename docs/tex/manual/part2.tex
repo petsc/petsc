@@ -2236,7 +2236,7 @@ Chebyshev methods.  For these three cases the true residual is used by
 default, but the preconditioned residual can be employed instead with
 the options database command \trl{ksp_preres} or by calling the routine
 \begin{verse}
-  KSPSetUsePreconditionedResidual(KSP ksp,PETSC\_TRUE);
+  KSPSetNormType(KSP ksp,KSP\_PRECONDITIONED\_NORM);
 \end{verse}
 
 \begin{table}

@@ -151,8 +151,8 @@ int MatESISetFromOptions(Mat V)
 #define __FUNCT__ "MatSetValues_ESI"
 int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
-  Mat_ESI *esi = (Mat_ESI*)mat->data;
-  int      ierr,row,i,j,rstart = esi->rstart,rend = esi->rend;
+  Mat_ESI *iesi = (Mat_ESI*)mat->data;
+  int      ierr,i,j,rstart = iesi->rstart,rend = iesi->rend;
  
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -161,9 +161,8 @@ int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMo
     if (im[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
 #endif
     if (im[i] >= rstart && im[i] < rend) {
-      row = im[i] - rstart;
       for (j=0; j<n; j++) {
-          ierr = esi->wmat->copyIntoRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
+          ierr = iesi->wmat->copyIntoRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
        }
     } else {
       ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);

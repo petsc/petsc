@@ -7,17 +7,17 @@
 PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::Preconditioner(PC pc)
 {
   int ierr;
-  this->pc      = pc;
+  this->pc      = ipc;
   this->pobject = (PetscObject)this->pc;
-  PetscObjectGetComm((PetscObject)this->pc,&this->comm);
-  ierr = PetscObjectReference((PetscObject)pc);
+  ierr = PetscObjectGetComm((PetscObject)this->pc,&this->comm);if (ierr) return;
+  ierr = PetscObjectReference((PetscObject)ipc);if (ierr) return;
 }
 
 
 PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::~Preconditioner()
 {
   int ierr;
-  ierr = PetscObjectDereference((PetscObject)this->pc);
+  ierr = PetscObjectDereference((PetscObject)this->pc);if (ierr) return;
 }
 
 PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterface(const char* name, void *& iface)
@@ -73,8 +73,8 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft(
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
-  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
+  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
+  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));CHKERRQ(ierr);
 
   return PCApplySymmetricLeft(this->pc,px,py);
 }
@@ -84,8 +84,8 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
-  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
+  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
+  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));CHKERRQ(ierr);
 
   return PCApplySymmetricRight(this->pc,px,py);
 }
@@ -94,15 +94,15 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( es
 {
   int    ierr;
   Vec    py,px,work;
-  PCSide side;
+  PCSide iside;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
   ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
   ierr = VecDuplicate(py,&work);CHKERRQ(ierr);
-  if (this->side == esi::PRECONDITIONER_LEFT)      side = PC_LEFT;
-  if (this->side == esi::PRECONDITIONER_RIGHT)     side = PC_RIGHT;
-  if (this->side == esi::PRECONDITIONER_TWO_SIDED) side = PC_SYMMETRIC;
-  ierr = PCApplyBAorAB(this->pc,side,px,py,work);CHKERRQ(ierr);
+  if (this->side == esi::PRECONDITIONER_LEFT)      iside = PC_LEFT;
+  if (this->side == esi::PRECONDITIONER_RIGHT)     iside = PC_RIGHT;
+  if (this->side == esi::PRECONDITIONER_TWO_SIDED) iside = PC_SYMMETRIC;
+  ierr = PCApplyBAorAB(this->pc,iside,px,py,work);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -114,13 +114,13 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setup()
 
 PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(esi::PreconditionerSide side)
 {
-  this->side = side;
+  this->side = iside;
   return 0;
 }
 
 PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(esi::PreconditionerSide & side)
 {
-  side = this->side;
+  iside = this->side;
   return 0;
 }
 
@@ -130,7 +130,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperato
         For now require Operator to be a PETSc Mat
   */
   Mat A;
-  int ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));
-  ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);
+  int ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
+  ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   return 0;
 }

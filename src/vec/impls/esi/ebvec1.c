@@ -24,7 +24,7 @@ int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
   PetscFunctionBegin;
   if (!xin->esivec) {
     t = new esi::petsc::Vector<double,int>(xin);
-    ierr = t->getInterface("esi::Vector",xin->esivec);
+    ierr = t->getInterface("esi::Vector",xin->esivec);CHKERRQ(ierr);
   }
   *v = reinterpret_cast<esi::Vector<double,int>* >(xin->esivec);
   PetscFunctionReturn(0);

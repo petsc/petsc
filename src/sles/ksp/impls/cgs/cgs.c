@@ -53,7 +53,9 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  if (!ksp->avoidnorms) {
+  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  } else if (ksp->normtype == KSP_NATURAL_NORM) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -84,8 +86,10 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecAXPY(&a,T,X);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
-    if (!ksp->avoidnorms) {
+    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    } else if (ksp->normtype == KSP_NATURAL_NORM) {
+      dp = PetscAbsInt(rho);
     }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -123,7 +127,6 @@ int KSPCreate_CGS(KSP ksp)
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_CGS;
   ksp->ops->solve                = KSPSolve_CGS;
   ksp->ops->destroy              = KSPDefaultDestroy;

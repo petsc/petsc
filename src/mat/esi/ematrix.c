@@ -7,14 +7,14 @@
 PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
 {
   int      ierr,rn,rN,cn,cN;
-  MPI_Comm *comm;
+  MPI_Comm *icomm;
 
-  ierr = inrmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
+  ierr = inrmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(icomm));
   ierr = inrmap->getLocalSize(rn);
   ierr = inrmap->getGlobalSize(rN);
   ierr = incmap->getLocalSize(cn);
   ierr = incmap->getGlobalSize(cN);
-  ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
+  ierr = MatCreate(*icomm,rn,cn,rN,cN,&this->mat);if (ierr) return;
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->mat,"esi");
   ierr = MatSetFromOptions(this->mat);
 
@@ -24,7 +24,7 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrm
   ierr = incmap->addReference();
 
   this->pobject = (PetscObject)this->mat;
-  PetscObjectGetComm((PetscObject)this->mat,&this->comm);
+  ierr = PetscObjectGetComm((PetscObject)this->mat,&this->comm);if (ierr) return;
 }
 
 
@@ -32,12 +32,12 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat mat)
 {
   int m,n,M,N,ierr;
 
-  this->mat  = mat;
+  this->mat  = imat;
   
   this->pobject = (PetscObject)this->mat;
-  PetscObjectGetComm((PetscObject)this->mat,&this->comm);
-  ierr = MatGetLocalSize(mat,&m,&n);
-  ierr = MatGetSize(mat,&M,&N);
+  ierr = PetscObjectGetComm((PetscObject)this->mat,&this->comm);if (ierr) return;
+  ierr = MatGetLocalSize(mat,&m,&n);if (ierr) return;
+  ierr = MatGetSize(mat,&M,&N);if (ierr) return;
   this->rmap = new esi::petsc::IndexSpace<int>(this->comm,m,M);
   this->cmap = new esi::petsc::IndexSpace<int>(this->comm,n,N);
 }
@@ -46,7 +46,7 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat mat)
 PETSC_TEMPLATE esi::petsc::Matrix<double,int>::~Matrix()
 {
   int ierr;
-  ierr = MatDestroy(this->mat);
+  ierr = MatDestroy(this->mat);if (ierr) return;
 }
 
 PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, void *& iface)
@@ -71,7 +71,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");
@@ -88,8 +88,8 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
-  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
+  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
+  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));CHKERRQ(ierr);
 
   return MatMult(this->mat,px,py);
 }
@@ -134,7 +134,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::V
   int ierr;
   Vec py;
 
-  ierr = diagVector.getInterface("Vec",reinterpret_cast<void*&>(py));
+  ierr = diagVector.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
   return MatGetDiagonal(this->mat,py);
 }
 

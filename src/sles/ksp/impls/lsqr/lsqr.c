@@ -196,7 +196,6 @@ int KSPCreate_LSQR(KSP ksp)
   PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_LSQR;
   ksp->ops->solve                = KSPSolve_LSQR;
   ksp->ops->destroy              = KSPDestroy_LSQR;

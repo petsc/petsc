@@ -71,8 +71,6 @@ EXTERN int KSPSetPreconditionerSide(KSP,PCSide);
 EXTERN int KSPGetPreconditionerSide(KSP,PCSide*);
 EXTERN int KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,int*);
 EXTERN int KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,int);
-EXTERN int KSPSetComputeResidual(KSP,PetscTruth);
-EXTERN int KSPSetUsePreconditionedResidual(KSP,PetscTruth);
 EXTERN int KSPSetInitialGuessNonzero(KSP,PetscTruth);
 EXTERN int KSPGetInitialGuessNonzero(KSP,PetscTruth *);
 EXTERN int KSPSetComputeEigenvalues(KSP,PetscTruth);
@@ -86,8 +84,6 @@ EXTERN int KSPGetIterationNumber(KSP,int*);
 
 EXTERN int KSPSetPC(KSP,PC);
 EXTERN int KSPGetPC(KSP,PC*);
-
-EXTERN int KSPSetAvoidNorms(KSP,PetscTruth);
 
 EXTERN int KSPSetMonitor(KSP,int (*)(KSP,int,PetscReal,void*),void *,int (*)(void*));
 EXTERN int KSPClearMonitor(KSP);
@@ -141,6 +137,23 @@ EXTERN int KSPAppendOptionsPrefix(KSP,char*);
 EXTERN int KSPGetOptionsPrefix(KSP,char**);
 
 EXTERN int KSPView(KSP,PetscViewer);
+
+/*E
+    KSPNormType - Norm that is passed in the Krylov convergence
+       test routines.
+
+   Level: advanced
+
+   Notes: this must match finclude/petscksp.h 
+
+.seealso: SLESSolve(), KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
+          KSPSetConvergenceTest()
+E*/
+typedef enum {KSP_NO_NORM               = 0,
+              KSP_PRECONDITIONED_NORM   = 1,
+              KSP_UNPRECONDITIONED_NORM = 2,
+              KSP_NATURAL_NORM          = 3} KSPNormType;
+EXTERN int KSPSetNormType(KSP,KSPNormType);
 
 /*E
     KSPConvergedReason - reason a Krylov method was said to 

@@ -149,7 +149,6 @@ int KSPCreate_TFQMR(KSP ksp)
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;
   ksp->ops->destroy              = KSPDefaultDestroy;

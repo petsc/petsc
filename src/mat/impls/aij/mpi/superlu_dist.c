@@ -56,10 +56,10 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
     int *marker;
 
     /* Allocate storage for another copy of the matrix. */
-    *at = (double *) doubleMalloc(nnz);
-    *rowind = (int *) intMalloc(nnz);
-    *colptr = (int *) intMalloc(n+1);
-    marker = (int *) intCalloc(n);
+    *at = (double *) doubleMalloc_dist(nnz);
+    *rowind = (int *) intMalloc_dist(nnz);
+    *colptr = (int *) intMalloc_dist(n+1);
+    marker = (int *) intCalloc_dist(n);
 
     /* Get counts of each column of A, and set up column pointers */
     for (i = 0; i < m; ++i)
@@ -94,7 +94,7 @@ extern int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
     
   PetscFunctionBegin;
   /* Deallocate SuperLU_DIST storage */
-  Destroy_CompCol_Matrix(&lu->A_sup);
+  Destroy_CompCol_Matrix_dist(&lu->A_sup);
   Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
   ScalePermstructFree(&lu->ScalePermstruct);
   LUstructFree(&lu->LUstruct);
@@ -200,13 +200,13 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   }
 
   /* Allocate storage for compressed column representation. */
-  dallocateA(N, aa->nz, &a, &asub, &xa);
+  dallocateA_dist(N, aa->nz, &a, &asub, &xa);
   
   /* Convert Petsc NR matrix storage to SuperLU_DIST NC storage */
   dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&a, &asub, &xa);
 
   /* Create compressed column matrix A_sup. */
-  dCreate_CompCol_Matrix(&A_sup, M, N, aa->nz, a, asub, xa, NC, _D, GE);  
+  dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, NC, D, GE);  
 
   /* Factor the matrix. */
   PStatInit(&stat);                /* Initialize the statistics variables. */
