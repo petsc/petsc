@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.7 1996/10/01 02:17:48 curfman Exp bsmith $";
+C "$Id: ex1f.F,v 1.8 1996/10/02 20:59:22 bsmith Exp balay $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -202,6 +202,7 @@ C
 C  Declarations for use with local arrays
 
       Scalar   lx_v(1), lf_v(1)
+      common   lx_v, lf_v
       integer  lx_i, lf_i 
 
 C  Get pointers to vector data.

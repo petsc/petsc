@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.2 1996/10/03 12:56:09 bsmith Exp bsmith $";
+C "$Id: ex4f.F,v 1.3 1996/10/04 20:00:02 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -279,6 +279,7 @@ C
       Double   lambda
 C  Declarations for use with local arrays
       Scalar   lx_v(1)
+      common   lx_v
       integer  lx_i
 
       common /params/ lambda
