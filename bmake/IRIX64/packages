@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.61 2000/04/20 20:14:27 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.62 2000/04/20 20:16:26 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -69,13 +69,13 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 #  The CFLAGS and following stuff is due to Matlab being miss-intalled on our machine
 #  you may not need any of that stuff
-MCC            = cc
+#MCC            = cc
 #CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
-CMEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
-MATLABCOMMAND  = matlab -sgi
-MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
-PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+#CMEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
+#MATLABCOMMAND  = matlab -sgi
+#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
+#MATLAB_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #
 # Location where adiC is installed
