@@ -18,6 +18,23 @@ def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
 
+def fixWin32Flinker(filename):
+    '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
+    import fileinput
+    import re
+
+    reglink    = re.compile('CXX_FLINKER ')
+    regwin32fe = re.compile('win32fe',re.I)
+    regcl      = re.compile('cl',re.I)
+
+    for line in fileinput.input(filename,inplace=1):
+      fl = reglink.search(line)
+      fw = regwin32fe.search(line)
+      if fl and fw:
+        line = regcl.sub('f90',line)
+      print line,
+    return
+
 def petsc_configure(configure_options):
   # use the name of the config/configure_arch.py to determine the arch
   if getarch(): configure_options.append('-PETSC_ARCH='+getarch())
@@ -50,6 +67,7 @@ def petsc_configure(configure_options):
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
+    fixWin32Flinker('bmake/'+framework.argDB['PETSC_ARCH']+'/variables')
     return 0
   except RuntimeError, e:
     msg = '******* Unable to configure with given options ******* (see configure.log for full details):\n'+str(e)+'\n******************************************************\n'
