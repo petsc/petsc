@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.88 1996/09/11 22:44:21 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.89 1996/10/04 02:36:37 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -139,8 +139,8 @@ extern int UseMPE,PLogEventMPEFlags[];
 extern int PLogEventMPEActivate(int);
 extern int PLogEventMPEDeactivate(int);
 #else
-#define PLogEventMPEActivate(a)
-#define PLogEventMPEDeactivate(a)
+#define PLogEventMPEActivate(a) 0
+#define PLogEventMPEDeactivate(a) 0
 #endif
 
 extern int PLogEventActivate(int);
