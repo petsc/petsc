@@ -19,7 +19,6 @@ typedef struct {
 int main( int argc, char **argv )
 {
   SNES         snes;               /* SNES context */
-  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its, n = 5,i;
@@ -52,7 +51,6 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);

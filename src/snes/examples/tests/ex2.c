@@ -12,7 +12,6 @@ int  FormJacobian(SNES snes,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;               /* SNES context */
-  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;                /* solution, residual vectors */
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its;
@@ -27,7 +26,6 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
