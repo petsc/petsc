@@ -258,7 +258,6 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
