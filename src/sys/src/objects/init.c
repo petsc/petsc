@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.42 1999/06/08 22:54:31 balay Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.43 1999/06/30 23:49:38 balay Exp bsmith $";
 #endif
 /*
 
@@ -734,11 +734,14 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
   */
   if (argc && *argc) {
     ierr = PetscSetProgramName(**args);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSetProgramName("Unknown Name"); CHKERRQ(ierr);
   }
+
   /* Also initialize the initial datestamp */
   ierr = PetscSetInitialDate();CHKERRQ(ierr);
 
-  MPI_Initialized(&flag);
+  ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
     ierr = MPI_Init(argc,args);CHKERRQ(ierr);
     PetscBeganMPI    = 1;
