@@ -191,42 +191,24 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
     return
 
-  def checkFortranCompilerOption(self, option, lang = 'F77'):
-    self.pushLanguage(lang)
-    self.sourceExtension = '.F'
-    oldFlags = self.framework.argDB['FFLAGS']
-    success  = 0
-
-    (output, returnCode) = self.outputCompile('', '')
-    if returnCode: raise RuntimeError('Could not compile anything with '+lang+' compiler:\n'+output)
-
-    self.framework.argDB['FFLAGS'] = option
-    (newOutput, returnCode) = self.outputCompile('', '')
-    if not returnCode and output == newOutput:
-      success = 1
-
-    self.framework.argDB['FFLAGS'] = oldFlags
-    self.popLanguage()
-    return success
-
   def configureFortranPIC(self):
     '''Determine the PIC option for the Fortran compiler'''
     # We use the framework in order to remove the PETSC_ namespace
     option = ''
-    if self.checkFortranCompilerOption('-PIC'):
+    if self.compilers.checkFortranFlag('-PIC'):
       option = '-PIC'
-    elif self.checkFortranCompilerOption('-fPIC'):
+    elif self.compilers.checkFortranFlag('-fPIC'):
       option = '-fPIC'
-    elif self.checkFortranCompilerOption('-KPIC'):
+    elif self.compilers.checkFortranFlag('-KPIC'):
       option = '-KPIC'
     self.framework.addSubstitution('FC_SHARED_OPT', option)
     return
 
   def configureFortranCPP(self):
-    '''Determine if Fortran handles CPP properly'''
+    '''Handle case where Fortran cannot preprocess properly'''
     if 'FC' in self.framework.argDB:
       # IBM xlF chokes on this
-      if not self.checkFortranCompilerOption('-DPTesting'):
+      if not self.compilers.fortranPreprocess:
         if self.compilers.isGCC:
           traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
         else:
