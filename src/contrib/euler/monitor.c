@@ -1,11 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.56 1998/05/31 14:55:29 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.57 1998/06/12 19:53:37 curfman Exp curfman $";
 #endif
 
 /*
    This file contains various monitoring routines used by the SNES/Julianne code.
  */
 #include "user.h"
+#include <math.h>
 
 #undef __FUNC__
 #define __FUNC__ "MonitorEuler"
@@ -346,7 +347,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     ni  = app->ni;  nj  = app->nj;  nk = app->nk;
     ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
     /*
-    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p,f_avg,f_ru,f_rv,f_rw,f_r,f_e\n");
+    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p,f_tot,f_ru,f_rv,f_rw,f_r,f_e\n");
     for (k=0; k<nk; k++) {
       for (j=0; j<nj; j++) {
         for (i=0; i<ni; i++) {
@@ -355,9 +356,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
           ijkcx = k*nj*ni + j*ni + i;
           fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
             app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],xx[ijkxi+1],xx[ijkxi+2],
-            xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx],
-            (ff[ijkxi+1]+ff[ijkxi+2]+ff[ijkxi+3]+ff[ijkxi]+ff[ijkxi+4])/5.0,
-            ff[ijkxi+1],ff[ijkxi+2],ff[ijkxi+3],ff[ijkxi],ff[ijkxi+4]);
+            xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx]);
         }
       }
     }
@@ -428,7 +427,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
           f_zv   = 0.25 * (f_rw(i,j,k) + f_rw(i+1,j,k) + f_rw(i,j+1,k) + f_rw(i+1,j+1,k));
           f_r    = 0.25 * (f_den(i,j,k) + f_den(i+1,j,k) + f_den(i,j+1,k) + f_den(i+1,j+1,k));
           f_e_av = 0.25 * (f_e(i,j,k) + f_e(i+1,j,k) + f_e(i,j+1,k) + f_e(i+1,j+1,k));
-          f_tot  = f_xv + f_yv + f_zv + f_r + f_e_av;
+          f_tot  = sqrt(f_xv*f_xv + f_yv*f_yv + f_zv*f_zv + f_r*f_r + f_e_av*f_e_av);
 
           fprintf(fp,"%8.4f  %8.4f  %8.4f  %8.4f  %8.4f  %8.4f  %8.4f  %8.4f  %8.4f  %8.4e  %8.4e  %8.4e  %8.4e  %8.4e  %8.4e\n",
             xcoord3(i,j,k),ycoord3(i,j,k),zcoord3(i,j,k),p_av,mach,xv,yv,zv,e_av,
