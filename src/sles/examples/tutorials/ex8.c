@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.18 1996/09/27 21:52:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.19 1997/01/01 03:39:14 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -18,6 +18,10 @@ parameters include:\n\
    PCASMCreateSubDomains2D(), which is used in this example to demonstrate
    user-defined subdomains (activated via -user_set_subdomains), is
    uniprocessor only.
+
+   This matrix in this linear system arises from the discretized Laplacian,
+   and thus is not very interesting in terms of experimenting with variants
+   of the ASM preconditioner.  
 */
 
 /*T
@@ -123,6 +127,9 @@ int main(int argc,char **args)
      Could instead use the option -pc_asm_overlap <ovl> 
 
      Set the total number of blocks via -pc_asm_blocks <blks>
+     Note:  The ASM default is to use 1 block per processor.  To
+     experiment on a single processor with various overlaps, you
+     must specify use of multiple blocks!
   */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

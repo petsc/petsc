@@ -33,6 +33,14 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Upgrade sles/examples/tutorials/ex8.c to use a more intersting test problem
+    so that ASM experiments are meaningful.  Add ASM experiments to the
+    spiffed-up tutorials.
+
+  - Maybe support KSPConvergedTrueResidual(), as requested by Dave Levine.
+    Kind of dangerous, because then some people will use it and get inefficient
+    performance.
+
   - Objects need to be able to flush themself of memory that they are not currently
     actively using, so that it may be used by another object. For example the work
     vectors in KSP, or the memory used for storing values in sparse matrices, see
