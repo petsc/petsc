@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.14 1995/10/24 21:55:05 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.15 1996/01/01 01:05:46 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -29,6 +29,8 @@ extern int   DAView(DA,Viewer);
 
 extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);
 extern int   DAGlobalToLocalEnd(DA,Vec, InsertMode,Vec);
+extern int   DALocalToLocalBegin(DA,Vec, InsertMode,Vec);
+extern int   DALocalToLocalEnd(DA,Vec, InsertMode,Vec);
 extern int   DALocalToGlobal(DA,Vec, InsertMode,Vec);
 
 extern int   DAGetDistributedVector(DA,Vec*);
