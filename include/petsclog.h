@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.55 1996/02/26 22:53:57 balay Exp balay $ */
+/* $Id: plog.h,v 1.56 1996/02/26 23:14:07 balay Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -81,7 +81,7 @@
 #define KSP_GMRESOrthogonalization              72
 
 #define PC_SetUp                                75
-#define PC_SetUpBlocks                          76
+#define PC_SetUpOnBlocks                        76
 #define PC_Apply                                77
 #define PC_ApplySymmLeft                        78
 #define PC_ApplySymmRight                       79
