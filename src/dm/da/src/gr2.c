@@ -405,7 +405,7 @@ int VecView_MPI_DA(Vec xin,PetscViewer viewer)
     }
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf_DA(xin,viewer);CHKERRQ(ierr);
-    /*SETERRQ1(1,"Cannot view netCDF vector associated with this dimensional DA %d",dim);*/
+    /* SETERRQ1(1,"Cannot view netCDF vector associated with this dimensional DA %d",dim); */
   } else {
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
