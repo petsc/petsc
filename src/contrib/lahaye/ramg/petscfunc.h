@@ -41,6 +41,8 @@ extern int MatSubstract(Mat Term1, Mat Term2, Mat* Diff);
 
 /*..Structure used in the interface to RAMG..*/
 typedef struct{
+    PetscTruth        arraysset; /* indicates the arrays have already been allocated
+                                    they will be deleted in the next setup call */
     double            *A; 
     int               *IA; 
     int               *JA;

@@ -1762,6 +1762,38 @@ int MatCreate_MPISBAIJ(Mat B)
 }
 EXTERN_C_END
 
+/*MC
+   MATSBAIJ = "sbaij" - A matrix type to be used for symmetric block sparse matrices.
+
+   This matrix type is identical to MATSEQSBAIJ when constructed with a single process communicator,
+   and MATMPISBAIJ otherwise.
+
+   Options Database Keys:
+. -mat_type sbaij - sets the matrix type to "sbaij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPISBAIJ,MATSEQSBAIJ,MATMPISBAIJ
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SBAIJ"
+int MatCreate_SBAIJ(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJ);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPISBAIJSetPreallocation"
 /*@C

@@ -2152,6 +2152,38 @@ int MatCreate_MPIBAIJ(Mat B)
 }
 EXTERN_C_END
 
+/*MC
+   MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
+
+   This matrix type is identical to MATSEQBAIJ when constructed with a single process communicator,
+   and MATMPIBAIJ otherwise.
+
+   Options Database Keys:
+. -mat_type baij - sets the matrix type to "baij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIBAIJ,MATSEQBAIJ,MATMPIBAIJ
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_BAIJ"
+int MatCreate_BAIJ(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATBAIJ);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocation"
 /*@C

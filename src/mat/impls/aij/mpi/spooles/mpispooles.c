@@ -637,7 +637,7 @@ int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 
 /*MC
   MATMPIAIJSPOOLES = "mpiaijspooles" - A matrix type providing direct solvers (LU) for distributed matrices 
-  via the external package MPIAIJSPOOLES.
+  via the external package Spooles.
 
   If MPIAIJSPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),

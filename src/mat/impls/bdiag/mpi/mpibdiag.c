@@ -987,6 +987,38 @@ int MatCreate_MPIBDiag(Mat B)
 }
 EXTERN_C_END
 
+/*MC
+   MATBDIAG = "bdiag" - A matrix type to be used for block diagonal matrices.
+
+   This matrix type is identical to MATSEQBDIAG when constructed with a single process communicator,
+   and MATMPIBDIAG otherwise.
+
+   Options Database Keys:
+. -mat_type bdiag - sets the matrix type to "bdiag" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIBDiag,MATSEQBDIAG,MATMPIBDIAG
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_BDiag"
+int MatCreate_BDiag(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATBDIAG);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQBDIAG);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBDiagSetPreallocation"
 /*@C

@@ -100,7 +100,7 @@ int main(int argc,char **args)
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr  = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr  = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
     ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
     ierrp = VecLoad(fd,&b);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
