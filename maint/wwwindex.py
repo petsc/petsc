@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.23 1999/04/01 18:06:09 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.24 1999/08/31 21:10:57 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -97,6 +97,57 @@ def printindex(outfilename,headfilename,levels,titles,tables):
       fd.write('<BR><A HREF="../index.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
       fd.close()
 
+# This routine takes in as input a dictionary, which contains the
+# alhabetical index to all the man page functions, and prints them all in
+# a single index page
+def printsingleindex(outfilename,alphabet_dict):
+      # Now open the output file.
+      try:
+            fd = open(outfilename,'w')
+      except:
+            print 'Error writing to file',outfilename
+            exit()
+
+      alphabet_index = alphabet_dict.keys()
+      alphabet_index.sort()
+
+      # Print the HTML index for each alphabet
+      fd.write('\n<P>\n')
+      fd.write('<H1>Index</H1>\n')
+
+      fd.write('<H3> <CENTER> | ')
+      for key in alphabet_index:
+            fd.write('<A HREF="singleindex.html#' + key + '"> ' + upper(key) + ' </A> | \n')
+      fd.write('</CENTER></H3> \n')
+      fd.write('\n<P>\n')
+
+      # Now print each section, begining with a title
+      for key in alphabet_index:
+            fd.write('<H3><A NAME="' + key + '">' + upper(key) + '</A></H3>\n' )
+            fd.write('\n<P>\n')
+            fd.write('<TABLE>\n')
+            fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+            fd.write('</TD></TR>\n')
+            function_dict  = alphabet_dict[key]
+            function_index = function_dict.keys()
+            function_index.sort()
+            function_index = maketranspose(function_index,3)
+            for name in function_index:
+                  if name:
+                        path_name = function_dict[name]
+                  else:
+                        path_name = ''
+                  mesg = '<TD WIDTH=250><A HREF="'+ './' + path_name + '">' + \
+                         name + '</A></TD>\n'
+                  fd.write(mesg)
+                  if function_index.index(name) %3 == 2: fd.write('<TR>\n')
+
+            fd.write('</TABLE>')
+
+      fd.close()
+      return
+
+
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
@@ -154,7 +205,44 @@ def createtable(dirname,levels):
             else:
                   print 'Error! Unknown level \''+ level + '\' in', filename
       return table
-      
+
+# This routine is called for each man dir. Each time, it
+# adds the list of manpages, to the given list, and returns
+# the union list.
+
+def addtolist(dirname,singlelist):
+      fd = os.popen('ls '+ dirname + '/*.html')
+      buf = fd.read()
+      if buf == '':
+            print 'Error! Empty directory:',dirname
+            return None
+
+      for filename in split(strip(buf),'\n'):
+            singlelist.append(filename)
+
+      return singlelist
+
+# This routine creates a dictionary, with entries such that each
+# key is the alphabet, and the vaue corresponds to this key is a dictionary
+# of FunctionName/PathToFile Pair.
+
+def createdict(singlelist):
+
+      newdict = {}
+      for filename in singlelist:
+            path,name     = posixpath.split(filename)
+            # grab the short path Mat from /wired/path/Mat
+            junk,path     = posixpath.split(path)
+            index_char    = lower(name[0:1])
+            # remove the .name suffix from name
+            func_name,ext = posixpath.splitext(name)
+            if not newdict.has_key(index_char):
+                  newdict[index_char] = {}
+            newdict[index_char][func_name] = path + '/' + name
+
+      return newdict
+
+
 # Gets the list of man* dirs present in the doc dir.
 # Each dir will have an index created for it.
 def getallmandirs(dirs):
@@ -165,6 +253,7 @@ def getallmandirs(dirs):
             if posixpath.isdir(filename):
                   mandirs.append(filename)
       return mandirs
+
 
 # Extracts PETSC_DIR from the command line and
 # starts genrating index for all the manpages.
@@ -189,15 +278,21 @@ def main():
                 'Advanced - Setting more advanced options and customization',
                 'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
                 'None: Not yet cataloged']
+
+      singlelist = []
       for dirname in mandirs:
-            table       = createtable(dirname,levels)
+            table        = createtable(dirname,levels)
+            singlelist   = addtolist(dirname,singlelist)
             if not table: continue
-            outfilename    = dirname + '/index.html'
+            outfilename  = dirname + '/index.html'
             dname,fname  = posixpath.split(dirname)
             headfilename = dname + '/sec/bop.' + fname
             printindex(outfilename,headfilename,levels,titles,table)
 
-
+      alphabet_dict = createdict(singlelist)
+      outfilename   = PETSC_DIR + '/docs/manualpages' + '/singleindex.html'
+      printsingleindex (outfilename,alphabet_dict)
+      
 # The classes in this file can also
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__': 
