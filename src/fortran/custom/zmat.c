@@ -819,6 +819,7 @@ void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR 
 }
 #endif
 
+#if defined(PETSC_HAVE_SCOTCH)
 void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
                                            PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -827,6 +828,7 @@ void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR 
   *ierr = MatPartitioningScotchSetHostList(*part,t);
   FREECHAR(filename,t);
 }
+#endif
 
 void PETSC_STDCALL matissymmetric_(Mat *mat,PetscReal *tol,PetscTruth *flg,PetscErrorCode *ierr)
 {

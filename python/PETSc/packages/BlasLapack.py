@@ -273,21 +273,21 @@ class Configure(config.base.Configure):
             fc = os.path.join(os.path.dirname(fc),'xlf')
             self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
-      if line.startswith('  '):
+      if line.startswith('FOPTFLAGS '):
         self.setcompilers.pushLanguage('F77')
         #line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
         self.setcompilers.popLanguage()
-        line = 'FOPTFLAGS  = '+self.framework.argDB['FFLAGS']+'\n'
-      if line.startswith('  '):
-        line = 'AR      = '+self.setcompilers.AR+'\n'
-      if line.startswith('  '):
+        line = 'FOPTFLAGS  = -O '+self.framework.argDB['FFLAGS']+'\n'
+      if line.startswith('AR '):
+        line = 'AR         = '+self.setcompilers.AR+'\n'
+      if line.startswith('AR_FLAGS '):
         line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
-      if line.startswith('  '):
+      if line.startswith('LIB_SUFFIX '):
         line = 'LIB_SUFFIX = '+self.framework.argDB['LIB_SUFFIX']+'\n'
-      if line.startswith('  '):
-        line = 'RANLIB = '+self.framework.argDB['RANLIB']+'\n'
-      if line.startswith('  '):
-        line = 'RM = '+self.framework.argDB['RM']+'\n'
+      if line.startswith('RANLIB '):
+        line = 'RANLIB     = '+self.framework.argDB['RANLIB']+'\n'
+      if line.startswith('RM '):
+        line = 'RM         = '+self.framework.argDB['RM']+'\n'
 
       if line.startswith('include'):
         line = '\n'
