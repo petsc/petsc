@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.125 1999/05/04 20:29:08 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.126 1999/05/12 03:27:09 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -122,12 +122,15 @@ EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PetscTrValid"
-/*
-   PetscTrValid - Test the allocated blocks for validity.  This can be used to
+/*@C
+   PetscTrValid - Test the memory for corruption.  This can be used to
    check for memory overwrites.
 
    Input Parameter:
-.  line, file - line number and filename where call originated.
++  line - line number where call originated.
+.  function - name of function calling
+.  file - file where function is
+-  dir - directory where function is
 
    Return value:
    The number of errors detected.
@@ -135,8 +138,20 @@ EXTERN_C_END
    Output Effect:
    Error messages are written to stdout.  
 
+   Notes:
+    You should generally use CHKMEMQ or CHKMEMA as a short cut for calling this 
+    routine.
+
+    The line, function, file and dir are given by the C preprocessor as 
+    __LINE__, __FUNC__, __FILE__, and __DIR__
+
+    The Fortran calling sequence is simply PetscTrValid(ierr)
+
    No output is generated if there are no problems detected.
-*/
+
+.seealso: CHKMEMQ, CHKMEMA
+
+@*/
 int PetscTrValid(int line,const char function[],const char file[],const char dir[])
 {
   TRSPACE  *head;
@@ -147,30 +162,29 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
   head = TRhead;
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
-      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
-      (*PetscErrorPrintf)("Block at address %p is corrupted\n", head );
+      (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("Memory at address %p is corrupted\n", head );
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
       SETERRQ(PETSC_ERR_MEMC,0,"");
     }
     if (head->size <=0) {
-      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
-      (*PetscErrorPrintf)("Block at address %p is corrupted\n", head );
+      (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("Memory at address %p is corrupted\n", head );
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
       SETERRQ(PETSC_ERR_MEMC,0,"");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
     if (nend[0] != COOKIE_VALUE) {
-      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("error detected at %s() line %d in %s%s\n",function,line,dir,file );
       if (nend[0] == ALREADY_FREED) {
-        (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p already freed\n",head->id,head->size, a );
-        SETERRQ(PETSC_ERR_MEMC,0,"Freed block in memory list, corrupted memory");
+        (*PetscErrorPrintf)("Memory [id=%d(%lx)] at address %p already freed\n",head->id,head->size, a );
       } else {
-        (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
+        (*PetscErrorPrintf)("Memory [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 	        head->id, head->size, a );
-        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,
+        (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,
                 head->lineno,head->dirname,head->filename);
-        SETERRQ(PETSC_ERR_MEMC,0,"Corrupted memory");
+        SETERRQ(PETSC_ERR_MEMC,0,"");
       }
     }
     head = head->next;

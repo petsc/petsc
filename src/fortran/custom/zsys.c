@@ -1,11 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.64 1999/05/08 14:00:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.65 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define chkmem_fortran_            CHKMEM_FORTRAN
 #define petscattachdebugger_       PETSCATTACHDEBUGGER
 #define petscobjectsetname_        PETSCOBJECTSETNAME
 #define petscobjectdestroy_        PETSCOBJECTDESTROY
@@ -42,6 +43,7 @@ static char vcid[] = "$Id: zsys.c,v 1.64 1999/05/08 14:00:39 bsmith Exp bsmith $
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define chkmem_fortran_            chkmem_fortran
 #define petscobjectgetnewtag_      petscobjectgetnewtag
 #define petscobjectrestorenewtag_  petscobjectrestorenewtag
 #define petsccommgetnewtag_        petsccommgetnewtag
@@ -208,6 +210,16 @@ void petscmemcpy_(int *out,int *in,int *length,int *__ierr)
 void petsctrlog_(int *__ierr)
 {
   *__ierr = PetscTrLog();
+}
+
+void chkmem_fortran_(int *line, CHAR file,int len)
+{
+  int  ierr;
+  char *c1;
+
+  FIXCHARNOMALLOC(file,len,c1);
+  ierr = PetscTrValid(*line,"Userfunction",c1," ");
+  if (ierr) MPI_Abort(PETSC_COMM_WORLD,ierr);
 }
 
 void petsctrvalid_(int *__ierr)

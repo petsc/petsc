@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.130 1999/05/12 03:35:22 bsmith Exp bsmith $ 
+% $Id: part1.tex,v 1.131 1999/05/16 14:16:33 bsmith Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -474,6 +474,13 @@ details regarding error checking when using the PETSc Fortran interface.
 \caption{Example of Error Traceback}
 \label{fig:traceback}
 \end{figure}
+
+When running the debug (BOPT=g compiled) version of the PETSc libraries, it
+does a great deal of checking for memory corruption (writing outside of 
+array bounds etc). The macros {\tt CHKMEMQ} and {\tt CHKMEMA} can be called 
+anywhere in the code to check the current status of the memory for corruption.
+By putting several (or many) of these macros into your code you can usually 
+easily track down in what small segment of your code the corruption has occured.
 
 \subsection*{Parallel Programming}
 
