@@ -44,7 +44,6 @@ static int TSSetTypeFromOptions(TS ts)
     ierr = TSSetType(ts, defaultType);                                                                    CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-  return(0);
 }
 
 #undef __FUNCT__  

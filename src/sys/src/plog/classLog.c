@@ -121,7 +121,7 @@ int ClassLogRegister(ClassLog classLog, const char cname[], int *cookie) {
   classLog->classInfo[c].descMem      = 0.0;
   if (*cookie == PETSC_DECIDE) {
     classLog->classInfo[c].cookie     = ++PETSC_LARGEST_COOKIE;
-  } else if (cookie >= 0) {
+  } else if (*cookie >= 0) {
     classLog->classInfo[c].cookie     = *cookie;
     /* Need to check here for montonicity and insert if necessary */
   } else {
