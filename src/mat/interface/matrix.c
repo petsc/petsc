@@ -5896,7 +5896,6 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C)
   PetscValidHeaderSpecific(C,MAT_COOKIE,3);
   PetscValidType(C,3);
   MatPreallocated(C);
-  if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (P->N!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->M);
   if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
