@@ -1,11 +1,10 @@
-ld -elf -shared -rdata_shared -all libmpiuni.a        -o libmpiuni.so
-ld -elf -shared -rdata_shared -all libpetsccontrib.a  -o libpetsccontrib.so
-ld -elf -shared -rdata_shared -all libpetscdraw.a     -o libpetscdraw.so
-ld -elf -shared -rdata_shared -all libpetscksp.a      -o libpetscksp.so
-ld -elf -shared -rdata_shared -all libpetscmat.a      -o libpetscmat.so
-ld -elf -shared -rdata_shared -all libpetscsles.a     -o libpetscsles.so
-ld -elf -shared -rdata_shared -all libpetscsnes.a     -o libpetscsnes.so
-ld -elf -shared -rdata_shared -all libpetscsys.a      -o libpetscsys.so
-ld -elf -shared -rdata_shared -all libpetscts.a       -o libpetscts.so
-ld -elf -shared -rdata_shared -all libpetscvec.a      -o libpetscvec.so
-ld -elf -shared -rdata_shared -all libpetscfortran.a  -o libpetscfortran.so
+#! /bin/csh
+echo "$argv[0]: making dynamic libraries in $argv[1]"
+cd $argv[1]
+foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
+  petscsles petscsnes petscsys petscts petscvec petscfortran)
+  if ( -e lib$LIBNAME.a) then 
+    ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so
+  endif
+end
+
