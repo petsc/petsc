@@ -16,3 +16,4 @@ PETSc names that should be changed.
  - PCBSIterSetBlockSolve -> move into pc? (Right now the man page is in mat)
 
  - MGSetR ->??? ( Do not know much aboug MG, but probably "R" could be expanded - satish)
+   MGSetX
