@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.134 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.135 1997/07/29 14:08:31 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -857,7 +857,7 @@ char *OptionsGetProgramName()
 static int OptionsInsertFile_Private(char *file)
 {
   char string[128],*first,*second,*third,*final;
-  int   len,ierr;
+  int   len,ierr,i;
   FILE *fd = fopen(file,"r"); 
 
   if (fd) {
@@ -866,6 +866,13 @@ static int OptionsInsertFile_Private(char *file)
       if (string[0] == '#') continue;
       if (string[0] == '!') continue;
       if (string[0] == '%') continue;
+      /* replace tabs with " " */
+      len = PetscStrlen(string);
+      for ( i=0; i<len; i++ ) {
+        if (string[i] == '\t') {
+          string[i] = ' ';
+        }
+      }
       first = PetscStrtok(string," ");
       second = PetscStrtok(0," ");
       if (first && first[0] == '-') {
