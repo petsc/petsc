@@ -29,7 +29,7 @@ static PetscTruth Xterm = PETSC_TRUE;
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "dbx", "gdb", "idb" or "xxgdb".  Also, HP-UX
+              usually "dbx", "gdb", "idb", "xxgdb" or "ddd".  Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
 -  xterm - flag to indicate debugger window, set to either 1 (to indicate
@@ -129,7 +129,9 @@ int PetscSetDebuggerFromString(char *string)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrstr(string, "noxterm", &f);                                                              CHKERRQ(ierr);
+  ierr = PetscStrstr(string, "noxterm", &f);                                                                 CHKERRQ(ierr);
+  if (f) xterm = PETSC_FALSE;
+  ierr = PetscStrstr(string, "ddd", &f);                                                                     CHKERRQ(ierr);
   if (f) xterm = PETSC_FALSE;
   ierr = PetscCheckDebugger_Private("xdb",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);                                          CHKERRQ(ierr);
@@ -137,10 +139,12 @@ int PetscSetDebuggerFromString(char *string)
   ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("idb",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("ddd",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ups",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("workshop", string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);                                          CHKERRQ(ierr);
-  ierr = PetscSetDebugger(debugger, xterm);                                                               CHKERRQ(ierr);
+
+  ierr = PetscSetDebugger(debugger, xterm);                                                                  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +204,7 @@ int PetscAttachDebugger(void)
   if (child) { /* I am the parent, will run the debugger */
     const char *args[10];
     char       pid[10];
-    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop;
+    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
@@ -213,13 +217,15 @@ int PetscAttachDebugger(void)
     sprintf(pid,"%d",child); 
 
     ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"idb",&isidb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
-    if (isxxgdb || isups) {
+
+    if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
@@ -495,7 +501,7 @@ int PetscStopForDebugger(void)
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int        ppid,rank;
   char       program[256],hostname[256];
-  PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
+  PetscTruth isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
 #endif
 
   PetscFunctionBegin;
@@ -522,12 +528,13 @@ int PetscStopForDebugger(void)
   ppid = getpid();
 
   ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
 
-  if (isxxgdb || isups) {
+  if (isxxgdb || isups || isddd ) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #if defined(PETSC_USE_A_FOR_DEBUGGER)
