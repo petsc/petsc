@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(PETSC_INCLUDE) $(PCONF)
+CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	      = 
 SOURCEC	      = 
 SOURCEF	      =
@@ -9,6 +9,7 @@ SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscvec
+LOCDIR        = src/is/examples
 RUNEXAMPLES_1 = runex2
 EXAMPLES_1    = ex2
 RUNEXAMPLES_2 = runex1

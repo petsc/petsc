@@ -2,8 +2,8 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq $(PCONF) \
-           $(CONF) -D__DIR__='"mat/impls/bdiag/mpi/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	   -I../../.. -I../seq 
 SOURCEC  = mmbdiag.c mpibdiag.c mpibdpc.c
 SOURCEF  =
 SOURCEH  = mpibdiag.h

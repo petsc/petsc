@@ -2,7 +2,7 @@ PETSC_DIR = ../../../..
 ALL: ex1
 
 # Note that we need CONF to pick up the Fortran format info
-CFLAGS        = $(CONF) $(PCONF) $(PETSC_INCLUDE)
+CFLAGS        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS        = 
 SOURCEC       = 
 SOURCEF       =
@@ -10,6 +10,7 @@ SOURCEH       =
 OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscsnes
+LOCDIR        = src/snes/examples/umin/
 EXAMPLES_1    = ex2 ex3
 RUNEXAMPLES_1 = runex2 runex2_2 runex2_3 runex3
 EXAMPLES_2    = ex3

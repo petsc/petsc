@@ -2,8 +2,7 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../..  $(PCONF)\
-           $(CONF) -D__DIR__='"mat/impls/bdiag/seq/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../.. 
 SOURCEC  = bdiag.c bdfact.c
 SOURCEF  =
 SOURCEH  = bdiag.h

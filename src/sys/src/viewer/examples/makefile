@@ -1,13 +1,14 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(PETSC_INCLUDE) $(PCONF) -I$(PETSC_DIR)/include
+CFLAGS	      =	  $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	      = 
 SOURCEC	      = 
 SOURCEF	      =
 SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
+LOCDIR        = src/viewer/examples/
 LIBBASE	      = libpetscvec
 EXAMPLES_2    = 
 EXAMPLESC     = ex1.c ex2.c ex1.m

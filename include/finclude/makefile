@@ -1,6 +1,6 @@
 PETSC_DIR = ../..
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) $(CONF) $(PCONF)
+CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = petsc.h vec.h snes.h da.h draw.h mat.h ksp.h pc.h sles.h viewer.h is.h
@@ -9,7 +9,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
 MANSEC   = 7
-LOCDIR   = include/
+LOCDIR   = include/FINCLUDE/
 
 runexamples:
 

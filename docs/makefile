@@ -1,6 +1,6 @@
 PETSC_DIR = ../
 
-CFLAGS   = $(OPT) -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I..
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = tex/manual/manual.tex www/www.html tex/manual/part1.tex \
@@ -12,6 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = 
+LOCDIR   = docs/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -1,6 +1,6 @@
 PETSC_DIR = ../
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) $(CONF) $(PCONF) 
+CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \

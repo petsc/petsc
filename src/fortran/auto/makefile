@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS	 = $(OPT) $(PETSC_INCLUDE) -I../..  $(PCONF)\
-	   $(CONF) -D__DIR__='"fortran/auto/"'
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. 
 
 SOURCEC	 = asmf.c axisf.c axpyf.c bjacobif.c cgf.c chebyf.c cmeshf.c \
 	cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
@@ -40,6 +39,7 @@ OBJSC	 = asmf.o axisf.o axpyf.o bjacobif.o cgf.o chebyf.o cmeshf.o \
 OBJSF	 =
 LIBBASE	 = libpetscfortran
 MANSEC	 = 1
+LOCDIR   = src/fortran/auto/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

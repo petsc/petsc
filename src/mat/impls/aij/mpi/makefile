@@ -2,8 +2,8 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS	 =  $(PETSC_INCLUDE) -I../../.. -I../seq $(CONF) -I../../../../vec \
-	    -D__DIR__='"mat/impls/aij/mpi/"' $(PCONF)
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	   -I../../.. -I../seq -I../../../../vec 
 SOURCEC	 = mpiaij.c mmaij.c maijfact.c mpiaijpc.c aijpc.c mpiov.c
 SOURCEF	 =
 SOURCEH	 = 

@@ -2,8 +2,7 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../..  $(PCONF)\
-          $(CONF) -D__DIR__='"ts/impls/pseudo/posindep/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../..
 SOURCEC  = posindep.c
 SOURCEF  =
 SOURCEH  = 

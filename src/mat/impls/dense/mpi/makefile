@@ -2,8 +2,8 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq $(PCONF)\
-           $(CONF) -D__DIR__='"mat/impls/dense/mpi/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	   -I../../.. -I../seq 
 SOURCEC  = mpidense.c mmdense.c
 SOURCEF  =
 SOURCEH  = mpidense.h

@@ -2,8 +2,7 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR) $(PCONF)\
-           $(CONF) -D__DIR__='"is/impls/seq/stride/"'
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../.. 
 SOURCEC  = stride.c
 SOURCEF  =
 SOURCEH  = 

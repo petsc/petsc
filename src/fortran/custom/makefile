@@ -13,6 +13,6 @@ OBJSC    = zoptions.o zksp.o zpc.o zsnes.o zsys.o zmat.o zvec.o zsles.o \
 OBJSF    = somefort.o
 LIBBASE  = libpetscfortran
 MANSEC   = 7
-LOCDIR   = fortran/custom/
+LOCDIR   = src/fortran/custom/
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
