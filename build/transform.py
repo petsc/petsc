@@ -22,10 +22,7 @@ class Transform(base.Base):
     for child in self.output.children:
       if set.isCompatible(child):
         return child.append(f)
-    import copy
-    newSet = copy.copy(set)
-    del newSet[:]
-    del newSet.children[:]
+    newSet = set.clone()
     newSet.append(f)
     return self.output.children.append(newSet)
 

@@ -81,14 +81,15 @@ class GenericTag (FileChanged):
     '''- If the file is not in the specified root directory, use the default handler
        - If the file is in the extension list, call the parent method
        - If the file is in the deferred extension list and has changed, put it in the update set'''
-    (base, ext) = os.path.splitext(f)
-    if not self.root or self.root+os.sep == os.path.commonprefix([os.path.normpath(base), self.root+os.sep]):
-      if self.ext is None or ext in self.ext:
-        return FileChanged.handleFile(self, f, set)
-      elif not self.deferredExt is None and ext in self.deferredExt:
-        if self.hasChanged(f):
-          self.deferredUpdates.append(f)
-        return self.output
+    if self.inputTag is None or set.tag in self.inputTag:
+      (base, ext) = os.path.splitext(f)
+      if not self.root or self.root+os.sep == os.path.commonprefix([os.path.normpath(base), self.root+os.sep]):
+        if self.ext is None or ext in self.ext:
+          return FileChanged.handleFile(self, f, set)
+        elif not self.deferredExt is None and ext in self.deferredExt:
+          if self.hasChanged(f):
+            self.deferredUpdates.append(f)
+          return self.output
     return build.transform.Transform.handleFile(self, f, set)
 
   def handleFileSet(self, set):

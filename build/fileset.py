@@ -12,6 +12,10 @@ class FileSet(list):
       self.extend(filenames)
     return
 
+  def clone(self):
+    '''Return a FileSet with the same tag and existence flag, but no members or children'''
+    return FileSet(tag = self.tag, mustExist = self.mustExist)
+
   def checkFile(self, filename):
     '''If mustExist true, check for file existence'''
     if self.mustExist and not os.path.exists(filename):
@@ -135,6 +139,12 @@ class RootedFileSet(FileSet, base.Base):
 
   def __iter__(self):
     return FileSetIterator(self)
+
+  def clone(self):
+    '''Return a RootedFileSet with the same root, tag and existence flag, but no members or children'''
+    set = RootedFileSet(self.projectUrl, tag = self.tag, mustExist = self.mustExist)
+    set._projectRoot = self._projectRoot
+    return set
 
   def checkFile(self, filename, root = None):
     if root is None:
