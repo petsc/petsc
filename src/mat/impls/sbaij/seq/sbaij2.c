@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.10 2000/09/14 15:41:30 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.11 2000/09/15 14:02:26 hzhang Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -32,9 +32,9 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
 
   PetscFunctionBegin;
  
-  if (isrow != iscol) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRA(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
-  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
+  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -59,10 +59,10 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqSBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || c->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Submatrix wrong size");
+    if (c->mbs!=nrows || c->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(int),&flag);CHKERRQ(ierr);
     if (flag == PETSC_FALSE) {
-      SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
+      SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(int));CHKERRQ(ierr);
     C = *B;
@@ -108,7 +108,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
   int         *vary,*iary,*irow,nrows,i,ierr,bs=a->bs,count;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
+  if (isrow != iscol) SETERRA(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
  
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
  
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
@@ -1192,7 +1192,7 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     ierr = PetscFree(jl);CHKERRQ(ierr); 
     ierr = PetscFree(sum);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"No support for this norm yet");
+    SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
   }
   PetscFunctionReturn(0);
 }
@@ -1205,7 +1205,7 @@ int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   int         ierr;
 
   PetscFunctionBegin;
-  if (B->type !=MATSEQSBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
+  if (B->type !=MATSEQSBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| (a->s_nz != b->s_nz)) {
@@ -1239,7 +1239,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   MatScalar   *aa,*aa_j;
 
   PetscFunctionBegin;
-  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = a->bs;
   aa   = a->a;
   ai   = a->i;
@@ -1250,7 +1250,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  /* if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming matrix and vector");*/
+  /* if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");*/
   for (i=0; i<ambs; i++) {
     j=ai[i];              
     if (aj[j] == i) {             /* if this is a diagonal element */
@@ -1282,12 +1282,12 @@ int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   bs2 = a->bs2;
 
   if (ll != rr) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"For symmetric format, left and right scaling vectors must be same\n");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
   }
   if (ll) { 
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
-    if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
+    if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
       M  = ai[i+1] - ai[i];
       li = l + i*bs;      
@@ -1314,7 +1314,7 @@ int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   if (rr) {
     ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
-    if (rn != m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
+    if (rn != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
       M  = ai[i+1] - ai[i];
       v  = aa + bs2*ai[i];
