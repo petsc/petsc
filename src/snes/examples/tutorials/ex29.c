@@ -567,6 +567,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx        *user = (AppCtx*)ptr;
   TstepCtx      *tsCtx = user->tsCtx;
+  Parameter     *param = user->param;
   int           ierr,i,j;
   int           xints,xinte,yints,yinte;
   PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
@@ -659,9 +660,18 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   }
 
   /* Add time step contribution */
-  if (tsCtx->ires) {
-    ierr = AddTSTermLocal(info,x,f,user); CHKERRQ(ierr);
-  }
+  if (tsCtx->ires)
+    if ((param->second_order) && (tsCtx->itstep > 0))
+    {
+      ierr = AddTSTermLocal2(info,x,f,user);
+      CHKERRQ(ierr);
+    }
+    else
+    {
+      ierr = AddTSTermLocal(info,x,f,user);
+      CHKERRQ(ierr);
+    }
+
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
@@ -697,7 +707,7 @@ int Update(DMMG *dmmg)
 
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
 
-    if ((param->second_order) && (tsCtx->itstep == 0))
+    if ((param->second_order) && (tsCtx->itstep > 0))
     {
       for (i=param->mglevels-1; i>=0 ;i--)
       {
