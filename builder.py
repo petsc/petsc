@@ -61,8 +61,9 @@ class MD5DependencyChecker(DependencyChecker):
       if not f in self.sourceDB:
         self.logPrint('Source '+str(source)+' rebuilds due to file '+str(f)+' missing from database')
         return True
-      if not self.sourceDB[f][0] == self.sourceDB.getChecksum(f):
-        self.logPrint('Source '+str(source)+' rebuilds due to changed checksum of file '+str(f))
+      checksum = self.sourceDB.getChecksum(f)
+      if not self.sourceDB[f][0] == checksum:
+        self.logPrint('Source '+str(source)+' rebuilds due to changed checksum('+str(checksum)+') of file '+str(f))
         return True
       if checked is None:
         checked = sets.Set()
@@ -427,10 +428,16 @@ class Builder(logging.Logger):
         target = self.getLinkerTarget(source[0], shared)
     if not target is None and self.shouldLink(source, target):
         if callable(self.getLinkerObject()):
-          output, error, status, outputFiles = self.getLinkerObject()(source, target)
+          if shared:
+            output, error, status, outputFiles = self.getLinkerObject()(source, target)
+          else:
+            output, error, status, outputFiles = self.getSharedLinkerObject()(source, target)
           check(None, status, output, error)
         else:
-          output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
+          if shared:
+            output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
+          else:
+            output, error, status = script.Script.executeShellCommand(self.getSharedLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
           outputFiles = {'Linked ELF': sets.Set([target])}
         self.updateOutputFiles(config.outputFiles, outputFiles)
     else:

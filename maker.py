@@ -329,7 +329,7 @@ class SIDLMake(Make):
             compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
           else:
             if not self.getSIDLClientDirectory(depMake.builder, depSidlFile, language):
-              raise RuntimeError('Cannot determine '+language+' client directory for '+str(depMake)+'('+depSidlFile+')')
+              raise RuntimeError('Cannot determine '+language+' client directory for '+str(depMake.root)+'('+depSidlFile+')')
             compiler.includeDirectories[language].add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
         except KeyError, e:
           if e.args[0] == language:

@@ -47,6 +47,11 @@ class VersionControl(logging.Logger):
     self.logPrint('Commiting a change set', debugSection = 'vc')
     return 0
 
+  def clone(self, parent, child):
+    '''Clone a parent repository into a child. Both arguments are URLs.'''
+    self.logPrint('Cloning '+str(parent)+' into '+str(child), debugSection = 'vc')
+    return 0
+
 class BitKeeper(script.Script, VersionControl):
   def __init__(self, clArgs = None, argDB = None):
     script.Script.__init__(self, clArgs, argDB)
@@ -149,3 +154,9 @@ class BitKeeper(script.Script, VersionControl):
     '''Commit a change set'''
     self.executeShellCommand(self.bk+' citool')
     return 1
+
+  def clone(self, parent, child):
+    '''Clone a parent repository into a child. Both arguments are URLs.'''
+    VersionControl.clone(self, parent, child)
+    self.executeShellCommand(self.bk+' clone '+str(parent)+' '+str(child))
+    return 0

@@ -113,13 +113,14 @@ class UrlMappingNew(logging.Logger):
     return 0
   checkBootstrap = staticmethod(checkBootstrap)
 
-  def bootstrapUrlMap(self, url):
+  def bootstrapUrlMap(url):
     if UrlMappingNew.checkBootstrap():
       (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
       if scheme == 'bk':
         path = os.path.join('/pub', 'petsc', UrlMappingNew.getRepositoryPath(url))
         return (1, urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment)))
     return (0, url)
+  bootstrapUrlMap = staticmethod(bootstrapUrlMap)
 
   def getRepositoryName(url):
     '''Return the repository name from a project URL. This is the base filename that should be used for tarball distributions.'''
