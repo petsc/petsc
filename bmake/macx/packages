@@ -10,13 +10,11 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-#BLASLAPACK_LIB         = -L/Users/petsc/software/f2cblaslapack/macx -lf2clapack -lf2cblas
-#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
-BLASLAPACK_LIB         = -L/Users/petsc/software/fblaslapack/macx -lflapack -lfblas
+BLASLAPACK_LIB         = /System/Library/Frameworks/vecLib.framework/vecLib
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /Users/petsc/software/mpich-1.2.4/macx
+MPI_HOME       = /Users/petsc/software/mpich-1.2.5
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
