@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.4 2000/01/15 15:03:10 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.5 2000/01/18 16:39:29 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -131,7 +131,7 @@ int main(int argc,char **args)
   REAL *xin,*yin;
   REAL cl;                                   /* Lift coefficient           */
   
-  ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&CommSize);
 
