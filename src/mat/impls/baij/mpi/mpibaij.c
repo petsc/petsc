@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.125 1998/05/29 18:52:46 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.126 1998/05/29 22:50:16 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -11,6 +11,7 @@ extern int MatSetUpMultiply_MPIBAIJ(Mat);
 extern int DisAssemble_MPIBAIJ(Mat);
 extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
 extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatGetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *);
 
 /* 
      Local utility routine that creates a mapping from the global column 
