@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.129 2001/08/07 03:04:10 balay Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.130 2001/08/21 21:03:56 bsmith Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
@@ -62,6 +62,7 @@ int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioniBase_FD"
 int MatSNESMFSetFunctioniBase_FD(Mat mat,int (*func)(Vec,void *))
@@ -72,7 +73,9 @@ int MatSNESMFSetFunctioniBase_FD(Mat mat,int (*func)(Vec,void *))
   ctx->funcisetbase = func;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioni_FD"
 int MatSNESMFSetFunctioni_FD(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
@@ -83,7 +86,7 @@ int MatSNESMFSetFunctioni_FD(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
   ctx->funci = funci;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 /*MC
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
@@ -237,6 +240,8 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
       ierr = SNESGetGradient(j->snes,&j->current_f,PETSC_NULL);CHKERRQ(ierr);
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
   }
+  j->vshift = 0.0;
+  j->vscale = 1.0;
   PetscFunctionReturn(0);
 }
 
@@ -317,6 +322,16 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
   ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
   h    = 1.0/h;
   ierr = VecScale(&h,y);CHKERRQ(ierr);
+
+
+  if (ctx->vshift != 0.0 && ctx->vscale != 1.0) {
+    ierr = VecAXPBY(&ctx->vshift,&ctx->vscale,a,y);CHKERRQ(ierr);
+  } else if (ctx->vscale != 1.0) {
+    ierr = VecScale(&ctx->vscale,y);CHKERRQ(ierr);
+  } else if (ctx->vshift != 0.0) {
+    ierr = VecAXPY(&ctx->vshift,a,y);CHKERRQ(ierr);
+  }
+
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
@@ -371,6 +386,10 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
     ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
     ierr          = (*ctx->funci)(i,w,&v,ctx->funcctx);CHKERRQ(ierr);
     aa[i-rstart]  = (v - aa[i-rstart])/h;
+
+    /* possibly shift and scale result */
+    aa[i - rstart] = ctx->vshift + ctx->vscale*aa[i-rstart];
+
     ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
     ww[i-rstart] -= h;
     ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
@@ -378,6 +397,27 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
   ierr = VecRestoreArray(a,&aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatShift_MFFD"
+int MatShift_MFFD(PetscScalar *a,Mat Y)
+{
+  MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
+  PetscFunctionBegin;
+  shell->vshift += *a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_MFFD"
+int MatScale_MFFD(PetscScalar *a,Mat Y)
+{
+  MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
+  PetscFunctionBegin;
+  shell->vscale *= *a;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSNESMF"
@@ -544,6 +584,9 @@ int MatCreate_MFFD(Mat A)
   mfctx->type_name       = 0;
   mfctx->usesnes         = PETSC_FALSE;
 
+  mfctx->vshift          = 0.0;
+  mfctx->vscale          = 1.0;
+
   /* 
      Create the empty data structure to contain compute-h routines.
      These will be filled in below from the command line options or 
@@ -567,10 +610,12 @@ int MatCreate_MFFD(Mat A)
   A->ops->view           = MatView_MFFD;
   A->ops->assemblyend    = MatAssemblyEnd_MFFD;
   A->ops->getdiagonal    = MatGetDiagonal_MFFD;
+  A->ops->scale          = MatScale_MFFD;
+  A->ops->shift          = MatShift_MFFD;
   A->ops->setfromoptions = MatSNESMFSetFromOptions;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioniBase_C","MatSNESMFSetFunctioniBasei_FD",MatSNESMFSetFunctioniBase_FD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioniBase_C","MatSNESMFSetFunctioniBase_FD",MatSNESMFSetFunctioniBase_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
   mfctx->mat = A;
   ierr = VecCreateMPI(A->comm,A->n,A->N,&mfctx->w);CHKERRQ(ierr);
