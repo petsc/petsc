@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Defaults
-hme="/home/petsc/petsc-2.0.17"
+hme="/home/petsc/petsc-2.0.18"
 src_dir=""
 action="lib"
 
@@ -25,7 +25,7 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.17 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.18 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
         echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.18 SRC_DIR=\"\" ACTION=\"all fortran\" "
         echo " "
@@ -59,30 +59,31 @@ done
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh maverick "cd $hme/$src_dir; $make BOPT=g"
-rsh maverick "cd $hme/$src_dir; $make BOPT=O"
+#rsh maverick "cd $hme/$src_dir; $make BOPT=O"
 rsh maverick "cd $hme/$src_dir; $make BOPT=g_c++"
-rsh maverick "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh maverick "cd $hme/$src_dir; $make BOPT=g_complex"
+#rsh maverick "cd $hme/$src_dir; $make BOPT=O_c++"
+#rsh maverick "cd $hme/$src_dir; $make BOPT=g_complex"
 
 
 # IRIX
 arch=IRIX
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh cyan "cd $hme/$src_dir; $make BOPT=g"
-rsh cyan "cd $hme/$src_dir; $make BOPT=O"
-rsh cyan "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh cyan "cd $hme/$src_dir; $make BOPT=g"
+#rsh cyan "cd $hme/$src_dir; $make BOPT=O"
+#rsh cyan "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
 # rs6000_p4
 arch=rs6000_p4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh doc "cd $hme/$src_dir; $make BOPT=g"
-rsh doc "cd $hme/$src_dir; $make BOPT=O"
+#rsh doc "cd $hme/$src_dir; $make BOPT=g"
+#rsh doc "cd $hme/$src_dir; $make BOPT=O"
 
 
 # rs6000
 arch=rs6000
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
+rsh clyde "cd $hme/$src_dir; $make BOPT=g"
 rsh clyde "cd $hme/$src_dir; $make BOPT=O"
 rsh clyde "cd $hme/$src_dir; $make BOPT=g_c++"
 rsh clyde "cd $hme/$src_dir; $make BOPT=O_c++"
