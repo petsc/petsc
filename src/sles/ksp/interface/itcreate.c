@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.13 1995/03/21 23:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 15:57:22 curfman Exp $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.13 1995/03/21 23:18:19 bsmith Exp bsmi
 #include "viewer.h"
 
 /*@ 
-    KSPView - Prints KSP datastructure.
+    KSPView - Prints the KSP data structure.
 
   Input Parameters:
 .  ksp - the Krylov space context
@@ -30,11 +30,13 @@ int _KSPView(PetscObject obj,Viewer viewer)
 }
 static NRList *__ITList = 0;
 /*@
-    KSPCreate - Creates default KSP context.
+    KSPCreate - Creates the default KSP context.
 
   Output Parameter:
 .  ksp - location to put the Krylov Space context.
 
+  Note:
+  The default KSP method is GMRES with a restart of 10.
 @*/
 int KSPCreate(KSP *ksp)
 {
@@ -174,7 +176,8 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
 }
 
 /*@C
-   KSPGetMethodName - Get the name (as a string) from the method type
+   KSPGetMethodName - Gets the KSP method name (as a string) from 
+             the method type.
 
    Input Parameter:
 .  itctx - Iterative context
