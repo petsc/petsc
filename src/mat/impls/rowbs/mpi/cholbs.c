@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.7 1995/04/21 21:37:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.8 1995/05/09 23:59:56 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -110,6 +110,6 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 #else
-static int MatNullMPIRowbs()
+int MatNullMPIRowbs()
 {return 0;}
 #endif
