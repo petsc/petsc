@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.30 2001/01/15 21:48:06 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.31 2001/01/17 22:26:26 bsmith Exp balay $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example
@@ -197,7 +197,7 @@
 !  Output Parameter:
 !  f - function vector
 !
-      subroutine FormFunction(snes,x,f,dummy)
+      subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -253,7 +253,7 @@
 !  B - optionally different preconditioning matrix
 !  flag - flag indicating matrix structure
 !
-      subroutine FormJacobian(snes,X,jac,B,flag,dummy)
+      subroutine FormJacobian(snes,X,jac,B,flag,dummy,ierr)
       implicit none
 
 #include "include/finclude/petsc.h"
