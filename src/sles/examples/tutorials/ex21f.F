@@ -1,11 +1,10 @@
 !
-!    "$Id: ex21f.F,v 1.5 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex21f.F,v 1.6 2001/01/15 21:47:36 bsmith Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
-!      -user_defined_pc : Activate a user-defined preconditioner
 !
-!  Program usage: mpirun ex15f [-help] [all PETSc options]
+!  Program usage: mpirun ex21f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: SLES^basic parallel example
@@ -91,6 +90,8 @@
 
       call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
      &               m*n,A,ierr)
+
+      call MatSetFromOptions(A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
@@ -228,6 +229,7 @@
   100 format('Norm of error ',1pe10.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
+
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
@@ -235,8 +237,12 @@
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
-      call VecDestroy(work,ierr)
       call MatDestroy(A,ierr)
+
+! Free up PCShell data
+      call PCDestroy(sor,ierr)
+      call PCDestroy(jacobi,ierr)
+      call VecDestroy(work,ierr)
 
 
 !  Always call PetscFinalize() before exiting a program. 
