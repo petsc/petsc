@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.29 1995/05/02 16:55:21 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.30 1995/05/02 19:02:21 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -181,8 +181,8 @@ int KSPRegisterDestroy()
 
 
 /*
-   KSPGetMethodFromOptions - Sets the selected KSP method from the options
-   database.
+   KSPGetMethodFromOptions_Private - Sets the selected KSP method from 
+   the options database.
 
    Input Parameter:
 .  ctx - the KSP context
@@ -192,11 +192,8 @@ int KSPRegisterDestroy()
 
    Returns:
    Returns 1 if the method is found; 0 otherwise.
-
-   Options Database Key:
-$  -ksp_method  itmethod
 */
-int KSPGetMethodFromOptions(KSP ctx,KSPMethod *itmethod)
+int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
 {
   char sbuf[50];
   if (OptionsGetString(0,ctx->prefix,"-ksp_method", sbuf, 50 )) {
@@ -227,19 +224,15 @@ int KSPGetMethodName(KSPMethod  itmeth,char **name )
 }
 
 #include <stdio.h>
-/*@C
-   KSPPrintMethods - Prints the KSP methods available from the options 
+/*
+   KSPPrintMethods_Private - Prints the KSP methods available from the options 
    database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
 .  name - the options database name (by default "kspmethod") 
-
-.keywords: KSP, print, methods, options, database
-
-.seealso: KSPPrintHelp()
-@*/
-int KSPPrintMethods(char* prefix,char *name)
+*/
+int KSPPrintMethods_Private(char* prefix,char *name)
 {
   FuncList *entry;
   if (!__ITList) {KSPRegisterAll();}

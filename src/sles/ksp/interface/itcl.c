@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.21 1995/04/27 20:15:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.22 1995/05/02 19:02:46 curfman Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: itcl.c,v 1.21 1995/04/27 20:15:08 bsmith Exp curfman 
 #include "sys.h"
 #include "options.h"
 
-extern int KSPGetMethodFromOptions(KSP,KSPMethod *);
+extern int KSPGetMethodFromOptions_Private(KSP,KSPMethod *);
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -34,7 +34,7 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsHasName(0,0,"-help")) {
     KSPPrintHelp(ctx);
   }
-  if (KSPGetMethodFromOptions(ctx,&method)) {
+  if (KSPGetMethodFromOptions_Private(ctx,&method)) {
     KSPSetMethod(ctx,method);
   }
   OptionsGetInt(0,ctx->prefix,"-ksp_max_it",&ctx->max_it);
@@ -81,6 +81,8 @@ int KSPSetFromOptions(KSP ctx)
   return 0;
 }
   
+extern int KSPPrintMethods_Private(char *,char *);
+
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
@@ -103,7 +105,7 @@ int KSPPrintHelp(KSP ctx)
     else             p = "-";
     VALIDHEADER(ctx,KSP_COOKIE);
     fprintf(stderr,"KSP Options -------------------------------------\n");
-    KSPPrintMethods(p,"ksp_method");
+    KSPPrintMethods_Private(p,"ksp_method");
     fprintf(stderr," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
     fprintf(stderr," %sksp_atol tol: absolute tolerance, defaults to %g\n",

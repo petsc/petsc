@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.20 1995/05/02 21:20:57 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.21 1995/05/03 15:50:54 curfman Exp curfman $";
 #endif
 
 /*  
@@ -23,8 +23,8 @@ int PCPrintHelp(PC pc)
   char *p; 
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr,"PC options ----------------------------------------\n");
-  PCPrintMethods_Private(p,"pcmethod");
-  fprintf(stderr,"Run program with %spcmethod method -help for help on ",p);
+  PCPrintMethods_Private(p,"pc_method");
+  fprintf(stderr,"Run program with %spc_method method -help for help on ",p);
   fprintf(stderr,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
@@ -36,7 +36,7 @@ int PCPrintHelp(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 
-.keywords: KSP, destroy
+.keywords: PC, destroy
 
 .seealso: PCCreate(), PCSetUp()
 @*/
