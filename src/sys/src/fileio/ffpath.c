@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ffpath.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"
 
-extern int SYiTestFile(char *,char,uid_t,gid_t);
+extern int PetscTestFile(char *,char,uid_t,gid_t);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFileFromPath" /* ADIC Ignore */
@@ -50,7 +50,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
-    if (SYiTestFile( path, mode, uid, gid )) {
+    if (PetscTestFile( path, mode, uid, gid )) {
       PetscStrcpy( fname, path );
       return 1;
     }
@@ -76,7 +76,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 	
       PetscStrcpy( trial + ln, name );
 
-      if (SYiTestFile( trial, mode, uid, gid )) {
+      if (PetscTestFile( trial, mode, uid, gid )) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
 	PetscGetFullPath( trial,  fname, MAXPATHLEN );
 	PetscFree( senv );
@@ -86,6 +86,6 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     PetscFree( senv );
   }
 
-  if (SYiTestFile( fname, mode, uid, gid )) return 1;
+  if (PetscTestFile( fname, mode, uid, gid )) return 1;
   else return 0;
 }
