@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
     
   def configureHelp(self, help):
     import nargs
-    help.addArgument('X11', '-no-x',                         nargs.ArgBool(None, 0,   'Deactivate X11'))
+    help.addArgument('X11', '-with-x',                       nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
     help.addArgument('X11', '-with-x-library=<X11 lib>',     nargs.Arg(None, None,    'Specify X11 library file'))
     return
@@ -207,7 +207,7 @@ acfindx:
     return
 
   def configure(self):
-    if self.framework.argDB['no-x']:
+    if not self.framework.argDB['with-x']:
       self.executeTest(self.emptySubstitutions)
       return
     self.executeTest(self.configureLibrary)
