@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.48 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.49 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -20,27 +20,28 @@ struct SH {
 static struct SH* sh        = 0;
 static int        SignalSet = 0;
 
-static char *SIGNAME[] = { "Unknown signal", 
-                           "HUP",
-                           "INT",
-                           "QUIT",
-                           "ILL",
-                           "TRAP",
-                           "ABRT",
-                           "EMT",  
-                           "FPE:\nPETSC ERROR: Floating Point Exception, probably divide by zero",
-                           "KILL", 
-                           "BUS: Bus Error",  
-                           "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory out of range", 
-                           "SYS",
-                           "PIPE",
-                           "ALRM",
-                           "TERM", 
-                           "URG",
-                           "STOP",
-                           "TSTP",
-                           "CONT", 
-                           "CHLD" }; 
+static char *SIGNAME[] = { 
+    "Unknown signal", 
+    "HUP",
+    "INT",
+    "QUIT",
+    "ILL",
+    "TRAP",
+    "ABRT",
+    "EMT",  
+    "FPE:\nPETSC ERROR: Floating Point Exception, probably divide by zero",
+    "KILL", 
+    "BUS: Bus Error, possibly illegal memory access",  
+    "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range", 
+    "SYS",
+    "PIPE",
+    "ALRM",
+    "TERM", 
+    "URG",
+    "STOP",
+    "TSTP",
+    "CONT", 
+    "CHLD" }; 
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSignalHandler"
@@ -106,7 +107,9 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
     PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");
-    PetscStackView(0);
+    PetscErrorPrintf("--------------- Stack Frames ---------------\n");
+    PetscStackView(VIEWER_STDERR_WORLD);
+    PetscErrorPrintf("--------------------------------------------\n");
   }
 #endif
   ierr =  PetscError(0,"unknownfunction","unknown file"," ",PETSC_ERR_SIG,0,buf);
