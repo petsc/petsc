@@ -397,6 +397,10 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   
   b->inode.use             = PETSC_FALSE;
   b->compressedrow.use     = PETSC_TRUE; 
+  if (aij->B->bs !=1){
+    /* printf("aij->B->bs: %d, mat: bs=%d, dim=%d, %d, %d, %d\n",aij->B->bs,mat->bs,mat->m,mat->n,mat->M,mat->N);*/
+    aij->B->bs = 1; /* why it could !=1 ? */
+  }
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
