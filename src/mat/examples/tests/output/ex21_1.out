@@ -2,12 +2,12 @@ Matrix Object:
   type=seqaij, rows=6, cols=6
   total: nonzeros=20, allocated nonzeros=30
     not using I-node routines
-row 0: 0 4  1 -1  2 -1 
-row 1: 0 -1  1 4  3 -1 
-row 2: 0 -1  2 4  3 -1  4 -1 
-row 3: 1 -1  2 -1  3 4  5 -1 
-row 4: 2 -1  4 4  5 -1 
-row 5: 3 -1  4 -1  5 4 
+row 0: (0, 4)  (1, -1)  (2, -1) 
+row 1: (0, -1)  (1, 4)  (3, -1) 
+row 2: (0, -1)  (2, 4)  (3, -1)  (4, -1) 
+row 3: (1, -1)  (2, -1)  (3, 4)  (5, -1) 
+row 4: (2, -1)  (4, 4)  (5, -1) 
+row 5: (3, -1)  (4, -1)  (5, 4) 
 [0] get row 0: 0 4  1 -1  2 -1  
 [0] get row 1: 0 -1  1 4  3 -1  
 [0] get row 2: 0 -1  2 4  3 -1  4 -1  
@@ -18,9 +18,9 @@ Matrix Object:
   type=seqaij, rows=6, cols=6
   total: nonzeros=20, allocated nonzeros=30
     not using I-node routines
-row 0: 0 4  1 -1  2 -1 
-row 1: 0 -1  1 4  3 -1 
-row 2: 0 -1  2 4  3 -1  4 -1 
-row 3: 1 -1  2 -1  3 4  5 -1 
-row 4: 2 -1  4 4  5 -1 
-row 5: 3 -1  4 -1  5 4 
+row 0: (0, 4)  (1, -1)  (2, -1) 
+row 1: (0, -1)  (1, 4)  (3, -1) 
+row 2: (0, -1)  (2, 4)  (3, -1)  (4, -1) 
+row 3: (1, -1)  (2, -1)  (3, 4)  (5, -1) 
+row 4: (2, -1)  (4, 4)  (5, -1) 
+row 5: (3, -1)  (4, -1)  (5, 4) 

@@ -395,7 +395,7 @@ runex5_3:
 	  for mattype in mpiaij mpibaij; do \
 	    ${MPIRUN} -np $$np ex5 -mat_type $$mattype -test_diagonalscale > ex5_3.tmp 2>&1; \
 	    if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
-	    else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
+	    else echo "Possible problem with ex5_3 for" $$mattype", -np="$$np", diffs above"; fi; \
 	    ${RM} -f ex5_3.tmp; \
 	  done; \
 	done;
