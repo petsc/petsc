@@ -2088,6 +2088,7 @@ int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);
    
+    PetscLogInfo(0,"MatAXPY_SeqAIJ: ratio of nnz(X)/nnz(Y): %d/%d = %g\n",x->nz,y->nz,PetscReal(x->nz)/y->nz);
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
