@@ -1,5 +1,5 @@
 !
-!      "$Id: ex58f.F,v 1.6 1998/12/03 04:01:49 bsmith Exp balay $";
+!      "$Id: ex58f.F,v 1.7 1999/03/26 23:20:06 balay Exp bsmith $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
@@ -9,9 +9,8 @@
 #include "include/finclude/viewer.h"
 
       Mat      A
-      integer  err,i
+      integer  err,i,cols(500),ncols
       Scalar   values(500)
-      integer  err,cols(500),ncols
       Viewer   v    
 
       call PetscInitialize(PETSC_NULL_CHARACTER,err)
