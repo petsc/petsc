@@ -28,10 +28,11 @@ BUILDEXAMPLES_9 =
 EXAMPLESC       = ex1.c
 EXAMPLESF       =
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
 	$(RM) ex1.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

@@ -24,6 +24,8 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
@@ -108,6 +110,5 @@ runex10:
 	   else echo "Error in PetscMemmove."; fi; \
 	   $(RM) -f ex10_1.tmp ex10_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

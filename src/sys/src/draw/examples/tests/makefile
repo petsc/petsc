@@ -22,6 +22,8 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex5.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 runex1:
 	-@$(MPIRUN) -np 1 ex1
 runex2:
@@ -78,4 +80,3 @@ ex9: ex9.o  chkopts
 	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
 	$(RM) -f ex9.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

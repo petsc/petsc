@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.18 1997/08/22 15:20:44 bsmith Exp balay $ 
 
 CFLAGS    = 
 SOURCEC   =
@@ -13,8 +13,10 @@ MANSEC    = 7
 LOCDIR    = include/FINCLUDE/
 NOADIC    = true
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 runexamples:
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 
 

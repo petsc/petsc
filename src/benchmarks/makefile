@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 1997/08/22 15:19:15 bsmith Exp balay $ 
 
 ALL: 
 
@@ -26,6 +26,8 @@ EXAMPLESF     =
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
 		PetscGetCPUTime
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 PetscTime: PetscTime.o  chkopts 
 	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
@@ -105,5 +107,4 @@ runtest:
 	-@echo "------------------------------------------------"
 	-@$(MPIRUN) -np 1 Index  > /dev/null
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

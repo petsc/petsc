@@ -19,8 +19,9 @@ BUILDEXAMPLES_3 = ex1f.PETSc  ex1f.rm
 
 EXAMPLESC       = ex1.c   
 EXAMPLESF       = ex1f.F
-#
-#
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) ex1.o
@@ -97,4 +98,3 @@ runex1f:
 	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -linear_variable_matrix 
 	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -nonlinear_jacobian 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

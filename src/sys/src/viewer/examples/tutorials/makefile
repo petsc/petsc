@@ -15,6 +15,8 @@ TESTEXAMPLES_4  =
 BUILDEXAMPLES_4 = 
 EXAMPLESC       = 
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o   chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
@@ -23,5 +25,4 @@ ex2: ex2.o   chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) -f ex2.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

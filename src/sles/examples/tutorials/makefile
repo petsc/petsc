@@ -54,6 +54,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c 
                   ex13.c ex14.c ex15.c ex16.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) ex1.o
@@ -335,4 +337,4 @@ runex16:
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   $(RM) -f ex16_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+

@@ -33,6 +33,7 @@ BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex4f90.F ex1f90.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -179,7 +180,6 @@ runex9:
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
 	   $(RM) -f ex9_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 
 

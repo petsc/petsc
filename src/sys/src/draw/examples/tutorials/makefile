@@ -19,6 +19,8 @@ BUILDEXAMPLES_4 =
 EXAMPLESC       =
 EXAMPLESF       =
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 runex1:
 	-@$(MPIRUN) -np 1 ex1
 runex2:
@@ -54,4 +56,4 @@ ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
 	$(RM) -f ex6.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+

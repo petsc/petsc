@@ -29,6 +29,8 @@ FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
         dmsabc.o dodcps.o dgl2co.o mpinter.o
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o $(FOBJ1) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ1)  $(PETSC_LIB)
 	$(RM) ex1.o $(FOBJ1)
@@ -95,4 +97,3 @@ runex4:
            else echo "Possible problem with ex4_1, diffs above"; fi;\
 	   $(RM) -f ex4_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

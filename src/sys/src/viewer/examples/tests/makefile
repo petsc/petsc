@@ -16,6 +16,8 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex1.m
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 runex2:
 	@echo "There are no externally runable examples in this directory"
 
@@ -27,5 +29,4 @@ ex2: ex2.o   chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) -f ex2.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

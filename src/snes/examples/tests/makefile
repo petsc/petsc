@@ -35,6 +35,9 @@ FOBJ1 = dficfj.o dsfdfj.o dhhdfj.o dcprfj.o dcpffj.o dfdcfj.o dsfifj.o
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o $(FOBJ1) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ1) $(PETSC_LIB)
 	$(RM) ex1.o $(FOBJ1)
@@ -235,4 +238,3 @@ runex14_3:
 	   else echo "Possible problem with ex14_3, diffs above"; fi; \
 	   $(RM) -f ex14_3.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

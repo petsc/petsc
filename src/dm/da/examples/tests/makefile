@@ -30,6 +30,8 @@ BUILDEXAMPLES_5 =
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 EXAMPLESF       = 
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
@@ -89,4 +91,3 @@ runex5:
 runex6:
 	-@$(MPIRUN) -np 6 ex6 -test_order
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

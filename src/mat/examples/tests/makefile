@@ -73,6 +73,8 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex53.c ex54.c ex55.c ex56.c ex57.c
 EXAMPLESF      = ex36.F ex16f90.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
 	$(RM) ex1.o
@@ -598,6 +600,5 @@ runex56_4:
 	   $(RM) -f ex56_4.tmp
 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

@@ -42,6 +42,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex9.c ex10.c \
 		  ex15.c ex17.c
 EXAMPLESF       = ex12.F ex16.F
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) ex1.o
@@ -348,4 +350,3 @@ runex22_2:
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   $(RM) -f ex22_2.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -23,6 +23,8 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
 	$(RM) ex1.o
@@ -71,4 +73,3 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
