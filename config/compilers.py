@@ -51,7 +51,9 @@ class Configure(config.base.Configure):
   def checkCxxOptionalExtensions(self):
     '''Check whether the C++ compiler (IBM xlC, OSF5) need special flag for .c files which contain C++'''
     self.pushLanguage('C++')
-    self.sourceExtension = '.c'
+    cxxObj = self.framework.getCompilerObject('C++')
+    oldExt = cxxObj.sourceExtension
+    cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
     success=0
     for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
@@ -67,6 +69,7 @@ class Configure(config.base.Configure):
           break
         except RuntimeError:
           pass
+    cxxObj.sourceExtension = oldExt
     self.popLanguage()
     return
 
