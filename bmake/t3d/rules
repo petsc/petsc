@@ -1,7 +1,7 @@
-# $Id: base,v 1.31 1998/04/09 21:13:29 balay Exp bsmith $ 
+# $Id: base,v 1.32 1998/04/14 19:44:28 bsmith Exp balay $ 
 
 PARCH    = t3d
-CC       = cc -DPARCH_t3d -h jump
+CC       = cc -h jump
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -15,7 +15,7 @@ RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
 CLINKER  = ${CC} ${COPTFLAGS}
-FLINKER  = ${FC} ${FOPTFLAGS}
+FLINKER  = ${FC} ${FOPTFLAGS} -M7207
 SYS_LIB  =
 SHELL    = /bin/sh
 FCONF    = -DHAVE_64BITS 
@@ -32,22 +32,20 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-
-# This F.f rule ensures that the old *.f files are removed.
-#
-
 .F.f:
-	${RM} $*.f
-	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
-
+	-${RM} /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 .F.o:
-	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
-	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${RM} -f $*.f
+	-${RM} /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${FC} -c ${FOPTFLAGS} /tmp/$*.f -o $*.o
+	-${RM} /tmp/$*.f
 
-.F.a: 
-	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
-	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${AR} cr ${LIBNAME} $*.o
-	${RM} -f $*.o $*.f
+.F.a:
+	-${RM} /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${FC} -c ${FOPTFLAGS} /tmp/$*.f -o $*.o
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} /tmp/$*.f
+
 shared:

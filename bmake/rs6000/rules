@@ -1,11 +1,11 @@
-# $Id: base,v 1.28 1998/04/06 22:52:27 balay Exp balay $ 
+# $Id: base,v 1.29 1998/04/09 21:02:59 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
 # we default to xlC since it generates faster code.
 #
 PARCH    = rs6000
-CC       = xlc -DPARCH_rs6000 
+CC       = xlc
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown

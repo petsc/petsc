@@ -1,4 +1,4 @@
-# $Id: base,v 1.11 1998/04/07 19:41:58 balay Exp bsmith $ 
+# $Id: base,v 1.12 1998/04/13 16:20:43 bsmith Exp balay $ 
 
 
 #
@@ -9,7 +9,7 @@
 #  Setup to use the NAG Fortran 90 compiler.
 #
 PARCH    = sun4
-CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
+CC       = gcc -D__USE_FIXED_PROTOTYPES__ -fPIC
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -36,27 +36,23 @@ libf: ${LIBNAME}(${OBJSF})
 
 #
 #   These are alternative rules for Fortran compilers that 
-#  do not understand the .F suffix
-#
-#   Note: it is not possible to use the NAG F90 compiler with 
-#  PETSc and a Fortran main problem. This is because the NAG
-#  compiler actually generates a C main program while MPICH and
-#  PETSc naturally expect the command line arguments to be 
-#  handled in the Fortran manner, so MPICH crashes on initializing
-#  the command line arguments.
-#
+#   do not understand the .F suffix
+
+.F.f:
+	-${RM} __$*.f
+	-${CC} -E -P -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | grep -v '^C' > __$*.f
 .F.o:
-	-${RM} $*.f
-	-cpp ${CFLAGS} $< | grep -v '^ *#' |grep -v '^C' > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	-${RM} $*.f
+	-${RM} __$*.f
+	-${CC} -E -P -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | grep -v '^C' > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${RM} __$*.f
 
 .F.a:
-	-${RM} $*.f
-	-cpp ${CFLAGS}  $< | grep -v '^ *#' |grep -v '^C' > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	-${RM} __$*.f
+	-cpp -E -P -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F |grep -v '^C' > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o	$*.f
+	-${RM} __$*.f
 
 SLSUFFIX = so.1.0 
 shared: chkopts_basic

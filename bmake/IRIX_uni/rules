@@ -1,7 +1,7 @@
-# $Id: base,v 1.17 1998/04/09 20:39:03 balay Exp balay $ 
+# $Id: base,v 1.18 1998/04/09 21:10:57 balay Exp balay $ 
 
 PARCH    = IRIX
-CC       = cc -DPARCH_IRIX
+CC       = cc 
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -42,11 +42,12 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ############
+
 .F.o:
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} ${COPTFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} ${COPTFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o
 

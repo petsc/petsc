@@ -1,7 +1,7 @@
-# $Id: base,v 1.38 1998/04/09 20:33:13 balay Exp balay $ 
+# $Id: base,v 1.39 1998/04/09 21:09:29 balay Exp balay $ 
 
 PARCH    = IRIX
-CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
+CC       = cc -64 -woff 1164 -woff 1048
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -36,14 +36,14 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###################
+
 .F.o:
-	-${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o
-
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\

@@ -1,7 +1,7 @@
-# $Id: base,v 1.10 1998/04/14 15:23:14 balay Exp balay $ 
+# $Id: base,v 1.11 1998/04/22 20:40:38 balay Exp balay $ 
 
 PARCH    = solaris
-CC       = gcc  -DPARCH_solaris -fPIC
+CC       = gcc -fPIC
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
@@ -28,26 +28,23 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #############
-
-#
-#  We ignore error messages from FC since they seem to be bogus
 #
 #  .F.f: target is nolonger required, but retained, as it is
 #  useful to check what the preprocessor output.
 #
 .F.f:
-	-${RM} $*.f __$*.c
-	-${CC} -E -x c ${CFLAGS} $*.F  > $*.f
+	-${RM} __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -x c ${CFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -x c ${CFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f
 

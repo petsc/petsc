@@ -4,7 +4,7 @@
 # gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__.
 #
 PARCH    = nt_gnu
-CC       = gcc -D__USE_FIXED_PROTOTYPES__ -DPARCH_nt_gnu
+CC       = gcc -D__USE_FIXED_PROTOTYPES__
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -28,19 +28,24 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #############
-
+#
+#  .F.f: target is nolonger required, but retained, as it is
+#  useful to check what the preprocessor output.
+#
 .F.f:
-	-${RM} __$*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} -E  ${CFLAGS} __$*.c  > __$*.f
-	-${RM} __$*.c
-
+	-${RM} __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
 .F.o:
-	-${RM} __$*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} -E  ${CFLAGS} __$*.c  > __$*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f
-	-mv __$*.o $*.o
-	-${RM} __$*.f __$*.c
+	-${RM} __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${RM} __$*.f
+
+.F.a:
+	-${RM} __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} __$*.f
 
 shared:

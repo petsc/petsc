@@ -1,7 +1,7 @@
-# $Id: base,v 1.26 1998/04/13 16:20:43 bsmith Exp bsmith $ 
+# $Id: base,v 1.27 1998/04/16 16:07:59 bsmith Exp balay $ 
 
 PARCH    = alpha
-CC       = cc -DPARCH_alpha
+CC       = cc
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -29,19 +29,15 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #######
+
 .F.o:
-	-${RM} $*.f
-	-cpp ${CFLAGS} ${FCONF} -E $< | grep -v '^ *#' > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	-${RM} $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${RM} $*.f
-	-cpp  ${CFLAGS}  ${FCONF} -E $< | grep -v '^ *#' > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	-${RM} $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} -f $*.o
+	-${RM} $*.o
+
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\

@@ -1,11 +1,11 @@
-# $Id: base,v 1.35 1998/04/22 18:54:54 balay Exp balay $ 
+# $Id: base,v 1.36 1998/04/22 20:41:35 balay Exp balay $ 
 
 PARCH    = solaris
 #
 #  If you are using gcc or an old version cc you may need to remove the
 #  -dalign -xtarget=native from below.
 #
-CC       = cc -DPARCH_solaris -KPIC -dalign -xtarget=native
+CC       = cc -KPIC -dalign -xtarget=native
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
@@ -31,34 +31,13 @@ libf: ${LIBNAME}(${OBJSF})
 
 #############
 
-#.F.o: 
-#	${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
-#.F.a: 
-#	${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
-#	${AR} cr ${LIBNAME} $*.o
-#	${RM} $*.o
-#
-#  .F.f: target is nolonger required, but retained, as it is
-#  useful to check what the preprocessor output.
-#
-.F.f:
-	-${RM} __$*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > __$*.f
-
 .F.o:
-	-${RM} __$*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 
-
-.F.a:
-	-${RM} __$*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F > __$*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f $*.o
+.F.a: 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f $*.o
-
+	-${RM} $*.o
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\

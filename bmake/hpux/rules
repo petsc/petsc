@@ -1,15 +1,15 @@
-# $Id: base,v 1.36 1998/04/09 00:14:50 balay Exp bsmith $ 
+# $Id: base,v 1.37 1998/04/13 16:20:43 bsmith Exp balay $ 
 
 PARCH    = hpux
 #
 #   The name of the C compiler to use, the -Aa option is mandatory
 #  and indicates the we are compiling with ANSI C.
 #
-CC       = cc -DPARCH_hpux -Aa +z
+CC       = cc -Aa +z
 #
 # If building shared libraries, use the following instead.
 # You MUST use +z for shared libraries.
-# CC       = cc -DPARCH_hpux -Aa +z
+# CC       = cc -Aa +z
 # Do similar modifcations for other base.* files which define "CC"
 #
 #
@@ -57,11 +57,12 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ##############
-.F.o: 
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
+
+.F.o:
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o
 
