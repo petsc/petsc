@@ -19,8 +19,8 @@ FC_LIB          = -lf2c
 #
 #BLAS_LIB       = c:/users/petsc/clapack/blas_nt.a
 #LAPACK_LIB     = c:/users/petsc/clapack/lapack_nt.a
-BLAS_LIB       = c:/work/blaslapack/blas.a
-LAPACK_LIB     = c:/work/blaslapack/lapack.a
+BLAS_LIB       = c:/home/blaslapack/blas.a
+LAPACK_LIB     = c:/home/blaslapack/lapack.a
 
 #
 # Location of X-windows software
