@@ -7,7 +7,7 @@
 #define __MG_IMPL
 #include "src/sles/pc/pcimpl.h"
 #include "petscmg.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 typedef struct _MG* MG;
 
@@ -28,8 +28,8 @@ struct _MG
   Vec       r;                            /* Residual */
   int       (*residual)(Mat,Vec,Vec,Vec);
   Mat       A;                            /* matrix used in forming residual*/ 
-  SLES      smoothd;                      /* pre smoother */
-  SLES      smoothu;                      /* post smoother */
+  KSP      smoothd;                      /* pre smoother */
+  KSP      smoothu;                      /* post smoother */
   Mat       interpolate; 
   Mat       restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
   int       default_smoothu;              /* number of smooths per level if not over-ridden */

@@ -1,26 +1,26 @@
 /*$Id: ex3.c,v 1.33 2001/08/07 21:30:54 bsmith Exp $*/
 
-static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
+static char help[] = "Solves a linear system in parallel with KSP.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 /*T
-   Concepts: SLES^basic parallel example
+   Concepts: KSP^basic parallel example
    Concepts: Matrices^inserting elements by blocks
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* Declare user-defined routines */
 extern int FormElementStiffness(PetscReal,PetscScalar*);
@@ -32,7 +32,7 @@ int main(int argc,char **args)
 {
   Vec         u,b,ustar; /* approx solution, RHS, exact solution */
   Mat         A;           /* linear system matrix */
-  SLES        sles;        /* linear solver context */
+  KSP        ksp;        /* linear solver context */
   KSP         ksp;         /* Krylov subspace method context */
   IS          is;          /* index set - used for boundary conditions */
   int         N;           /* dimension of system (global) */
@@ -147,17 +147,18 @@ int main(int argc,char **args)
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -181,7 +182,7 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(ustar);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 

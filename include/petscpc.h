@@ -50,7 +50,7 @@ E*/
 #define PCILU       "ilu"
 #define PCICC       "icc"
 #define PCASM       "asm"
-#define PCSLES      "sles"
+#define PCKSP      "ksp"
 #define PCCOMPOSITE "composite"
 #define PCREDUNDANT "redundant"
 #define PCSPAI      "spai"
@@ -198,7 +198,7 @@ EXTERN int PCBJacobiSetUseTrueLocal(PC);
 EXTERN int PCBJacobiSetTotalBlocks(PC,int,const int[]);
 EXTERN int PCBJacobiSetLocalBlocks(PC,int,const int[]);
 
-EXTERN int PCSLESSetUseTrue(PC);
+EXTERN int PCKSPSetUseTrue(PC);
 
 EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*); 
 EXTERN int PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));

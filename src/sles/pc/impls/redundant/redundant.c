@@ -4,7 +4,7 @@
 
 */
 #include "src/sles/pc/pcimpl.h"     /*I "petscpc.h" I*/
-#include "petscsles.h"
+#include "petscksp.h"
 
 typedef struct {
   PC         pc;                    /* actual preconditioner used on each processor */

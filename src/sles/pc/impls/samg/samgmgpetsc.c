@@ -1,6 +1,6 @@
 #include "global.h"
 #include "petscfunc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 #include "petscmg.h"
 
 static char help[] = "Does PETSc multigrid cycling using hierarchy build by SAMG\n\n";
@@ -12,7 +12,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    /*..Petsc variables..*/
    Vec      x, b;         /* approx solution and RHS */
    Mat      A;            /* linear system matrix */
-   SLES     sles;         /* linear solver context */
+   KSP     ksp;         /* linear solver context */
    PC       pc;           /* preconditioner context */
    PCType   pctype;       /* preconditioning technique */
    KSP      ksp;          /* KSP context */
@@ -43,7 +43,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    Mat         FineLevelMatrix; 
    int         petsc_level, size; 
    /*..Variables for coarse grid solve..*/ 
-   SLES        coarsegridsles;
+   KSP        coarsegridksp;
    PC          coarsegridpc; 
    KSP         coarsegridksp; 
    int         coarsegrid_n; 
@@ -126,14 +126,11 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
        printf("[PETSc]:The right-hand side norm = %e \n",bnrm2); 
 
    /*..Create linear solver context..*/  
-   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRQ(ierr);
+   ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRQ(ierr);
 
    /*..Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix..*/
-   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-
-   /*..Extract ksp type from context..*/
-   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
+   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
 
    /*..Extract pc type from context..*/
    ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
@@ -194,10 +191,10 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
          level....*/ 
    for (k=1;k<=levels;k++){ 
        petsc_level = levels - k; 
-       /*....Get pre-smoothing SLES context....*/ 
-       ierr = MGGetSmootherDown(pc,petsc_level,&grid[k].sles_pre); 
+       /*....Get pre-smoothing KSP context....*/ 
+       ierr = MGGetSmootherDown(pc,petsc_level,&grid[k].ksp_pre); 
               CHKERRQ(ierr); 
-       ierr = MGGetSmootherUp(pc,petsc_level,&grid[k].sles_post); 
+       ierr = MGGetSmootherUp(pc,petsc_level,&grid[k].ksp_post); 
 	      CHKERRQ(ierr); 
        if (k==1)
           FineLevelMatrix = A; 
@@ -210,27 +207,25 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
        ierr = VecDuplicate(grid[k].x,&grid[k].b); CHKERRQ(ierr); 
        ierr = VecDuplicate(grid[k].x,&grid[k].r); CHKERRQ(ierr); 
 
-       /*....set sles_pre context....*/ 
-       ierr = SLESSetOperators(grid[k].sles_pre, FineLevelMatrix, 
+       /*....set ksp_pre context....*/ 
+       ierr = KSPSetOperators(grid[k].ksp_pre, FineLevelMatrix, 
                                FineLevelMatrix, DIFFERENT_NONZERO_PATTERN); 
               CHKERRQ(ierr);
-       ierr = SLESGetKSP(grid[k].sles_pre,&ksp_pre); CHKERRQ(ierr);
        ierr = KSPGetPC(ksp_pre_pre,&pc_pre); CHKERRQ(ierr);
-       ierr = KSPSetType(ksp_pre, KSPRICHARDSON); CHKERRQ(ierr);
-       ierr = KSPSetTolerances(ksp_pre, 1e-12, 1e-50, 1e7,1); 
+       ierr = KSPSetType(grid[k].ksp_pre, KSPRICHARDSON); CHKERRQ(ierr);
+       ierr = KSPSetTolerances(grid[k].ksp_pre, 1e-12, 1e-50, 1e7,1); 
               CHKERRQ(ierr); 
        ierr = PCSetType(pc_pre, PCSOR); CHKERRQ(ierr);   
        ierr = PCSORSetSymmetric(pc_pre,SOR_FORWARD_SWEEP); CHKERRQ(ierr); 
 
-       /*....set sles_post context....*/  
-       ierr = SLESSetOperators(grid[k].sles_post, FineLevelMatrix, 
+       /*....set ksp_post context....*/  
+       ierr = KSPSetOperators(grid[k].ksp_post, FineLevelMatrix, 
                                FineLevelMatrix, DIFFERENT_NONZERO_PATTERN); 
               CHKERRQ(ierr);
-       ierr = SLESGetKSP(grid[k].sles_post,&ksp_post); CHKERRQ(ierr);
-       ierr = KSPGetPC(ksp_post,&pc_post); CHKERRQ(ierr);
-       ierr = KSPSetInitialGuessNonzero(ksp_post, PETSC_TRUE); CHKERRQ(ierr);
-       ierr = KSPSetType(ksp_post, KSPRICHARDSON); CHKERRQ(ierr);
-       ierr = KSPSetTolerances(ksp_post, 1e-12, 1e-50, 1e7,1);
+       ierr = KSPGetPC(grid[k].ksp_post,&pc_post); CHKERRQ(ierr);
+       ierr = KSPSetInitialGuessNonzero(grid[k].ksp_post, PETSC_TRUE); CHKERRQ(ierr);
+       ierr = KSPSetType(grid[k].ksp_post, KSPRICHARDSON); CHKERRQ(ierr);
+       ierr = KSPSetTolerances(grid[k].ksp_post, 1e-12, 1e-50, 1e7,1);
               CHKERRQ(ierr);  
        ierr = PCSetType(pc_post, PCSOR); CHKERRQ(ierr);   
        ierr = PCSORSetSymmetric(pc_post,SOR_BACKWARD_SWEEP); CHKERRQ(ierr);   
@@ -250,17 +245,16 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    }
 
    /*....Set coarse grid solver....*/ 
-   ierr = MGGetCoarseSolve(pc,&coarsegridsles); CHKERRQ(ierr); 
-   ierr = SLESSetFromOptions(coarsegridsles); CHKERRQ(ierr);
-   ierr = SLESSetOperators(coarsegridsles, grid[levels].A, grid[levels].A, 
+   ierr = MGGetCoarseSolve(pc,&coarsegridksp); CHKERRQ(ierr); 
+   ierr = KSPSetFromOptions(coarsegridksp); CHKERRQ(ierr);
+   ierr = KSPSetOperators(coarsegridksp, grid[levels].A, grid[levels].A, 
                            DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-   ierr = SLESGetKSP(coarsegridsles,&coarsegridksp); CHKERRQ(ierr);
    ierr = KSPGetPC(coarsegridksp,&coarsegridpc); CHKERRQ(ierr);
    ierr = KSPSetType(coarsegridksp, KSPPREONLY); CHKERRQ(ierr);
    ierr = PCSetType(coarsegridpc, PCLU); CHKERRQ(ierr); 
 
    /*..Allow above criterea to be overwritten..*/
-   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr); 
+   ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr); 
 
    /*..Indicate that we are going to use a non-zero initial solution..*/
    ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); CHKERRQ(ierr);
@@ -273,7 +267,9 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = PetscGetTime(&v1);CHKERRQ(ierr); 
 
    /*..Solve linear system..*/
-   ierr = SLESSolve(sles,b,x); CHKERRQ(ierr);
+   ierr = KSPSetRhs(ksp,b); CHKERRQ(ierr);
+   ierr = KSPSetSolution(ksp,x); CHKERRQ(ierr);
+   ierr = KSPSolve(ksp); CHKERRQ(ierr);
    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
  
    /*..Print number of iterations..*/ 
@@ -306,7 +302,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = VecDestroy(x); CHKERRQ(ierr);
    ierr = VecDestroy(b); CHKERRQ(ierr); 
    ierr = MatDestroy(A); CHKERRQ(ierr); 
-   ierr = SLESDestroy(sles); CHKERRQ(ierr);
+   ierr = KSPDestroy(ksp); CHKERRQ(ierr);
    for (k=2;k<=levels;k++){ 
      ierr = MatDestroy(grid[k].A); CHKERRQ(ierr); 
    }

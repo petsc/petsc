@@ -28,7 +28,7 @@ static int    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 /*
     KSPSetUp_LGMRES - Sets up the workspace needed by lgmres.
 
-    This is called once, usually automatically by SLESSolve() or SLESSetUp(),
+    This is called once, usually automatically by KSPSolve() or KSPSetUp(),
     but can be called directly by KSPSetUp().
 
 */

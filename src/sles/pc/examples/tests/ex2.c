@@ -1,7 +1,7 @@
 /*$Id: ex2.c,v 1.53 2001/08/07 21:30:37 bsmith Exp $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
-users should employ the SLES interface instead of using PC directly.\n\n";
+users should employ the KSP interface instead of using PC directly.\n\n";
 
 #include "petscksp.h"
 #include "petscpc.h"

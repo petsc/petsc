@@ -903,7 +903,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
+  if (!ilu->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }

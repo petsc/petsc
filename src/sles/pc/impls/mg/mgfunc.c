@@ -1,6 +1,6 @@
 /*$Id: mgfunc.c,v 1.41 2001/08/07 03:03:36 balay Exp $*/
 
-#include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
+#include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscksp.h" I*/
                           /*I "petscmg.h"   I*/
 
 #undef __FUNCT__  
@@ -48,18 +48,18 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 .  pc - the multigrid context 
 
    Output Parameter:
-.  sles - the coarse grid solver context 
+.  ksp - the coarse grid solver context 
 
    Level: advanced
 
 .keywords: MG, multigrid, get, coarse grid
 @*/ 
-int MGGetCoarseSolve(PC pc,SLES *sles)  
+int MGGetCoarseSolve(PC pc,KSP *ksp)  
 { 
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
-  *sles =  mg[0]->smoothd;
+  *ksp =  mg[0]->smoothd;
   PetscFunctionReturn(0);
 }
 
@@ -170,19 +170,19 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetSmoother"
 /*@C
-   MGGetSmoother - Gets the SLES context to be used as smoother for 
+   MGGetSmoother - Gets the KSP context to be used as smoother for 
    both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
    MGGetSmootherDown() to use different functions for pre- and 
    post-smoothing.
 
-   Not Collective, SLES returned is parallel if PC is 
+   Not Collective, KSP returned is parallel if PC is 
 
    Input Parameters:
 +  pc - the multigrid context 
 -  l - the level (0 is coarsest) to supply
 
    Ouput Parameters:
-.  sles - the smoother
+.  ksp - the smoother
 
    Level: advanced
 
@@ -190,29 +190,29 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-int MGGetSmoother(PC pc,int l,SLES *sles)
+int MGGetSmoother(PC pc,int l,KSP *ksp)
 {
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
-  *sles = mg[l]->smoothd;  
+  *ksp = mg[l]->smoothd;  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetSmootherUp"
 /*@C
-   MGGetSmootherUp - Gets the SLES context to be used as smoother after 
+   MGGetSmootherUp - Gets the KSP context to be used as smoother after 
    coarse grid correction (post-smoother). 
 
-   Not Collective, SLES returned is parallel if PC is
+   Not Collective, KSP returned is parallel if PC is
 
    Input Parameters:
 +  pc - the multigrid context 
 -  l  - the level (0 is coarsest) to supply
 
    Ouput Parameters:
-.  sles - the smoother
+.  ksp - the smoother
 
    Level: advanced
 
@@ -220,12 +220,11 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-int MGGetSmootherUp(PC pc,int l,SLES *sles)
+int MGGetSmootherUp(PC pc,int l,KSP *ksp)
 {
   MG       *mg = (MG*)pc->data;
   int      ierr;
   char     *prefix;
-  KSP      ksp;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -238,31 +237,30 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
-    ierr = SLESCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
-    ierr = SLESGetKSP(mg[l]->smoothd,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
-    ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
+    ierr = KSPCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[l]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PetscLogObjectParent(pc,mg[l]->smoothu);
   }
-  if (sles) *sles = mg[l]->smoothu;
+  if (ksp) *ksp = mg[l]->smoothu;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetSmootherDown"
 /*@C
-   MGGetSmootherDown - Gets the SLES context to be used as smoother before 
+   MGGetSmootherDown - Gets the KSP context to be used as smoother before 
    coarse grid correction (pre-smoother). 
 
-   Not Collective, SLES returned is parallel if PC is
+   Not Collective, KSP returned is parallel if PC is
 
    Input Parameters:
 +  pc - the multigrid context 
 -  l  - the level (0 is coarsest) to supply
 
    Ouput Parameters:
-.  sles - the smoother
+.  ksp - the smoother
 
    Level: advanced
 
@@ -270,7 +268,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 
 .seealso: MGGetSmootherUp(), MGGetSmoother()
 @*/
-int MGGetSmootherDown(PC pc,int l,SLES *sles)
+int MGGetSmootherDown(PC pc,int l,KSP *ksp)
 {
   int ierr;
   MG  *mg = (MG*)pc->data;
@@ -278,7 +276,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
   PetscFunctionBegin;
   /* make sure smoother up and down are different */
   ierr = MGGetSmootherUp(pc,l,PETSC_NULL);CHKERRQ(ierr);
-  *sles = mg[l]->smoothd;  
+  *ksp = mg[l]->smoothd;  
   PetscFunctionReturn(0);
 }
 

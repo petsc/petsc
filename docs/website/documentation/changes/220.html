@@ -1,4 +1,6 @@
 
+  Changes for PETSc 2.2
+
   Changed petscengine.h to petscmatlab.h
 
   added new PETSC_VIEWER_MATLAB for saving variables to Matlab .mat files
@@ -18,6 +20,12 @@ the matrix will likly lose the symmetry flag.
   Eliminated KSPGMRESIROrthogonalize() now have KSPGMRESSetCGSRefinement() to decide
 when to use iterative refinement
 
- removed its argument from SLESSolve and KSPSolve
+  The SLES object has been removed from PETSc. All of this options are available via
+the KSP object. For example, -sles_view_binary ->ksp_view_binary, SLESCreate()->KSPCreate()
+The calling sequences SLESSetUp(sles,b,x) should be replaced with KSPSetRhs(ksp,b)
+KSPSetSolution(ksp,x) KSPSetUp(ksp). Similarly SLESSolve(sles,b,x) should be replaced with KSPSetRhs(ksp,b)
+KSPSetSolution(ksp,x) KSPSolve(ksp)
 
--sles_view_binary ->ksp_view_binary
+ removed its argument from KSPSolve. Obtain the number of iterations via KSPGetIterationNumber()
+
+

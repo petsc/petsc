@@ -3,7 +3,7 @@
       Defines a preconditioner that can consist of a collection of PCs
 */
 #include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscsles.h"            /*I "petscsles.h" I*/
+#include "petscksp.h"            /*I "petscksp.h" I*/
 
 typedef struct _PC_CompositeLink *PC_CompositeLink;
 struct _PC_CompositeLink {
@@ -270,7 +270,7 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr = PCSetOptionsPrefix(link->pc,prefix);CHKERRQ(ierr);
   sprintf(newprefix,"sub_%d_",cnt);
   ierr = PCAppendOptionsPrefix(link->pc,newprefix);CHKERRQ(ierr);
-  /* type is set after prefix, because some methods may modify prefix, e.g. pcsles */
+  /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
   ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -461,7 +461,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 
 .keywords: PC, composite preconditioner, set, true, flag
 
-.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCSLESSetUseTrue()
+.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCKSPSetUseTrue()
 @*/
 int PCCompositeSetUseTrue(PC pc)
 {
@@ -490,13 +490,13 @@ int PCCompositeSetUseTrue(PC pc)
    Concepts: composing solvers
 
    Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
-          inner PCs to be PCSLES. 
+          inner PCs to be PCKSP. 
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the other Krylov method
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCSHELL, PCSLES, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
+           PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
            PCCompositeGetPC(), PCCompositeSetUseTrue()
 
 M*/

@@ -255,7 +255,7 @@ runex6f:
 	   else echo "Possible problem with ex6f_1, diffs above"; fi; \
 	   ${RM} -f ex6f_1.tmp
 runex7:
-	-@${MPIRUN} -np 2 ex7 -ksp_smonitor -noslesview -ksp_gmres_cgs_refinement_type always> ex7_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex7 -ksp_smonitor -nokspview -ksp_gmres_cgs_refinement_type always> ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
@@ -349,8 +349,8 @@ runex10_9:
 	   else echo "Possible problem with ex10_9, diffs above"; fi;
 	-@${RM} -f ex10_9.tmp
 runex10_10:
-	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type fgmres -pc_type sles \
-	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcsles -ksp_smonitor> ex10_10.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type fgmres -pc_type ksp \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_smonitor> ex10_10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
@@ -435,12 +435,12 @@ runex14f:
 	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 runex15:
-	-@${MPIRUN} -np 2 ex15 -sles_view -user_defined_pc -ksp_gmres_cgs_refinement_type always > ex15_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex15 -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type always > ex15_1.tmp 2>&1; \
 	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   ${RM} -f ex15_1.tmp
 runex15f:
-	-@${MPIRUN} -np 2 ex15f -sles_view -user_defined_pc -ksp_gmres_cgs_refinement_type always > ex15f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex15f -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type always > ex15f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex15f_1.out ex15f_1.tmp) then true; \
 	   else echo "Possible problem with ex15f_1, diffs above"; fi; \
 	   ${RM} -f ex15f_1.tmp
@@ -491,7 +491,7 @@ runex25_2:
 	   ${RM} -f ex25_1.tmp
 
 runex26:
-	-@${MPIRUN} -np 1 ex26 -esi_sles_view -esi_mat_type seqbaij > ex26_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex26 -esi_ksp_view -esi_mat_type seqbaij > ex26_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
 	   else echo "Possible problem with ex26_1, diffs above"; fi; \
 	   ${RM} -f ex26_1.tmp

@@ -14,7 +14,7 @@ ALL: main
 LOCDIR         = src/contrib/oberman/laplacian_q1/
 EXAMPLESC      = main.c appview.c appload.c appalgebra.c appelement.c
 EXAMPLESO      = main.o appview.o appload.o appalgebra.o appelement.o
-EXAMPLECH      = appctx.h
+EXAMPLESCH     = appctx.h
 DOCS           = finput.c
 DIRS           = scalable
 

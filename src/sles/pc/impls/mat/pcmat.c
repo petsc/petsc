@@ -34,7 +34,7 @@ static int PCDestroy_Mat(PC pc)
 
 /*MC
      PCMAT - A preconditioner obtained by multiplying by the preconditioner matrix supplied
-             in PCSetOperators() or SLESSetOperators()
+             in PCSetOperators() or KSPSetOperators()
 
    Notes:  This one is a little strange. One rarely has an explict matrix that approximates the
          inverse of the matrix they wish to solve for.

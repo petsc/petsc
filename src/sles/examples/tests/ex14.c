@@ -3,7 +3,7 @@
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined Newton method.\n\
-Uses SLES to solve the linearized Newton sytems.  This solver\n\
+Uses KSP to solve the linearized Newton sytems.  This solver\n\
 is a very simplistic inexact Newton method.  The intent of this code is to\n\
 demonstrate the repeated solution of linear sytems with the same nonzero pattern.\n\
 \n\
@@ -22,7 +22,7 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SLES^writing a user-defined nonlinear solver (parallel Bratu example);
+   Concepts: KSP^writing a user-defined nonlinear solver (parallel Bratu example);
    Concepts: DA^using distributed arrays;
    Processors: n
 T*/
@@ -51,7 +51,7 @@ T*/
 
 /* 
    Include "petscda.h" so that we can use distributed arrays (DAs).
-   Include "petscsles.h" so that we can use SLES solvers.  Note that this
+   Include "petscksp.h" so that we can use KSP solvers.  Note that this
    file automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
@@ -59,7 +59,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 #include "petscda.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* 
    User-defined application context - contains data needed by the 
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
   MPI_Comm  comm;                /* communicator */
-  SLES      sles;                /* linear solver */
+  KSP      ksp;                /* linear solver */
   Vec       X,Y,F;             /* solution, update, residual vectors */
   Mat       J;                   /* Jacobian matrix */
   AppCtx    user;                /* user-defined work context */
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
      Create linear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g.,-ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
@@ -207,7 +207,7 @@ int main(int argc,char **argv)
   /* 
       This solver is a very simplistic inexact Newton method, with no
       no damping strategies or bells and whistles. The intent of this code
-      is  merely to demonstrate the repeated solution with SLES of linear
+      is  merely to demonstrate the repeated solution with KSP of linear
       sytems with the same nonzero structure.
 
       This is NOT the recommended approach for solving nonlinear problems
@@ -216,7 +216,6 @@ int main(int argc,char **argv)
       offers many advantages over coding nonlinear solvers independently.
    */
 
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   for (i=0; i<max_nonlin_its; i++) {
 
     /* 
@@ -227,13 +226,15 @@ int main(int argc,char **argv)
 
     /* 
         Solve J Y = F, where J is the Jacobian matrix.
-          - First, set the SLES linear operators.  Here the matrix that
+          - First, set the KSP linear operators.  Here the matrix that
             defines the linear system also serves as the preconditioning
             matrix.
           - Then solve the Newton system.
      */
-    ierr = SLESSetOperators(sles,J,J,mat_flag);CHKERRQ(ierr);
-    ierr = SLESSolve(sles,F,Y);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,J,J,mat_flag);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,F);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,Y);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
     /* 
@@ -288,7 +289,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);           ierr = VecDestroy(Y);CHKERRQ(ierr);
   ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(F);CHKERRQ(ierr);      
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;

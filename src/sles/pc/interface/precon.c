@@ -2,7 +2,7 @@
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "src/sles/pc/pcimpl.h"            /*I "petscsles.h" I*/
+#include "src/sles/pc/pcimpl.h"            /*I "petscksp.h" I*/
 
 /* Logging support */
 int PC_COOKIE = 0;
@@ -916,8 +916,8 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
          user-defined func routine (may be null)
 
    Notes:
-   PCSetModifySubMatrices() MUST be called before SLESSetUp() and
-   SLESSolve().
+   PCSetModifySubMatrices() MUST be called before KSPSetUp() and
+   KSPSolve().
 
    A routine set by PCSetModifySubMatrices() is currently called within
    the block Jacobi (PCBJACOBI) and additive Schwarz (PCASM)
@@ -1327,7 +1327,7 @@ int PCGetOptionsPrefix(PC pc,char *prefix[])
    Notes:
    The pre-solve phase is distinct from the PCSetUp() phase.
 
-   SLESSolve() calls this directly, so is rarely called by the user.
+   KSPSolve() calls this directly, so is rarely called by the user.
 
 .keywords: PC, pre-solve
 
@@ -1382,13 +1382,13 @@ int PCPreSolve(PC pc,KSP ksp)
 .ve
 
    Note:
-   SLESSolve() calls this routine directly, so it is rarely called by the user.
+   KSPSolve() calls this routine directly, so it is rarely called by the user.
 
    Level: developer
 
 .keywords: PC, post-solve
 
-.seealso: PCPreSolve(), SLESSolve()
+.seealso: PCPreSolve(), KSPSolve()
 @*/
 int PCPostSolve(PC pc,KSP ksp)
 {

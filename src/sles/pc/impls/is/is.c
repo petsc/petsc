@@ -123,31 +123,31 @@ int PCISSetUp(PC pc)
   /* See historical note 01, at the bottom of this file. */
 
   /*
-    Creating the SLES contexts for the local Dirichlet and Neumann problems.
+    Creating the KSP contexts for the local Dirichlet and Neumann problems.
   */
   {
     PC  pc_ctx;
     KSP ksp_ctx;
     /* Dirichlet */
-    ierr = SLESCreate(PETSC_COMM_SELF,&pcis->sles_D);CHKERRQ(ierr);
-    ierr = SLESSetOperators(pcis->sles_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(pcis->sles_D,"localD_");CHKERRQ(ierr);
-    ierr = SLESGetKSP(pcis->sles_D,&ksp_ctx);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcis->ksp_D,"localD_");CHKERRQ(ierr);
+    ierr = KSPGetPC(pcis->ksp_D,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(pcis->sles_D);CHKERRQ(ierr);
-    /* the vectors in the following line are dummy arguments, just telling the SLES the vector size. Values are not used */
-    ierr = SLESSetUp(pcis->sles_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = KSPSetType(pcis->ksp_D,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(pcis->ksp_D);CHKERRQ(ierr);
+    /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
+    ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
+    ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = KSPSetUp(pcis->ksp_D);CHKERRQ(ierr);
     /* Neumann */
-    ierr = SLESCreate(PETSC_COMM_SELF,&pcis->sles_N);CHKERRQ(ierr);
-    ierr = SLESSetOperators(pcis->sles_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(pcis->sles_N,"localN_");CHKERRQ(ierr);
-    ierr = SLESGetKSP(pcis->sles_N,&ksp_ctx);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcis->ksp_N,"localN_");CHKERRQ(ierr);
+    ierr = KSPGetPC(pcis->ksp_N,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(pcis->sles_N);CHKERRQ(ierr);
+    ierr = KSPSetType(pcis->ksp_N,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(pcis->ksp_N);CHKERRQ(ierr);
     {
       PetscTruth damp_fixed,
                  remove_nullspace_fixed,
@@ -197,8 +197,10 @@ int PCISSetUp(PC pc)
 	}
       }
     }
-    /* the vectors in the following line are dummy arguments, just telling the SLES the vector size. Values are not used */
-    ierr = SLESSetUp(pcis->sles_N,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+    /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
+    ierr = KSPSetRhs(pcis->ksp_N,pcis->vec1_N);CHKERRQ(ierr);
+    ierr = KSPSetSolution(pcis->ksp_N,pcis->vec2_N);CHKERRQ(ierr);
+    ierr = KSPSetUp(pcis->ksp_N);CHKERRQ(ierr);
   }
 
   ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),
@@ -230,8 +232,8 @@ int PCISDestroy(PC pc)
   if (pcis->A_BI)        {ierr = MatDestroy(pcis->A_BI);CHKERRQ(ierr);}
   if (pcis->A_BB)        {ierr = MatDestroy(pcis->A_BB);CHKERRQ(ierr);}
   if (pcis->D)           {ierr = VecDestroy(pcis->D);CHKERRQ(ierr);}
-  if (pcis->sles_N)      {ierr = SLESDestroy(pcis->sles_N);CHKERRQ(ierr);}
-  if (pcis->sles_D)      {ierr = SLESDestroy(pcis->sles_D);CHKERRQ(ierr);}
+  if (pcis->ksp_N)      {ierr = KSPDestroy(pcis->ksp_N);CHKERRQ(ierr);}
+  if (pcis->ksp_D)      {ierr = KSPDestroy(pcis->ksp_D);CHKERRQ(ierr);}
   if (pcis->vec1_N)      {ierr = VecDestroy(pcis->vec1_N);CHKERRQ(ierr);}
   if (pcis->vec2_N)      {ierr = VecDestroy(pcis->vec2_N);CHKERRQ(ierr);}
   if (pcis->vec1_D)      {ierr = VecDestroy(pcis->vec1_D);CHKERRQ(ierr);}
@@ -273,8 +275,8 @@ int PCISCreate(PC pc)
   pcis->A_BI        = 0;
   pcis->A_BB        = 0;
   pcis->D           = 0;
-  pcis->sles_N      = 0;
-  pcis->sles_D      = 0;
+  pcis->ksp_N      = 0;
+  pcis->ksp_D      = 0;
   pcis->vec1_N      = 0;
   pcis->vec2_N      = 0;
   pcis->vec1_D      = 0;
@@ -322,7 +324,9 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 
   ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,vec1_D,vec2_D);CHKERRQ(ierr);
+  ierr = KSPSetRhs(pcis->ksp_D,vec1_D);CHKERRQ(ierr);
+  ierr = KSPSetSolution(pcis->ksp_D,vec2_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
   ierr = VecAXPY(&m_one,vec2_B,vec1_B);CHKERRQ(ierr);
 
@@ -439,7 +443,9 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
     }
   }
   /* Solving the system for vec2_N */
-  ierr = SLESSolve(pcis->sles_N,vec1_N,vec2_N);CHKERRQ(ierr);
+  ierr = KSPSetRhs(pcis->ksp_N,vec1_N);CHKERRQ(ierr);
+  ierr = KSPSetSolution(pcis->ksp_N,vec2_N);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
   ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);

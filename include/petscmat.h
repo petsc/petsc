@@ -337,7 +337,7 @@ EXTERN int        MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatCopy(), SLESSetOperators(), PCSetOperators()
+.seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
 E*/
 typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER,SUBSET_NONZERO_PATTERN} MatStructure;
 
@@ -751,7 +751,7 @@ EXTERN int MatDAADSetCtx(Mat,void*);
 
 /* 
   These routines are not usually accessed directly, rather solving is 
-  done through the SLES, KSP and PC interfaces.
+  done through the KSP and PC interfaces.
 */
 
 /*E

@@ -1,8 +1,8 @@
 /*$Id: ex15.c,v 1.28 2001/08/07 21:30:50 bsmith Exp $*/
 
-static char help[] = "SLES on an operator with a null space.\n\n";
+static char help[] = "KSP on an operator with a null space.\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -10,12 +10,11 @@ int main(int argc,char **args)
 {
   Vec          x,b,u;      /* approx solution, RHS, exact solution */
   Mat          A;            /* linear system matrix */
-  SLES         sles;         /* SLES context */
+  KSP          ksp;         /* KSP context */
   int          ierr,i,n = 10,col[3],its,i1,i2;
   PetscScalar  none = -1.0,value[3],avalue;
   PetscReal    norm;
   PC           pc;
-  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -55,18 +54,19 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  /* Create SLES context; set operators and options; solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* Create KSP context; set operators and options; solve linear system */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
   /* currently does not do anything */
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
-  /* ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  /* ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   /* Free work space */
   ierr = VecDestroy(x);CHKERRQ(ierr);ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

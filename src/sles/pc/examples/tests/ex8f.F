@@ -19,7 +19,6 @@
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscmg.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +26,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
-!     sles     - linear solver context
+!     ksp     - linear solver context
 !     x, b, u  - approx solution, right-hand-side, exact solution vectors
 !     A        - matrix that defines linear system
 !     its      - iterations for convergence
@@ -35,7 +34,7 @@
 !     rctx     - random number context
 !
 
-      SLES             sles
+      KSP             ksp
       Mat              A 
       Vec              x,b,u
       PC               pc
@@ -137,8 +136,7 @@
 
 !  Create linear solver context
 
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
       call MGSetLevels(pc,1,PETSC_NULL_OBJECT,ierr)
@@ -149,11 +147,11 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
 
 
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)

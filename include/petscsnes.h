@@ -4,7 +4,7 @@
 */
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
-#include "petscsles.h"
+#include "petscksp.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
@@ -14,7 +14,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: nonlinear solvers
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, SLES, KSP, PC
+.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC
 S*/
 typedef struct _p_SNES* SNES;
 
@@ -113,7 +113,7 @@ M*/
 #define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
 #endif
 
-EXTERN int SNESGetSLES(SNES,SLES*);
+EXTERN int SNESGetKSP(SNES,KSP*);
 EXTERN int SNESGetSolution(SNES,Vec*);
 EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
 EXTERN int SNESGetFunction(SNES,Vec*,void**,int(**)(SNES,Vec,Vec,void*));

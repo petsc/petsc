@@ -6,7 +6,7 @@ elasticity. This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\
   -m : problem size\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.
@@ -28,7 +28,6 @@ int main(int argc,char **args)
   int         ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
   PetscScalar v,neg1 = -1.0;
   Vec         u,x,b;
-  SLES        sles;
   KSP         ksp;
   PetscReal   norm;
 
@@ -59,14 +58,15 @@ int main(int argc,char **args)
   ierr = MatMult(mat,u,b);CHKERRQ(ierr);
   
   /* Solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,mat,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
   ierr = VecAXPY(&neg1,u,x);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

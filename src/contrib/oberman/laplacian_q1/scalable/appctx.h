@@ -8,7 +8,7 @@
 #define __APPCTX_H
 
 #include "petscao.h"           /* allows using the PETSc AOData-base routines for grid information */
-#include "petscsles.h"         /* allows using PETSc linear solvers */
+#include "petscksp.h"         /* allows using PETSc linear solvers */
 #include "petscpf.h"
 
 /*------------------------------------------------------------
@@ -92,7 +92,7 @@ typedef struct {
 extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
 
-extern int AppCtxSolve(AppCtx*,int*);
+extern int AppCtxSolve(AppCtx*);
 
 extern int AppCtxCreateRhsAndMatrix(AppCtx*);
 extern int AppCtxSetMatrix(AppCtx*);

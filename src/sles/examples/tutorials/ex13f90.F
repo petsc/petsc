@@ -3,8 +3,8 @@
 !
 !
 !/*T
-!   Concepts: SLES^basic sequential example
-!   Concepts: SLES^Laplacian, 2d
+!   Concepts: KSP^basic sequential example
+!   Concepts: KSP^Laplacian, 2d
 !   Concepts: Laplacian, 2d
 !   Processors: 1
 !T*/
@@ -17,27 +17,25 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The following include statements are required for SLES Fortran programs:
+!  The following include statements are required for KSP Fortran programs:
 !     petsc.h  - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
-!     petscsles.h   - SLES interface
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
 
 !   Vec    x,b      /* solution vector, right hand side vector and work vector */
 !   Mat    A        /* sparse matrix */
-!   SLES   sles     /* linear solver context */
+!   KSP   ksp     /* linear solver context */
 !   int    m,n      /* grid dimensions */
 !
 !   Since we cannot store Scalars and integers in the same context,
@@ -174,7 +172,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 
       integer          m,n,ierr
       PetscFortranAddr userctx(*)
@@ -185,7 +182,7 @@
 !  Local variable declararions
       Mat     A
       Vec     b,x
-      SLES    sles
+      KSP    ksp
       integer Ntot
 
 
@@ -214,12 +211,12 @@
 !  Create linear solver context. This will be used repeatedly for all 
 !  the linear solves needed.
 
-      call SLESCreate(PETSC_COMM_SELF,sles,ierr)
+      call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
 
       userctx(1) = x
       userctx(2) = b
       userctx(3) = A
-      userctx(4) = sles
+      userctx(4) = ksp
       userctx(5) = m
       userctx(6) = n
 
@@ -240,7 +237,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 
       integer ierr
       PetscFortranAddr userctx(*)
@@ -251,7 +247,7 @@
       double precision hx2,hy2
 
       PC   pc
-      SLES sles
+      KSP ksp
       Vec  b,x
       Mat  A
       integer m,n
@@ -264,7 +260,7 @@
       x    = userctx(1)
       b    = userctx(2)
       A    = userctx(3)
-      sles = userctx(4)
+      ksp = userctx(4)
       m    = userctx(5)
       n    = userctx(6)
 
@@ -320,13 +316,12 @@
 !     will have the same nonzero pattern here, we indicate this so the
 !     linear solvers can take advantage of this.
 !
-      call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
 
 !
 !     Set linear solver defaults for this problem (optional).
 !     - Here we set it to use direct LU factorization for the solution
 !
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCLU,ierr)
 
@@ -334,13 +329,13 @@
 !     Set runtime options, e.g.,
 !        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 !     These options will override those specified above as long as
-!     SLESSetFromOptions() is called _after_ any other customization
+!     KSPSetFromOptions() is called _after_ any other customization
 !     routines.
 ! 
 !     Run the program with the option -help to see all the possible
 !     linear solver options.
 !
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
 !
 !     This allows the PETSc linear solvers to compute the solution 
@@ -358,7 +353,9 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
 
       return
       end
@@ -374,7 +371,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 
       integer ierr
       PetscFortranAddr userctx(*)
@@ -383,7 +379,7 @@
 
       Vec  x,b
       Mat  A
-      SLES sles
+      KSP ksp
 !
 !     We are all done and don't need to solve any more linear systems, so
 !     we free the work space.  All PETSc objects should be destroyed when
@@ -392,12 +388,12 @@
       x    = userctx(1)
       b    = userctx(2)
       A    = userctx(3)
-      sles = userctx(4)
+      ksp = userctx(4)
 
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
 
       return
       end

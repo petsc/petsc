@@ -14,32 +14,32 @@ users manual for a discussion of preloading.  Input parameters include\n\
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
    ex10 -f0 <datafile> -ksp_type preonly  \n\
-        -help -sles_view                  \n\
+        -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -matload_type seqaijspooles/superlu/superlu_dist/aijmumps \n\
         -ksp_type preonly -pc_type cholesky -matload_type seqsbaijspooles/dscpack/sbaijmumps    \n\n";
 */
 /*T
-   Concepts: SLES^solving a linear system
+   Concepts: KSP^solving a linear system
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  SLES           sles;             /* linear solver context */
+  KSP           ksp;             /* linear solver context */
   Mat            A;                /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
@@ -205,7 +205,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("SLESSetUp");
+    PreLoadStage("KSPSetUp");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -215,23 +215,24 @@ int main(int argc,char **args)
     /*
        Create linear solver; set operators; set runtime options.
     */
-    ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
-      /* ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
-    ierr = SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+      /* ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
+    ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* 
-       Here we explicitly call SLESSetUp() and KSPSetUpOnBlocks() to
+       Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
-       SLESSolve() if they haven't been called already.
+       KSPSolve() if they haven't been called already.
     */
-    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
     ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
     tsetup = tsetup2 - tsetup1;
@@ -297,19 +298,19 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    PreLoadStage("SLESSolve");
+    PreLoadStage("KSPSolve");
 
     /*
        Solve linear system; we also explicitly time this stage.
     */
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
-      ierr = SLESSolveTranspose(sles,b,x);CHKERRQ(ierr);
+      ierr = KSPSolveTranspose(ksp);CHKERRQ(ierr);
     } else {
       int  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
       while ( num_rhs-- ) {
-        ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+        ierr = KSPSolve(ksp);CHKERRQ(ierr);
       }
     }
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -340,20 +341,20 @@ int main(int argc,char **args)
        Write output (optinally using table for solver details).
         - PetscPrintf() handles output for multiprocessor jobs 
           by printing from only one processor in the communicator.
-        - SLESView() prints information about the linear solver.
+        - KSPView() prints information about the linear solver.
     */
     if (table) {
-      char        *matrixname,slesinfo[120];
+      char        *matrixname,kspinfo[120];
       PetscViewer viewer;
 
       /*
          Open a string viewer; then write info to it.
       */
-      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRQ(ierr);
-      ierr = SLESView(sles,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
+      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
-                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
+                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
 
       /*
          Destroy the viewer
@@ -368,7 +369,6 @@ int main(int argc,char **args)
     if (flg){
       KSP ksp;
       KSPConvergedReason reason;
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %d\n", reason); 
     }
@@ -381,7 +381,7 @@ int main(int argc,char **args)
     */
     ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

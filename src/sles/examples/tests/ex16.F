@@ -8,7 +8,6 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscviewer.h"
 #include "include/finclude/petscis.h"
@@ -29,7 +28,7 @@
       PetscScalar      norm,none,five
       Vec              x,b,u
       Mat              A
-      SLES             sles1,sles2
+      KSP             ksp1,ksp2
       character*(128)  f 
       PetscViewer      fd
       IS               isrow
@@ -62,21 +61,22 @@
       call VecDuplicate(b,u,ierr)
 
 ! Solve system-1
-      call SLESCreate(PETSC_COMM_WORLD,sles1,ierr)
-      call SLESSetOptionsPrefix(sles1,'a',ierr)
-      call SLESAppendOptionsPrefix(sles1,'_',ierr)
-      call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,        &  
+      call KSPCreate(PETSC_COMM_WORLD,ksp1,ierr)
+      call KSPSetOptionsPrefix(ksp1,'a',ierr)
+      call KSPAppendOptionsPrefix(ksp1,'_',ierr)
+      call KSPSetOperators(ksp1,A,A,DIFFERENT_NONZERO_PATTERN,        &  
      &                      ierr)
-      call SLESSetFromOptions(sles1,ierr)
+      call KSPSetFromOptions(ksp1,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles1,b,x,ierr)
+      call KSPSetRhs(ksp1,b,ierr)
+      call KSPSetSolution(ksp1,x,ierr)
+      call KSPSolve(ksp1,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
 
 !      print*, 'Time for solve = ',time2-time1
@@ -89,28 +89,29 @@
       call MatZeroRows(A,isrow,five,ierr)
 
 ! Solve system-2
-      call SLESCreate(PETSC_COMM_WORLD,sles2,ierr)
-      call SLESSetOptionsPrefix(sles2,'b',ierr)
-      call SLESAppendOptionsPrefix(sles2,'_',ierr)
-      call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,        &
+      call KSPCreate(PETSC_COMM_WORLD,ksp2,ierr)
+      call KSPSetOptionsPrefix(ksp2,'b',ierr)
+      call KSPAppendOptionsPrefix(ksp2,'_',ierr)
+      call KSPSetOperators(ksp2,A,A,DIFFERENT_NONZERO_PATTERN,        &
      &                      ierr)
-      call SLESSetFromOptions(sles2,ierr)
+      call KSPSetFromOptions(ksp2,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles2,b,x,ierr)
+      call KSPSetRhs(ksp1,b,ierr)
+      call KSPSetSolution(ksp1,x,ierr)
+      call KSPSolve(ksp2,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
 !      print*, 'Time for solve = ',time2-time1
       write(6,100) norm,its
 
 ! Cleanup
-      call SLESDestroy(sles1,ierr)
-      call SLESDestroy(sles2,ierr)
+      call KSPDestroy(ksp1,ierr)
+      call KSPDestroy(ksp2,ierr)
       call VecDestroy(b,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(u,ierr)

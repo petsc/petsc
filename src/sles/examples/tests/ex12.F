@@ -9,7 +9,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscviewer.h"
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
@@ -22,7 +21,7 @@
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
-      SLES             sles
+      KSP             ksp
       character*(128)  f 
       PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)
@@ -58,26 +57,27 @@
       call VecDuplicate(b,u,ierr)
 
 ! Solve system
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
       print*, 'Time for solve = ',time2-time1
 
 ! Cleanup
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call VecDestroy(b,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(u,ierr)

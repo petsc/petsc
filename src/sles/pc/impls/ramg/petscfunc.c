@@ -2,7 +2,7 @@
 
 #include "petscfunc.h"
 #include "ramgfunc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

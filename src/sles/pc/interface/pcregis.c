@@ -15,7 +15,7 @@ EXTERN int PCCreate_MG(PC);
 EXTERN int PCCreate_Eisenstat(PC);
 EXTERN int PCCreate_ICC(PC);
 EXTERN int PCCreate_ASM(PC);
-EXTERN int PCCreate_SLES(PC);
+EXTERN int PCCreate_KSP(PC);
 EXTERN int PCCreate_Composite(PC);
 EXTERN int PCCreate_Redundant(PC);
 EXTERN int PCCreate_NN(PC);
@@ -74,7 +74,7 @@ int PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCHOLESKY     ,path,"PCCreate_Cholesky",PCCreate_Cholesky);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCKSP         ,path,"PCCreate_KSP",PCCreate_KSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);

@@ -5,7 +5,7 @@
 /*
     Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
-#include "petscsles.h"
+#include "petscksp.h"
 #include "src/sles/pc/pcimpl.h"
 
 /*
@@ -15,7 +15,7 @@ typedef struct {
   int        n,n_local;        /* number of blocks (global, local) */
   int        first_local;       /* number of first block on processor */
   PetscTruth use_true_local;    /* use block from true matrix, not preconditioner matrix for local MatMult() */
-  SLES       *sles;             /* SLES contexts for blocks */
+  KSP       *ksp;             /* KSP contexts for blocks */
   void       *data;             /* implementation-specific data */
   PetscTruth same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
   int        *l_lens;           /* lens of each block */

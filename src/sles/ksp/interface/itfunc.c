@@ -10,7 +10,7 @@
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
    for the preconditioned operator. Called after or during KSPSolve()
-   (SLESSolve()).
+   (KSPSolve()).
 
    Not Collective
 
@@ -59,7 +59,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 #define __FUNCT__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
-   preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
+   preconditioned operator. Called after or during KSPSolve() (KSPSolve()).
 
    Not Collective
 
@@ -79,7 +79,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space
-   generated during the KSPSolve() (that is the SLESSolve); for example, with 
+   generated during the KSPSolve() (that is the KSPSolve); for example, with 
    CG it corresponds to the number of CG iterations, for GMRES it is the number 
    of GMRES iterations SINCE the last restart. Any extra space in r[] and c[]
    will be ignored.
@@ -137,7 +137,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
    KSPSetUpOnBlocks() is a routine that the user can optinally call for
    more precise profiling (via -log_summary) of the setup phase for these
    block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
-   it will automatically be called from within SLESSolve().
+   it will automatically be called from within KSPSolve().
    
    Calling KSPSetUpOnBlocks() is the same as calling PCSetUpOnBlocks()
    on the PC context within the KSP context.
@@ -247,7 +247,7 @@ static char *convergedreasons[] = {"preconditioner is indefinite",              
 #define __FUNCT__ "KSPSolve"
 /*@
    KSPSolve - Solves linear system; usually not called directly, rather 
-   it is called by a call to SLESSolve().
+   it is called by a call to KSPSolve().
 
    Collective on KSP
 
@@ -289,7 +289,7 @@ static char *convergedreasons[] = {"preconditioner is indefinite",              
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
-          SLESSolve(), KSPSolveTranspose(), SLESGetKSP()
+          KSPSolve(), KSPSolveTranspose()
 @*/
 int KSPSolve(KSP ksp) 
 {
@@ -309,6 +309,14 @@ int KSPSolve(KSP ksp)
   }
 
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
+
+  /* reset the residual history list if requested */
+  if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+
+  ksp->transpose_solve = PETSC_FALSE;
   ierr = PCPreSolve(ksp->B,ksp);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
@@ -328,14 +336,6 @@ int KSPSolve(KSP ksp)
     ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
   }
-
-  /* reset the residual history list if requested */
-  if (ksp->res_hist_reset) ksp->res_hist_len = 0;
-
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-
-  ksp->transpose_solve = PETSC_FALSE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   if (!ksp->reason) {
     SETERRQ(1,"Internal error, solver returned without setting converged reason");
@@ -476,7 +476,7 @@ int KSPSolve(KSP ksp)
 #define __FUNCT__ "KSPSolveTranspose"
 /*@
    KSPSolveTranspose - Solves the transpose of a linear system. Usually
-   accessed through SLESSolveTranspose().
+   accessed through KSPSolveTranspose().
 
    Collective on KSP
 
@@ -496,7 +496,7 @@ int KSPSolve(KSP ksp)
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
-          SLESSolve(), SLESGetKSP()
+          KSPSolve()
 @*/
 int KSPSolveTranspose(KSP ksp)
 {
@@ -728,14 +728,14 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
    Collective on KSP
 
    Input Parameters:
-+  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
 -  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
 
    Level: beginner
 
    Notes:
     If this is not called the X vector is zeroed in the call to 
-SLESSolve() (or KSPSolve()).
+KSPSolve() (or KSPSolve()).
 
 .keywords: KSP, set, initial guess, nonzero
 
@@ -784,7 +784,7 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
    Collective on KSP
 
    Input Parameters:
-+  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
 -  flg - PETSC_TRUE or PETSC_FALSE
 
    Level: advanced
@@ -1361,7 +1361,7 @@ int KSPGetConvergenceContext(KSP ksp,void **ctx)
 #define __FUNCT__ "KSPBuildSolution"
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
-   This routine is NOT commonly needed (see SLESSolve()).
+   This routine is NOT commonly needed (see KSPSolve()).
 
    Collective on KSP
 

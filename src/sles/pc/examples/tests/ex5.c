@@ -35,12 +35,11 @@ int main(int Argc,char **Args)
   int         ierr,its;
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
-  SLES        csles,sles[20],slesmg;
+  KSP         cksp,ksp[20],kspmg;
   PetscReal   e[3]; /* l_2 error,max error, residual */
   char        *shellname;
   Vec         x,solution,X[20],R[20],B[20];
   PetscScalar zero = 0.0;
-  KSP         cksp,ksp,kspmg,kspi;
   PC          pcmg,pc;
   PetscTruth  flg;
 
@@ -66,21 +65,18 @@ int main(int Argc,char **Args)
 
   ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);
 
-  ierr = SLESCreate(PETSC_COMM_WORLD,&slesmg);CHKERRQ(ierr);
-  ierr = SLESGetKSP(slesmg,&kspmg);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&kspmg);CHKERRQ(ierr);
   ierr = KSPGetPC(kspmg,&pcmg);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(slesmg);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(kspmg);CHKERRQ(ierr);
   ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
   ierr = MGSetType(pcmg,am);CHKERRQ(ierr);
 
-  ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(csles,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESGetKSP(csles,&cksp);CHKERRQ(ierr);
+  ierr = MGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(cksp,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-  ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPSetType(cksp,KSPPREONLY);CHKERRQ(ierr);
 
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
@@ -93,16 +89,15 @@ int main(int Argc,char **Args)
     ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
 
     /* set smoother */
-    ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles[i],&kspi);CHKERRQ(ierr);
-    ierr = KSPGetPC(kspi,&pc);CHKERRQ(ierr);
+    ierr = MGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp[i],&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
     ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
-    /* this is a dummy! since SLES requires a matrix passed in  */
-    ierr = SLESSetOperators(sles[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    /* this is a dummy! since KSP requires a matrix passed in  */
+    ierr = KSPSetOperators(ksp[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     /* 
         We override the matrix passed in by forcing it to use Richardson with 
         a user provided application. This is non-standard and this practice
@@ -112,10 +107,9 @@ int main(int Argc,char **Args)
     if (use_jacobi) {
       ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0);CHKERRQ(ierr);
     }
-    ierr = SLESGetKSP(sles[i],&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths);CHKERRQ(ierr);
+    ierr = KSPSetType(ksp[i],KSPRICHARDSON);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp[i],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths);CHKERRQ(ierr);
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     X[levels - 1 - i] = x;
@@ -138,7 +132,7 @@ int main(int Argc,char **Args)
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void(*)(void))amult);CHKERRQ(ierr);
-  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
@@ -150,9 +144,10 @@ int main(int Argc,char **Args)
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRQ(ierr);
 
-  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
-  ierr = SLESGetKSP(slesmg,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPSetRhs(kspmg,B[levels-1]);CHKERRQ(ierr);
+  ierr = KSPSetSolution(kspmg,X[levels-1]);CHKERRQ(ierr);
+  ierr = KSPSolve(kspmg);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
@@ -172,7 +167,7 @@ int main(int Argc,char **Args)
   }
   ierr = MatDestroy(cmat);CHKERRQ(ierr);
   ierr = MatDestroy(fmat);CHKERRQ(ierr);
-  ierr = SLESDestroy(slesmg);CHKERRQ(ierr);
+  ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

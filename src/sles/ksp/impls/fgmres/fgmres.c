@@ -25,7 +25,7 @@ extern int KSPView_GMRES(KSP,PetscViewer);
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
 
-    This is called once, usually automatically by SLESSolve() or SLESSetUp(),
+    This is called once, usually automatically by KSPSolveQ() or KSPSetUp(),
     but can be called directly by KSPSetUp().
 
 */
@@ -698,8 +698,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
     }
     ierr = PetscOptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_fgmres_modifypcsles","vary the SLES based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
+    ierr = PetscOptionsLogicalGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCKSP,0,0);CHKERRQ(ierr);} 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -314,7 +314,7 @@ EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
    Notes: The DA object and the VecPack object are examples of DMs
 
           Though the DA objects require the petscsnes.h include files the DM library is
-    NOT dependent on the SNES or SLES library. In fact, the SLES and SNES libraries depend on
+    NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 
 .seealso:  VecPackCreate(), DA, VecPack
@@ -354,10 +354,10 @@ struct _p_DMMG {
   void       *user;         
   PetscTruth galerkin;                  /* for A_c = R*A*R^T */
 
-  /* SLES only */
-  SLES       sles;             
+  /* KSP only */
+  KSP       ksp;             
   int        (*rhs)(DMMG,Vec);
-  PetscTruth matricesset;               /* User had called DMMGSetSLES() and the matrices have been computed */
+  PetscTruth matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
   /* SNES only */
   Mat           B;
@@ -386,14 +386,14 @@ struct _p_DMMG {
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
 EXTERN int DMMGDestroy(DMMG*);
 EXTERN int DMMGSetUp(DMMG*);
-EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
+EXTERN int DMMGSetKSP(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
 EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
 EXTERN int DMMGView(DMMG*,PetscViewer);
 EXTERN int DMMGSolve(DMMG*);
 EXTERN int DMMGSetUseMatrixFree(DMMG*);
 EXTERN int DMMGSetDM(DMMG*,DM);
-EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
+EXTERN int DMMGSetUpLevel(DMMG*,KSP,int);
 EXTERN int DMMGSetUseGalerkinCoarse(DMMG*);
 
 EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
@@ -430,7 +430,7 @@ EXTERN int DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void
    Fortran Usage:
 .     DMMGGetx(DMMG dmmg,Vec x,int ierr)
 
-.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetSLES(), DMMGSetSNESLocal()
+.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal()
 
 M*/
 #define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
@@ -439,7 +439,7 @@ M*/
 #define DMMGGetComm(ctx)           (ctx)[(ctx)[0]->nlevels-1]->comm
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
-#define DMMGGetSLES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->sles
+#define DMMGGetKSP(ctx)           (ctx)[(ctx)[0]->nlevels-1]->ksp
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)

@@ -13,13 +13,13 @@
  */
 
 #include <stdlib.h>
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SLES solver; KSP ksp; PC prec; Mat A,M; Vec X,B,D;
+  KSP solver; KSP ksp; PC prec; Mat A,M; Vec X,B,D;
   MPI_Comm comm;
   PetscScalar v; KSPConvergedReason reason;
   int i,j,its,ierr;
@@ -65,10 +65,9 @@ int main(int argc,char **argv)
    * A Conjugate Gradient method
    * with ILU(0) preconditioning
    */
-  ierr = SLESCreate(comm,&solver); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
+  ierr = KSPCreate(comm,&solver); CHKERRQ(ierr);
+  ierr = KSPSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
 
-  ierr = SLESGetKSP(solver,&ksp); CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPCG); CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE); CHKERRQ(ierr);
 
@@ -85,8 +84,10 @@ int main(int argc,char **argv)
   ierr = PCSetType(prec,PCICC); CHKERRQ(ierr);
   /*  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 
-  ierr = SLESSetFromOptions(solver); CHKERRQ(ierr);
-  ierr = SLESSetUp(solver,B,X); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(solver); CHKERRQ(ierr);
+  ierr = KSPSetRhs(solver,B); CHKERRQ(ierr);
+  ierr = KSPSetSolution(solver,X); CHKERRQ(ierr);
+  ierr = KSPSetUp(solver); CHKERRQ(ierr);
 
   /*
    * Now that the factorisation is done, show the pivots;
@@ -103,7 +104,7 @@ int main(int argc,char **argv)
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  ierr = SLESSolve(solver,B,X); CHKERRQ(ierr);
+  ierr = KSPSolve(solver); CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");

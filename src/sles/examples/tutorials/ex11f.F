@@ -1,10 +1,10 @@
 !
 !    "$Id: ex11f.F,v 1.31 2001/08/07 03:04:00 balay Exp $";
 !
-!  Description: Solves a complex linear system in parallel with SLES (Fortran code).
+!  Description: Solves a complex linear system in parallel with KSP (Fortran code).
 !
 !/*T
-!  Concepts: SLES^solving a Helmholtz equation
+!  Concepts: KSP^solving a Helmholtz equation
 !  Concepts: complex numbers
 !  Processors: n
 !T*/
@@ -33,13 +33,12 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The following include statements are required for SLES Fortran programs:
+!  The following include statements are required for KSP Fortran programs:
 !     petsc.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscpc.h     - preconditioners
 !     petscksp.h    - Krylov subspace methods
-!     petscsles.h   - SLES interface
 !  Include the following to use PETSc random numbers:
 !     petscsys.h    - system routines
 !  Additional include statements may be needed if using other PETSc
@@ -52,7 +51,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +58,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
-!     sles     - linear solver context
+!     ksp     - linear solver context
 !     x, b, u  - approx solution, right-hand-side, exact solution vectors
 !     A        - matrix that defines linear system
 !     its      - iterations for convergence
@@ -68,7 +66,7 @@
 !     rctx     - random number context
 !
 
-      SLES             sles
+      KSP             ksp
       Mat              A 
       Vec              x,b,u
       PetscRandom      rctx
@@ -199,24 +197,26 @@
 
 !  Create linear solver context
 
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                     Check solution and clean up
@@ -226,7 +226,6 @@
 
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
@@ -242,7 +241,7 @@
 !  are no longer needed.
 
       if (use_random) call PetscRandomDestroy(rctx,ierr)
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)

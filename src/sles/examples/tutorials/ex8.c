@@ -1,7 +1,7 @@
 /*$Id: ex8.c,v 1.50 2001/08/07 03:04:00 balay Exp $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM.\n\
-The Additive Schwarz Method for solving a linear system in parallel with SLES.  The\n\
+The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
   -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
@@ -10,7 +10,7 @@ parameters include:\n\
 /*
    Note:  This example focuses on setting the subdomains for the ASM 
    preconditioner for a problem on a 2D rectangular grid.  See ex1.c
-   and ex2.c for more detailed comments on the basic usage of SLES
+   and ex2.c for more detailed comments on the basic usage of KSP
    (including working with matrices and vectors).
 
    The ASM preconditioner is fully parallel, but currently the routine
@@ -24,19 +24,19 @@ parameters include:\n\
 */
 
 /*T
-   Concepts: SLES^Additive Schwarz Method (ASM) with user-defined subdomains
+   Concepts: KSP^Additive Schwarz Method (ASM) with user-defined subdomains
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -44,7 +44,7 @@ int main(int argc,char **args)
 {
   Vec          x,b,u;                 /* approx solution, RHS, exact solution */
   Mat          A;                       /* linear system matrix */
-  SLES         sles;                    /* linear solver context */
+  KSP          ksp;                    /* linear solver context */
   PC           pc;                      /* PC context */
   IS           *is;                     /* array of index sets that define the subdomains */
   int          overlap = 1;             /* width of subdomain overlap */
@@ -55,7 +55,6 @@ int main(int argc,char **args)
   PetscTruth   flg;
   PetscTruth   user_subdomains;         /* flag - 1 indicates user-defined subdomains */
   PetscScalar  v, one = 1.0;
-  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -102,18 +101,17 @@ int main(int argc,char **args)
   /* 
      Create linear solver context 
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set the default preconditioner for this program to be ASM
   */
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCASM);CHKERRQ(ierr);
 
@@ -173,11 +171,11 @@ int main(int argc,char **args)
         Advanced method, setting different solvers for various blocks.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-     Note that each block's SLES context is completely independent of
-     the others, and the full range of uniprocessor SLES options is
+     Note that each block's KSP context is completely independent of
+     the others, and the full range of uniprocessor KSP options is
      available for each block.
 
-     - Use PCASMGetSubSLES() to extract the array of SLES contexts for
+     - Use PCASMGetSubKSP() to extract the array of KSP contexts for
        the local blocks.
      - See ex7.c for a simple example of setting different linear solvers
        for the individual blocks for the block Jacobi method (which is
@@ -186,9 +184,8 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRQ(ierr);
   if (flg) {
-    SLES       *subsles;       /* array of SLES contexts for local subblocks */
+    KSP       *subksp;       /* array of KSP contexts for local subblocks */
     int        nlocal,first;  /* number of local subblocks, first local subblock */
-    KSP        subksp;         /* KSP context for subblock */
     PC         subpc;          /* PC context for subblock */
     PetscTruth isasm;
 
@@ -197,7 +194,7 @@ int main(int argc,char **args)
     /* 
        Set runtime options
     */
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* 
        Flag an error if PCTYPE is changed from the runtime options
@@ -207,41 +204,44 @@ int main(int argc,char **args)
       SETERRQ(1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 
-       Call SLESSetUp() to set the block Jacobi data structures (including
-       creation of an internal SLES context for each block).
+       Call KSPSetUp() to set the block Jacobi data structures (including
+       creation of an internal KSP context for each block).
 
-       Note: SLESSetUp() MUST be called before PCASMGetSubSLES().
+       Note: KSPSetUp() MUST be called before PCASMGetSubKSP().
     */
-    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     /*
-       Extract the array of SLES contexts for the local blocks
+       Extract the array of KSP contexts for the local blocks
     */
-    ierr = PCASMGetSubSLES(pc,&nlocal,&first,&subsles);CHKERRQ(ierr);
+    ierr = PCASMGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
 
     /*
-       Loop over the local blocks, setting various SLES options
+       Loop over the local blocks, setting various KSP options
        for each block.  
     */
     for (i=0; i<nlocal; i++) {
-      ierr = SLESGetKSP(subsles[i],&subksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
-      ierr = KSPSetType(subksp,KSPGMRES);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+      ierr = KSPSetType(subksp[i],KSPGMRES);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     }
   } else {
     /* 
        Set runtime options
     */
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
@@ -254,7 +254,7 @@ int main(int argc,char **args)
     }
     ierr = PetscFree(is);CHKERRQ(ierr);
   }
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

@@ -25,7 +25,9 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
   if (converged) *converged = PETSC_FALSE;
 
   if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-  ierr = SLESSolve(mg->smoothd,mg->b,mg->x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(mg->smoothd,mg->b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(mg->smoothd,mg->x);CHKERRQ(ierr);
+  ierr = KSPSolve(mg->smoothd);CHKERRQ(ierr);
   if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mg->level) {  /* not the coarsest grid */
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
@@ -53,7 +55,9 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
     }
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
     if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = SLESSolve(mg->smoothu,mg->b,mg->x);CHKERRQ(ierr); 
+    ierr = KSPSetRhs(mg->smoothu,mg->b);CHKERRQ(ierr); 
+    ierr = KSPSetSolution(mg->smoothu,mg->x);CHKERRQ(ierr); 
+    ierr = KSPSolve(mg->smoothu);CHKERRQ(ierr); 
     if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -72,7 +76,6 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
   MG   *mg;
   int  i,ierr,size;
   char *prefix;
-  KSP  ksp;
   PC   ipc;
 
   PetscFunctionBegin;
@@ -89,19 +92,17 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
     mg[i]->cycles = 1;
 
     if (comms) comm = comms[i];
-    ierr = SLESCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
-    ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
+    ierr = KSPCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
 
     /* do special stuff for coarse grid */
     if (!i && levels > 1) {
-      ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
 
       /* coarse solve is (redundant) LU by default */
-      ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&ipc);CHKERRQ(ierr);
+      ierr = KSPSetType(mg[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
+      ierr = KSPGetPC(mg[0]->smoothd,&ipc);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
@@ -110,7 +111,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
       ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
 
     } else {
-      ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
     }
     PetscLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;
@@ -137,9 +138,9 @@ static int PCDestroy_MG(PC pc)
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
-      ierr = SLESDestroy(mg[i]->smoothd);CHKERRQ(ierr);
+      ierr = KSPDestroy(mg[i]->smoothd);CHKERRQ(ierr);
     }
-    ierr = SLESDestroy(mg[i]->smoothu);CHKERRQ(ierr);
+    ierr = KSPDestroy(mg[i]->smoothu);CHKERRQ(ierr);
     ierr = PetscFree(mg[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(mg);CHKERRQ(ierr);
@@ -308,14 +309,14 @@ static int PCView_MG(PC pc,PetscViewer viewer)
     for (i=0; i<levels; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = SLESView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
+      ierr = KSPView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = SLESView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
+        ierr = KSPView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     }
@@ -326,7 +327,7 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 }
 
 /*
-    Calls setup for the SLES on each level
+    Calls setup for the KSP on each level
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_MG"
@@ -334,7 +335,6 @@ static int PCSetUp_MG(PC pc)
 {
   MG          *mg = (MG*)pc->data;
   int         ierr,i,n = mg[0]->levels;
-  KSP         ksp,subksp;
   PC          cpc;
   PetscTruth  preonly,lu,redundant,monitor = PETSC_FALSE,dump;
   PetscViewer ascii;
@@ -343,7 +343,7 @@ static int PCSetUp_MG(PC pc)
   PetscFunctionBegin;
   /*
      temporarily stick pc->vec into mg[0]->b and x so that 
-   SLESSetUp is happy. Since currently those slots are empty.
+   KSPSetUp is happy. Since currently those slots are empty.
   */
   mg[n-1]->x = pc->vec;
   mg[n-1]->b = pc->vec;
@@ -354,44 +354,44 @@ static int PCSetUp_MG(PC pc)
     for (i=1; i<n; i++) {
       if (mg[i]->smoothd) {
         if (monitor) {
-          ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
-          ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+          ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
         }
-        ierr = SLESSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
+        ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
       }
     }
     for (i=0; i<n; i++) {
       if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
         if (monitor) {
-          ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
-          ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+          ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(mg[i]->smoothu,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
         }
-        ierr = SLESSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
+        ierr = KSPSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       }
     }
   }
 
   for (i=1; i<n; i++) {
     if (mg[i]->smoothd) {
-      ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-      ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
+      ierr = KSPSetRhs(mg[i]->smoothd,mg[i]->b);CHKERRQ(ierr);
+      ierr = KSPSetSolution(mg[i]->smoothd,mg[i]->x);CHKERRQ(ierr);
+      ierr = KSPSetUp(mg[i]->smoothd);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
   for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(mg[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-      ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
+      ierr = KSPSetRhs(mg[i]->smoothu,mg[i]->b);CHKERRQ(ierr);
+      ierr = KSPSetSolution(mg[i]->smoothu,mg[i]->x);CHKERRQ(ierr);
+      ierr = KSPSetUp(mg[i]->smoothu);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
@@ -399,30 +399,30 @@ static int PCSetUp_MG(PC pc)
   /*
       If coarse solver is not direct method then DO NOT USE preonly 
   */
-  ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)ksp,KSPPREONLY,&preonly);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mg[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
-    ierr = KSPGetPC(ksp,&cpc);CHKERRQ(ierr);
+    ierr = KSPGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     if (!lu && !redundant) {
-      ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+      ierr = KSPSetType(mg[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
 
   if (pc->setupcalled == 0) {
     if (monitor) {
-      ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
-      ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)mg[0]->smoothd,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(ascii,n);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(mg[0]->smoothd,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    ierr = SLESSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
   }
 
   if (mg[0]->eventsetup) {ierr = PetscLogEventBegin(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-  ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(mg[0]->smoothd,mg[0]->b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(mg[0]->smoothd,mg[0]->x);CHKERRQ(ierr);
+  ierr = KSPSetUp(mg[0]->smoothd);CHKERRQ(ierr);
   if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 
   /*
@@ -435,8 +435,7 @@ static int PCSetUp_MG(PC pc)
       ierr = MatView(mg[i]->restrct,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
     for (i=0; i<n; i++) {
-      ierr = SLESGetKSP(mg[i]->smoothd,&subksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(subksp,&pc);CHKERRQ(ierr);
+      ierr = KSPGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
       ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
   }
@@ -480,7 +479,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 
   if (pc->data) {
     SETERRQ(1,"Number levels already set for MG\n\
-    make sure that you call MGSetLevels() before SLESSetFromOptions()");
+    make sure that you call MGSetLevels() before KSPSetFromOptions()");
   }
   ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
   mg[0]->am                = MGMULTIPLICATIVE;
@@ -691,8 +690,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   for (i=0; i<levels; i++) {  
     /* make sure smoother up and down are different */
     ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothd = n;
   }
   PetscFunctionReturn(0);
@@ -718,7 +716,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 
    Note: this does not set a value on the coarsest grid, since we assume that
     there is no seperate smooth up on the coarsest grid. If you want to have a
-    seperate smooth up on the coarsest grid then call MGGetSmoothUp(pc,0,&sles);
+    seperate smooth up on the coarsest grid then call MGGetSmoothUp(pc,0,&ksp);
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
@@ -728,7 +726,6 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 { 
   MG  *mg;
   int i,levels,ierr;
-  KSP ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -739,8 +736,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   for (i=1; i<levels; i++) {  
     /* make sure smoother up and down are different */
     ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothu = n;
   }
   PetscFunctionReturn(0);

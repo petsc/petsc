@@ -75,7 +75,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 /*  -------------------------------------------------------------------- 
 
      This file implements a truncated Newton method with a line search,
-     for solving a system of nonlinear equations, using the SLES, Vec, 
+     for solving a system of nonlinear equations, using the KSP, Vec, 
      and Mat interfaces for linear solvers, vectors, and matrices, 
      respectively.
 
@@ -140,7 +140,7 @@ int SNESSolve_LS(SNES snes,int *outits)
   KSP          ksp;
 
   PetscFunctionBegin;
-  ierr = SLESGetKSP(snes->sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   snes->reason  = SNES_CONVERGED_ITERATING;
 
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -175,8 +175,10 @@ int SNESSolve_LS(SNES snes,int *outits)
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SLESSolve(snes->sles,F,Y);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = KSPSetRhs(snes->ksp,F);CHKERRQ(ierr);
+    ierr = KSPSetSolution(snes->ksp,Y);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo){

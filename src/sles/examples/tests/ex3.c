@@ -1,12 +1,12 @@
 /*$Id: ex3.c,v 1.73 2001/08/07 21:30:50 bsmith Exp $*/
 
-static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
+static char help[] = "This example solves a linear system in parallel with KSP.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
@@ -38,7 +38,6 @@ int main(int argc,char **args)
   PetscReal   x,y,h,norm;
   int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
-  SLES        sles;
   KSP         ksp;
   IS          is;
 
@@ -132,12 +131,13 @@ int main(int argc,char **args)
   }
 
   /* Solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
@@ -154,7 +154,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(ustar);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

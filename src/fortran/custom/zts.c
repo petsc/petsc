@@ -11,7 +11,7 @@
 #define tscreate_                            TSCREATE
 #define tsgetsolution_                       TSGETSOLUTION
 #define tsgetsnes_                           TSGETSNES
-#define tsgetsles_                           TSGETSLES
+#define tsgetksp_                           TSGETKSP
 #define tsgettype_                           TSGETTYPE
 #define tsdestroy_                           TSDESTROY
 #define tssetmonitor_                        TSSETMONITOR
@@ -36,7 +36,7 @@
 #define tscreate_                            tscreate
 #define tsgetsolution_                       tsgetsolution
 #define tsgetsnes_                           tsgetsnes
-#define tsgetsles_                           tsgetsles
+#define tsgetksp_                           tsgetksp
 #define tsgettype_                           tsgettype
 #define tsdestroy_                           tsdestroy
 #define tssetmonitor_                        tssetmonitor
@@ -179,9 +179,9 @@ void PETSC_STDCALL tsgetsnes_(TS *ts,SNES *snes,int *ierr)
   *ierr = TSGetSNES(*ts,snes);
 }
 
-void PETSC_STDCALL tsgetsles_(TS *ts,SLES *sles,int *ierr)
+void PETSC_STDCALL tsgetksp_(TS *ts,KSP *ksp,int *ierr)
 {
-  *ierr = TSGetSLES(*ts,sles);
+  *ierr = TSGetKSP(*ts,ksp);
 }
 
 void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))

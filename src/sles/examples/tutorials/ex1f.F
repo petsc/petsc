@@ -1,10 +1,10 @@
 !
 !    "$Id: ex1f.F,v 1.30 2001/08/07 03:04:00 balay Exp $";
 !
-!   Description: Solves a tridiagonal linear system with SLES.
+!   Description: Solves a tridiagonal linear system with KSP.
 !
 !/*T
-!   Concepts: SLES^solving a system of linear equations
+!   Concepts: KSP^solving a system of linear equations
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------
@@ -32,13 +32,12 @@
 !
 !  See the Fortran section of the PETSc users manual for details.
 !
-!  The following include statements are required for SLES Fortran programs:
+!  The following include statements are required for KSP Fortran programs:
 !     petsc.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
-!     petscsles.h   - SLES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
 !     petscviewer.h - viewers
@@ -49,14 +48,13 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
-!     sles     - linear solver context
+!     ksp     - linear solver context
 !     ksp      - Krylov subspace method context
 !     pc       - preconditioner context
 !     x, b, u  - approx solution, right-hand-side, exact solution vectors
@@ -68,7 +66,7 @@
       Mat              A 
       KSP              ksp
       PC               pc
-      SLES             sles
+      KSP             ksp
       double precision norm,tol
       integer          ierr,i,n,col(3),its,flg,size,rank
       PetscScalar      none,one,value(3)
@@ -149,22 +147,21 @@
 
 !  Create linear solver context
 
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
 
 !  Set linear solver defaults for this problem (optional).
-!   - By extracting the KSP and PC contexts from the SLES context,
+!   - By extracting the KSP and PC contexts from the KSP context,
 !     we can then directly directly call any KSP and PC routines
 !     to set various options.
 !   - The following four statements are optional; all of these
 !     parameters could alternatively be specified at runtime via
-!     SLESSetFromOptions();
+!     KSPSetFromOptions();
 
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
       tol = 1.d-7
@@ -174,20 +171,22 @@
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 !  These options will override those specified above as long as
-!  SLESSetFromOptions() is called _after_ any other customization
+!  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
 
-!  View solver info; we could instead use the option -sles_view
+!  View solver info; we could instead use the option -ksp_view
 
-      call SLESView(sles,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      Check solution and clean up
@@ -197,7 +196,6 @@
 
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (norm .gt. 1.e-12) then
         write(6,100) norm,its
@@ -214,7 +212,7 @@
       call VecDestroy(u,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call PetscFinalize(ierr)
 
       end

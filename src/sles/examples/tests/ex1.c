@@ -2,7 +2,7 @@
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         C; 
   int         ierr,N = 0;
   Vec         u,b,x;
-  SLES        sles;
+  KSP        ksp;
   PetscScalar zero = 0.0,mone = -1.0;
   PetscReal   norm;
 
@@ -36,17 +36,19 @@ int main(int argc,char **args)
 
 
   /* solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   ierr = MatMult(C,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,b,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   printf("Norm of residual %g\n",norm);
 
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

@@ -11,13 +11,12 @@
        n_local = maximum over all processors of n_local_true
 */
 #include "src/sles/pc/pcimpl.h"     /*I "petscpc.h" I*/
-#include "petscsles.h"
 
 typedef struct {
   int        n,n_local,n_local_true;
   PetscTruth is_flg;              /* flg set to 1 if the IS created in pcsetup */
   int        overlap;             /* overlap requested by user */
-  SLES       *sles;               /* linear solvers for each block */
+  KSP       *ksp;               /* linear solvers for each block */
   VecScatter *scat;               /* mapping to subregion */
   Vec        *x,*y;
   IS         *is;                 /* index set that defines each subdomain */
@@ -55,9 +54,9 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      if (!rank && jac->sles) {
+      if (!rank && jac->ksp) {
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
+        ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -68,7 +67,7 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
       for (i=0; i<jac->n_local; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        ierr = SLESView(jac->sles[i],sviewer);CHKERRQ(ierr);
+        ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
         if (i != jac->n_local-1) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
@@ -80,7 +79,7 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      if (jac->sles) {ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);}
+      if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
@@ -97,7 +96,7 @@ static int PCSetUp_ASM(PC pc)
   int      start,start_val,end_val,size,sz,bs;
   MatReuse scall = MAT_REUSE_MATRIX;
   IS       isl;
-  SLES     sles;
+  KSP     ksp;
   KSP      subksp;
   PC       subpc;
   char     *prefix,*pprefix;
@@ -136,7 +135,7 @@ static int PCSetUp_ASM(PC pc)
       osm->is_flg = PETSC_TRUE;
     }
 
-    ierr   = PetscMalloc((n_local_true+1)*sizeof(SLES **),&osm->sles);CHKERRQ(ierr);
+    ierr   = PetscMalloc((n_local_true+1)*sizeof(KSP **),&osm->ksp);CHKERRQ(ierr);
     ierr   = PetscMalloc(n_local*sizeof(VecScatter **),&osm->scat);CHKERRQ(ierr);
     ierr   = PetscMalloc(2*n_local*sizeof(Vec **),&osm->x);CHKERRQ(ierr);
     osm->y = osm->x + n_local;
@@ -168,17 +167,16 @@ static int PCSetUp_ASM(PC pc)
        Create the local solvers.
     */
     for (i=0; i<n_local_true; i++) {
-      ierr = SLESCreate(PETSC_COMM_SELF,&sles);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,sles);
-      ierr = SLESGetKSP(sles,&subksp);CHKERRQ(ierr);
-      ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+      PetscLogObjectParent(pc,ksp);
+      ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = SLESSetOptionsPrefix(sles,prefix);CHKERRQ(ierr);
-      ierr = SLESAppendOptionsPrefix(sles,"sub_");CHKERRQ(ierr);
-      ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-      osm->sles[i] = sles;
+      ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+      osm->ksp[i] = ksp;
     }
     scall = MAT_INITIAL_MATRIX;
   } else {
@@ -198,12 +196,12 @@ static int PCSetUp_ASM(PC pc)
      different boundary conditions for the submatrices than for the global problem) */
   ierr = PCModifySubMatrices(pc,osm->n_local,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
 
-  /* loop over subdomains putting them into local sles */
+  /* loop over subdomains putting them into local ksp */
   ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
   for (i=0; i<n_local_true; i++) {
     ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     PetscLogObjectParent(pc,osm->pmat[i]);
-    ierr = SLESSetOperators(osm->sles[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -217,7 +215,9 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
-    ierr = SLESSetUp(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
+    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr);
+    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr);
+    ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
   }
   /* 
      If inplace flag is set, then destroy the matrix after the setup
@@ -261,7 +261,9 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
+    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr); 
+    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr); 
+    ierr = KSPSolve(osm->ksp[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -310,7 +312,9 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = SLESSolveTranspose(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
+    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr); 
+    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr); 
+    ierr = KSPSolveTranspose(osm->ksp[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -340,16 +344,16 @@ static int PCDestroy_ASM(PC pc)
   if (osm->n_local_true > 0 && !osm->inplace && osm->pmat) {
     ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
   }
-  if (osm->sles) {
+  if (osm->ksp) {
     for (i=0; i<osm->n_local_true; i++) {
-      ierr = SLESDestroy(osm->sles[i]);CHKERRQ(ierr);
+      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
     }
   }
   if (osm->is_flg) {
     for (i=0; i<osm->n_local_true; i++) {ierr = ISDestroy(osm->is[i]);CHKERRQ(ierr);}
     ierr = PetscFree(osm->is);CHKERRQ(ierr);
   }
-  if (osm->sles) {ierr = PetscFree(osm->sles);CHKERRQ(ierr);}
+  if (osm->ksp) {ierr = PetscFree(osm->ksp);CHKERRQ(ierr);}
   if (osm->scat) {ierr = PetscFree(osm->scat);CHKERRQ(ierr);}
   if (osm->x) {ierr = PetscFree(osm->x);CHKERRQ(ierr);}
   ierr = PetscFree(osm);CHKERRQ(ierr);
@@ -464,15 +468,15 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCASMGetSubSLES_ASM"
-int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
+#define __FUNCT__ "PCASMGetSubKSP_ASM"
+int PCASMGetSubKSP_ASM(PC pc,int *n_local,int *first_local,KSP **ksp)
 {
   PC_ASM   *jac = (PC_ASM*)pc->data;
   int      ierr;
 
   PetscFunctionBegin;
   if (jac->n_local_true < 0) {
-    SETERRQ(1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outer SLES object) before calling here");
+    SETERRQ(1,"Need to call PCSetUP() on PC (or KSPSetUp() on the outer KSP object) before calling here");
   }
 
   if (n_local)     *n_local     = jac->n_local_true;
@@ -480,7 +484,7 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
     ierr = MPI_Scan(&jac->n_local_true,first_local,1,MPI_INT,MPI_SUM,pc->comm);CHKERRQ(ierr);
     *first_local -= jac->n_local_true;
   }
-  *sles                         = jac->sles;
+  *ksp                         = jac->ksp;
   jac->same_local_solves        = PETSC_FALSE; /* Assume that local solves are now different;
                                       not necessarily true though!  This flag is 
                                       used only for PCView_ASM() */
@@ -569,7 +573,7 @@ int PCASMSetUseInPlace(PC pc)
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
 int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
@@ -619,7 +623,7 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
 
 .keywords: PC, ASM, set, total, global, subdomains, additive Schwarz
 
-.seealso: PCASMSetLocalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+.seealso: PCASMSetLocalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
 int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
@@ -673,7 +677,7 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
 
 .keywords: PC, ASM, set, overlap
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
 int PCASMSetOverlap(PC pc,int ovl)
@@ -714,7 +718,7 @@ int PCASMSetOverlap(PC pc,int ovl)
 
 .keywords: PC, ASM, set, type
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
 int PCASMSetType(PC pc,PCASMType type)
@@ -731,9 +735,9 @@ int PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCASMGetSubSLES"
+#define __FUNCT__ "PCASMGetSubKSP"
 /*@C
-   PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
+   PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
    
    Collective on PC iff first_local is requested
@@ -745,34 +749,34 @@ int PCASMSetType(PC pc,PCASMType type)
 +  n_local - the number of blocks on this processor or PETSC_NULL
 .  first_local - the global number of the first block on this processor or PETSC_NULL,
                  all processors must request or all must pass PETSC_NULL
--  sles - the array of SLES contexts
+-  ksp - the array of KSP contexts
 
    Note:  
-   After PCASMGetSubSLES() the array of SLESes is not to be freed
+   After PCASMGetSubKSP() the array of KSPes is not to be freed
 
    Currently for some matrix implementations only 1 block per processor 
    is supported.
    
-   You must call SLESSetUp() before calling PCASMGetSubSLES().
+   You must call KSPSetUp() before calling PCASMGetSubKSP().
 
    Level: advanced
 
-.keywords: PC, ASM, additive Schwarz, get, sub, SLES, context
+.keywords: PC, ASM, additive Schwarz, get, sub, KSP, context
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
           PCASMCreateSubdomains2D(),
 @*/
-int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
+int PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
 {
-  int ierr,(*f)(PC,int*,int*,SLES **);
+  int ierr,(*f)(PC,int*,int*,KSP **);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubSLES_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
+    ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot get subsles for this type of PC");
+    SETERRQ(1,"Cannot get subksp for this type of PC");
   }
 
  PetscFunctionReturn(0);
@@ -781,7 +785,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
 /* -------------------------------------------------------------------------------------*/
 /*MC
    PCASM - Use the additive Schwarz method, each block is (approximately) solved with 
-           its own SLES object.
+           its own KSP object.
 
    Options Database Keys:
 +  -pc_asm_truelocal - Activates PCASMSetUseTrueLocal()
@@ -793,19 +797,19 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
    Notes: Each processor can have one or more blocks, but a block cannot be shared by more
      than one processor. Defaults to one block per processor.
 
-     To set options on the solvers for each block append -sub_ to all the SLES, KSP, and PC
+     To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1 -sub_ksp_type preonly
         
-     To set the options on the solvers seperate for each block call PCASMGetSubSLES()
-         and set the options directly on the resulting SLES object (you can access its KSP and PC
-         with SLESGetKSP() and KSPGetPC())
+     To set the options on the solvers seperate for each block call PCASMGetSubKSP()
+         and set the options directly on the resulting KSP object (you can access its PC
+         with KSPGetPC())
 
    Level: beginner
 
    Concepts: additive Schwarz method
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubSLES(), PCASMSetLocalSubdomains(),
+           PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
            PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(),
            PCASMSetUseInPlace()
 M*/
@@ -827,7 +831,7 @@ int PCCreate_ASM(PC pc)
   osm->n_local_true      = PETSC_DECIDE;
   osm->overlap           = 1;
   osm->is_flg            = PETSC_FALSE;
-  osm->sles              = 0;
+  osm->ksp              = 0;
   osm->scat              = 0;
   osm->is                = 0;
   osm->mat               = 0;
@@ -854,8 +858,8 @@ int PCCreate_ASM(PC pc)
                     PCASMSetOverlap_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
                     PCASMSetType_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubSLES_C","PCASMGetSubSLES_ASM",
-                    PCASMGetSubSLES_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",
+                    PCASMGetSubKSP_ASM);CHKERRQ(ierr);
 ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetUseInPlace_C","PCASMSetUseInPlace_ASM",
                     PCASMSetUseInPlace_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -890,7 +894,7 @@ EXTERN_C_END
 
 .keywords: PC, ASM, additive Schwarz, create, subdomains, 2D, regular grid
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMSetOverlap()
 @*/
 int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
@@ -958,7 +962,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubmatrices()
 @*/
 int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
@@ -968,7 +972,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after SLESSetUP() or PCSetUp().");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUP() or PCSetUp().");
   }
 
   osm = (PC_ASM*)pc->data;
@@ -997,7 +1001,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz, block Jacobi
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
 @*/
 int PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
@@ -1007,7 +1011,7 @@ int PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after SLESSetUP() or PCSetUp().");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUP() or PCSetUp().");
   }
 
   osm = (PC_ASM*)pc->data;

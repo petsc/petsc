@@ -16,12 +16,12 @@ method via
 </font face>
 ).  
 
-SNES internally employs <A HREF="PETSC_DIRdocs/manualpages/SLES/index.html">SLES</A> for the solution of 
+SNES internally employs <A HREF="PETSC_DIRdocs/manualpages/SLES/index.html">KSP</A> for the solution of 
 its linear systems.
-SNES users can also set SLES options directly in application
-codes by first extracting the SLES context from the SNES context via
-<A HREF="PETSC_DIRdocs/manualpages/SNES/SNESGetSLES.html">SNESGetSLES()</A>
-and then directly calling various SLES (and KSP and PC) routines (e.g., 
+SNES users can also set KSP options directly in application
+codes by first extracting the KSP context from the SNES context via
+<A HREF="PETSC_DIRdocs/manualpages/SNES/SNESGetKSP.html">SNESGetKSP()</A>
+and then directly calling various KSP (and KSP and PC) routines (e.g., 
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).
 

@@ -62,7 +62,6 @@ static int SNESSolve_TR(SNES snes,int *its)
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         mone = -1.0,cnorm;
   KSP                 ksp;
-  SLES                sles;
   SNESConvergedReason reason;
   PetscTruth          conv;
 
@@ -88,8 +87,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 
  if (fnorm < snes->atol) {*its = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
@@ -105,10 +103,12 @@ static int SNESSolve_TR(SNES snes,int *its)
  
   for (i=0; i<maxits; i++) {
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SLESSolve(snes->sles,F,Ytmp);CHKERRQ(ierr);
+    ierr = KSPSetRhs(snes->ksp,F);CHKERRQ(ierr);
+    ierr = KSPSetSolution(snes->ksp,Ytmp);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     PetscLogInfo(snes,"SNESSolve_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);

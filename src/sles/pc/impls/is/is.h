@@ -4,7 +4,7 @@
 
 #include "src/sles/pc/pcimpl.h"
 #include "src/mat/impls/is/is.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* 
    Context (data structure) common for all Iterative Substructuring preconditioners.  
@@ -30,8 +30,8 @@ typedef struct {
   Mat        A_II, A_IB,     /* local (sequential) submatrices */
              A_BI, A_BB;
   Vec        D;              /* diagonal scaling "matrix" (stored as a vector, since it's diagonal) */
-  SLES       sles_N,         /* linear solver contexts */
-             sles_D;
+  KSP       ksp_N,         /* linear solver contexts */
+             ksp_D;
   Vec        vec1_N,         /* local (sequential) work vectors */
              vec2_N,
              vec1_D,

@@ -301,7 +301,7 @@ uniprocessor example in Figure~\ref{fig_example1} that solves the
 one-dimensional Laplacian problem with finite differences.  This
 sequential code, which can be found in 
 \trl{${PETSC_DIR}/src/sles/examples/tutorials/ex1.c},
-illustrates the solution of a linear system with SLES, the 
+illustrates the solution of a linear system with KSP, the 
 interface to the preconditioners, Krylov subspace methods, and direct
 linear solvers of PETSc.  Following the code we highlight a few of the most important
 parts of this example.  
@@ -319,15 +319,15 @@ parts of this example.
 The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
 {\footnotesize
-   \#include "petscsles.h"
+   \#include "petscksp.h"
 }
 \end{tabbing}
-where \trl{petscsles.h} is the include file for the SLES library.
+where \trl{petscksp.h} is the include file for the linear solver library.
 Each PETSc program must specify an
 include file that corresponds to the highest level PETSc objects
 needed within the program; all of the required lower level include
 files are automatically included within the higher level files.  For
-example, \trl{petscsles.h} includes \trl{petscmat.h} (matrices),
+example, \trl{petscksp.h} includes \trl{petscmat.h} (matrices),
 \trl{petscvec.h} (vectors), and \trl{petsc.h} (base PETSc file).  
 The PETSc include files are located in the directory 
 \trl{${PETSC_DIR}/include}.  See Section \ref{sec_fortran_includes}
@@ -413,22 +413,24 @@ well as the details of some basic matrix manipulation routines.
 \subsection*{Linear Solvers}
 
 After creating the matrix and vectors that define a linear system,
-\trl{Ax = b}, the user can then use SLES to solve the system 
+\trl{Ax = b}, the user can then use KSP to solve the system 
 with the following sequence of commands: 
-\findex{SLESCreate()} \findex{SLESSetOperators()}
-\findex{SLESSetFromOptions()} \findex{SLESSolve()} \findex{SLESDestroy()}
+\findex{KSPCreate()} \findex{KSPSetOperators()}
+\findex{KSPSetFromOptions()} \findex{KSPSolve()} \findex{KSPDestroy()}
 \begin{tabbing}
-  SLESCreate(MPI\_Comm comm,SLES *sles); \\
-  SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);\\
-  SLESSetFromOptions(SLES sles);\\
-  SLESSolve(SLES sles,Vec b,Vec x);\\
-  SLESDestroy(SLES sles);
+  KSPCreate(MPI\_Comm comm,KSP *ksp); \\
+  KSPSetOperators(KSP ksp,Mat A,Mat PrecA,MatStructure flag);\\
+  KSPSetFromOptions(KSP ksp);\\
+  KSPSetRhs(KSP ksp,Vec b);\\
+  KSPSetSolution(KSP ksp,Vec x);\\
+  KSPSolve(KSP ksp);\\
+  KSPDestroy(KSP ksp);
 \end{tabbing}
-The user first creates the SLES context and sets the operators
+The user first creates the KSP context and sets the operators
 associated with the system (linear system matrix and optionally different
 preconditioning matrix).  The user then sets various options for
 customized solution, solves the linear system, and finally destroys
-the SLES context.  We emphasize the command \trl{SLESSetFromOptions()}, 
+the KSP context.  We emphasize the command \trl{KSPSetFromOptions()}, 
 which enables the user to customize the linear solution
 method at runtime by using the options database, which is discussed in
 Section~\ref{sec_options}. Through this database, the user not only
@@ -436,7 +438,7 @@ can select an iterative method and preconditioner, but also can prescribe
 the convergence tolerance, set various monitoring routines, etc.
 (see, e.g., Figure~\ref{fig_exprof}).
 
-Chapter~\ref{ch_sles} describes in detail the SLES package, including
+Chapter~\ref{ch_sles} describes in detail the KSP package, including
 the PC and KSP packages for preconditioners and Krylov subspace methods.
 
 \subsection*{Nonlinear Solvers}
@@ -508,7 +510,7 @@ creation are:
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,int M,int N,Mat *A);\\
   VecCreate(MPI\_Comm comm,Vec *x);\\
-  SLESCreate(MPI\_Comm comm,SLES *sles); 
+  KSPCreate(MPI\_Comm comm,KSP *ksp); 
 \end{tabbing}
 The creation routines are collective over all processors in the
 communicator; thus, all processors in the communicator {\em must}
@@ -520,7 +522,7 @@ The next example, given in Figure~\ref{fig_example2}, illustrates the
 solution of a linear system in parallel.  This code, corresponding to
 \trl{${PETSC_DIR}/src/sles/examples/tutorials/ex2.c}, handles the
 two-dimensional Laplacian discretized with finite differences, where
-the linear system is again solved with SLES.  The code performs the
+the linear system is again solved with KSP.  The code performs the
 same tasks as the sequential version within Figure~\ref{fig_example1}.
 Note that the user interface for initiating the program, creating
 vectors and matrices, and solving the linear system is {\em exactly}
@@ -625,8 +627,8 @@ VecCopy               1  3.101e-04    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+
 VecSet                3  5.029e-04    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0
 VecAXPY               3  8.690e-04    1.0  6.9e+06    1.0  0.0e+00 0.0e+00 0.0e+00  1 15  0  0  0
 VecMAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0
-SLESSolve             1  1.288e-02    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00 11 70  0  0  0
-SLESSetUp             1  2.669e-02    1.0  1.1e+05    1.0  0.0e+00 0.0e+00 0.0e+00 23  7  0  0  0
+KSPSolve             1  1.288e-02    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00 11 70  0  0  0
+KSPSetUp             1  2.669e-02    1.0  1.1e+05    1.0  0.0e+00 0.0e+00 0.0e+00 23  7  0  0  0
 KSPGMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0e+00 0.0e+00 0.0e+00  1 10  0  0  0
 PCSetUp               1 24e-02    1.0  1.5e+05    1.0  0.0e+00 0.0e+00 0.0e+00 18  7  0  0  0
 PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00  4 25  0  0  0
@@ -640,7 +642,7 @@ Vector                8              8      65728     0
 Matrix                2              2     184924     4140
 Krylov Solver         1              1      16892     41080
 Preconditioner        1              1          0     64872
-SLES                  1              1          0     122844
+KSP                  1              1          0     122844
 
 \end{verbatim}
 }
@@ -660,7 +662,7 @@ users examine programs in the directories
 \end{tabbing}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
-section), such as \trl{snes} or \trl{sles}.  
+section), such as \trl{snes} or \trl{ksp}.  
 The manual pages located at
 \begin{tabbing}
    \${PETSC\_DIR}/docs/index.html or \\
@@ -749,7 +751,7 @@ The root directory of PETSc contains the following directories:
     \item \trl{da} - distributed arrays,
     \item \trl{ao} - application orderings,
    \end{itemize}
- \item \trl{sles} - complete linear equations solvers,
+ \item \trl{ksp} - complete linear equations solvers,
  \begin{itemize}
    \item \trl{ksp} - Krylov subspace accelerators,
    \item \trl{pc} - preconditioners,

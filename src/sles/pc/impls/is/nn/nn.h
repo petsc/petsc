@@ -14,7 +14,7 @@ typedef struct {
   Mat           coarse_mat;
   Vec           coarse_x;
   Vec           coarse_b;
-  SLES          sles_coarse;
+  KSP          ksp_coarse;
   PetscScalar   **DZ_IN;          /* proc[k].DZ_IN[i][] = bit of vector to be received from processor i by proc. k  */
   PetscScalar   factor_coarse_rhs;
 } PC_NN;

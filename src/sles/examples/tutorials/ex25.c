@@ -17,7 +17,7 @@ with boundary conditions
 static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\n\n";
 
 #include "petscda.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 extern int ComputeJacobian(DMMG,Mat);
 extern int ComputeRHS(DMMG,Vec);
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetDM(dmmg,(DM)da);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
-  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 

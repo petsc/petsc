@@ -15,7 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: ODE solvers
 
-.seealso:  TSCreate(), TSSetType(), TSType, SNES, SLES, KSP, PC
+.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC
 S*/
 typedef struct _p_TS* TS;
 
@@ -195,7 +195,7 @@ EXTERN int TSSerializeRegisterDestroy(void);
 #endif
 
 EXTERN int TSGetSNES(TS,SNES*);
-EXTERN int TSGetSLES(TS,SLES*);
+EXTERN int TSGetKSP(TS,KSP*);
 
 EXTERN int TSView(TS,PetscViewer);
 EXTERN int TSViewFromOptions(TS,const char[]);

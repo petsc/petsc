@@ -8,7 +8,7 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
+#include "include/finclude/petscksp.h"
 #include "include/finclude/petscviewer.h"
 !
 !      Solves a linear system matrix free
@@ -17,7 +17,7 @@
       Mat         A
       Vec         x,y
       integer     m,ierr
-      SLES        sles
+      KSP        ksp
       external    mymatmult
       PetscScalar one
 
@@ -25,7 +25,7 @@
      
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one = 1.d0
-      call SLESCreate(PETSC_COMM_SELF,sles,ierr)
+      call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
 
       call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL_OBJECT,    &
      &     A,ierr)
@@ -35,13 +35,15 @@
       call VecDuplicate(x,y,ierr)
       call VecSet(one,x,ierr)
 
-      call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
-      call SLESSolve(sles,x,y,ierr)
+      call KSPSetRhs(ksp,x,ierr)
+      call KSPSetSolution(ksp,y,ierr)
+      call KSPSolve(ksp,ierr)
 
       call MatDestroy(A,ierr)
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
 

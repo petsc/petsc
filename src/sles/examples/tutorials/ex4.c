@@ -1,29 +1,29 @@
 /*$Id: ex4.c,v 1.53 2001/08/07 03:04:00 balay Exp $*/
 
-static char help[] = "Uses a different preconditioner matrix and linear system matrix in the SLES solvers.\n\
+static char help[] = "Uses a different preconditioner matrix and linear system matrix in the KSP solvers.\n\
 Note that different storage formats\n\
 can be used for the different matrices.\n\n";
 
 /*T
-   Concepts: SLES^different matrices for linear system and preconditioner;
+   Concepts: KSP^different matrices for linear system and preconditioner;
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  SLES        sles;      /* linear solver context */
+  KSP        ksp;      /* linear solver context */
   Mat         A,B;      /* linear system matrix, preconditioning matrix */
   PetscRandom rctx;      /* random number generator context */
   Vec         x,b,u;   /* approx solution, RHS, exact solution */
@@ -154,30 +154,32 @@ int main(int argc,char **args)
   /* 
     Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Note that we use different matrices to define the
      linear system and to precondition it.
   */
-  ierr = SLESSetOperators(sles,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);     ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);     ierr = VecDestroy(b);CHKERRQ(ierr);
 

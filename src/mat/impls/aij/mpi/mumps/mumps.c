@@ -481,7 +481,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
     } 
     ierr = PetscOptionsInt("-mat_mumps_icntl_9","ICNTL(9): A or A^T x=b to be solved. 1: A; otherwise: A^T","None",lu->id.ICNTL(9),&lu->id.ICNTL(9),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",lu->id.ICNTL(10),&lu->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): error analysis, a positive value returns statistics (by -sles_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): error analysis, a positive value returns statistics (by -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control","None",lu->id.ICNTL(12),&lu->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control","None",lu->id.ICNTL(13),&lu->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
@@ -777,7 +777,7 @@ int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 . -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
 . -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
 . -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
-. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -sles_view
+. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -ksp_view
 . -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
 . -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
 . -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)
@@ -921,7 +921,7 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 . -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
 . -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
 . -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
-. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -sles_view
+. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -ksp_view
 . -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
 . -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
 . -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)

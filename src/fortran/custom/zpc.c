@@ -1,7 +1,7 @@
 /*$Id: zpc.c,v 1.51 2001/08/06 21:19:11 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 #include "petscmg.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
@@ -18,8 +18,8 @@
 #define pcgetfactoredmatrix_       PCGETFACTOREDMATRIX
 #define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
 #define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
-#define pcbjacobigetsubsles_       PCBJACOBIGETSUBSLES
-#define pcasmgetsubsles_           PCASMGETSUBSLES
+#define pcbjacobigetsubksp_       PCBJACOBIGETSUBKSP
+#define pcasmgetsubksp_           PCASMGETSUBKSP
 #define mggetcoarsesolve_          MGGETCOARSESOLVE
 #define mggetsmoother_             MGGETSMOOTHER
 #define mggetsmootherup_           MGGETSMOOTHERUP
@@ -57,8 +57,8 @@
 #define pcgetfactoredmatrix_       pcgetfactoredmatrix
 #define pcsetoptionsprefix_        pcsetoptionsprefix
 #define pcappendoptionsprefix_     pcappendoptionsprefix
-#define pcbjacobigetsubsles_       pcbjacobigetsubsles
-#define pcasmgetsubsles_           pcasmgetsubsles
+#define pcbjacobigetsubksp_       pcbjacobigetsubksp
+#define pcasmgetsubksp_           pcasmgetsubksp
 #define mggetcoarsesolve_          mggetcoarsesolve
 #define mggetsmoother_             mggetsmoother
 #define mggetsmootherup_           mggetsmootherup
@@ -201,49 +201,49 @@ void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
   *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
 }
 
-void PETSC_STDCALL mggetcoarsesolve_(PC *pc,SLES *sles,int *ierr)
+void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,int *ierr)
 {
-  *ierr = MGGetCoarseSolve(*pc,sles);
+  *ierr = MGGetCoarseSolve(*pc,ksp);
 }
 
-void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,SLES *sles,int *ierr)
+void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,KSP *ksp,int *ierr)
 {
-  *ierr = MGGetSmoother(*pc,*l,sles);
+  *ierr = MGGetSmoother(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,SLES *sles,int *ierr)
+void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,KSP *ksp,int *ierr)
 {
-  *ierr = MGGetSmootherUp(*pc,*l,sles);
+  *ierr = MGGetSmootherUp(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,SLES *sles,int *ierr)
+void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,KSP *ksp,int *ierr)
 {
-  *ierr = MGGetSmootherDown(*pc,*l,sles);
+  *ierr = MGGetSmootherDown(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *ierr)
+void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,int *ierr)
 {
-  SLES *tsles;
+  KSP *tksp;
   int  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCBJacobiGetSubSLES(*pc,&nloc,first_local,&tsles);
+  *ierr = PCBJacobiGetSubKSP(*pc,&nloc,first_local,&tksp);
   if (n_local) *n_local = nloc;
   for (i=0; i<nloc; i++){
-    sles[i] = tsles[i];
+    ksp[i] = tksp[i];
   }
 }
 
-void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *ierr)
+void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,int *ierr)
 {
-  SLES *tsles;
+  KSP *tksp;
   int  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCASMGetSubSLES(*pc,&nloc,first_local,&tsles);
+  *ierr = PCASMGetSubKSP(*pc,&nloc,first_local,&tksp);
   if (n_local) *n_local = nloc;
   for (i=0; i<nloc; i++){
-    sles[i] = tsles[i];
+    ksp[i] = tksp[i];
   }
 }
 

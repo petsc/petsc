@@ -176,7 +176,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
+  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }
@@ -608,7 +608,7 @@ int PCLUSetDamping(PC pc,PetscReal damping)
    Notes:
    PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
    a different matrix is provided for the multiply and the preconditioner in 
-   a call to SLESSetOperators().
+   a call to KSPSetOperators().
    This is because the Krylov space methods require an application of the 
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.

@@ -523,10 +523,8 @@ int MatSNESMFSetFromOptions(Mat mat)
   if (mfctx->snes) {
     ierr = PetscOptionsName("-snes_mf_ksp_monitor","Monitor matrix-free parameters","MatSNESMFKSPMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
-      SLES sles;
-      KSP  ksp;
-      ierr = SNESGetSLES(mfctx->snes,&sles);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      KSP ksp;
+      ierr = SNESGetKSP(mfctx->snes,&ksp);CHKERRQ(ierr);
       ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
     }
   }

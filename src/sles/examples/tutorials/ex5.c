@@ -1,6 +1,6 @@
 /*$Id: ex5.c,v 1.93 2001/09/11 16:33:29 bsmith Exp $*/
 
-static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
+static char help[] = "Solves two linear systems in parallel with KSP.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
 method but different matrices (having the same nonzero structure).  The code\n\
 also uses multiple profiling stages.  Input arguments are\n\
@@ -8,26 +8,26 @@ also uses multiple profiling stages.  Input arguments are\n\
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 /*T
-   Concepts: SLES^repeatedly solving linear systems;
+   Concepts: KSP^repeatedly solving linear systems;
    Concepts: PetscLog^profiling multiple stages of code;
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  SLES         sles;             /* linear solver context */
+  KSP          ksp;             /* linear solver context */
   Mat          C;                /* matrix */
   Vec          x,u,b;          /* approx solution, RHS, exact solution */
   PetscReal    norm;             /* norm of solution error */
@@ -36,7 +36,6 @@ int main(int argc,char **args)
   int          i,j,m = 3,n = 2,rank,size,its;
   PetscTruth   mat_nonsymmetric;
   int          stages[2];
-  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -167,42 +166,43 @@ int main(int argc,char **args)
   /* 
     Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
 
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* 
-     Solve linear system.  Here we explicitly call SLESSetUp() for more
+     Solve linear system.  Here we explicitly call KSPSetUp() for more
      detailed performance monitoring of certain preconditioners, such
-     as ICC and ILU.  This call is optional, as SLESSetUp() will
-     automatically be called within SLESSolve() if it hasn't been
+     as ICC and ILU.  This call is optional, as KSPSetUp() will
+     automatically be called within KSPSolve() if it hasn't been
      called already.
   */
-  ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
  
   /* 
      Check the error
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
-     Solve another linear system with the same method.  We reuse the SLES
+     Solve another linear system with the same method.  We reuse the KSP
      context, matrix and vector data structures, and hence save the
      overhead of creating new ones.
 
@@ -269,20 +269,21 @@ int main(int argc,char **args)
         will not function correctly.  Thus, use this optimization
         feature with caution!
   */
-  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Solve linear system
   */
-  ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* 
      Check the error
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 
@@ -290,7 +291,7 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

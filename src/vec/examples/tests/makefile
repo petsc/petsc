@@ -11,7 +11,7 @@ LOCDIR          = src/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
 		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c ex31.c ex34.c
-EXAMPLESF       = ex17f.F ex19.F ex20.F ex30f.F ex32f.F
+EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
 include ${PETSC_DIR}/bmake/common/base
@@ -92,16 +92,16 @@ ex18: ex18.o  chkopts
 	-${CLINKER} -o ex18 ex18.o  ${PETSC_VEC_LIB}
 	${RM} -f ex18.o
 
-ex19: ex19.o  chkopts
-	-${FLINKER} -o ex19 ex19.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
-	${RM} -f ex19.o
+ex19f: ex19f.o  chkopts
+	-${FLINKER} -o ex19f ex19f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	${RM} -f ex19f.o
 
-ex20: ex20.o  chkopts
-	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
-	${RM} -f ex20.o
+ex20f: ex20f.o  chkopts
+	-${FLINKER} -o ex20f ex20f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	${RM} -f ex20f.o
 
 ex21: ex21.o  chkopts
-	-${FLINKER} -o ex21 ex21.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex21 ex21.o  ${PETSC_VEC_LIB}
 	${RM} -f ex21.o
 
 ex22: ex22.o  chkopts
@@ -113,7 +113,7 @@ ex23: ex23.o  chkopts
 	${RM} -f ex23.o
 
 ex24: ex24.o chkopts
-	-${CLINKER} -o ex24 ex24.o ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
+	-${CLINKER} -o ex24 ex24.o ${PETSC_VEC_LIB} 
 	${RM} -f ex24.o 
 
 ex25: ex25.o chkopts
@@ -264,16 +264,11 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi;\
 	   ${RM} -f ex19_1.tmp
-runex20:
-	-@${MPIRUN} -np 1 ex20 > ex20_1.tmp 2>&1;\
+runex20f:
+	-@${MPIRUN} -np 1 ex20f > ex20_1.tmp 2>&1;\
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi;\
 	   ${RM} -f ex20_1.tmp vector.dat
-runex20_2:
-	-@${MPIRUN} -np 2 ex20 > ex20_2.tmp 2>&1;\
-	   if (${DIFF} output/ex20_2.out ex20_2.tmp) then true; \
-	   else echo "Possible problem with ex20_2, diffs above"; fi;\
-	   ${RM} -f ex20_2.tmp vector.dat
 runex21:
 	-@${MPIRUN} -np 1 ex21 > ex21_1.tmp 2>&1;\
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
@@ -343,9 +338,9 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
 		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \
 		  ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_3  = ex17f.PETSc runex17f ex17f.rm ex19.PETSc runex19 ex19.rm \
-	          ex20.PETSc ex20.rm ex30f.PETSc runex30f ex30f.rm
-TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
+TESTEXAMPLES_3  = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc runex19f ex19f.rm \
+	          ex20f.PETSc ex20f.rm ex30f.PETSc runex30f ex30f.rm
+TESTEXAMPLES_9  = ex19f.PETSc runex19f ex19f.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
                   ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 

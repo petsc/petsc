@@ -1,10 +1,10 @@
 /*$Id: ex4.c,v 1.64 2001/08/07 21:30:50 bsmith Exp $*/
 
-static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
+static char help[] = "Solves a linear system with KSP.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "FormatElementStiffness"
@@ -33,7 +33,6 @@ int main(int argc,char **args)
   PetscScalar val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
   PetscReal   x,y,h,norm;
   Vec         u,ustar,b;
-  SLES        sles;
   KSP         ksp;
   IS          is;
 
@@ -110,13 +109,14 @@ int main(int argc,char **args)
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /* solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);
  CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* check error */
   for (i=0; i<N; i++) {
@@ -132,7 +132,7 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
 
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(ustar);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

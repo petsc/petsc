@@ -7,18 +7,17 @@
 !  in common blocks.
 !
 !/*T
-!  Concepts: SLES^repeatedly solving linear systems;
-!  Concepts: SLES^different matrices for linear system and preconditioner;
+!  Concepts: KSP^repeatedly solving linear systems;
+!  Concepts: KSP^different matrices for linear system and preconditioner;
 !  Processors: n
 !T*/
 !
-!  The following include statements are required for SLES Fortran programs:
+!  The following include statements are required for KSP Fortran programs:
 !     petsc.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscpc.h     - preconditioners
 !     petscksp.h    - Krylov subspace methods
-!     petscsles.h   - SLES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
 !     petscviewer.h - viewers
@@ -28,20 +27,19 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
 
 !  Variables:
 !
 !  A       - matrix that defines linear system
-!  sles    - SLES context
+!  ksp    - KSP context
 !  ksp     - KSP context
 !  x, b, u - approx solution, RHS, exact solution vectors
 !
       Vec     x,u,b
       Mat     A
-      SLES    sles
+      KSP    ksp
       integer i,j,II,JJ,ierr,m,n
       integer Istart,Iend,flg,nsteps
       PetscScalar  v
@@ -120,16 +118,16 @@
 
 !  Create linear solver context
 
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
 
 !  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
 !  Solve several linear systems in succession
 
       do 100 i=1,nsteps
-         call solve1(sles,A,x,b,u,i,nsteps,ierr)
+         call solve1(ksp,A,x,b,u,i,nsteps,ierr)
  100  continue
 
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -139,19 +137,18 @@
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
 
       call PetscFinalize(ierr)
       end
 
 ! -----------------------------------------------------------------------
 !
-      subroutine solve1(sles,A,x,b,u,count,nsteps,ierr)
+      subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
 
@@ -166,7 +163,7 @@
       PetscScalar  v,val
       integer II,ierr,Istart,Iend,count,nsteps
       Mat     A
-      SLES    sles
+      KSP    ksp
       KSP     ksp
       Vec     x,b,u
 
@@ -187,7 +184,6 @@
         call MatConvert(A,MATSAME,A2,ierr)
 ! All other times: Set previous solution as initial guess for next solve.
       else
-        call SLESGetKSP(sles,ksp,ierr)
         call KSPSetInitialGuessNonzero(ksp,PETSC_TRUE,ierr)
       endif
 
@@ -211,10 +207,12 @@
 ! Set operators, keeping the identical preconditioner matrix for
 ! all linear solves.  This approach is often effective when the
 ! linear systems do not change very much between successive steps.
-      call SLESSetOperators(sles,A,A2,SAME_PRECONDITIONER,ierr)
+      call KSPSetOperators(ksp,A,A2,SAME_PRECONDITIONER,ierr)
 
 ! Solve linear system
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
 
 ! Destroy the preconditioner matrix on the last time through
       if (count .eq. nsteps) call MatDestroy(A2,ierr)

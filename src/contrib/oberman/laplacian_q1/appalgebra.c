@@ -34,7 +34,7 @@ int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
-  SLES        sles;
+  KSP        ksp;
   int         ierr;
 
   PetscFunctionBegin;
@@ -86,18 +86,18 @@ int AppCtxSolve(AppCtx* appctx)
     /*     5) Set the rhs boundary conditions - this also creates initial guess that satisfies boundary conditions */
     ierr = SetBoundaryConditions(appctx);CHKERRQ(ierr);
 
-    ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     {
-      KSP ksp;
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-    ierr = SLESSetUp(sles,appctx->algebra.b,appctx->algebra.b);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,appctx->algebra.b);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,appctx->algebra.x);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     PreLoadStage("Solve");  
-    ierr = SLESSolve(sles,algebra->b,algebra->x);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
     {
       PetscTruth flg;
@@ -107,7 +107,6 @@ int AppCtxSolve(AppCtx* appctx)
 	KSP         ksp;
 	Mat         mat,mat2;
 	PetscViewer viewer;
-	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
@@ -123,7 +122,7 @@ int AppCtxSolve(AppCtx* appctx)
     }
 
     /*      Free the solver data structures */
-    ierr = SLESDestroy(sles);CHKERRQ(ierr);
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   PreLoadEnd();
 
   ierr = PFDestroy(appctx->bc);CHKERRQ(ierr);

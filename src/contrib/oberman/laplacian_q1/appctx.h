@@ -8,7 +8,7 @@
 #define __APPCTX_H
 
 #include "petscao.h"           /* allows using the PETSc AOData-base routines for grid information */
-#include "petscsles.h"         /* allows using PETSc linear solvers */
+#include "petscksp.h"         /* allows using PETSc linear solvers */
 #include "petscpf.h"
 
 /*-------------------------------------------------------------------

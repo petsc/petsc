@@ -5,12 +5,12 @@
 static char help[] = "Solves a tridiagonal linear system.\n\n";
 
 /*T
-   Concepts: SLES^basic parallel example;
+   Concepts: KSP^basic parallel example;
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
@@ -19,7 +19,7 @@ T*/
 
   Note:  The corresponding uniprocessor example is ex1.c
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -27,9 +27,8 @@ int main(int argc,char **args)
 {
   Vec         x, b, u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
-  SLES        sles;         /* linear solver context */
+  KSP         ksp;         /* linear solver context */
   PC          pc;           /* preconditioner context */
-  KSP         ksp;          /* Krylov subspace method context */
   PetscReal   norm;         /* norm of solution error */
   int         ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar neg_one = -1.0,one = 1.0,value[3];
@@ -126,24 +125,23 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the SLES context,
+     - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
        various options.
      - The following four statements are optional; all of these
        parameters could alternatively be specified at runtime via
-       SLESSetFromOptions();
+       KSPSetFromOptions();
   */
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -152,10 +150,10 @@ int main(int argc,char **args)
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization
+    KSPSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
@@ -163,13 +161,15 @@ int main(int argc,char **args)
   /* 
      Solve linear system
   */
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr); 
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr); 
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp);CHKERRQ(ierr); 
 
   /* 
-     View solver info; we could instead use the option -sles_view to
-     print this info to the screen at the conclusion of SLESSolve().
+     View solver info; we could instead use the option -ksp_view to
+     print this info to the screen at the conclusion of KSPSolve().
   */
-  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -187,7 +187,7 @@ int main(int argc,char **args)
   */
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

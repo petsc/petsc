@@ -55,7 +55,7 @@ Input parameters include:\n\
      petscsys.h    - system routines       petscmat.h  - matrices
      petscis.h     - index sets            petscksp.h  - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h   - preconditioners
-     petscsles.h   - linear solvers        petscsnes.h - nonlinear solvers
+     petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
 #include "petscts.h"

@@ -1,14 +1,14 @@
 !
 !    "$Id: ex2f.F,v 1.65 2001/08/07 03:04:00 balay Exp $";
 !
-!  Description: Solves a linear system in parallel with SLES (Fortran code).
+!  Description: Solves a linear system in parallel with KSP (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
 !
 !  Program usage: mpirun -np <procs> ex2f [-help] [all PETSc options]
 !
 !/*T
-!  Concepts: SLES^basic parallel example
-!  Concepts: SLES^setting a user-defined monitoring routine
+!  Concepts: KSP^basic parallel example
+!  Concepts: KSP^setting a user-defined monitoring routine
 !  Processors: n
 !T*/
 !
@@ -37,13 +37,12 @@
 !
 !  See the Fortran section of the PETSc users manual for details.
 !
-!  The following include statements are required for SLES Fortran programs:
+!  The following include statements are required for KSP Fortran programs:
 !     petsc.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscpc.h     - preconditioners
 !     petscksp.h    - Krylov subspace methods
-!     petscsles.h   - SLES interface
 !  Include the following to use PETSc random numbers:
 !     petscsys.h    - system routines
 !  Additional include statements may be needed if using additional
@@ -56,7 +55,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +62,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
-!     sles     - linear solver context
+!     ksp     - linear solver context
 !     ksp      - Krylov subspace method context
 !     pc       - preconditioner context
 !     x, b, u  - approx solution, right-hand-side, exact solution vectors
@@ -87,7 +85,7 @@
       PetscScalar v,one,neg_one
       Vec         x,b,u
       Mat         A 
-      SLES        sles
+      KSP        ksp
       KSP         ksp
       PetscRandom rctx
 !  These variables are not currently used.
@@ -225,30 +223,29 @@
 
 !  Create linear solver context
 
-      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
 
 !  Set linear solver defaults for this problem (optional).
-!   - By extracting the KSP and PC contexts from the SLES context,
+!   - By extracting the KSP and PC contexts from the KSP context,
 !     we can then directly directly call any KSP and PC routines
 !     to set various options.
 !   - The following four statements are optional; all of these
 !     parameters could alternatively be specified at runtime via
-!     SLESSetFromOptions(). All of these defaults can be
+!     KSPSetFromOptions(). All of these defaults can be
 !     overridden at runtime, as indicated below.
 
 !     We comment out this section of code since the Jacobi
 !     preconditioner is not a good general default.
 
-!      call SLESGetPC(sles,pc,ierr)
+!      call KSPGetPC(ksp,pc,ierr)
 !      ptype = PCJACOBI
 !      call PCSetType(pc,ptype,ierr)
-!      call SLESGetKSP(sles,ksp,ierr)
 !      tol = 1.e-7
 !      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
 !     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
@@ -258,7 +255,6 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
      &                    flg,ierr)
       if (flg .eq. 1) then
-        call SLESGetKSP(sles,ksp,ierr)
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
       endif
@@ -267,17 +263,16 @@
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 !  These options will override those specified above as long as
-!  SLESSetFromOptions() is called _after_ any other customization
+!  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call SLESSetFromOptions(sles,ierr)
+      call KSPSetFromOptions(ksp,ierr)
 
 !  Set convergence test routine if desired
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-my_ksp_convergence',flg,ierr)
       if (flg .eq. 1) then
-        call SLESGetKSP(sles,ksp,ierr)
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
      &          PETSC_NULL_OBJECT,ierr)
       endif
@@ -286,7 +281,9 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,ierr)
+      call KSPSetRhs(ksp,b,ierr)
+      call KSPSetSolution(ksp,x,ierr)
+      call KSPSolve(ksp,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                     Check solution and clean up
@@ -296,7 +293,6 @@
 
       call VecAXPY(neg_one,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
@@ -311,7 +307,7 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call SLESDestroy(sles,ierr)
+      call KSPDestroy(ksp,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
@@ -328,7 +324,7 @@
 ! --------------------------------------------------------------
 !
 !  MyKSPMonitor - This is a user-defined routine for monitoring
-!  the SLES iterative solvers.
+!  the KSP iterative solvers.
 !
 !  Input Parameters:
 !    ksp   - iterative context
@@ -371,7 +367,7 @@
 ! --------------------------------------------------------------
 !
 !  MyKSPConverged - This is a user-defined routine for testing
-!  convergence of the SLES iterative solvers.
+!  convergence of the KSP iterative solvers.
 !
 !  Input Parameters:
 !    ksp   - iterative context

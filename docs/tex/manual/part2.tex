@@ -1969,19 +1969,19 @@ great deal of time.
 
 
 % ------------------------------------------------------------------
-\chapter{SLES: Linear Equations Solvers} \sindex{linear system solvers}
+\chapter{KSP: Linear Equations Solvers} \sindex{linear system solvers}
 \label{ch_sles}
 
-The object SLES is the heart of PETSc, because it provides uniform and efficient access 
+The object KSP is the heart of PETSc, because it provides uniform and efficient access 
 to all of the package's linear system solvers, including parallel and sequential,
 direct and iterative.
-SLES is intended for solving nonsingular systems of the form
+KSP is intended for solving nonsingular systems of the form
 \begin{equation}
    A x = b,
 \label{eq_Ax=b}
 \end{equation}
 where $ A$ denotes the matrix representation of a linear operator, $b$
-is the right-hand-side vector, and $ x $ is the solution vector.  SLES
+is the right-hand-side vector, and $ x $ is the solution vector.  KSP
 uses the same calling sequence for both direct and iterative solution
 of a linear system.  In addition, particular solution techniques and
 their associated options can be selected at runtime.
@@ -1989,34 +1989,34 @@ their associated options can be selected at runtime.
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
 linear systems.  See, for example, \cite{fgn} for an overview of the theory
-of such methods.  SLES creates a simplified interface to the
+of such methods.  KSP creates a simplified interface to the
 lower-level KSP and PC modules within the PETSc package.  The KSP package,
 discussed in
 Section~\ref{sec_ksp}, provides many popular Krylov
 \sindex{Krylov subspace methods} subspace iterative methods;
 the PC module, described in Section~\ref{sec_pc}, includes a
 variety of preconditioners.  Although both  KSP and PC can be used
-directly, users should employ the interface of SLES.
+directly, users should employ the interface of KSP.
 
-\section{Using SLES} 
+\section{Using KSP} 
 \label{sec_usingsles}
 
-To solve a linear system with SLES, one must first create a solver context 
-with the command \findex{SLESCreate()}
+To solve a linear system with KSP, one must first create a solver context 
+with the command \findex{KSPCreate()}
 \begin{tabbing}
-  SLESCreate(MPI\_Comm comm,SLES *sles); 
+  KSPCreate(MPI\_Comm comm,KSP *ksp); 
 \end{tabbing}
-Here \trl{comm} is the MPI communicator, and \trl{sles} is the newly
+Here \trl{comm} is the MPI communicator, and \trl{ksp} is the newly
 formed solver context.
-Before actually solving a linear system with SLES, the user must call 
+Before actually solving a linear system with KSP, the user must call 
 the following routine to set the matrices associated with the linear
-system: \findex{SLESSetOperators()}
+system: \findex{KSPSetOperators()}
 \begin{tabbing}
-  SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag);
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
 \end{tabbing}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.  
-In particular, SLES {\em does} support matrix-free methods. 
+In particular, KSP {\em does} support matrix-free methods. 
 \sindex{matrix-free methods}
 The routine MatCreateShell() \findex{MatCreateShell()}
 in Section~\ref{sec_matrixfree} provides further information regarding
@@ -2044,16 +2044,16 @@ ignored.  The user can set \trl{flag} as follows:
 If the structure of a matrix is not known a priori, one should use
 the flag \trl{DIFFERENT_NONZERO_PATTERN}.
  
-Much of the power of SLES can be accessed through the single routine
+Much of the power of KSP can be accessed through the single routine
 \begin{tabbing}
-  SLESSetFromOptions(SLES sles);
+  KSPSetFromOptions(KSP ksp);
 \end{tabbing}
-This \findex{SLESSetFromOptions()}
+This \findex{KSPSetFromOptions()}
 routine accepts the options \trl{-h} and \trl{-help} as well as 
 any of the KSP and PC options discussed below. 
-To solve a linear system, one merely executes the command \findex{SLESSolve()}
+To solve a linear system, one merely executes the command \findex{KSPSolve()}
 \begin{tabbing}
-  SLESSolve(SLES sles,Vec b,Vec x);
+  KSPSolve(KSP ksp);
 \end{tabbing}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
 solution vectors.  On return, the parameter \trl{its} contains
@@ -2061,11 +2061,11 @@ either the iteration number at which convergence was successfully
 reached, or the {\em negative} of the iteration at which divergence or
 breakdown was detected.  Section~\ref{section_convergencetests} gives
 more details regarding convergence testing.
-Note that multiple linear solves can be performed by the same SLES context.
-Once the SLES context is no longer needed, it should be destroyed with the 
-command \findex{SLESDestroy()}
+Note that multiple linear solves can be performed by the same KSP context.
+Once the KSP context is no longer needed, it should be destroyed with the 
+command \findex{KSPDestroy()}
 \begin{tabbing}
-  SLESDestroy(SLES sles);
+  KSPDestroy(KSP ksp);
 \end{tabbing}
 
 The above procedure is sufficient for general use of the SLES package.
@@ -2073,16 +2073,16 @@ One additional step is required for users who wish to customize certain
 preconditioners (e.g., see Section~\ref{sec_bjacobi}) or to log certain 
 performance data using the PETSc profiling facilities (as discussed in 
 Chapter~\ref{ch_profiling}).
-In this case, the user can optionally explicitly call \findex{SLESSetUp()}
+In this case, the user can optionally explicitly call \findex{KSPSetUp()}
 \begin{tabbing}
-  SLESSetUp(SLES sles,Vec b,Vec x);
+  KSPSetUp(KSP ksp)
 \end{tabbing}
-before calling SLESSolve() to perform any setup required for 
+before calling KSPSolve() to perform any setup required for 
 the linear solvers.  The explicit call of this routine enables the
 separate monitoring of any computations performed during the set up
 phase, such as incomplete factorization for the ILU preconditioner.
 
-The default solver within SLES is restarted GMRES, preconditioned for
+The default solver within KSP is restarted GMRES, preconditioned for
 the uniprocess case with ILU(0), and for the multiprocess case
 with the block Jacobi method (with one block per process, each of
 which is solved with ILU(0)). A variety of other solvers
@@ -2091,10 +2091,8 @@ To allow application programmers to set any of the preconditioner or
 Krylov subspace options directly within the code, we provide routines
 that extract the PC and KSP contexts, \findex{KSPGetPC()}
 \begin{tabbing}
-  SLESGetKSP(SLES sles,KSP *ksp);
   KSPGetPC(KSP ksp,PC *pc);\\
 \end{tabbing}
-\findex{SLESGetKSP()}
 The application programmer can then directly call any of the PC or KSP 
 routines to modify the corresponding default options.   
 
@@ -2116,18 +2114,18 @@ When solving multiple linear systems of the same size with the same
 method, several options are available.  To solve successive linear
 systems having the {\em same} preconditioner matrix (i.e., the same
 data structure with exactly the same matrix elements) but different
-right-hand-side vectors, the user should simply call SLESSolve()
+right-hand-side vectors, the user should simply call KSPSolve,()
 multiple times.  The preconditioner setup operations (e.g.,
 factorization for ILU) will be done during the first call to \trl{
-SLESSolve()} only; such operations will {\em not} be repeated for
+KSPSolve()} only; such operations will {\em not} be repeated for
 successive solves.
 
 To solve successive linear systems that have {\em different}
 preconditioner matrices (i.e., the matrix elements and/or the matrix
 data structure change), the user {\em must} call 
-SLESSetOperators() and SLESSolve() for each solve.  See
+KSPSetOperators() and KSPSolve() for each solve.  See
 Section~\ref{sec_usingsles} for a description of various flags for
-SLESSetOperators() that can save work for such cases.
+KSPSetOperators() that can save work for such cases.
 
 \section{Krylov Methods}\sindex{Krylov subspace methods}
 \label{sec_ksp}
@@ -2212,7 +2210,7 @@ set to work with the KSP object is ignored if LSQR was selected.
 
 By default, KSP assumes an initial guess of zero by zeroing the initial 
 value for the solution vector that is given; this zeroing is done at the
-call to SLESSolve() (or KSPSolve()). To use a nonzero 
+call to KSPSolve() (or KSPSolve()). To use a nonzero 
 initial guess, the user {\em must} call \findex{KSPSetInitialGuessNonzero()}
 \begin{tabbing}
   KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg);
@@ -2430,7 +2428,7 @@ First, before the linear solve one must call
 \begin{tabbing}
  KSPSetComputeEigenvalues(KSP ksp,PETSC\_TRUE);
 \end{tabbing}
-Then after the SLES solve one calls \findex{KSPSetComputeEigenvalues()}
+Then after the KSP solve one calls \findex{KSPSetComputeEigenvalues()}
 \begin{tabbing}
  KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart,int *neig);
 \end{tabbing}
@@ -2521,7 +2519,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Linear solver                        & PCSLES        & sles \\
+Linear solver                        & PCKSP        & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
 LU                                   & PCLU          & lu\\
@@ -2559,7 +2557,7 @@ Some of the options for ILU preconditioner are
 \findex{PCILUSetUseDropTolerance()} \findex{PCILUDTSetReuseFill()}
 \findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
 
-When repeatedly solving linear systems with the same SLES
+When repeatedly solving linear systems with the same KSP
 context, one can reuse some information  computed
 during the first linear solve.
 In particular, PCILUSetReuseOrdering() causes the ordering  (for example, set with 
@@ -2802,23 +2800,23 @@ and PC options can be applied to the subproblems by inserting the prefix
 These options database commands set the particular options for {\em all} 
 of the blocks within the global problem.  In addition, the routines
 \begin{tabbing}
-  PCBJacobiGetSubSLES(PC pc,int *n\_local,int *first\_local,SLES **subsles);\\
-  PCASMGetSubSLES(PC pc,int *n\_local,int *first\_local,SLES **subsles);
+  PCBJacobiGetSubKSP(PC pc,int *n\_local,int *first\_local,KSP **subksp);\\
+  PCASMGetSubKSP(PC pc,int *n\_local,int *first\_local,KSP **subksp);
 \end{tabbing}
-extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local 
+extract the \findex{PCBJacobiGetSubKSP()} KSP context for each local 
 block.  The argument \trl{n_local} is the number of blocks on the 
 calling process, and \trl{first_local} indicates the global number 
 of the first block on the process. The blocks are numbered 
 successively by processes from zero through $ gb-1$, 
 where $ gb $ is the number of global blocks.  
-The array of SLES contexts for the local blocks is given by \trl{subsles}. 
+The array of KSP contexts for the local blocks is given by \trl{subksp}. 
 This mechanism enables the user to set different solvers for the 
 various blocks.  To set the appropriate data structures, the 
-user {\em must} explicitly call SLESSetUp() \findex{SLESSetUp()} 
-before calling PCBJacobiGetSubSLES() or
-PCASMGetSubSLES().
+user {\em must} explicitly call KSPSetUp() \findex{KSPSetUp()} 
+before calling PCBJacobiGetSubKSP() or
+PCASMGetSubKSP().
 For further details, see the 
-example \trl{${PETSC_DIR}/src/sles/examples/tutorials/ex7.c}.
+example \trl{${PETSC_DIR}/src/ksp/examples/tutorials/ex7.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz 
 preconditioners allow the user
@@ -2906,7 +2904,7 @@ input vector, and the output vector, respectively.
 For a preconditioner that requires some sort of ``setup'' before being used,
 that requires a new setup everytime the operator is changed, one can 
 provide a ``setup'' routine that is called everytime the operator is 
-changed (usually via SLESSetOperators()).
+changed (usually via KSPSetOperators()).
 \findex{PCShellSetSetUp()}
 \begin{tabbing}
   PCShellSetSetUp(PC pc,int (*setup)(void *ctx));
@@ -2997,26 +2995,26 @@ For example, \trl{-sub_0_pc_ilu_fill} \trl{0}.
 
 
 PETSc also allows a preconditioner to be a complete linear solver. This is 
-achieved with the \trl{PCSLES} type. \findex{PCSLES}
+achieved with the \trl{PCKSP} type. \findex{PCKSP}
 \begin{tabbing}
-  PCSetType(PC pc,PCSLES PCSLES);\\
-  PCSLESGetSLES(pc,\&sles);\\
-   /* set any SLES/KSP/PC options */
+  PCSetType(PC pc,PCKSP PCKSP);\\
+  PCKSPGetKSP(pc,\&ksp);\\
+   /* set any KSP/PC options */
 \end{tabbing}
-\findex{PCSLESGetSLES()} From the command line one can use 5 iterations of 
+\findex{PCKSPGetKSP()} From the command line one can use 5 iterations of 
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
-\trl{-pc_type sles -sles_pc_type ilu -sles_ksp_max_it 5 -sles_ksp_type bcgs}. 
+\trl{-pc_type ksp -ksp_pc_type ilu -ksp_ksp_max_it 5 -ksp_ksp_type bcgs}. 
 
-By default the inner SLES preconditioner uses the outer preconditioner matrix 
+By default the inner KSP preconditioner uses the outer preconditioner matrix 
 as the matrix to be solved in the linear system; to use the true matrix use the 
-option \findex{PCSLESSetUseTrue()}
+option \findex{PCKSPSetUseTrue()}
 \begin{tabbing}
-  PCSLESSetUseTrue(PC pc);
+  PCKSPSetUseTrue(PC pc);
 \end{tabbing}
-or at the command line with \trl{-pc_sles_true}. \findex{-pc_sles_true}
+or at the command line with \trl{-pc_ksp_true}. \findex{-pc_ksp_true}
 
-Naturally one can use a SLES preconditioner inside a composite preconditioner. For example,
-\trl{-pc_type composite -pc_composite_pcs ilu,sles -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}
+Naturally one can use a KSP preconditioner inside a composite preconditioner. For example,
+\trl{-pc_type composite -pc_composite_pcs ilu,ksp -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}
 uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi preconditioning. Though
 it is not clear whether one would ever wish to do such a thing.
 
@@ -3034,8 +3032,7 @@ interface to the multigrid solvers for linear and nonlinear problems using the D
 
 A multigrid preconditioner is created with the four commands 
 \begin{tabbing}
-  SLESCreate(MPI\_Comm comm,SLES *sles);\\
-  SLESGetKSP(SLES sles,KSP *ksp);\\
+  KSPCreate(MPI\_Comm comm,KSP *ksp);\\
   KSPGetPC(KSP ksp,PC *pc);\\
   PCSetType(PC pc,PCMG);\\
   MGSetLevels(pc,int levels,MPI\_Comm *comms);
@@ -3088,22 +3085,22 @@ are mandatory.
 To set the coarse grid solver, one must \sindex{coarse grid solve}
 call \findex{MGGetCoarseSolve()}
 \begin{tabbing}
-  MGGetCoarseSolve(PC pc,SLES *sles);
+  MGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
-and set the appropriate options in \trl{sles}. Similarly, the 
+and set the appropriate options in \trl{ksp}. Similarly, the 
 smoothers are set by calling \findex{MGGetSmoother()}
 \begin{tabbing}
-  MGGetSmoother(PC pc,int level,SLES *sles);
+  MGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
-and setting the various options in \trl{sles.} 
+and setting the various options in \trl{ksp.} 
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{tabbing}
-  MGGetSmootherUp(PC pc,int level,SLES *upsles);
+  MGGetSmootherUp(PC pc,int level,KSP *upksp);
 \end{tabbing}
 and 
 \begin{tabbing}
-  MGGetSmootherDown(PC pc,int level,SLES *downsles);
+  MGGetSmootherDown(PC pc,int level,KSP *downksp);
 \end{tabbing}
 
 Use
@@ -3376,7 +3373,7 @@ that at runtime the user can select a particular nonlinear solver, set
 various parameters and customized routines (e.g., specialized line
 search variants), prescribe the convergence tolerance, and set
 monitoring routines.  With this routine the user can also control all
-linear solver options in the SLES, KSP, and PC modules, as discussed
+linear solver options in the KSP, and PC modules, as discussed
 in Chapter~\ref{ch_sles}.
 
 After having set these routines and options, the user
@@ -3436,7 +3433,7 @@ as \trl{A}); a \trl{flag} indicating information about the
 preconditioner matrix structure; and an optional user-defined Jacobian
 context, \trl{ctx}, for application-specific data.  The options for
 \trl{flag} are identical to those for the flag of \trl{
-SLESSetOperators()}, discussed in Section~\ref{sec_usingsles}.  
+KSPSetOperators()}, discussed in Section~\ref{sec_usingsles}.  
 Note that the SNES solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
 methods) can be used.  Chapter~\ref{chapter_matrices} discusses
@@ -3469,7 +3466,7 @@ repeatedly throughout the solution process.  In addition, if using
 different matrices for the actual Jacobian and the preconditioner, the
 user can hold the preconditioner matrix fixed for multiple iterations
 by setting \trl{flag} to \trl{SAME_PRECONDITIONER}.  See the
-discussion of SLESSetOperators() in Section~\ref{sec_usingsles} for
+discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
 details.
 
 The directory \trl{${PETSC_DIR}/src/snes/examples/tutorials} provides
@@ -3886,7 +3883,7 @@ Matrix          & routine. $ ^\dagger $                         & various matrix
                 &                                    & Or use MatCreateSNESMF().\\
 & & \\ \hline
 & & \\
-Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and KSPGetPC() \\
+Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetKSP() and KSPGetPC() \\
 Matrix           & Assemble matrix with user-defined & to access the PC, then use\\
                 & routine. $ ^\dagger $         & PCSetType(pc,PCSHELL);\\ 
                 &             & followed by PCSetApply(). \\
@@ -4396,7 +4393,7 @@ interface provided in the \trl{PCType} of MG, see Section
 \ref{sec_mg}. Currently we only provide piecewise linear and piecewise
 constant interpolation, but can add more if needed. The DMMG routines
 only provide linear multigrid but they can be used easily with either
-SLES (for linear problems) or SNES (for nonlinear problems).
+KSP (for linear problems) or SNES (for nonlinear problems).
 
 For linear problems the examples \trl{src/sles/examples/tutorials/ex22.c} and \trl{ex25.c} can be used
 to guide your development. We give a short summary here.
@@ -4417,9 +4414,9 @@ to guide your development. We give a short summary here.
   /*  Tell the DMMG object to use the da to define the coarsest grid */\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\
 
-  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the \\
+  /*  Tell the DMMG we are solving a linear problem (hence KSP) and provide the \\
       callback function to compute the right hand side and matrices for each level */\\
-  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);\\
+  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);\\
 
   /*  Solve the problem */\\
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
@@ -4441,10 +4438,10 @@ The solver (smoother) used on each level but the coarsest can be controled via t
 database with any PC or KSP option prefixed as \trl{-mg_levels_[pc/ksp]_}. The 
 solver options on the finest grid can be set with  \trl{-mg_coarse_[pc/ksp]_}. The 
 DMMG has many other options that can view by running the DMMG program with the option \trl{-help}.
-You should generally run your code with the option \trl{-sles_view} to see exactly what 
+You should generally run your code with the option \trl{-ksp_view} to see exactly what 
 solvers are being used.
 
-For nonlinear problems one replaces the DMMGSetSLES() with 
+For nonlinear problems one replaces the DMMGSetKSP() with 
 \begin{tabbing}
   DMMGSetSNES(\=DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),\\
              \>int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -4832,11 +4829,11 @@ In the Fortran version, each PETSc routine has as its final argument
 an integer error variable, in contrast to the C convention of
 providing the error variable as the routine's return value.  The error
 code is set to be nonzero if an error has been detected; otherwise, it
-is zero.  For example, the Fortran and C variants of SLESSolve() are
+is zero.  For example, the Fortran and C variants of KSPSolve() are
 given, respectively, below, where \trl{ierr} denotes the error variable:
 \begin{tabbing}
-   call SLESSolve(SLES sles,Vec b,Vec x,int ierr)\\
-  SLESSolve(SLES sles,Vec b,Vec x);
+   call KSPSolve(KSP ksp,int ierr)\\
+  KSPSolve(KSP ksp);
 \end{tabbing}
 
 Fortran programmers
@@ -4852,7 +4849,7 @@ Fortran routines; however, Fortran programmers can easily use the
 error codes in writing their own tracebacks.  For example, one could
 use code such as the following:
 \begin{tabbing}
-   call SLESSolve(sles,x,y,ierr)\\
+   call KSPSolve(ksp,ierr)\\
    if ( ierr .ne. 0) then\\
        print*, 'Error in routine ...'\\
        return\\
@@ -5210,39 +5207,39 @@ present only a limited view of performance, since memory loads and stores are
 the real performance barrier.
 
 For simplicity, the remainder of this discussion focuses on
-interpreting profile data for the SLES library, 
+interpreting profile data for the KSP library, 
 which provides the linear solvers at the heart of the
 PETSc package.  Recall the hierarchical organization of the PETSc
-library, as shown in Figure~\ref{fig_1}.  Each SLES solver 
+library, as shown in Figure~\ref{fig_1}.  Each KSP solver 
 is composed of a PC (preconditioner) and a KSP (Krylov
 subspace) part, which are in turn built on top of the Mat 
 (matrix) and Vec (vector) modules.  Thus, operations in the
-SLES module are composed of lower-level operations in these
+KSP module are composed of lower-level operations in these
 packages.  Note also that the nonlinear solvers library, SNES, 
-is build on top of the SLES module, and the timestepping
+is build on top of the KSP module, and the timestepping
 library, TS, is in turn built on top of SNES.
 
 We briefly discuss interpretation of the sample output in
 Figure~\ref{fig_exprof}, which was generated by solving a linear
 system on one process using restarted GMRES and ILU
-preconditioning.  The linear solvers in SLES consist of two
-basic phases, SLESSetUp() and SLESSolve(), each of which
+preconditioning.  The linear solvers in KSP consist of two
+basic phases, KSPSetUp() and KSPSolve(), each of which
 consists of a variety of actions, depending on the particular
 solution technique.
 For the case of using the PCILU preconditioner and KSPGMRES
 Krylov subspace method, the breakdown of PETSc routines is listed below.
 As indicated by the levels of indentation, the
-operations in SLESSetUp() include all of the operations within
+operations in KSPSetUp() include all of the operations within
 PCSetUp(), which in turn include MatILUFactor(), and so on. 
 \newcommand{\bu}{$\bullet \: $}
 \begin{tabbing}
 12345\=123\=123\=123\= \kill
-\> \bu SLESSetUp - Set up linear solver\\
+\> \bu KSPSetUp - Set up linear solver\\
 \>\> \bu PCSetUp - Set up preconditioner\\
 \>\>\> \bu MatILUFactor - Factor preconditioning matrix\\
 \>\>\>\> \bu MatILUFactorSymbolic - Symbolic factorization phase\\
 \>\>\>\> \bu MatLUFactorNumeric - Numeric factorization phase\\
-\> \bu SLESSolve - Solve linear system\\
+\> \bu KSPSolve - Solve linear system\\
 \>\> \bu PCApply - Apply preconditioner\\
 \>\>\> \bu MatSolve - Forward/backward triangular solves\\
 \>\> \bu KSPGMRESOrthog - Orthogonalization in GMRES\\
@@ -5254,7 +5251,7 @@ PCSetUp(), which in turn include MatILUFactor(), and so on.
 
 The summaries printed via \trl{-log_summary} reflect this 
 routine hierarchy. For example, the performance summaries for a
-particular high-level routine such as SLESSolve include all of
+particular high-level routine such as KSPSolve include all of
 the operations accumulated in the lower-level components that
 make up the routine.  
 
@@ -5319,11 +5316,11 @@ MPI Reductions:       1.850e+02      1.0
 Summary of Stages:  ---- Time ------  ----- Flops -------  -- Messages -- -- Message-lengths -- Reductions -
                       Avg      %Total    Avg     %Total   counts   %Total    avg      %Total   counts  %Total 
  0:  Load System 0: 1.191e+00    3.6% 3.980e+06   0.5%  3.80e+01    4.9%  6.102e+04   0.3%  1.80e+01   9.7% 
- 1:    SLESSetup 0: 6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0% 
- 2:    SLESSolve 0: 2.269e-01    0.9% 1.340e+06   0.0%  1.52e+02   19.7%  9.405e+03   0.0%  3.90e+01  21.1% 
+ 1:    KSPSetup 0: 6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0% 
+ 2:    KSPSolve 0: 2.269e-01    0.9% 1.340e+06   0.0%  1.52e+02   19.7%  9.405e+03   0.0%  3.90e+01  21.1% 
  3:  Load System 1: 2.680e+01  107.3% 0.000e+00   0.0%  2.10e+01    2.7%  1.799e+07  88.2%  1.60e+01   8.6% 
- 4:    SLESSetup 1: 1.867e-01    0.7% 1.088e+08   2.3%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0% 
- 5:    SLESSolve 1: 3.831e+00   15.3% 2.217e+08  97.1%  5.60e+02   72.6%  2.333e+06  11.4%  1.12e+02  60.5% 
+ 4:    KSPSetup 1: 1.867e-01    0.7% 1.088e+08   2.3%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0% 
+ 5:    KSPSolve 1: 3.831e+00   15.3% 2.217e+08  97.1%  5.60e+02   72.6%  2.333e+06  11.4%  1.12e+02  60.5% 
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -5341,7 +5338,7 @@ Vector Scatter        2              2     106220     0
 Matrix                8              8    9611488     5.59773e+06
 Krylov Solver         4              4      33960     7.5966e+06
 Preconditioner        4              4         16     9.49114e+06
-SLES                  4              4          0     1.71217e+07
+KSP                  4              4          0     1.71217e+07
 \end{verbatim}
 }
 %\centerline{ \pdfximage width 7in {perflog1.pdf} \pdfrefximage \pdflastximage}
@@ -5396,16 +5393,16 @@ Phase              Count      Time (sec)       Flops/sec                        
 ------------------------------------------------------------------------------------------------------------------------
 ...
  
---- Event Stage 4: SLESSetUp 1
+--- Event Stage 4: KSPSetUp 1
 
 MatGetReordering       1  3.491e-03   1.0  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   2  0  0  0  0     0
 MatILUFctrSymbol       1  6.970e-03   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   3  0  0  0  0     0
 MatLUFactorNumer       1  1.829e-01   1.1  3.2e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  90 99  0  0  0   110
-SLESSetUp              2  1.989e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  99 99  0  0  0   102
+KSPSetUp              2  1.989e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  99 99  0  0  0   102
 PCSetUp                2  1.952e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  97 99  0  0  0   104
 PCSetUpOnBlocks        1  1.930e-01   1.1  3.0e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  96 99  0  0  0   105
 
---- Event Stage 5: SLESSolve 1
+--- Event Stage 5: KSPSolve 1
 
 MatMult               56  1.199e+00   1.1  5.3e+07   1.0  1.1e+03 4.2e+03 0.0e+00  5 28 99 23  0  30 28 99 99  0   201
 MatSolve              57  1.263e+00   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  5 27  0  0  0  33 28  0  0  0   187
@@ -5418,7 +5415,7 @@ VecMDot               55  5.216e-01   1.2  9.8e+07   1.2  0.0e+00 0.0e+00 2.2e+0
 VecMAXPY              57  6.997e-01   1.1  6.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  3 21  0  0  0  18 21  0  0  0   261
 VecScatterBegin       56  4.534e-02   1.8  0.0e+00   0.0  1.1e+03 4.2e+03 0.0e+00  0  0 99 23  0   1  0 99 99  0     0
 VecScatterEnd         56  2.095e-01   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   5  0  0  0  0     0
-SLESSolve              1  3.832e+00   1.0  5.6e+07   1.0  1.1e+03 4.2e+03 4.5e+02 15 97 99 23 61  99 99 99 99 99   222
+KSPSolve              1  3.832e+00   1.0  5.6e+07   1.0  1.1e+03 4.2e+03 4.5e+02 15 97 99 23 61  99 99 99 99 99   222
 KSPGMRESOrthog        55  1.177e+00   1.1  7.9e+07   1.1  0.0e+00 0.0e+00 2.2e+02  4 39  0  0 30  29 40  0  0 49   290
 PCSetUpOnBlocks        1  1.180e-05   1.1  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
 PCApply               57  1.267e+00   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  5 27  0  0  0  33 28  0  0  0   186
@@ -5633,18 +5630,18 @@ PetscLogEventRegister() (as described in Section~\ref{sec_profileuser}).
 PETSc also provides routines that deactivate (or activate)
 logging for entire components of the library. Currently, the 
 components that support such logging (de)activation are Mat (matrices),
-Vec (vectors), SLES (linear solvers, including KSP 
+Vec (vectors), KSP (linear solvers, including KSP 
 and PC), and SNES (nonlinear solvers):
 \begin{tabbing}
    PetscLogEventDeactivateClass(MAT\_COOKIE);\\
-   PetscLogEventDeactivateClass(SLES\_COOKIE); /* includes PC and KSP */\\
+   PetscLogEventDeactivateClass(KSP\_COOKIE); /* includes PC and KSP */\\
    PetscLogEventDeactivateClass(VEC\_COOKIE);\\
    PetscLogEventDeactivateClass(SNES\_COOKIE);
 \end{tabbing}
 and 
 \begin{tabbing}
    PetscLogEventActivateClass(MAT\_COOKIE);\\
-   PetscLogEventActivateClass(SLES\_COOKIE);   /* includes PC and KSP */\\
+   PetscLogEventActivateClass(KSP\_COOKIE);   /* includes PC and KSP */\\
    PetscLogEventActivateClass(VEC\_COOKIE);\\
    PetscLogEventActivateClass(SNES\_COOKIE);
 \end{tabbing}
@@ -5701,7 +5698,7 @@ Messages can be reactivated with the command
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., TS and SNES) without 
 seeing all lower level data as well (e.g., Mat).  One can deactivate
-events at runtime for matrix and linear solver libraries via \trl{-log_info [no_mat, no_sles]}.
+events at runtime for matrix and linear solver libraries via \trl{-log_info [no_mat, no_ksp]}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Time}
@@ -5756,7 +5753,7 @@ performance numbers are not distorted.
 When this procedure is used in conjunction with the user-defined stages of profiling
 described in Section~\ref{sec_profstages}, we can focus easily on the
 problem of interest.  For example, we used this technique in the program
-\trl{${PETSC_DIR}/src/sles/examples/tutorials/ex10.c} to
+\trl{${PETSC_DIR}/src/ksp/examples/tutorials/ex10.c} to
 generate the timings within Figures~\ref{fig_exparprof} and \ref{fig_exparprof2}.
 In this case,
 the profiled code of interest (solving the linear system for the larger problem)
@@ -5918,8 +5915,8 @@ range of problems, but clearly these defaults cannot be best for all
 cases.  Users should experiment with many combinations to determine 
 what is best for a given problem and customize the solvers accordingly.
 \begin{itemize}
-\item Use the options \trl{-snes_view}, \trl{-sles_view}, etc. (or the routines 
-     SLESView(), SNESView(), etc.) to view the options that have been
+\item Use the options \trl{-snes_view}, \trl{-ksp_view}, etc. (or the routines 
+     KSPView(), SNESView(), etc.) to view the options that have been
      used for a particular solver.
 \item Run the code with the option \trl{-help} for a list of the available 
      runtime commands.
@@ -6939,7 +6936,7 @@ libraries in the appropriate order for correct linking.  For users who
 employ only a specific PETSc library, can use alternative variables
 like  \trl{${PETSC_SYS_LIB}}, \trl{${PETSC_VEC_LIB}}, 
 \trl{${PETSC_MAT_LIB}}, \trl{${PETSC_DM_LIB}},
-\trl{${PETSC_SLES_LIB}}, \trl{${PETSC_SNES_LIB}} or
+\trl{${PETSC_KSP_LIB}}, \trl{${PETSC_SNES_LIB}} or
 \trl{${PETSC_TS_LIB}}.
 
 The second sample makefile, given in Figure~\ref{fig_make2},
@@ -7115,7 +7112,7 @@ To create a \trl{B} matrix that may be multiplied with a vector \trl{x} one can 
 \label{sec_matfactor}
 
 Normally, PETSc users will access the matrix solvers through the 
-SLES interface, as discussed in Chapter \ref{ch_sles}, but the underlying 
+KSP interface, as discussed in Chapter \ref{ch_sles}, but the underlying 
 factorization and triangular solve routines are also directly 
 accessible to the user.
 
@@ -7248,7 +7245,7 @@ the diagonal are smaller than \trl{tol} in a absolute value. If small
 values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
-\findex{MatReorderForNonzeroDiagonal()} When using the SLES solver interface
+\findex{MatReorderForNonzeroDiagonal()} When using the KSP solver interface
 the options \trl{-pc_ilu_nonzeros_along_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
 and \findex{-pc_lu_nonzeros_along_diagonal}
 \trl{-pc_lu_nonzeros_along_diagonal <tol>} may be used.  Here, \trl{tol}
@@ -7267,13 +7264,13 @@ The \findex{MatSolveTranspose()} \findex{MatSolveAdd()}
 matrix \findex{MatSolveTransposeAdd()}
 \trl{A} of these routines must have been obtained from a 
 factorization routine; otherwise, an error will be generated.
-In general, the user should use the SLES solvers introduced in the 
+In general, the user should use the KSP solvers introduced in the 
 next chapter rather than using these factorization and solve routines
 directly.
 
 \section{Unimportant Details of KSP}
 
-Again, virtually all users should use KSP through the SLES interface
+Again, virtually all users should use KSP through the KSP interface
 and, thus, will not need to know the details that follow. 
 
 It is possible to generate a Krylov subspace context with the 
@@ -7324,13 +7321,13 @@ the \trl{PC} package with a Krylov method from the \trl{KSP}
 package. This strategy makes things much simpler conceptually, so 
 (we hope)
 clean code will result. {\em Note}: We had this idea already implicitly in 
-older versions of SLES, but, for instance, just doing Gauss-Seidel
-with Richardson in old SLES was much more expensive than it had to be. 
+older versions of KSP, but, for instance, just doing Gauss-Seidel
+with Richardson in old KSP was much more expensive than it had to be. 
 With PETSc this should not be a problem. 
 
 \section{Unimportant Details of PC}
 
-Most users will obtain their preconditioner contexts from the SLES
+Most users will obtain their preconditioner contexts from the KSP
 context with the command KSPGetPC(). It is possible to create,
 manipulate, and destroy PC contexts directly, although this capability
 should rarely be needed. To create a PC context, one uses the command

@@ -1,12 +1,12 @@
 /*$Id: ex20.c,v 1.19 2001/08/07 21:30:50 bsmith Exp $*/
 
-static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
+static char help[] = "This example solves a linear system in parallel with KSP.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
 matrix assembly,the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscScalar  zero = 0.0,Ke[16], one = 1.0;
   PetscReal    h;
   Vec          u,b;
-  SLES         sles;
+  KSP         ksp;
   KSP          ksp;
   MatNullSpace nullsp;
   PC           pc;
@@ -74,10 +74,9 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,u);CHKERRQ(ierr);
 
   /* Solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRQ(ierr);
@@ -88,11 +87,13 @@ int main(int argc,char **args)
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
 
-  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
 
   /* Free work space */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);

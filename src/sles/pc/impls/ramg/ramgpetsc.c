@@ -3,7 +3,7 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "ramgfunc.h"
 #include "petscfunc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 /**************************************************************************/
 /*                                                                        */

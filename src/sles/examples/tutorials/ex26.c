@@ -15,7 +15,7 @@ T*/
 
 /* 
 
-   Note the usual PETSc objects all work. Those related to vec, mat, pc, ksp, and sles
+   Note the usual PETSc objects all work. Those related to vec, mat, pc, ksp
 are prefixed with esi_
 
 */

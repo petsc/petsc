@@ -2,7 +2,7 @@
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
-static char help[] = "Solves a linear system in parallel with SLES.\n\
+static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
@@ -10,21 +10,21 @@ Input parameters include:\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
-   Concepts: SLES^basic parallel example;
-   Concepts: SLES^Laplacian, 2d
+   Concepts: KSP^basic parallel example;
+   Concepts: KSP^Laplacian, 2d
    Concepts: Laplacian, 2d
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -32,13 +32,12 @@ int main(int argc,char **args)
 {
   Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
-  SLES        sles;     /* linear solver context */
+  KSP         ksp;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
   PetscReal   norm;     /* norm of solution error */
   int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscTruth  flg;
   PetscScalar v,one = 1.0,neg_one = -1.0;
-  KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -156,26 +155,25 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the SLES context,
+     - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
        various options.
      - The following two statements are optional; all of these
        parameters could alternatively be specified at runtime via
-       SLESSetFromOptions().  All of these defaults can be
+       KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
 
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
                           PETSC_DEFAULT);CHKERRQ(ierr);
 
@@ -183,16 +181,18 @@ int main(int argc,char **args)
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization
+    KSPSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -219,7 +219,7 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
 

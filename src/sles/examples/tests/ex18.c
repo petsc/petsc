@@ -8,7 +8,7 @@ Input arguments are:\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
 #include "petscmat.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
-  SLES           sles;
+  KSP           ksp;
   char           file[128]; 
   PetscViewer    fd;
   KSP            ksp;
@@ -61,11 +61,13 @@ int main(int argc,char **args)
 
   /* Solve system */
   PetscLogStagePush(1);
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   time = time2 - time1;
   PetscLogStagePop();
@@ -74,14 +76,13 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);CHKERRQ(ierr);
 
   /* Cleanup */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);

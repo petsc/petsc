@@ -1,6 +1,6 @@
 /* $Id: modpcf.c,v 1.14 2001/04/10 19:36:35 bsmith Exp $*/
 
-#include "petscsles.h" 
+#include "petscksp.h" 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC"
 /*@C
@@ -25,7 +25,7 @@
 
    Options Database Keys:
    -ksp_fgmres_modifypcnochange
-   -ksp_fgmres_modifypcsles
+   -ksp_fgmres_modifypcksp
 
    Level: intermediate
 
@@ -34,9 +34,9 @@
    Notes:
    Several modifypc routines are predefined, including
     KSPFGMRESModifyPCNoChange()
-    KSPFGMRESModifyPCSLES()
+    KSPFGMRESModifyPCKSP()
 
-.seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCSLES()
+.seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
 
 @*/
 int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,int (*d)(void*))
@@ -76,7 +76,7 @@ int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* c
 
 You can use this as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
+.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
 int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void* dummy)
@@ -87,10 +87,10 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_no
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPFGMRESModifyPCSLES"
+#define __FUNCT__ "KSPFGMRESModifyPCKSP"
 /*@C
 
- KSPFGMRESModifyPCSLES - modifies the attributes of the
+ KSPFGMRESModifyPCKSP - modifies the attributes of the
      GMRES preconditioner.  It serves as an example (not as something 
      useful!) 
 
@@ -107,26 +107,24 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_no
 
  This could be used as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
+.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void *dummy)
+int KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void *dummy)
 {
   PC         pc;
   int        ierr,maxits;
-  SLES       sub_sles;
   KSP        sub_ksp;
   PetscReal  rtol,atol,dtol;
-  PetscTruth issles;
+  PetscTruth isksp;
 
   PetscFunctionBegin;
 
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)pc,PCSLES,&issles);CHKERRQ(ierr);
-  if (issles) { 
-    ierr = PCSLESGetSLES(pc,&sub_sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sub_sles,&sub_ksp);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
+  if (isksp) { 
+    ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
   
     /* note that at this point you could check the type of KSP with KSPGetType() */  
 

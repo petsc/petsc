@@ -1,8 +1,7 @@
 #ifndef PETSCFUNC_H
 #define PETSCFUNC_H
 
-/* #include "sles.h" */ 
-#include "petscsles.h"
+#include "petscksp.h"
 
 /*..Low level timing routine..*/ 
 extern "C" float dtime_(float*); 
@@ -89,8 +88,8 @@ typedef struct{
     1 - The menber A is not stored on level 1 (the finest level in SAMG 
         ordering) to avoid unnecessary memory useage. 
   */ 
-  SLES sles_pre;  
-  SLES sles_post;
+  KSP ksp_pre;  
+  KSP ksp_post;
   Mat  A, B, C;
   Mat  Interp; 
   Vec  x, b, upd_b, r, y, b_y, r_y; 

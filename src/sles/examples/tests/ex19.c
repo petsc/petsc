@@ -21,7 +21,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
     system of equations.
 */
 
-#include "petscsles.h"
+#include "petscksp.h"
 #include "petscda.h"
 #include "petscmg.h"
 
@@ -38,7 +38,7 @@ typedef struct {
 typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
-   SLES        sles_coarse;
+   KSP        ksp_coarse;
    int         ratio;
    Mat         I;               /* interpolation from coarse to fine */
 } AppCtx;
@@ -58,10 +58,9 @@ int main(int argc,char **argv)
   AppCtx        user;                      
   int           ierr,its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
   int           size,nlocal,Nlocal;
-  SLES          sles,sles_fine;
+  KSP           ksp,ksp_fine;
   PC            pc;
   PetscScalar   one = 1.0;
-  KSP           ksp;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -103,10 +102,9 @@ int main(int argc,char **argv)
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
 
   /* Create linear solver */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
@@ -116,18 +114,18 @@ int main(int argc,char **argv)
   ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRQ(ierr);
-  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&sles_fine);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(sles_fine,"fine_");CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles_fine);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ksp_fine,"fine_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
@@ -136,7 +134,7 @@ int main(int argc,char **argv)
   ierr = MGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
   ierr = MGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
 
-  ierr = SLESSetOperators(sles,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = VecSet(&one,user.fine.b);CHKERRQ(ierr);
   {
@@ -147,10 +145,11 @@ int main(int argc,char **argv)
   }
 
   /* Set options, then solve nonlinear system */
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = SLESSolve(sles,user.fine.b,user.fine.x);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,user.fine.b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,user.fine.x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
 
@@ -170,7 +169,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
 
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = MatDestroy(user.I);CHKERRQ(ierr); 
   ierr = PetscFinalize();CHKERRQ(ierr);
 

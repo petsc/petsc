@@ -5,7 +5,7 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 #include "petsclog.h"
 
 #undef __FUNCT__
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
-  SLES           sles;
+  KSP           ksp;
   char           file[128];
   PetscViewer    fd;
   PetscTruth     table,flg;
@@ -78,11 +78,12 @@ int main(int argc,char **args)
   PetscLogStageRegister(&stage1,"mystage 1");
   PetscLogStagePush(stage1);
   ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
   tsetup = tsetup2 -tsetup1;
@@ -92,7 +93,7 @@ int main(int argc,char **args)
   PetscLogStageRegister(&stage2,"mystage 2");
   PetscLogStagePush(stage2);
   ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
   tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();
@@ -104,13 +105,13 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
-    char   *matrixname,slesinfo[120];
+    char   *matrixname,kspinfo[120];
     PetscViewer viewer;
-    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRQ(ierr);
-    ierr = SLESView(sles,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscStrrchr(file,'/',&matrixname);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
-                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
+                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
@@ -118,7 +119,7 @@ int main(int argc,char **args)
   }
 
   /* Cleanup */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);

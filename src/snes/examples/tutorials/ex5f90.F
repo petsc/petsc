@@ -81,7 +81,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
 #include "include/finclude/petscvec.h90"
@@ -153,7 +152,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 #include "include/finclude/petscvec.h90"
 #include "include/finclude/petscda.h90"
@@ -362,7 +360,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
@@ -429,7 +426,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
@@ -585,7 +581,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
 #include "include/finclude/petscvec.h90"
@@ -707,7 +702,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:

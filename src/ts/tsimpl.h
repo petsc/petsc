@@ -55,7 +55,7 @@ struct _p_TS {
   int        *Iindex;                                /* The index of the identity for each time dependent field */
 
   /* ---------------------Linear Iteration---------------------------------*/
-  SLES sles;
+  KSP ksp;
   Mat  A, B;                                         /* user provided matrix and preconditioner */
 
   /* ---------------------Nonlinear Iteration------------------------------*/

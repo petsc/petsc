@@ -1,23 +1,23 @@
 /*$Id: ex13.c,v 1.29 2001/08/07 21:30:54 bsmith Exp $*/
 
-static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
+static char help[] = "Solves a variable Poisson problem with KSP.\n\n";
 
 /*T
-   Concepts: SLES^basic sequential example
-   Concepts: SLES^Laplacian, 2d
+   Concepts: KSP^basic sequential example
+   Concepts: KSP^Laplacian, 2d
    Concepts: Laplacian, 2d
    Processors: 1
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 /*
     User-defined context that contains all the data structures used
@@ -26,7 +26,7 @@ T*/
 typedef struct {
    Vec    x,b;      /* solution vector, right-hand-side vector */
    Mat    A;         /* sparse matrix */
-   SLES   sles;      /* linear solver context */
+   KSP   ksp;      /* linear solver context */
    int    m,n;      /* grid dimensions */
    PetscScalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
@@ -173,7 +173,7 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
      Create linear solver context. This will be used repeatedly for all 
      the linear solves needed.
   */
-  ierr = SLESCreate(PETSC_COMM_SELF,&userctx->sles);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_SELF,&userctx->ksp);CHKERRQ(ierr);
 
   return 0;
 }
@@ -248,27 +248,26 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */
-  ierr = SLESSetOperators(userctx->sles,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(userctx->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
      - Here we set it to use direct LU factorization for the solution
   */
-  ierr = SLESGetKSP(userctx->sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = KSPGetPC(userctx->ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 
   /* 
      Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
      These options will override those specified above as long as
-     SLESSetFromOptions() is called _after_ any other customization
+     KSPSetFromOptions() is called _after_ any other customization
      routines.
  
      Run the program with the option -help to see all the possible
      linear solver options.
   */
-  ierr = SLESSetFromOptions(userctx->sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(userctx->ksp);CHKERRQ(ierr);
 
   /*
      This allows the PETSc linear solvers to compute the solution 
@@ -286,7 +285,9 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(userctx->ksp,userctx->b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(userctx->ksp,userctx->x);CHKERRQ(ierr);
+  ierr = KSPSolve(userctx->ksp);CHKERRQ(ierr);
 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x
@@ -306,7 +307,7 @@ int UserFinalizeLinearSolver(UserCtx *userctx)
      we free the work space.  All PETSc objects should be destroyed when
      they are no longer needed.
   */
-  ierr = SLESDestroy(userctx->sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(userctx->ksp);CHKERRQ(ierr);
   ierr = VecDestroy(userctx->x);CHKERRQ(ierr);
   ierr = VecDestroy(userctx->b);CHKERRQ(ierr);  
   ierr = MatDestroy(userctx->A);CHKERRQ(ierr);

@@ -33,7 +33,7 @@ PetscFList PCList = 0;
   See "petsc/include/petscpc.h" for available methods (for instance,
   PCJACOBI, PCILU, or PCBJACOBI).
 
-  Normally, it is best to use the SLESSetFromOptions() command and
+  Normally, it is best to use the KSPSetFromOptions() command and
   then set the PC type from the options database rather than by using
   this routine.  Using the options database provides the user with
   maximum flexibility in evaluating the many different preconditioners. 

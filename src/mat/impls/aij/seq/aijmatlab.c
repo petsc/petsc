@@ -127,7 +127,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab_QR;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab_QR;
   (*F)->factor               = FACTOR_LU;
-  (*F)->assembled            = PETSC_TRUE;  /* required by -sles_view */
+  (*F)->assembled            = PETSC_TRUE;  /* required by -ksp_view */
 
   PetscFunctionReturn(0);
 }

@@ -154,7 +154,7 @@ int MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
   B->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   B->ops->solve           = MatSolve_UMFPACK;
   B->factor               = FACTOR_LU;
-  B->assembled            = PETSC_TRUE;  /* required by -sles_view */
+  B->assembled            = PETSC_TRUE;  /* required by -ksp_view */
 
   lu = (Mat_UMFPACK*)(B->spptr);
   
@@ -235,7 +235,7 @@ int MatAssemblyEnd_UMFPACK(Mat A,MatAssemblyType mode) {
   PetscFunctionReturn(0);
 }
 
-/* used by -sles_view */
+/* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_UMFPACK"
 int MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer) {

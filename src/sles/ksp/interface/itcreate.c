@@ -628,6 +628,10 @@ int KSPSetFromOptions(KSP ksp)
     if (ksp->ops->setfromoptions) {
       ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsName("-ksp_view","View linear solver parameters","KSPView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,9 +1,9 @@
 /*$Id: ex17.c,v 1.43 2001/08/07 21:30:50 bsmith Exp $*/
 
-static char help[] = "Solves a linear system with SLES.  This problem is\n\
+static char help[] = "Solves a linear system with KSP.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern int FormTestMatrix(Mat,int,TestType);
@@ -14,7 +14,7 @@ int main(int argc,char **args)
 {
   Vec         x,b,u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
-  SLES        sles;         /* SLES context */
+  KSP        ksp;         /* KSP context */
   int         ierr,n = 10,its, dim,p = 1,use_random;
   PetscScalar none = -1.0,pfive = 0.5;
   PetscReal   norm;
@@ -63,18 +63,18 @@ int main(int argc,char **args)
     ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  /* Create SLES context; set operators and options; solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
- CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* Create KSP context; set operators and options; solve linear system */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %d\n",norm,its);CHKERRQ(ierr);
 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

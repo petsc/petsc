@@ -6,21 +6,21 @@ solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
 /*T
-   Concepts: SLES^repeatedly solving linear systems;
+   Concepts: KSP^repeatedly solving linear systems;
    Concepts: PetscLog^profiling multiple stages of code;
    Concepts: PetscLog^user-defined event profiling;
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 /* 
    Declare user-defined routines
@@ -35,8 +35,7 @@ int main(int argc,char **args)
   Vec          x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
   Vec          u;              /* exact solution vector */
   Mat          C1,C2;         /* matrices for systems #1 and #2 */
-  SLES         sles1,sles2;   /* SLES contexts for systems #1 and #2 */
-  KSP          ksp1,ksp2;     /* KSP context for system #1 */
+  KSP          ksp1,ksp2;   /* KSP contexts for systems #1 and #2 */
   int          ntimes = 3;     /* number of times to solve the linear systems */
   int          CHECK_ERROR;    /* event number for error checking */
   int          ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
@@ -63,7 +62,7 @@ int main(int argc,char **args)
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error",SLES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error",KSP_COOKIE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup
@@ -98,13 +97,12 @@ int main(int argc,char **args)
      names, while the second linear systme uses a different
      options prefix.
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles1);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles1);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp1);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp1);CHKERRQ(ierr);
 
   /* 
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = SLESGetKSP(sles1,&ksp1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
@@ -120,14 +118,14 @@ int main(int argc,char **args)
   /*
      Create second linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles2);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp2);CHKERRQ(ierr);
 
   /* 
      Set different options prefix for second linear system.
      Set runtime options (e.g., -s2_pc_type <type>)
   */
-  ierr = SLESAppendOptionsPrefix(sles2,"s2_");CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles2);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(ksp2,"s2_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp2);CHKERRQ(ierr);
 
   /* 
      Assemble exact solution vector in parallel.  Note that each
@@ -237,7 +235,7 @@ int main(int argc,char **args)
           will not function correctly.  Thus, use this optimization
           feature with caution!
     */
-    ierr = SLESSetOperators(sles1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* 
        Use the previous solution of linear system #1 as the initial
@@ -251,13 +249,15 @@ int main(int argc,char **args)
 
     /* 
        Solve the first linear system.  Here we explicitly call
-       SLESSetUp() for more detailed performance monitoring of
+       KSPSetUp() for more detailed performance monitoring of
        certain preconditioners, such as ICC and ILU.  This call
-       is optional, ase SLESSetUp() will automatically be called
-       within SLESSolve() if it hasn't been called already.
+       is optional, ase KSPSetUp() will automatically be called
+       within KSPSolve() if it hasn't been called already.
     */
-    ierr = SLESSetUp(sles1,b1,x1);CHKERRQ(ierr);
-    ierr = SLESSolve(sles1,b1,x1);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp1,b1);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp1,x1);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp1);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp1);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp1,&its);CHKERRQ(ierr);
 
     /*
@@ -325,14 +325,15 @@ int main(int argc,char **args)
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */
-    ierr = SLESSetOperators(sles2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* 
        Solve the second linear system
     */
-    ierr = SLESSetUp(sles2,b2,x2);CHKERRQ(ierr);
-    ierr = SLESSolve(sles2,b2,x2);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles2,&ksp2);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp2,b2);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp2,x2);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp2);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp2);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp2,&its);CHKERRQ(ierr);
 
     /*
@@ -353,7 +354,7 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles1);CHKERRQ(ierr); ierr = SLESDestroy(sles2);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp1);CHKERRQ(ierr); ierr = KSPDestroy(ksp2);CHKERRQ(ierr);
   ierr = VecDestroy(x1);CHKERRQ(ierr);     ierr = VecDestroy(x2);CHKERRQ(ierr);
   ierr = VecDestroy(b1);CHKERRQ(ierr);     ierr = VecDestroy(b2);CHKERRQ(ierr);
   ierr = MatDestroy(C1);CHKERRQ(ierr);     ierr = MatDestroy(C2);CHKERRQ(ierr);
@@ -410,7 +411,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
 #define __FUNCT__ "MyKSPMonitor"
 /*
    MyKSPMonitor - This is a user-defined routine for monitoring
-   the SLES iterative solvers.
+   the KSP iterative solvers.
 
    Input Parameters:
      ksp   - iterative context

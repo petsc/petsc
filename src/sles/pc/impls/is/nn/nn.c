@@ -63,7 +63,9 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
+  ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
   
   /*
     Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
@@ -96,7 +98,9 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
+  ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
   ierr = VecScale(&m_one,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
@@ -128,7 +132,7 @@ static int PCDestroy_NN(PC pc)
   if (pcnn->coarse_mat)  {ierr = MatDestroy(pcnn->coarse_mat);CHKERRQ(ierr);}
   if (pcnn->coarse_x)    {ierr = VecDestroy(pcnn->coarse_x);CHKERRQ(ierr);}
   if (pcnn->coarse_b)    {ierr = VecDestroy(pcnn->coarse_b);CHKERRQ(ierr);}
-  if (pcnn->sles_coarse) {ierr = SLESDestroy(pcnn->sles_coarse);CHKERRQ(ierr);}
+  if (pcnn->ksp_coarse) {ierr = KSPDestroy(pcnn->ksp_coarse);CHKERRQ(ierr);}
   if (pcnn->DZ_IN) {
     if (pcnn->DZ_IN[0]) {ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);}
     ierr = PetscFree(pcnn->DZ_IN);CHKERRQ(ierr);
@@ -179,7 +183,7 @@ int PCCreate_NN(PC pc)
   pcnn->coarse_mat  = 0;
   pcnn->coarse_x    = 0;
   pcnn->coarse_b    = 0;
-  pcnn->sles_coarse = 0;
+  pcnn->ksp_coarse = 0;
   pcnn->DZ_IN       = 0;
 
   /*
@@ -358,18 +362,19 @@ int PCNNCreateCoarseMatrix (PC pc)
   {
     PC  pc_ctx, inner_pc;
     KSP ksp_ctx;
-    ierr = SLESCreate(pc->comm,&pcnn->sles_coarse);CHKERRQ(ierr);
-    ierr = SLESSetOperators(pcnn->sles_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = SLESGetKSP(pcnn->sles_coarse,&ksp_ctx);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPCreate(pc->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
-    ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);               
+    ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);               
     ierr = PCRedundantGetPC(pc_ctx,&inner_pc);CHKERRQ(ierr);           
     ierr = PCSetType(inner_pc,PCLU);CHKERRQ(ierr);                     
-    ierr = SLESSetOptionsPrefix(pcnn->sles_coarse,"coarse_");CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(pcnn->sles_coarse);CHKERRQ(ierr);
-    /* the vectors in the following line are dummy arguments, just telling the SLES the vector size. Values are not used */
-    ierr = SLESSetUp(pcnn->sles_coarse,pcnn->coarse_x,pcnn->coarse_b);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"coarse_");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(pcnn->ksp_coarse);CHKERRQ(ierr);
+    /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
+    ierr = KSPSetRhs(pcnn->ksp_coarse,pcnn->coarse_x);CHKERRQ(ierr);
+    ierr = KSPSetSolution(pcnn->ksp_coarse,pcnn->coarse_b);CHKERRQ(ierr);
+    ierr = KSPSetUp(pcnn->ksp_coarse);CHKERRQ(ierr);
   }
 
   /* Free the memory for mat */
@@ -578,7 +583,9 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
        ierr = VecAssemblyEnd  (pcnn->coarse_b);CHKERRQ(ierr);
     */
   }
-  ierr = SLESSolve(pcnn->sles_coarse,pcnn->coarse_b,pcnn->coarse_x);CHKERRQ(ierr);
+  ierr = KSPSetRhs(pcnn->ksp_coarse,pcnn->coarse_b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(pcnn->ksp_coarse,pcnn->coarse_x);CHKERRQ(ierr);
+  ierr = KSPSolve(pcnn->ksp_coarse);CHKERRQ(ierr);
   if (!u) { ierr = VecScale(&m_one,pcnn->coarse_x);CHKERRQ(ierr); }
   ierr = VecGetArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   for (k=0; k<pcis->n_shared[0]; k++) { work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k]; }

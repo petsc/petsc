@@ -2,7 +2,7 @@
 !    "$Id: ex14f.F,v 1.24 2001/08/07 03:04:00 balay Exp $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
-!  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
+!  Newton method that uses KSP to solve the linearized Newton sytems.  This solver
 !  is a very simplistic inexact Newton method.  The intent of this code is to
 !  demonstrate the repeated solution of linear sytems with the same nonzero pattern.
 !
@@ -23,7 +23,7 @@
 !  -mf use matrix free for matrix vector product
 !
 !/*T
-!   Concepts: SLES^writing a user-defined nonlinear solver
+!   Concepts: KSP^writing a user-defined nonlinear solver
 !   Concepts: DA^using distributed arrays
 !   Processors: n
 !T*/
@@ -64,11 +64,10 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscda.h"
 
       MPI_Comm comm
-      SLES     sles
+      KSP     ksp
       Vec      X,Y,F,localX,localF
       Mat      J,B
       DA       da
@@ -116,7 +115,7 @@
 !     Create linear solver context
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESCreate(comm,sles,ierr)
+      call KSPCreate(comm,ksp,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create vector data structures
@@ -188,7 +187,7 @@
 !  
 !     Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
 !  
-       call SLESSetFromOptions(sles,ierr)
+       call KSPSetFromOptions(ksp,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Evaluate initial guess
@@ -208,7 +207,7 @@
 
 !  This solver is a very simplistic inexact Newton method, with no
 !  no damping strategies or bells and whistles. The intent of this code
-!  is merely to demonstrate the repeated solution with SLES of linear
+!  is merely to demonstrate the repeated solution with KSP of linear
 !  sytems with the same nonzero structure.
 !
 !  This is NOT the recommended approach for solving nonlinear problems
@@ -224,13 +223,15 @@
          call ComputeJacobian(X,B,ierr)
 
 !  Solve J Y = F, where J is the Jacobian matrix.
-!    - First, set the SLES linear operators.  Here the matrix that
+!    - First, set the KSP linear operators.  Here the matrix that
 !      defines the linear system also serves as the preconditioning
 !      matrix.
 !    - Then solve the Newton system.
 
-         call SLESSetOperators(sles,J,B,SAME_NONZERO_PATTERN,ierr)
-         call SLESSolve(sles,F,Y,ierr)
+         call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
+         call KSPSetRhs(ksp,F,ierr)
+         call KSPSetSolution(ksp,Y,ierr)
+         call KSPSolve(ksp,ierr)
 
 !  Compute updated iterate
 
@@ -238,7 +239,6 @@
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
-         call SLESGetKSP(sles,ksp,ierr)
          call KSPGetIterationNumber(ksp,lin_its,ierr)
          if (nooutput .eq. 0) then
            print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
@@ -281,7 +281,7 @@
        call VecDestroy(Y,ierr)
        call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
-       call SLESDestroy(sles,ierr)
+       call KSPDestroy(ksp,ierr)
        call DADestroy(da,ierr)
        call PetscFinalize(ierr)
        end
@@ -309,7 +309,7 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
+#include "include/finclude/petscksp.h"
 #include "include/finclude/petscda.h"
       integer          ierr
       PetscOffset      idx
@@ -397,7 +397,7 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
+#include "include/finclude/petscksp.h"
 #include "include/finclude/petscda.h"
 
       Vec              X,F,localX,localF
@@ -503,7 +503,7 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
+#include "include/finclude/petscksp.h"
 #include "include/finclude/petscda.h"
 
       Vec         X

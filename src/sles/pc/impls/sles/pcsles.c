@@ -2,83 +2,87 @@
 
 
 #include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscsles.h"            /*I "petscsles.h" I*/
+#include "petscksp.h"            /*I "petscksp.h" I*/
 
 typedef struct {
   PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */
-  SLES       sles; 
-  int        its;                   /* total number of iterations SLES uses */
-} PC_SLES;
+  KSP       ksp; 
+  int        its;                   /* total number of iterations KSP uses */
+} PC_KSP;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_SLES"
-static int PCApply_SLES(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_KSP"
+static int PCApply_KSP(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
-  PC_SLES *jac = (PC_SLES*)pc->data;
+  PC_KSP *jac = (PC_KSP*)pc->data;
   KSP     ksp;
 
   PetscFunctionBegin;
-  ierr      = SLESSolve(jac->sles,x,y);CHKERRQ(ierr);
-  ierr      = SLESGetKSP(jac->sles,&ksp);CHKERRQ(ierr);
-  ierr      = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);
+  ierr      = KSPSetSolution(jac->ksp,y);CHKERRQ(ierr);
+  ierr      = KSPSolve(jac->ksp);CHKERRQ(ierr);
+  ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApplyTranspose_SLES"
-static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApplyTranspose_KSP"
+static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
   int     its,ierr;
-  PC_SLES *jac = (PC_SLES*)pc->data;
+  PC_KSP *jac = (PC_KSP*)pc->data;
   KSP     ksp;
 
   PetscFunctionBegin;
-  ierr      = SLESSolveTranspose(jac->sles,x,y);CHKERRQ(ierr);
-  ierr      = SLESGetKSP(jac->sles,&ksp);CHKERRQ(ierr);
-  ierr      = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);
+  ierr      = KSPSetSolution(jac->ksp,y);CHKERRQ(ierr);
+  ierr      = KSPSolveTranspose(jac->ksp);CHKERRQ(ierr);
+  ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_SLES"
-static int PCSetUp_SLES(PC pc)
+#define __FUNCT__ "PCSetUp_KSP"
+static int PCSetUp_KSP(PC pc)
 {
   int     ierr;
-  PC_SLES *jac = (PC_SLES*)pc->data;
+  PC_KSP *jac = (PC_KSP*)pc->data;
   Mat     mat;
 
   PetscFunctionBegin;
-  ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
   else                      mat = pc->pmat;
 
-  ierr = SLESSetOperators(jac->sles,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
-  ierr = SLESSetUp(jac->sles,pc->vec,pc->vec);CHKERRQ(ierr);
+  ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+  ierr = KSPSetRhs(jac->ksp,pc->vec);CHKERRQ(ierr);
+  ierr = KSPSetSolution(jac->ksp,pc->vec);CHKERRQ(ierr);
+  ierr = KSPSetUp(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* Default destroy, if it has never been setup */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_SLES"
-static int PCDestroy_SLES(PC pc)
+#define __FUNCT__ "PCDestroy_KSP"
+static int PCDestroy_KSP(PC pc)
 {
-  PC_SLES *jac = (PC_SLES*)pc->data;
+  PC_KSP *jac = (PC_KSP*)pc->data;
   int     ierr;
 
   PetscFunctionBegin;
-  ierr = SLESDestroy(jac->sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCView_SLES"
-static int PCView_SLES(PC pc,PetscViewer viewer)
+#define __FUNCT__ "PCView_KSP"
+static int PCView_KSP(PC pc,PetscViewer viewer)
 {
-  PC_SLES    *jac = (PC_SLES*)pc->data;
+  PC_KSP    *jac = (PC_KSP*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
@@ -88,13 +92,13 @@ static int PCView_SLES(PC pc,PetscViewer viewer)
     if (jac->use_true_matrix) {
       ierr = PetscViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on KSP preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = SLESView(jac->sles,viewer);CHKERRQ(ierr);
+  ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
@@ -103,16 +107,16 @@ static int PCView_SLES(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_SLES"
-static int PCSetFromOptions_SLES(PC pc){
+#define __FUNCT__ "PCSetFromOptions_KSP"
+static int PCSetFromOptions_KSP(PC pc){
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SLES preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_sles_true","Use true matrix to define inner linear system, not preconditioner matrix","PCSLESSetUseTrue",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSLESSetUseTrue(pc);CHKERRQ(ierr);
+      ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -122,13 +126,13 @@ static int PCSetFromOptions_SLES(PC pc){
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCSLESSetUseTrue_SLES"
-int PCSLESSetUseTrue_SLES(PC pc)
+#define __FUNCT__ "PCKSPSetUseTrue_KSP"
+int PCKSPSetUseTrue_KSP(PC pc)
 {
-  PC_SLES   *jac;
+  PC_KSP   *jac;
 
   PetscFunctionBegin;
-  jac                  = (PC_SLES*)pc->data;
+  jac                  = (PC_KSP*)pc->data;
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -136,22 +140,22 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCSLESGetSLES_SLES"
-int PCSLESGetSLES_SLES(PC pc,SLES *sles)
+#define __FUNCT__ "PCKSPGetKSP_KSP"
+int PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
-  PC_SLES   *jac;
+  PC_KSP   *jac;
 
   PetscFunctionBegin;
-  jac          = (PC_SLES*)pc->data;
-  *sles        = jac->sles;
+  jac          = (PC_KSP*)pc->data;
+  *ksp        = jac->ksp;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSLESSetUseTrue"
+#define __FUNCT__ "PCKSPSetUseTrue"
 /*@
-   PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
+   PCKSPSetUseTrue - Sets a flag to indicate that the true matrix (rather than
    the matrix used to define the preconditioner) is used to compute the
    residual inside the inner solve.
 
@@ -161,7 +165,7 @@ EXTERN_C_END
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_sles_true - Activates PCSLESSetUseTrue()
+.  -pc_ksp_true - Activates PCKSPSetUseTrue()
 
    Note:
    For the common case in which the preconditioning and linear 
@@ -169,17 +173,17 @@ EXTERN_C_END
 
    Level: advanced
 
-.keywords:  PC, SLES, set, true, local, flag
+.keywords:  PC, KSP, set, true, local, flag
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
 @*/
-int PCSLESSetUseTrue(PC pc)
+int PCKSPSetUseTrue(PC pc)
 {
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCKSPSetUseTrue_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -187,35 +191,35 @@ int PCSLESSetUseTrue(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSLESGetSLES"
+#define __FUNCT__ "PCKSPGetKSP"
 /*@C
-   PCSLESGetSLES - Gets the SLES context for a SLES PC.
+   PCKSPGetKSP - Gets the KSP context for a KSP PC.
 
-   Not Collective but SLES returned is parallel if PC was parallel
+   Not Collective but KSP returned is parallel if PC was parallel
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-.  sles - the PC solver
+.  ksp - the PC solver
 
    Notes:
-   You must call SLESSetUp() before calling PCSLESGetSLES().
+   You must call KSPSetUp() before calling PCKSPGetKSP().
 
    Level: advanced
 
-.keywords:  PC, SLES, get, context
+.keywords:  PC, KSP, get, context
 @*/
-int PCSLESGetSLES(PC pc,SLES *sles)
+int PCKSPGetKSP(PC pc,KSP *ksp)
 {
-  int ierr,(*f)(PC,SLES*);
+  int ierr,(*f)(PC,KSP*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SLESSetUp first");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp first");
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCKSPGetKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,sles);CHKERRQ(ierr);
+    ierr = (*f)(pc,ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -223,11 +227,11 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 /* ----------------------------------------------------------------------------------*/
 
 /*MC
-     PCSLES -    Defines a preconditioner that can consist of any SLES solver.
+     PCKSP -    Defines a preconditioner that can consist of any KSP solver.
                  This allows, for example, embedding a Krylov method inside a preconditioner.
 
    Options Database Key:
-.     -pc_sles_true - use the matrix that defines the linear system as the matrix for the
+.     -pc_ksp_true - use the matrix that defines the linear system as the matrix for the
                     inner solver, otherwise by default it uses the matrix used to construct
                     the preconditioner (see PCSetOperators())
 
@@ -240,43 +244,43 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCSHELL, PCCOMPOSITE, PCSLESUseTrue(), PCSLESGetSLES()
+           PCSHELL, PCCOMPOSITE, PCKSPUseTrue(), PCKSPGetKSP()
 
 M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_SLES"
-int PCCreate_SLES(PC pc)
+#define __FUNCT__ "PCCreate_KSP"
+int PCCreate_KSP(PC pc)
 {
   int       ierr;
   char      *prefix;
-  PC_SLES   *jac;
+  PC_KSP   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_SLES,&jac);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_SLES));
-  pc->ops->apply              = PCApply_SLES;
-  pc->ops->applytranspose     = PCApplyTranspose_SLES;
-  pc->ops->setup              = PCSetUp_SLES;
-  pc->ops->destroy            = PCDestroy_SLES;
-  pc->ops->setfromoptions     = PCSetFromOptions_SLES;
-  pc->ops->view               = PCView_SLES;
+  ierr = PetscNew(PC_KSP,&jac);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_KSP));
+  pc->ops->apply              = PCApply_KSP;
+  pc->ops->applytranspose     = PCApplyTranspose_KSP;
+  pc->ops->setup              = PCSetUp_KSP;
+  pc->ops->destroy            = PCDestroy_KSP;
+  pc->ops->setfromoptions     = PCSetFromOptions_KSP;
+  pc->ops->view               = PCView_KSP;
   pc->ops->applyrichardson    = 0;
 
   pc->data               = (void*)jac;
-  ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
+  ierr                   = KSPCreate(pc->comm,&jac->ksp);CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(jac->sles,prefix);CHKERRQ(ierr);
-  ierr = SLESAppendOptionsPrefix(jac->sles,"sles_");CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(jac->ksp,"ksp_");CHKERRQ(ierr);
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESSetUseTrue_C","PCSLESSetUseTrue_SLES",
-                    PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESGetSLES_C","PCSLESGetSLES_SLES",
-                    PCSLESGetSLES_SLES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPSetUseTrue_C","PCKSPSetUseTrue_KSP",
+                    PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",
+                    PCKSPGetKSP_KSP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

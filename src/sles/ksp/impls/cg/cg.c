@@ -49,7 +49,7 @@ EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 
 
-      This is called once, usually automatically by SLESSolve() or SLESSetUp()
+      This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
 #undef __FUNCT__  

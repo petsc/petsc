@@ -2,7 +2,7 @@
 
 static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 
 #undef __FUNCT__
@@ -15,7 +15,6 @@ int main(int argc,char **args)
   PetscReal   err_norm,res_norm;
   Vec         x,b,u,u_tmp;
   PetscRandom r;
-  SLES        sles;
   PC          pc;          
   KSP         ksp;  
 
@@ -65,21 +64,18 @@ int main(int argc,char **args)
 
   for (k=0; k<3; k++){
     if (k == 0){                              /* CG  */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr); 
     } else if (k == 1){                       /* MINRES */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr); 
     } else {                                 /* SYMMLQ */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr); 
     }
@@ -93,13 +89,15 @@ int main(int argc,char **args)
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization
+    KSPSetFromOptions() is called _after_ any other customization
     routines.
     */
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);   
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);   
 
     /* Solve linear system; */ 
-    ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
@@ -114,7 +112,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A;",res_norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A.\n",err_norm);CHKERRQ(ierr);
 
-    ierr = SLESDestroy(sles);CHKERRQ(ierr);
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   }
    
   /* 

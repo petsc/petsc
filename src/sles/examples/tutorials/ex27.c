@@ -2,27 +2,27 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves the normal equations.\n\n";
 /*T
-   Concepts: SLES^solving a linear system
+   Concepts: KSP^solving a linear system
    Concepts: Normal equations
    Processors: n
 T*/
 
 /* 
-  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscsles.h"
+#include "petscksp.h"
 
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  SLES           sles;             /* linear solver context */
+  KSP           ksp;             /* linear solver context */
   Mat            A,N;                /* matrix */
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
@@ -120,7 +120,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("SLESSetUp");
+    PreLoadStage("KSPSetUp");
 
     ierr = MatCreateNormal(A,&N);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,b,Ab);CHKERRQ(ierr);
@@ -128,19 +128,20 @@ int main(int argc,char **args)
     /*
        Create linear solver; set operators; set runtime options.
     */
-    ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-    ierr = SLESSetOperators(sles,N,N,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,N,N,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* 
-       Here we explicitly call SLESSetUp() and KSPSetUpOnBlocks() to
+       Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
-       SLESSolve() if they haven't been called already.
+       KSPSolve() if they haven't been called already.
     */
-    ierr = SLESSetUp(sles,Ab,x);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp,Ab);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
     /*
@@ -150,12 +151,12 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    PreLoadStage("SLESSolve");
+    PreLoadStage("KSPSolve");
 
     /*
        Solve linear system
     */
-    ierr = SLESSolve(sles,Ab,x);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
 
    /* 
        Conclude profiling this stage
@@ -183,7 +184,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = MatDestroy(N);CHKERRQ(ierr); ierr = VecDestroy(Ab);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
