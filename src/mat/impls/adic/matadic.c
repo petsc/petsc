@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.8 2001/07/26 19:57:18 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.9 2001/07/26 20:04:28 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -9,10 +9,12 @@
 #include "petscsnes.h"
 
 typedef struct {
-  DA   da;
-  Vec  localu; /* point at which Jacobian is evaluated */
-  void *ctx;
-  SNES snes;
+  DA         da;
+  Vec        localu;         /* point at which Jacobian is evaluated */
+  void       *ctx;
+  SNES       snes;
+  Vec        diagonal;       /* current matrix diagonal */
+  PetscTruth diagonalvalid;  /* indicates if diagonal matches current base vector */
 } Mat_DAAD;
 
 #undef __FUNCT__  
@@ -24,6 +26,7 @@ int MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
   Vec      u;
 
   PetscFunctionBegin;
+  a->diagonalvalid = PETSC_FALSE;
   if (a->snes) {
     ierr = SNESGetSolution(a->snes,&u);CHKERRQ(ierr);
     ierr = DAGlobalToLocalBegin(a->da,u,INSERT_VALUES,a->localu);CHKERRQ(ierr);
@@ -49,6 +52,8 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#include "src/dm/da/daimpl.h"
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_DAD"
 int MatGetDiagonal_DAAD(Mat A,Vec d)
@@ -67,34 +72,29 @@ int MatGetDiagonal_DAAD(Mat A,Vec d)
   PetscFunctionReturn(0);
 }
 
-#include "src/dm/da/daimpl.h"
-
-typedef struct  {
- double  u[8];
-}
-mField;
-
-typedef struct  {
- double  u[4];
-}
-iField;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_DAD"
 int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
   Mat_DAAD    *a = (Mat_DAAD*)A->data;
-  int         ierr,rstart,rend,j,gtdof,nI;
-  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*D;
+  int         ierr,rstart,rend,j,gtdof,nI,gI;
+  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
   Vec         localxx,dd;
   DALocalInfo info;
   MatStencil  stencil;
-  mField      **ad_vu;
-  iField      **b,**d;
+  void*       *ad_vu;
 
   PetscFunctionBegin;
-  ierr = DAGetGlobalVector(a->da,&dd);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,dd);CHKERRQ(ierr);
+  if (!a->diagonal) {
+    ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
+  }
+  if (!a->diagonalvalid) {
+    ierr             = MatGetDiagonal(A,a->diagonal);CHKERRQ(ierr);
+    a->diagonalvalid = PETSC_TRUE;
+  }
+  dd   = a->diagonal;
+
 
   ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -104,7 +104,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
     ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
   }
 
-  /* get space for derivative objects.  */
+  /* get space for derivative object.  */
   ierr = DAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
 
   /* copy input vector into derivative object */
@@ -121,41 +121,52 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   my_AD_IncrementTotalGradSize(1);
   my_AD_SetIndepDone();
 
-  ierr = VecGetArray(dd,&D);CHKERRQ(ierr);
-  ierr = VecRestoreArray(dd,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
-  ierr = DAVecGetArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
+  ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
 
   ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
-  if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
-    nI = 0;
-    for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
-      for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
-        for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
-          ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
-
-          ad_vu[stencil.j][stencil.i].u[2*stencil.c+1] += (b[stencil.j][stencil.i].u[stencil.c] - ad_f[1])/d[stencil.j][stencil.i].u[stencil.c];
-          if (d[stencil.j][stencil.i].u[stencil.c] != D[nI]) SETERRQ(1,"");
-          nI++;
+  while (its--) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+      nI = 0;
+      for (stencil.k = info.zs; stencil.k<info.zs+info.zm; stencil.k++) {
+        for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
+          for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
+            for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
+              ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
+              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+              ad_vustart[1+2*gI] += (b[nI] - ad_f[1])/d[nI];
+              nI++;
+            }
+          }
+        }
+      }
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+      nI = info.dof*info.xm*info.ym*info.zm - 1;
+      for (stencil.k = info.zs+info.zm-1; stencil.k>=info.zs; stencil.k--) {
+        for (stencil.j = info.ys+info.ym-1; stencil.j>=info.ys; stencil.j--) {
+          for (stencil.i = info.xs+info.xm-1; stencil.i>=info.xs; stencil.i--) {
+            for (stencil.c = info.dof-1; stencil.c>=0; stencil.c--) {
+              ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
+              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+              ad_vustart[1+2*gI] += (b[nI] - ad_f[1])/d[nI];
+              nI--;
+            }
+          }
         }
       }
     }
   }
 
-  ierr = DAVecRestoreArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
-  /*  ierr = VecRestoreArray(dd,&D);CHKERRQ(ierr); */
-  ierr = DARestoreGlobalVector(a->da,&dd);CHKERRQ(ierr);
+  ierr = VecRestoreArray(dd,&d);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
 
   ierr = VecGetArray(localxx,&av);CHKERRQ(ierr);
   for (j=0; j<gtdof; j++) {
     av[j] = ad_vustart[2*j+1];
   }
   ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
-  /*  VecView(localxx,0); */
-
   ierr = DALocalToGlobal(a->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
-  /*  ierr = VecCopy(bb,xx);CHKERRQ(ierr); */
 
   ierr = DARestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
   ierr = DARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
@@ -174,6 +185,7 @@ int MatDestroy_DAAD(Mat A)
   PetscFunctionBegin;
   ierr = DADestroy(a->da);CHKERRQ(ierr);
   ierr = VecDestroy(a->localu);CHKERRQ(ierr);
+  if (a->diagonal) {ierr = VecDestroy(a->diagonal);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -268,6 +280,7 @@ int MatSNESMFSetBase_AD(Mat J,Vec U)
   Mat_DAAD *a = (Mat_DAAD*)J->data;
 
   PetscFunctionBegin;
+  a->diagonalvalid = PETSC_FALSE;
   ierr = DAGlobalToLocalBegin(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
