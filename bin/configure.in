@@ -508,34 +508,34 @@ dnl
 dnl Fortran BLAS should define
 dnl AC_DEFINE(HAVE_SLOW_NRM2)
 dnl
-dnl Special routines
-echo "checking for special routines for floating-point exceptions" 1>&6
-case $PETSC_ARCH in
-    sun4*|solaris) 
-          # Despite the documentation, the IEEE functions are in libm,
-          # at least in SunOS 4.1.4.  We need to do this to get 
-          # the compiler to link against -lm .
-          AC_CHECK_LIB(m,sin)
-          AC_CHECK_LIB(sunmath,standard_arithmetic)
-	  AC_CHECK_HEADERS(floatingpoint.h sunmath.h)
-          AC_CHECK_FUNCS(ieee_flags ieee_handler standard_arithmetic)
-	  ;;
-    IRIX*|SGI*) 
-	  AC_CHECK_LIB(fpe,handle_sigfpes)
-	  AC_CHECK_HEADERS(sigfpe.h)
-          dnl AC_CHECK_FUNCS(handle_sigfpes) 
-	  ;;
-    intelnx|paragon)
-	  AC_CHECK_HEADERS(ieeefp.h)
-          AC_CHECK_FUNCS(fpsetmask)
-	  ;;
-    rs6000|AIX)
-	  AC_CHECK_HEADERS(fpxcp.h)
-          AC_CHECK_HEADERS(fptrap.h)
-          AC_CHECK_FUNCS(fp_sh_trap_info fp_trap fp_enable fp_disable)
-          ;;
-    # Other cases just use default handler.
-esac
+dnl
+echo "Checking for special routines for floating-point exceptions" 1>&6
+dnl
+dnl 
+  AC_CHECK_HEADERS(floatingpoint.h sunmath.h)
+  AC_CHECK_FUNCS(ieee_flags ieee_handler)
+  if test -n "$HAVE_FLOATINGPOINT_H" -a -n "$HAVE_IEEE_FLAGS" -a -n "$HAVE_IEEE_HANDLER -a -n "$HAVE_SUNMATH_H" ; then
+    HAVE_SOLARIS_STYLE_FPTRAP="yes"
+
+  elif test -n "$HAVE_FLOATINGPOINT_H" -a -n "$HAVE_IEEE_FLAGS" -a -n "$HAVE_IEEE_HANDLER; then
+    # Despite the documentation, the IEEE functions are in libm,
+    # at least in SunOS 4.1.4.  We need to do this to get 
+    # the compiler to link against -lm .
+    AC_CHECK_LIB(m,sin)
+    HAVE_SUN4_STYLE_FPTRAP="yes"
+  fi
+
+  AC_CHECK_LIB(fpe,handle_sigfpes)
+  AC_CHECK_HEADERS(sigfpe.h)
+  if test -n "$HAVE_SIGFPE_H" ; then
+    HAVE_IRIX_STYLE_FPTRAP="yes"
+  fi
+
+  AC_CHECK_HEADERS(fpxcp.h fptrap.h)
+  AC_CHECK_FUNCS(fp_sh_trap_info fp_trap fp_enable fp_disable)
+  if test -n "$HAVE_FPXCP_H" -a -n "$HAVE_FPTRAP_H" -a -n "$HAVE_FP_SH_FPXCP_H" -a -n "$HAVE_FP_TRAP" ; then
+    HAVE_RS6000_STYLE_FPTRAP="yes"
+  fi
 
 dnl
 dnl The "extra commands" are not executed in the environment of the
