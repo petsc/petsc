@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dascatter.c,v 1.6 1996/12/16 21:11:12 balay Exp balay $";
+static char vcid[] = "$Id: dascatter.c,v 1.7 1997/01/06 20:30:32 balay Exp gropp $";
 #endif
  
 /*
@@ -21,6 +21,10 @@ static char vcid[] = "$Id: dascatter.c,v 1.6 1996/12/16 21:11:12 balay Exp balay
 .  ltog - local-to-global scatter context (may be PETSC_NULL)
 .  gtol - global-to-local scatter context (may be PETSC_NULL) 
 .  ltol - local-to-local scatter context (may be PETSC_NULL)
+
+Notes:
+   The output contexts are valid only as long as the input da is valid.
+   If you delete the da, the scatter contexts will become invalid.
 
 .keywords: distributed array, get, scatter, context, global-to-local,
            local-to-global, local-to-local
