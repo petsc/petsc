@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.135 1999/06/11 16:59:14 balay Exp balay $ 
+# $Id: crontab,v 1.136 1999/08/31 03:49:37 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -62,7 +62,7 @@
 # 45 5 * * 0 rsh maverick "cd /mcs/www-unix/petsc/petsc-index; /bin/rm -f index.log; build_index.cgi >& index.log; chmod g+w index.log"
 #
 # Rebuild the documentation every night
-15 6 * * * /usr/ucb/rsh soot "cd /home/bsmith/petsc; make alldoc >& /home/bsmith/petsc/maint/nightlylogs/doc.log"
+15 6 * * * /usr/ucb/rsh fire "cd /home/bsmith/petsc; make alldoc >& /home/bsmith/petsc/maint/nightlylogs/doc.log"
 #
 # send out reminder about Tuesday afternoon meeting
 #
