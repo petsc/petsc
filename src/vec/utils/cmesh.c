@@ -1,11 +1,25 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.61 1999/02/02 16:21:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.62 1999/03/02 00:01:13 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"        /*I "vec.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawScalePopup"
+/*@
+       DrawScalePopup - Draws a contour scale window. 
+
+     Collective on Draw
+
+  Input Parameters:
++    popup - the window (often a window obtained via DrawGetPopup()
+.    min - minimum value being plotted
+-    max - maximum value being plotted
+
+  Notes:
+     All processors that share the draw MUST call this routine
+
+@*/
 int DrawScalePopup(Draw popup,double min,double max)
 {
   double   xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0,value;
@@ -182,6 +196,9 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],V
     if (!xin) PetscFree(x); 
     if (!yin) PetscFree(y);
 #endif
+  } else {
+    /* Draw the scale window */
+    ierr = DrawScalePopup(popup,0.0,0.0); CHKERRQ(ierr);
   }
   ierr = VecDestroy(W); CHKERRQ(ierr);
 
