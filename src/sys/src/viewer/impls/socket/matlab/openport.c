@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.5 1996/12/18 17:02:39 balay Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -8,9 +8,9 @@ static char vcid[] = "$Id: openport.c,v 1.5 1996/12/18 17:02:39 balay Exp bsmith
 */
 
 #if defined(PARCH_rs6000)
-/* include files are all messed up on rs6000, IBM likes to 
-pretend they conform to all standards like ANSI C, POSIX, X Open,
-etc. but they do a half-assed job of organizing their include files */
+/* 
+   Had trouble locating the right include file on IBM for these definitions
+*/
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
 typedef unsigned short  ushort;
