@@ -3,12 +3,12 @@
 
   Application Description: 3D Euler Flow
 
-  This particular file contains the driver program and some support routines
-  for the PETSc interface to the Julianne code for the 3D Euler model.
-  The problem domain is a logically rectangular C-grid, where there are
-  five degrees of freedom per node (corresponding to density, vector momentum,
-  and internal energy).  The standard, 7-point 3D stencil is used via finite
-  volumes.
+  This file contains the driver program and some support routines for
+  the PETSc interface to the Julianne code for a 3D Euler model.  The
+  problem domain is a logically regular C-grid, where there are five
+  degrees of freedom per node (corresponding to density, vector momentum,
+  and internal energy).  The standard, 7-point 3D stencil is used via
+  finite volumes.
 
   The driver program and most PETSc interface routines are written in C,
   while the application code, as modified only slightly from the original
@@ -49,6 +49,7 @@ Runtime options include:\n\
   -cfl_advance               : use advancing CFL number\n\
   -cfl_max_incr              : maximum ratio for advancing CFL number at any given step\n\
   -cfl_max_decr              : maximum ratio for decreasing CFL number at any given step\n\
+  -global_timestep           : use global timestepping instead of the default local version\n\
   -cfl_snes_it <it>          : number of SNES iterations at each CFL step\n\
   -f_red <fraction>          : reduce the function norm by this fraction before advancing CFL\n\
   -no_output                 : do not print any output during SNES solve (intended for use\n\
@@ -994,7 +995,7 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz);
+         app->aiz,app->ajz,app->akz,&app->ts_type);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1115,6 +1116,10 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
   return 0;
 }
+
+int DACreate3d_Lois(MPI_Comm,DAPeriodicType,DAStencilType, 
+               int,int,int,int,int,int,int,int,DA *);
+
 #undef __FUNC__
 #define __FUNC__ "UserCreateEuler"
 /***************************************************************************/
@@ -1216,6 +1221,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_max_decr          = 0.1;      /* maximum CFL decrease at any given step */
   app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
+  app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
   app->mf_adaptive           = 0;        /* by default, we do not adapt mf param */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
@@ -1253,6 +1259,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
   else PetscPrintf(comm,"CFL remains constant\n");
 
+  ierr = OptionsHasName(PETSC_NULL,"-global_timestep",&flg); CHKERRQ(ierr);
+  if (flg) app->ts_type = GLOBAL_TS;
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-mf_tol",&app->mf_tol,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
