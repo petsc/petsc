@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.236 1998/04/23 23:55:07 balay Exp balay $ 
+# $Id: makefile,v 1.237 1998/04/24 20:00:01 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -167,6 +167,15 @@ testfortran: info chkopts
 	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
+testexamples_uni: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines some of the numbers may not match exactly."
+	-@echo "========================================="
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
+	   ACTION=testexamples_4  tree 
+	-@echo "Completed compiling and running uniprocessor test examples"
+	-@echo "========================================="
 testfortran_uni: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR FORTRAN EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
