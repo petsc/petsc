@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.24 1996/03/31 19:59:04 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.25 1996/04/04 00:27:51 balay Exp balay $";
 #endif
 
 /*
@@ -221,7 +221,7 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#define CHUNKSIZE   10
+#define CHUNKSIZE  2
 
 /* This version has row oriented v  */
 static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
@@ -379,6 +379,52 @@ int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   if (idx) {if (*idx) PetscFree(*idx);}
   if (v)   {if (*v)   PetscFree(*v);}
+  return 0;
+}
+
+static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
+  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift;
+  int        bs = a->bs,  mbs = a->mbs, bs2 = bs*bs;
+  Scalar     *aa = a->a, *ap;
+
+  if (mode == FLUSH_ASSEMBLY) return 0;
+
+  for ( i=1; i<mbs; i++ ) {
+    /* move each row back by the amount of empty slots (fshift) before it*/
+    fshift += imax[i-1] - ailen[i-1];
+    if (fshift) {
+      ip = aj + ai[i] + shift; ap = aa + bs2*ai[i] + shift;
+      N = ailen[i];
+      for ( j=0; j<N; j++ ) {
+        ip[j-fshift] = ip[j];
+        PetscMemcpy(ap+(j-fshift)*bs2,ap+j+bs2,bs2);
+      }
+    } 
+    ai[i] = ai[i-1] + ailen[i-1];
+  }
+  if (mbs) {
+    fshift += imax[mbs-1] - ailen[mbs-1];
+    ai[mbs] = ai[mbs-1] + ailen[mbs-1];
+  }
+  /* reset ilen and imax for each row */
+  for ( i=0; i<mbs; i++ ) {
+    ailen[i] = imax[i] = ai[i+1] - ai[i];
+  }
+  a->nz = (ai[m] + shift)*bs2; 
+
+  /* diagonals may have moved, so kill the diagonal pointers */
+  if (fshift && a->diag) {
+    PetscFree(a->diag);
+    PLogObjectMemory(A,-(m+1)*sizeof(int));
+    a->diag = 0;
+  } 
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Unneeded storage space %d used %d rows %d\n",
+           fshift,a->nz,m);
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues %d\n",
+           a->reallocs);
   return 0;
 }
 
@@ -755,7 +801,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        0,
        MatGetInfo_SeqBAIJ,MatEqual_SeqBAIJ,
        MatGetDiagonal_SeqBAIJ,MatDiagonalScale_SeqBAIJ,MatNorm_SeqBAIJ,
-       0,0,
+       0,MatAssemblyEnd_SeqBAIJ,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
        MatGetReordering_SeqBAIJ,
