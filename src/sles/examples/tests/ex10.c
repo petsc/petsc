@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.24 1995/07/28 04:23:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.25 1995/07/29 03:16:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -173,7 +173,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   /* Display matrix information and nonzero structure */
-  MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
+  ierr = MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
   return 0;
 }
