@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.18 1996/02/27 06:33:05 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.19 1996/02/27 14:52:12 balay Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -238,9 +238,9 @@ int PCCreate_ASM(PC pc)
 
   Input Parameters:
 .   pc - the preconditioner context
-.   n - the number of subdomains for this processor
+.   n - the number of subdomains for this processor. Default value = 1.
 .   is - the index sets that define the subdomains for this processor
-         or PETSC_NULL for PETSc to determine. Default value is 1 per processor.
+         or PETSC_NULL for PETSc to determine. 
 @*/
 int PCASMSetSubdomains(PC pc, int n, IS *is)
 {
