@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.22 1995/04/16 16:09:24 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.23 1995/04/17 19:36:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -503,7 +503,7 @@ static int MatNorm_Dense(Mat matin,int type,double *norm)
   return 0;
 }
 
-static int MatInsOpt_Dense(Mat aijin,int op)
+static int MatSetOption_Dense(Mat aijin,int op)
 {
   Mat_Dense *aij = (Mat_Dense *) aijin->data;
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
@@ -567,7 +567,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatCopy_Dense,
        MatGetDiag_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
-       0, MatInsOpt_Dense,MatZero_Dense,MatZeroRows_Dense,0,
+       0, MatSetOption_Dense,MatZero_Dense,MatZeroRows_Dense,0,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
        MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
        MatGetSize_Dense,MatGetSize_Dense,0,
