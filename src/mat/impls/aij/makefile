@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = seq mpi
+DIRS     = seq mpi aij
 LOCDIR   = src/mat/impls/aij/
 
 include ${PETSC_DIR}/bmake/common/base
