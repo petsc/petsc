@@ -22,8 +22,6 @@ class Configure:
     # Preprocessing, compiling, and linking
     self.language = []
     self.pushLanguage('C')
-    self.codeBegin = ''
-    self.codeEnd   = ''
     return
 
   def __str__(self):
@@ -347,25 +345,25 @@ class Configure:
       raise RuntimeError('Unknown language: '+language)
     return self.linkerCmd
 
-  def getCode(self, includes, body = None):
+  def getCode(self, includes, body = None, codeBegin = None, codeEnd = None):
     language = self.language[-1]
     if includes and not includes[-1] == '\n':
       includes += '\n'
     if language in ['C', 'C++', 'Cxx']:
       codeStr = '#include "confdefs.h"\n'+includes
       if not body is None:
-        if self.codeBegin:
-          codeBegin = self.codeBegin
-        else:
+        if codeBegin is None:
           codeBegin = '\nint main() {\n'
-        if self.codeEnd:
-          codeEnd   = self.codeEnd
-        else:
+        if codeEnd is None:
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'F77':
       if not body is None:
-        codeStr = '      program main\n'+body+'\n      end\n'
+        if codeBegin is None:
+          codeBegin = '      program main\n'
+        if codeEnd is None:
+          codeEnd   = '\n      end\n'
+        codeStr = codeBegin+body+codeEnd
       else:
         codeStr = includes
     else:
@@ -443,7 +441,7 @@ class Configure:
   def filterCompileOutput(self, output):
     return self.framework.filterCompileOutput(output)
 
-  def outputCompile(self, includes = '', body = '', cleanup = 1):
+  def outputCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Return the error output from this compile and the return code
        - It sounds like I could just take some code from MPD here, but that will have to wait I guess'''
     command = self.getCompilerCmd()
@@ -451,7 +449,7 @@ class Configure:
     out     = ''
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
-    f.write(self.getCode(includes, body))
+    f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
@@ -473,13 +471,13 @@ class Configure:
     if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
-      self.framework.log.write('Source:\n'+self.getCode(includes, body))
+      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     return (out, ret)
 
-  def checkCompile(self, includes = '', body = '', cleanup = 1):
+  def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Returns True if the compile was successful'''
     (output, returnCode) = self.outputCompile(includes, body, cleanup)
     output = self.filterCompileOutput(output)
@@ -497,10 +495,10 @@ class Configure:
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
     import sys
 
-    (out, ret) = self.outputCompile(includes, body, cleanup = 0)
+    (out, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out)
     if ret or len(out):return (out, ret)
     
@@ -528,15 +526,15 @@ class Configure:
       self.framework.log.write('ERR (linker): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-      self.framework.log.write('Source:\n'+self.getCode(includes, body))
+      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (out, ret)
 
-  def checkLink(self, includes = '', body = '', cleanup = 1):
-    (output, returnCode) = self.outputLink(includes, body, cleanup)
+  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
