@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.166 1996/11/08 05:43:43 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.167 1996/11/09 03:02:30 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1910,6 +1910,9 @@ One can also access the this functionality from the options database
 with the command {\tt -ksp\_xmonitor [x,y,w,h]}. \findex{-ksp_xmonitor} 
 Where {\tt x, y, w, h} are the optional location and size of the window.
 
+Once can cancel all hardwired monitoring routines for KSP at runtime with the 
+option {\tt -ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
+
 \subsection{Understanding the Operators Spectrum}
 Since the convergence of Krylov subspace methods depends strongly on 
 the spectrum (eigenvalues) of the preconditioned operator, PETSc has specific
@@ -2898,6 +2901,10 @@ that should be done after the solution update. The option
 SNES monitor routine, {\tt SNESDefaultMonitor()}, \findex{SNESDefaultMonitor()}
 while {\tt -snes\_xmonitor} \findex{-snes_xmonitor} draws
 a simple line graph of the residual norm's convergence.
+
+Once can cancel all hardwired monitoring routines for SNES at runtime with the 
+option {\tt -snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
+
 
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
 \begin{verbatim}

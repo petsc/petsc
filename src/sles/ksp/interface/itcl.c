@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.78 1996/11/01 23:39:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.79 1996/11/07 15:08:01 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -73,6 +73,13 @@ int KSPSetFromOptions(KSP ksp)
     ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);
   }
   /* -----------------------------------------------------------------------*/
+  /*
+     Cancels all monitors hardwired into code before call to KSPSetFromOptions()
+  */
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cancelmonitors",&flg); CHKERRQ(ierr);
+  if (flg) {
+    KSPSetMonitor(ksp,0,(void *)0);
+  }
   /*
      Prints preconditioned residual norm at each iteration
   */
@@ -224,7 +231,8 @@ int KSPPrintHelp(KSP ksp)
                      p,ksp->max_it);
     PetscPrintf(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
     PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-    PetscPrintf(ksp->comm," KSP Monitoring Options: Choose 1 of the following\n");
+    PetscPrintf(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
+    PetscPrintf(ksp->comm,"   %sksp_cancelmonitors: cancels all monitors hardwired in code\n",p);
     PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
     residual norm to stdout\n",p);
     PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\

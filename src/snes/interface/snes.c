@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.96 1996/11/07 18:58:01 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.97 1996/11/13 15:41:22 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -176,6 +176,8 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);CHKERRQ(ierr);
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg); CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetMonitor(snes,0,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
   if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
@@ -253,7 +255,8 @@ int SNESPrintHelp(SNES snes)
   PetscPrintf(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);
   PetscPrintf(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);
   PetscPrintf(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
-  PetscPrintf(snes->comm," SNES Monitoring Options: Choose 1 of the following\n");
+  PetscPrintf(snes->comm," SNES Monitoring Options: Choose any of the following\n");
+  PetscPrintf(snes->comm,"   %ssnes_cancelmonitors: cancels all monitors hardwired in code\n",p);
   PetscPrintf(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor\n",p);
   PetscPrintf(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);
   if (snes->type == SNES_NONLINEAR_EQUATIONS) {
