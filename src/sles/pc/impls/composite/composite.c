@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.35 2000/05/04 14:04:18 balay Exp balay $*/
+/*$Id: composite.c,v 1.36 2000/05/05 22:17:20 balay Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -46,6 +46,32 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
     ierr = VecAXPY(&one,jac->work1,y);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+/*
+    This is very special for a matrix of the form alpha I + R + S
+where first preconditioner is built from alpha I + S and second from
+alpha I + R
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Special"
+static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
+{
+  int              ierr;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
+  PC_CompositeLink next = jac->head;
+
+  PetscFunctionBegin;
+  if (!next) {
+    SETERRQ(1,1,"No composite preconditioners supplied via PCCompositeAddPC()");
+  }
+  if (!next->next || next->next->next) {
+    SETERRQ(1,1,"Special composite preconditioners requires exactly two PCs");
+  }
+
+  ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
+  ierr = PCApply(next->next->pc,jac->work1,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -126,13 +152,15 @@ static int PCSetFromOptions_Composite(PC pc)
   PetscFunctionBegin;
   ierr = OptionsGetString(pc->prefix,"-pc_composite_type",stype,16,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscTruth ismult,isadd;
+    PetscTruth ismult,isadd,isspecial;
 
     ierr = PetscStrcmp(stype,"multiplicative",&ismult);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,"additive",&isadd);CHKERRQ(ierr);
+    ierr = PetscStrcmp(stype,"special",&isspecial);CHKERRQ(ierr);
 
-    if (ismult)      type = PC_COMPOSITE_MULTIPLICATIVE;
-    else if (isadd)  type = PC_COMPOSITE_ADDITIVE;
+    if (ismult)          type = PC_COMPOSITE_MULTIPLICATIVE;
+    else if (isadd)      type = PC_COMPOSITE_ADDITIVE;
+    else if (isspecial)  type = PC_COMPOSITE_SPECIAL;
     else SETERRQ(1,1,"Unknown composite type given");
 
     ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
@@ -167,7 +195,7 @@ static int PCPrintHelp_Composite(PC pc,char *p)
 
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCComposite preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative]\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative,special]\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_true\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);CHKERRQ(ierr);
 
@@ -224,6 +252,8 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
     pc->ops->apply = PCApply_Composite_Additive;
   } else if (type ==  PC_COMPOSITE_MULTIPLICATIVE) {
     pc->ops->apply = PCApply_Composite_Multiplicative;
+  } else if (type ==  PC_COMPOSITE_SPECIAL) {
+    pc->ops->apply = PCApply_Composite_Special;
   } else {
     SETERRQ(1,1,"Unkown composite preconditioner type");
   }
@@ -316,7 +346,7 @@ EXTERN_C_END
 
    Input Parameter:
 .  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default) or PC_COMPOSITE_MULTIPLICATIVE
+.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
 
    Options Database Key:
 .  -pc_composite_type <type> - Sets composite preconditioner type
