@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.115 1998/04/13 18:02:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.116 1998/04/27 14:31:31 curfman Exp bsmith $";
 #endif
 
 /*
@@ -609,7 +609,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
   } else if (!ix || !iy) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must provide at least ix and iy");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must provide at least ix or iy");
   }
 
   /*
