@@ -654,7 +654,7 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
 
   This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
   and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
+  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
   conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)

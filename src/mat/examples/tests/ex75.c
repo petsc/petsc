@@ -37,7 +37,7 @@ int main(int argc,char **args)
   /* -mat_type <seqsbaij_derived type>, e.g., mpisbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
-  printf(" mattype: %s\n",type); 
+  /* printf(" mattype: %s\n",type); */
   ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL,o_nz,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs == 1){
