@@ -1737,7 +1737,6 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
 
-  ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   C->preallocated   = PETSC_TRUE;
   C->factor         = A->factor;
   c->row            = 0;
