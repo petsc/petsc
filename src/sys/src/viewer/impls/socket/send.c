@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.42 1996/09/14 03:35:02 curfman Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.43 1996/09/24 20:36:23 balay Exp bsmith $";
 #endif
 
 /* 
@@ -53,6 +53,10 @@ extern "C" {
 #if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
     && !defined(PARCH_alpha) && !defined(PARCH_solaris) && \
     !defined(PARCH_linux)
+/*
+    Some versions of the Gnu g++ compiler on the IBM RS6000 require the 
+  prototype below.
+*/
 extern int setsockopt(int,int,int,char*,int);
 #endif
 extern int close(int);
