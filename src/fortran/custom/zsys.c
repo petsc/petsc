@@ -1,10 +1,11 @@
-/*$Id: zsys.c,v 1.89 2001/04/19 15:44:02 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.90 2001/04/19 15:44:42 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
 #include "petscengine.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define petscgettime_              PETSCGETTIME
 #define petscgetcputime_           PETSCGETCPUTIME
 #define petscfopen_                PETSCFOPEN
 #define petscfclose_               PETSCFCLOSE
@@ -106,6 +107,7 @@
 #define petscsynchronizedflush_    petscsynchronizedflush
 #define petscfptrap_               petscfptrap
 #define petscgetcputime_           petscgetcputime
+#define petscgettime_              petscgettime
 #endif
 
 EXTERN_C_BEGIN
@@ -128,9 +130,14 @@ void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
   *shift = y - x;
 }
 
-void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *__ierr )
+void PETSC_STDCALL petscgettime_(PetscLogDouble *t, int *ierr )
 {
-  *__ierr = PetscGetCPUTime(t);
+  *ierr = PetscGetTime(t);
+}
+
+void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *ierr )
+{
+  *ierr = PetscGetCPUTime(t);
 }
 
 void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),

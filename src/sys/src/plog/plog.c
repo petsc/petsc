@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.259 2001/04/10 22:34:32 balay Exp balay $*/
+/*$Id: plog.c,v 1.260 2001/04/18 20:48:24 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -2041,7 +2041,7 @@ int PetscLogObjectState(PetscObject obj,const char format[],...)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetTime"
-/*@
+/*@C
    PetscGetTime - Returns the current time of day in seconds. This 
    returns wall-clock time.  
 
