@@ -509,6 +509,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
       ierr  = PetscViewerBinaryWrite(view,&nitem->offset,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
       dtype = (PetscInt)nitem->dtype;
       ierr  = PetscViewerBinaryWrite(view,&dtype,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      if (dtype == PETSC_ENUM) {
+        ierr = PetscViewerBinaryWriteStringArray(view,(char **)nitem->list);CHKERRQ(ierr);
+      }
       ierr  = PetscViewerBinaryWrite(view,nitem->name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
       ierr  = PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
       ierr  = PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
@@ -546,7 +549,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
   PetscErrorCode ierr;
   PetscTruth     isbinary,skipoptions;
   PetscInt       cookie,bagsizecount[2],i,offsetdtype[2],msize;
-  char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];
+  char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH],**list;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)view,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
@@ -567,6 +570,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
 
   for (i=0; i<bagsizecount[1]; i++) {
     ierr = PetscViewerBinaryRead(view,offsetdtype,2,PETSC_INT);CHKERRQ(ierr);
+    if (offsetdtype[1] == PETSC_ENUM) {
+      ierr = PetscViewerBinaryReadStringArray(view,&list);CHKERRQ(ierr);
+    }
     ierr = PetscViewerBinaryRead(view,name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(view,help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(view,&msize,1,PETSC_INT);CHKERRQ(ierr);
@@ -590,6 +596,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
       PetscTruth mdefault;
       ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_LOGICAL);CHKERRQ(ierr);
       ierr = PetscBagRegisterTruth(*bag,((char*)(*bag))+offsetdtype[0],mdefault,name,help);CHKERRQ(ierr);
+    } else if (offsetdtype[1] == (PetscInt) PETSC_ENUM) {
+      PetscEnum mdefault;
+      ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_ENUM);CHKERRQ(ierr);
+      ierr = PetscBagRegisterEnum(*bag,((char*)(*bag))+offsetdtype[0],(const char**)list,mdefault,name,help);CHKERRQ(ierr);
     }
   }
   PetscBagInLoad = PETSC_FALSE;

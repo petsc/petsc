@@ -342,7 +342,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryWrite" 
 /*@C
-   PetscViewerBinaryWrites - writes to a binary file, only from the first process
+   PetscViewerBinaryWrite - writes to a binary file, only from the first process
 
    Collective on MPI_Comm
 
@@ -367,6 +367,94 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   ierr = PetscSynchronizedBinaryWrite(viewer->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryWriteStringArray" 
+/*@C
+   PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first process an array of strings
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer - the binary viewer
+.  data - location of the array of strings
+-
+
+   Level: intermediate
+
+   Concepts: binary files
+
+    Notes: array of strings is null terminated
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data)
+{
+  PetscErrorCode     ierr;
+  PetscInt           i,n = 0,*sizes;
+
+  /* count number of strings */
+  while (data[n++]);
+  n--;
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
+  sizes[0] = n;
+  for (i=0; i<n; i++) {
+    size_t tmp;
+    ierr       = PetscStrlen(data[i],&tmp);CHKERRQ(ierr);
+    sizes[i+1] = tmp + 1;   /* size includes space for the null terminator */
+  }
+  ierr = PetscViewerBinaryWrite(viewer,sizes,n+1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = PetscViewerBinaryWrite(viewer,data[i],sizes[i+1],PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscViewerBinaryReadStringArray - reads a binary file an array of strings
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  viewer - the binary viewer
+
+   Output Parameter:
+.  data - location of the array of strings
+
+   Level: intermediate
+
+   Concepts: binary files
+
+    Notes: array of strings is null terminated
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
+{
+  PetscErrorCode     ierr;
+  PetscInt           i,n,*sizes,N = 0;
+
+  /* count number of strings */
+  ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,sizes,n,PETSC_INT);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    N += sizes[i];
+  }
+  ierr = PetscMalloc((n+1)*sizeof(char*) + N*sizeof(char),data);CHKERRQ(ierr);
+  (*data)[0] = (char*)((*data) + n + 1);
+  for (i=1; i<n; i++) {
+    (*data)[i] = (*data)[i-1] + sizes[i-1];
+  }
+  ierr = PetscViewerBinaryRead(viewer,(*data)[0],N,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -504,6 +592,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Binary(PetscViewer viewer,
     SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
   }
   ierr = PetscOptionsGetLogical(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(viewer->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 
