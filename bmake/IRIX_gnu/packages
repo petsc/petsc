@@ -22,7 +22,7 @@
 # BLAS usually comes with SGI. Do NOT use the parallel (library names with 
 # mp in them) version of the SGI BLAS.
 #
-BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/IRIX_gnu -lflapack -lfblas
+BLASLAPACK_LIB = -L/home/petsc/soft/irix-6-gnu/fblaslapack -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software  
 #
