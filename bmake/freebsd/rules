@@ -1,4 +1,4 @@
-# $Id: base,v 1.44 1998/04/26 00:51:28 balay Exp balay $ 
+# $Id: base,v 1.45 1998/04/28 20:21:19 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc
@@ -16,11 +16,12 @@ FC       = f77 -Nn1000
 AR       = ar
 RM       = rm -f
 #
-#  We've found that we have to use gnumake on FreeBSD since
-# the native make is non-standard. On your machine gmake may 
-# be named gnumake.
-#
-OMAKE    = gmake  --no-print-directory
+# Older versions of freebsd may require the use of gnumake
+# If you encounter problems with freebsd-make please send
+# the output of make to petsc-maint@mcs.anl.gov
+# 
+#OMAKE    = gmake  --no-print-directory
+OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = /usr/local/gcc-2.7.2/bin/gcc ${COPTFLAGS}
