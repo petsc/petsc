@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.1 1996/09/25 02:33:19 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.2 1996/09/25 20:10:09 curfman Exp curfman $";
 C
 C/*T
 C  Concepts: SLES (solving a Helmholtz equation)
@@ -87,10 +87,14 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      none = -1.0
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      dim = n*n
+      none   = -1.0
+      n      = 10
+      sigma1 = 100.0
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,
+     *                       flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      dim    = n*n
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C      Compute the matrix and right-hand-side vector that define
@@ -116,9 +120,6 @@ C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
 C   - Always specify global row and columns of matrix entries.
 
-      sigma1 = 100.0
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,
-     *                       flg,ierr)
       call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
      *                       rctx,ierr)
       h2 = 1.0/((n+1)*(n+1))
@@ -190,9 +191,6 @@ C  also serves as the preconditioning matrix.
 
 C  Set runtime options, e.g.,
 C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-C  These options will override those specified above as long as
-C  SLESSetFromOptions() is called _after_ any other customization
-C  routines.
 
       call SLESSetFromOptions(sles,ierr)
 

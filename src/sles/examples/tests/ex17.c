@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.11 1996/09/12 16:26:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.12 1996/09/25 14:07:44 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -143,7 +143,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for ( I=Istart; I<Iend; I++ ) { 
-      *val = -1.0*h2; i = I/n; j = I - i*n;  
+      *val = -1.0; i = I/n; j = I - i*n;  
       if ( i>0 ) {
         J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       if ( i<n-1 ) {
@@ -153,7 +153,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
       if ( j<n-1 ) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRQ(ierr);
-      *val = 4.0*h2 - sigma1 + sigma2;
+      *val = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
     }
     ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
@@ -172,7 +172,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (0.0,10.0) / (n+1);  /* alpha_h = alpha * h */
     for ( I=Istart; I<Iend; I++ ) { 
-      *val = -1.0*h2; i = I/n; j = I - i*n;  
+      *val = -1.0; i = I/n; j = I - i*n;  
       if ( i>0 ) {
         J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       if ( i<n-1 ) {
@@ -181,7 +181,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
         J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       if ( j<n-1 ) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
-      *val = 4.0*h2 - sigma1;
+      *val = 4.0 - sigma1*h2;
       if (!((I+1)%n)) *val += alpha_h;
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
     }
