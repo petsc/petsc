@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.38 1996/03/19 21:24:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.39 1996/04/01 03:11:27 curfman Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
   IO capability to MPI.
 */
-#include "petsc.h"
+#include "petsc.h" 
 #include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
@@ -162,7 +162,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 
   /* Get the private communicator for the sequential operations */
   if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,(void*)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,(void*)0);
   }
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
