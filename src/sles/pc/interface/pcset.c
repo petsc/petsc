@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.98 2000/01/11 21:01:36 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.99 2000/01/25 00:47:08 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -6,7 +6,7 @@
 #include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
 #include "sys.h"
 
-int  PCRegisterAllCalled = 0;
+PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered KSP routines
 */
@@ -125,7 +125,7 @@ int PCRegisterDestroy(void)
     ierr = FListDestroy(PCList);CHKERRQ(ierr);
     PCList = 0;
   }
-  PCRegisterAllCalled = 0;
+  PCRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -194,8 +194,6 @@ int PCPrintHelp(PC pc)
 @*/
 int PCGetType(PC pc,PCType *meth)
 {
-  int ierr;
-
   PetscFunctionBegin;
   *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
