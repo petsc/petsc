@@ -6,7 +6,7 @@ import sys
 class BuildChecker:
   compilers = {'IRIX':            ['sgiMipsPro'],
                'IRIX64':          ['sgiMipsPro'],
-               'irix6':           ['sgiMipsPro'],
+               'irix6.5':         ['sgiMipsPro'],
                'alpha':           ['mipsUltrix'],
                'alpha_uni':       ['mipsUltrix'],
                'freebsd':         ['gcc'],
@@ -112,7 +112,9 @@ class BuildChecker:
       raise RuntimeError('Invalid filename: '+self.filename)
     m = re.match(r'build_(?P<arch>[\w-]*)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
     if not m:
-      raise RuntimeError('Invalid filename '+self.filename)
+      m = re.match(r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
+      if not m:
+        raise RuntimeError('Invalid filename '+self.filename)
     try:
       compilers = self.compilers[m.group('arch')]
     except KeyError:
