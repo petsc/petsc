@@ -27,9 +27,8 @@ endif
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
 rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
-#if ("${ARCH}" != "t3e") then
-#  $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
-#endif
+# rsync -C does not clear lib - so do this separately
+rsync -z -e "$RSH" -r --exclude=BitKeeper --delete /sandbox/petsc/petsc-test/lib ${MACH}:$RSYNC_DIR/lib
 
 
 #$RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
