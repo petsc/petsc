@@ -218,7 +218,7 @@ PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
     n    = n/pf->dimin;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-    if (!pf->ops->apply) SETERRQ(1,"No function has been provided for this PF");
+    if (!pf->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
     ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
@@ -263,7 +263,7 @@ PetscErrorCode PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
   PetscValidScalarPointer(x,2);
   PetscValidScalarPointer(y,3);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different arrays");
-  if (!pf->ops->apply) SETERRQ(1,"No function has been provided for this PF");
+  if (!pf->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 
   ierr = (*pf->ops->apply)(pf->data,n,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -326,7 +326,7 @@ PetscErrorCode PFView(PF pf,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

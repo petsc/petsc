@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = pc ksp examples utils esi
+DIRS     = pc ksp examples utils
 LOCDIR   = src/ksp/
 MANSEC   = KSP
 

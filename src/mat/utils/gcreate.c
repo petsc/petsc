@@ -147,9 +147,9 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
 PetscErrorCode MatSetFromOptions(Mat B)
 {
   PetscErrorCode ierr;
-  int size;
-  char       mtype[256];
-  PetscTruth flg;
+  PetscMPIInt    size;
+  char           mtype[256];
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
@@ -160,9 +160,6 @@ PetscErrorCode MatSetFromOptions(Mat B)
     ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
     ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
   }
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = MatESISetFromOptions(B);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

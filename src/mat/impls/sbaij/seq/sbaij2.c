@@ -109,7 +109,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,M
 
   PetscFunctionBegin;
  
-  if (isrow != iscol) SETERRQ(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
@@ -188,7 +188,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse 
   int         *vary,*iary,*irow,nrows,i,bs=a->bs,count;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRQ(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
+  if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
  
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse 
  
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(1,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
@@ -1198,29 +1198,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscLogFlops(2*(a->nz*2 - A->m));
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTranspose_SeqSBAIJ"
-PetscErrorCode MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMult(A,xx,zz);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeAdd_SeqSBAIJ"
-PetscErrorCode MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMultAdd(A,xx,yy,zz);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  

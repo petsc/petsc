@@ -51,8 +51,6 @@ E*/
 #define MATSBAIJ           "sbaij"
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
-#define MATESI             "esi"
-#define MATPETSCESI        "petscesi"
 #define MATNORMAL          "normal"
 #define MATSEQAIJSPOOLES   "seqaijspooles"
 #define MATMPIAIJSPOOLES   "mpiaijspooles"
@@ -407,8 +405,12 @@ EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
-EXTERN PetscErrorCode MatGetLocalMat(Mat,MatReuse,IS*,IS*,Mat*);
+EXTERN PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
+EXTERN PetscErrorCode MatMerge_SeqsToMPINumeric(Mat,Mat); 
+EXTERN PetscErrorCode MatGetLocalMat(Mat,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
+EXTERN PetscErrorCode MatGetBrowsOfAoCols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
 
 EXTERN PetscErrorCode MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
 
@@ -1290,9 +1292,6 @@ EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
 EXTERN PetscErrorCode MatMAIJGetAIJ(Mat,Mat*);
 
 EXTERN PetscErrorCode MatComputeExplicitOperator(Mat,Mat*);
-
-EXTERN PetscErrorCode MatESISetType(Mat,const char*);
-EXTERN PetscErrorCode MatESISetFromOptions(Mat);
 
 EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 

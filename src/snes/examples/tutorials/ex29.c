@@ -45,7 +45,7 @@ T*/
 #include "petscmg.h"
 
 #ifdef HAVE_DA_HDF
-int DAVecHDFOutput(DA da, Vec X, char *fname);
+PetscInt DAVecHDFOutput(DA da, Vec X, char *fname);
 #endif
 
 #define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)-1].m) * dhx)
@@ -71,8 +71,8 @@ typedef struct {
   PetscReal      ptime;
   PetscReal      max_time;
   PetscReal      fnorm_ratio;
-  int            ires,itstep;
-  int            max_steps,print_freq;
+  PetscInt       ires,itstep;
+  PetscInt       max_steps,print_freq;
   PetscReal      t;
   PetscScalar    fnorm;
 
@@ -90,8 +90,8 @@ typedef struct {
 } PassiveField;
 
 typedef struct {
-  int          mglevels;
-  int          cycles;           /* number of time steps for integration */ 
+  PetscInt     mglevels;
+  PetscInt     cycles;           /* number of time steps for integration */ 
   PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
   PetscTruth   draw_contours;    /* flag - 1 indicates drawing contours */
   PetscTruth   second_order;
@@ -104,46 +104,44 @@ typedef struct {
   Parameter    *param;
 } AppCtx;
 
-extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern int Update(DMMG *);
-extern int Initialize(DMMG *);
-extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
-extern int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
-extern int Gnuplot(DA da, Vec X, double time);
-extern int AttachNullSpace(KSP,Vec);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode Update(DMMG *);
+extern PetscErrorCode Initialize(DMMG *);
+extern PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
+extern PetscErrorCode AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
+extern PetscErrorCode Gnuplot(DA da, Vec X, double time);
+extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+extern PetscErrorCode CreateNullSpace(DMMG,Vec*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG       *dmmg;       /* multilevel grid structure */
-  AppCtx     *user;       /* user-defined work context (one for each level) */
-  TstepCtx   tsCtx;       /* time-step parameters (one total) */
-  Parameter  param;       /* physical parameters (one total) */
-  int        i,ierr,m,n,mx,my;
-  MPI_Comm   comm;
-  DA         da;
-  PetscTruth flg;
-  PetscReal  dt_ratio;
-
-  int       dfill[16] = {1,0,1,0,
-                         0,1,0,1,
-                         0,0,1,1,
-                         0,1,1,1};
-  int       ofill[16] = {1,0,0,0,
-                         0,1,0,0,
-                         1,1,1,1,
-                         1,1,1,1};
+  PetscErrorCode ierr;
+  DMMG           *dmmg;       /* multilevel grid structure */
+  AppCtx         *user;       /* user-defined work context (one for each level) */
+  TstepCtx       tsCtx;       /* time-step parameters (one total) */
+  Parameter      param;       /* physical parameters (one total) */
+  PetscInt       i,m,n,mx,my;
+  DA             da;
+  PetscTruth     flg;
+  PetscReal      dt_ratio;
+  PetscInt       dfill[16] = {1,0,1,0,
+                              0,1,0,1,
+                              0,0,1,1,
+                              0,1,1,1};
+  PetscInt       ofill[16] = {1,0,0,0,
+                              0,1,0,0,
+                              1,1,1,1,
+                              1,1,1,1};
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  comm = PETSC_COMM_WORLD;
 
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
   param.PreLoading = PreLoading;
-    ierr = DMMGCreate(comm,1,&user,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGCreate(PETSC_COMM_WORLD,1,&user,&dmmg);CHKERRQ(ierr);
     param.mglevels = DMMGGetLevels(dmmg);
 
     /*
@@ -151,9 +149,8 @@ int main(int argc,char **argv)
       parallel grid and vectors for principal unknowns (x) and
       governing residuals (f)
     */
-    ierr = DACreate2d(comm, DA_XYPERIODIC, DA_STENCIL_STAR, -5, -5,
-                      PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da);
-    CHKERRQ(ierr);
+    ierr = DACreate2d(PETSC_COMM_WORLD, DA_XYPERIODIC, DA_STENCIL_STAR, -5, -5,
+                      PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da);CHKERRQ(ierr);
 
     /* overwrite the default sparsity pattern toone specific for
        this code's nonzero structure */
@@ -168,39 +165,25 @@ int main(int argc,char **argv)
     param.d_e   = 0.2;
     param.rho_s = 0;
 
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-viscosity", &param.nu,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-viscosity", &param.nu,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-resistivity", &param.eta,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-resistivity", &param.eta,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-skin_depth", &param.d_e,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-skin_depth", &param.d_e,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-larmor_radius", &param.rho_s,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-larmor_radius", &param.rho_s,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &param.draw_contours);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &param.draw_contours);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(PETSC_NULL, "-second_order", &param.second_order);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-second_order", &param.second_order);CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 0, "phi");
-    CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 0, "phi");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 1, "psi");
-    CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 1, "psi");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 2, "U");
-    CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 2, "U");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 3, "F");
-    CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 3, "F");CHKERRQ(ierr);
 
     /*======================================================================*/
     /* Initialize stuff related to time stepping */
@@ -220,35 +203,19 @@ int main(int argc,char **argv)
     tsCtx.ts_monitor  = PETSC_FALSE;
     tsCtx.dump_time   = -1.0;
 
-    ierr = PetscOptionsGetInt(PETSC_NULL, "-max_st", &tsCtx.max_steps,
-                              PETSC_NULL);
-    CHKERRQ(ierr);
-
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-ts_rtol", &tsCtx.fnorm_ratio,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
-
-    ierr = PetscOptionsGetInt(PETSC_NULL, "-print_freq", &tsCtx.print_freq,
-                              PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL, "-max_st", &tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-ts_rtol", &tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL, "-print_freq", &tsCtx.print_freq,PETSC_NULL);CHKERRQ(ierr);
 
     dt_ratio = 1.0;
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-dt_ratio", &dt_ratio,
-                                 PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-dt_ratio", &dt_ratio,PETSC_NULL);CHKERRQ(ierr);
     tsCtx.dt *= dt_ratio;
 
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-ts_monitor", &tsCtx.ts_monitor);
-    CHKERRQ(ierr);
-
-    ierr = PetscOptionsGetReal(PETSC_NULL, "-dump", &tsCtx.dump_time,
-                               PETSC_NULL);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-ts_monitor", &tsCtx.ts_monitor);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-dump", &tsCtx.dump_time,PETSC_NULL);CHKERRQ(ierr);
 
     tsCtx.socketviewer = 0;
-    ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);
-    CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
     if (flg && !PreLoading) {
       tsCtx.ts_monitor = PETSC_TRUE;
       ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
@@ -276,37 +243,19 @@ int main(int argc,char **argv)
        
        Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,
-                            ad_FormFunctionLocal, admf_FormFunctionLocal);
-    CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,ad_FormFunctionLocal, admf_FormFunctionLocal);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
 
     /* attach nullspace to each level of the preconditioner */
-    {
-      KSP       subksp,ksp;
-      PC         pc;
-      PetscTruth mg;
+    ierr = DMMGSetNullSpace(dmmg,PETSC_FALSE,1,CreateNullSpace);CHKERRQ(ierr);
 
-      ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
-      ierr = AttachNullSpace(ksp,DMMGGetx(dmmg));CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCMG,&mg);CHKERRQ(ierr);
-      if (mg) {
-        for (i=0; i<param.mglevels; i++) {
-	  ierr = MGGetSmoother(pc,i,&subksp);CHKERRQ(ierr);
-	  ierr = AttachNullSpace(subksp,dmmg[i]->x);CHKERRQ(ierr);
-        }
-      }
-    }
-    
     if (PreLoading) {
-      ierr = PetscPrintf(comm, "# viscosity = %g, resistivity = %g, "
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %g, resistivity = %g, "
 			 "skin_depth # = %g, larmor_radius # = %g\n",
-			 param.nu, param.eta, param.d_e, param.rho_s);
-      CHKERRQ(ierr);
+			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
       ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"dx %g dy %g dt %g ratio dt/min(dx,dy) %g\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %g dy %g dt %g ratio dt/min(dx,dy) %g\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
 
     
@@ -345,28 +294,25 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "Gnuplot"
 /* ------------------------------------------------------------------- */
-int Gnuplot(DA da, Vec X, double time)
+PetscErrorCode Gnuplot(DA da, Vec X, double time)
 {
-  int          i,j,xs,ys,xm,ym;
-  int          xints,xinte,yints,yinte;
-  int          ierr;
-  Field        **x;
-  FILE         *f;
-  char         fname[100];
-  int          cpu;
+  PetscInt       i,j,xs,ys,xm,ym;
+  PetscInt       xints,xinte,yints,yinte;
+  PetscErrorCode ierr;
+  Field          **x;
+  FILE           *f;
+  char           fname[100];
+  PetscMPIInt    rank;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&cpu);
-  CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  sprintf(fname, "out-%g-%d.dat", time, cpu);
+  sprintf(fname, "out-%g-%d.dat", time, rank);
 
   f = fopen(fname, "w");
 
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
-  CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DAVecGetArray(da,X,&x);
-  CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
@@ -376,18 +322,12 @@ int Gnuplot(DA da, Vec X, double time)
                           "%d %d %g %g %g %g %g %g\n",
                           i, j, 0.0, 0.0,
                           PetscAbsScalar(x[j][i].U), PetscAbsScalar(x[j][i].F), 
-                          PetscAbsScalar(x[j][i].phi), PetscAbsScalar(x[j][i].psi));
-      CHKERRQ(ierr);
+                          PetscAbsScalar(x[j][i].phi), PetscAbsScalar(x[j][i].psi));CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");
-    CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");CHKERRQ(ierr);
   }
-
-  ierr = DAVecRestoreArray(da,X,&x);
-  CHKERRQ(ierr);
-
+  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   fclose(f);
-
   return 0;
 }
 
@@ -395,18 +335,19 @@ int Gnuplot(DA da, Vec X, double time)
 #undef __FUNCT__
 #define __FUNCT__ "Initialize"
 /* ------------------------------------------------------------------- */
-int Initialize(DMMG *dmmg)
+PetscErrorCode Initialize(DMMG *dmmg)
 {
-  AppCtx     *appCtx = (AppCtx*)DMMGGetUser(dmmg,0);
-  Parameter  *param = appCtx->param;
-  DA         da;
-  int        i,j,mx,my,ierr,xs,ys,xm,ym;
-  PetscReal  two = 2.0,one = 1.0;
-  PetscReal  hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PetscReal  d_e,rho_s,de2,xx,yy;
-  Field      **x, **localx;
-  Vec        localX;
-  PetscTruth flg;
+  AppCtx         *appCtx = (AppCtx*)DMMGGetUser(dmmg,0);
+  Parameter      *param = appCtx->param;
+  DA             da;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mx,my,xs,ys,xm,ym;
+  PetscReal      two = 2.0,one = 1.0;
+  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PetscReal      d_e,rho_s,de2,xx,yy;
+  Field          **x, **localx;
+  Vec            localX;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
@@ -505,27 +446,26 @@ int Initialize(DMMG *dmmg)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMaxima"
-int ComputeMaxima(DA da, Vec X, PetscReal t)
+PetscErrorCode ComputeMaxima(DA da, Vec X, PetscReal t)
 {
-  int      ierr,i,j,mx,my,xs,ys,xm,ym;
-  int      xints,xinte,yints,yinte;
-  Field    **x;
-  double   norm[4] = {0,0,0,0};
-  double   gnorm[4];
-  MPI_Comm comm;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mx,my,xs,ys,xm,ym;
+  PetscInt       xints,xinte,yints,yinte;
+  Field          **x;
+  double         norm[4] = {0,0,0,0};
+  double         gnorm[4];
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
 
-  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);
-  CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
   CHKERRQ(ierr);
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
-  ierr = DAVecGetArray(da, X, &x);
-  CHKERRQ(ierr);
+  ierr = DAVecGetArray(da, X, &x);CHKERRQ(ierr);
 
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
@@ -536,39 +476,32 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
     }
   }
 
-  ierr = DAVecRestoreArray(da,X,&x);
-  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
-  ierr = PetscObjectGetComm((PetscObject)da, &comm);
-  CHKERRQ(ierr);
-  ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);
-  CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da, &comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
 
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, stderr,
-                      "%g\t%g\t%g\t%g\t%g\n",
-                      t, gnorm[0], gnorm[1], gnorm[2], gnorm[3]);
-  CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, stderr,"%g\t%g\t%g\t%g\t%g\n",t, gnorm[0], gnorm[1], gnorm[2], gnorm[3]);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 {
-  AppCtx        *user = (AppCtx*)ptr;
-  TstepCtx      *tsCtx = user->tsCtx;
-  Parameter     *param = user->param;
-  int           ierr,i,j;
-  int           xints,xinte,yints,yinte;
-  PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PassiveReal   de2,rhos2,nu,eta,dde2;
-  PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
-  PassiveReal   F_eq_x,By_eq;
-
-  PetscScalar   xx;
-  PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  Parameter      *param = user->param;
+  PetscErrorCode ierr;
+  PetscInt       xints,xinte,yints,yinte,i,j;
+  PassiveReal    hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PassiveReal    de2,rhos2,nu,eta,dde2;
+  PassiveReal    two = 2.0,one = 1.0,p5 = 0.5;
+  PassiveReal    F_eq_x,By_eq;
+  PetscScalar    xx;
+  PetscScalar    vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar    Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
 
   PetscFunctionBegin;
   de2     = sqr(param->d_e);
@@ -652,15 +585,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 
   /* Add time step contribution */
   if (tsCtx->ires) {
-    if ((param->second_order) && (tsCtx->itstep > 0))
-    {
-      ierr = AddTSTermLocal2(info,x,f,user);
-      CHKERRQ(ierr);
-    }
-    else
-    {
-      ierr = AddTSTermLocal(info,x,f,user);
-      CHKERRQ(ierr);
+    if ((param->second_order) && (tsCtx->itstep > 0)){
+      ierr = AddTSTermLocal2(info,x,f,user);CHKERRQ(ierr);
+    } else {
+      ierr = AddTSTermLocal(info,x,f,user);CHKERRQ(ierr);
     }
   }
 
@@ -674,18 +602,19 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "Update"
-int Update(DMMG *dmmg)
+PetscErrorCode Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 {
-  AppCtx         *user = (AppCtx *) DMMGGetUser(dmmg,0);
-  TstepCtx       *tsCtx = user->tsCtx;
-  Parameter      *param = user->param;
-  SNES           snes;
-  int            ierr,its,lits,i;
-  int            max_steps;
-  int            nfailsCum = 0,nfails = 0;
-  static int     ic_out;
-  PetscTruth     ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
+  AppCtx          *user = (AppCtx *) DMMGGetUser(dmmg,0);
+  TstepCtx        *tsCtx = user->tsCtx;
+  Parameter       *param = user->param;
+  SNES            snes;
+  PetscErrorCode  ierr;
+  PetscInt        its,lits,i;
+  PetscInt        max_steps;
+  PetscInt        nfailsCum = 0,nfails = 0;
+  static PetscInt ic_out;
+  PetscTruth      ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -694,8 +623,7 @@ int Update(DMMG *dmmg)
   else
     max_steps = tsCtx->max_steps;
   
-  ierr = Initialize(dmmg);
-  CHKERRQ(ierr);
+  ierr = Initialize(dmmg);CHKERRQ(ierr);
 
   snes = DMMGGetSNES(dmmg);
 
@@ -705,57 +633,43 @@ int Update(DMMG *dmmg)
     {
       for (i=param->mglevels-1; i>=0 ;i--)
       {
-        ierr = VecCopy(((AppCtx*)DMMGGetUser(dmmg,i))->Xold,
-                       ((AppCtx*)DMMGGetUser(dmmg,i))->Xoldold);
-        CHKERRQ(ierr);
+        ierr = VecCopy(((AppCtx*)DMMGGetUser(dmmg,i))->Xold,((AppCtx*)DMMGGetUser(dmmg,i))->Xoldold);CHKERRQ(ierr);
       }
     }
 
     for (i=param->mglevels-1; i>0 ;i--) {
-      ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);
-      CHKERRQ(ierr);
-      ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);
-      CHKERRQ(ierr);
-      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)DMMGGetUser(dmmg,i))->Xold);
-      CHKERRQ(ierr);
+      ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);CHKERRQ(ierr);
+      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)DMMGGetUser(dmmg,i))->Xold);CHKERRQ(ierr);
     }
-    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)DMMGGetUser(dmmg,0))->Xold);
-    CHKERRQ(ierr);
+    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)DMMGGetUser(dmmg,0))->Xold);CHKERRQ(ierr);
 
-    ierr = DMMGSolve(dmmg);
-    CHKERRQ(ierr); 
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
 
     if (tsCtx->itstep == 665000)
     {
-      KSP ksp;
-      PC pc;
-      Mat mat, pmat;
+      KSP          ksp;
+      PC           pc;
+      Mat          mat, pmat;
       MatStructure flag;
-      PetscViewer viewer;
-      char file[PETSC_MAX_PATH_LEN];
+      PetscViewer  viewer;
+      char         file[PETSC_MAX_PATH_LEN];
 
       ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file,
-                                   PETSC_FILE_CREATE, &viewer);
-      CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, PETSC_FILE_CREATE, &viewer);CHKERRQ(ierr);
 
-      ierr = SNESGetKSP(snes, &ksp);
-      CHKERRQ(ierr);
+      ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
 
-      ierr = KSPGetPC(ksp, &pc);
-      CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
 
-      ierr = PCGetOperators(pc, &mat, &pmat, &flag);
-      CHKERRQ(ierr);
+      ierr = PCGetOperators(pc, &mat, &pmat, &flag);CHKERRQ(ierr);
 
-      ierr = MatView(mat, viewer);
-      CHKERRQ(ierr);
+      ierr = MatView(mat, viewer);CHKERRQ(ierr);
 
-      ierr = PetscViewerDestroy(viewer);
-      CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       SETERRQ(1,"Done saving Jacobian");
     }
 
@@ -783,8 +697,7 @@ int Update(DMMG *dmmg)
       ierr = PetscPrintf(PETSC_COMM_WORLD,
                          "time step = %d, time = %g, number of nonlinear steps = %d, "
                          "number of linear steps = %d, norm of the function = %g\n",
-			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));
-      CHKERRQ(ierr);
+			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
       if (!param->PreLoading && tsCtx->socketviewer)
@@ -797,23 +710,19 @@ int Update(DMMG *dmmg)
 
     if (!param->PreLoading) {
       if (param->draw_contours) {
-	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);
-        CHKERRQ(ierr);
+	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       }
 
       if (1 && ts_monitor) {
 	/* compute maxima */
-	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,
-                      dmmg[param->mglevels-1]->x,
-                      tsCtx->t);
+	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,dmmg[param->mglevels-1]->x,tsCtx->t);
 	/* output */
 	if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
 #ifdef HAVE_DA_HDF
           char fname[PETSC_MAX_PATH_LEN];
 
           sprintf(fname, "out-%g.hdf", tsCtx->t);
-          ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);
-          CHKERRQ(ierr);
+          ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);CHKERRQ(ierr);
 #else
 /*
           ierr = Gnuplot(DMMGGetDA(dmmg), DMMGGetx(dmmg), tsCtx->t);
@@ -829,8 +738,7 @@ int Update(DMMG *dmmg)
   if (!param->PreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
-		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));
-    CHKERRQ(ierr);
+		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
   }
 
   if (param->PreLoading) {
@@ -843,13 +751,14 @@ int Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AddTSTermLocal"
-int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
+PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   TstepCtx       *tsCtx = user->tsCtx;
   DA             da = info->da;
-  int            ierr,i,j;
-  int            xints,xinte,yints,yinte;
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscInt       xints,xinte,yints,yinte;
   PassiveReal    hx,hy,dhx,dhy,hxhy;
   PassiveReal    one = 1.0;
   PassiveScalar  dtinv;
@@ -881,13 +790,13 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AddTSTermLocal2"
-int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
+PetscErrorCode AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   TstepCtx       *tsCtx = user->tsCtx;
   DA             da = info->da;
-  int            ierr,i,j;
-  int            xints,xinte,yints,yinte;
+  PetscErrorCode ierr;
+  PetscInt       i,j,xints,xinte,yints,yinte;
   PassiveReal    hx,hy,dhx,dhy,hxhy;
   PassiveReal    one = 1.0, onep5 = 1.5, two = 2.0, p5 = 0.5;
   PassiveScalar  dtinv;
@@ -920,54 +829,47 @@ int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------*/
+/* Creates the null space of the Jacobian for a particular level */
 #undef __FUNCT__
-#define __FUNCT__ "AttachNullSpace"
-int AttachNullSpace(KSP ksp,Vec model)
+#define __FUNCT__ "CreateNullSpace"
+PetscErrorCode CreateNullSpace(DMMG dmmg,Vec *nulls)
 {
-  int          i,ierr,rstart,rend,N;
-  MatNullSpace sp;
-  Vec          v,vs[1];
-  PetscScalar  *vx,scale;
+  PetscErrorCode ierr;
+  PetscInt       i,N,rstart,rend;
+  PetscScalar    scale,*vx;
 
   PetscFunctionBegin;
-  ierr  = VecDuplicate(model,&v);CHKERRQ(ierr);
-  ierr  = VecGetSize(model,&N);CHKERRQ(ierr);
+  ierr  = VecGetSize(nulls[0],&N);CHKERRQ(ierr);
   scale = 2.0/sqrt((PetscReal)N); 
-  ierr  = VecGetArray(v,&vx);CHKERRQ(ierr);
-  ierr  = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
+  ierr  = VecGetArray(nulls[0],&vx);CHKERRQ(ierr);
+  ierr  = VecGetOwnershipRange(nulls[0],&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     if (!(i % 4)) vx[i-rstart] = scale;
     else          vx[i-rstart] = 0.0;
   }
-  ierr  = VecRestoreArray(v,&vx);CHKERRQ(ierr);
-  vs[0] = v;
-  ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,vs,&sp);CHKERRQ(ierr);
-  ierr  = VecDestroy(v);CHKERRQ(ierr);
-  ierr  = KSPSetNullSpace(ksp,sp);CHKERRQ(ierr);
-  ierr  = MatNullSpaceDestroy(sp);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(nulls[0],&vx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
     This is an experimental function and can be safely ignored.
 */
-int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
- {
-  AppCtx        *user = (AppCtx*)ptr;
-  TstepCtx      *tsCtx = user->tsCtx;
-  Parameter     *param = user->param;
-  int           ierr,i,j,c;
-  int           xints,xinte,yints,yinte;
-  PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PassiveReal   de2,rhos2,nu,eta,dde2;
-  PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
-  PassiveReal   F_eq_x,By_eq,dtinv;
-
-  PetscScalar   xx;
-  PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
-  PassiveField  **xold;
+PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
+{
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  Parameter      *param = user->param;
+  PetscErrorCode ierr;
+  PetscInt       i,j,c;
+  PetscInt       xints,xinte,yints,yinte;
+  PassiveReal    hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PassiveReal    de2,rhos2,nu,eta,dde2;
+  PassiveReal    two = 2.0,one = 1.0,p5 = 0.5;
+  PassiveReal    F_eq_x,By_eq,dtinv;
+  PetscScalar    xx;
+  PetscScalar    vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar    Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
+  PassiveField   **xold;
 
   PetscFunctionBegin;
   de2     = sqr(param->d_e);

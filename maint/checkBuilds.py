@@ -23,6 +23,7 @@ class BuildChecker(script.Script):
 
   compilers = {'aix5.1.0.0':           ['ibm'],
                'cygwin':               ['gcc'],
+               'cygwin-borland':       ['win32fe', 'borland'],
                'cygwin-ms':            ['win32fe', 'ms'],
                'freebsd5.1':           ['gcc'],
                'linux':                ['gcc'],
@@ -33,11 +34,14 @@ class BuildChecker(script.Script):
                'linux-gnu-ia64':       ['gcc'],
                'linux-gnu-ia64-intel': ['intel', 'intelF90'],
                'linux-gnu-uni':        ['gcc'],
+               'linux-gnu-valgrind':   ['gcc'],
                'macosx-gnu':           ['gcc'],
                'macosx-ibm':           ['ibm'],
                'osf5.0':               ['mipsUltrix'],
                'solaris2.9':           ['solaris'],
+               'solaris-gnu':          ['gcc'],
                'solaris-lam':          ['solaris'],
+               'solaris-uni':          ['solaris'],
                # Untested architectures
                'irix6.5':         ['sgiMipsPro'],
                't3e':             ['cray'],
@@ -58,6 +62,7 @@ class BuildChecker(script.Script):
     ##   warning on line 17 of fplot.f: data type is undefined for variable d
     'absoftF90': [r'[^\n]*(?P<type>error|warning) on line[ \t]+(?P<line>[0-9]+)[ \t]+of[ \t]+([^:\n]+):'],
     ## Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
+    ##   Error E2303 h:\home\balay\PETSC-~1\include\petscsys.h 89: Type name expected
     ##   Error ping.c 15: Unable to open include file 'sys/types.h'
     ##   Warning ping.c 68: Call to function 'func' with no prototype
     'borland': [r'(?P<type>Error|Warning) (?P<subtype>[EW][0-9]+) (?P<filename>[a-zA-Z]?:?[^:(\s]+) (?P<line>[0-9]+)([) \t]|:[^0-9\n])'],

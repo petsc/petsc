@@ -906,7 +906,7 @@ PetscErrorCode AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],
   if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Key does not exist");
 
   if (ikey->ltog) {
-    SETERRQ1(1,"Database key %s already has local to global mapping",name);
+    SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Database key %s already has local to global mapping",name);
   }
 
   ikey->ltog = map;

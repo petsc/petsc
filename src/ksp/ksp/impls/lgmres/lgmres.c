@@ -420,7 +420,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) {
-     SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+     SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its        = 0;
@@ -553,7 +553,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
  
   /* solve the upper triangular system - GRS is the right side and HH is 
      the upper triangular matrix  - put soln in nrs */
-  if (*HH(it,it) == 0.0) SETERRQ2(1,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
      nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -836,7 +836,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %d",cstr,lgmres->max_k);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 
@@ -922,8 +922,8 @@ PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp,int aug_dim)
 
   PetscFunctionBegin;
 
-  if (aug_dim < 0) SETERRQ(1,"Augmentation dimension must be positive");
-  if (aug_dim > (lgmres->max_k -1))  SETERRQ(1,"Augmentation dimension must be <= (restart size-1)");
+  if (aug_dim < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  if (aug_dim > (lgmres->max_k -1))  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
 
   lgmres->aug_dim = aug_dim;
 

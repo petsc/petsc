@@ -28,8 +28,6 @@ EXTERN PetscErrorCode PCCreate_RAMG(PC);
 #if defined(PETSC_HAVE_SAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_SAMG(PC);
 #endif
-EXTERN PetscErrorCode PCCreate_PetscESI(PC);
-EXTERN PetscErrorCode PCCreate_ESI(PC);
 EXTERN PetscErrorCode PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_HYPRE(PC);
@@ -85,10 +83,6 @@ PetscErrorCode PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_SAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSAMG         ,path,"PCCreate_SAMG",PCCreate_SAMG);CHKERRQ(ierr);
-#endif
-#if defined(__cplusplus) && !defined(PETSC_USE_SINGLE) && !defined (PETSC_USE_COMPLEX) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = PCRegisterDynamic(PCESI          ,path,"PCCreate_ESI",PCCreate_ESI);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCPETSCESI     ,path,"PCCreate_PetscESI",PCCreate_PetscESI);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);

@@ -44,7 +44,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if self.framework.argDB['with-adic']:
+    if self.framework.argDB['with-adic'] and not self.framework.argDB['with-64-bit-int']:
       self.executeTest(self.configureLibrary)
     else:
       self.addSubstitution('ADIC_DEFINES', '')

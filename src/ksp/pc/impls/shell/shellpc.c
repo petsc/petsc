@@ -42,7 +42,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->apply) SETERRQ(1,"No apply() routine provided to Shell PC");
+  if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -56,7 +56,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->applytranspose) SETERRQ(1,"No applytranspose() routine provided to Shell PC");
+  if (!shell->applytranspose) SETERRQ(PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
   ierr  = (*shell->applytranspose)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -435,7 +435,7 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Not shell preconditioner, cannot get name");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not shell preconditioner, cannot get name");
   }
   PetscFunctionReturn(0);
 }

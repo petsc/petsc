@@ -346,7 +346,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -813,7 +813,7 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp,int max_k)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (max_k < 1) SETERRQ(1,"Restart must be positive");
+  if (max_k < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupcalled) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

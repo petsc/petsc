@@ -22,10 +22,6 @@ EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 EXTERN PetscErrorCode MatCreate_Dense(Mat);
 EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
 EXTERN PetscErrorCode MatCreate_Shell(Mat);
-#if defined(__cplusplus)
-EXTERN PetscErrorCode MatCreate_ESI(Mat);
-EXTERN PetscErrorCode MatCreate_PetscESI(Mat);
-#endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode MatCreate_SeqAIJSpooles(Mat);
 EXTERN PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat);
@@ -119,10 +115,6 @@ PetscErrorCode MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATDENSE,     path,"MatCreate_Dense",     MatCreate_Dense);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = MatRegisterDynamic(MATESI,       path,"MatCreate_ESI",    MatCreate_ESI);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATPETSCESI,  path,"MatCreate_PetscESI",    MatCreate_PetscESI);CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
   ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJSpooles",  MatCreate_SeqAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJSpooles",MatCreate_SeqSBAIJSpooles);CHKERRQ(ierr);

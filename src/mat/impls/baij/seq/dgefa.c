@@ -15,9 +15,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "LINPACKdgefa"
-PetscErrorCode LINPACKdgefa(MatScalar *a,int n,int *ipvt)
+PetscErrorCode LINPACKdgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
 {
-    int        i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;
+    PetscInt   i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;
     MatScalar  t,*ax,*ay,*aa;
     MatReal    tmp,max;
 

@@ -505,7 +505,7 @@ int KSPView_BCGSL(KSP ksp, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf( viewer, "  BCGSL: Ell = %d\n", bcgsl->ell);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf( viewer, "  BCGSL: Delta = %lg\n", bcgsl->delta);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1, "Viewer type %s not supported for KSP BCGSL", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for KSP BCGSL", ((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

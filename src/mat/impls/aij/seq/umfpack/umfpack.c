@@ -104,7 +104,7 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
   umfpack_di_report_info(lu->Control, lu->Info); 
   if (status < 0){
     umfpack_di_report_status(lu->Control, status);
-    SETERRQ(1,"umfpack_di_wsolve failed");
+    SETERRQ(PETSC_ERR_LIB,"umfpack_di_wsolve failed");
   }
     
   ierr = VecRestoreArray(b,&ba);
@@ -129,7 +129,7 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,Mat *F)
       umfpack_di_free_numeric(&lu->Numeric);
   }
   status = umfpack_di_numeric (ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
-  if (status < 0) SETERRQ(1,"umfpack_di_numeric failed");
+  if (status < 0) SETERRQ(PETSC_ERR_LIB,"umfpack_di_numeric failed");
   /* report numeric factorization of A' when Control[PRL] > 3 */
   (void) umfpack_di_report_numeric (lu->Numeric, lu->Control);
 
@@ -243,7 +243,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   if (status < 0){
     umfpack_di_report_info(lu->Control, lu->Info);
     umfpack_di_report_status(lu->Control, status);
-    SETERRQ(1,"umfpack_di_symbolic failed");
+    SETERRQ(PETSC_ERR_LIB,"umfpack_di_symbolic failed");
   }
   /* report sumbolic factorization of A' when Control[PRL] > 3 */
   (void) umfpack_di_report_symbolic(lu->Symbolic, lu->Control);

@@ -32,7 +32,7 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
   PetscScalar    *coors;
 
   PetscFunctionBegin;
-  if (xmax <= xmin) SETERRQ2(1,"xmax must be larger than xmin %g %g",xmin,xmax);
+  if (xmax <= xmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",xmin,xmax);
 
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (ymax <= ymin) SETERRQ2(1,"ymax must be larger than ymin %g %g",ymin,ymax);
+    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",ymin,ymax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,2);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
@@ -64,8 +64,8 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (ymax <= ymin) SETERRQ2(1,"ymax must be larger than ymin %g %g",ymin,ymax);
-    if (zmax <= zmin) SETERRQ2(1,"zmax must be larger than zmin %g %g",zmin,zmax);
+    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",ymin,ymax);
+    if (zmax <= zmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",zmin,zmax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,3*isize*jsize*ksize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,3);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
@@ -87,7 +87,7 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Cannot create uniform coordinates for this dimension %d\n",dim);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %d\n",dim);
   }
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   PetscLogObjectParent(da,xcoor);
@@ -118,7 +118,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-draw_vec_mark_points",&showpoints);CHKERRQ(ierr);
 

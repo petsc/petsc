@@ -151,6 +151,10 @@ ex28: ex28.o  chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_KSP_LIB}
 	${RM} ex28.o
 
+ex29: ex29.o  chkopts
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
+	${RM} ex29.o
+
 ex31: ex31.o  chkopts
 	-${CLINKER} -o $@ $<  ${PETSC_KSP_LIB}
 	${RM} $<
@@ -495,6 +499,18 @@ runex26:
 	   else echo "Possible problem with ex26_1, diffs above"; fi; \
 	   ${RM} -f ex26_1.tmp
 
+runex29:
+	-@${MPIRUN} -np 1 ex29 -ksp_smonitor  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
+	   else echo "Possible problem with ex29_1, diffs above"; fi; \
+	   ${RM} -f ex29_1.tmp
+
+runex29_2:
+	-@${MPIRUN} -np 1 ex29 -ksp_smonitor  -bc_type neumann -dmmg_nlevels 9 > ex29_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
+	   else echo "Possible problem with ex29_2, diffs above"; fi; \
+	   ${RM} -f ex29_2.tmp
+
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
@@ -502,7 +518,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
-                   ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm
+                   ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
+                   ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \

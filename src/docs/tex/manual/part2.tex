@@ -6524,14 +6524,14 @@ libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 \trl{BOPT=[g_complex,O_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file \trl{${PETSC_DIR}/docs/installation/index.htm}
+and profiling versions, respectively.  The file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}
 provides detailed instructions for installing PETSc.
 
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
 norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file \trl{${PETSC_DIR}/docs/installation/index.htm} for
+Numbers'' section of the file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html} for
 details on building these kernels.  This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node

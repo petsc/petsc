@@ -2954,13 +2954,13 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
   for (ii=0; ii<m; ii++) {
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
 #if defined(PETSC_USE_BOPT_g)
-    if (i[ii+1] - i[ii] < 0) SETERRQ2(1,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
 #endif    
   }
 #if defined(PETSC_USE_BOPT_g)
   for (ii=0; ii<aij->i[m]; ii++) {
-    if (j[ii] < 0) SETERRQ2(1,"Negative column index at location = %d index = %d",ii,j[ii]);
-    if (j[ii] > n - 1) SETERRQ2(1,"Column index to large at location = %d index = %d",ii,j[ii]);
+    if (j[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
+    if (j[ii] > n - 1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);
   }
 #endif    
 
@@ -3017,7 +3017,7 @@ PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
   ISColoringValue *color;
 
   PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+  if (!a->coloring) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
   nlen  = PetscADGetDerivTypeSize()/sizeof(PetscScalar);
   color = a->coloring->colors;
   /* loop over rows */
@@ -3039,7 +3039,7 @@ PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"PETSc installed without ADIC");
+  SETERRQ(PETSC_ERR_SUP_SYS,"PETSc installed without ADIC");
 }
 
 #endif
@@ -3054,7 +3054,7 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
   ISColoringValue *color;
 
   PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+  if (!a->coloring) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
   color = a->coloring->colors;
   /* loop over rows */
   for (i=0; i<m; i++) {

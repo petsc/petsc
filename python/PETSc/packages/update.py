@@ -69,7 +69,10 @@ class Configure(config.base.Configure):
 ##    self.host_os     = results['host_os']
 
     if not self.framework.argDB.has_key('PETSC_ARCH'):
-      arch = self.host_os
+      if 'PETSC_ARCH' in os.environ:
+        arch = os.environ['PETSC_ARCH']
+      else:
+        arch = self.host_os
     else:
       arch = self.framework.argDB['PETSC_ARCH']
     archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', arch)

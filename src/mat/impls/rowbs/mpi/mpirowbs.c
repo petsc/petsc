@@ -635,7 +635,7 @@ PetscErrorCode MatView_MPIRowbs(Mat mat,PetscViewer viewer)
   } else if (isbinary) {
     ierr = MatView_MPIRowbs_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by MPIRowbs matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIRowbs matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -2065,7 +2065,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
   PetscTruth   idn;
   PetscFunctionBegin;
 
-  if (info->levels != 0) SETERRQ(1,"Blocksolve ILU only supports 0 fill");
+  if (info->levels) SETERRQ(PETSC_ERR_SUP,"Blocksolve ILU only supports 0 fill");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity row permutation supported");
@@ -3199,7 +3199,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
     ierr   = MPI_Scan(&nlocal,&cend,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     cstart = cend - nlocal;
     if (rank == size - 1 && cend != ncol) {
-      SETERRQ(1,"Local column sizes do not add up to total number of columns");
+      SETERRQ(PETSC_ERR_ARG_SIZ,"Local column sizes do not add up to total number of columns");
     }
 
     ierr  = PetscMalloc((2*nrow+1)*sizeof(int),&d_nz);CHKERRQ(ierr);

@@ -5,9 +5,8 @@ set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev-2
 set TAO_LOC=/sandbox/petsc/tao-devel-2
 set CONF=solaris-gnu
-
-if ($day == Sun || $day == Wed || $day == Sat) then
+if ($day == Sun || $day == Wed) then
   set CONF=solaris-uni
 else if ($day == Thu || $day == Fri) then
-  set CONF=solaris-64
+  set CONF=solaris2.9-lam
 endif

@@ -609,12 +609,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[j],A->m-1);
+        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
 #endif
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[i],A->n-1);
+          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
@@ -623,12 +623,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[j],A->m-1);
+        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
 #endif
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[i],A->n-1);
+          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }

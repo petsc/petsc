@@ -29,8 +29,8 @@ typedef struct {
 static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
-  PetscErrorCode ierr;
-  int *locals,size,rank;
+  PetscErrorCode           ierr;
+  int                      *locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
   int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
   Mat                      mat = part->adj,newmat;
@@ -52,7 +52,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   adjncy  = adj->j;
   ierr    = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
-    SETERRQ(1,"Does not support any processor with no entries");
+    SETERRQ(PETSC_ERR_LIB,"Does not support any processor with no entries");
   }
 #if defined(PETSC_USE_BOPT_g)
   /* check that matrix has no diagonal entries */
@@ -61,7 +61,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(1,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
     }
   }
@@ -124,7 +124,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

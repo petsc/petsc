@@ -8,118 +8,6 @@
 #include "src/inline/dot.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");  
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_1"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_2"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_3"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_4"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_5"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_6"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_7"
-PetscErrorCode MatSolveTranspose_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N"
 PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 {
@@ -1455,7 +1343,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
           m  = qm; qm = q[m];
         } while(qm < vj);
         if (qm == vj) {
-          SETERRQ(1," error: duplicate entry in A\n"); 
+          SETERRQ(PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
         }     
         nzk++;
         q[m]  = vj;
@@ -1648,7 +1536,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
           m  = qm; qm = q[m];
         } while(qm < vj);
         if (qm == vj) {
-          SETERRQ(1," error: duplicate entry in A\n"); 
+          SETERRQ(PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
         }     
         nzk++;
         q[m]       = vj;
@@ -1787,42 +1675,50 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       case 1:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solves                = MatSolves_SeqSBAIJ_1;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n");
         break;
       case 2:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_2_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_2_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
         break;
       case 3:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_3_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_3_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
         break; 
       case 4:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_4_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_4_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
         break;
       case 5:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_5_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_5_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
         break;
       case 6: 
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_6_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_6_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
         break; 
       case 7:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_7_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_7_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
       break; 
       default:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_N_NaturalOrdering;
+        (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_N_NaturalOrdering;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
       break; 
     }

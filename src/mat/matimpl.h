@@ -202,7 +202,6 @@ struct _p_Mat {
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
   void                   *spptr;          /* pointer for special library like SuperLU */
-  void                   *esimat;
 };
 
 #define MatPreallocated(A) {PetscInt _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}

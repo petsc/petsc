@@ -77,15 +77,13 @@ EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern PetscCookie DA_COOKIE;
+extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
-extern PetscEvent DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
-
-EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
-EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
-EXTERN PetscErrorCode   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
+EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,DA *);
+EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,DA *);
+EXTERN PetscErrorCode   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
 EXTERN PetscErrorCode   DADestroy(DA);
 EXTERN PetscErrorCode   DAView(DA,PetscViewer);
-
 EXTERN PetscErrorCode   DAPrintHelp(DA);
 
 EXTERN PetscErrorCode   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
@@ -99,7 +97,7 @@ EXTERN PetscErrorCode   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode   DALocalToGlobal(DA,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode   DALocalToGlobalBegin(DA,Vec,Vec);
 EXTERN PetscErrorCode   DALocalToGlobalEnd(DA,Vec,Vec);
-EXTERN PetscErrorCode   DAGetOwnershipRange(DA,int **,int **,int **);
+EXTERN PetscErrorCode   DAGetOwnershipRange(DA,PetscInt **,PetscInt **,PetscInt **);
 EXTERN PetscErrorCode   DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode   DACreateNaturalVector(DA,Vec *);
 EXTERN PetscErrorCode   DACreateLocalVector(DA,Vec *);
@@ -107,17 +105,17 @@ EXTERN PetscErrorCode   DAGetLocalVector(DA,Vec *);
 EXTERN PetscErrorCode   DARestoreLocalVector(DA,Vec *);
 EXTERN PetscErrorCode   DAGetGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode   DARestoreGlobalVector(DA,Vec *);
-EXTERN PetscErrorCode   DALoad(PetscViewer,int,int,int,DA *);
-EXTERN PetscErrorCode   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
-EXTERN PetscErrorCode   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
-EXTERN PetscErrorCode   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
-EXTERN PetscErrorCode   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
+EXTERN PetscErrorCode   DALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DA *);
+EXTERN PetscErrorCode   DAGetCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode   DAGetGhostCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode   DAGetInfo(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DAPeriodicType*,DAStencilType*);
+EXTERN PetscErrorCode   DAGetProcessorSubset(DA,DADirection,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode   DARefine(DA,MPI_Comm,DA*);
 
 EXTERN PetscErrorCode   DAGlobalToNaturalAllCreate(DA,VecScatter*);
 EXTERN PetscErrorCode   DANaturalAllToGlobalCreate(DA,VecScatter*);
 
-EXTERN PetscErrorCode   DAGetGlobalIndices(DA,int*,int**);
+EXTERN PetscErrorCode   DAGetGlobalIndices(DA,PetscInt*,PetscInt**);
 EXTERN PetscErrorCode   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
 EXTERN PetscErrorCode   DAGetISLocalToGlobalMappingBlck(DA,ISLocalToGlobalMapping*);
 
@@ -129,13 +127,13 @@ EXTERN PetscErrorCode   DAGetCoordinates(DA,Vec *);
 EXTERN PetscErrorCode   DAGetGhostedCoordinates(DA,Vec *);
 EXTERN PetscErrorCode   DAGetCoordinateDA(DA,DA *);
 EXTERN PetscErrorCode   DASetUniformCoordinates(DA,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode   DASetFieldName(DA,int,const char[]);
-EXTERN PetscErrorCode   DAGetFieldName(DA,int,char **);
+EXTERN PetscErrorCode   DASetFieldName(DA,PetscInt,const char[]);
+EXTERN PetscErrorCode   DAGetFieldName(DA,PetscInt,char **);
 
 EXTERN PetscErrorCode   DAVecGetArray(DA,Vec,void *);
 EXTERN PetscErrorCode   DAVecRestoreArray(DA,Vec,void *);
 
-EXTERN PetscErrorCode   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
+EXTERN PetscErrorCode   DASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
 /*S
      SDA - This provides a simplified interface to the DA distributed
@@ -157,14 +155,14 @@ EXTERN PetscErrorCode   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 S*/
 typedef struct _SDA* SDA;
 
-EXTERN PetscErrorCode   SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
-EXTERN PetscErrorCode   SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int *,int *,SDA *);
-EXTERN PetscErrorCode   SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
+EXTERN PetscErrorCode   SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,SDA*);
+EXTERN PetscErrorCode   SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,SDA*);
+EXTERN PetscErrorCode   SDACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,SDA*);
 EXTERN PetscErrorCode   SDADestroy(SDA);
 EXTERN PetscErrorCode   SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
 EXTERN PetscErrorCode   SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);
-EXTERN PetscErrorCode   SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
-EXTERN PetscErrorCode   SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode   SDAGetCorners(SDA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode   SDAGetGhostCorners(SDA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode   MatRegisterDAAD(void);
 EXTERN PetscErrorCode   MatCreateDAAD(DA,Mat*);
@@ -180,14 +178,14 @@ EXTERN PetscErrorCode   MatCreateDAAD(DA,Mat*);
 .seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAGetLocalInfo(), DAGetInfo()
 S*/
 typedef struct {
-  int            dim,dof,sw;
+  PetscInt       dim,dof,sw;
   DAPeriodicType pt;
   DAStencilType  st;
-  int            mx,my,mz;    /* global number of grid points in each direction */
-  int            xs,ys,zs;    /* starting point of this processor, excluding ghosts */
-  int            xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
-  int            gxs,gys,gzs;    /* starting point of this processor including ghosts */
-  int            gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
+  PetscInt       mx,my,mz;    /* global number of grid points in each direction */
+  PetscInt       xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
+  PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
+  PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
+  PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
   DA             da;
 } DALocalInfo;
 
@@ -202,7 +200,7 @@ typedef struct {
 .seealso: DAForEachPointEnd2d(), DAVecGetArray()
 M*/
 #define DAForEachPointBegin2d(info,i,j) {\
-  int _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
+  PetscInt _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
   for (j=_yints; j<_yinte; j++) {\
     for (i=_xints; i<_xinte; i++) {\
 
@@ -274,11 +272,10 @@ typedef struct {PetscScalar x,y;} DACoor2d;
 M*/
 typedef struct {PetscScalar x,y,z;} DACoor3d;
     
-
 EXTERN PetscErrorCode DAGetLocalInfo(DA,DALocalInfo*);
 typedef PetscErrorCode (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN PetscErrorCode DAFormFunction1(DA,Vec,Vec,void*);
-EXTERN PetscErrorCode DAFormFunctioni1(DA,int,Vec,PetscScalar*,void*);
+EXTERN PetscErrorCode DAFormFunctioni1(DA,PetscInt,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
@@ -336,21 +333,20 @@ EXTERN PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA,PetscErrorCode (*)(DA
 #endif
 EXTERN PetscErrorCode DAFormFunctioniTest1(DA,void*);
 
-
 #include "petscmat.h"
 EXTERN PetscErrorCode DAGetColoring(DA,ISColoringType,ISColoring *);
 EXTERN PetscErrorCode DAGetMatrix(DA,const MatType,Mat *);
 EXTERN PetscErrorCode DASetGetMatrix(DA,PetscErrorCode (*)(DA,const MatType,Mat *));
 EXTERN PetscErrorCode DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN PetscErrorCode DAGetInjection(DA,DA,VecScatter*);
-EXTERN PetscErrorCode DASetBlockFills(DA,int*,int*);
-EXTERN PetscErrorCode DASetRefinementFactor(DA,int,int,int);
-EXTERN PetscErrorCode DAGetRefinementFactor(DA,int*,int*,int*);
+EXTERN PetscErrorCode DASetBlockFills(DA,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode DASetRefinementFactor(DA,PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode DAGetRefinementFactor(DA,PetscInt*,PetscInt*,PetscInt*);
 
-EXTERN PetscErrorCode DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
-EXTERN PetscErrorCode DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
-EXTERN PetscErrorCode DAGetAdicMFArray(DA,PetscTruth,void**,void**,int*);
-EXTERN PetscErrorCode DARestoreAdicMFArray(DA,PetscTruth,void**,void**,int*);
+EXTERN PetscErrorCode DAGetAdicArray(DA,PetscTruth,void**,void**,PetscInt*);
+EXTERN PetscErrorCode DARestoreAdicArray(DA,PetscTruth,void**,void**,PetscInt*);
+EXTERN PetscErrorCode DAGetAdicMFArray(DA,PetscTruth,void**,void**,PetscInt*);
+EXTERN PetscErrorCode DARestoreAdicMFArray(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode DAGetArray(DA,PetscTruth,void**);
 EXTERN PetscErrorCode DARestoreArray(DA,PetscTruth,void**);
 EXTERN PetscErrorCode ad_DAGetArray(DA,PetscTruth,void**);
@@ -377,7 +373,7 @@ typedef struct _p_VecPack *VecPack;
 
 EXTERN PetscErrorCode VecPackCreate(MPI_Comm,VecPack*);
 EXTERN PetscErrorCode VecPackDestroy(VecPack);
-EXTERN PetscErrorCode VecPackAddArray(VecPack,int);
+EXTERN PetscErrorCode VecPackAddArray(VecPack,PetscInt);
 EXTERN PetscErrorCode VecPackAddDA(VecPack,DA);
 EXTERN PetscErrorCode VecPackAddVecScatter(VecPack,VecScatter);
 EXTERN PetscErrorCode VecPackScatter(VecPack,Vec,...);
@@ -391,7 +387,6 @@ EXTERN PetscErrorCode VecPackCreateGlobalVector(VecPack,Vec*);
 EXTERN PetscErrorCode VecPackGetGlobalIndices(VecPack,...);
 EXTERN PetscErrorCode VecPackRefine(VecPack,MPI_Comm,VecPack*);
 EXTERN PetscErrorCode VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
-
 
 #include "petscsnes.h"
 
@@ -431,7 +426,7 @@ typedef struct NLF_DAAD* NLF;
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate()
+.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES()
 S*/
 typedef struct _p_DMMG *DMMG;
 struct _p_DMMG {
@@ -439,9 +434,9 @@ struct _p_DMMG {
   Vec            x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
   Mat            J;                    /* matrix on this level */
   Mat            R;                    /* restriction to next coarser level (not defined on level 0) */
-  int            nlevels;              /* number of levels above this one (total number of levels on level 0)*/
+  PetscInt       nlevels;              /* number of levels above this one (total number of levels on level 0)*/
   MPI_Comm       comm;
-  PetscErrorCode (*solve)(DMMG*,int);
+  PetscErrorCode (*solve)(DMMG*,PetscInt);
   void           *user;         
   PetscTruth     galerkin;                  /* for A_c = R*A*R^T */
 
@@ -457,7 +452,7 @@ struct _p_DMMG {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);  
 
   PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
-  int            updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
+  PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  
@@ -469,12 +464,12 @@ struct _p_DMMG {
   NLF            nlf;                   /* FAS smoother object */
   VecScatter     inject;                /* inject from this level to the next coarsest */
   PetscTruth     monitor,monitorall;
-  int            presmooth,postsmooth,coarsesmooth;
+  PetscInt       presmooth,postsmooth,coarsesmooth;
   PetscReal      rtol,atol,rrtol;       /* convergence tolerance */   
   
 };
 
-EXTERN PetscErrorCode DMMGCreate(MPI_Comm,int,void*,DMMG**);
+EXTERN PetscErrorCode DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
 EXTERN PetscErrorCode DMMGDestroy(DMMG*);
 EXTERN PetscErrorCode DMMGSetUp(DMMG*);
 EXTERN PetscErrorCode DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
@@ -484,8 +479,9 @@ EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
 EXTERN PetscErrorCode DMMGSolve(DMMG*);
 EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
 EXTERN PetscErrorCode DMMGSetDM(DMMG*,DM);
-EXTERN PetscErrorCode DMMGSetUpLevel(DMMG*,KSP,int);
+EXTERN PetscErrorCode DMMGSetUpLevel(DMMG*,KSP,PetscInt);
 EXTERN PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG*);
+EXTERN PetscErrorCode DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
 
 EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
@@ -502,7 +498,27 @@ EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalI
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
+/*MC
+   DMMGGetb - Returns the right hand side vector from a DMMG solve on the finest grid
+
+   Synopsis:
+   Vec DMMGGetb(DMMG *dmmg)
+
+   Not Collective, but resulting vector is parallel
+
+   Input Parameters:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Fortran Usage:
+.     DMMGGetb(DMMG dmmg,Vec b,PetscErrorCode ierr)
+
+.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal(), DMMGGetb()
+
+M*/
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
+
 #define DMMGGetr(ctx)              (ctx)[(ctx)[0]->nlevels-1]->r
 
 /*MC
@@ -526,20 +542,167 @@ EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalI
 M*/
 #define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
 
+/*MC
+   DMMGGetJ - Returns the Jacobian (matrix) for the finest level
+
+   Synopsis:
+   Mat DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB()
+
+M*/
 #define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J
+
+/*MC
+   DMMGGetComm - Returns the MPI_Comm for the finest level
+
+   Synopsis:
+   MPI_Comm DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetComm(ctx)           (ctx)[(ctx)[0]->nlevels-1]->comm
+
+/*MC
+   DMMGGetB - Returns the matrix for the finest level used to construct the preconditioner; usually 
+              the same as the Jacobian
+
+   Synopsis:
+   Mat DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
+
+/*MC
+   DMMGGetFine - Returns the DMMG associated with the finest level
+
+   Synopsis:
+   DMMG DMMGGetFine(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
+
+
+/*MC
+   DMMGGetKSP - Gets the KSP object (linear solver object) for the finest level
+
+   Synopsis:
+   KSP DMMGGetKSP(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: If this is a linear problem (i.e. DMMGSetKSP() was used) then this is the 
+     master linear solver. If this is a nonlinear problem (i.e. DMMGSetSNES() was used) this
+     returns the KSP (linear solver) that is associated with the SNES (nonlinear solver)
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetSNES()
+
+M*/
 #define DMMGGetKSP(ctx)            (ctx)[(ctx)[0]->nlevels-1]->ksp
+
+/*MC
+   DMMGGetSNES - Gets the SNES object (nonlinear solver) for the finest level
+
+   Synopsis:
+   SNES DMMGGetSNES(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: If this is a linear problem (i.e. DMMGSetKSP() was used) then this returns PETSC_NULL
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP()
+
+M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
+
+/*MC
+   DMMGGetDA - Gets the DA object on the finest level
+
+   Synopsis:
+   DA DMMGGetDA(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: Use only if the DMMG was created with a DA, not a VecPack
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetVecPack()
+
+M*/
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
+
+/*MC
+   DMMGGetVecPack - Gets the VecPack object on the finest level
+
+   Synopsis:
+   VecPack DMMGGetVecPack(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: Use only if the DMMG was created with a DA, not a VecPack
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDA()
+
+M*/
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
    DMMGGetUser - Returns the user context for a particular level
 
    Synopsis:
-   void* DMMGGetUser(DMMG *dmmg,int level)
+   void* DMMGGetUser(DMMG *dmmg,PetscInt level)
 
    Not Collective
 
@@ -558,7 +721,7 @@ M*/
    DMMGSetUser - Sets the user context for a particular level
 
    Synopsis:
-   PetscErrorCode DMMGSetUser(DMMG *dmmg,int level,void *ctx)
+   PetscErrorCode DMMGSetUser(DMMG *dmmg,PetscInt level,void *ctx)
 
    Not Collective
 
@@ -577,6 +740,22 @@ M*/
 M*/
 #define DMMGSetUser(ctx,level,usr) ((ctx)[level]->user = usr,0)
 
+/*MC
+   DMMGGetLevels - Gets the number of levels in a DMMG object
+
+   Synopsis:
+   PetscInt DMMGGetLevels(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGGetUser()
+
+M*/
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
 PETSC_EXTERN_CXX_END

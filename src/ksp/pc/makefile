@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = pcimpl.h ../../../include/petscpc.h
-DIRS     = interface impls examples esi
+DIRS     = interface impls examples
 LOCDIR   = src/ksp/pc/
 MANSEC   = PC
 

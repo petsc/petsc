@@ -62,7 +62,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newma
     }
     bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
   }
-  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(1,"bi[mbs]: %d != 2*a->nz-mbs: %d\n",bi[mbs],2*a->nz - mbs);
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_ERR_PLIB,"bi[mbs]: %d != 2*a->nz-mbs: %d\n",bi[mbs],2*a->nz - mbs);
 
   /* set b->j and b->a */
   aj = a->j; av = a->a;
@@ -218,7 +218,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newm
     bi[i+1]       = bi[i] + browlengths[i]; 
     browstart[i]  = bi[i];
   }
-  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(1,"bi[mbs]: %d != 2*a->nz - mbs: %d\n",bi[mbs],2*a->nz - mbs);
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_ERR_PLIB,"bi[mbs]: %d != 2*a->nz - mbs: %d\n",bi[mbs],2*a->nz - mbs);
   
   /* set b->j and b->a */
   aj = a->j; av = a->a;

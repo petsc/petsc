@@ -179,11 +179,11 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
   }
   if (lu->StatPrint) {
@@ -365,11 +365,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
   }
 
@@ -440,7 +440,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
-    if (size != lu->nprow * lu->npcol) SETERRQ(1,"Number of processes should be equal to nprow*npcol");
+    if (size != lu->nprow * lu->npcol) SETERRQ(PETSC_ERR_ARG_SIZ,"Number of processes should be equal to nprow*npcol");
   
     ierr = PetscOptionsInt("-mat_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
@@ -557,7 +557,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   } else if (options.ColPerm == COLAMD) {
     colperm = "COLAMD";
   } else {
-    SETERRQ(1,"Unknown column permutation");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation %s \n",colperm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

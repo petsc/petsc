@@ -23,6 +23,7 @@ class Configure(config.base.Configure):
       if dir.startswith('sowing') and os.path.isdir(os.path.join(packages, dir)):
         sowingDir = dir
     if sowingDir is None:
+      self.framework.log.write('Could not locate a downloading Sowing\n')
       raise RuntimeError('Error locating Sowing directory')
     return os.path.join(packages, sowingDir)
 
@@ -34,6 +35,7 @@ class Configure(config.base.Configure):
       import urllib
 
       packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      self.framework.log.write('Need to actually ftp Sowing\n')
       try:
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', os.path.join(packages, 'sowing.tar.gz'))
       except Exception, e:

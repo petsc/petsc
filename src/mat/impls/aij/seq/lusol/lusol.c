@@ -364,14 +364,14 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A, Mat *F)
 
         case 1:
         case -1:		/* singular */
-          SETERRQ(1,"Singular matrix"); 
+          SETERRQ(PETSC_ERR_LIB,"Singular matrix"); 
 
         case 3:
         case 4:		/* error conditions */
-          SETERRQ(1,"matrix error"); 
+          SETERRQ(PETSC_ERR_LIB,"matrix error"); 
 
         default:		/* unknown condition */
-          SETERRQ(1,"matrix unknown return code"); 
+          SETERRQ(PETSC_ERR_LIB,"matrix unknown return code"); 
         }
 
       factorizations++;

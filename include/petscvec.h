@@ -95,8 +95,6 @@ E*/
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
-#define VECESI         "esi"
-#define VECPETSCESI    "petscesi"
 #define VecType char*
 
 /* Logging support */
@@ -466,9 +464,6 @@ EXTERN PetscErrorCode VecConjugate(Vec);
 
 EXTERN PetscErrorCode VecScatterCreateToAll(Vec,VecScatter*,Vec*);
 EXTERN PetscErrorCode VecScatterCreateToZero(Vec,VecScatter*,Vec*);
-
-EXTERN PetscErrorCode VecESISetType(Vec,const char*);
-EXTERN PetscErrorCode VecESISetFromOptions(Vec);
 
 EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
 EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);

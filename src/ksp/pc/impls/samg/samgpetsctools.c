@@ -407,7 +407,7 @@ PetscErrorCode MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
 
    /*..Check input..*/ 
    if ( (cols1 != rows1) || (cols2 != rows2) ){
-      SETERRQ(1,"Error in MatMatMult: cols1 <> rows1 or cols1 <> rows1"); 
+      SETERRQ(PETSC_ERR_ARG_SIZ,"Error in MatMatMult: cols1 <> rows1 or cols1 <> rows1"); 
    }
 
    /*..Create difference of 2 SeqAIJ matrices..*/ 

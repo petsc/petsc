@@ -337,7 +337,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
       lu->frontETree = orderViaND(graph, lu->options.maxdomainsize, 
                      lu->options.seed + rank,lu->options.msglvl,lu->options.msgFile); break;
     default:
-      SETERRQ(1,"Unknown Spooles's ordering");
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown Spooles's ordering");
     }
 
     Graph_free(graph);
@@ -481,7 +481,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
   lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 2;
   /* if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n firsttag: %d, nfront: %d\n",lu->firsttag, lu->frontETree->nfront);*/
   if ( lasttag > tagbound ) {
-      SETERRQ3(1,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
+      SETERRQ3(PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
                lu->firsttag, lasttag, tagbound); 
   }
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
@@ -518,13 +518,13 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
       PatchAndGoInfo_free(lu->frontmtx->patchinfo);
     }
   }
-  if ( sierr >= 0 ) SETERRQ2(1,"\n proc %d : factorization error at front %d", rank, sierr);
+  if ( sierr >= 0 ) SETERRQ2(PETSC_ERR_LIB,"\n proc %d : factorization error at front %d", rank, sierr);
  
   /*  post-process the factorization and split 
       the factor matrices into submatrices */
   lasttag  = lu->firsttag + 5*size;
   if ( lasttag > tagbound ) {
-      SETERRQ3(1,"fatal error in FrontMtx_MPI_postProcess(), tag range is [%d,%d], tag_bound = %d",\
+      SETERRQ3(PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_postProcess(), tag range is [%d,%d], tag_bound = %d",\
                lu->firsttag, lasttag, tagbound); 
   }
   FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,

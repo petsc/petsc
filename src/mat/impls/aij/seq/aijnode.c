@@ -81,7 +81,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,PetscInt *iia[],P
   nslim_row = a->inode.node_count;
   m         = A->m;
   n         = A->n;
-  if (m != n) SETERRQ(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
+  if (m != n) SETERRQ(PETSC_ERR_SUP,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
@@ -1259,7 +1259,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   node_max = a->inode.node_count; 
   ns       = a->inode.size ;
   if (!ns){                   
-    SETERRQ(1,"Matrix without inode information");
+    SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
   }
 
   /* If max inode size > 3, split it into two inodes.*/

@@ -385,7 +385,7 @@ PetscErrorCode RamgShellPCApply(void *ctx, Vec r, Vec z)
        (*PetscErrorPrintf)("NDA provided %d\n",nda);
      }
 
-     SETERRQ1(1,"Error from RAMG solve, number %d",ierr);
+     SETERRQ1(PETSC_ERR_LIB,"Error from RAMG solve, number %d",ierr);
    }
 
    /*..Create auxilary vector..*/ 

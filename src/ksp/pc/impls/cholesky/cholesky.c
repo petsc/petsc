@@ -122,7 +122,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -134,7 +134,7 @@ static PetscErrorCode PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  if (!dir->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }

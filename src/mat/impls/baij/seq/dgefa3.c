@@ -16,8 +16,8 @@
 #define __FUNCT__ "Kernel_A_gets_inverse_A_3"
 PetscErrorCode Kernel_A_gets_inverse_A_3(MatScalar *a)
 {
-    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[3],kb,k3;
-    int        k4,j3;
+    PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[3],kb,k3;
+    PetscInt   k4,j3;
     MatScalar  *aa,*ax,*ay,work[9],stmp;
     MatReal    tmp,max;
 

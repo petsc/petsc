@@ -48,7 +48,7 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -231,8 +231,8 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int 
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  if (ia && a->i != *ia) SETERRQ(1,"ia passed back is not one obtained with MatGetRowIJ()");
-  if (ja && a->j != *ja) SETERRQ(1,"ja passed back is not one obtained with MatGetRowIJ()");
+  if (ia && a->i != *ia) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
+  if (ja && a->j != *ja) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {
@@ -357,15 +357,15 @@ PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
 #if defined(PETSC_USE_BOPT_g)
-  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
+  if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %d\n",i[0]);
   for (ii=1; ii<B->m; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(1,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
+      SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[B->m]; ii++) {
     if (j[ii] < 0 || j[ii] >= B->N) {
-      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index %d out of range %d\n",ii,j[ii]);
     }
   } 
 #endif
