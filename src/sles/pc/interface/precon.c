@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.175 1999/06/30 22:51:03 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.176 1999/07/03 14:06:02 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -67,6 +67,9 @@ int PCDestroy(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (--pc->refct > 0) PetscFunctionReturn(0);
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(pc);CHKERRQ(ierr);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->nullsp) {ierr = PCNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}

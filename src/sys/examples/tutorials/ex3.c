@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.27 1999/05/04 20:29:57 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1999/05/12 03:27:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
     icount = 0;
     for (i=0; i<imax; i++) icount++;
     PLogFlops(imax);
-    PetscSleep(1);
+    ierr = PetscSleep(1);CHKERRA(ierr);
   PLogEventEnd(USER_EVENT,0,0,0,0);
 
   /* 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = PLogEventMPEDeactivate(USER_EVENT);CHKERRA(ierr);
   ierr = PLogEventDeactivate(USER_EVENT);CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
-  PetscSleep(1);
+  ierr = PetscSleep(1);CHKERRA(ierr);
   PLogEventEnd(USER_EVENT,0,0,0,0);
 
   /* 
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   ierr = PLogEventMPEActivate(USER_EVENT);CHKERRA(ierr);
   ierr = PLogEventActivate(USER_EVENT);CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
-  PetscSleep(1);
+  ierr = PetscSleep(1);CHKERRA(ierr);
   PLogEventEnd(USER_EVENT,0,0,0,0);
 
   PetscFinalize();

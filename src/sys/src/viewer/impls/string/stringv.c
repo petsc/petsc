@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.32 1999/05/12 03:26:19 bsmith Exp balay $";
+static char vcid[] = "$Id: stringv.c,v 1.33 1999/06/30 23:48:55 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -18,7 +18,7 @@ typedef struct  {
 static int ViewerDestroy_String(Viewer viewer)
 {
   Viewer_String *vstr = (Viewer_String *)viewer->data;
-  int ierr;
+  int           ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(vstr);CHKERRQ(ierr);
@@ -118,16 +118,13 @@ EXTERN_C_BEGIN
 int ViewerCreate_String(Viewer v)
 {
   Viewer_String *vstr;
-  int           ierr;
 
   PetscFunctionBegin;
   v->ops->destroy = ViewerDestroy_String;
   v->ops->view    = 0;
   v->ops->flush   = 0;
-  vstr            = PetscNew(Viewer_String);
+  vstr            = PetscNew(Viewer_String);CHKPTRQ(vstr);
   v->data         = (void *) vstr;
-  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(STRING_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  ierr = PetscStrcpy(v->type_name,STRING_VIEWER);CHKERRQ(ierr);
   vstr->string    = 0;
   PetscFunctionReturn(0);
 }

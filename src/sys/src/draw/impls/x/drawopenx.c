@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.6 1999/05/04 20:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.7 1999/05/12 03:26:40 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -60,21 +60,16 @@ static char vcid[] = "$Id: drawopenx.c,v 1.6 1999/05/04 20:28:34 balay Exp bsmit
 @*/
 int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* inctx)
 {
-  int  flg,ierr;
+  int  ierr;
 
   PetscFunctionBegin;
   ierr = DrawCreate(comm,display,title,x,y,w,h,inctx);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
-  } else {
 #if !defined(PETSC_HAVE_X11)
-    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
-    ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
+  (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
+  ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
 #else
-    ierr = DrawSetType(*inctx,DRAW_X);CHKERRQ(ierr);
+  ierr = DrawSetType(*inctx,DRAW_X);CHKERRQ(ierr);
 #endif
-  }
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.9 1999/05/04 20:30:38 balay Exp balay $";
+static char vcid[] = "$Id: vnake.c,v 1.10 1999/06/08 22:55:09 balay Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -98,9 +98,9 @@ int VecSetFromOptions(Vec vec)
   if (!vec->type_name) {
     ierr = MPI_Comm_size(vec->comm,&size);CHKERRQ(ierr);
     if (size > 1) {
-      ierr = VecSetType(vec,"PETSc#VecMPI");CHKERRQ(ierr);
+      ierr = VecSetType(vec,VEC_MPI);CHKERRQ(ierr);
     } else {
-      ierr = VecSetType(vec,"PETSc#VecSeq");CHKERRQ(ierr);
+      ierr = VecSetType(vec,VEC_SEQ);CHKERRQ(ierr);
     }
   }
 

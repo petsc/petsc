@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.122 1999/08/03 18:32:52 curfman Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.123 1999/08/10 19:16:58 balay Exp bsmith $";
 #endif
 
 /*
@@ -566,9 +566,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
     if (!rank) {
-      ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(mat->comm,M,mdn->nvec,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIDense(mat->comm,0,N,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(mat->comm,0,mdn->nvec,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
     }
     PLogObjectParent(mat,A);
 
@@ -1024,9 +1024,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   Currently, the only parallel dense matrix decomposition is by rows,
-   so that n=N and each submatrix owns all of the global columns.
-
    Level: intermediate
 
 .keywords: matrix, dense, parallel
@@ -1060,24 +1057,19 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
 
-  /*
-     The computation of n is wrong below, n should represent the number of local 
-     rows in the right (column vector) 
-  */
+  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  a->nvec = n;
 
   /* each row stores all columns */
-  if (N == PETSC_DECIDE) N = n;
-  if (n == PETSC_DECIDE) {n = N/a->size + ((N % a->size) > a->rank);}
-  /*  if (n != N) SETERRQ(PETSC_ERR_SUP,0,"For now, only n=N is supported"); */
   a->N = mat->N = N;
   a->M = mat->M = M;
   a->m = mat->m = m;
-  a->n = mat->n = n;
+  a->n = mat->n = N;   /* NOTE: n == N */
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
   ierr = MapCreateMPI(comm,m,M,&mat->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,PETSC_DECIDE,N,&mat->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,N,&mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int));CHKPTRQ(a->rowners);

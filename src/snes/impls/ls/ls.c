@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.139 1999/07/01 02:28:12 curfman Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.140 1999/07/01 03:34:24 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -81,10 +81,10 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = fnorm;
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
@@ -115,10 +115,10 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
 
-    PetscAMSTakeAccess(snes);
+    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    PetscAMSGrantAccess(snes);
+    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,fnorm,lits);
     SNESMonitor(snes,i+1,fnorm);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.27 1999/05/12 03:28:28 bsmith Exp balay $";
+static char vcid[] = "$Id: shvec.c,v 1.28 1999/06/30 23:50:35 balay Exp bsmith $";
 #endif
 
 /*
@@ -61,9 +61,6 @@ int VecCreate_Shared(Vec vv)
 
   ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
-  ierr = PetscFree(vv->type_name);CHKERRQ(ierr);
-  vv->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_SHARED))*sizeof(char));CHKPTRQ(vv->type_name);
-  ierr = PetscStrcpy(vv->type_name,VEC_SHARED);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -196,7 +193,8 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
 
   PetscFunctionBegin;
   if (Petsc_Shared_keyval == MPI_KEYVAL_INVALID) {
-    ierr = PetscSharedInitialize(comm);
+    ierr = PetscSharedInitialize(comm); 
+    if (ierr) PetscFunctionReturn(0);
   }
   ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);
   if (ierr) PetscFunctionReturn(0);
@@ -284,7 +282,7 @@ int VecCreateShared(MPI_Comm comm, int n, int N, Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
-  ierr = VecSetType(*v,"PETSc#VecShared");CHKERRQ(ierr);
+  ierr = VecSetType(*v,VEC_SHARED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

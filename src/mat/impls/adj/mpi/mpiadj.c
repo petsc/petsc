@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.24 1999/05/12 03:30:08 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiadj.c,v 1.25 1999/06/30 23:52:07 balay Exp bsmith $";
 #endif
 
 /*
@@ -60,7 +60,6 @@ int MatDestroy_MPIAdj(Mat mat)
   int        ierr;
 
   PetscFunctionBegin;
-  if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);

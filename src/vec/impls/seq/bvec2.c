@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.162 1999/06/30 23:50:29 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.163 1999/07/15 14:12:07 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -155,8 +155,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   ierr = DrawLGAddPoints(lg,n,&xx,&x->array);CHKERRQ(ierr);
 #else 
   {
-    double *yy;
-    yy = (double *) PetscMalloc( (n+1)*sizeof(double) );CHKPTRQ(yy);    
+    double *yy = (double *) PetscMalloc( (n+1)*sizeof(double) );CHKPTRQ(yy);    
     for ( i=0; i<n; i++ ) {
       yy[i] = PetscReal(x->array[i]);
     }
@@ -188,11 +187,11 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
   /*
      Currently it only supports drawing to a line graph */
   if (format != VIEWER_FORMAT_DRAW_LG) {
-    ViewerPushFormat(v,VIEWER_FORMAT_DRAW_LG,PETSC_NULL);
+    ierr = ViewerPushFormat(v,VIEWER_FORMAT_DRAW_LG,PETSC_NULL);CHKERRQ(ierr);
   } 
   ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
   if (format != VIEWER_FORMAT_DRAW_LG) {
-    ViewerPopFormat(v);
+    ierr = ViewerPopFormat(v);CHKERRQ(ierr);
   } 
 
   PetscFunctionReturn(0);

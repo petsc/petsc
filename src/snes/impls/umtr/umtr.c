@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.83 1999/05/04 20:36:02 balay Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.84 1999/06/30 23:54:15 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -57,14 +57,14 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);              /* xnorm = || X || */
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);  /* G(X) <- gradient */
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);               /* gnorm = || G || */
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
@@ -75,9 +75,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
-    PetscAMSTakeAccess(snes);
+    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
-    PetscAMSGrantAccess(snes);
+    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     newton = 0;
     neP->success = 0;
     snes->nfailures = 0;
@@ -161,9 +161,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
-    PetscAMSTakeAccess(snes);
+    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
     ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);
-    PetscAMSGrantAccess(snes);
+    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     snes->vec_func_always = G;
 
     SNESLogConvHistory(snes,*gnorm,qits);

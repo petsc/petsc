@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.10 1999/05/11 19:16:06 bsmith Exp balay $";
+static char vcid[] = "$Id: bicg.c,v 1.11 1999/06/08 22:57:26 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -72,10 +72,10 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
-  PetscAMSTakeAccess(ksp);
+  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  PetscAMSGrantAccess(ksp);
+  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
 
   for ( i=0; i<maxit; i++) {
@@ -104,10 +104,10 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      } else {
        ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
-     PetscAMSTakeAccess(ksp);
+     ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
      ksp->its   = i+1;
      ksp->rnorm = dp;
-     PetscAMSGrantAccess(ksp);
+     ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
      KSPLogResidualHistory(ksp,dp);
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.25 1999/03/19 21:16:22 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.26 1999/05/04 20:28:42 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates opening and drawing a window\n";
@@ -23,13 +23,13 @@ int main(int argc,char **argv)
   ierr = DrawStringSetSize(draw,.5,.5);CHKERRA(ierr);
   ierr = DrawString(draw,.2,.2,DRAW_BLUE,"Some Text");CHKERRA(ierr);
   ierr = DrawFlush(draw);CHKERRA(ierr);
-  PetscSleep(2);
+  ierr = PetscSleep(2);CHKERRA(ierr);
   ierr = DrawClear(draw);CHKERRA(ierr); ierr = DrawFlush(draw);CHKERRA(ierr);
   ierr = DrawResizeWindow(draw,600,600);CHKERRA(ierr);
-  PetscSleep(2);
+  ierr = PetscSleep(2);CHKERRA(ierr);
   ierr = DrawLine(draw,0.0,1.0,1.0,0.0,DRAW_BLUE);
   ierr = DrawFlush(draw);CHKERRA(ierr);
-  PetscSleep(2);
+  ierr = PetscSleep(2);CHKERRA(ierr);
   ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.61 1999/06/30 22:49:52 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.62 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -175,16 +175,10 @@ int VecSetType(Vec vec,VecType type_name)
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
   }
-  if (vec->type_name) { 
-    ierr = PetscFree(vec->type_name);CHKERRQ(ierr);
-    vec->type_name = 0;
-  }
+
   ierr = (*r)(vec);CHKERRQ(ierr);
 
-  if (!(vec)->type_name) {
-    (vec)->type_name = (char *) PetscMalloc((PetscStrlen(type_name)+1)*sizeof(char));CHKPTRQ((vec)->type_name);
-    ierr = PetscStrcpy((vec)->type_name,type_name);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectChangeTypeName((PetscObject)vec,type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,16 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psleep.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psleep.c,v 1.20 1999/05/12 03:27:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include "pinclude/petscfix.h"
-
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
+#include "pinclude/petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSleep"
@@ -21,6 +20,9 @@ static char vcid[] = "$Id: psleep.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith
 
    Input Parameters:
 .  s - number of seconds to sleep
+
+   Notes:
+      If s is negative waits for keyboard input
 
    Level: intermediate
 

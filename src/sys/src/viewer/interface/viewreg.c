@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.11 1999/06/04 00:10:15 balay Exp balay $";
+static char vcid[] = "$Id: viewreg.c,v 1.12 1999/06/30 23:49:02 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -77,9 +77,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   if (viewer->data) {
     /* destroy the old private Viewer context */
     ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
-    if (viewer->type_name) {ierr = PetscFree(viewer->type_name);CHKERRQ(ierr);}
     viewer->data      = 0;
-    viewer->type_name = 0;
   }
   /* Get the function pointers for the graphics method requested */
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
@@ -91,10 +89,8 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   viewer->data        = 0;
   ierr = (*r)(viewer);CHKERRQ(ierr);
 
-  if (!viewer->type_name) {
-    viewer->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(viewer->type_name);
-    ierr = PetscStrcpy(viewer->type_name,type);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

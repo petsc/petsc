@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.62 1999/07/02 14:31:53 curfman Exp curfman $ 
+# $Id: makefile,v 1.63 1999/07/02 14:32:43 curfman Exp bsmith $ 
 
 ALL: ex1
 
@@ -24,6 +24,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
                    ex14.PETSc ex14.rm ex15.PETSc ex15.rm clean
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
 TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm clean
+TESTEXAMPLES_15  = ex12.PETSc runex12 runex12_2 ex12.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm \
 		   ex12.PETSc ex12.rm clean
@@ -46,31 +47,24 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
 	${RM} ex1.o
-
 ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex1f.o
-
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
 	${RM} ex2.o
-
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
-
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
 	${RM} ex4.o
-
 ex4f: ex4f.o  chkopts
 	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex4f.o
-
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
-
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f.o
@@ -86,43 +80,33 @@ ex5s: chkopts
 	-${FC} -pfa keep -mp -64 ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} -c ex5fs.F
 	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_SNES_LIB}
 	${RM} ex5s.o
-
 ex5f90: ex5f90.o  chkopts
 	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f90.o
-
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
-
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
-
 ex8: ex8.o common8and9.o chkopts
 	-${CLINKER} -o ex8 ex8.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex8.o common8and9.o
-
 ex9: ex9.o common8and9.o chkopts
 	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o common8and9.o
-
 ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o ${PETSC_SNES_LIB}
 	${RM} ex12.o
-
 ex13: ex13.o chkopts
 	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
 	${RM} ex13.o
-
 ex14: ex14.o chkopts
 	-${CLINKER} -o ex14 ex14.o ${PETSC_SNES_LIB}
 	${RM} ex14.o
-
 ex15: ex15.o chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_SNES_LIB}
 	${RM} ex15.o
-
 runex1:
 	-@${MPIRUN} -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -308,12 +292,21 @@ runex9_2:
            if (diff output/ex9_2.out ex9_2.tmp) then true; \
            else echo "Possible problem with ex9_2, diffs above"; fi; \
            ${RM} -f ex9_2.tmp
+runex12:
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_DIR}/matlab']); ex12(1) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_1.tmp 2>&1; \
+                egrep '(Unable To Connect|Warning)' ex12_1.tmp ; \
+                if [ "$$?" != 1 ]; then cat ex12_1.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_1"; fi; \
+	        ${RM} -f ex12_1.tmp
+runex12_2:
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_DIR}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_2.tmp 2>&1; \
+            egrep '(Unable To Connect|Warning)' ex12_2.tmp ; \
+              if [ "$$?" != 1 ]; then cat ex12_2.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_2"; fi;
+	${RM} -f ex12_2.tmp ex12_2.tmp2
 runex14:
 	-@${MPIRUN} -np 4 ex14 -Nx 2 -Ny 2 -Nz 1 -mx 8 -my 8 -mz 8 -snes_smonitor > ex14_1.tmp 2>&1; \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
-
 runex14_2:
 	-@${MPIRUN} -np 4 ex14 -Nx 2 -Ny 1 -Nz 2 -mx 8 -my 8 -mz 8 -snes_smonitor > ex14_2.tmp 2>&1; \
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \

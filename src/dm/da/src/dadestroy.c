@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.28 1999/05/04 20:37:25 balay Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.29 1999/06/30 23:55:09 balay Exp bsmith $";
 #endif
  
 /*
@@ -37,6 +37,9 @@ int DADestroy(DA da)
      vectors that cause another destroy on the da
   */
   if (da->refct < 0) PetscFunctionReturn(0);
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(da);CHKERRQ(ierr);
 
   PLogObjectDestroy(da);
   ierr = PetscFree(da->idx);CHKERRQ(ierr);

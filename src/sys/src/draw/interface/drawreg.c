@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.13 1999/06/04 00:10:51 balay Exp balay $";
+static char vcid[] = "$Id: drawreg.c,v 1.14 1999/06/30 23:49:05 balay Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -93,21 +93,23 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
 @*/
 int DrawSetType(Draw draw,DrawType type)
 {
-  int ierr,(*r)(Draw);
+  int ierr,(*r)(Draw),flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
   if (PetscTypeCompare(draw->type_name,type)) PetscFunctionReturn(0);
 
+  /*  User requests no graphics */
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
+  if (flg) {
+    type = DRAW_NULL;
+  }
+
   if (draw->data) {
     /* destroy the old private Draw context */
-    ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
-    draw->data      = 0;
-  }
-  if (draw->type_name) {
-    ierr = PetscFree(draw->type_name);CHKERRQ(ierr);
-    draw->type_name = 0;
+    ierr       = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
+    draw->data = 0;
   }
 
   /* Get the function pointers for the graphics method requested */
@@ -120,10 +122,7 @@ int DrawSetType(Draw draw,DrawType type)
   draw->data        = 0;
   ierr = (*r)(draw);CHKERRQ(ierr);
 
-  if (!draw->type_name) {
-    draw->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(draw->type_name);
-    ierr = PetscStrcpy(draw->type_name,type);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

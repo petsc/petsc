@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex71.c,v 1.31 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex71.c,v 1.32 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = VecView(x,viewer);CHKERRA(ierr);
   
-  PetscSleep(30);
+  ierr = PetscSleep(30);CHKERRA(ierr);
   ierr = PetscObjectDestroy((PetscObject) viewer);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.57 1999/04/19 22:08:51 bsmith Exp balay $";
+static char vcid[] = "$Id: draw.c,v 1.58 1999/06/30 23:49:05 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -192,6 +192,10 @@ int DrawDestroy(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (--draw->refct > 0) PetscFunctionReturn(0);
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(draw);CHKERRQ(ierr);
+
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
@@ -287,8 +291,6 @@ int DrawCreate_Null(Draw draw)
   draw->port_yl = 0.0;  draw->port_yr = 1.0;
   draw->popup   = 0;
 
-  draw->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_NULL)+1)*sizeof(char));CHKPTRQ(draw->type_name);
-  ierr = PetscStrcpy(draw->type_name,DRAW_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

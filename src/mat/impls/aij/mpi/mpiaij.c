@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.296 1999/06/10 16:08:15 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.297 1999/06/30 23:51:10 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -683,7 +683,6 @@ int MatDestroy_MPIAIJ(Mat mat)
   int        ierr;
 
   PetscFunctionBegin;
-  if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.12 1999/05/04 20:35:25 balay Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.13 1999/06/30 23:53:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -236,7 +236,7 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
         v = -.5*(rho[I] + rho[J])*hx2;
         MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
       }
-      v = 2*rho[I]*(hx2+hy2);
+      v = 2.0*rho[I]*(hx2+hy2);
       MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);     
       I++;
     }

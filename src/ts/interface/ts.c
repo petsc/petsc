@@ -678,6 +678,9 @@ int TSDestroy(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (--ts->refct > 0) PetscFunctionReturn(0);
 
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(ts);CHKERRQ(ierr);
+
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   ierr = (*(ts)->destroy)(ts);CHKERRQ(ierr);

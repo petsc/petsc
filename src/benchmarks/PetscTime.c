@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscTime.c,v 1.10 1997/10/19 03:30:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: PetscTime.c,v 1.11 1999/03/19 21:24:35 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -32,7 +32,7 @@ int main( int argc, char **argv)
     fprintf(stderr,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
   PetscTime(x);
-  PetscSleep(10);
+  ierr = PetscSleep(10);CHKERRA(ierr);
   PetscTime(y); 
   fprintf(stderr,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
 

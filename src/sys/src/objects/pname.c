@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.25 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.26 1999/05/12 03:27:11 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -130,5 +130,19 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectChangeTypeName"
+int PetscObjectChangeTypeName(PetscObject ctx,char *type_name)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscAMSTakeAccess(ctx);CHKERRQ(ierr);
+  if (ctx->type_name) {ierr = PetscFree(ctx->type_name);CHKERRQ(ierr);}
+  ctx->type_name = (char *) PetscMalloc((PetscStrlen(type_name)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
+  ierr = PetscStrcpy(ctx->type_name,type_name);CHKERRQ(ierr);
+  ierr = PetscAMSGrantAccess(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 

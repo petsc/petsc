@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.247 1999/05/11 19:17:17 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.248 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -190,6 +190,7 @@ extern int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 extern int PetscObjectPublish(PetscObject);
+extern int PetscObjectChangeTypeName(PetscObject,char *);
 
 /*
     Defines PETSc error handling.

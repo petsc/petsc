@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.9 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex16.c,v 1.10 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -149,7 +149,7 @@ int main(int argc,char **args)
        Set exact solution; then compute right-hand-side vector.  We use
        an exact solution of a vector with all elements equal to 1.0*k.
     */
-    rhs = one * k;
+    rhs = one * (double)k;
     ierr = VecSet(&rhs,u);CHKERRA(ierr);
     ierr = MatMult(A,u,b);CHKERRA(ierr);
 

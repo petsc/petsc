@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.98 1999/05/04 20:35:59 balay Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.99 1999/06/30 23:54:13 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -80,10 +80,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm );CHKERRQ(ierr);             /* fnorm <- || F || */
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   snes->iter = 0;
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
@@ -153,10 +153,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     }
     if (!breakout) {
       fnorm = gnorm;
-      PetscAMSTakeAccess(snes);
+      ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      PetscAMSGrantAccess(snes);
+      ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
       TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
       VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */

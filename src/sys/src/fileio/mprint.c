@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.35 1999/07/07 00:45:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.36 1999/08/31 19:45:52 bsmith Exp bsmith $";
 #endif
 /*
       Utilites routines to add simple ASCII IO capability.
@@ -415,6 +415,12 @@ int PetscErrorPrintfDefault(const char format[],...)
 {
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;
+  static  int InPetscErrorPrintfDefault = 0;
+
+  /*
+      InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
+     from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
+  */
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -426,6 +432,9 @@ int PetscErrorPrintfDefault(const char format[],...)
   if (!PetscErrorPrintfCalled) {
     int  rank;
     char arch[10],hostname[64],username[16],pname[256],date[64];
+
+    PetscErrorPrintfCalled    = 1;
+    InPetscErrorPrintfDefault = 1;
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
@@ -463,17 +472,19 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(stderr,"--------------------------------------------\
 ---------------------------\n");
     fflush(stderr);
-    PetscErrorPrintfCalled = 1;
+    InPetscErrorPrintfDefault = 0;
   }
 
-  va_start( Argp, format );
+  if (!InPetscErrorPrintfDefault) {
+    va_start( Argp, format );
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vfprintf(stderr,format,(char *)Argp);
+    vfprintf(stderr,format,(char *)Argp);
 #else
-  vfprintf(stderr,format,Argp);
+    vfprintf(stderr,format,Argp);
 #endif
-  fflush(stderr);
-  va_end( Argp );
+    fflush(stderr);
+    va_end( Argp );
+  }
   return 0;
 }
 

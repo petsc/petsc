@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.138 1999/06/08 22:54:40 bsmith Exp $";
+static char vcid[] = "$Id: lsparams.c,v 1.2 1999/06/30 22:51:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -77,15 +77,15 @@ int SNESGetLineSearchParams(SNES snes, double *alpha, double *maxstep, double *s
 
   ls = (SNES_LS *) snes->data;
   if (alpha) {
-    PetscValidPointer(alpha);
+    PetscValidDoublePointer(alpha);
     *alpha   = ls->alpha;
   }
   if (maxstep) {
-    PetscValidPointer(maxstep);
+    PetscValidDoublePointer(maxstep);
     *maxstep = ls->maxstep;
   }
   if (steptol) {
-    PetscValidPointer(steptol);
+    PetscValidDoublePointer(steptol);
     *steptol = ls->steptol;
   }
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.74 1999/05/11 19:15:50 bsmith Exp balay $";
+static char vcid[] = "$Id: cheby.c,v 1.75 1999/06/08 22:57:20 balay Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -115,9 +115,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
-    PetscAMSTakeAccess(ksp);
+    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    PetscAMSGrantAccess(ksp);
+    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
@@ -129,9 +129,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     if (ksp->calc_res) {
       if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
-      PetscAMSTakeAccess(ksp);
+      ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                              = rnorm;
-      PetscAMSGrantAccess(ksp);
+      ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       KSPMonitor(ksp,i,rnorm);
@@ -158,9 +158,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
       ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
     }
-    PetscAMSTakeAccess(ksp);
+    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->rnorm                              = rnorm;
-    PetscAMSGrantAccess(ksp);
+    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
     ksp->vec_sol = p[k]; 
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);

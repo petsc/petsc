@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.22 1999/06/30 23:50:57 balay Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.23 1999/08/17 19:00:49 balay Exp bsmith $";
 #endif
 
 /*
@@ -27,7 +27,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
-  ierr = VecCreateMPI(mat->comm,mat->n,mdn->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mdn->nvec,mdn->N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx);CHKERRQ(ierr);

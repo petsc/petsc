@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.68 1999/05/12 03:28:22 bsmith Exp balay $"
+static char vcid[] =  "$Id: dvec2.c,v 1.69 1999/06/30 23:50:29 balay Exp bsmith $"
 #endif
 
 /* 
@@ -759,6 +759,7 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 int VecGetArray_Seq(Vec vin,Scalar *a[])
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
   if (vin->array_gotten) {
@@ -768,7 +769,7 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
   vin->array_gotten = PETSC_TRUE;
 
   *a =  v->array;
-  PetscAMSTakeAccess(vin)
+  ierr = PetscAMSTakeAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -776,6 +777,8 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
 #define __FUNC__ "VecRestoreArray_Seq"
 int VecRestoreArray_Seq(Vec vin,Scalar *a[])
 {
+  int ierr;
+
   PetscFunctionBegin;
 
   if (!vin->array_gotten) {
@@ -785,7 +788,7 @@ int VecRestoreArray_Seq(Vec vin,Scalar *a[])
   vin->array_gotten = PETSC_FALSE;
   *a                = 0; /* now user cannot accidently use it again */
 
-  PetscAMSGrantAccess(vin) 
+  ierr = PetscAMSGrantAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

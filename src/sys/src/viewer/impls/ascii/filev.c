@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.91 1999/06/15 15:24:38 balay Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.92 1999/06/30 23:48:52 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -273,8 +273,6 @@ int ViewerCreate_ASCII(Viewer v)
   v->iformat         = 0;
   v->outputname      = 0;
   vascii->tab        = 0;
-  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(ASCII_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  ierr = PetscStrcpy(v->type_name,ASCII_VIEWER);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerSetFilename_C",
                                     "ViewerSetFilename_ASCII",

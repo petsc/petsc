@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.35 1999/04/21 18:16:01 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.36 1999/05/04 20:31:12 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -55,13 +55,13 @@ int main(int argc,char **args)
   /* PART 2:  Read in vector in binary format */
 
   /* All processors wait until test vector has been dumped */
-  MPI_Barrier(PETSC_COMM_WORLD);
-  PetscSleep(10);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = PetscSleep(10);CHKERRA(ierr);
 
   /* Read new vector in binary format */
   ierr = PLogEventRegister(&VECTOR_READ,"Read Vector","Green:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_READ,0,0,0,0);
-  PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = VecLoad(viewer,&u);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);

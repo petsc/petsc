@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.121 1999/06/08 22:55:14 balay Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.122 1999/06/30 23:50:31 balay Exp bsmith $ 
 #endif
 
 /*
@@ -25,6 +25,9 @@ int VecDestroy_MPI(Vec v)
   int     ierr;
 
   PetscFunctionBegin;
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",x->N);

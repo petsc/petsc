@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.341 1999/07/26 01:40:46 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.342 1999/07/26 02:52:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -670,9 +670,9 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetLocalToGlobalMappingBlocked"
+#define __FUNC__ "MatSetLocalToGlobalMappingBlock"
 /*@
-   MatSetLocalToGlobalMappingBlocked - Sets a local-to-global numbering for use
+   MatSetLocalToGlobalMappingBlock - Sets a local-to-global numbering for use
    by the routine MatSetValuesBlockedLocal() to allow users to insert matrix
    entries using a local (per-processor) numbering.
 
@@ -690,7 +690,7 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
+int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
@@ -796,7 +796,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 
    Notes:
    Before calling MatSetValuesBlockedLocal(), the user must first set the
-   local-to-global mapping by calling MatSetLocalToGlobalMappingBlocked(),
+   local-to-global mapping by calling MatSetLocalToGlobalMappingBlock(),
    where the mapping MUST be set for matrix blocks, not for matrix elements.
 
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
@@ -810,7 +810,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 
 .keywords: matrix, set, values, blocked, local
 
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlocked(), MatSetValuesBlocked()
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
 int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
 {
@@ -829,7 +829,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
   if (!mat->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlocked()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlock()");
   }
   if (nrow > 2048 || ncol > 2048) {
     SETERRQ2(PETSC_ERR_SUP,0,"Number column/row indices must be <= 2048: are %d %d",nrow,ncol);

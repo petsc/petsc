@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.124 1999/05/12 03:31:46 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.125 1999/06/30 23:53:36 balay Exp bsmith $";
 #endif
 
 /*
@@ -232,9 +232,9 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   if (!restart) {
     ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
   }
-  PetscAMSTakeAccess(ksp)
+  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  PetscAMSGrantAccess(ksp)
+  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
   while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
            && it < max_k && ksp->its < max_it) {
@@ -268,10 +268,10 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     ierr = GMRESUpdateHessenberg( ksp, it, &res );CHKERRQ(ierr);
     it++;
     gmres->it  = (it-1);  /* For converged */
-    PetscAMSTakeAccess(ksp)
+    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
-    PetscAMSGrantAccess(ksp)
+    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
   }
   KSPLogResidualHistory(ksp,res);
 
@@ -318,9 +318,9 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  PetscAMSTakeAccess(ksp)
+  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  PetscAMSGrantAccess(ksp)
+  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
 
   restart  = 0;
   itcount  = 0;

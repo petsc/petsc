@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.190 1999/06/30 22:51:49 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.191 1999/06/30 23:54:03 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1435,6 +1435,9 @@ int SNESDestroy(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (--snes->refct > 0) PetscFunctionReturn(0);
 
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(snes);CHKERRQ(ierr);
+
   if (snes->destroy) {ierr = (*(snes)->destroy)(snes);CHKERRQ(ierr);}
   if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
   if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
@@ -2013,9 +2016,7 @@ int SNESSetType(SNES snes,SNESType method)
   snes->data = 0;
   ierr = (*r)(snes);CHKERRQ(ierr);
 
-  if (snes->type_name) {ierr = PetscFree(snes->type_name);CHKERRQ(ierr);}
-  snes->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(snes->type_name);
-  ierr = PetscStrcpy(snes->type_name,method);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)snes,method);CHKERRQ(ierr);
   snes->set_method_called = 1;
 
   PetscFunctionReturn(0); 

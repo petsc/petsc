@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.134 1999/05/12 03:28:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.135 1999/06/30 22:50:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -182,8 +182,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   s->size      = size;
   s->rank      = rank;
   s->browners  = 0;
-  v->type_name = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
-  ierr = PetscStrcpy(v->type_name,VEC_MPI);CHKERRQ(ierr);
   if (array) {
     s->array           = (Scalar *)array;
     s->array_allocated = 0;
@@ -216,6 +214,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   }
   ierr = PetscObjectComposeFunction((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
                                      (void *)VecView_MPI_Draw);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
   PetscPublishAll(v);
   PetscFunctionReturn(0);
 }

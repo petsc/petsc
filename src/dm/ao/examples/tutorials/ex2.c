@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.19 1999/05/04 20:37:20 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.20 1999/06/30 23:55:06 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -176,7 +176,7 @@ int DataRead(GridData *gdata)
 {
   int          rank,size,n_vert,*mmlocal_vert,mlocal_vert,i,*ia,*ja,cnt,j;
   int          mlocal_ele,*mmlocal_ele,*ele,*tmpele,n_ele,net,a1,a2,a3;
-  int          *iatmp,*jatmp;
+  int          *iatmp,*jatmp,ierr;
   char         msg[128];
   double       *vert,*tmpvert;
   MPI_Status   status;
@@ -192,12 +192,12 @@ int DataRead(GridData *gdata)
    involving up to a say a million nodes and 100 processors this approach 
    here is fine.
   */
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   if (!rank) {
     FILE *fd;
-    fd = fopen("usgdata","r"); if (!fd) SETERRA(1,1,"Cannot open grid file");
+    fd = fopen("usgdata","r"); if (!fd) SETERRQ(1,1,"Cannot open grid file");
 
     /* read in number of vertices */
     fgets(msg,128,fd);
@@ -206,7 +206,7 @@ int DataRead(GridData *gdata)
     printf("Number of grid vertices %d\n",n_vert);
 
     /* broadcast number of vertices to all processors */
-    MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);
+    ierr = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_vert  = n_vert/size + ((n_vert % size) > 0);
 
     /* 
@@ -240,10 +240,10 @@ int DataRead(GridData *gdata)
         fscanf(fd,"%d %lf %lf\n",&cnt,tmpvert+2*i,tmpvert+2*i+1);
         printf("%d %g %g\n",cnt,tmpvert[2*i],tmpvert[2*i+1]);
       }
-      MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_DOUBLE,j,0,PETSC_COMM_WORLD);
+      ierr = MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_DOUBLE,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
-    ierr = PetscFree(tmpvert);CHKERRA(ierr);
-    ierr = PetscFree(mmlocal_vert);CHKERRA(ierr);
+    ierr = PetscFree(tmpvert);CHKERRQ(ierr);
+    ierr = PetscFree(mmlocal_vert);CHKERRQ(ierr);
 
     fscanf(fd,"Number Elements = %d\n",&n_ele);
     printf("Number of grid elements %d\n",n_ele);
@@ -251,7 +251,7 @@ int DataRead(GridData *gdata)
     /* 
        Broadcast number of elements to all processors
     */
-    MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);
+    ierr = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_ele  = n_ele/size + ((n_ele % size) > 0);
 
     /* 
@@ -284,9 +284,9 @@ int DataRead(GridData *gdata)
         fscanf(fd,"%d %d %d %d\n",&cnt,tmpele+3*i,tmpele+3*i+1,tmpele+3*i+2);
         printf("%d %d %d %d\n",cnt,tmpele[3*i],tmpele[3*i+1],tmpele[3*i+2]);
       }
-      MPI_Send(tmpele,3*mmlocal_ele[j],MPI_INT,j,0,PETSC_COMM_WORLD);
+      ierr = MPI_Send(tmpele,3*mmlocal_ele[j],MPI_INT,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
-    ierr = PetscFree(tmpele);CHKERRA(ierr);
+    ierr = PetscFree(tmpele);CHKERRQ(ierr);
 
     /* 
          Read in element neighbors for processor 0 
@@ -349,12 +349,12 @@ int DataRead(GridData *gdata)
       printf("\n");
 
       /* send graph off to appropriate processor */
-      MPI_Send(iatmp,mmlocal_ele[j]+1,MPI_INT,j,0,PETSC_COMM_WORLD);
-      MPI_Send(jatmp,iatmp[mmlocal_ele[j]],MPI_INT,j,0,PETSC_COMM_WORLD);
+      ierr = MPI_Send(iatmp,mmlocal_ele[j]+1,MPI_INT,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Send(jatmp,iatmp[mmlocal_ele[j]],MPI_INT,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
-    ierr = PetscFree(iatmp);CHKERRA(ierr);
-    ierr = PetscFree(jatmp);CHKERRA(ierr);
-    ierr = PetscFree(mmlocal_ele);CHKERRA(ierr);
+    ierr = PetscFree(iatmp);CHKERRQ(ierr);
+    ierr = PetscFree(jatmp);CHKERRQ(ierr);
+    ierr = PetscFree(mmlocal_ele);CHKERRQ(ierr);
 
     fclose(fd);
   } else {
@@ -364,27 +364,27 @@ int DataRead(GridData *gdata)
     */
 
     /* receive total number of vertices */
-    MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);
+    ierr = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
 
     /* receive vertices */
     vert = (double *) PetscMalloc(2*(mlocal_vert+1)*sizeof(double));CHKPTRQ(vert);
-    MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);
+    ierr = MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
-    MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);
+    ierr = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_ele = n_ele/size + ((n_ele % size) > rank);
 
     /* receive elements */
     ele = (int *) PetscMalloc(3*(mlocal_ele+1)*sizeof(int));CHKPTRQ(ele);
-    MPI_Recv(ele,3*mlocal_ele,MPI_INT,0,0,PETSC_COMM_WORLD,&status);
+    ierr = MPI_Recv(ele,3*mlocal_ele,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive element adjacency graph */
     ia    = (int *) PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
-    MPI_Recv(ia,mlocal_ele+1,MPI_INT,0,0,PETSC_COMM_WORLD,&status);
+    ierr = MPI_Recv(ia,mlocal_ele+1,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     ja    = (int *) PetscMalloc((ia[mlocal_ele]+1)*sizeof(int));CHKPTRA(ja);
-    MPI_Recv(ja,ia[mlocal_ele],MPI_INT,0,0,PETSC_COMM_WORLD,&status);
+    ierr = MPI_Recv(ja,ia[mlocal_ele],MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
   gdata->n_vert      = n_vert;
@@ -469,8 +469,8 @@ int DataMoveElements(GridData *gdata)
 
   PetscFunctionBegin;
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* 
       Determine how many elements are assigned to each processor 
@@ -590,8 +590,8 @@ int DataPartitionVertices(GridData *gdata)
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /*
       Allocated space to store bit-array indicting vertices marked
@@ -685,7 +685,8 @@ int DataMoveVertices(GridData *gdata)
   double     *avert;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* ---------------------------------------------------------------------
       Create a global reodering of the vertex numbers

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgcoor.c,v 1.17 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgcoor.c,v 1.18 1999/03/17 23:21:11 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -32,10 +32,10 @@ int DrawGetCoordinates(Draw draw,double *xl,double *yl,double *xr,double *yr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  PetscValidPointer(xl);
-  PetscValidPointer(yl);
-  PetscValidPointer(xr);
-  PetscValidPointer(yr);
+  PetscValidDoublePointer(xl);
+  PetscValidDoublePointer(yl);
+  PetscValidDoublePointer(xr);
+  PetscValidDoublePointer(yr);
   *xl = draw->coor_xl; *yl = draw->coor_yl;
   *xr = draw->coor_xr; *yr = draw->coor_yr;
   PetscFunctionReturn(0);

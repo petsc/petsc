@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.133 1999/05/12 03:26:40 bsmith Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.134 1999/06/30 23:49:13 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -521,11 +521,6 @@ int DrawCreate_X(Draw ctx)
 
   PetscFunctionBegin;
 
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   if (w <= 0) w = ctx->w = 300;
   if (h <= 0) h = ctx->h = 300; 
 
@@ -623,9 +618,6 @@ int DrawCreate_X(Draw ctx)
   Xwin->w      = w;
   Xwin->h      = h;
   ctx->data    = (void *) Xwin;
-
-  ctx->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_X)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
-  ierr = PetscStrcpy(ctx->type_name,DRAW_X);CHKERRQ(ierr);
 
   /*
     Need barrier here so processor 0 doesn't destroy the window before other 

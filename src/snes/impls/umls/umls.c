@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.82 1999/05/12 03:32:47 bsmith Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.83 1999/06/30 23:54:17 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -40,15 +40,15 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);     /* G(X) <- gradient */
 
-  PetscAMSTakeAccess(snes);
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);         /* gnorm = || G || */
-  PetscAMSGrantAccess(snes);
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
@@ -59,9 +59,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);CHKERRQ(ierr);
 
   for ( i=0; i<maxits; i++ ) {
-    PetscAMSTakeAccess(snes);
+    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
-    PetscAMSGrantAccess(snes);
+    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     neP->gamma = neP->gamma_factor*(*gnorm);
     success = 0;
     ierr = VecCopy(G,RHS);CHKERRQ(ierr);
@@ -97,9 +97,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 
     /* Line search */
     ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));
-    PetscAMSTakeAccess(snes);
+    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
     snes->norm = tnorm;
-    PetscAMSGrantAccess(snes);
+    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     if (neP->line != 1) snes->nfailures++;CHKERRQ(ierr);
 
     SNESLogConvHistory(snes,*gnorm,iters);

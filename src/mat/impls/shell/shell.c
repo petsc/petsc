@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.71 1999/06/10 14:23:34 balay Exp balay $";
+static char vcid[] = "$Id: shell.c,v 1.72 1999/06/30 23:51:21 balay Exp bsmith $";
 #endif
 
 /*
@@ -83,7 +83,6 @@ int MatDestroy_Shell(Mat mat)
   Mat_Shell *shell;
 
   PetscFunctionBegin;
-  if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.77 1999/05/11 19:15:52 bsmith Exp balay $";
+static char vcid[] = "$Id: rich.c,v 1.78 1999/06/08 22:57:21 balay Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -62,9 +62,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   }
 
   for ( i=0; i<maxit; i++ ) {
-     PetscAMSTakeAccess(ksp);
+     ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
      ksp->its++;
-     PetscAMSGrantAccess(ksp);
+     ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
 
      ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
@@ -75,9 +75,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
            ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
          }
        }
-       PetscAMSTakeAccess(ksp);
+       ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
        ksp->rnorm                              = rnorm;
-       PetscAMSGrantAccess(ksp);
+       ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
        KSPLogResidualHistory(ksp,rnorm);
        KSPMonitor(ksp,i,rnorm);
        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
@@ -97,9 +97,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }
-    PetscAMSTakeAccess(ksp);
+    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->rnorm                              = rnorm;
-    PetscAMSGrantAccess(ksp);
+    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
   }

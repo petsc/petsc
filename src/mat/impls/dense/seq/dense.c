@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.171 1999/06/08 22:55:39 balay Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.172 1999/06/30 23:50:54 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -801,7 +801,6 @@ int MatDestroy_SeqDense(Mat mat)
   int          ierr;
 
   PetscFunctionBegin;
-  if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.176 1999/05/12 03:29:27 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.177 1999/06/30 23:51:28 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -47,7 +47,6 @@ int MatDestroy_SeqBDiag(Mat A)
   int          i, bs = a->bs,ierr;
 
   PetscFunctionBegin;
-  if (--A->refct > 0) PetscFunctionReturn(0);
 
   if (A->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);

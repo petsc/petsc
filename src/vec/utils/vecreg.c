@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.7 1999/02/01 15:14:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecreg.c,v 1.8 1999/03/07 14:34:11 curfman Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
@@ -37,10 +37,6 @@ int VecRegisterAll(const char path[])
 
   PetscFunctionBegin;
   VecRegisterAllCalled = 1;
-
-  ierr = VecRegister("PETSc#VecMPI",    path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegister("PETSc#VecShared", path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
-  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
 
   ierr = VecRegister(VEC_MPI,           path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegister(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);

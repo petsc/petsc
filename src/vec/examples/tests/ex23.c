@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex23.c,v 1.5 1999/04/19 22:11:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex23.c,v 1.6 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr); 
  
-  PetscSleep(2*rank);
+  ierr = PetscSleep(2*rank);CHKERRA(ierr);
   ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.59 1999/05/11 19:15:43 bsmith Exp balay $";
+static char vcid[] = "$Id: bcgs.c,v 1.60 1999/06/08 22:57:14 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -56,10 +56,10 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   if (!ksp->avoidnorms) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  PetscAMSTakeAccess(ksp);
+  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  PetscAMSGrantAccess(ksp);
+  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
@@ -94,10 +94,10 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, da = s . s = 0");}
       ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
-      PetscAMSTakeAccess(ksp);
+      ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm = 0.0;
-      PetscAMSGrantAccess(ksp);
+      ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dp);
       KSPMonitor(ksp,i+1,0.0);
       break;
@@ -114,10 +114,10 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     rhoold   = rho;
     omegaold = omega;
 
-    PetscAMSTakeAccess(ksp);
+    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    PetscAMSGrantAccess(ksp);
+    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.37 1999/05/04 20:27:58 balay Exp balay $";
+static char vcid[] = "$Id: drawv.c,v 1.38 1999/06/30 23:48:58 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -263,7 +263,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerCreate_Draw" 
 int ViewerCreate_Draw(Viewer ctx)
 {
-  int         i,ierr;
+  int         i;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -273,9 +273,6 @@ int ViewerCreate_Draw(Viewer ctx)
   ctx->ops->flush   = ViewerFlush_Draw;
   ctx->ops->destroy = ViewerDestroy_Draw;
   ctx->format       = 0;
-
-  ctx->type_name = (char *)PetscMalloc((1+PetscStrlen(DRAW_VIEWER))*sizeof(char));CHKPTRQ(ctx->type_name);
-  ierr = PetscStrcpy(ctx->type_name,DRAW_VIEWER);CHKERRQ(ierr);
 
   /* these are created on the fly if requested */
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
