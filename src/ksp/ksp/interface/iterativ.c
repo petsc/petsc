@@ -599,8 +599,8 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 .  reason - negative value indicates diverged, positive value converged, see KSPConvergedReason
 
    Possible values for reason:
-+  KSP_CONVERGED_RTOL (residual norm decreased by a factor of rtol)
-.  KSP_CONVERGED_ATOL (residual norm less than abstol)
++  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
+.  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
 .  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration) 
 .  KSP_CONVERGED_QCG_NEG_CURVE
 .  KSP_CONVERGED_QCG_CONSTRAINED

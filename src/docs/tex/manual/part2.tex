@@ -2303,12 +2303,12 @@ be used. \findex{KSPBICG} \sindex{Bi-conjugate gradient}
 The default convergence test, KSPDefaultConverged(), is 
 based on the $l_2$-norm of the residual. Convergence 
 (or divergence) is decided by three quantities:
-the relative decrease of the residual norm, \trl{rtol}, the absolute 
+the decrease of the residual norm relative to the norm of the right hand side, \trl{rtol}, the absolute 
 size of the residual norm, \trl{atol}, and the relative increase in the 
 residual, \trl{dtol}.  Convergence is detected at iteration $ k $ if
-\[  \| r_k \|_2 < {\rm max} ( rtol * \| r_0 \|_2, atol), \]
+\[  \| r_k \|_2 < {\rm max} ( rtol * \| b \|_2, atol), \]
 where $r_k = b - A x_k$.  Divergence is detected if
-\[  \| r_k \|_2 > dtol * \| r_0 \|_2. \]
+\[  \| r_k \|_2 > dtol * \| b \|_2. \]
 These parameters, as well as the maximum number of allowable iterations, 
 can be set with the routine \findex{KSPSetTolerances()}
 \begin{tabbing}
@@ -2341,7 +2341,9 @@ The routine for detecting convergence, \trl{test}, should set reason to
 positive for convergence, 0 for no convergence, and negative for 
 failure to converge.  A list of possible KSPConvergedReason is given
 \findex{KSPConvergedReason} in \trl{include/petscksp.h}.
- 
+ You can use \findex{KSPGetConvergedReason()} after KSPSolve() to see why
+convergence/divergence was detected.
+
 \subsection{Convergence Monitoring}
 \label{sec_kspmonitor}
 

@@ -326,7 +326,7 @@ EXTERN PetscErrorCode KSPSetNormType(KSP,KSPNormType);
 
    Developer note: The string versions of these are in 
      src/ksp/ksp/interface/itfunc.c called convergedreasons.
-     If these enums are changed you much change those.
+     If these enums are changed you must change those.
 
 .seealso: KSPSolve(), KSPGetConvergedReason()
 E*/

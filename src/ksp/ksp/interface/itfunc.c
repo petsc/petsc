@@ -247,14 +247,14 @@ PetscErrorCode KSPSetUp(KSP ksp)
     The numerical values for these is set in include/petscksp.h changes
    there must be made here.
 */
-static const char *convergedreasons[] = {"preconditioner is indefinite",                  "matrix or preconditioner is nonsymmetric",
-					 "breakdown in BICG",                             "breakdown",
-					 "residual norm increased by dtol",               "reached maximum number of iterations",
-					 "null operator or preconditioner",               "not used",
-					 "never reached",                                 "not used",
-					 "residual norm decreased by relative tolerance", "residual norm decreased by absolute tolerance",
-					 "only one iteration requested",                  "negative curvature obtained in QCG",
-					 "constrained in QCG",                            "small step length reached"};
+static const char *convergedreasons[] = {"preconditioner is indefinite",                         "matrix or preconditioner is nonsymmetric",
+					 "breakdown in BICG",                                    "breakdown",
+					 "residual norm increased by dtol",                      "reached maximum number of iterations",
+					 "null operator or preconditioner",                      "not used",
+					 "never reached",                                        "not used",
+					 "residual 2-norm < relative tolerance * 2-norm of RHS", "residual 2-norm below absolute tolerance",
+					 "only one iteration requested",                         "negative curvature obtained in QCG",
+					 "constrained in QCG",                                   "small step length reached"};
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve"
