@@ -29,7 +29,7 @@ MPI_Comm   PETSC_COMM_WORLD = 0;
 MPI_Comm   PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
-#if !defined(PARCH_win32) /* required only for MS cl */
+#if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 MPI_Datatype  MPIU_COMPLEX;
