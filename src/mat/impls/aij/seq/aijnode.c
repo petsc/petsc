@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.26 1996/01/05 00:17:48 curfman Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.27 1996/01/12 21:28:41 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -341,11 +341,12 @@ int Mat_AIJ_CheckInode(Mat A)
   ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit, \
                        &flg);  CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
-  m = a->m;        
-  if (!a->inode.size && m){
-    ns = (int *)PetscMalloc(m*sizeof(int));  CHKPTRQ(ns);
-  }
-  else return 0;                /* Use the already formed inode info */
+  if (a->inode.size && a->nonew) return 0; /* inode struct exists, and mat is unchanged*/
+  m = a->m;    
+  if (a->inode.size) {ns = a->inode.size;}
+  else { ns = (int *)PetscMalloc((m+1)*sizeof(int));  CHKPTRQ(ns);}
+
+
 
   i          = 0;
   node_count = 0; 
@@ -796,7 +797,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     }
     PetscFree(tmp_vec);
   }
-  /* If max inode size >3, split ti into two inodes.*/
+  /* If max inode size >3, split it into two inodes.*/
   tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
   for(i=0, j=0; i< node_max; ++i, ++j){
     if(ns[i]>3) {
@@ -805,7 +806,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     } else tmp_vec[j] = ns[i];
   }
 
-  /* Noe use the new inode info created*/
+  /* Now use the new inode info created*/
   ns       = tmp_vec;
   node_max = j;
 
