@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.39 1997/06/05 12:50:59 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.40 1997/07/09 03:10:46 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -103,6 +103,7 @@ typedef struct {
   int            n_nonmatching;        /* number of "from"s  != "to"s */
   int            *slots_nonmatching;   /* locations of "from"s  != "to"s */
   int            is_copy,copy_start;   /* local scatter is a copy starting at copy_start */
+  int            copy_length;
 } VecScatter_Seq_General;
 
 typedef struct {

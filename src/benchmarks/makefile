@@ -19,7 +19,7 @@ RUNEXAMPLES_3 =
 EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
 EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
-		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c 
+		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index
@@ -60,6 +60,9 @@ Index: Index.o  chkopts
 	-$(CLINKER) -o Index Index.o $(PETSC_LIB)
 	$(RM) -f Index.o
 
+PetscVecNorm: PetscVecNorm.o  chkopts 
+	-$(CLINKER) -o PetscVecNorm PetscVecNorm.o $(PETSC_LIB)
+	$(RM) -f PetscVecNorm.o
 
 test: $(TESTS)
 

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: borthog3.c,v 1.4 1997/03/09 17:57:21 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: borthog3.c,v 1.5 1997/06/05 12:51:49 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -25,12 +25,12 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       j,ncnt;
-  Scalar    *hh, *hes,shh[20], *lhh;
+  Scalar    *hh, *hes,shh[100], *lhh;
   double    dnorm;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
   /* Don't allocate small arrays */
-  if (it < 20) lhh = shh;
+  if (it < 100) lhh = shh;
   else {
     lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar)); CHKPTRQ(lhh);
   }
@@ -79,7 +79,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   /* It would be nice to put ncnt somewhere.... */
   PLogInfo(ksp,"KSPGMRESIROrthogonalization: Number of iterative refinement steps %d\n",ncnt);
 
-  if (it >= 20) PetscFree( lhh );
+  if (it >= 100) PetscFree( lhh );
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
   return 0;
 }

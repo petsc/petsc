@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.66 1997/02/22 02:24:12 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mg.c,v 1.67 1997/04/03 18:59:39 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -68,7 +68,9 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix); CHKERRQ(ierr);
     PLogObjectParent(pc,mg[i]->smoothd);
-    mg[i]->smoothu = mg[i]->smoothd;
+    mg[i]->smoothu         = mg[i]->smoothd;
+    mg[i]->default_smoothu = 10000;
+    mg[i]->default_smoothd = 10000;
   }
   *result = mg;
   return 0;
@@ -177,6 +179,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   for ( i=0; i<levels; i++ ) {  
     SLESGetKSP(mg[i]->smoothd,&ksp);
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
+    mg[i]->default_smoothd = n;
   }
   return 0;
 }
@@ -212,6 +215,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   for ( i=0; i<levels; i++ ) {  
     SLESGetKSP(mg[i]->smoothu,&ksp);
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
+    mg[i]->default_smoothu = n;
   }
   return 0;
 }
@@ -327,11 +331,11 @@ static int PCSetFromOptions_MG(PC pc)
   ierr = OptionsGetString(pc->prefix,"-pc_mg_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
     MGType mg = MGADDITIVE;
-    if (!PetscStrcmp(buff,"additive")) mg = MGADDITIVE;
+    if      (!PetscStrcmp(buff,"additive"))       mg = MGADDITIVE;
     else if (!PetscStrcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
-    else if (!PetscStrcmp(buff,"full")) mg = MGFULL;
-    else if (!PetscStrcmp(buff,"kaskade")) mg = MGKASKADE;
-    else if (!PetscStrcmp(buff,"cascade")) mg = MGKASKADE;
+    else if (!PetscStrcmp(buff,"full"))           mg = MGFULL;
+    else if (!PetscStrcmp(buff,"kaskade"))        mg = MGKASKADE;
+    else if (!PetscStrcmp(buff,"cascade"))        mg = MGKASKADE;
     else SETERRQ(1,0,"Unknown type");
     ierr = MGSetType(pc,mg); CHKERRQ(ierr);
   }
@@ -376,11 +380,10 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    PetscFPrintf(pc->comm,fd,
-      "   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-      cstring,mg[0]->cycles,itu,itd); 
+    PetscFPrintf(pc->comm,fd,"   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+                 cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); 
     for ( i=0; i<levels; i++ ) {
-      PetscFPrintf(pc->comm,fd,"Down solver on level %d -------\n",i);
+      PetscFPrintf(pc->comm,fd,"Down solver on level %d -------------------------------\n",i);
       ierr = SLESView(mg[i]->smoothd,viewer); CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
         PetscFPrintf(pc->comm,fd,"Up solver same as down solver\n");

@@ -1,52 +1,40 @@
-#ifndef lint
-static char vcid[] = "$Id: PetscMemcpy.c,v 1.7 1997/03/09 18:00:35 bsmith Exp $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: PetscVecNorm.c,v 1.1 1997/07/08 22:22:04 bsmith Exp bsmith $";
 #endif
 
-#include "stdio.h"
-#include "petsc.h"
+#include "vec.h"
 
 int main( int argc, char **argv)
 {
-  PLogDouble x, y, z;
-  int        i;
-  Scalar     A[10000], B[10000];
+  Vec        x;
+  double     norm;
+  PLogDouble t1,t2;
+  int        ierr,n = 10000,flg;
 
   PetscInitialize(&argc, &argv,0,0);
-  for (i=0; i<10000; i++) {
-    A[i] = i%61897;
-    B[i] = i%61897;
-  }
-  /* To take care of paging effects */
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  x = PetscGetTime();
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
-  x = PetscGetTime();
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  PetscMemcpy(A,B,sizeof(Scalar)*10000);
-  y = PetscGetTime();
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  z = PetscGetTime();
+  ierr = VecCreate(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
+
+  /* To take care of paging effects */
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+
+  t1 = PetscGetTime();
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  t2 = PetscGetTime();
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
 
   fprintf(stderr,"%s : \n","PetscMemcpy");
-  fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000.0);
+  fprintf(stderr," Time %g\n",t2-t1);
 
   PetscFinalize();
   return 0;

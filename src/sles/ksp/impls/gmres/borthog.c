@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.39 1997/06/11 02:26:54 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: borthog.c,v 1.40 1997/07/02 22:24:27 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -52,7 +52,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int        j, m, ncnt;
-  Scalar    *hh, *hes, shh[20], *lhh;
+  Scalar    *hh, *hes, shh[100], *lhh;
   double     omega, theta, alpha, beta, mgamma, delta, epsilon;
   double     sqrit, delta0, delta1, delta2, delta3, delta4, delta5, delta6;
   double     rho0, rho1, dnorm;
@@ -63,7 +63,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 
   PLogEventBegin(KSP_GMRESOrthogonalization, ksp, 0, 0, 0);
   /* Don't allocate small arrays */
-  if (it < 20)
+  if (it < 100)
     lhh = shh;
   else {
     lhh = (Scalar *) PetscMalloc((it+1) * sizeof(Scalar)); CHKPTRQ(lhh);
@@ -175,8 +175,9 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 
   PLogInfo(ksp, "Iterative refinement of orthogonalization took %d iterations\n", ncnt);
 
-  if (it >= 20) PetscFree(lhh);
+  if (it >= 100) PetscFree(lhh);
   PLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0);
   return(0);
 }
+
 

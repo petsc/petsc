@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.42 1997/06/11 02:37:46 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: matio.c,v 1.43 1997/07/02 22:26:14 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -177,7 +177,7 @@ int MatLoadGetInfo_Private(Viewer viewer)
   char string[128],*first,*second,*final;
   int  len,ierr,flg;
 
-  ierr = OptionsHasName(PETSC_NULL,"-matload_ignore */_info",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matload_ignore_info",&flg);CHKERRQ(ierr);
   if (flg) return 0;
 
   ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);

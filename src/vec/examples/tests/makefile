@@ -132,9 +132,9 @@ ex23: ex23.o  chkopts
 	-$(CLINKER) -o ex23 ex23.o  $(SLES_LIB)
 	$(RM) -f ex23.o
 
-ex24: ex24.o ex24f.o chkopts
-	-$(FLINKER) -o ex24 ex24.o ex24f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
-	$(RM) -f ex24.o ex24f.o
+ex24: ex24.o chkopts
+	-$(CLINKER) -o ex24 ex24.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
+	$(RM) -f ex24.o 
 
 runex1:
 	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \

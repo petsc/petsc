@@ -1,4 +1,4 @@
-/* $Id: mgimpl.h,v 1.8 1996/08/08 14:42:12 bsmith Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.9 1996/11/07 15:08:56 bsmith Exp bsmith $ */
 
 /*
       Data structure used for Multigrid preconditioner.
@@ -18,20 +18,23 @@ typedef struct _MG* MG;
 */
 struct _MG
 {
-    MGType   am;                     /* Multiplicative, additive or full */
-    int      cycles;                 /* Number cycles to run */
-    int      level;                  /* level = 0 coarsest level */
-    int      levels;                 /* number of active levels used */
-    int      maxlevels;              /* total number of levels allocated */
-    Vec      b;                      /* Right hand side */ 
-    Vec      x;                      /* Solution */
-    Vec      r;                      /* Residual */
+    MGType   am;                           /* Multiplicative, additive or full */
+    int      cycles;                       /* Number cycles to run */
+    int      level;                        /* level = 0 coarsest level */
+    int      levels;                       /* number of active levels used */
+    int      maxlevels;                    /* total number of levels allocated */
+    Vec      b;                            /* Right hand side */ 
+    Vec      x;                            /* Solution */
+    Vec      r;                            /* Residual */
     int      (*residual)(Mat,Vec,Vec,Vec);
-    Mat      A;                      /* matrix used in forming residual*/ 
-    SLES     smoothd;                /* pre smoother */
-    SLES     smoothu;                /* post smoother */
+    Mat      A;                            /* matrix used in forming residual*/ 
+    SLES     smoothd;                      /* pre smoother */
+    SLES     smoothu;                      /* post smoother */
     Mat      interpolate; 
-    Mat      restrct;  /* restrict is a reserved word on the Cray!!!*/ 
+    Mat      restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
+    int      default_smoothu;              /* number of smooths per level if not over-ridden */
+    int      default_smoothd;              /*  with calls to KSPSetTolerances() */
+
 };
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.83 1997/07/09 18:50:58 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.84 1997/07/09 20:26:34 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -164,7 +164,9 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     if (yv == xv && !gen_to->local.nonmatching_computed) {
       ierr = VecScatterLocalOptimize_Private(&gen_to->local,&gen_from->local);CHKERRQ(ierr);
     }
-    if (yv != xv || gen_to->local.nonmatching_computed == -1) {
+    if (gen_to->local.is_copy) {
+      PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+    } else if (yv != xv || gen_to->local.nonmatching_computed == -1) {
       int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
       int n       = gen_to->local.n;
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
@@ -278,7 +280,7 @@ int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterLocalOptimizeCopy_Private" /* ADIC Ignore */
-int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
+int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,int bs)
 {
   int n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   int to_start,from_start;
@@ -287,15 +289,18 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
   from_start = from_slots[0];
 
   for ( i=1; i<n; i++ ) {
-    if (to_slots[i] != ++to_start) return 0;
+    if (to_slots[i]   != ++to_start)   return 0;
     if (from_slots[i] != ++from_start) return 0;
   }
-  gen_to->is_copy   = 1; gen_to->copy_start   = to_slots[0];
-  gen_from->is_copy = 1; gen_from->copy_start = from_slots[0];
+  gen_to->is_copy       = 1; 
+  gen_to->copy_start    = bs*to_slots[0]; 
+  gen_to->copy_length   = bs*sizeof(Scalar)*n;
+  gen_from->is_copy     = 1;
+  gen_from->copy_start  = bs*from_slots[0];
+  gen_from->copy_length = bs*sizeof(Scalar)*n;
 
   PLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
 
-PetscTrValid(0,0,0,0);
   return 0;
 }
 
@@ -506,20 +511,24 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
-      for ( i=0; i<n; i++ ) {
-        il = fslots[i]; ir = tslots[i];
-        yv[il]    = xv[ir];
-        yv[il+1]  = xv[ir+1];
-        yv[il+2]  = xv[ir+2];
-        yv[il+3]  = xv[ir+3];
-        yv[il+4]  = xv[ir+4];
-        yv[il+5]  = xv[ir+5];
-        yv[il+6]  = xv[ir+6];
-        yv[il+7]  = xv[ir+7];
-        yv[il+8]  = xv[ir+8];
-        yv[il+9]  = xv[ir+9];
-        yv[il+10] = xv[ir+10];
-        yv[il+11] = xv[ir+11];
+      if (gen_to->local.is_copy) {
+        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+      } else {
+        for ( i=0; i<n; i++ ) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]    = xv[ir];
+          yv[il+1]  = xv[ir+1];
+          yv[il+2]  = xv[ir+2];
+          yv[il+3]  = xv[ir+3];
+          yv[il+4]  = xv[ir+4];
+          yv[il+5]  = xv[ir+5];
+          yv[il+6]  = xv[ir+6];
+          yv[il+7]  = xv[ir+7];
+          yv[il+8]  = xv[ir+8];
+          yv[il+9]  = xv[ir+9];
+          yv[il+10] = xv[ir+10];
+          yv[il+11] = xv[ir+11];
+        }
       }
     }  else {
       for ( i=0; i<n; i++ ) {
@@ -699,13 +708,17 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
-      for ( i=0; i<n; i++ ) {
-        il = fslots[i]; ir = tslots[i];
-        yv[il]   = xv[ir];
-        yv[il+1] = xv[ir+1];
-        yv[il+2] = xv[ir+2];
-        yv[il+3] = xv[ir+3];
-        yv[il+4] = xv[ir+4];
+      if (gen_to->local.is_copy) {
+        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+      } else {
+        for ( i=0; i<n; i++ ) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]   = xv[ir];
+          yv[il+1] = xv[ir+1];
+          yv[il+2] = xv[ir+2];
+          yv[il+3] = xv[ir+3];
+          yv[il+4] = xv[ir+4];
+        }
       }
     }  else {
       for ( i=0; i<n; i++ ) {
@@ -862,12 +875,16 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
-      for ( i=0; i<n; i++ ) {
-        il = fslots[i]; ir = tslots[i];
-        yv[il]   = xv[ir];
-        yv[il+1] = xv[ir+1];
-        yv[il+2] = xv[ir+2];
-        yv[il+3] = xv[ir+3];
+      if (gen_to->local.is_copy) {
+        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+      } else {
+        for ( i=0; i<n; i++ ) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]   = xv[ir];
+          yv[il+1] = xv[ir+1];
+          yv[il+2] = xv[ir+2];
+          yv[il+3] = xv[ir+3];
+        }
       }
     }  else {
       for ( i=0; i<n; i++ ) {
@@ -1019,12 +1036,16 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
-      for ( i=0; i<n; i++ ) {
-        il = fslots[i]; ir = tslots[i];
-        yv[il]   = xv[ir];
-        yv[il+1] = xv[ir+1];
-        yv[il+2] = xv[ir+2];
-        yv[il+3] = xv[ir+3];
+      if (gen_to->local.is_copy) {
+        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+      } else {
+        for ( i=0; i<n; i++ ) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]   = xv[ir];
+          yv[il+1] = xv[ir+1];
+          yv[il+2] = xv[ir+2];
+          yv[il+3] = xv[ir+3];
+        }
       }
     }  else {
       for ( i=0; i<n; i++ ) {
@@ -1172,10 +1193,14 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
-      for ( i=0; i<n; i++ ) {
-        il = fslots[i]; ir = tslots[i];
-        yv[il]   = xv[ir];
-        yv[il+1] = xv[ir+1];
+      if (gen_to->local.is_copy) {
+        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+      } else {
+        for ( i=0; i<n; i++ ) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]   = xv[ir];
+          yv[il+1] = xv[ir+1];
+        }
       }
     }  else {
       for ( i=0; i<n; i++ ) {
@@ -1719,7 +1744,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
 
   /* Check if the local scatter is actually a copy; important special case */
   if (nprocslocal) { 
-    ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local); CHKERRQ(ierr);
+    ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local,bs); CHKERRQ(ierr);
   }
 
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.46 1997/03/26 01:38:58 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.47 1997/05/23 18:34:01 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -35,7 +35,8 @@ extern int PetscRegisterCookie(int *);
   char        *prefix;                      \
   void*       child;                        \
   int         (*childcopy)(void *,void**);  \
-  int         (*childdestroy)(void *);     
+  int         (*childdestroy)(void *);      \
+  void*       fortran_func_pointers[5];
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
