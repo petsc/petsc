@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.34 1995/08/18 18:49:38 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.35 1995/08/22 19:36:54 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -112,7 +112,7 @@ int SLESSetFromOptions(SLES sles)
   PCSetFromOptions(sles->pc);
   return 0;
 }
-/*@
+/*@C
    SLESCreate - Creates a linear equation solver context.
 
    Input Parameter:
@@ -141,7 +141,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   return 0;
 }
 
-/*@
+/*@C
    SLESDestroy - Destroys the SLES context.
 
    Input Parameters:
