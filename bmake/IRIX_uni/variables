@@ -1,0 +1,117 @@
+# $Id: base,v 1.25 1999/01/25 22:20:13 bsmith Exp $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+#     For SGI 64 bit machines use the PETSC_ARCH IRIX64
+#
+LD               = ld  -n32
+AR               = ar
+RM               = rm -f
+RANLIB    	 = true
+OMAKE            = make
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc -n32 -woff 1048
+C_FC             = f77 -n32 
+C_CLINKER        = cc  -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 -n32 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}
+C_CCV            = unknown
+C_SYS_LIB        = -lfpe -lsun -lftn
+
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O2 -OPT:Olimit=6000
+O_FOPTFLAGS      = -O2
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = CC -n32 -woff 3262
+CXX_FC           = f77 -n32 
+CXX_CLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}  
+CXX_FLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}
+CXX_CCV          = unknown
+CXX_SYS_LIB      = -lcomplex -lfpe -lsun -lftn
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O -OPT:Olimit=6000
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g 
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O -OPT:Olimit=6000 
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O  -DUSE_PETSC_LOG 
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK  
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O  
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS \
+	           -D_NON_TEMPLATE_COMPLEX
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O  \
+                   -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS -D_NON_TEMPLATE_COMPLEX 
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH    = IRIX
+
+include ${PETSC_DIR}/bmake/common
+
+libc:
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libmember:    ${LIBNAME}(${LIBMEMBER})
+
+############
+
+shared: chkopts_basic
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+	    if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	            -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	    fi; \
+	  fi; \
+	done
+
+#
+# Notes:
+#
+# This version of PETSCFLAGS specifies the use of Fortran kernels (via
+# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
+# complex numbers rather than using the potentially slower C++ versions.
+# To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
+# list.
+#
+# For IRIX Release less than,6.2 the above should probably be replaced by
+# FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+#
