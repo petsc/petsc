@@ -55,7 +55,7 @@ class TagBKClose (transform.Transform):
     newFiles = []
     for file in fileList:
       if (file[-1] == '~'): continue
-      if (file[0] == '#' and file[-1] == '#'): continue
+      if (file[-1] == '#'): continue
       newFiles.append(file)
     return newFiles
 
