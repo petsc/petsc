@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.33 1998/12/17 22:11:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.34 1998/12/21 01:03:13 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: petscpvode.c,v 1.33 1998/12/17 22:11:45 bsmith Exp bs
 */
 #undef __FUNC__
 #define __FUNC__ "TSPrecond_PVode"
-static int TSPrecond_PVode(integer N, real tn, N_Vector y, 
+int TSPrecond_PVode(integer N, real tn, N_Vector y, 
                            N_Vector fy, bool jok,
                            bool *jcurPtr, real _gamma, N_Vector ewt, real h,
                            real uround, long int *nfePtr, void *P_data,
@@ -84,7 +84,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
 */    
 #undef __FUNC__
 #define __FUNC__ "TSPSolve_PVode"
-static int TSPSolve_PVode(integer N, real tn, N_Vector y, 
+int TSPSolve_PVode(integer N, real tn, N_Vector y, 
                           N_Vector fy, N_Vector vtemp,
                           real _gamma, N_Vector ewt, real delta, long int *nfePtr,
                           N_Vector r, int lr, void *P_data, N_Vector z)
@@ -119,7 +119,7 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
 */  
 #undef __FUNC__  
 #define __FUNC__ "TSFunction_PVode"
-static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
+void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS        ts = (TS) ctx;
   TS_PVode *cvode = (TS_PVode*) ts->data;
@@ -151,7 +151,7 @@ static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
    time - time that integrater is  terminated. 
 
 */
-static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
+int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 {
   TS_PVode  *cvode = (TS_PVode*) ts->data;
   Vec       sol = ts->vec_sol;
@@ -208,7 +208,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_PVode"
-static int TSDestroy_PVode(TS ts )
+int TSDestroy_PVode(TS ts )
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
@@ -232,7 +232,7 @@ static int TSDestroy_PVode(TS ts )
 */
 #undef __FUNC__  
 #define __FUNC__ "TSSetUp_PVode_Nonlinear"
-static int TSSetUp_PVode_Nonlinear(TS ts)
+int TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*) ts->data;
   int         ierr, M, locsize;
@@ -285,7 +285,7 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
-static int TSSetFromOptions_PVode_Nonlinear(TS ts)
+int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr, flag,restart;
@@ -340,7 +340,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_PVode" 
-static int TSPrintHelp_PVode(TS ts,char *p)
+int TSPrintHelp_PVode(TS ts,char *p)
 {
   int      ierr;
   TS_PVode *cvode = (TS_PVode*) ts->data;
@@ -365,7 +365,7 @@ static int TSPrintHelp_PVode(TS ts,char *p)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSView_PVode" 
-static int TSView_PVode(TS ts,Viewer viewer)
+int TSView_PVode(TS ts,Viewer viewer)
 {
   TS_PVode   *cvode = (TS_PVode*) ts->data;
   int        ierr;
