@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import bs
+
 import os
+import types
 
 class FileSet:
   def __init__(self, data = [], func = None, children = [], tag = None):
@@ -85,13 +87,15 @@ class TreeFileSet (FileSet):
       if (self.fileTest(fullPath)): defaultFiles.append(fullPath)
 
 class ExtensionFileSet (TreeFileSet):
-  def __init__(self, root, ext):
+  def __init__(self, root, exts):
     TreeFileSet.__init__(self, root, self.extTest)
-    self.ext = ext
+    self.exts = exts
+    if not type(self.exts) == types.ListType:
+      self.exts = [self.exts]
 
   def extTest(self, file):
     (base, ext) = os.path.splitext(file)
-    if (ext == self.ext):
+    if (ext in self.exts):
       return 1
     else:
       return 0

@@ -135,9 +135,21 @@ class TagCxx (transform.GenericTag):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class CompileCxx (Compile):
-  def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-c -g -Wall', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+  def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
     self.includeDirs.append('.')
+
+class TagFortran (transform.GenericTag):
+  def __init__(self, tag = 'fortran', ext = 'f', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+
+class CompileF77 (Compile):
+  def __init__(self, library, sources = None, tag = 'fortran', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
+
+class CompileF90 (Compile):
+  def __init__(self, library, sources = None, tag = 'fortran', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
 
 class TagEtags (transform.GenericTag):
   def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = ''):

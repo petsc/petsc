@@ -104,6 +104,7 @@ class BS (Maker):
 
   def __init__(self, args = None):
     self.targets = {}
+    self.args    = {}
     if args: self.processArgs(args)
     Maker.__init__(self)
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
@@ -192,10 +193,11 @@ class BS (Maker):
       sourceDB[source] = (checksum, mtime, timestamp, tuple(newDep))
 
   def main(self):
-    if self.targets.has_key(self.args['target']):
-      self.targets[self.args['target']].execute()
-    elif self.args['target'] == 'recalc':
-      self.calculateDependencies()
-    else:
-      print 'Invalid target: '+self.args['target']
+    if self.args.has_key('target'):
+      if self.targets.has_key(self.args['target']):
+        self.targets[self.args['target']].execute()
+      elif self.args['target'] == 'recalc':
+        self.calculateDependencies()
+      else:
+        print 'Invalid target: '+self.args['target']
     self.cleanupDir(self.tmpDir)
