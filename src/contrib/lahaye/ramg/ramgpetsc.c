@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.17 2001/07/27 18:15:44 bsmith Exp balay $*/
+/*$Id: ramgpetsc.c,v 1.18 2001/08/07 03:04:54 balay Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -207,7 +207,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
               &ecg2, &ewt2, &nwt, &ntr, &ierr);
    if (ierr) {
-     if (ierr == 2) {
+     if (ierr == 2 || ierr == 1) {
        (*PetscErrorPrintf)("Error from RAMG not enough array work space provided\n");
        (*PetscErrorPrintf)("A provided %d\n",nda);
        (*PetscErrorPrintf)("JA provided %d\n",ndja);
@@ -407,7 +407,8 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 #define __FUNCT__ " RamgGetParam"
 int RamgGetParam(struct RAMG_PARAM *ramg_param)
 {
-  int       ierr; 
+  int        ierr,cycles; 
+  PetscTruth flg;
 
    PetscFunctionBegin;
   /*..Set default RAMG paramets..*/ 
@@ -446,6 +447,12 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_cycles",&cycles,&flg);CHKERRQ(ierr);
+  if (flg) {
+    double scale = pow(10.0,((double)(1 + (int)(log10(1.e-12+(double)cycles)))));
+    (*ramg_param).NCYC = 103*scale + cycles;
+    PetscLogInfo(0,"RAMG using %d for cycles (number after 103 is number of cycles)",(*ramg_param).NCYC);
+  }  
   PetscFunctionReturn(0); 
 }
 
