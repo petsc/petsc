@@ -1,12 +1,12 @@
 
 #include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
-EXTERN int TSCreate_Euler(TS);
-EXTERN int TSCreate_BEuler(TS);
-EXTERN int TSCreate_Pseudo(TS);
-EXTERN int TSCreate_PVode(TS);
-EXTERN int TSCreate_CN(TS);
-EXTERN int TSCreate_Rk(TS);
+EXTERN PetscErrorCode TSCreate_Euler(TS);
+EXTERN PetscErrorCode TSCreate_BEuler(TS);
+EXTERN PetscErrorCode TSCreate_Pseudo(TS);
+EXTERN PetscErrorCode TSCreate_PVode(TS);
+EXTERN PetscErrorCode TSCreate_CN(TS);
+EXTERN PetscErrorCode TSCreate_Rk(TS);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -24,9 +24,9 @@ EXTERN_C_END
 .keywords: TS, timestepper, register, all
 .seealso: TSCreate(), TSRegister(), TSRegisterDestroy(), TSRegisterDynamic()
 @*/
-int TSRegisterAll(const char path[])
+PetscErrorCode TSRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   TSRegisterAllCalled = PETSC_TRUE;

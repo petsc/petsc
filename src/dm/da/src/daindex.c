@@ -50,7 +50,7 @@
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
           DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd()
 @*/
-int DAGetGlobalIndices(DA da,int *n,int **idx)
+PetscErrorCode DAGetGlobalIndices(DA da,int *n,int **idx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -66,7 +66,7 @@ int DAGetGlobalIndices(DA da,int *n,int **idx)
 
    Used by DAGetAO() and DAGlobalToNatural_Create()
 */
-int DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
+PetscErrorCode DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
 {
   int Nlocal,i,j,k,ierr,*lidx,lict = 0;
 
@@ -135,7 +135,7 @@ int DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices()
 @*/
-int DAGetAO(DA da,AO *ao)
+PetscErrorCode DAGetAO(DA da,AO *ao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -146,7 +146,7 @@ int DAGetAO(DA da,AO *ao)
   */
   if (!da->ao) {
     IS  ispetsc,isnatural;
-    int ierr,Nlocal;
+    PetscErrorCode ierr,Nlocal;
 
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);

@@ -11,7 +11,7 @@ static int MatLoadPrintHelp_Private(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
   MPI_Comm          comm = A->comm;
-  int               ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
@@ -111,10 +111,10 @@ and PetscWriteBinary() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-int MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
+PetscErrorCode MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
 {
   Mat         factory;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
   int         (*r)(PetscViewer,const MatType,Mat*);

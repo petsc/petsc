@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSequentialPhaseBegin_Private" 
-int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
+PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
   MPI_Status status;
@@ -24,7 +24,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSequentialPhaseEnd_Private" 
-int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
+PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
   MPI_Status status;
@@ -87,9 +87,10 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Concepts: sequential stage
 
 @*/
-int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
+PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
-  int        ierr,np;
+  PetscErrorCode ierr;
+  int        np;
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
@@ -131,9 +132,10 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
    Concepts: sequential stage
 
 @*/
-int PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
+PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 {
-  int        ierr,np,flag;
+  PetscErrorCode ierr;
+  int        np,flag;
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;

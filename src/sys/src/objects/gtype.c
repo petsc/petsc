@@ -23,7 +23,7 @@
    Concepts: object type
 
 @*/
-int PetscObjectGetType(PetscObject obj,int *type)
+PetscErrorCode PetscObjectGetType(PetscObject obj,int *type)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");

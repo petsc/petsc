@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Constant"
-int PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
 {
   int    i;
   PetscScalar v = ((PetscScalar*)value)[0];
@@ -18,18 +18,18 @@ int PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApplyVec_Constant"
-int PFApplyVec_Constant(void *value,Vec x,Vec y)
+PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecSet((PetscScalar*)value,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PFView_Constant"
-int PFView_Constant(void *value,PetscViewer viewer)
+PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -45,9 +45,9 @@ int PFView_Constant(void *value,PetscViewer viewer)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PFDestroy_Constant"
-int PFDestroy_Constant(void *value)
+PetscErrorCode PFDestroy_Constant(void *value)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -55,9 +55,9 @@ int PFDestroy_Constant(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFSetFromOptions_Constant"
-int PFSetFromOptions_Constant(PF pf)
+PetscErrorCode PFSetFromOptions_Constant(PF pf)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  *value = (PetscScalar *)pf->data;
 
   PetscFunctionBegin;
@@ -70,9 +70,9 @@ int PFSetFromOptions_Constant(PF pf)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Constant"
-int PFCreate_Constant(PF pf,void *value)
+PetscErrorCode PFCreate_Constant(PF pf,void *value)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PetscScalar *loc;
 
   PetscFunctionBegin;
@@ -91,12 +91,11 @@ typedef int (*FCN)(void*,int,PetscScalar*,PetscScalar*); /* force argument to ne
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"
-int PFCreate_Quick(PF pf,void *function)
+PetscErrorCode PFCreate_Quick(PF pf,void *function)
 {
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PFSet(pf,(FCN)function,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -105,7 +104,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Identity"
-int PFApply_Identity(void *value,int n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Identity(void *value,int n,PetscScalar *x,PetscScalar *y)
 {
   int    i;
 
@@ -119,18 +118,18 @@ int PFApply_Identity(void *value,int n,PetscScalar *x,PetscScalar *y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApplyVec_Identity"
-int PFApplyVec_Identity(void *value,Vec x,Vec y)
+PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PFView_Identity"
-int PFView_Identity(void *value,PetscViewer viewer)
+PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -142,9 +141,9 @@ int PFView_Identity(void *value,PetscViewer viewer)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PFDestroy_Identity"
-int PFDestroy_Identity(void *value)
+PetscErrorCode PFDestroy_Identity(void *value)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -153,9 +152,10 @@ int PFDestroy_Identity(void *value)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Identity"
-int PFCreate_Identity(PF pf,void *value)
+PetscErrorCode PFCreate_Identity(PF pf,void *value)
 {
-  int    ierr,*loc;
+  PetscErrorCode ierr;
+  int *loc;
 
   PetscFunctionBegin;
   if (pf->dimout != pf->dimin) {

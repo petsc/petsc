@@ -19,9 +19,9 @@
 
 .seealso: PetscDrawBOP(), PetscDrawEOP(), PetscDrawSynchronizedClear()
 @*/
-int PetscDrawClear(PetscDraw draw)
+PetscErrorCode PetscDrawClear(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -45,9 +45,9 @@ int PetscDrawClear(PetscDraw draw)
 
 .seealso: PetscDrawEOP(), PetscDrawClear()
 @*/
-int PetscDrawBOP(PetscDraw draw)
+PetscErrorCode PetscDrawBOP(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -70,9 +70,9 @@ int PetscDrawBOP(PetscDraw draw)
 
 .seealso: PetscDrawBOP(), PetscDrawClear()
 @*/
-int PetscDrawEOP(PetscDraw draw)
+PetscErrorCode PetscDrawEOP(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

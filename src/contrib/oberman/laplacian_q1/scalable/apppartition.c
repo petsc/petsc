@@ -8,7 +8,7 @@ int AppPartitionGetOwnedSize(AppPartition *part, int *m);
 int AppPartitionSetUp(AppPartition *part, MPI_Comm comm, int Nelx, int Nely, int nsdx, int nsdy,
                       double xmin, double xmax, double ymin, double ymax)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 

@@ -14,10 +14,11 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerAMSSetCommName_AMS" 
-int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
+PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
-  int             ierr,port = -1;
+  PetscErrorCode  ierr;
+  int             port = -1;
   PetscTruth      flg,flg2;
   char            m[16],*pdir;
 
@@ -80,7 +81,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerAMSGetAMSComm_AMS" 
-int PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
+PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS *)lab->data;
 
@@ -93,9 +94,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerAMSSetCommName" 
-int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
+PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 {
-  int ierr,(*f)(PetscViewer,const char[]);
+  PetscErrorCode ierr,(*f)(PetscViewer,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
@@ -132,9 +133,9 @@ int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 .seealso: PetscViewerDestroy(), PetscViewerAMSOpen(), PetscViewer_AMS_, PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF
 
 @*/
-int PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
+PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 {
-  int ierr,(*f)(PetscViewer,AMS_Comm *);
+  PetscErrorCode ierr,(*f)(PetscViewer,AMS_Comm *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
@@ -173,9 +174,10 @@ $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 @*/
 PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {
-  int         ierr,flag,size,rank;
-  PetscViewer viewer;
-  char        name[256];
+  PetscErrorCode ierr;
+  int            flag,size,rank;
+  PetscViewer    viewer;
+  char           name[256];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
@@ -213,10 +215,11 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_AMS_Destroy" 
-int PetscViewer_AMS_Destroy(MPI_Comm comm)
+PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
 {
-  int         ierr,flag;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  int            flag;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
@@ -235,7 +238,7 @@ int PetscViewer_AMS_Destroy(MPI_Comm comm)
 static int PetscViewerDestroy_AMS(PetscViewer viewer)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)viewer->data;
-  int             ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
 
@@ -259,10 +262,10 @@ static int PetscViewerDestroy_AMS(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_AMS" 
-int PetscViewerCreate_AMS(PetscViewer v)
+PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;
-  int             ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   v->ops->destroy = PetscViewerDestroy_AMS;

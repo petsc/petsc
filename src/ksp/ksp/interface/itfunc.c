@@ -32,9 +32,9 @@
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeEigenvalues()
 @*/
-int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
+PetscErrorCode KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -99,9 +99,9 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
 @*/
-int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -147,9 +147,9 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 
 .seealso: PCSetUpOnBlocks(), KSPSetUp(), PCSetUp()
 @*/
-int KSPSetUpOnBlocks(KSP ksp)
+PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -174,9 +174,9 @@ int KSPSetUpOnBlocks(KSP ksp)
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-int KSPSetUp(KSP ksp)
+PetscErrorCode KSPSetUp(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -303,9 +303,10 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-int KSPSolve(KSP ksp,Vec b,Vec x) 
+PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x) 
 {
-  int          ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
   PetscTruth   flag1,flag2,flg;
   PetscScalar  zero = 0.0;
 
@@ -517,9 +518,9 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolve()
 @*/
-int KSPSolveTranspose(KSP ksp,Vec b,Vec x)
+PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscScalar   zero = 0.0;
 
   PetscFunctionBegin;
@@ -552,7 +553,7 @@ int KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
 .seealso: KSPCreate(), KSPSetUp(), KSPSolve()
 @*/
-int KSPDestroy(KSP ksp)
+PetscErrorCode KSPDestroy(KSP ksp)
 {
   int i,ierr;
 
@@ -613,7 +614,7 @@ int KSPDestroy(KSP ksp)
 
 .seealso: KSPGetPreconditionerSide()
 @*/
-int KSPSetPreconditionerSide(KSP ksp,PCSide side)
+PetscErrorCode KSPSetPreconditionerSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -645,7 +646,7 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPGetPreconditionerSide(KSP ksp,PCSide *side) 
+PetscErrorCode KSPGetPreconditionerSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -681,7 +682,7 @@ int KSPGetPreconditionerSide(KSP ksp,PCSide *side)
 
 .seealso: KSPSetTolerances()
 @*/
-int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int *maxits)
+PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -731,7 +732,7 @@ int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int
 
 .seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
+PetscErrorCode KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -764,7 +765,7 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
 
 .seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
-int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
+PetscErrorCode KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   ksp->guess_zero   = (PetscTruth)!(int)flg;
@@ -791,7 +792,7 @@ int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 
 .seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
-int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
+PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
   if (ksp->guess_zero) *flag = PETSC_FALSE;
@@ -817,7 +818,7 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 
 .seealso: KSPGetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
-int KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
+PetscErrorCode KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   ksp->guess_knoll   = flg;
@@ -844,7 +845,7 @@ int KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
 
 .seealso: KSPSetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
-int KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
+PetscErrorCode KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
   *flag = ksp->guess_knoll;
@@ -880,7 +881,7 @@ int KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
 
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
-int KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
+PetscErrorCode KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -910,7 +911,7 @@ int KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 
 .seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
 @*/
-int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
+PetscErrorCode KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -938,7 +939,7 @@ int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 
 .seealso: KSPGetSolution(), KSPSolve()
 @*/
-int KSPGetRhs(KSP ksp,Vec *r)
+PetscErrorCode KSPGetRhs(KSP ksp,Vec *r)
 {   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -967,7 +968,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 
 .seealso: KSPGetRhs(),  KSPBuildSolution(), KSPSolve()
 @*/
-int KSPGetSolution(KSP ksp,Vec *v)
+PetscErrorCode KSPGetSolution(KSP ksp,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1); 
@@ -998,9 +999,9 @@ int KSPGetSolution(KSP ksp,Vec *v)
 
 .seealso: KSPGetPC()
 @*/
-int KSPSetPC(KSP ksp,PC pc)
+PetscErrorCode KSPSetPC(KSP ksp,PC pc)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1032,7 +1033,7 @@ int KSPSetPC(KSP ksp,PC pc)
 
 .seealso: KSPSetPC()
 @*/
-int KSPGetPC(KSP ksp,PC *pc)
+PetscErrorCode KSPGetPC(KSP ksp,PC *pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1095,7 +1096,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
-int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
+PetscErrorCode KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1129,7 +1130,7 @@ int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPSetMonitor()
 @*/
-int KSPClearMonitor(KSP ksp)
+PetscErrorCode KSPClearMonitor(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1157,7 +1158,7 @@ int KSPClearMonitor(KSP ksp)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPGetMonitorContext(KSP ksp,void **ctx)
+PetscErrorCode KSPGetMonitorContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1194,9 +1195,9 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPSetResidualHistory(KSP ksp,PetscReal a[],int na,PetscTruth reset)
+PetscErrorCode KSPSetResidualHistory(KSP ksp,PetscReal a[],int na,PetscTruth reset)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1242,7 +1243,7 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPGetResidualHistory(KSP ksp,PetscReal *a[],int *na)
+PetscErrorCode KSPGetResidualHistory(KSP ksp,PetscReal *a[],int *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1291,7 +1292,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
+PetscErrorCode KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1320,7 +1321,7 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConverged
 
 .seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-int KSPGetConvergenceContext(KSP ksp,void **ctx)
+PetscErrorCode KSPGetConvergenceContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1366,9 +1367,9 @@ int KSPGetConvergenceContext(KSP ksp,void **ctx)
 
 .seealso: KSPGetSolution(), KSPBuildResidual()
 @*/
-int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
+PetscErrorCode KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1404,7 +1405,7 @@ int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
 .seealso: KSPBuildSolution()
 @*/
-int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
+PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   int flag = 0,ierr;
   Vec w = v,tt = t;
@@ -1454,7 +1455,7 @@ int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-int KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
+PetscErrorCode KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1490,7 +1491,7 @@ int KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 
 .seealso: KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
+PetscErrorCode KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1529,7 +1530,7 @@ int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPGetDiagonalScaleFix()
 @*/
-int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
+PetscErrorCode KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1569,7 +1570,7 @@ int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-int KSPGetDiagonalScaleFix(KSP ksp,PetscTruth *fix)
+PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp,PetscTruth *fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

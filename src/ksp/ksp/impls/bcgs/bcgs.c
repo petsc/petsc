@@ -5,7 +5,7 @@
 #define __FUNCT__ "KSPSetUp_BCGS"
 static int KSPSetUp_BCGS(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
@@ -143,7 +143,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BCGS"
-int KSPCreate_BCGS(KSP ksp)
+PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void*)0;

@@ -13,10 +13,10 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecESIWrap"
-int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
+PetscErrorCode VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 {
   esi::petsc::Vector<double,int> *t;
-  int                             ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!xin->esivec) {
@@ -40,7 +40,7 @@ int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 {
   Vec_ESI    *x;
   PetscTruth tesi;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)xin,0,&tesi);CHKERRQ(ierr);
@@ -78,11 +78,11 @@ int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPlaceArray_ESI"
-int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
+PetscErrorCode VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
 {
   Vec_ESI                                *v = (Vec_ESI *)vin->data;
   ::esi::VectorReplaceAccess<double,int> *vr;
-  int                                    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = v->evec->getInterface("esi::VectorReplaceAccess",reinterpret_cast<void *&>(vr));CHKERRQ(ierr);
@@ -92,10 +92,10 @@ int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet_ESI"
-int VecSet_ESI(const PetscScalar *alpha,Vec xin)
+PetscErrorCode VecSet_ESI(const PetscScalar *alpha,Vec xin)
 {
   Vec_ESI *x = (Vec_ESI*)xin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->put(*alpha);CHKERRQ(ierr);
@@ -104,10 +104,10 @@ int VecSet_ESI(const PetscScalar *alpha,Vec xin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_ESI"
-int VecDuplicate_ESI(Vec xin,Vec *xout)
+PetscErrorCode VecDuplicate_ESI(Vec xin,Vec *xout)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *nevec;
 
   PetscFunctionBegin;
@@ -121,10 +121,10 @@ int VecDuplicate_ESI(Vec xin,Vec *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_ESI"
-int VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -136,10 +136,10 @@ int VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_ESI"
-int VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
+PetscErrorCode VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -151,10 +151,10 @@ int VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAYPX_ESI"
-int VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
+PetscErrorCode VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -166,10 +166,10 @@ int VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecWAXPY_ESI"
-int VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
+PetscErrorCode VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ytmp,*wtmp;
 
   PetscFunctionBegin;
@@ -182,10 +182,10 @@ int VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCopy_ESI"
-int VecCopy_ESI(Vec xin,Vec yin)
+PetscErrorCode VecCopy_ESI(Vec xin,Vec yin)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -199,10 +199,10 @@ int VecCopy_ESI(Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_ESI"
-int VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
+PetscErrorCode VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
 {
   Vec_ESI                   *x = (Vec_ESI*)xin->data;
-  int                       ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int> *ztmp;
 
   PetscFunctionBegin;
@@ -218,7 +218,7 @@ int VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseDivide_ESI"
-int VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
+PetscErrorCode VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
 {
   int          n = xin->n,i,ierr;
   PetscScalar  *xx,*yy,*ww;
@@ -242,9 +242,9 @@ int VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecSwap_ESI"
-int VecSwap_ESI(Vec xin,Vec yin)
+PetscErrorCode VecSwap_ESI(Vec xin,Vec yin)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -262,10 +262,11 @@ int VecSwap_ESI(Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_ESI"
-int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
+PetscErrorCode VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
   Vec_ESI                   *x = (Vec_ESI *)xin->data;
-  int                       ierr,i;
+  PetscErrorCode            ierr;
+  int                       i;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -280,10 +281,11 @@ int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMAXPY_ESI"
-int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
+PetscErrorCode VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
 {
   Vec_ESI                   *x = (Vec_ESI *)xin->data;
-  int                       ierr,i;
+  PetscErrorCode ierr;
+  int                       i;
   ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
@@ -298,10 +300,10 @@ int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetSize_ESI"
-int VecGetSize_ESI(Vec vin,int *size)
+PetscErrorCode VecGetSize_ESI(Vec vin,int *size)
 {
   Vec_ESI *x = (Vec_ESI*)vin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->getGlobalSize(*size);CHKERRQ(ierr); 
@@ -310,10 +312,10 @@ int VecGetSize_ESI(Vec vin,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetLocalSize_ESI"
-int VecGetLocalSize_ESI(Vec vin,int *size)
+PetscErrorCode VecGetLocalSize_ESI(Vec vin,int *size)
 {
   Vec_ESI                  *x = (Vec_ESI*)vin->data;
-  int                      ierr;
+  PetscErrorCode ierr;
   ::esi::IndexSpace<int>   *map;
 
   PetscFunctionBegin;
@@ -324,10 +326,10 @@ int VecGetLocalSize_ESI(Vec vin,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetArray_ESI"
-int VecGetArray_ESI(Vec vin,PetscScalar **array)
+PetscErrorCode VecGetArray_ESI(Vec vin,PetscScalar **array)
 {
   Vec_ESI *x = (Vec_ESI*)vin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->getCoefPtrReadWriteLock(*array);CHKERRQ(ierr);
@@ -336,10 +338,10 @@ int VecGetArray_ESI(Vec vin,PetscScalar **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecRestoreArray_ESI"
-int VecRestoreArray_ESI(Vec vin,PetscScalar **array)
+PetscErrorCode VecRestoreArray_ESI(Vec vin,PetscScalar **array)
 {
   Vec_ESI *x = (Vec_ESI*)vin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->releaseCoefPtrLock(*array);CHKERRQ(ierr);
@@ -348,10 +350,10 @@ int VecRestoreArray_ESI(Vec vin,PetscScalar **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScale_ESI"
-int VecScale_ESI(const PetscScalar *array,Vec vin)
+PetscErrorCode VecScale_ESI(const PetscScalar *array,Vec vin)
 {
   Vec_ESI *x = (Vec_ESI*)vin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = x->evec->scale(*array);CHKERRQ(ierr);
@@ -360,10 +362,10 @@ int VecScale_ESI(const PetscScalar *array,Vec vin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_ESI"
-int VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
+PetscErrorCode VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
 {
   Vec_ESI *x = (Vec_ESI*)vin->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ntype == NORM_2 || ntype == NORM_FROBENIUS) {
@@ -376,24 +378,24 @@ int VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-extern int VecSetValues_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
-extern int VecAssemblyBegin_MPI(Vec);
-extern int VecAssemblyEnd_MPI(Vec);
-extern int VecView_MPI(Vec,PetscViewer);
-extern int VecReciprocal_Default(Vec);
-extern int VecSetRandom_Seq(PetscRandom,Vec);
-extern int VecSetValuesBlocked_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
-extern int VecMax_MPI(Vec,int*,PetscReal*);
-extern int VecMin_MPI(Vec,int*,PetscReal*);
+EXTERN PetscErrorCode VecSetValues_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
+EXTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
+EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
+EXTERN PetscErrorCode VecReciprocal_Default(Vec);
+EXTERN PetscErrorCode VecSetRandom_Seq(PetscRandom,Vec);
+EXTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode VecMax_MPI(Vec,int*,PetscReal*);
+EXTERN PetscErrorCode VecMin_MPI(Vec,int*,PetscReal*);
 
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_ESI"
-int VecDestroy_ESI(Vec v)
+PetscErrorCode VecDestroy_ESI(Vec v)
 {
   Vec_ESI *vs = (Vec_ESI*)v->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (vs->evec) {
@@ -408,9 +410,9 @@ int VecDestroy_ESI(Vec v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_PetscESI"
-int VecCreate_PetscESI(Vec V)
+PetscErrorCode VecCreate_PetscESI(Vec V)
 {
-  int                            ierr;
+  PetscErrorCode ierr;
   Vec                            v;
   esi::petsc::Vector<double,int> *ve;
 
@@ -473,11 +475,11 @@ static struct _VecOps EvOps = {VecDuplicate_ESI,
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecESISetFromOptions"
-int VecESISetFromOptions(Vec V)
+PetscErrorCode VecESISetFromOptions(Vec V)
 {
   char       string[1024];
   PetscTruth flg;
-  int        ierr;
+  PetscErrorCode ierr;
  
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)V,VECESI,&flg);CHKERRQ(ierr);
@@ -494,10 +496,10 @@ int VecESISetFromOptions(Vec V)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_ESI"
-int VecCreate_ESI(Vec V)
+PetscErrorCode VecCreate_ESI(Vec V)
 {
   Vec_ESI *s;
-  int     ierr;
+  PetscErrorCode ierr;
  
   PetscFunctionBegin;
   ierr    = PetscNew(Vec_ESI,&s);CHKERRQ(ierr);
@@ -522,9 +524,9 @@ extern PetscFList CCAList;
   Level: beginner
     
 @*/
-int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v)
+PetscErrorCode ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v)
 {
-  int                             ierr;
+  PetscErrorCode ierr;
   ::esi::IndexSpace<int>::Factory *f;
   ::esi::IndexSpace<int>::Factory *(*r)(void);
   char                            name[PETSC_MAX_PATH_LEN];
@@ -551,9 +553,9 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
 
   Level: intermediate
 @*/
-int VecESISetType(Vec V,const char *name)
+PetscErrorCode VecESISetType(Vec V,const char *name)
 {
-  int                                ierr;
+  PetscErrorCode ierr;
   ::esi::Vector<double,int>          *ve;
   ::esi::Vector<double,int>::Factory *f,*(*r)(void);
   ::esi::IndexSpace<int>             *map;
@@ -595,9 +597,9 @@ int VecESISetType(Vec V,const char *name)
 
   Level: intermediate
 @*/
-int ESILoadFactory(char *commname,void *comm,char *classname,void *&f)
+PetscErrorCode ESILoadFactory(char *commname,void *comm,char *classname,void *&f)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   void          *(*r)();
   PetscTruth    flag;
 

@@ -9,13 +9,13 @@
 */
 #if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
 
-EXTERN int PetscSharedMalloc(MPI_Comm,int,int,void**);
+EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,int,int,void**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_Shared"
-int VecDuplicate_Shared(Vec win,Vec *v)
+PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Vec_MPI      *w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 
@@ -48,9 +48,9 @@ int VecDuplicate_Shared(Vec win,Vec *v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-int VecCreate_Shared(Vec vv)
+PetscErrorCode VecCreate_Shared(Vec vv)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  *array;
 
   PetscFunctionBegin;
@@ -117,7 +117,7 @@ static int Petsc_Shared_size   = 100000000;
 */
 static int Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(attr_val);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static int Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extr
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedMemorySetSize"
-int PetscSharedMemorySetSize(int s)
+PetscErrorCode PetscSharedMemorySetSize(int s)
 {
   PetscFunctionBegin;
   Petsc_Shared_size = s;
@@ -139,7 +139,7 @@ int PetscSharedMemorySetSize(int s)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedInitialize"
-int PetscSharedInitialize(MPI_Comm comm)
+PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
 {
   int     rank,ierr,flag;
   size_t  len;
@@ -192,10 +192,11 @@ int PetscSharedInitialize(MPI_Comm comm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedMalloc"
-int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
+PetscErrorCode PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
 {
   char    *value;
-  int     ierr,shift,rank,flag;
+  PetscErrorCode ierr;
+  int     shift,rank,flag;
   usptr_t **arena;
 
   PetscFunctionBegin;
@@ -238,9 +239,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-int VecCreate_Shared(Vec vv)
+PetscErrorCode VecCreate_Shared(Vec vv)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(vv->comm,&size);CHKERRQ(ierr);
@@ -284,9 +285,9 @@ EXTERN_C_END
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-int VecCreateShared(MPI_Comm comm,int n,int N,Vec *v)
+PetscErrorCode VecCreateShared(MPI_Comm comm,int n,int N,Vec *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,v);CHKERRQ(ierr);

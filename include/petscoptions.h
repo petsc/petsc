@@ -6,36 +6,36 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN int  PetscOptionsHasName(const char[],const char[],PetscTruth*);
-EXTERN int  PetscOptionsGetInt(const char[],const char [],int *,PetscTruth*);
-EXTERN int  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
-EXTERN int  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
-EXTERN int  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
-EXTERN int  PetscOptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
-EXTERN int  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],int *,PetscTruth*);
-EXTERN int  PetscOptionsGetString(const char[],const char[],char[],int,PetscTruth*);
-EXTERN int  PetscOptionsGetStringArray(const char[],const char[],char*[],int*,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsHasName(const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetInt(const char[],const char [],int *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],int *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetString(const char[],const char[],char[],int,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetStringArray(const char[],const char[],char*[],int*,PetscTruth*);
 
-EXTERN int  PetscOptionsSetAlias(const char[],const char[]);
-EXTERN int  PetscOptionsSetValue(const char[],const char[]);
-EXTERN int  PetscOptionsClearValue(const char[]);
+EXTERN PetscErrorCode  PetscOptionsSetAlias(const char[],const char[]);
+EXTERN PetscErrorCode  PetscOptionsSetValue(const char[],const char[]);
+EXTERN PetscErrorCode  PetscOptionsClearValue(const char[]);
 
-EXTERN int  PetscOptionsAllUsed(int*);
-EXTERN int  PetscOptionsLeft(void);
-EXTERN int  PetscOptionsPrint(FILE *);
+EXTERN PetscErrorCode  PetscOptionsAllUsed(int*);
+EXTERN PetscErrorCode  PetscOptionsLeft(void);
+EXTERN PetscErrorCode  PetscOptionsPrint(FILE *);
 
-EXTERN int  PetscOptionsCreate(void);
-EXTERN int  PetscOptionsInsert(int*,char ***,const char[]);
-EXTERN int  PetscOptionsInsertFile(const char[]);
-EXTERN int  PetscOptionsInsertString(const char[]);
-EXTERN int  PetscOptionsDestroy(void);
+EXTERN PetscErrorCode  PetscOptionsCreate(void);
+EXTERN PetscErrorCode  PetscOptionsInsert(int*,char ***,const char[]);
+EXTERN PetscErrorCode  PetscOptionsInsertFile(const char[]);
+EXTERN PetscErrorCode  PetscOptionsInsertString(const char[]);
+EXTERN PetscErrorCode  PetscOptionsDestroy(void);
 
-EXTERN int  PetscOptionsReject(const char[],const char[]);
-EXTERN int  PetscOptionsGetAll(char*[]);
+EXTERN PetscErrorCode  PetscOptionsReject(const char[],const char[]);
+EXTERN PetscErrorCode  PetscOptionsGetAll(char*[]);
 
-EXTERN int  PetscOptionsGetenv(MPI_Comm,const char[],char[],int,PetscTruth *);
-EXTERN int  PetscOptionsAtoi(const char[],int*);
-EXTERN int  PetscOptionsAtod(const char[],PetscReal*);
+EXTERN PetscErrorCode  PetscOptionsGetenv(MPI_Comm,const char[],char[],int,PetscTruth *);
+EXTERN PetscErrorCode  PetscOptionsAtoi(const char[],int*);
+EXTERN PetscErrorCode  PetscOptionsAtod(const char[],PetscReal*);
 
 extern PetscTruth PetscOptionsPublish;
 extern int        PetscOptionsPublishCount;
@@ -96,9 +96,9 @@ M*/
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}}
 
-EXTERN int PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
-EXTERN int PetscOptionsEnd_Private(void);
-EXTERN int PetscOptionsHead(const char[]);
+EXTERN PetscErrorCode PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PetscOptionsEnd_Private(void);
+EXTERN PetscErrorCode PetscOptionsHead(const char[]);
 
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
@@ -125,20 +125,20 @@ EXTERN int PetscOptionsHead(const char[]);
 M*/
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
-EXTERN int PetscOptionsInt(const char[],const char[],const char[],int,int*,PetscTruth*);
-EXTERN int PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscTruth*);
-EXTERN int PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscTruth*);
-EXTERN int PetscOptionsName(const char[],const char[],const char[],PetscTruth*);
-EXTERN int PetscOptionsString(const char[],const char[],const char[],const char[],char*,int,PetscTruth*);
-EXTERN int PetscOptionsLogical(const char[],const char[],const char[],PetscTruth,PetscTruth*,PetscTruth*);
-EXTERN int PetscOptionsLogicalGroupBegin(const char[],const char[],const char[],PetscTruth*);
-EXTERN int PetscOptionsLogicalGroup(const char[],const char[],const char[],PetscTruth*);
-EXTERN int PetscOptionsLogicalGroupEnd(const char[],const char[],const char[],PetscTruth*);
-EXTERN int PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],int,PetscTruth*);
-EXTERN int PetscOptionsEList(const char[],const char[],const char[],const char*[],int,const char[],int*,PetscTruth*);
-EXTERN int PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],int*,PetscTruth*);
-EXTERN int PetscOptionsIntArray(const char[],const char[],const char[],int[],int*,PetscTruth*);
-EXTERN int PetscOptionsStringArray(const char[],const char[],const char[],char*[],int*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsInt(const char[],const char[],const char[],int,int*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsName(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsString(const char[],const char[],const char[],const char[],char*,int,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsLogical(const char[],const char[],const char[],PetscTruth,PetscTruth*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsLogicalGroupBegin(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsLogicalGroup(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsLogicalGroupEnd(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],int,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsEList(const char[],const char[],const char[],const char*[],int,const char[],int*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],int*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsIntArray(const char[],const char[],const char[],int[],int*,PetscTruth*);
+EXTERN PetscErrorCode PetscOptionsStringArray(const char[],const char[],const char[],char*[],int*,PetscTruth*);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -38,7 +38,7 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKrcm"
-int SPARSEPACKrcm(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKrcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {
     /* System generated locals */
@@ -46,7 +46,7 @@ int SPARSEPACKrcm(int *root, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    EXTERN int SPARSEPACKdegree(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKdegree(int*, int *, int *, 
 	    int *, int *, int *, int *);
     int lbegin, lvlend, nbr;
 

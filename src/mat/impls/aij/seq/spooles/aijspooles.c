@@ -6,9 +6,9 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SeqAIJSpooles"
-int MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_Spooles       *lu=(Mat_Spooles*)(A->spptr);
@@ -28,8 +28,8 @@ int MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJSpooles"
-int MatAssemblyEnd_SeqAIJSpooles(Mat A,MatAssemblyType mode) {
-  int         ierr;
+PetscErrorCode MatAssemblyEnd_SeqAIJSpooles(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
@@ -49,11 +49,12 @@ int MatAssemblyEnd_SeqAIJSpooles(Mat A,MatAssemblyType mode) {
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJSpooles"
-int MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_Spooles  *lu;
-  int          ierr,m=A->m,n=A->n;
+  PetscErrorCode ierr;
+  int          m=A->m,n=A->n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
@@ -80,11 +81,12 @@ int MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatQRFactorSymbolic_SeqAIJSpooles"
-int MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_Spooles  *lu;   
-  int          ierr,m=A->m,n=A->n;
+  PetscErrorCode ierr;
+  int          m=A->m,n=A->n;
 
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
@@ -109,11 +111,12 @@ int MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJSpooles"
-int MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
   Mat         B;
   Mat_Spooles *lu;   
-  int         ierr,m=A->m,n=A->n;
+  PetscErrorCode ierr;
+  int         m=A->m,n=A->n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */

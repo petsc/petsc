@@ -8,9 +8,10 @@ EXTERN_C_BEGIN
 #include "IJ_mv.h"
 EXTERN_C_END
 
-int MatHYPRE_IJMatrixCreate(Mat v,HYPRE_IJMatrix *ij)
+PetscErrorCode MatHYPRE_IJMatrixCreate(Mat v,HYPRE_IJMatrix *ij)
 {
-  int         ierr,rstart,rend,cstart,cend;
+  PetscErrorCode ierr;
+  int rstart,rend,cstart,cend;
   
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
@@ -27,7 +28,7 @@ the conversion efficient
 /* #include "src/mat/impls/aij/mpi/mpiaij.h" */
 /*  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *)v->data; */
 
-int MatHYPRE_IJMatrixCopy(Mat v,HYPRE_IJMatrix ij)
+PetscErrorCode MatHYPRE_IJMatrixCopy(Mat v,HYPRE_IJMatrix ij)
 {
   int               i,ierr,rstart,rend,ncols;
   const PetscScalar *values;

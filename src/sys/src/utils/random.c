@@ -42,7 +42,7 @@ struct _p_PetscRandom {
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
-int PetscRandomDestroy(PetscRandom r)
+PetscErrorCode PetscRandomDestroy(PetscRandom r)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -79,7 +79,7 @@ int PetscRandomDestroy(PetscRandom r)
 
 .seealso: PetscRandomCreate()
 @*/
-int PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
+PetscErrorCode PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -149,10 +149,11 @@ EXTERN_C_END
 
 .seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
-int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
-  int         ierr,rank;
+  PetscErrorCode ierr;
+  int         rank;
 
   PetscFunctionBegin;
   *r = 0;
@@ -203,7 +204,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
-int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -235,7 +236,7 @@ int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
   int      rank,ierr;
@@ -261,7 +262,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 #define RAND_WRAP() (rand()/(double)((unsigned int)RAND_MAX+1))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -293,11 +294,11 @@ extern double drand48();
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
   char        arch[10];
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *r = 0;
@@ -312,7 +313,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);

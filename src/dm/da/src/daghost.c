@@ -35,7 +35,7 @@
 .seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int w;
 

@@ -5,12 +5,12 @@
 /*
      Prototypes for Minpack coloring routines 
 */
-EXTERN int MINPACKdegr(int*,int *,int *,int *,int *,int *,int *);
-EXTERN int MINPACKdsm(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
-EXTERN int MINPACKido(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
-EXTERN int MINPACKnumsrt(int*,int *,int *,int *,int *,int *,int *);
-EXTERN int MINPACKseq(int*,int *,int *,int *,int *,int *,int *,int *,int *);
-EXTERN int MINPACKsetr(int*,int*,int*,int*,int*,int*,int*);
-EXTERN int MINPACKslo(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKdegr(int*,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKdsm(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKido(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKnumsrt(int*,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKseq(int*,int *,int *,int *,int *,int *,int *,int *,int *);
+EXTERN PetscErrorCode MINPACKsetr(int*,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode MINPACKslo(int*,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *,int *);
 
 #endif

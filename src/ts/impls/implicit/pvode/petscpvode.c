@@ -36,7 +36,7 @@ g
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
 @*/
-int TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
+PetscErrorCode TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
 { 
   TS_PVode     *cvode = (TS_PVode*)ts->data;
 
@@ -56,7 +56,7 @@ int TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPrecond_PVode"
-int TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,booleantype jok,
+PetscErrorCode TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,booleantype jok,
                     booleantype *jcurPtr,realtype _gamma,N_Vector ewt,realtype h,
                     realtype uround,long int *nfePtr,void *P_data,
                     N_Vector vtemp1,N_Vector vtemp2,N_Vector vtemp3)
@@ -64,7 +64,7 @@ int TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,booleantype
   TS           ts = (TS) P_data;
   TS_PVode     *cvode = (TS_PVode*)ts->data;
   PC           pc = cvode->pc;
-  int          ierr;
+  PetscErrorCode ierr;
   Mat          Jac = ts->B;
   Vec          tmpy = cvode->w1;
   PetscScalar  one = 1.0,gm;
@@ -115,7 +115,7 @@ int TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,booleantype
 */    
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_PVode"
-int TSPSolve_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,N_Vector vtemp,
+PetscErrorCode TSPSolve_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,N_Vector vtemp,
                    realtype _gamma,N_Vector ewt,realtype delta,long int *nfePtr,
                    N_Vector r,int lr,void *P_data,N_Vector z)
 { 
@@ -123,7 +123,7 @@ int TSPSolve_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,N_Vector vte
   TS_PVode *cvode = (TS_PVode*)ts->data;
   PC       pc = cvode->pc;
   Vec      rr = cvode->w1,xx = cvode->w2;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -154,7 +154,7 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   TS        ts = (TS) ctx;
   TS_PVode *cvode = (TS_PVode*)ts->data;
   Vec       tmpx = cvode->w1,tmpy = cvode->w2;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -190,11 +190,12 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
    time - time that integrater is  terminated. 
 
 */
-int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
+PetscErrorCode TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 {
   TS_PVode  *cvode = (TS_PVode*)ts->data;
   Vec       sol = ts->vec_sol;
-  int       ierr,i,max_steps = ts->max_steps,flag;
+  int       ierr;
+  int i,max_steps = ts->max_steps,flag;
   double    t,tout;
   realtype  *tmp;
 
@@ -255,10 +256,10 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_PVode"
-int TSDestroy_PVode(TS ts)
+PetscErrorCode TSDestroy_PVode(TS ts)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
@@ -279,10 +280,11 @@ int TSDestroy_PVode(TS ts)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_PVode_Nonlinear"
-int TSSetUp_PVode_Nonlinear(TS ts)
+PetscErrorCode TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*)ts->data;
-  int         ierr,M,locsize;
+  PetscErrorCode ierr;
+  int M,locsize;
   M_Env       machEnv;
   realtype    *tmp;
 
@@ -335,10 +337,11 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_PVode_Nonlinear"
-int TSSetFromOptions_PVode_Nonlinear(TS ts)
+PetscErrorCode TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
-  int        ierr,indx;
+  PetscErrorCode ierr;
+  int indx;
   const char *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth flag;
 
@@ -368,9 +371,9 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSPrintHelp_PVode" 
-int TSPrintHelp_PVode(TS ts,char *p)
+PetscErrorCode TSPrintHelp_PVode(TS ts,char *p)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");CHKERRQ(ierr);
@@ -391,10 +394,10 @@ int TSPrintHelp_PVode(TS ts,char *p)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_PVode" 
-int TSView_PVode(TS ts,PetscViewer viewer)
+PetscErrorCode TSView_PVode(TS ts,PetscViewer viewer)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
-  int        ierr;
+  PetscErrorCode ierr;
   char       *type;
   PetscTruth iascii,isstring;
 
@@ -432,7 +435,7 @@ int TSView_PVode(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetType_Pvode"
-int TSPVodeSetType_PVode(TS ts,TSPVodeType type)
+PetscErrorCode TSPVodeSetType_PVode(TS ts,TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -445,7 +448,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetGMRESRestart_PVode"
-int TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
+PetscErrorCode TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -458,7 +461,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetLinearTolerance_PVode"
-int TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
+PetscErrorCode TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -471,7 +474,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetGramSchmidtType_PVode"
-int TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
+PetscErrorCode TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -485,7 +488,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetTolerance_PVode"
-int TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
+PetscErrorCode TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -499,7 +502,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeGetPC_PVode"
-int TSPVodeGetPC_PVode(TS ts,PC *pc)
+PetscErrorCode TSPVodeGetPC_PVode(TS ts,PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*)ts->data;
 
@@ -513,7 +516,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeGetIterations_PVode"
-int TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
+PetscErrorCode TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -527,7 +530,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeSetExactFinalTime_PVode"
-int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
+PetscErrorCode TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -566,9 +569,9 @@ EXTERN_C_END
           TSPVodeSetExactFinalTime()
 
 @*/
-int TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
+PetscErrorCode TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
 {
-  int ierr,(*f)(TS,int*,int*);
+  PetscErrorCode ierr,(*f)(TS,int*,int*);
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -601,9 +604,9 @@ int TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
           TSPVodeSetExactFinalTime()
 @*/
-int TSPVodeSetType(TS ts,TSPVodeType type)
+PetscErrorCode TSPVodeSetType(TS ts,TSPVodeType type)
 {
-  int ierr,(*f)(TS,TSPVodeType);
+  PetscErrorCode ierr,(*f)(TS,TSPVodeType);
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -637,9 +640,9 @@ int TSPVodeSetType(TS ts,TSPVodeType type)
           TSPVodeSetExactFinalTime()
 
 @*/
-int TSPVodeSetGMRESRestart(TS ts,int restart)
+PetscErrorCode TSPVodeSetGMRESRestart(TS ts,int restart)
 {
-  int ierr,(*f)(TS,int);  
+  PetscErrorCode ierr,(*f)(TS,int);  
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGMRESRestart_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -674,9 +677,9 @@ int TSPVodeSetGMRESRestart(TS ts,int restart)
           TSPVodeSetExactFinalTime()
 
 @*/
-int TSPVodeSetLinearTolerance(TS ts,double tol)
+PetscErrorCode TSPVodeSetLinearTolerance(TS ts,double tol)
 {
-  int ierr,(*f)(TS,double);  
+  PetscErrorCode ierr,(*f)(TS,double);  
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetLinearTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -709,9 +712,9 @@ int TSPVodeSetLinearTolerance(TS ts,double tol)
           TSPVodeSetExactFinalTime()
 
 @*/
-int TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
+PetscErrorCode TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
 {
-  int ierr,(*f)(TS,TSPVodeGramSchmidtType);  
+  PetscErrorCode ierr,(*f)(TS,TSPVodeGramSchmidtType);  
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -750,9 +753,9 @@ int TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
           TSPVodeSetExactFinalTime()
 
 @*/
-int TSPVodeSetTolerance(TS ts,double aabs,double rel)
+PetscErrorCode TSPVodeSetTolerance(TS ts,double aabs,double rel)
 {
-  int ierr,(*f)(TS,double,double);  
+  PetscErrorCode ierr,(*f)(TS,double,double);  
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -782,9 +785,9 @@ int TSPVodeSetTolerance(TS ts,double aabs,double rel)
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
 @*/
-int TSPVodeGetPC(TS ts,PC *pc)
+PetscErrorCode TSPVodeGetPC(TS ts,PC *pc)
 { 
-  int ierr,(*f)(TS,PC *);  
+  PetscErrorCode ierr,(*f)(TS,PC *);  
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetPC_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -815,9 +818,9 @@ int TSPVodeGetPC(TS ts,PC *pc)
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC() 
 @*/
-int TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
+PetscErrorCode TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
 { 
-  int ierr,(*f)(TS,PetscTruth);  
+  PetscErrorCode ierr,(*f)(TS,PetscTruth);  
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetExactFinalTime_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -855,10 +858,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_PVode"
-int TSCreate_PVode(TS ts)
+PetscErrorCode TSCreate_PVode(TS ts)
 {
   TS_PVode *cvode;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ts->ops->destroy         = TSDestroy_PVode;

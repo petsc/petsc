@@ -33,7 +33,7 @@
 .keywords: ghost, exchange
 .seealso: GridGlobalToLocal(), GridLocalToGlobal()
 @*/
-int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghostIndices, PetscDataType dataType,
+PetscErrorCode PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghostIndices, PetscDataType dataType,
                       int *firstVar, InsertMode addv, ScatterMode mode, void *locVars, void *ghostVars)
 {
   int         *numSendGhosts; /* The number of ghosts from each domain */
@@ -54,7 +54,7 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
 #endif
   int          size, rank;
   int          proc, ghost, locIndex, byte;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Initialize communication */

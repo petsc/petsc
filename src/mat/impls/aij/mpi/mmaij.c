@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIAIJ"
-int MatSetUpMultiply_MPIAIJ(Mat mat)
+PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
@@ -134,12 +134,13 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
    Kind of slow! But that's what application programmers get when 
    they are sloppy.
 */
-int DisAssemble_MPIAIJ(Mat A)
+PetscErrorCode DisAssemble_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)A->data;
   Mat          B = aij->B,Bnew;
   Mat_SeqAIJ   *Baij = (Mat_SeqAIJ*)B->data;
-  int          ierr,i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
+  PetscErrorCode ierr;
+  int          i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
   int          *nz,ec;
   PetscScalar  v;
 
@@ -198,10 +199,11 @@ static Vec auglydd = 0,auglyoo = 0;   /* work vectors used to scale the two part
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJDiagonalScaleLocalSetUp"
-int MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
+PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIAIJ  *ina = (Mat_MPIAIJ*) inA->data; /*access private part of matrix */
-  int          ierr,i,n,nt,cstart,cend,no,*garray = ina->garray,*lindices;
+  PetscErrorCode ierr;
+  int          i,n,nt,cstart,cend,no,*garray = ina->garray,*lindices;
   int          *r_rmapd,*r_rmapo;
   
   PetscFunctionBegin;
@@ -257,10 +259,10 @@ int MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJDiagonalScaleLocal"
-int MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
+PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
-  int ierr,(*f)(Mat,Vec);
+  PetscErrorCode ierr,(*f)(Mat,Vec);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatDiagonalScaleLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -273,10 +275,11 @@ int MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal_MPIAIJ"
-int MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
+PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
 {
   Mat_MPIAIJ  *a = (Mat_MPIAIJ*) A->data; /*access private part of matrix */
-  int         ierr,n,i;
+  PetscErrorCode ierr;
+  int         n,i;
   PetscScalar *d,*o,*s;
   
   PetscFunctionBegin;

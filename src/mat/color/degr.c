@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKdegr" 
-int MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,int * iwa)
+PetscErrorCode MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,int * iwa)
 {
     /* System generated locals */
     int i__1, i__2, i__3;

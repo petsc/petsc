@@ -6,9 +6,9 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_MINRES"
-int KSPSetUp_MINRES(KSP ksp)
+PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
@@ -23,9 +23,10 @@ int KSPSetUp_MINRES(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_MINRES"
-int  KSPSolve_MINRES(KSP ksp)
+PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
-  int          ierr,i;
+  PetscErrorCode ierr;
+  int i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
   PetscScalar  rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np;
@@ -211,10 +212,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_MINRES"
-int KSPCreate_MINRES(KSP ksp)
+PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES *minres;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 

@@ -28,7 +28,7 @@
 
 .seealso: MatCreateShell()
 @*/
-int MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
+PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

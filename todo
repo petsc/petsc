@@ -22,7 +22,10 @@ KSP
 
      Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
-   
+
+Viewers
+
+  Change mathematica viewer directory to only compile if mathematica present. Remove all mathematica mesh/grid stuff   
 
 SNES
    Manual pages for SNESConvergedReason

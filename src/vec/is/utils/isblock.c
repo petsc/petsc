@@ -20,9 +20,10 @@
 
    Level: intermediate
 @*/
-int ISCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
+PetscErrorCode ISCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
-  int                ierr,isz,len,i,j,*idx,ival,Nbs;
+  PetscErrorCode ierr;
+  int                isz,len,i,j,*idx,ival,Nbs;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   int                tt, gid1, *nidx;
@@ -91,9 +92,10 @@ int ISCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCompressIndicesSorted"
-int ISCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
+PetscErrorCode ISCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
-  int          ierr,i,j,k,val,len,*idx,*nidx,*idx_local;
+  PetscErrorCode ierr;
+  int          i,j,k,val,len,*idx,*nidx,*idx_local;
   PetscTruth   flg;
 #if defined (PETSC_USE_CTABLE)
   int maxsz;
@@ -145,9 +147,10 @@ int ISCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISExpandIndicesGeneral"
-int ISExpandIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
+PetscErrorCode ISExpandIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
-  int          ierr,len,i,j,k,*idx,*nidx;
+  PetscErrorCode ierr;
+  int          len,i,j,k,*idx,*nidx;
 #if defined (PETSC_USE_CTABLE)
   int          maxsz;
 #else

@@ -297,7 +297,7 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
 #define __FUNCT__ "UserFinalizeLinearSolve"
 int UserFinalizeLinearSolver(UserCtx *userctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
   /* 
      We are all done and don't need to solve any more linear systems, so
      we free the work space.  All PETSc objects should be destroyed when

@@ -19,9 +19,10 @@
    Level: intermediate
 
 @*/
-int DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
+PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
 {
-  int        ierr,info[8],nmax = 8,fd,i;
+  PetscErrorCode ierr;
+  int info[8],nmax = 8,fd,i;
   MPI_Comm   comm;
   char       fieldnametag[32],fieldname[64];
   PetscTruth isbinary,flag;

@@ -24,12 +24,12 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScaleSystem_MPIRowbs"
-int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
+PetscErrorCode MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
   PetscScalar  *xa,*rhsa,*va;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   /* Permute and scale RHS and solution vectors */
@@ -55,12 +55,12 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUnScaleSystem_MPIRowbs"
-int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
+PetscErrorCode MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
   PetscScalar  *xa,*va,*rhsa;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   /* Unpermute and unscale the solution and RHS vectors */
@@ -85,7 +85,7 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseScaledForm_MPIRowbs"
-int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
+PetscErrorCode MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
 

@@ -13,7 +13,7 @@ static int KSPSetUp_PREONLY(KSP ksp)
 #define __FUNCT__ "KSPSolve_PREONLY"
 static int  KSPSolve_PREONLY(KSP ksp)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   Vec        X,B;
   PetscTruth diagonalscale;
 
@@ -52,7 +52,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_PREONLY"
-int KSPCreate_PREONLY(KSP ksp)
+PetscErrorCode KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

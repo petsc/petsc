@@ -7,9 +7,9 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 
-int XiInitFonts(PetscDraw_X *);
-int XiMatchFontSize(XiFont*,int,int);
-int XiLoadFont(PetscDraw_X*,XiFont*);
+PetscErrorCode XiInitFonts(PetscDraw_X *);
+PetscErrorCode XiMatchFontSize(XiFont*,int,int);
+PetscErrorCode XiLoadFont(PetscDraw_X*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
@@ -19,10 +19,10 @@ int XiLoadFont(PetscDraw_X*,XiFont*);
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiFontFixed" 
-int XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
+PetscErrorCode XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!curfont) { ierr = XiInitFonts(XBWin);CHKERRQ(ierr);}
@@ -48,7 +48,7 @@ static int act_nfonts = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiLoadFont" 
-int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
+PetscErrorCode XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 {
   char        font_name[100];
   XFontStruct *FontInfo;
@@ -75,7 +75,7 @@ int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 /* Code to find fonts and their characteristics */
 #undef __FUNCT__  
 #define __FUNCT__ "XiInitFonts" 
-int XiInitFonts(PetscDraw_X *XBWin)
+PetscErrorCode XiInitFonts(PetscDraw_X *XBWin)
 {
   char         **names;
   int          cnt,i,j;
@@ -104,7 +104,7 @@ int XiInitFonts(PetscDraw_X *XBWin)
     names   = XListFontsWithInfo(XBWin->disp,"?x",NFONTS,&cnt,&info);
     j       = 0;
     for (i=0; i<cnt; i++) {
-        int    ierr;
+        PetscErrorCode ierr;
         size_t len;
 
         ierr = PetscStrlen(names[i],&len);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int XiInitFonts(PetscDraw_X *XBWin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiMatchFontSize" 
-int XiMatchFontSize(XiFont *font,int w,int h)
+PetscErrorCode XiMatchFontSize(XiFont *font,int w,int h)
 {
   int i,max,imax,tmp;
 

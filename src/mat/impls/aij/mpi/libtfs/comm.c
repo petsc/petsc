@@ -21,6 +21,7 @@ File Description:
 
 ***********************************comm.c*************************************/
 #include <stdio.h>
+#include "petsc.h"
 
 #if   defined NXSRC
 #ifndef DELTA
@@ -1179,8 +1180,7 @@ proc_sync()
 
 
 /* hmt hack */
-int 
-hmt_xor_ (register int *i1, register int *i2)
+PetscErrorCode hmt_xor_ (register int *i1, register int *i2)
 {
   return(*i1^*i2);
 }

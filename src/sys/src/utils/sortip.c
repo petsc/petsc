@@ -14,7 +14,7 @@
 #define __FUNCT__ "PetscSortIntWithPermutation_Private"
 static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right)
 {
-  int ierr,tmp,i,vl,last;
+  PetscErrorCode ierr,tmp,i,vl,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -57,9 +57,9 @@ static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-int PetscSortIntWithPermutation(int n,const int i[],int idx[])
+PetscErrorCode PetscSortIntWithPermutation(int n,const int i[],int idx[])
 {
-  int ierr,j,k,tmp,ik;
+  PetscErrorCode ierr,j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -85,7 +85,8 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 static int PetscSortRealWithPermutation_Private(const PetscReal v[],int vdx[],int right)
 {
   PetscReal vl;
-  int       ierr,tmp,i,last;
+  PetscErrorCode ierr;
+  int       tmp,i,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -128,7 +129,7 @@ static int PetscSortRealWithPermutation_Private(const PetscReal v[],int vdx[],in
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-int PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
+PetscErrorCode PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
 {
   int       j,k,tmp,ierr;
   PetscReal ik;
@@ -154,7 +155,8 @@ int PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
 #define __FUNCT__ "PetscSortStrWithPermutation_Private"
 static int PetscSortStrWithPermutation_Private(const char* v[],int vdx[],int right)
 {
-  int        ierr,tmp,i,last;
+  PetscErrorCode ierr;
+  int        tmp,i,last;
   PetscTruth gt;
   const char *vl;
 
@@ -201,9 +203,10 @@ static int PetscSortStrWithPermutation_Private(const char* v[],int vdx[],int rig
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-int PetscSortStrWithPermutation(int n,const char* i[],int idx[])
+PetscErrorCode PetscSortStrWithPermutation(int n,const char* i[],int idx[])
 {
-  int        ierr,j,k,tmp;
+  PetscErrorCode ierr;
+  int        j,k,tmp;
   const char *ik;
   PetscTruth gt;
 

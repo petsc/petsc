@@ -24,7 +24,7 @@
     Concepts: cookie^getting new one
 
 @*/
-int PetscRegisterCookie(int *cookie)
+PetscErrorCode PetscRegisterCookie(int *cookie)
 {
   SETERRQ(PETSC_ERR_SUP, "This function is now obsolete. Please use PetscLogClassRegister().");
 }

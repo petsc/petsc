@@ -19,7 +19,7 @@
 #define __FUNCT__ "PCSetUp_NN"
 static int PCSetUp_NN(PC pc)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -49,7 +49,7 @@ static int PCSetUp_NN(PC pc)
 static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS       *pcis = (PC_IS*)(pc->data);
-  int         ierr;
+  PetscErrorCode ierr;
   PetscScalar m_one = -1.0;
   Vec         w = pcis->vec1_global;
 
@@ -118,7 +118,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
 static int PCDestroy_NN(PC pc)
 {
   PC_NN *pcnn = (PC_NN*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -174,9 +174,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_NN"
-int PCCreate_NN(PC pc)
+PetscErrorCode PCCreate_NN(PC pc)
 {
-  int   ierr;
+  PetscErrorCode ierr;
   PC_NN *pcnn;
 
   PetscFunctionBegin;
@@ -228,7 +228,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNCreateCoarseMatrix"
-int PCNNCreateCoarseMatrix (PC pc)
+PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 {
   MPI_Request    *send_request, *recv_request;
   int            i, j, k, ierr;
@@ -436,7 +436,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNApplySchurToChunk"
-int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+PetscErrorCode PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int   i, ierr;
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -476,10 +476,10 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScala
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCNNApplyInterfacePreconditioner"
-int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
+PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_IS* pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
@@ -552,7 +552,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNBalancing"
-int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
+PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
   int            k, ierr;

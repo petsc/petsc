@@ -27,7 +27,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance_RK"
-int TSRKSetTolerance_RK(TS ts,PetscReal aabs)
+PetscErrorCode TSRKSetTolerance_RK(TS ts,PetscReal aabs)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
   
@@ -56,9 +56,9 @@ EXTERN_C_END
 .seealso: TSPVodeSetTolerance()
 
 @*/
-int TSRKSetTolerance(TS ts,PetscReal aabs)
+PetscErrorCode TSRKSetTolerance(TS ts,PetscReal aabs)
 {
-  int ierr,(*f)(TS,PetscReal);  
+  PetscErrorCode ierr,(*f)(TS,PetscReal);  
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSRKSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -244,7 +244,7 @@ static int TSSetUp_Rk(TS ts)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSRkqs"
-int TSRkqs(TS ts,PetscReal t,PetscReal h)
+PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
 {
   TS_Rk		*rk = (TS_Rk*)ts->data;
   int		ierr,j,l;
@@ -435,7 +435,7 @@ static int TSDestroy_Rk(TS ts)
 static int TSSetFromOptions_Rk(TS ts)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
@@ -449,7 +449,7 @@ static int TSSetFromOptions_Rk(TS ts)
 static int TSView_Rk(TS ts,PetscViewer viewer)
 {
    TS_Rk *rk = (TS_Rk*)ts->data;
-   int ierr;
+   PetscErrorCode ierr;
    /*double elapsed;*/
    
    PetscFunctionBegin;
@@ -479,10 +479,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Rk"
-int TSCreate_Rk(TS ts)
+PetscErrorCode TSCreate_Rk(TS ts)
 {
   TS_Rk    *rk;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ts->ops->setup           = TSSetUp_Rk;

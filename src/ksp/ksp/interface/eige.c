@@ -28,10 +28,11 @@
 
 .seealso: KSPComputeEigenvaluesExplicitly()
 @*/
-int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
+PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {
   Vec      in,out;
-  int      ierr,i,M,m,size,*rows,start,end;
+  PetscErrorCode ierr;
+  int i,M,m,size,*rows,start,end;
   Mat      A;
   MPI_Comm comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
@@ -123,7 +124,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
+PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
   int                i,n,ierr,size,rank,dummy;

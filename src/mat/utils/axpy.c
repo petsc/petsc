@@ -25,7 +25,7 @@
 
 .seealso: MatAYPX()
  @*/
-int MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int         m1,m2,n1,n2,ierr;
 
@@ -49,7 +49,7 @@ int MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_Basic"
-int MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int               i,start,end,j,ncols,ierr,m,n;
   const int         *row;
@@ -99,7 +99,7 @@ int MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 .seealso: MatDiagonalSet()
  @*/
-int MatShift(const PetscScalar *a,Mat Y)
+PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
 {
   int    i,start,end,ierr;
 
@@ -139,7 +139,7 @@ int MatShift(const PetscScalar *a,Mat Y)
 
 .seealso: MatShift()
 @*/
-int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
+PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   int    i,start,end,ierr;
 
@@ -191,7 +191,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-int MatAYPX(const PetscScalar *a,Mat X,Mat Y)
+PetscErrorCode MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 {
   PetscScalar one = 1.0;
   int         mX,mY,nX,nY,ierr;
@@ -236,10 +236,11 @@ int MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 .keywords: Mat, compute, explicit, operator
 
 @*/
-int MatComputeExplicitOperator(Mat inmat,Mat *mat)
+PetscErrorCode MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
   Vec      in,out;
-  int      ierr,i,M,m,size,*rows,start,end;
+  PetscErrorCode ierr;
+  int i,M,m,size,*rows,start,end;
   MPI_Comm comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
 
@@ -292,9 +293,9 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
 /* Get the map xtoy which is used by MatAXPY() in the case of SUBSET_NONZERO_PATTERN */
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPYGetxtoy_Private"
-int MatAXPYGetxtoy_Private(int m,int *xi,int *xj,int *xgarray, int *yi,int *yj,int *ygarray, int **xtoy)
+PetscErrorCode MatAXPYGetxtoy_Private(int m,int *xi,int *xj,int *xgarray, int *yi,int *yj,int *ygarray, int **xtoy)
 {
-  int ierr,row,i,nz,xcol,ycol,jx,jy,*x2y;
+  PetscErrorCode ierr,row,i,nz,xcol,ycol,jx,jy,*x2y;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(int),&x2y);CHKERRQ(ierr);

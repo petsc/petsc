@@ -6,8 +6,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqSBAIJSpooles"
-int MatDestroy_SeqSBAIJSpooles(Mat A) {
-  int         ierr;
+PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   /* SeqSBAIJ_Spooles isn't really the matrix that USES spooles, */
@@ -22,8 +23,10 @@ int MatDestroy_SeqSBAIJSpooles(Mat A) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqSBAIJSpooles"
-int MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) {
-  int         ierr,bs;
+PetscErrorCode MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) \
+{
+  PetscErrorCode ierr;
+  int bs;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
@@ -44,7 +47,7 @@ int MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_SeqSBAIJSpooles"
-int MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
+PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
 { 
   Mat_Spooles *lu = (Mat_Spooles*)F->spptr; 
   int         neg,zero,pos;
@@ -60,11 +63,12 @@ int MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJSpooles"
-int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
   Mat         B;
   Mat_Spooles *lu;   
-  int         ierr,m=A->m,n=A->n;
+  PetscErrorCode ierr;
+  int m=A->m,n=A->n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
@@ -89,10 +93,10 @@ int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATSEQSBAIJ matrix */
   /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
 
@@ -167,8 +171,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBAIJSpooles"
-int MatCreate_SeqSBAIJSpooles(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ */
@@ -218,8 +223,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBAIJSpooles"
-int MatCreate_SBAIJSpooles(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_SBAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJSpooles or MPISBAIJSpooles */

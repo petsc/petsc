@@ -3,7 +3,7 @@
 */
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
-extern int DALocalToLocalCreate(DA);
+EXTERN PetscErrorCode DALocalToLocalCreate(DA);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetScatter"
@@ -32,9 +32,9 @@ extern int DALocalToLocalCreate(DA);
 
 .seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+PetscErrorCode DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

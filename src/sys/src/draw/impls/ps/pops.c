@@ -23,9 +23,9 @@
 
 .seealso: PetscDrawDestroy(), PetscDrawOpenX(), PetscDrawCreate(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw()
 @*/
-int PetscDrawOpenPS(MPI_Comm comm,char *filename,PetscDraw *draw)
+PetscErrorCode PetscDrawOpenPS(MPI_Comm comm,char *filename,PetscDraw *draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(comm,filename,0,0,0,0,0,draw);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ static PetscTruth rgbfilled = PETSC_FALSE;
 static int PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 {
   PetscReal     xx,yy;
-  int           ierr;
+  PetscErrorCode ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -73,7 +73,7 @@ static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal x
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1,x2,y2;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   x1 = XTRANS(draw,xl);   x2  = XTRANS(draw,xr); 
@@ -88,7 +88,8 @@ static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal x
 static int PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,PetscReal  y)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  int           ierr,w,h;
+  PetscErrorCode ierr;
+  int           w,h;
 
   PetscFunctionBegin;
   w = (int)((WIDTH)*x*(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
@@ -115,7 +116,7 @@ static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,cons
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
@@ -131,7 +132,7 @@ static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,in
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
@@ -149,7 +150,7 @@ static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscR
                           PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  int           ierr;
+  PetscErrorCode ierr;
   PetscReal     x1,y_1,x2,y2,x3,y3;
 
   PetscFunctionBegin;
@@ -175,7 +176,7 @@ static int PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,Petsc
                           PetscReal Y2,int c1,int c2,int c3,int c4)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  int           ierr;
+  PetscErrorCode ierr;
   PetscReal     x1,y_1,x2,y2,x3,y3,x4,y4;
 
   PetscFunctionBegin;
@@ -198,7 +199,7 @@ static int PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,Petsc
 static int PetscDrawDestroy_PS(PetscDraw draw)
 {
   PetscDraw_PS *ps = (PetscDraw_PS*)draw->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   show;
   char         *filename,par[PETSC_MAX_PATH_LEN];
  
@@ -220,7 +221,7 @@ static int PetscDrawDestroy_PS(PetscDraw draw)
 #define __FUNCT__ "PetscDrawSynchronizedFlush_PS" 
 static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -232,7 +233,7 @@ static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 #define __FUNCT__ "PetscDrawSynchronizedClear_PS" 
 static int PetscDrawSynchronizedClear_PS(PetscDraw draw)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -276,10 +277,11 @@ static struct _PetscDrawOps DvOps = { 0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_PS" 
-int PetscDrawCreate_PS(PetscDraw draw)
+PetscErrorCode PetscDrawCreate_PS(PetscDraw draw)
 {
   PetscDraw_PS  *ps;
-  int           ierr,ncolors,i;
+  PetscErrorCode ierr;
+  int           ncolors,i;
   unsigned char *red,*green,*blue;
   static int    filecount = 0;
   char          buff[32];
@@ -455,7 +457,8 @@ static int PetscDrawInterpolatedTriangle_PS(PetscDraw_PS* ps,PetscReal x1,PetscR
   PetscReal lc,rc = 0.0,lx,rx = 0.0,xx,y;
   PetscReal rc_lc,rx_lx,t2_t1,x2_x1,t3_t1,x3_x1,t3_t2,x3_x2;
   PetscReal R_y2_y_1,R_y3_y_1,R_y3_y2;
-  int       ierr,c;
+  PetscErrorCode ierr;
+  int       c;
 
   PetscFunctionBegin;
   /*

@@ -15,7 +15,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_Matlab"
-int DAView_Matlab(DA da,PetscViewer viewer)
+PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
   int            dim,m,n,p,dof,swidth;
@@ -49,7 +49,7 @@ int DAView_Matlab(DA da,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_Binary"
-int DAView_Binary(DA da,PetscViewer viewer)
+PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
   int            i,dim,m,n,p,dof,swidth,M,N,P;
@@ -177,9 +177,10 @@ int DAView_Binary(DA da,PetscViewer viewer)
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
-int DAView(DA da,PetscViewer viewer)
+PetscErrorCode DAView(DA da,PetscViewer viewer)
 {
-  int        ierr,i,dof = da->w;
+  PetscErrorCode ierr;
+  int i,dof = da->w;
   PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth ismatlab;
@@ -255,7 +256,7 @@ int DAView(DA da,PetscViewer viewer)
 
 .seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
+PetscErrorCode DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -292,7 +293,7 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
 
 .seealso: DAGetInfo(), DAGetCorners()
 @*/
-int DAGetLocalInfo(DA da,DALocalInfo *info)
+PetscErrorCode DAGetLocalInfo(DA da,DALocalInfo *info)
 {
   int w;
 

@@ -22,9 +22,9 @@
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
 @*/
-int KSPGMRESSetPreAllocateVectors(KSP ksp)
+PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
-  int ierr,(*f)(KSP);
+  PetscErrorCode ierr,(*f)(KSP);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void (**)(void))&f);CHKERRQ(ierr);

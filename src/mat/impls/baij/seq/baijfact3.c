@@ -11,7 +11,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
-int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
   IS          isicol;

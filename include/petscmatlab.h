@@ -20,15 +20,15 @@ extern int MATLABENGINE_COOKIE;
 S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
-EXTERN int PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
-EXTERN int PetscMatlabEngineDestroy(PetscMatlabEngine);
-EXTERN int PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
-EXTERN int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-EXTERN int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
-EXTERN int PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
-EXTERN int PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
-EXTERN int PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
-EXTERN int PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
+EXTERN PetscErrorCode PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
+EXTERN PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine);
+EXTERN PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
+EXTERN PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+EXTERN PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+EXTERN PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
+EXTERN PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
+EXTERN PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
+EXTERN PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 
 EXTERN PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm);
 

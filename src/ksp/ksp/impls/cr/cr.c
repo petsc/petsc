@@ -5,7 +5,7 @@
 #define __FUNCT__ "KSPSetUp_CR"
 static int KSPSetUp_CR(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,"no right preconditioning for KSPCR");}
@@ -133,7 +133,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CR"
-int KSPCreate_CR(KSP ksp)
+PetscErrorCode KSPCreate_CR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->pc_side                   = PC_LEFT;

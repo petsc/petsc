@@ -16,7 +16,7 @@
 
 .seealso: ISColoringView(), MatGetColoring()
 @*/
-int ISColoringDestroy(ISColoring iscoloring)
+PetscErrorCode ISColoringDestroy(ISColoring iscoloring)
 {
   int i,ierr;
 
@@ -53,7 +53,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 
 .seealso: ISColoringDestroy(), ISColoringGetIS(), MatGetColoring()
 @*/
-int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
+PetscErrorCode ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
   int        i,ierr;
   PetscTruth iascii;
@@ -102,9 +102,9 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 
 .seealso: ISColoringRestoreIS(), ISColoringView()
 @*/
-int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
+PetscErrorCode ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
@@ -166,7 +166,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
 
 .seealso: ISColoringGetIS(), ISColoringView()
 @*/
-int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
+PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 {
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
@@ -205,9 +205,10 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
 @*/
-int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColoring *iscoloring)
+PetscErrorCode ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColoring *iscoloring)
 {
-  int        ierr,size,rank,base,top,tag,nc,ncwork,i;
+  PetscErrorCode ierr;
+  int        size,rank,base,top,tag,nc,ncwork,i;
   PetscTruth flg;
   MPI_Status status;
 
@@ -276,7 +277,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColori
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningCount()
 
 @*/
-int ISPartitioningToNumbering(IS part,IS *is)
+PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm comm;
   int      i,ierr,size,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
@@ -362,7 +363,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
         MatPartitioningSetNParts()
 
 @*/
-int ISPartitioningCount(IS part,int count[])
+PetscErrorCode ISPartitioningCount(IS part,int count[])
 {
   MPI_Comm comm;
   int      i,ierr,size,*indices,np,npt,n,*lsizes;
@@ -430,7 +431,7 @@ int ISPartitioningCount(IS part,int count[])
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices()
 @*/
-int ISAllGather(IS is,IS *isout)
+PetscErrorCode ISAllGather(IS is,IS *isout)
 {
   int      *indices,*sizes,size,*offsets,n,*lindices,i,N,ierr;
   MPI_Comm comm;
@@ -491,7 +492,7 @@ int ISAllGather(IS is,IS *isout)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-int ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *outN,int *outindices[])
+PetscErrorCode ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *outN,int *outindices[])
 {
   int *indices,*sizes,size,*offsets,i,N,ierr;
 
@@ -545,7 +546,7 @@ int ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *outN,int *o
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISAllGatherIndices()
 @*/
-int ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue *outindices[])
+PetscErrorCode ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
   int             *sizes,size,*offsets,i,N,ierr;

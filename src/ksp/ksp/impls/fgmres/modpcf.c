@@ -38,9 +38,9 @@
 .seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
 
 @*/
-int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,int (*d)(void*))
+PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,int (*d)(void*))
 {
-  int ierr,(*f)(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int (*)(void*));
+  PetscErrorCode ierr,(*f)(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int (*)(void*));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -77,7 +77,7 @@ You can use this as a template!
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void* dummy)
+PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void* dummy)
 {
   PetscFunctionBegin;
 
@@ -108,10 +108,11 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_no
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-int KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void *dummy)
+PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void *dummy)
 {
   PC         pc;
-  int        ierr,maxits;
+  PetscErrorCode ierr;
+  int maxits;
   KSP        sub_ksp;
   PetscReal  rtol,atol,dtol;
   PetscTruth isksp;

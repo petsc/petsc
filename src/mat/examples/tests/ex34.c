@@ -10,7 +10,7 @@ static char help[] = "Reads a matrix and vector from a file and writes to anothe
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  flg;
   Vec         x;
   Mat         A;

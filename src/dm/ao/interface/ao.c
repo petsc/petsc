@@ -36,9 +36,9 @@ int AOEvents[AO_MAX_EVENTS] = {0};
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-int AOView(AO ao,PetscViewer viewer)
+PetscErrorCode AOView(AO ao,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
@@ -64,9 +64,9 @@ int AOView(AO ao,PetscViewer viewer)
 
 .seealso: AOCreateBasic()
 @*/
-int AODestroy(AO ao)
+PetscErrorCode AODestroy(AO ao)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ao) PetscFunctionReturn(0);
@@ -111,7 +111,7 @@ int AODestroy(AO ao)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOApplicationToPetscIS(),AOPetscToApplication()
 @*/
-int AOPetscToApplicationIS(AO ao,IS is)
+PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 {
   int        n,*ia,ierr;
   PetscTruth flag;
@@ -159,7 +159,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOApplicationToPetscIS(AO ao,IS is)
+PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
 {
   int        n,*ia,ierr;
   PetscTruth flag;
@@ -206,9 +206,9 @@ int AOApplicationToPetscIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOPetscToApplication(AO ao,int n,int ia[])
+PetscErrorCode AOPetscToApplication(AO ao,int n,int ia[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
@@ -242,9 +242,9 @@ int AOPetscToApplication(AO ao,int n,int ia[])
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOApplicationToPetsc(AO ao,int n,int ia[])
+PetscErrorCode AOApplicationToPetsc(AO ao,int n,int ia[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
@@ -271,9 +271,9 @@ int AOApplicationToPetsc(AO ao,int n,int ia[])
 .keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
+PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
@@ -301,9 +301,9 @@ int AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
+PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
@@ -331,9 +331,9 @@ int AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
+PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
@@ -361,9 +361,9 @@ int AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
+PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);

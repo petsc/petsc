@@ -42,7 +42,7 @@
 /*                                                                */
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgenqmd" 
-int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *invp, int *deg, int *marker, int *
 	rchset, int *nbrhd, int *qsize, int *qlink, int *nofsub)
 {
@@ -51,9 +51,9 @@ int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int ndeg, irch, node, nump1, j, inode;
-    EXTERN int SPARSEPACKqmdqt(int*, int *, int *, int *, int *, int *, int *);
+    EXTERN PetscErrorCode SPARSEPACKqmdqt(int*, int *, int *, int *, int *, int *, int *);
     int ip, np, mindeg, search;
-    EXTERN int SPARSEPACKqmdrch(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKqmdrch(int*, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
 	   SPARSEPACKqmdupd(int*, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);

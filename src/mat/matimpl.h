@@ -116,12 +116,12 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-EXTERN int MatConvert_Basic(Mat,const MatType,Mat*);
-EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
-EXTERN int MatView_Private(Mat);
-EXTERN int MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
-EXTERN int MatHeaderCopy(Mat,Mat);
-EXTERN int MatAXPYGetxtoy_Private(int,int*,int*,int*, int*,int*,int*, int**);
+EXTERN PetscErrorCode MatConvert_Basic(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
+EXTERN PetscErrorCode MatView_Private(Mat);
+EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
+EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
+EXTERN PetscErrorCode MatAXPYGetxtoy_Private(int,int*,int*,int*, int*,int*,int*, int**);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -153,17 +153,17 @@ typedef struct {
   int           nprocessed;             /* number of messages already processed */
 } MatStash;
 
-EXTERN int MatStashCreate_Private(MPI_Comm,int,MatStash*);
-EXTERN int MatStashDestroy_Private(MatStash*);
-EXTERN int MatStashScatterEnd_Private(MatStash*);
-EXTERN int MatStashSetInitialSize_Private(MatStash*,int);
-EXTERN int MatStashGetInfo_Private(MatStash*,int*,int*);
-EXTERN int MatStashValuesRow_Private(MatStash*,int,int,const int[],const MatScalar[]);
-EXTERN int MatStashValuesCol_Private(MatStash*,int,int,const int[],const MatScalar[],int);
-EXTERN int MatStashValuesRowBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
-EXTERN int MatStashValuesColBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
-EXTERN int MatStashScatterBegin_Private(MatStash*,int*);
-EXTERN int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
+EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,int,MatStash*);
+EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
+EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
+EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,int);
+EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,int*,int*);
+EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,int,int,const int[],const MatScalar[]);
+EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,int,int,const int[],const MatScalar[],int);
+EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
+EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
+EXTERN PetscErrorCode MatStashScatterBegin_Private(MatStash*,int*);
+EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2

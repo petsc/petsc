@@ -30,9 +30,9 @@
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateNaturalVector()
 @*/
-int DACreateGlobalVector(DA da,Vec* g)
+PetscErrorCode DACreateGlobalVector(DA da,Vec* g)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -77,7 +77,7 @@ int DACreateGlobalVector(DA da,Vec* g)
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DACreateNaturalVector(DA da,Vec* g)
+PetscErrorCode DACreateNaturalVector(DA da,Vec* g)
 {
   int cnt,ierr;
 

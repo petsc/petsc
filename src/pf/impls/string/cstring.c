@@ -8,9 +8,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFView_String"
-int PFView_String(void *value,PetscViewer viewer)
+PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -23,9 +23,9 @@ int PFView_String(void *value,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFDestroy_String"
-int PFDestroy_String(void *value)
+PetscErrorCode PFDestroy_String(void *value)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrfree((char*)value);CHKERRQ(ierr);
@@ -49,10 +49,10 @@ int PFDestroy_String(void *value)
 .seealso: PFSetFromOptions()
 
 */
-int PFStringCreateFunction(PF pf,char *string,void **f)
+PetscErrorCode PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  int        ierr;
+  PetscErrorCode ierr;
   char       task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
   FILE       *fd;
   PetscTruth tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
@@ -98,9 +98,9 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFSetFromOptions_String"
-int PFSetFromOptions_String(PF pf)
+PetscErrorCode PFSetFromOptions_String(PF pf)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   char       value[PETSC_MAX_PATH_LEN];
   int        (*f)(void*,int,PetscScalar*,PetscScalar*) = 0;
@@ -120,9 +120,9 @@ typedef int (*FCN)(void*,int,PetscScalar*,PetscScalar*); /* force argument to ne
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_String"
-int PFCreate_String(PF pf,void *value)
+PetscErrorCode PFCreate_String(PF pf,void *value)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   FCN        f = 0;
 
   PetscFunctionBegin;

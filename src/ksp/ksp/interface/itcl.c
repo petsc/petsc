@@ -11,7 +11,7 @@
 */
 #define MAXSETFROMOPTIONS 5
 int numberofsetfromoptions = 0;
-int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
+PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPAddOptionsChecker"
@@ -29,7 +29,7 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 .seealso: KSPSetFromOptions()
 @*/
-int KSPAddOptionsChecker(int (*kspcheck)(KSP))
+PetscErrorCode KSPAddOptionsChecker(int (*kspcheck)(KSP))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
@@ -76,9 +76,9 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP))
 
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-int KSPSetOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCSetOptionsPrefix(ksp->pc,prefix);CHKERRQ(ierr);
@@ -108,9 +108,9 @@ int KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-int KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCAppendOptionsPrefix(ksp->pc,prefix);CHKERRQ(ierr);
@@ -141,9 +141,9 @@ int KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
-int KSPGetOptionsPrefix(KSP ksp,char *prefix[])
+PetscErrorCode KSPGetOptionsPrefix(KSP ksp,char *prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);

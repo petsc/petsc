@@ -19,9 +19,9 @@ typedef struct {
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
+PetscErrorCode TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscScalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
@@ -65,7 +65,8 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
   TS_CN       *cn = (TS_CN*)ts->data;
   Vec         sol = ts->vec_sol,update = cn->update;
   Vec         rhs = cn->rhs;
-  int         ierr,i,max_steps = ts->max_steps,its;
+  PetscErrorCode ierr;
+  int i,max_steps = ts->max_steps,its;
   PetscScalar dt = ts->time_step,two = 2.0;
   KSP         ksp;
 
@@ -111,7 +112,8 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
   Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
-  int          ierr,i,max_steps = ts->max_steps,its;
+  PetscErrorCode ierr;
+  int i,max_steps = ts->max_steps,its;
   PetscScalar  dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure str;
   KSP          ksp;
@@ -169,7 +171,8 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 {
   Vec   sol = ts->vec_sol;
-  int   ierr,i,max_steps = ts->max_steps,its,lits;
+  PetscErrorCode ierr;
+  int i,max_steps = ts->max_steps,its,lits;
   TS_CN *cn = (TS_CN*)ts->data;
   
   PetscFunctionBegin;
@@ -200,7 +203,7 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 static int TSDestroy_CN(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
@@ -217,11 +220,12 @@ static int TSDestroy_CN(TS ts)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSCnFunction"
-int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
+PetscErrorCode TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS          ts = (TS) ctx;
   PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
-  int         ierr,i,n;
+  PetscErrorCode ierr;
+  int i,n;
 
   PetscFunctionBegin;
   /* apply user provided function */
@@ -248,10 +252,10 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSCnJacobian"
-int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS           ts = (TS) ctx;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
@@ -275,7 +279,7 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  two = 2.0,neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
@@ -298,7 +302,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -311,7 +315,7 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 static int TSSetUp_CN_Nonlinear(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -326,7 +330,7 @@ static int TSSetUp_CN_Nonlinear(TS ts)
 #define __FUNCT__ "TSSetFromOptions_CN_Linear"
 static int TSSetFromOptions_CN_Linear(TS ts)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
@@ -337,7 +341,7 @@ static int TSSetFromOptions_CN_Linear(TS ts)
 #define __FUNCT__ "TSSetFromOptions_CN_Nonlinear"
 static int TSSetFromOptions_CN_Nonlinear(TS ts)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
@@ -364,10 +368,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_CN"
-int TSCreate_CN(TS ts)
+PetscErrorCode TSCreate_CN(TS ts)
 {
   TS_CN      *cn;
-  int        ierr;
+  PetscErrorCode ierr;
   KSP        ksp;
 
   PetscFunctionBegin;

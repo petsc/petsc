@@ -48,10 +48,10 @@
 
 .seealso: PetscGetUserName()
 @*/
-int PetscGetHostName(char name[],int nlen)
+PetscErrorCode PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
-  int            ierr;
+  PetscErrorCode ierr;
   PetscTruth     flag;
 #if defined(PETSC_HAVE_UNAME) && !defined(PARCH_win32) && !defined(PARCH_win32_gnu)
   struct utsname utname;

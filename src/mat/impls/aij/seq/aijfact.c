@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
-int MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
 
@@ -16,12 +16,12 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol
 }
 
 
-EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
-EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
+EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
-EXTERN int SPARSEKIT2dperm(int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*,int*,int*,int*);
-EXTERN int SPARSEKIT2ilutp(int*,PetscScalar*,int*,int*,int*,PetscReal,PetscReal*,int*,PetscScalar*,int*,int*,int*,PetscScalar*,int*,int*,int*);
-EXTERN int SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscScalar*,int*);
+EXTERN PetscErrorCode SPARSEKIT2dperm(int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode SPARSEKIT2ilutp(int*,PetscScalar*,int*,int*,int*,PetscReal,PetscReal*,int*,PetscScalar*,int*,int*,int*,PetscScalar*,int*,int*,int*);
+EXTERN PetscErrorCode SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscScalar*,int*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ"
@@ -46,7 +46,7 @@ EXTERN int SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscS
 
      ------------------------------------------------------------
 */
-int MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
@@ -263,7 +263,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
-int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
@@ -422,11 +422,11 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *
   PetscFunctionReturn(0); 
 }
 /* ----------------------------------------------------------- */
-EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
+EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
-int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
@@ -574,7 +574,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUsePETSc_SeqAIJ"
-int MatUsePETSc_SeqAIJ(Mat A)
+PetscErrorCode MatUsePETSc_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ;
@@ -586,9 +586,9 @@ int MatUsePETSc_SeqAIJ(Mat A)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqAIJ"
-int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Mat C;
 
   PetscFunctionBegin;
@@ -601,7 +601,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ"
-int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
@@ -652,7 +652,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
-int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   int          n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
@@ -702,7 +702,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveAdd_SeqAIJ"
-int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
+PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
@@ -753,7 +753,7 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 /* -------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqAIJ"
-int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
@@ -810,7 +810,7 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
-int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
+PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
@@ -864,11 +864,11 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
-EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
-int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
@@ -1093,10 +1093,10 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
-int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  int                 ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin; 
   if (!a->sbaijMat){
@@ -1112,10 +1112,10 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
-int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscTruth          perm_identity;
  
   PetscFunctionBegin;   
@@ -1135,10 +1135,10 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
-int MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscTruth          perm_identity;
  
   PetscFunctionBegin;   

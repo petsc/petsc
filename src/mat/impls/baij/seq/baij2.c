@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqBAIJ"
-int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val,ival;
@@ -71,7 +71,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_SeqBAIJ_Private"
-int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*c;
   int          *smap,i,k,kstart,kend,ierr,oldcols = a->nbs,*lens;
@@ -156,7 +156,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_SeqBAIJ"
-int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   IS          is1,is2;
@@ -201,9 +201,9 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_SeqBAIJ"
-int MatGetSubMatrices_SeqBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -224,7 +224,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReu
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_1"
-int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,sum;
@@ -253,13 +253,14 @@ int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_2"
-int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,*xb,sum1,sum2;
   PetscScalar     x1,x2;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -289,12 +290,13 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_3"
-int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar  *x,*z,*xb,sum1,sum2,sum3,x1,x2,x3;
   MatScalar    *v;
-  int          ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int  mbs=a->mbs,i,*idx,*ii,j,n;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*v,*z,*xb)
@@ -329,12 +331,13 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_4"
-int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -367,12 +370,13 @@ int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_5"
-int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*xb,*z,*x;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -407,13 +411,14 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_6"
-int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
   PetscScalar     x1,x2,x3,x4,x5,x6;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int   mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -448,13 +453,14 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_7"
-int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
   PetscScalar     x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -494,12 +500,13 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_N"
-int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,*xb,*work,*workt;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,bs=a->bs,j,n,bs2=a->bs2;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,bs=a->bs,j,n,bs2=a->bs2;
   int             ncols,k;
 
   PetscFunctionBegin;
@@ -538,12 +545,13 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_1"
-int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,sum;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -575,13 +583,14 @@ int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_2"
-int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2;
   PetscScalar     x1,x2;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -619,12 +628,13 @@ int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_3"
-int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2,sum3,x1,x2,x3;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -663,12 +673,13 @@ int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_4"
-int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii;
+  PetscErrorCode ierr;
+  int  mbs=a->mbs,i,*idx,*ii;
   int             j,n;
 
   PetscFunctionBegin;
@@ -710,12 +721,13 @@ int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_5"
-int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -756,13 +768,14 @@ int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_6"
-int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
   PetscScalar     x1,x2,x3,x4,x5,x6;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -805,13 +818,14 @@ int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_7"
-int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
   PetscScalar     x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -855,7 +869,7 @@ int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_N"
-int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar    *x,*z,*xb,*work,*workt,*y;
@@ -904,7 +918,7 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTranspose_SeqBAIJ"
-int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
+PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *xg,*zg,*zb,zero = 0.0;
@@ -1072,7 +1086,7 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqBAIJ"
-int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -1202,7 +1216,7 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqBAIJ"
-int MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
   int         totalnz = a->bs2*a->nz;
@@ -1224,7 +1238,7 @@ int MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqBAIJ"
-int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
+PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   MatScalar   *v = a->a;
@@ -1265,10 +1279,10 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_SeqBAIJ"
-int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
+PetscErrorCode MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data,*b = (Mat_SeqBAIJ *)B->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
@@ -1296,10 +1310,11 @@ int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_SeqBAIJ"
-int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
+PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
-  int          ierr,i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
+  PetscErrorCode ierr;
+  int  i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
   PetscScalar  *x,zero = 0.0;
   MatScalar    *aa,*aa_j;
 
@@ -1332,12 +1347,13 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_SeqBAIJ"
-int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
+PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar  *l,*r,x,*li,*ri;
   MatScalar    *aa,*v;
-  int          ierr,i,j,k,lm,rn,M,m,n,*ai,*aj,mbs,tmp,bs,bs2;
+  PetscErrorCode ierr;
+  int i,j,k,lm,rn,M,m,n,*ai,*aj,mbs,tmp,bs,bs2;
 
   PetscFunctionBegin;
   ai  = a->i;
@@ -1390,7 +1406,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_SeqBAIJ"
-int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
 
@@ -1421,10 +1437,10 @@ int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_SeqBAIJ"
-int MatZeroEntries_SeqBAIJ(Mat A)
+PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));CHKERRQ(ierr);

@@ -21,9 +21,9 @@
    Concepts: drawing^line
 
 @*/
-int PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+PetscErrorCode PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
@@ -50,9 +50,9 @@ int PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscRea
    Level: advanced
 
 @*/
-int PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
+PetscErrorCode PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;

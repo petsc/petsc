@@ -3,13 +3,13 @@
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN int MatPartitioningCreate_Current(MatPartitioning);
-EXTERN int MatPartitioningCreate_Square(MatPartitioning);
-EXTERN int MatPartitioningCreate_Parmetis(MatPartitioning);
-EXTERN int MatPartitioningCreate_Chaco(MatPartitioning);
-EXTERN int MatPartitioningCreate_Jostle(MatPartitioning);
-EXTERN int MatPartitioningCreate_Party(MatPartitioning);
-EXTERN int MatPartitioningCreate_Scotch(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Jostle(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
+EXTERN PetscErrorCode MatPartitioningCreate_Scotch(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -36,9 +36,9 @@ EXTERN_C_END
 
 .seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterDestroy()
 @*/
-int MatPartitioningRegisterAll(const char path[])
+PetscErrorCode MatPartitioningRegisterAll(const char path[])
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);

@@ -16,12 +16,12 @@
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-int PCInitializePackage(const char path[]) {
+PetscErrorCode PCInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
@@ -73,12 +73,12 @@ int PCInitializePackage(const char path[]) {
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-int KSPInitializePackage(const char path[]) {
+PetscErrorCode KSPInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
@@ -123,9 +123,9 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-int PetscDLLibraryRegister(char *path)
+PetscErrorCode PetscDLLibraryRegister(char *path)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
 

@@ -20,9 +20,9 @@
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
           PetscViewerSetType()
 @*/
-int PetscViewerFlush(PetscViewer viewer)
+PetscErrorCode PetscViewerFlush(PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

@@ -27,11 +27,11 @@ PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;
 .keywords: map, set, type
 .seealso PetscMapGetType(), PetscMapCreate()
 @*/
-int PetscMapSetType(PetscMap map, const PetscMapType method)
+PetscErrorCode PetscMapSetType(PetscMap map, const PetscMapType method)
 {
   int      (*r)(PetscMap);
   PetscTruth match;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
@@ -70,9 +70,9 @@ int PetscMapSetType(PetscMap map, const PetscMapType method)
 .keywords: map, get, type, name
 .seealso PetscMapSetType(), PetscMapCreate()
 @*/
-int PetscMapGetType(PetscMap map, PetscMapType *type)
+PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
@@ -129,10 +129,10 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapRegister"
-int PetscMapRegister(const char sname[], const char path[], const char name[], int (*function)(PetscMap))
+PetscErrorCode PetscMapRegister(const char sname[], const char path[], const char name[], int (*function)(PetscMap))
 {
   char fullname[PETSC_MAX_PATH_LEN];
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
@@ -155,9 +155,9 @@ int PetscMapRegister(const char sname[], const char path[], const char name[], i
 .keywords: map, register, destroy
 .seealso: PetscMapRegister(), PetscMapRegisterAll()
 @*/
-int PetscMapRegisterDestroy()
+PetscErrorCode PetscMapRegisterDestroy()
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscMapList != PETSC_NULL) {

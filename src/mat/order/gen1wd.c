@@ -28,7 +28,7 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgen1wd" 
-int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *nblks, int *xblk, int *perm, int *
 	xls, int *ls)
 {
@@ -37,10 +37,10 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, nsep, lnum, nlvl, root;
-    EXTERN int SPARSEPACKfn1wd(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKfn1wd(int*, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     int i, j, k, ccsize;
-    EXTERN int SPARSEPACKrevrse(int*, int *), SPARSEPACKrootls(
+    EXTERN PetscErrorCode SPARSEPACKrevrse(int*, int *), SPARSEPACKrootls(
 	    int *, int *, int *, int *, int *, int *, int *);
     int num;
 

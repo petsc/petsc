@@ -40,19 +40,19 @@ typedef struct {
 } Mat_SuperLU;
 
 
-EXTERN int MatFactorInfo_SuperLU(Mat,PetscViewer);
-EXTERN int MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
+EXTERN PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN_C_BEGIN
-EXTERN int MatConvert_SuperLU_SeqAIJ(Mat,const MatType,Mat*);
-EXTERN int MatConvert_SeqAIJ_SuperLU(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_SuperLU_SeqAIJ(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat,const MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SuperLU"
-int MatDestroy_SuperLU(Mat A)
+PetscErrorCode MatDestroy_SuperLU(Mat A)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
 
   PetscFunctionBegin;
@@ -78,9 +78,9 @@ int MatDestroy_SuperLU(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SuperLU"
-int MatView_SuperLU(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_SuperLU       *lu=(Mat_SuperLU*)(A->spptr);
@@ -100,8 +100,8 @@ int MatView_SuperLU(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SuperLU"
-int MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
-  int         ierr;
+PetscErrorCode MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_SuperLU *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
@@ -117,7 +117,7 @@ int MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
 #include "src/mat/impls/dense/seq/dense.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNull_SuperLU"
-int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
+PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 {
   Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
   int           numRows = A->m,numCols = A->n;
@@ -192,11 +192,12 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SuperLU"
-int MatSolve_SuperLU(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
   PetscScalar   *barray,*xarray;
-  int           ierr,info,i;
+  PetscErrorCode ierr;
+  int           info,i;
   SuperLUStat_t stat;
   double        ferr,berr; 
 
@@ -260,11 +261,12 @@ int MatSolve_SuperLU(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
-int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ    *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SuperLU   *lu = (Mat_SuperLU*)(*F)->spptr;
-  int           ierr,info;
+  PetscErrorCode ierr;
+  int           info;
   SuperLUStat_t stat;
   double        ferr, berr; 
   NCformat      *Ustore;
@@ -345,7 +347,7 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
-int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_SuperLU  *lu;
@@ -450,7 +452,7 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 /* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_SuperLU"
-int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU       *lu= (Mat_SuperLU*)A->spptr;
   int               ierr;
@@ -479,7 +481,7 @@ int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SuperLU"
-int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
   int         ierr;
   Mat_SuperLU *lu=(Mat_SuperLU *)A->spptr;
 
@@ -492,7 +494,7 @@ int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
-int MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   int                  ierr;
@@ -520,7 +522,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
-int MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   int         ierr;
@@ -588,8 +590,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU"
-int MatCreate_SuperLU(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_SuperLU(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SUPERLU types */

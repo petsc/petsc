@@ -6,10 +6,11 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIBDiag"
-int MatSetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;
+  PetscErrorCode ierr;
+  int         i,j,row,rstart = mbd->rstart,rend = mbd->rend;
   PetscTruth   roworiented = mbd->roworiented;
 
   PetscFunctionBegin;
@@ -42,10 +43,11 @@ int MatSetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIBDiag"
-int MatGetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
+PetscErrorCode MatGetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;
+  PetscErrorCode ierr;
+  int          i,j,row,rstart = mbd->rstart,rend = mbd->rend;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -67,11 +69,12 @@ int MatGetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_MPIBDiag"
-int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   MPI_Comm     comm = mat->comm;
-  int          ierr,nstash,reallocs;
+  PetscErrorCode ierr;
+  int          nstash,reallocs;
   InsertMode   addv;
 
   PetscFunctionBegin;
@@ -88,7 +91,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIBDiag"
-int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *mlocal;
@@ -149,7 +152,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetBlockSize_MPIBDiag"
-int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
+PetscErrorCode MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mbd->A->data;
@@ -161,10 +164,10 @@ int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_MPIBDiag"
-int MatZeroEntries_MPIBDiag(Mat A)
+PetscErrorCode MatZeroEntries_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *l = (Mat_MPIBDiag*)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(l->A);CHKERRQ(ierr);
@@ -184,7 +187,7 @@ int MatZeroEntries_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBDiag"
-int MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -305,10 +308,10 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPIBDiag"
-int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
+PetscErrorCode MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
@@ -319,10 +322,10 @@ int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_MPIBDiag"
-int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
@@ -333,10 +336,10 @@ int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTranspose_MPIBDiag"
-int MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
@@ -349,10 +352,10 @@ int MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_MPIBDiag"
-int MatMultTransposeAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultTransposeAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
@@ -364,11 +367,11 @@ int MatMultTransposeAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_MPIBDiag"
-int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mat->A->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscReal    isend[5],irecv[5];
 
   PetscFunctionBegin;
@@ -406,9 +409,9 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_MPIBDiag"
-int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
+PetscErrorCode MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Mat_MPIBDiag *A = (Mat_MPIBDiag*)mat->data;
 
   PetscFunctionBegin;
@@ -418,10 +421,10 @@ int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIBDiag"
-int MatDestroy_MPIBDiag(Mat mat)
+PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_LOG)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag*)mbd->A->data;
 
@@ -446,7 +449,7 @@ int MatDestroy_MPIBDiag(Mat mat)
 static int MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mbd->size == 1) {
@@ -461,7 +464,8 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag      *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag      *dmat = (Mat_SeqBDiag*)mbd->A->data;
-  int               ierr,i,size = mbd->size,rank = mbd->rank;
+  PetscErrorCode ierr;
+  int               i,size = mbd->size,rank = mbd->rank;
   PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -549,9 +553,9 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIBDiag"
-int MatView_MPIBDiag(Mat mat,PetscViewer viewer)
+PetscErrorCode MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii,isdraw,isbinary;
 
   PetscFunctionBegin;
@@ -570,10 +574,10 @@ int MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIBDiag"
-int MatSetOption_MPIBDiag(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   switch (op) {
   case MAT_NO_NEW_NONZERO_LOCATIONS:
@@ -619,7 +623,7 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIBDiag"
-int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
   int          lrow,ierr;
@@ -633,7 +637,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIBDiag"
-int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
+PetscErrorCode MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
                                   PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
@@ -648,12 +652,13 @@ int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_MPIBDiag"
-int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
+PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)A->data;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)mbd->A->data;
   PetscReal    sum = 0.0;
-  int          ierr,d,i,nd = a->nd,bs = a->bs,len;
+  PetscErrorCode ierr;
+  int          d,i,nd = a->nd,bs = a->bs,len;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -695,10 +700,10 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPrintHelp_MPIBDiag"
-int MatPrintHelp_MPIBDiag(Mat A)
+PetscErrorCode MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!a->rank) {
@@ -709,9 +714,9 @@ int MatPrintHelp_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
-int MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
+PetscErrorCode MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
 
   PetscFunctionBegin;
@@ -721,9 +726,9 @@ int MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIBDiag"
-int MatSetUpPreallocation_MPIBDiag(Mat A)
+PetscErrorCode MatSetUpPreallocation_MPIBDiag(Mat A)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr =  MatMPIBDiagSetPreallocation(A,PETSC_DEFAULT,PETSC_DEFAULT,0,0);CHKERRQ(ierr);
@@ -822,10 +827,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIBDiag"
-int MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   Mat_MPIBDiag *matin = (Mat_MPIBDiag *)A->data;
-  int          ierr,lrows,lcols,rstart,rend;
+  PetscErrorCode ierr;
+  int          lrows,lcols,rstart,rend;
   IS           localc,localr;
 
   PetscFunctionBegin;
@@ -845,10 +851,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBDiagSetPreallocation_MPIBDiag"
-int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
+PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
 {
   Mat_MPIBDiag *b;
-  int          ierr,i,k,*ldiag,len,nd2;
+  PetscErrorCode ierr;
+  int          i,k,*ldiag,len,nd2;
   PetscScalar  **ldiagv = 0;
   PetscTruth   flg2;
 
@@ -961,10 +968,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBDiag"
-int MatCreate_MPIBDiag(Mat B)
+PetscErrorCode MatCreate_MPIBDiag(Mat B)
 {
   Mat_MPIBDiag *b;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr            = PetscNew(Mat_MPIBDiag,&b);CHKERRQ(ierr);
@@ -1018,8 +1025,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BDiag"
-int MatCreate_BDiag(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_BDiag(Mat A) 
+{
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBDIAG);CHKERRQ(ierr);
@@ -1082,9 +1090,9 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,const int diag[],PetscScalar *diagv[])
+PetscErrorCode MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,const int diag[],PetscScalar *diagv[])
 {
-  int ierr,(*f)(Mat,int,int,const int[],PetscScalar*[]);
+  PetscErrorCode ierr,(*f)(Mat,int,int,const int[],PetscScalar*[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBDiagSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -1148,9 +1156,9 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,const int diag[],PetscScalar *diagv[],Mat *A)
+PetscErrorCode MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,const int diag[],PetscScalar *diagv[],Mat *A)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,m,M,N,A);CHKERRQ(ierr);
@@ -1199,12 +1207,12 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar ***diagv)
+PetscErrorCode MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat = 0;
   PetscTruth   isseq,ismpi;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1228,7 +1236,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBDiag"
-int MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   PetscScalar  *vals,*svals;

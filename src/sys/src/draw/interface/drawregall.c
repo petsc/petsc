@@ -4,10 +4,10 @@
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN int PetscDrawCreate_X(PetscDraw);
-EXTERN int PetscDrawCreate_PS(PetscDraw);
-EXTERN int PetscDrawCreate_Null(PetscDraw);
-EXTERN int PetscDrawCreate_Win32(PetscDraw);
+EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
+EXTERN PetscErrorCode PetscDrawCreate_PS(PetscDraw);
+EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
+EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -21,9 +21,9 @@ EXTERN_C_END
 
 .seealso:  PetscDrawRegisterDestroy()
 @*/
-int PetscDrawRegisterAll(const char *path)
+PetscErrorCode PetscDrawRegisterAll(const char *path)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   

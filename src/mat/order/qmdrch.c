@@ -28,7 +28,7 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdrch"
-int SPARSEPACKqmdrch(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKqmdrch(int *root, int *xadj, int *adjncy, 
 	int *deg, int *marker, int *rchsze, int *rchset, 
 	int *nhdsze, int *nbrhd)
 {

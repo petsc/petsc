@@ -4,7 +4,7 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-int DRAWHG_COOKIE = 0;
+PetscErrorCode DRAWHG_COOKIE = 0;
 
 struct _p_DrawHG {
   PETSCHEADER(int) 
@@ -50,11 +50,11 @@ struct _p_DrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
+PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscDrawHG h;
   MPI_Comm    comm;
   PetscTruth  isnull;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
@@ -108,8 +108,8 @@ int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
    Concepts: histogram^setting number of bins
 
 @*/
-int PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
-  int ierr;
+PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -139,7 +139,7 @@ int PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
 
   Concepts: histogram^resetting
 @*/
-int PetscDrawHGReset(PetscDrawHG hist)
+PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -167,9 +167,9 @@ int PetscDrawHGReset(PetscDrawHG hist)
 
 .seealso:  PetscDrawHGCreate()
 @*/
-int PetscDrawHGDestroy(PetscDrawHG hist)
+PetscErrorCode PetscDrawHGDestroy(PetscDrawHG hist)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(hist,1);
@@ -205,14 +205,14 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
 
 .seealso: PetscDrawHGAddValues()
 @*/
-int PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
+PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
     PetscReal *tmp;
-    int        ierr;
+    PetscErrorCode ierr;
 
     ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
     PetscLogObjectMemory(hist, CHUNKSIZE * sizeof(PetscReal));
@@ -272,7 +272,7 @@ int PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   Contributed by: Matthew Knepley
 @*/
-int PetscDrawHGDraw(PetscDrawHG hist)
+PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 {
   PetscDraw  draw = hist->win;
   PetscTruth isnull;
@@ -416,7 +416,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
 
 .keywords:  draw, histogram
 @*/
-int PetscDrawHGPrint(PetscDrawHG hist)
+PetscErrorCode PetscDrawHGPrint(PetscDrawHG hist)
 {
   PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   int       numBins,numBinsOld,numValues,initSize,i,p,ierr;
@@ -509,7 +509,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
   Level: intermediate
 
 @*/
-int PetscDrawHGSetColor(PetscDrawHG hist, int color)
+PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -536,7 +536,7 @@ int PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Concepts: histogram^setting axis
 @*/
-int PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
+PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -565,7 +565,7 @@ int PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int
 .keywords:  draw, histogram, statistics
 
 @*/
-int PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
+PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -590,7 +590,7 @@ int PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 
 .keywords:  draw, histogram, statistics
 @*/
-int PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
+PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -618,7 +618,7 @@ int PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 
   Contributed by: Matthew Knepley
 @*/
-int PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
+PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -644,7 +644,7 @@ int PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 
   Contributed by: Matthew Knepley
 @*/
-int PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
+PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);

@@ -8,7 +8,7 @@
 typedef struct  {
   char         *string;   /* string where info is stored */
   char         *head;     /* pointer to begining of unused portion */
-  int          curlen,maxlen;
+  size_t       curlen,maxlen;
 } PetscViewer_String;
 
 #undef __FUNCT__  
@@ -16,7 +16,7 @@ typedef struct  {
 static int PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
-  int                ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(vstr);CHKERRQ(ierr);
@@ -43,11 +43,11 @@ static int PetscViewerDestroy_String(PetscViewer viewer)
 
 .seealso: PetscViewerStringOpen()
 @*/
-int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
+PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
   size_t             shift;
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscTruth         isstring;
   char               tmp[4096];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -97,9 +97,9 @@ int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
 @*/
-int PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
+PetscErrorCode PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
@@ -110,10 +110,10 @@ int PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetSingleton_String" 
-int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
+PetscErrorCode PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  int                ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
@@ -122,9 +122,9 @@ int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRestoreSingleton_String" 
-int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
+PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
@@ -138,10 +138,10 @@ int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_String" 
-int PetscViewerCreate_String(PetscViewer v)
+PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
-  int                ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   v->ops->destroy          = PetscViewerDestroy_String;
@@ -173,10 +173,10 @@ EXTERN_C_END
 
 .seealso: PetscViewerStringOpen()
 @*/
-int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
+PetscErrorCode PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscTruth         isstring;
 
   PetscFunctionBegin;

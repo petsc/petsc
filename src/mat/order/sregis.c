@@ -2,13 +2,13 @@
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN int MatOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode MatOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -35,9 +35,9 @@ EXTERN_C_END
 
 .seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterDestroy()
 @*/
-int MatOrderingRegisterAll(const char path[])
+PetscErrorCode MatOrderingRegisterAll(const char path[])
 {
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = PETSC_TRUE;

@@ -33,7 +33,7 @@
    Concepts: menu
 
 @*/
-int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
+PetscErrorCode PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
   int    i,ierr,rank,rows = n + 2;
   size_t cols,len;

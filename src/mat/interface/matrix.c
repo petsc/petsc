@@ -7,18 +7,17 @@
 #include "vecimpl.h"  
 
 /* Logging support */
-int MAT_COOKIE = 0;
-int MATSNESMFCTX_COOKIE = 0;
-int MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-int MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
-int MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
-int MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
-int MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-int MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
-int MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
-int MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
-int MAT_MatMult = 0;
-int MAT_PtAP = 0;
+PetscCookieCode MAT_COOKIE = 0, MATSNESMFCTX_COOKIE = 0;
+PetscLogCode    MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
+PetscLogCode    MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
+PetscLogCode    MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
+PetscLogCode    MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
+PetscLogCode    MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
+PetscLogCode    MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
+PetscLogCode    MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
+PetscLogCode    MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
+PetscLogCode    MAT_MatMult = 0;
+PetscLogCode    MAT_PtAP = 0;
 
 /* nasty global values for MatSetValue() */
 int         MatSetValue_Row = 0, MatSetValue_Column = 0;
@@ -88,7 +87,7 @@ PetscScalar MatSetValue_Value = 0.0;
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
 
-int MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
+PetscErrorCode MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
 {
   int   incols,ierr;
 
@@ -141,9 +140,9 @@ int MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *va
 
 .seealso:  MatGetRow()
 @*/
-int MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
+PetscErrorCode MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -221,9 +220,10 @@ int MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar
 .seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), 
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), MatLoad()
 @*/
-int MatView(Mat mat,PetscViewer viewer)
+PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 {
-  int               ierr,rows,cols;
+  PetscErrorCode ierr;
+  int               rows,cols;
   PetscTruth        iascii;
   char              *cstr;
   PetscViewerFormat format;
@@ -302,9 +302,9 @@ int MatView(Mat mat,PetscViewer viewer)
 
 .seealso: MatUseScaledForm(), MatUnScaleSystem()
 @*/
-int MatScaleSystem(Mat mat,Vec x,Vec b)
+PetscErrorCode MatScaleSystem(Mat mat,Vec x,Vec b)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -345,9 +345,9 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 
 .seealso: MatUseScaledForm(), MatScaleSystem()
 @*/
-int MatUnScaleSystem(Mat mat,Vec x,Vec b)
+PetscErrorCode MatUnScaleSystem(Mat mat,Vec x,Vec b)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -384,9 +384,9 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 
 .seealso: MatScaleSystem(), MatUnScaleSystem()
 @*/
-int MatUseScaledForm(Mat mat,PetscTruth scaled)
+PetscErrorCode MatUseScaledForm(Mat mat,PetscTruth scaled)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -411,9 +411,9 @@ int MatUseScaledForm(Mat mat,PetscTruth scaled)
    Level: beginner
 
 @*/
-int MatDestroy(Mat A)
+PetscErrorCode MatDestroy(Mat A)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -460,7 +460,7 @@ int MatDestroy(Mat A)
 
    Concepts: matrices^validity
 @*/
-int MatValid(Mat m,PetscTruth *flg)
+PetscErrorCode MatValid(Mat m,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(flg,1);
@@ -515,9 +515,9 @@ int MatValid(Mat m,PetscTruth *flg)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-int MatSetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -619,7 +619,7 @@ $    idxm(MatStencil_c,1) = c
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
 @*/
-int MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
@@ -727,7 +727,7 @@ $    idxm(MatStencil_k,1) = k
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
 @*/
-int MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
@@ -794,7 +794,7 @@ int MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetValuesStencil()
 @*/
-int MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
+PetscErrorCode MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
 {
   int i;
 
@@ -861,9 +861,9 @@ int MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
-int MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -926,9 +926,9 @@ int MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const int idxn[],co
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
-int MatGetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
+PetscErrorCode MatGetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -968,9 +968,9 @@ int MatGetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScal
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
+PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE,1);
   PetscValidType(x,1);
@@ -1011,9 +1011,9 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
+PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE,1);
   PetscValidType(x,1);
@@ -1063,9 +1063,9 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
 @*/
-int MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
-  int ierr,irowm[2048],icolm[2048];
+  PetscErrorCode ierr,irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1139,9 +1139,9 @@ int MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
-int MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
-  int ierr,irowm[2048],icolm[2048];
+  PetscErrorCode ierr,irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1203,9 +1203,9 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const in
 
 .seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
-int MatMult(Mat mat,Vec x,Vec y)
+PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1262,9 +1262,9 @@ int MatMult(Mat mat,Vec x,Vec y)
 
 .seealso: MatMult(), MatMultAdd(), MatMultTransposeAdd()
 @*/
-int MatMultTranspose(Mat mat,Vec x,Vec y)
+PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscTruth flg1, flg2; 
 
   PetscFunctionBegin;
@@ -1322,9 +1322,9 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
 
 .seealso: MatMultTranspose(), MatMult(), MatMultTransposeAdd()
 @*/
-int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
+PetscErrorCode MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1374,9 +1374,9 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
 .seealso: MatMultTranspose(), MatMultAdd(), MatMult()
 @*/
-int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
+PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1425,9 +1425,9 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 .keywords: matrix, multiply, matrix-vector product, constraint
 .seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
 @*/
-int MatMultConstrained(Mat mat,Vec x,Vec y)
+PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1472,9 +1472,9 @@ int MatMultConstrained(Mat mat,Vec x,Vec y)
 .keywords: matrix, multiply, matrix-vector product, constraint
 .seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
 @*/
-int MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
+PetscErrorCode MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1555,9 +1555,9 @@ $       -log_info -mat_view_info
     Concepts: matrices^getting information on
  
 @*/
-int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1602,9 +1602,9 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fact)
+PetscErrorCode MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1658,9 +1658,9 @@ $                   Run with the option -log_info to determine an optimal value 
           MatGetOrdering(), MatSetUnfactored(), MatFactorInfo
 
 @*/
-int MatLUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1711,9 +1711,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
 .seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatILUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatILUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1767,9 +1767,9 @@ $                   Run with the option -log_info to determine an optimal value 
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1816,9 +1816,9 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 
 .seealso: MatLUFactorSymbolic(), MatLUFactor(), MatCholeskyFactor()
 @*/
-int MatLUFactorNumeric(Mat mat,Mat *fact)
+PetscErrorCode MatLUFactorNumeric(Mat mat,Mat *fact)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1871,9 +1871,9 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1928,9 +1928,9 @@ $                   Run with the option -log_info to determine an optimal value 
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1977,9 +1977,9 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 
 .seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
 @*/
-int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
+PetscErrorCode MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2030,9 +2030,9 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 
 .seealso: MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
-int MatSolve(Mat mat,Vec b,Vec x)
+PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2088,9 +2088,9 @@ int MatSolve(Mat mat,Vec b,Vec x)
 
 .seealso: MatSolve(), MatBackwardSolve()
 @ */
-int MatForwardSolve(Mat mat,Vec b,Vec x)
+PetscErrorCode MatForwardSolve(Mat mat,Vec b,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2145,9 +2145,9 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
 
 .seealso: MatSolve(), MatForwardSolve()
 @ */
-int MatBackwardSolve(Mat mat,Vec b,Vec x)
+PetscErrorCode MatBackwardSolve(Mat mat,Vec b,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2200,11 +2200,11 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 
 .seealso: MatSolve(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
-int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
+PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 {
   PetscScalar one = 1.0;
   Vec    tmp;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2274,9 +2274,9 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTransposeAdd()
 @*/
-int MatSolveTranspose(Mat mat,Vec b,Vec x)
+PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2329,10 +2329,10 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTranspose()
 @*/
-int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
+PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 {
   PetscScalar one = 1.0;
-  int         ierr;
+  PetscErrorCode ierr;
   Vec         tmp;
 
   PetscFunctionBegin;
@@ -2433,9 +2433,9 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
    Concepts: matrices^Gauss-Seidel
 
 @*/
-int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
+PetscErrorCode MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2480,9 +2480,9 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
    Level: developer
 
 @*/
-int MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
+PetscErrorCode MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2511,9 +2511,10 @@ int MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int
 /*
       Default matrix copy routine.
 */
-int MatCopy_Basic(Mat A,Mat B,MatStructure str)
+PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
-  int               ierr,i,rstart,rend,nz;
+  PetscErrorCode ierr;
+  int               i,rstart,rend,nz;
   const int         *cwork;
   const PetscScalar *vwork;
 
@@ -2560,9 +2561,9 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 .seealso: MatConvert(), MatDuplicate()
 
 @*/
-int MatCopy(Mat A,Mat B,MatStructure str)
+PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -2617,9 +2618,9 @@ PetscFList MatConvertList              = 0;
 .seealso: MatConvertRegisterAll(), MatConvert()
 
 @*/
-int MatConvertRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatType,Mat*))
+PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatType,Mat*))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -2655,9 +2656,9 @@ int MatConvertRegister(const char sname[],const char path[],const char name[],in
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-int MatConvert(Mat mat,const MatType newtype,Mat *M)
+PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth sametype,issame,flg;
   char       convname[256],mtype[256];
 
@@ -2745,9 +2746,9 @@ int MatConvert(Mat mat,const MatType newtype,Mat *M)
 
 .seealso: MatCopy(), MatConvert()
 @*/
-int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
+PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2800,9 +2801,9 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMax()
 @*/
-int MatGetDiagonal(Mat mat,Vec v)
+PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2837,9 +2838,9 @@ int MatGetDiagonal(Mat mat,Vec v)
 
 .seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix()
 @*/
-int MatGetRowMax(Mat mat,Vec v)
+PetscErrorCode MatGetRowMax(Mat mat,Vec v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2873,9 +2874,9 @@ int MatGetRowMax(Mat mat,Vec v)
 
 .seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose()
 @*/
-int MatTranspose(Mat mat,Mat *B)
+PetscErrorCode MatTranspose(Mat mat,Mat *B)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2918,9 +2919,9 @@ int MatTranspose(Mat mat,Mat *B)
 
 .seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian()
 @*/
-int MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
+PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
 {
-  int ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
+  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -2961,9 +2962,9 @@ int MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
 
 .seealso: MatGetOrdering()
 @*/
-int MatPermute(Mat mat,IS row,IS col,Mat *B)
+PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3010,7 +3011,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 
 .seealso: MatGetOrdering(), MatPermute()
 @*/
-int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
+PetscErrorCode MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
 {
   IS                irowp, icolp;
   int               *rows, *cols;
@@ -3022,7 +3023,7 @@ int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, 
   PetscScalar       *vnew;
   int               bw, size;
   int               row, locRow, newRow, col, newCol;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,    MAT_COOKIE,1);
@@ -3105,9 +3106,9 @@ int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, 
 
    Concepts: matrices^equality between
 @*/
-int MatEqual(Mat A,Mat B,PetscTruth *flg)
+PetscErrorCode MatEqual(Mat A,Mat B,PetscTruth *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
@@ -3153,9 +3154,9 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 
 .seealso: MatScale()
 @*/
-int MatDiagonalScale(Mat mat,Vec l,Vec r)
+PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3194,9 +3195,9 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
 .seealso: MatDiagonalScale()
 @*/
-int MatScale(const PetscScalar *a,Mat mat)
+PetscErrorCode MatScale(const PetscScalar *a,Mat mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
@@ -3233,9 +3234,9 @@ int MatScale(const PetscScalar *a,Mat mat)
    Concepts: matrices^norm
    Concepts: norm^of matrix
 @*/
-int MatNorm(Mat mat,NormType type,PetscReal *nrm)
+PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3280,9 +3281,9 @@ static int MatAssemblyEnd_InUse = 0;
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssembled()
 @*/
-int MatAssemblyBegin(Mat mat,MatAssemblyType type)
+PetscErrorCode MatAssemblyBegin(Mat mat,MatAssemblyType type)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3323,7 +3324,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssemblyBegin()
 @*/
-int MatAssembled(Mat mat,PetscTruth *assembled)
+PetscErrorCode MatAssembled(Mat mat,PetscTruth *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3340,9 +3341,9 @@ int MatAssembled(Mat mat,PetscTruth *assembled)
     Processes command line options to determine if/how a matrix
   is to be viewed. Called by MatAssemblyEnd() and MatLoad().
 */
-int MatView_Private(Mat mat)
+PetscErrorCode MatView_Private(Mat mat)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        flg;
   static PetscTruth incall = PETSC_FALSE;
 
@@ -3437,9 +3438,9 @@ int MatView_Private(Mat mat)
 
 .seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled(), PetscViewerSocketOpen()
 @*/
-int MatAssemblyEnd(Mat mat,MatAssemblyType type)
+PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   static int inassm = 0;
   PetscTruth flg;
 
@@ -3512,9 +3513,9 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
    Level: advanced
 
 @*/
-int MatCompress(Mat mat)
+PetscErrorCode MatCompress(Mat mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3640,9 +3641,9 @@ int MatCompress(Mat mat)
    Concepts: matrices^setting options
 
 @*/
-int MatSetOption(Mat mat,MatOption op)
+PetscErrorCode MatSetOption(Mat mat,MatOption op)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3709,9 +3710,9 @@ int MatSetOption(Mat mat,MatOption op)
 
 .seealso: MatZeroRows()
 @*/
-int MatZeroEntries(Mat mat)
+PetscErrorCode MatZeroEntries(Mat mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3767,9 +3768,9 @@ int MatZeroEntries(Mat mat)
 
 .seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-int MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3825,9 +3826,9 @@ int MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
 
 .seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-int MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 {
-  int ierr;
+  PetscErrorCode ierr;
   IS  newis;
 
   PetscFunctionBegin;
@@ -3871,7 +3872,7 @@ int MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 
 .seealso: MatGetLocalSize()
 @*/
-int MatGetSize(Mat mat,int *m,int* n)
+PetscErrorCode MatGetSize(Mat mat,int *m,int* n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3902,7 +3903,7 @@ int MatGetSize(Mat mat,int *m,int* n)
 
 .seealso: MatGetSize()
 @*/
-int MatGetLocalSize(Mat mat,int *m,int* n)
+PetscErrorCode MatGetLocalSize(Mat mat,int *m,int* n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3934,9 +3935,9 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 
    Concepts: matrices^row ownership
 @*/
-int MatGetOwnershipRange(Mat mat,int *m,int* n)
+PetscErrorCode MatGetOwnershipRange(Mat mat,int *m,int* n)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3988,9 +3989,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
           MatGetOrdering(), MatFactorInfo
 
 @*/
-int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4046,9 +4047,9 @@ $      expected fill - as ratio of original fill.
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4092,7 +4093,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
         Mat         mat
         PetscScalar mat_array(1)
         PetscOffset i_mat
-        int         ierr
+        PetscErrorCode ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)
 
   C  Access first local entry in matrix; note that array is
@@ -4112,9 +4113,9 @@ int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 
 .seealso: MatRestoreArray(), MatGetArrayF90()
 @*/
-int MatGetArray(Mat mat,PetscScalar *v[])
+PetscErrorCode MatGetArray(Mat mat,PetscScalar *v[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4143,7 +4144,7 @@ int MatGetArray(Mat mat,PetscScalar *v[])
         Mat         mat
         PetscScalar mat_array(1)
         PetscOffset i_mat
-        int         ierr
+        PetscErrorCode ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)
 
   C  Access first local entry in matrix; note that array is
@@ -4161,9 +4162,9 @@ int MatGetArray(Mat mat,PetscScalar *v[])
 
 .seealso: MatGetArray(), MatRestoreArrayF90()
 @*/
-int MatRestoreArray(Mat mat,PetscScalar *v[])
+PetscErrorCode MatRestoreArray(Mat mat,PetscScalar *v[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4226,7 +4227,7 @@ int MatRestoreArray(Mat mat,PetscScalar *v[])
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal()
 @*/
-int MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   int        i,ierr;
   PetscTruth eq;
@@ -4288,9 +4289,9 @@ int MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse sca
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatDestroyMatrices(int n,Mat *mat[])
+PetscErrorCode MatDestroyMatrices(int n,Mat *mat[])
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %d",n);
@@ -4325,9 +4326,9 @@ int MatDestroyMatrices(int n,Mat *mat[])
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4367,10 +4368,10 @@ int MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
 
 .seealso: MatCreate(), MatCreateXXX()
 @*/
-int MatPrintHelp(Mat mat)
+PetscErrorCode MatPrintHelp(Mat mat)
 {
   static PetscTruth called = PETSC_FALSE;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4410,9 +4411,9 @@ int MatPrintHelp(Mat mat)
 
 .seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatGetBlockSize(Mat mat,int *bs)
+PetscErrorCode MatGetBlockSize(Mat mat,int *bs)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4447,9 +4448,9 @@ int MatGetBlockSize(Mat mat,int *bs)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4490,9 +4491,9 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4535,9 +4536,9 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* 
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4579,9 +4580,9 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int*
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4620,9 +4621,9 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],i
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-int MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[],ISColoring *iscoloring)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4681,9 +4682,9 @@ int MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[
    Concepts: matrices^unfactored
 
 @*/
-int MatSetUnfactored(Mat mat)
+PetscErrorCode MatSetUnfactored(Mat mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);  
@@ -4799,9 +4800,10 @@ M*/
 
 .seealso: MatGetSubMatrices(), ISAllGather()
 @*/
-int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
+PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
 {
-  int     ierr, size;
+  PetscErrorCode ierr;
+  int     size;
   Mat     *local;
 
   PetscFunctionBegin;
@@ -4851,9 +4853,9 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
    Concepts: maps^getting from matrix
 
 @*/
-int MatGetPetscMaps(Mat mat,PetscMap *rmap,PetscMap *cmap)
+PetscErrorCode MatGetPetscMaps(Mat mat,PetscMap *rmap,PetscMap *cmap)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4868,7 +4870,7 @@ int MatGetPetscMaps(Mat mat,PetscMap *rmap,PetscMap *cmap)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetPetscMaps_Petsc"
-int MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
+PetscErrorCode MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
 {
   PetscFunctionBegin;
   if (rmap) *rmap = mat->rmap;
@@ -4910,9 +4912,9 @@ int MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
    Concepts: matrices^stash
 
 @*/
-int MatStashSetInitialSize(Mat mat,int size, int bsize)
+PetscErrorCode MatStashSetInitialSize(Mat mat,int size, int bsize)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4949,7 +4951,7 @@ int MatStashSetInitialSize(Mat mat,int size, int bsize)
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
 
 @*/
-int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
+PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 {
   int M,N,ierr;
 
@@ -4992,7 +4994,7 @@ int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
 
 @*/
-int MatInterpolate(Mat A,Vec x,Vec y)
+PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
 {
   int M,N,ierr;
 
@@ -5033,7 +5035,7 @@ int MatInterpolate(Mat A,Vec x,Vec y)
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatInterpolate()
 
 @*/
-int MatRestrict(Mat A,Vec x,Vec y)
+PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 {
   int M,N,ierr;
 
@@ -5074,9 +5076,9 @@ int MatRestrict(Mat A,Vec x,Vec y)
 
 .seealso: MatCreate(), MatNullSpaceCreate()
 @*/
-int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
+PetscErrorCode MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5120,9 +5122,9 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 
 .seealso: MatICCFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatICCFactor(Mat mat,IS row,MatFactorInfo* info)
+PetscErrorCode MatICCFactor(Mat mat,IS row,MatFactorInfo* info)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5159,9 +5161,9 @@ int MatICCFactor(Mat mat,IS row,MatFactorInfo* info)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           MatSetValues(), MatSetColoring(), MatSetValuesAdifor()
 @*/
-int MatSetValuesAdic(Mat mat,void *v)
+PetscErrorCode MatSetValuesAdic(Mat mat,void *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5197,9 +5199,9 @@ int MatSetValuesAdic(Mat mat,void *v)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           MatSetValues(), MatSetValuesAdic()
 @*/
-int MatSetColoring(Mat mat,ISColoring coloring)
+PetscErrorCode MatSetColoring(Mat mat,ISColoring coloring)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5235,9 +5237,9 @@ int MatSetColoring(Mat mat,ISColoring coloring)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           MatSetValues(), MatSetColoring()
 @*/
-int MatSetValuesAdifor(Mat mat,int nl,void *v)
+PetscErrorCode MatSetValuesAdifor(Mat mat,int nl,void *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5255,8 +5257,8 @@ int MatSetValuesAdifor(Mat mat,int nl,void *v)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatMPIAIJDiagonalScaleLocal(Mat,Vec);
-EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
+EXTERN PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat,Vec);
+EXTERN PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScaleLocal"
@@ -5276,9 +5278,10 @@ EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
       
 .seealso: MatDiagonalScale()
 @*/
-int MatDiagonalScaleLocal(Mat mat,Vec diag)
+PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
 {
-  int        ierr,size;
+  PetscErrorCode ierr;
+  int        size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5334,9 +5337,9 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
 
 
 @*/
-int MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
+PetscErrorCode MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5378,9 +5381,9 @@ int MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
 
 .seealso: MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd(), MatSolve()
 @*/
-int MatSolves(Mat mat,Vecs b,Vecs x)
+PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5417,9 +5420,9 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/
-int MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
+PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5464,7 +5467,7 @@ int MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
 @*/
-int MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+PetscErrorCode MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5498,9 +5501,9 @@ int MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsSymmetric(), MatSetOption()
 @*/
-int MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
+PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5533,9 +5536,9 @@ int MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsSymmetric(), MatIsStructurallySymmetric(), MatSetOption()
 @*/
-int MatIsHermitian(Mat A,PetscTruth *flg)
+PetscErrorCode MatIsHermitian(Mat A,PetscTruth *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5576,9 +5579,9 @@ extern int MatStashGetInfo_Private(MatStash*,int*,int*);
 .seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashSetInitialSize()
   
 @*/
-int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc)
+PetscErrorCode MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatStashGetInfo_Private(&mat->stash,nstash,reallocs);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->bstash,nstash,reallocs);CHKERRQ(ierr);
@@ -5604,9 +5607,9 @@ int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc
 
 .seealso: MatCreate()
 @*/
-int MatGetVecs(Mat mat,Vec *right,Vec *left)
+PetscErrorCode MatGetVecs(Mat mat,Vec *right,Vec *left)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

@@ -37,9 +37,9 @@
           
 
 @*/
-int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -80,9 +80,9 @@ int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalEnd()
 
 @*/
-int DALocalToGlobalBegin(DA da,Vec l,Vec g)
+PetscErrorCode DALocalToGlobalBegin(DA da,Vec l,Vec g)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -123,9 +123,9 @@ int DALocalToGlobalBegin(DA da,Vec l,Vec g)
           DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin()
 
 @*/
-int DALocalToGlobalEnd(DA da,Vec l,Vec g)
+PetscErrorCode DALocalToGlobalEnd(DA da,Vec l,Vec g)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -165,9 +165,9 @@ int DALocalToGlobalEnd(DA da,Vec l,Vec g)
 .seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d(),
      DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -177,7 +177,7 @@ int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-extern int DAGetNatural_Private(DA,int*,IS*);
+EXTERN PetscErrorCode DAGetNatural_Private(DA,int*,IS*);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGlobalToNatural_Create"
 /*
@@ -198,9 +198,9 @@ extern int DAGetNatural_Private(DA,int*,IS*);
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 */
-int DAGlobalToNatural_Create(DA da)
+PetscErrorCode DAGlobalToNatural_Create(DA da)
 {
-  int ierr,m,start,Nlocal;
+  PetscErrorCode ierr,m,start,Nlocal;
   IS  from,to;
   Vec global;
 
@@ -256,9 +256,9 @@ int DAGlobalToNatural_Create(DA da)
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -302,9 +302,9 @@ int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -346,9 +346,9 @@ int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 
 @*/
-int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -393,9 +393,9 @@ int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 
 @*/
-int DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

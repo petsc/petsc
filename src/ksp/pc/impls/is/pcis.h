@@ -69,11 +69,11 @@ typedef struct {
                   /* for all 0 <= m < proc[k].n_shared[i], or equiv'ly, for all 0 <= m < proc[l].n_shared[j]  */
 } PC_IS;
 
-extern int PCISSetUp(PC pc);
-extern int PCISDestroy(PC pc);
-extern int PCISCreate(PC pc);
-extern int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
-extern int PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
-extern int PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
+EXTERN PetscErrorCode PCISSetUp(PC pc);
+EXTERN PetscErrorCode PCISDestroy(PC pc);
+EXTERN PetscErrorCode PCISCreate(PC pc);
+EXTERN PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
+EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
+EXTERN PetscErrorCode PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
 
 #endif /* __pcis_h */

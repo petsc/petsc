@@ -25,7 +25,8 @@ typedef struct {
 static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,m = jac->mbs;
+  PetscErrorCode ierr;
+  int i,m = jac->mbs;
   PetscScalar *diag = jac->diag,x0,x1,*xx,*yy;
   
   PetscFunctionBegin;
@@ -47,7 +48,8 @@ static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,m = jac->mbs;
+  PetscErrorCode ierr;
+  int i,m = jac->mbs;
   PetscScalar *diag = jac->diag,x0,x1,x2,*xx,*yy;
   
   PetscFunctionBegin;
@@ -70,7 +72,8 @@ static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,m = jac->mbs;
+  PetscErrorCode ierr;
+  int i,m = jac->mbs;
   PetscScalar *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
   
   PetscFunctionBegin;
@@ -94,7 +97,8 @@ static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,m = jac->mbs;
+  PetscErrorCode ierr;
+  int i,m = jac->mbs;
   PetscScalar *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
   
   PetscFunctionBegin;
@@ -115,13 +119,14 @@ static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-extern int MatInvertBlockDiagonal_SeqBAIJ(Mat);
+EXTERN PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_PBJacobi"
 static int PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,size;
+  PetscErrorCode ierr;
+  int size;
   PetscTruth  seqbaij,mpibaij,baij;
   Mat         A = pc->pmat;
   Mat_SeqBAIJ *a;
@@ -167,7 +172,7 @@ static int PCSetUp_PBJacobi(PC pc)
 static int PCDestroy_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -193,10 +198,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PBJacobi"
-int PCCreate_PBJacobi(PC pc)
+PetscErrorCode PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 

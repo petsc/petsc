@@ -29,11 +29,11 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-int VecSetType(Vec vec, const VecType method)
+PetscErrorCode VecSetType(Vec vec, const VecType method)
 {
   int      (*r)(Vec);
   PetscTruth match;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
@@ -74,9 +74,9 @@ int VecSetType(Vec vec, const VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-int VecGetType(Vec vec, VecType *type)
+PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
@@ -98,10 +98,10 @@ int VecGetType(Vec vec, VecType *type)
 
   Level: advanced
 @*/
-int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
+PetscErrorCode VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
 {
   char fullname[PETSC_MAX_PATH_LEN];
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
@@ -125,9 +125,9 @@ int VecRegister(const char sname[], const char path[], const char name[], int (*
 .keywords: Vec, register, destroy
 .seealso: VecRegister(), VecRegisterAll(), VecRegisterDynamic()
 @*/
-int VecRegisterDestroy(void)
+PetscErrorCode VecRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (VecList != PETSC_NULL) {

@@ -30,7 +30,7 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKfnroot" 
-int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKfnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */
@@ -39,7 +39,7 @@ int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
-    EXTERN int SPARSEPACKrootls(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKrootls(int*, int *, int *, 
 	    int *, int *, int *, int *);
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 

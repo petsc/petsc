@@ -45,9 +45,9 @@ static PetscTruth Xterm = PETSC_TRUE;
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-int PetscSetDebugger(const char debugger[],PetscTruth xterm)
+PetscErrorCode PetscSetDebugger(const char debugger[],PetscTruth xterm)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (debugger) {
@@ -70,9 +70,9 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
-int PetscSetDefaultDebugger(void)
+PetscErrorCode PetscSetDefaultDebugger(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DBX_DEBUGGER)
@@ -93,7 +93,7 @@ static int PetscCheckDebugger_Private(const char defaultDbg[], const char string
 {
   PetscTruth exists;
   char      *f;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrstr(string, defaultDbg, &f);CHKERRQ(ierr);
@@ -120,12 +120,12 @@ static int PetscCheckDebugger_Private(const char defaultDbg[], const char string
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
 @*/
-int PetscSetDebuggerFromString(char *string)
+PetscErrorCode PetscSetDebuggerFromString(char *string)
 {
   const char *debugger = PETSC_NULL;
   PetscTruth  xterm    = PETSC_TRUE;
   char       *f;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrstr(string, "noxterm", &f);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int PetscSetDebuggerFromString(char *string)
 
 .seealso: PetscSetDebugger()
 @*/
-int PetscAttachDebugger(void)
+PetscErrorCode PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int   child=0,sleeptime=0,ierr=0;
@@ -459,9 +459,9 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-int PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
+PetscErrorCode PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!fun)  fun = "User provided function";
@@ -493,9 +493,10 @@ int PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,co
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/
-int PetscStopForDebugger(void)
+PetscErrorCode PetscStopForDebugger(void)
 {
-  int        ierr,sleeptime=0;
+  PetscErrorCode ierr;
+  int        sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int        ppid,rank;
   char       program[PETSC_MAX_PATH_LEN],hostname[256];

@@ -31,11 +31,12 @@ $  -mat_fd_coloring_freq <freq>
 
 .seealso: TSSetJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
-int TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
   SNES          snes;
-  int           ierr,freq,it;
+  PetscErrorCode ierr;
+  int freq,it;
 
   PetscFunctionBegin;
   /*
@@ -84,7 +85,7 @@ int TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStru
 
 .seealso: TSDefaultComputeJacobianColor()
 */
-int TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec         jj1,jj2,xx2;
   int         i,ierr,N,start,end,j;

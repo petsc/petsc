@@ -22,7 +22,7 @@ struct _p_PetscViewers {
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
 
 @*/
-int PetscViewersDestroy(PetscViewers v)
+PetscErrorCode PetscViewersDestroy(PetscViewers v)
 {
   int         i,ierr;
 
@@ -55,9 +55,9 @@ int PetscViewersDestroy(PetscViewers v)
 .seealso: PetscViewerCreate(), PetscViewersDestroy()
 
 @*/
-int PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
+PetscErrorCode PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr         = PetscNew(struct _p_PetscViewers,v);CHKERRQ(ierr);
@@ -89,9 +89,9 @@ int PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-int PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
+PetscErrorCode PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);

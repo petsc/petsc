@@ -4,7 +4,7 @@
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /* Logging support */
-int PF_COOKIE = 0;
+PetscCookieCode PF_COOKIE = 0;
 
 PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
@@ -30,7 +30,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-int PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
+PetscErrorCode PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -60,9 +60,9 @@ int PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(
 
 .seealso: PFCreate(), PFSet(), PFSetType()
 @*/
-int PFDestroy(PF pf)
+PetscErrorCode PFDestroy(PF pf)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -89,7 +89,7 @@ static int PFPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   PF          v = (PF) obj;
-  int         ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -126,10 +126,10 @@ static int PFPublish_Petsc(PetscObject obj)
 
 .seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
-int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
+PetscErrorCode PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 {
   PF  newpf;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
@@ -178,9 +178,10 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 
 .seealso: PFApply(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-int PFApplyVec(PF pf,Vec x,Vec y)
+PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 {
-  int        ierr,i,rstart,rend,n,p;
+  PetscErrorCode ierr;
+  int i,rstart,rend,n,p;
   PetscTruth nox = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -253,9 +254,9 @@ int PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-int PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
+PetscErrorCode PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -296,10 +297,10 @@ int PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
 
 .seealso: PetscViewerCreate(), PetscViewerASCIIOpen()
 @*/
-int PFView(PF pf,PetscViewer viewer)
+PetscErrorCode PFView(PF pf,PetscViewer viewer)
 {
   PFType            cstr;
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
 
@@ -373,9 +374,9 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFRegister"
-int PFRegister(const char sname[],const char path[],const char name[],int (*function)(PF,void*))
+PetscErrorCode PFRegister(const char sname[],const char path[],const char name[],int (*function)(PF,void*))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -407,7 +408,7 @@ int PFRegister(const char sname[],const char path[],const char name[],int (*func
 .seealso: PFSetType()
 
 @*/
-int PFGetType(PF pf,PFType *meth)
+PetscErrorCode PFGetType(PF pf,PFType *meth)
 {
   PetscFunctionBegin;
   *meth = (PFType) pf->type_name;
@@ -442,9 +443,9 @@ int PFGetType(PF pf,PFType *meth)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
 
 @*/
-int PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode PFSetType(PF pf,const PFType type,void *ctx)
 {
-  int        ierr,(*r)(PF,void*);
+  PetscErrorCode ierr,(*r)(PF,void*);
   PetscTruth match;
 
   PetscFunctionBegin;
@@ -496,9 +497,9 @@ int PFSetType(PF pf,const PFType type,void *ctx)
 
 .seealso:
 @*/
-int PFSetFromOptions(PF pf)
+PetscErrorCode PFSetFromOptions(PF pf)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       type[256];
   PetscTruth flg;
 

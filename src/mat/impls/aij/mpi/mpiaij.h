@@ -43,35 +43,35 @@ typedef struct {
 
 } Mat_MPIAIJ;
 
-EXTERN int MatSetColoring_MPIAIJ(Mat,ISColoring);
-EXTERN int MatSetValuesAdic_MPIAIJ(Mat,void*);
-EXTERN int MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
-EXTERN int MatSetUpMultiply_MPIAIJ(Mat);
-EXTERN int DisAssemble_MPIAIJ(Mat);
-EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
-EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatPrintHelp_SeqAIJ(Mat);
-EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
-EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
-EXTERN int MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
-EXTERN int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
-EXTERN int MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
-EXTERN int MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
-EXTERN int MatSetValues_MPIAIJ(Mat,int,const int[],int,const int[],const PetscScalar [],InsertMode);
+EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
+EXTERN PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
+EXTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
+EXTERN PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
+EXTERN PetscErrorCode DisAssemble_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
+EXTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
+EXTERN PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN PetscErrorCode MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
+EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,int,const int[],int,const int[],const PetscScalar [],InsertMode);
 
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
 #endif
 
 EXTERN_C_BEGIN
-EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
-EXTERN int MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
+EXTERN PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 EXTERN_C_END
 
 #endif

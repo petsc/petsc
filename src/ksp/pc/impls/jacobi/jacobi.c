@@ -65,7 +65,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-int PCJacobiSetUseRowMax_Jacobi(PC pc)
+PetscErrorCode PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -96,7 +96,8 @@ static int PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi     *jac = (PC_Jacobi*)pc->data;
   Vec           diag,diagsqrt;
-  int           ierr,n,i,zeroflag=0;
+  PetscErrorCode ierr;
+  int n,i,zeroflag=0;
   PetscScalar   *x;
 
   PetscFunctionBegin;
@@ -178,7 +179,7 @@ static int PCSetUp_Jacobi(PC pc)
 #define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
 static int PCSetUp_Jacobi_Symmetric(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
@@ -201,7 +202,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 #define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
 static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
@@ -229,7 +230,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!jac->diag) {
@@ -256,7 +257,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
@@ -281,7 +282,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 static int PCDestroy_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
@@ -299,7 +300,7 @@ static int PCDestroy_Jacobi(PC pc)
 static int PCSetFromOptions_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
@@ -344,10 +345,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Jacobi"
-int PCCreate_Jacobi(PC pc)
+PetscErrorCode PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -415,9 +416,9 @@ EXTERN_C_END
    Concepts: Jacobi preconditioner
 
 @*/
-int PCJacobiSetUseRowMax(PC pc)
+PetscErrorCode PCJacobiSetUseRowMax(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

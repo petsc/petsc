@@ -13,7 +13,7 @@ extern FILE *petsc_history;
 /* 
    No error handling because may be called by error handler
 */
-int PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
+PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 {
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(str,format,(char *)Argp);
@@ -28,7 +28,7 @@ int PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 /* 
    No error handling because may be called by error handler
 */
-int PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
 {
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vfprintf(fd,format,(char *)Argp);
@@ -41,7 +41,7 @@ int PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
 /* ----------------------------------------------------------------------- */
 
 PrintfQueue queue       = 0,queuebase = 0;
-int         queuelength = 0;
+PetscErrorCode         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
 
 #undef __FUNCT__  
@@ -63,7 +63,7 @@ FILE        *queuefile  = PETSC_NULL;
     from all the processors to be printed.
 
     Fortran Note:
-    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
     The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
@@ -71,9 +71,9 @@ FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -133,9 +133,9 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
+PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-int PetscSynchronizedFlush(MPI_Comm comm)
+PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 {
   int        rank,size,i,j,n,tag,ierr;
   char       message[QUEUESTRINGSIZE];
@@ -260,7 +260,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   int rank,ierr;
 
@@ -295,7 +295,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
    Level: intermediate
 
     Fortran Note:
-    The call sequence is PetscPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    The call sequence is PetscPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
    Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
@@ -306,7 +306,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   int       rank,ierr;
   size_t    len;
@@ -356,7 +356,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
-int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   int rank,ierr;
 
@@ -381,7 +381,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
-int PetscErrorPrintfDefault(const char format[],...)
+PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
 {
   va_list            Argp;
   static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
@@ -484,9 +484,9 @@ int PetscErrorPrintfDefault(const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-int PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
+PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

@@ -3,10 +3,10 @@
 #include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-EXTERN int MatColoring_Natural(Mat,const MatColoringType,ISColoring*);
-EXTERN int MatFDColoringSL_Minpack(Mat,const MatColoringType,ISColoring*);
-EXTERN int MatFDColoringLF_Minpack(Mat,const MatColoringType,ISColoring*);
-EXTERN int MatFDColoringID_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode MatColoring_Natural(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode MatFDColoringSL_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode MatFDColoringLF_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode MatFDColoringID_Minpack(Mat,const MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -33,9 +33,9 @@ EXTERN_C_END
 
 .seealso: MatColoringRegisterDynamic(), MatColoringRegisterDestroy()
 @*/
-int MatColoringRegisterAll(const char path[])
+PetscErrorCode MatColoringRegisterAll(const char path[])
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;  

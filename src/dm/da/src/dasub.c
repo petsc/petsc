@@ -30,10 +30,11 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
+PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
 {
   MPI_Group group,subgroup;
-  int       ierr,i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
+  PetscErrorCode ierr;
+  int i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

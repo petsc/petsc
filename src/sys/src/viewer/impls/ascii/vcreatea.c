@@ -33,9 +33,9 @@ $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
 @*/
 PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 {
-  int         ierr;
-  PetscTruth  flg;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
@@ -85,9 +85,9 @@ $      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
 @*/
 PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
 {
-  int         ierr;
-  PetscTruth  flg;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
@@ -150,9 +150,9 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
           PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, 
 @*/
-int PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
+PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);

@@ -30,7 +30,7 @@
 /******************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdupd"
-int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
+PetscErrorCode SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)
 {
@@ -39,7 +39,7 @@ int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist,
 
     /* Local variables */
     int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    EXTERN int SPARSEPACKqmdrch(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKqmdrch(int*, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
 	     SPARSEPACKqmdmrg(int*, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);

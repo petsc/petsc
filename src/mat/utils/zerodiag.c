@@ -50,9 +50,9 @@
 
 
 @*/
-int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
+PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 {
-  int ierr,(*f)(Mat,PetscReal,IS,IS);
+  PetscErrorCode ierr,(*f)(Mat,PetscReal,IS,IS);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -62,15 +62,16 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
-int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
+PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
 {
-  int         ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
+  PetscErrorCode ierr;
+  int prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
   PetscScalar *v,*vv;
   PetscReal   repla;
   IS          icis;

@@ -4330,8 +4330,7 @@ Description:
 ******************************************************************************/
 #if defined(not_used)
 static
-int 
-level_best_guess(void)
+PetscErrorCode level_best_guess(void)
 {
   /* full pairwise for now */
   return(num_nodes);

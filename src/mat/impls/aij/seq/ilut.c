@@ -432,7 +432,7 @@ L1:
 
 
 /* ---------------------------------------------------------------------- */
-int SPARSEKIT2ilutp(int *n,PetscScalar *a,int *ja,int * ia,int *lfil,PetscReal droptol,PetscReal *permtol,int *mbloc,PetscScalar *alu,
+PetscErrorCode SPARSEKIT2ilutp(int *n,PetscScalar *a,int *ja,int * ia,int *lfil,PetscReal droptol,PetscReal *permtol,int *mbloc,PetscScalar *alu,
 	int *jlu,int *ju,int *iwk,PetscScalar *w,int *jw,  int *iperm,int *ierr)
 {
     /* System generated locals */

@@ -21,11 +21,12 @@ EXTERN_C_END
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
-int PetscPLAPACKInitializePackage(char *path) {
+PetscErrorCode PetscPLAPACKInitializePackage(char *path) 
+{
 #ifdef PETSC_HAVE_PLAPACK
   MPI_Comm comm;
   int      initPLA;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PLA_Initialized(&initPLA);CHKERRQ(ierr);
@@ -51,9 +52,10 @@ int PetscPLAPACKInitializePackage(char *path) {
 .keywords: Petsc, destroy, package, PLAPACK
 .seealso: PetscFinalize()
 @*/
-int PetscPLAPACKFinalizePackage(void) {
+PetscErrorCode PetscPLAPACKFinalizePackage(void) 
+{
 #ifdef PETSC_HAVE_PLAPACK
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PLA_Finalize();CHKERRQ(ierr);

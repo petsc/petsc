@@ -22,10 +22,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_VU" 
-int PetscViewerDestroy_VU(PetscViewer viewer)
+PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (vu->vecSeen == PETSC_TRUE) {
@@ -40,11 +40,11 @@ int PetscViewerDestroy_VU(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFlush_VU" 
-int PetscViewerFlush_VU(PetscViewer viewer)
+PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   int            rank;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int PetscViewerFlush_VU(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetFilename_VU" 
-int PetscViewerGetFilename_VU(PetscViewer viewer, char **name)
+PetscErrorCode PetscViewerGetFilename_VU(PetscViewer viewer, char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -68,12 +68,12 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_VU" 
-int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
+PetscErrorCode PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   char           fname[PETSC_MAX_PATH_LEN];
   int            rank;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
@@ -124,10 +124,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_VU" 
-int PetscViewerCreate_VU(PetscViewer viewer)
+PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr         = PetscNew(PetscViewer_VU, &vu);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerASCIIGetPointer()
 @*/
-int PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
+PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -204,7 +204,7 @@ int PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 .keywords: Viewer, file, get, pointer
 .seealso: PetscViewerASCIISetMode()
 @*/
-int PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
+PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -230,7 +230,7 @@ int PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-int PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
+PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -258,7 +258,7 @@ int PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-int PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
+PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -285,12 +285,12 @@ int PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
 .keywords: Viewer, print, deferred
 .seealso: PetscViewerVUFlushDeferred()
 @*/
-int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
+PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   va_list        Argp;
   PrintfQueue    next;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _PrintfQueue, &next);CHKERRQ(ierr);
@@ -324,13 +324,13 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 .keywords: Viewer, flush, deferred
 .seealso: PetscViewerVUPrintDeferred()
 @*/
-int PetscViewerVUFlushDeferred(PetscViewer viewer)
+PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer viewer)
 {
   PetscViewer_VU *vu   = (PetscViewer_VU *) viewer->data;
   PrintfQueue    next = vu->queueBase;
   PrintfQueue    previous;
   int            i;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for(i = 0; i < vu->queueLength; i++) {

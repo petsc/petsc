@@ -22,10 +22,10 @@
    Concepts: triangle
 
 @*/
-int PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
+PetscErrorCode PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
                  int c1,int c2,int c3)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isnull;
 
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ int PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,Pet
      All processors that share the draw MUST call this routine
 
 @*/
-int PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
+PetscErrorCode PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
   PetscReal xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0,value;
   int       i,c = PETSC_DRAW_BASIC_COLORS,rank,ierr;
@@ -137,7 +137,7 @@ static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 .seealso: PetscDrawTensorContourPatch()
 
 @*/
-int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
+PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
   int           N = m*n,ierr;
   PetscTruth    isnull;
@@ -233,7 +233,7 @@ int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const 
 .seealso: PetscDrawTensorContour()
 
 @*/
-int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
+PetscErrorCode PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
 {
   int           c1,c2,c3,c4,i,j,ierr;
   PetscReal     x1,x2,x3,x4,y_1,y2,y3,y4,scale;

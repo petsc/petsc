@@ -22,9 +22,9 @@
 
 .seealso: PetscDrawSetPause(), PetscDrawGetPause()
 @*/
-int PetscDrawPause(PetscDraw draw)
+PetscErrorCode PetscDrawPause(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->pause) {

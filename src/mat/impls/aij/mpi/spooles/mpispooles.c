@@ -9,14 +9,14 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
-extern int SetSpoolesOptions(Mat, Spooles_options *);
+EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJSpooles"
-int MatDestroy_MPIAIJSpooles(Mat A)
+PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
-  int           ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   if (lu->CleanUpSpooles) {
@@ -46,10 +46,11 @@ int MatDestroy_MPIAIJSpooles(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIAIJSpooles"
-int MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr;
-  int           ierr,size,rank,m=A->m,irow,*rowindY;
+  PetscErrorCode ierr;
+  int           size,rank,m=A->m,irow,*rowindY;
   PetscScalar   *array;
   DenseMtx      *newY ;
   SubMtxManager *solvemanager ; 
@@ -172,7 +173,7 @@ int MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPIAIJSpooles"
-int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
+PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
   int             rank,size,ierr,lookahead=0;
@@ -585,10 +586,10 @@ int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
-int MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATMPIAIJ matrix */
   /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
 
@@ -667,8 +668,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJSpooles"
-int MatCreate_MPIAIJSpooles(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_MPIAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
   Mat A_diag;
 
   PetscFunctionBegin;

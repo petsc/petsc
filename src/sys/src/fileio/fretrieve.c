@@ -35,7 +35,7 @@
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
+EXTERN PetscErrorCode Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -69,9 +69,9 @@ EXTERN_C_END
   as the "/tmp" directory.
 
 @*/
-int PetscGetTmp(MPI_Comm comm,char *dir,int len)
+PetscErrorCode PetscGetTmp(MPI_Comm comm,char *dir,int len)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -125,9 +125,10 @@ int PetscGetTmp(MPI_Comm comm,char *dir,int len)
   as the "/tmp" directory.
 
 @*/
-int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
+PetscErrorCode PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 {
-  int        ierr,size,rank,*tagvalp,sum,cnt,i;
+  PetscErrorCode ierr;
+  int        size,rank,*tagvalp,sum,cnt,i;
   PetscTruth flg,iflg;
   FILE       *fd;
   static int Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
@@ -252,9 +253,10 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
    it requires O(p*p) file opens.
 
 @*/
-int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
+PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 {
-  int        ierr,size,rank,*tagvalp,sum,cnt,i;
+  PetscErrorCode ierr;
+  int        size,rank,*tagvalp,sum,cnt,i;
   PetscTruth flg,iflg;
   FILE       *fd;
   static int Petsc_WD_keyval = MPI_KEYVAL_INVALID;
@@ -356,7 +358,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
     Level: developer
 
 @*/
-int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
+PetscErrorCode PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
   char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
   const char        *pdir;

@@ -53,9 +53,9 @@
 
    Concepts: home directory
 @*/
-int PetscGetHomeDirectory(char dir[],int maxlen)
+PetscErrorCode PetscGetHomeDirectory(char dir[],int maxlen)
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char *d1 = 0;
 #if defined(PETSC_HAVE_GETPWUID)
   struct passwd *pw = 0;
@@ -97,10 +97,10 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
    Notes:
    Call PetscFixFilename() just before calling fopen().
 @*/
-int PetscFixFilename(const char filein[],char fileout[])
+PetscErrorCode PetscFixFilename(const char filein[],char fileout[])
 {
-  int    i,ierr;
-  size_t n;
+  PetscErrorCode ierr;
+  size_t         i,n;
 
   PetscFunctionBegin;
   if (!filein || !fileout) PetscFunctionReturn(0);

@@ -1,8 +1,8 @@
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-int TS_COOKIE = 0;
-int TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
+PetscCookieCode TS_COOKIE = 0;
+PetscLogCode    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"
@@ -24,7 +24,7 @@ static int TSSetTypeFromOptions(TS ts)
   PetscTruth opt;
   const char *defaultType;
   char       typeName[256];
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ts->type_name != PETSC_NULL) {
@@ -69,11 +69,11 @@ static int TSSetTypeFromOptions(TS ts)
 
 .seealso: TSGetType
 @*/
-int TSSetFromOptions(TS ts)
+PetscErrorCode TSSetFromOptions(TS ts)
 {
   PetscReal  dt;
   PetscTruth opt;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -146,7 +146,7 @@ int TSSetFromOptions(TS ts)
 .keywords: TS, view, options, database
 .seealso: TSSetFromOptions(), TSView()
 @*/
-int TSViewFromOptions(TS ts,const char title[])
+PetscErrorCode TSViewFromOptions(TS ts,const char title[])
 {
   PetscViewer viewer;
   PetscDraw   draw;
@@ -154,7 +154,7 @@ int TSViewFromOptions(TS ts,const char title[])
   char        typeName[1024];
   char        fileName[PETSC_MAX_PATH_LEN];
   size_t      len;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);CHKERRQ(ierr);
@@ -228,9 +228,9 @@ int TSViewFromOptions(TS ts,const char title[])
 
 .seealso:  TSSetRHSJacobian(), KSPSetOperators()
 @*/
-int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
+PetscErrorCode TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -268,9 +268,9 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
+PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -330,7 +330,7 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: TSSetRHSMatrix()
 @*/
-int TSSetRHSFunction(TS ts,int (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode TSSetRHSFunction(TS ts,int (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -389,7 +389,7 @@ $     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: TSSetRHSFunction()
 @*/
-int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -455,7 +455,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
           SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetRHSMatrix()
 
 @*/
-int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -482,9 +482,9 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatSt
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSBoundaryConditions(TS ts,PetscReal t,Vec x)
+PetscErrorCode TSComputeRHSBoundaryConditions(TS ts,PetscReal t,Vec x)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -526,7 +526,7 @@ $     func (TS ts,PetscReal t,Vec F,void *ctx);
 
 .keywords: TS, timestep, set, boundary conditions, function
 @*/
-int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -570,9 +570,9 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-int TSView(TS ts,PetscViewer viewer)
+PetscErrorCode TSView(TS ts,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       *type;
   PetscTruth iascii,isstring;
 
@@ -633,7 +633,7 @@ int TSView(TS ts,PetscViewer viewer)
 
 .seealso: TSGetApplicationContext()
 @*/
-int TSSetApplicationContext(TS ts,void *usrP)
+PetscErrorCode TSSetApplicationContext(TS ts,void *usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -661,7 +661,7 @@ int TSSetApplicationContext(TS ts,void *usrP)
 
 .seealso: TSSetApplicationContext()
 @*/
-int TSGetApplicationContext(TS ts,void **usrP)
+PetscErrorCode TSGetApplicationContext(TS ts,void **usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -686,7 +686,7 @@ int TSGetApplicationContext(TS ts,void **usrP)
 
 .keywords: TS, timestep, get, iteration, number
 @*/
-int TSGetTimeStepNumber(TS ts,int* iter)
+PetscErrorCode TSGetTimeStepNumber(TS ts,int* iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -714,7 +714,7 @@ int TSGetTimeStepNumber(TS ts,int* iter)
 
 .keywords: TS, set, initial, timestep
 @*/
-int TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
+PetscErrorCode TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -742,7 +742,7 @@ int TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 
 .keywords: TS, set, timestep
 @*/
-int TSSetTimeStep(TS ts,PetscReal time_step)
+PetscErrorCode TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -769,7 +769,7 @@ int TSSetTimeStep(TS ts,PetscReal time_step)
 
 .keywords: TS, get, timestep
 @*/
-int TSGetTimeStep(TS ts,PetscReal* dt)
+PetscErrorCode TSGetTimeStep(TS ts,PetscReal* dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -800,7 +800,7 @@ int TSGetTimeStep(TS ts,PetscReal* dt)
 
 .keywords: TS, timestep, get, solution
 @*/
-int TSGetSolution(TS ts,Vec *v)
+PetscErrorCode TSGetSolution(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -831,7 +831,7 @@ int TSGetSolution(TS ts,Vec *v)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-int TSSetProblemType(TS ts, TSProblemType type) {
+PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->problem_type = type;
@@ -861,7 +861,7 @@ int TSSetProblemType(TS ts, TSProblemType type) {
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-int TSGetProblemType(TS ts, TSProblemType *type) {
+PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   PetscValidIntPointer(type,2);
@@ -893,9 +893,9 @@ int TSGetProblemType(TS ts, TSProblemType *type) {
 
 .seealso: TSCreate(), TSStep(), TSDestroy()
 @*/
-int TSSetUp(TS ts)
+PetscErrorCode TSSetUp(TS ts)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -925,9 +925,9 @@ int TSSetUp(TS ts)
 
 .seealso: TSCreate(), TSSetUp(), TSSolve()
 @*/
-int TSDestroy(TS ts)
+PetscErrorCode TSDestroy(TS ts)
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -975,7 +975,7 @@ int TSDestroy(TS ts)
 
 .keywords: timestep, get, SNES
 @*/
-int TSGetSNES(TS ts,SNES *snes)
+PetscErrorCode TSGetSNES(TS ts,SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1011,7 +1011,7 @@ int TSGetSNES(TS ts,SNES *snes)
 
 .keywords: timestep, get, KSP
 @*/
-int TSGetKSP(TS ts,KSP *ksp)
+PetscErrorCode TSGetKSP(TS ts,KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1040,7 +1040,7 @@ int TSGetKSP(TS ts,KSP *ksp)
 
 .keywords: TS, timestep, get, maximum, iterations, time
 @*/
-int TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
+PetscErrorCode TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1079,7 +1079,7 @@ int TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
 
 .keywords: TS, timestep, set, maximum, iterations
 @*/
-int TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
+PetscErrorCode TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1104,7 +1104,7 @@ int TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
 
 .keywords: TS, timestep, set, solution, initial conditions
 @*/
-int TSSetSolution(TS ts,Vec x)
+PetscErrorCode TSSetSolution(TS ts,Vec x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1135,7 +1135,7 @@ int TSSetSolution(TS ts,Vec x)
 
 .keywords: TS, Rhs, boundary conditions
 @*/
-int TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
+PetscErrorCode TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1159,7 +1159,7 @@ int TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
 
 .keywords: TS, Rhs, boundary conditions
 @*/
-int TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
+PetscErrorCode TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1188,7 +1188,7 @@ int TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
 
 .keywords: TS, System matrix, boundary conditions
 @*/
-int TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
+PetscErrorCode TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1214,7 +1214,7 @@ int TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
 
 .keywords: TS, System matrix, boundary conditions
 @*/
-int TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
+PetscErrorCode TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1243,7 +1243,7 @@ int TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
 
 .keywords: TS, solution, boundary conditions
 @*/
-int TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
+PetscErrorCode TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1268,7 +1268,7 @@ int TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
 
 .keywords: TS, solution, boundary conditions
 @*/
-int TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
+PetscErrorCode TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1293,7 +1293,7 @@ int TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
 
 .keywords: TS, timestep
 @*/
-int TSSetPreStep(TS ts, int (*func)(TS))
+PetscErrorCode TSSetPreStep(TS ts, int (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1315,7 +1315,7 @@ int TSSetPreStep(TS ts, int (*func)(TS))
 
 .keywords: TS, timestep
 @*/
-int TSDefaultPreStep(TS ts)
+PetscErrorCode TSDefaultPreStep(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1344,7 +1344,7 @@ int TSDefaultPreStep(TS ts)
 
 .keywords: TS, update, timestep
 @*/
-int TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
+PetscErrorCode TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1370,7 +1370,7 @@ int TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
 
 .keywords: TS, update, timestep
 @*/
-int TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
+PetscErrorCode TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1395,7 +1395,7 @@ int TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 
 .keywords: TS, timestep
 @*/
-int TSSetPostStep(TS ts, int (*func)(TS))
+PetscErrorCode TSSetPostStep(TS ts, int (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1417,7 +1417,7 @@ int TSSetPostStep(TS ts, int (*func)(TS))
 
 .keywords: TS, timestep
 @*/
-int TSDefaultPostStep(TS ts)
+PetscErrorCode TSDefaultPostStep(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1460,7 +1460,7 @@ $    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSDefaultMonitor(), TSClearMonitor()
 @*/
-int TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int (*mdestroy)(void*))
+PetscErrorCode TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1492,7 +1492,7 @@ int TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int
 
 .seealso: TSDefaultMonitor(), TSSetMonitor()
 @*/
-int TSClearMonitor(TS ts)
+PetscErrorCode TSClearMonitor(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1502,9 +1502,9 @@ int TSClearMonitor(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultMonitor"
-int TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,ptime);CHKERRQ(ierr);
@@ -1531,9 +1531,9 @@ int TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-int TSStep(TS ts,int *steps,PetscReal *ptime)
+PetscErrorCode TSStep(TS ts,int *steps,PetscReal *ptime)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1558,7 +1558,7 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
 /*
      Runs the user provided monitor routines, if they exists.
 */
-int TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
+PetscErrorCode TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 {
   int i,ierr,n = ts->numbermonitors;
 
@@ -1601,10 +1601,10 @@ int TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 .seealso: TSLGMonitorDestroy(), TSSetMonitor()
 
 @*/
-int TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
@@ -1618,11 +1618,11 @@ int TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSLGMonitor"
-int TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
+PetscErrorCode TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
   PetscReal      x,y = ptime;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!monctx) {
@@ -1660,10 +1660,10 @@ int TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
 
 .seealso: TSLGMonitorCreate(),  TSSetMonitor(), TSLGMonitor();
 @*/
-int TSLGMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode TSLGMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscDraw draw;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
@@ -1693,7 +1693,7 @@ int TSLGMonitorDestroy(PetscDrawLG drawlg)
 
 .keywords: TS, get, time
 @*/
-int TSGetTime(TS ts,PetscReal* t)
+PetscErrorCode TSGetTime(TS ts,PetscReal* t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1728,9 +1728,9 @@ int TSGetTime(TS ts,PetscReal* t)
 .seealso: TSSetFromOptions()
 
 @*/
-int TSSetOptionsPrefix(TS ts,const char prefix[])
+PetscErrorCode TSSetOptionsPrefix(TS ts,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1773,9 +1773,9 @@ int TSSetOptionsPrefix(TS ts,const char prefix[])
 .seealso: TSGetOptionsPrefix()
 
 @*/
-int TSAppendOptionsPrefix(TS ts,const char prefix[])
+PetscErrorCode TSAppendOptionsPrefix(TS ts,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1816,9 +1816,9 @@ int TSAppendOptionsPrefix(TS ts,const char prefix[])
 
 .seealso: TSAppendOptionsPrefix()
 @*/
-int TSGetOptionsPrefix(TS ts,char *prefix[])
+PetscErrorCode TSGetOptionsPrefix(TS ts,char *prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1853,7 +1853,7 @@ int TSGetOptionsPrefix(TS ts,char *prefix[])
 .keywords: TS, timestep, get, matrix
 
 @*/
-int TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
+PetscErrorCode TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1888,9 +1888,9 @@ int TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
-int TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
+PetscErrorCode TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSGetRHSMatrix(ts,J,M,ctx);CHKERRQ(ierr);
@@ -1917,9 +1917,9 @@ int TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
 
 .seealso: TSSetMonitor(), TSDefaultMonitor(), VecView()
 @*/
-int TSVecViewMonitor(TS ts,int step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode TSVecViewMonitor(TS ts,int step,PetscReal ptime,Vec x,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;

@@ -29,10 +29,11 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
-int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
+PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx     *zctx = (ZoomCtx*)ctx;
-  int         ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
+  PetscErrorCode ierr;
+  int m,n,i,j,k,step,id,c1,c2,c3,c4;
   PetscReal   s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar *v,*xy;
 
@@ -75,7 +76,7 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Draw_DA2d"
-int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
+PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
   int                rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
@@ -249,14 +250,14 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims);
+EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF4_DA2d"
-int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
+PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
-  int ierr;
+  PetscErrorCode ierr;
   int dims[2];
   DA  da;
   Vec natural;
@@ -284,10 +285,11 @@ int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Netcdf_DA"
-int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
+PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_PNETCDF)
-  int            ierr,ncid,xstart,xdim_num=1;
+  PetscErrorCode ierr;
+  int ncid,xstart,xdim_num=1;
   int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
   int            xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
   int            *lx,*ly,*lz;
@@ -360,15 +362,16 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 #endif    
 }
 
-EXTERN int VecView_MPI_Draw_DA1d(Vec,PetscViewer);
+EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_DA"
-int VecView_MPI_DA(Vec xin,PetscViewer viewer)
+PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DA         da;
-  int        ierr,dim;
+  PetscErrorCode ierr;
+  int dim;
   Vec        natural;
   PetscTruth isdraw,ishdf4,isnetcdf;
   char       *prefix;
@@ -418,10 +421,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Binary_DA"
-int VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
+PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
   DA   da;
-  int  ierr;
+  PetscErrorCode ierr;
   Vec  natural;
   char *prefix;
 

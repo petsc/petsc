@@ -38,7 +38,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscIgnoreErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PetscIgnoreErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -83,7 +83,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-int PetscTraceBackErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PetscTraceBackErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1,flg2;

@@ -115,8 +115,8 @@ struct _p_AOData {
   AODataAlias       *aliases;
 };
 
-EXTERN int AODataKeyFind_Private(AOData,const char[],PetscTruth *,AODataKey **);
-EXTERN int AODataSegmentFind_Private(AOData,const char[],const char[],PetscTruth *,AODataKey **,AODataSegment **);
+EXTERN PetscErrorCode AODataKeyFind_Private(AOData,const char[],PetscTruth *,AODataKey **);
+EXTERN PetscErrorCode AODataSegmentFind_Private(AOData,const char[],const char[],PetscTruth *,AODataKey **,AODataSegment **);
 
 
 #include "petscbt.h"

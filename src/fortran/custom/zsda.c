@@ -26,7 +26,7 @@
 #define sdaarrayview_         sdaarrayview
 #endif
 
-extern int SDAArrayView(SDA,PetscScalar*,PetscViewer);
+EXTERN PetscErrorCode SDAArrayView(SDA,PetscScalar*,PetscViewer);
 
 EXTERN_C_BEGIN
 void sdaarrayview_(SDA *da,PetscScalar *values,PetscViewer *vin,int *ierr)

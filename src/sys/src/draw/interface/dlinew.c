@@ -22,9 +22,9 @@
 
 .seealso:  PetscDrawLineGetWidth()
 @*/
-int PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
+PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;

@@ -500,7 +500,7 @@ int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void 
 #define __FUNCT__ "RHSFunction"
 int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
   SNES snes = PETSC_NULL;
 
   ierr = FormFunction(snes,globalin,globalout,ctx);

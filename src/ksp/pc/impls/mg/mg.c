@@ -14,7 +14,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGMCycle_Private"
-int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
+PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
   MG          mg = *mglevels,mgc;
   int         cycles = mg->cycles,ierr;
@@ -144,9 +144,9 @@ static int PCDestroy_MG(PC pc)
 
 
 
-EXTERN int MGACycle_Private(MG*);
-EXTERN int MGFCycle_Private(MG*);
-EXTERN int MGKCycle_Private(MG*);
+EXTERN PetscErrorCode MGACycle_Private(MG*);
+EXTERN PetscErrorCode MGFCycle_Private(MG*);
+EXTERN PetscErrorCode MGKCycle_Private(MG*);
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
@@ -187,7 +187,8 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
 static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   MG         *mg = (MG*)pc->data;
-  int        ierr,levels = mg[0]->levels;
+  PetscErrorCode ierr;
+  int levels = mg[0]->levels;
   PetscTruth converged = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -219,7 +220,8 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal
 #define __FUNCT__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
-  int        ierr,indx,m,levels = 1;
+  PetscErrorCode ierr;
+  int indx,m,levels = 1;
   PetscTruth flg;
   const char *type[] = {"additive","multiplicative","full","cascade","kascade"};
 
@@ -287,7 +289,8 @@ static int PCSetFromOptions_MG(PC pc)
 static int PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
-  int        ierr,levels = mg[0]->levels,i;
+  PetscErrorCode ierr;
+  int levels = mg[0]->levels,i;
   const char *cstring;
   PetscTruth iascii;
 
@@ -329,7 +332,8 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 static int PCSetUp_MG(PC pc)
 {
   MG          *mg = (MG*)pc->data;
-  int         ierr,i,n = mg[0]->levels;
+  PetscErrorCode ierr;
+  int i,n = mg[0]->levels;
   PC          cpc;
   PetscTruth  preonly,lu,redundant,monitor = PETSC_FALSE,dump;
   PetscViewer ascii;
@@ -451,9 +455,9 @@ static int PCSetUp_MG(PC pc)
 
 .seealso: MGSetType(), MGGetLevels()
 @*/
-int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
+PetscErrorCode MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 {
-  int ierr;
+  PetscErrorCode ierr;
   MG  *mg;
 
   PetscFunctionBegin;
@@ -489,7 +493,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 
 .seealso: MGSetLevels()
 @*/
-int MGGetLevels(PC pc,int *levels)
+PetscErrorCode MGGetLevels(PC pc,int *levels)
 {
   MG  *mg;
 
@@ -525,7 +529,7 @@ int MGGetLevels(PC pc,int *levels)
 
 .seealso: MGSetLevels()
 @*/
-int MGSetType(PC pc,MGType form)
+PetscErrorCode MGSetType(PC pc,MGType form)
 {
   MG *mg;
 
@@ -561,7 +565,7 @@ $  -pc_mg_cycles n - 1 denotes a V-cycle; 2 denotes a W-cycle.
 
 .seealso: MGSetCyclesOnLevel()
 @*/
-int MGSetCycles(PC pc,int n)
+PetscErrorCode MGSetCycles(PC pc,int n)
 { 
   MG  *mg;
   int i,levels;
@@ -593,7 +597,7 @@ int MGSetCycles(PC pc,int n)
 
 .keywords: MG, check, set, multigrid
 @*/
-int MGCheck(PC pc)
+PetscErrorCode MGCheck(PC pc)
 {
   MG  *mg;
   int i,n,count = 0;
@@ -658,7 +662,7 @@ int MGCheck(PC pc)
 
 .seealso: MGSetNumberSmoothUp()
 @*/
-int MGSetNumberSmoothDown(PC pc,int n)
+PetscErrorCode MGSetNumberSmoothDown(PC pc,int n)
 { 
   MG  *mg;
   int i,levels,ierr;
@@ -704,7 +708,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 
 .seealso: MGSetNumberSmoothDown()
 @*/
-int  MGSetNumberSmoothUp(PC pc,int n)
+PetscErrorCode  MGSetNumberSmoothUp(PC pc,int n)
 { 
   MG  *mg;
   int i,levels,ierr;
@@ -757,7 +761,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_MG"
-int PCCreate_MG(PC pc)
+PetscErrorCode PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply          = PCApply_MG;

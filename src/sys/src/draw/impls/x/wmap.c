@@ -7,7 +7,7 @@
  */
 #undef __FUNCT__  
 #define __FUNCT__ "Xi_wait_map" 
-int Xi_wait_map(PetscDraw_X *XiWin)
+PetscErrorCode Xi_wait_map(PetscDraw_X *XiWin)
 {
   XEvent  event;
   int     w,h;

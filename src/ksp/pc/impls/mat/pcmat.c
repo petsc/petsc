@@ -5,7 +5,7 @@
 #define __FUNCT__ "PCApply_Mat"
 static int PCApply_Mat(PC pc,Vec x,Vec y)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMult(pc->pmat,x,y);CHKERRQ(ierr);
@@ -16,7 +16,7 @@ static int PCApply_Mat(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_Mat"
 static int PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMultTranspose(pc->pmat,x,y);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Mat"
-int PCCreate_Mat(PC pc)
+PetscErrorCode PCCreate_Mat(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;

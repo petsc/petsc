@@ -22,7 +22,7 @@ File Description:
 **********************************queue.h*************************************/
 #ifndef _queue_h
 #define _queue_h
-
+#include "petsc.h"
 
 /**********************************queue.h*************************************
 Type: queue_ADT
@@ -98,7 +98,7 @@ Return: integer number of elements
 Description: This function returns the number of elements in the queue.
 Usage: n = len_queue(queue);
 **********************************queue.h*************************************/
-extern int len_queue(queue_ADT queue);
+EXTERN PetscErrorCode len_queue(queue_ADT queue);
 
 
 

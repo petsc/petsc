@@ -37,9 +37,9 @@ typedef struct {
   PetscTruth CleanUpDSCPACK;
 } Mat_DSC;
 
-EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-EXTERN int MatConvert_Base_DSCPACK(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_Base_DSCPACK(Mat,const MatType,Mat*);
 EXTERN_C_END
 
 /* DSC function */
@@ -64,7 +64,7 @@ void isort2(int size, int *list, int *idx_dsc) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "BAIJtoMyANonz"
-int  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
+PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
 		    RealNumberType *ANonz, int NumLocalStructs, 
                     int NumLocalNonz,  int *GlobalStructNewColNum,                
 		    int *LocalStructOldNum,
@@ -160,8 +160,8 @@ int  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_DSCPACK_Base"
-int MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
-  int     ierr;
+PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
+  PetscErrorCode ierr;
   Mat     B=*newmat;
   Mat_DSC *lu=(Mat_DSC*)A->spptr;
   
@@ -186,9 +186,10 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_DSCPACK"
-int MatDestroy_DSCPACK(Mat A) {
+PetscErrorCode MatDestroy_DSCPACK(Mat A) 
+{
   Mat_DSC *lu=(Mat_DSC*)A->spptr;  
-  int     ierr;
+  PetscErrorCode ierr;
     
   PetscFunctionBegin;
   if (lu->CleanUpDSCPACK) {
@@ -221,9 +222,9 @@ int MatDestroy_DSCPACK(Mat A) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_DSCPACK"
-int MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
   Mat_DSC        *lu= (Mat_DSC*)A->spptr;
-  int            ierr;
+  PetscErrorCode ierr;
   RealNumberType *solution_vec,*rhs_vec; 
 
   PetscFunctionBegin;
@@ -261,12 +262,13 @@ int MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_DSCPACK"
-int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
+PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
   Mat_SeqBAIJ    *a_seq;
   Mat_DSC        *lu=(Mat_DSC*)(*F)->spptr; 
   Mat            *tseq,A_seq=0;
   RealNumberType *my_a_nonz;
-  int            ierr, M=A->M, Mbs=M/lu->bs, size,
+  PetscErrorCode ierr;
+  int        M=A->M, Mbs=M/lu->bs, size,
                  max_mem_estimate, max_single_malloc_blk,
                  number_of_procs,i,j,next,iold,
                  *idx,*iidx=0,*itmp;
@@ -431,10 +433,11 @@ int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
 /* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_DSCPACK"
-int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
+PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
   Mat        B;
   Mat_DSC    *lu;   
-  int        ierr,bs,indx; 
+  PetscErrorCode ierr;
+  int bs,indx; 
   PetscTruth flg;
   const char *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
@@ -532,8 +535,8 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_DSCPACK"
-int MatAssemblyEnd_DSCPACK(Mat A,MatAssemblyType mode) {
-  int     ierr;
+PetscErrorCode MatAssemblyEnd_DSCPACK(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_DSC *lu=(Mat_DSC*)A->spptr;
 
   PetscFunctionBegin;
@@ -545,10 +548,10 @@ int MatAssemblyEnd_DSCPACK(Mat A,MatAssemblyType mode) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_DSCPACK"
-int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
+PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 {
   Mat_DSC *lu=(Mat_DSC*)A->spptr;  
-  int     ierr;
+  PetscErrorCode ierr;
   char    *s=0;
   
   PetscFunctionBegin;   
@@ -606,8 +609,9 @@ int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_DSCPACK"
-int MatView_DSCPACK(Mat A,PetscViewer viewer) {
-  int               ierr,size;
+PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer) {
+  PetscErrorCode ierr;
+  int size;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_DSC           *lu=(Mat_DSC*)A->spptr;
@@ -638,11 +642,11 @@ int MatView_DSCPACK(Mat A,PetscViewer viewer) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIDSCPACK"
-int MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat     A;
   Mat_DSC *lu = (Mat_DSC*)B->spptr;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -662,11 +666,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
-int MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
-  int      ierr;
+  PetscErrorCode ierr;
   MPI_Comm comm;
   Mat      B=*newmat;
   Mat_DSC  *lu;
@@ -722,8 +726,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_DSCPACK"
-int MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
-  int     ierr;
+PetscErrorCode MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_DSC *lu=(Mat_DSC *)A->spptr;
 
   PetscFunctionBegin;
@@ -767,8 +771,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_DSCPACK"
-int MatCreate_DSCPACK(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_DSCPACK(Mat A) 
+{
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */

@@ -5,11 +5,12 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIBDiag"
-int MatSetUpMultiply_MPIBDiag(Mat mat)
+PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *lmbd = (Mat_SeqBDiag*)mbd->A->data;
-  int          ierr,N = mat->N,*indices,*garray,ec=0;
+  PetscErrorCode ierr;
+  int   N = mat->N,*indices,*garray,ec=0;
   int          bs = lmbd->bs,d,i,j,diag;
   IS           to,from;
   Vec          gvec;

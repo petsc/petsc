@@ -42,7 +42,7 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
 
 esi::petsc::Vector<double,int>::~Vector()
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = this->map->deleteReference();if (ierr) return;
   ierr = VecDestroy(this->vec);if (ierr) return;
 }
@@ -161,7 +161,7 @@ esi::petsc::Vector<double,int>::~Vector()
 
 ::esi::ErrorCode esi::petsc::Vector<double,int>::norm2squared(magnitude_type &scalar) 
 {
-  int ierr = VecNorm(this->vec,NORM_2,&scalar);CHKERRQ(ierr);
+  PetscErrorCode ierr = VecNorm(this->vec,NORM_2,&scalar);CHKERRQ(ierr);
   scalar *= scalar;
   return 0;
 }
@@ -176,7 +176,7 @@ esi::petsc::Vector<double,int>::~Vector()
 */
 ::esi::ErrorCode esi::petsc::Vector<double,int>::dot( ::esi::Vector<double,int> &yy,double &product) 
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
@@ -188,7 +188,7 @@ esi::petsc::Vector<double,int>::~Vector()
 */
 ::esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  ::esi::Vector<double,int> &yy,double scalar)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
@@ -197,7 +197,7 @@ esi::petsc::Vector<double,int>::~Vector()
 
 ::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   esi::petsc::Vector<double,int> *y;  ierr = yy1.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
@@ -214,7 +214,7 @@ esi::petsc::Vector<double,int>::~Vector()
 */
 ::esi::ErrorCode esi::petsc::Vector<double,int>::aypx(double scalar,  ::esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
@@ -275,7 +275,7 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
     virtual ::esi::ErrorCode getVector(::esi::IndexSpace<Ordinal>&lmap,::esi::Vector<Scalar,Ordinal>*&v)
     {
       Petra_ESI_IndexSpace<Ordinal> *map;
-      int ierr = lmap.getInterface("Petra_ESI_IndexSpace",reinterpret_cast<void *&>(map));CHKERRQ(ierr);
+      PetscErrorCode ierr = lmap.getInterface("Petra_ESI_IndexSpace",reinterpret_cast<void *&>(map));CHKERRQ(ierr);
       if (!map) SETERRQ(1,"Requires Petra_ESI_IndexSpace");
       v = new Petra_ESI_Vector<Scalar,Ordinal>(*map);
       //      ierr = map->addReference();CHKERRQ(ierr);  /* Petra has bug and does not increase reference count */

@@ -9,10 +9,10 @@ EXTERN_C_BEGIN
 /* --------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryInfo"
-int PetscDLLibraryInfo(char *path,char *type,const char *mess[]) 
+PetscErrorCode PetscDLLibraryInfo(char *path,char *type,const char *mess[]) 
 {
   PetscTruth iscon,isaut,isver;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin; 
 

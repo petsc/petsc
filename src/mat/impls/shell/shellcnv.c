@@ -4,10 +4,12 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-int MatConvert_Shell(Mat oldmat,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,Mat *newmat) \
+{
   Mat           mat;
   Vec           in,out;
-  int           ierr,i,M,m,*rows,start,end;
+  PetscErrorCode ierr;
+  int  i,M,m,*rows,start,end;
   MPI_Comm      comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
 

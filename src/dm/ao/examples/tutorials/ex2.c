@@ -763,7 +763,7 @@ int DataMoveVertices(GridData *gdata)
 #define __FUNCT__ "DataDestroy"
 int DataDestroy(GridData *gdata)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(gdata->ele);CHKERRQ(ierr);

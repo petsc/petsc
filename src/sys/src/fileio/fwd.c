@@ -50,7 +50,7 @@
    Concepts: working directory
 
 @*/
-int PetscGetWorkingDirectory(char path[],int len)
+PetscErrorCode PetscGetWorkingDirectory(char path[],int len)
 {
 #if defined(PETSC_HAVE_GETCWD)
   PetscFunctionBegin;

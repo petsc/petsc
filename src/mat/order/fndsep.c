@@ -34,7 +34,7 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKfndsep" 
-int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKfndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {
     /* System generated locals */
@@ -43,7 +43,7 @@ int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
-    EXTERN int SPARSEPACKfnroot(int*, int *, int *, 
+    EXTERN PetscErrorCode SPARSEPACKfnroot(int*, int *, int *, 
 	    int *, int *, int *, int *);
     int nbr;
 

@@ -8,12 +8,12 @@
 static int MatIncreaseOverlap_MPIAIJ_Once(Mat,int,IS *);
 static int MatIncreaseOverlap_MPIAIJ_Local(Mat,int,char **,int*,int**);
 static int MatIncreaseOverlap_MPIAIJ_Receive(Mat,int,int **,int**,int*);
-EXTERN int MatGetRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatGetRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ"
-int MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
 {
   int i,ierr;
 
@@ -541,19 +541,20 @@ static int MatIncreaseOverlap_MPIAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xda
   PetscFunctionReturn(0);
 }  
 /* -------------------------------------------------------------------------*/
-EXTERN int MatGetSubMatrices_MPIAIJ_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
-EXTERN int MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
+EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 /*
     Every processor gets the entire matrix
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ_All" 
-int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
+PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
 {
   Mat          B;
   Mat_MPIAIJ   *a = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ   *b,*ad = (Mat_SeqAIJ*)a->A->data,*bd = (Mat_SeqAIJ*)a->B->data;
-  int          ierr,sendcount,*recvcounts = 0,*displs = 0,size,i,*rstarts = a->rowners,rank,n,cnt,j;
+  PetscErrorCode ierr;
+  int          sendcount,*recvcounts = 0,*displs = 0,size,i,*rstarts = a->rowners,rank,n,cnt,j;
   int          m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
   PetscScalar  *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
 
@@ -719,7 +720,7 @@ int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ" 
-int MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   int         nmax,nstages_local,nstages,i,pos,max_no,ierr,nrow,ncol;
   PetscTruth  rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
@@ -768,7 +769,7 @@ int MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],M
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ_Local" 
-int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
   Mat         A = c->A;

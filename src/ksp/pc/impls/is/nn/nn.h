@@ -19,11 +19,11 @@ typedef struct {
   PetscScalar   factor_coarse_rhs;
 } PC_NN;
 
-extern int PCNNCreateCoarseMatrix (PC);
-extern int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
-extern int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B,
+EXTERN PetscErrorCode PCNNCreateCoarseMatrix (PC);
+EXTERN PetscErrorCode PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
+EXTERN PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B,
                                              Vec vec3_B, Vec vec1_D, Vec vec2_D, Vec vec1_N, Vec vec2_N);
-extern int PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, PetscScalar *work_N); 
+EXTERN PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, PetscScalar *work_N); 
 
 #endif /* __pcnn_h */
 

@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   Vec X,X1,X2,Y,Z,Z1,Z2;
   PetscScalar *a,*b,*x,*y,*z,v,one=1,mone=-1;
   PetscReal nrm;
-  int ierr,size=8,size1=6,size2=2, i,j;
+  PetscErrorCode ierr,size=8,size1=6,size2=2, i,j;
 
   PetscInitialize(&argc,&argv,0,0);
 

@@ -20,7 +20,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetSetZeroPivot"
-int PCLUSetZeroPivot_LU(PC pc,PetscReal z)
+PetscErrorCode PCLUSetZeroPivot_LU(PC pc,PetscReal z)
 {
   PC_LU *lu;
 
@@ -34,7 +34,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetReuseOrdering_LU"
-int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
+PetscErrorCode PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
@@ -48,7 +48,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetReuseFill_LU"
-int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
+PetscErrorCode PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
@@ -62,7 +62,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetShift_LU"
-int PCLUSetShift_LU(PC pc,PetscTruth shift)
+PetscErrorCode PCLUSetShift_LU(PC pc,PetscTruth shift)
 {
   PC_LU *dir;
  
@@ -79,7 +79,7 @@ EXTERN_C_END
 static int PCSetFromOptions_LU(PC pc)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg,set;
   char       tname[256];
   PetscFList ordlist;
@@ -137,7 +137,7 @@ static int PCSetFromOptions_LU(PC pc)
 static int PCView_LU(PC pc,PetscViewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii,isstring;
 
   PetscFunctionBegin;
@@ -184,7 +184,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 #define __FUNCT__ "PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
   PC_LU      *dir = (PC_LU*)pc->data;
 
@@ -242,7 +242,7 @@ static int PCSetUp_LU(PC pc)
 static int PCDestroy_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
@@ -258,7 +258,7 @@ static int PCDestroy_LU(PC pc)
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y);CHKERRQ(ierr);}
@@ -271,7 +271,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolveTranspose(pc->pmat,x,y);CHKERRQ(ierr);}
@@ -284,7 +284,7 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetFill_LU"
-int PCLUSetFill_LU(PC pc,PetscReal fill)
+PetscErrorCode PCLUSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
 
@@ -298,7 +298,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetDamping_LU"
-int PCLUSetDamping_LU(PC pc,PetscReal damping)
+PetscErrorCode PCLUSetDamping_LU(PC pc,PetscReal damping)
 {
   PC_LU *dir;
 
@@ -316,7 +316,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetUseInPlace_LU"
-int PCLUSetUseInPlace_LU(PC pc)
+PetscErrorCode PCLUSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir;
 
@@ -330,10 +330,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetMatOrdering_LU"
-int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
+PetscErrorCode PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU *dir = (PC_LU*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetPivoting_LU"
-int PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
+PetscErrorCode PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -359,7 +359,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetPivotInBlocks_LU"
-int PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
+PetscErrorCode PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -391,9 +391,9 @@ EXTERN_C_END
 
 .seealso: PCLUSetFill(), PCLUSetDamp(), PCILUSetZeroPivot()
 @*/
-int PCLUSetZeroPivot(PC pc,PetscReal zero)
+PetscErrorCode PCLUSetZeroPivot(PC pc,PetscReal zero)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -426,9 +426,9 @@ int PCLUSetZeroPivot(PC pc,PetscReal zero)
 
 .seealso: PCLUSetDamping(), PCILUSetShift()
 @*/
-int PCLUSetShift(PC pc,PetscTruth shifting)
+PetscErrorCode PCLUSetShift(PC pc,PetscTruth shifting)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -462,9 +462,9 @@ int PCLUSetShift(PC pc,PetscTruth shifting)
 
 .seealso: PCLUSetReuseFill(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill()
 @*/
-int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -496,9 +496,9 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCILUDTSetReuseFill()
 @*/
-int PCLUSetReuseFill(PC pc,PetscTruth flag)
+PetscErrorCode PCLUSetReuseFill(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -536,9 +536,9 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetFill()
 @*/
-int PCLUSetFill(PC pc,PetscReal fill)
+PetscErrorCode PCLUSetFill(PC pc,PetscReal fill)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -573,9 +573,9 @@ int PCLUSetFill(PC pc,PetscReal fill)
 .keywords: PC, set, factorization, direct, fill
 .seealso: PCILUSetFill(), PCILUSetDamp()
 @*/
-int PCLUSetDamping(PC pc,PetscReal damping)
+PetscErrorCode PCLUSetDamping(PC pc,PetscReal damping)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -618,9 +618,9 @@ int PCLUSetDamping(PC pc,PetscReal damping)
 
 .seealso: PCILUSetUseInPlace()
 @*/
-int PCLUSetUseInPlace(PC pc)
+PetscErrorCode PCLUSetUseInPlace(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -652,9 +652,9 @@ int PCLUSetUseInPlace(PC pc)
 
 .seealso: PCILUSetMatOrdering()
 @*/
-int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr,(*f)(PC,MatOrderingType);
+  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -684,9 +684,9 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 
 .seealso: PCILUSetMatOrdering(), PCLUSetPivotInBlocks()
 @*/
-int PCLUSetPivoting(PC pc,PetscReal dtcol)
+PetscErrorCode PCLUSetPivoting(PC pc,PetscReal dtcol)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivoting_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -715,9 +715,9 @@ int PCLUSetPivoting(PC pc,PetscReal dtcol)
 
 .seealso: PCILUSetMatOrdering(), PCLUSetPivoting()
 @*/
-int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
+PetscErrorCode PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -764,9 +764,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_LU"
-int PCCreate_LU(PC pc)
+PetscErrorCode PCCreate_LU(PC pc)
 {
-  int   ierr,size;
+  PetscErrorCode ierr;
+  int size;
   PC_LU *dir;
 
   PetscFunctionBegin;

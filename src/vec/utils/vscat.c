@@ -36,9 +36,10 @@ static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_MPI_ToAll"
-int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  int          ierr,yy_n,xx_n,*range;
+  PetscErrorCode ierr;
+  int          yy_n,xx_n,*range;
   PetscScalar  *xv,*yv;
   PetscMap     map;
 
@@ -154,7 +155,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
-int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   int          rank,ierr,yy_n,xx_n,*range;
   PetscScalar  *xv,*yv;
@@ -245,10 +246,10 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterDestroy_MPI_ToAll"
-int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(scat->count);CHKERRQ(ierr);
@@ -262,7 +263,7 @@ int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCopy_MPI_ToAll"
-int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
   int                  size,i,ierr;
@@ -297,7 +298,7 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_SGtoSG"
-int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
@@ -333,7 +334,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_SGtoSS_Stride1"
-int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
@@ -377,7 +378,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_SGtoSS"
-int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
@@ -420,7 +421,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_SStoSG_Stride1"
-int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
@@ -465,7 +466,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 /* 
    Scatter: sequential stride to sequential general 
 */
-int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
@@ -508,7 +509,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_SStoSS"
-int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
@@ -570,9 +571,9 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCopy_SGToSG"
-int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
 {
-  int                    ierr;
+  PetscErrorCode ierr;
   VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->todata,*out_to;
   VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from;
   
@@ -610,9 +611,9 @@ int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterDestroy_SGtoSG"
-int VecScatterDestroy_SGtoSG(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_SGtoSG(VecScatter ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->todata);CHKERRQ(ierr);
@@ -624,9 +625,9 @@ int VecScatterDestroy_SGtoSG(VecScatter ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCopy_SGToStride"
-int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
 {
-  int ierr;
+  PetscErrorCode ierr;
   VecScatter_Seq_Stride  *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to;
   VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from;
   
@@ -666,11 +667,11 @@ int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCopy_PStoSS"
-int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
 {
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to;
   VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride*)in->fromdata,*out_from;
-  int                   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   out->postrecvs  = 0;
@@ -698,9 +699,9 @@ int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-EXTERN int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
-EXTERN int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
-EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0
@@ -747,7 +748,7 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 .seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
   int        len,size,cando,totalv,ierr,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
@@ -1352,9 +1353,9 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
-int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
+PetscErrorCode VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
@@ -1411,9 +1412,9 @@ int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter 
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/
-int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
+PetscErrorCode VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_BOPT_g)
   int to_n,from_n;
 #endif
@@ -1480,9 +1481,9 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 
 .seealso: VecScatterBegin(), VecScatterCreate()
 @*/
-int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -1513,9 +1514,9 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
-int VecScatterDestroy(VecScatter ctx)
+PetscErrorCode VecScatterDestroy(VecScatter ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
@@ -1545,9 +1546,9 @@ int VecScatterDestroy(VecScatter ctx)
 
 .seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
-int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
+PetscErrorCode VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE,1);
@@ -1578,9 +1579,9 @@ int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
    Level: intermediate
 
 @*/
-int VecScatterView(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode VecScatterView(VecScatter ctx,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
@@ -1616,7 +1617,7 @@ int VecScatterView(VecScatter ctx,PetscViewer viewer)
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
 @*/
-int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
+PetscErrorCode VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 {
   VecScatter_Seq_General *to,*from;
   VecScatter_MPI_General *mto;

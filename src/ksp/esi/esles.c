@@ -7,7 +7,7 @@
 
 esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm icomm)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   ierr = KSPCreate(icomm,&this->ksp);if (ierr) return;
   ierr = KSPSetOptionsPrefix(this->ksp,"esi_");
@@ -19,7 +19,7 @@ esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm icomm)
 
 esi::petsc::SolverIterative<double,int>::SolverIterative(KSP iksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
   this->ksp    = iksp;
   ierr = PetscObjectGetComm((PetscObject)this->ksp,&this->comm);if (ierr) return;
   ierr = PetscObjectReference((PetscObject)iksp);if (ierr) return;
@@ -27,7 +27,7 @@ esi::petsc::SolverIterative<double,int>::SolverIterative(KSP iksp)
 
 esi::petsc::SolverIterative<double,int>::~SolverIterative()
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = PetscObjectDereference((PetscObject)this->ksp);if (ierr) return;
   if (this->op) {ierr = this->op->deleteReference();if (ierr) return;}
 }
@@ -67,7 +67,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getInterfacesSupported(e
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py,px;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));if (ierr) return ierr;
@@ -94,7 +94,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::setOperator( esi::Operat
   Mat A;
   this->op = &iop;
   iop.addReference();
-  int ierr = iop.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
+  PetscErrorCode ierr = iop.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
   if (!A) {
     /* ierr = MatCreate( &A);if (ierr) return ierr;
        ierr = MatSetType(A,MATESI);if (ierr) return ierr;
@@ -114,7 +114,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::
 {
   if (!this->pre) {
     PC  pc;
-    int ierr  = KSPGetPC(this->ksp,&pc);if (ierr) return ierr;
+    PetscErrorCode ierr  = KSPGetPC(this->ksp,&pc);if (ierr) return ierr;
     this->pre = new ::esi::petsc::Preconditioner<double,int>(pc); 
   }
   ipre = this->pre;
@@ -124,7 +124,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::setPreconditioner( esi::Preconditioner<double,int> &ipre)
 {
   PC  pc;
-  int ierr = KSPGetPC(this->ksp,&pc);if (ierr) return ierr;
+  PetscErrorCode ierr = KSPGetPC(this->ksp,&pc);if (ierr) return ierr;
       ierr = PCSetType(pc,PCESI);if (ierr) return ierr;
       ierr = PCESISetPreconditioner(pc,&ipre);if (ierr) return ierr;
   if (this->pre) {ierr = this->pre->deleteReference();if (ierr) return ierr;}
@@ -140,35 +140,35 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::parameters(int numParams
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::getTolerance( magnitude_type & tol )
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = KSPGetTolerances(this->ksp,&tol,0,0,0);if (ierr) return ierr;
   return 0;
 }
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::setTolerance( magnitude_type  tol )
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = KSPSetTolerances(this->ksp,tol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);if (ierr) return ierr;
   return 0;
 }
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::setMaxIterations(int its)
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = KSPSetTolerances(this->ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,its);if (ierr) return ierr;
   return 0;
 }
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::getMaxIterations(int &its)
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = KSPGetTolerances(this->ksp,0,0,0,&its);if (ierr) return ierr;
   return 0;
 }
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::getNumIterationsTaken(int &its)
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = KSPGetIterationNumber(this->ksp,&its);if (ierr) return ierr;
   return 0;
 }
@@ -177,7 +177,7 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getNumIterationsTaken(in
 ::esi::ErrorCode esi::petsc::SolverIterative<double,int>::Factory::create (char *commname,void *icomm,::esi::SolverIterative<double,int>*&v)
 {
   PetscTruth flg;
-  int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+  PetscErrorCode ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
   v = new esi::petsc::SolverIterative<double,int>(*(MPI_Comm*)icomm);
   return 0;
 };

@@ -27,12 +27,12 @@ $     CA x = Cf (left preconditioning).
 
 .seealso:  KSPMonitor()
 @*/
-int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
+PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
   PetscScalar   mone = -1.0;
   MatStructure  pflag;
   Mat           Amat,Pmat;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -91,9 +91,9 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
+PetscErrorCode KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

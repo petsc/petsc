@@ -50,7 +50,7 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFWP   *hctx = (MatSNESMFWP*)ctx->hctx;
   PetscReal     normU,norma = 1.0;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -90,7 +90,7 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 static int MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -118,7 +118,7 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 */
 static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   MatSNESMFWP *hctx = (MatSNESMFWP*)ctx->hctx;
 
   PetscFunctionBegin;
@@ -145,7 +145,7 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 */
 static int MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -154,7 +154,7 @@ static int MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFWPSetComputeNormA_P"
-int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
+PetscErrorCode MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
@@ -189,9 +189,9 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
+PetscErrorCode MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 {
-  int ierr,(*f)(Mat,PetscTruth);
+  PetscErrorCode ierr,(*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -205,7 +205,7 @@ int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFWPSetComputeNormU_P"
-int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
+PetscErrorCode MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
@@ -240,9 +240,9 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
+PetscErrorCode MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 {
-  int ierr,(*f)(Mat,PetscTruth);
+  PetscErrorCode ierr,(*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -264,9 +264,9 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatSNESMFCreate()
 
 */
-int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
+PetscErrorCode MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   MatSNESMFWP *hctx;
 
   PetscFunctionBegin;

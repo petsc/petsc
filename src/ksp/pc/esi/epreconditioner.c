@@ -6,7 +6,7 @@
 
 esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm icomm)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   ierr = PCCreate(icomm,&this->pc);if (ierr) return;
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi_");
@@ -17,7 +17,7 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm icomm)
 
 esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 {
-  int ierr;
+  PetscErrorCode ierr;
   this->pc      = ipc;
   ierr = PetscObjectGetComm((PetscObject)this->pc,&this->comm);if (ierr) return;
   ierr = PetscObjectReference((PetscObject)ipc);if (ierr) return;
@@ -25,7 +25,7 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 
 esi::petsc::Preconditioner<double,int>::~Preconditioner()
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = PetscObjectDereference((PetscObject)this->pc);if (ierr) return;
 }
 
@@ -65,7 +65,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfacesSupported(es
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py,px;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
@@ -81,7 +81,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::solve( esi::Vector<double
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py,px;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
@@ -92,7 +92,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft( esi::Vector<do
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py,px;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
@@ -103,7 +103,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight( esi::Vector<d
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   Vec    py,px,work;
   PCSide iside= PC_LEFT;
 
@@ -141,7 +141,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
         For now require Operator to be a PETSc Mat
   */
   Mat A;
-  int ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
+  PetscErrorCode ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
   ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   return 0;
 }
@@ -149,7 +149,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
 ::esi::ErrorCode esi::petsc::Preconditioner<double,int>::Factory::create(char *commname,void *icomm,::esi::Preconditioner<double,int>*&v)
 {
    PetscTruth flg;
-   int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+   PetscErrorCode ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
    if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
    v = new esi::petsc::Preconditioner<double,int>(*(MPI_Comm*)icomm);
    return 0;

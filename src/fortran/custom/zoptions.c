@@ -237,7 +237,7 @@ long PetscIntAddressToFortran(int *base,int *addr)
   return itmp2;
 }
 
-int *PetscIntAddressFromFortran(int *base,long addr)
+PetscErrorCode *PetscIntAddressFromFortran(int *base,long addr)
 {
   return base + addr;
 }
@@ -253,7 +253,7 @@ int *PetscIntAddressFromFortran(int *base,long addr)
  currently we just stick into the signed and don't check.
 
 */
-int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,int N,long *res)
+PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,int N,long *res)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(PetscScalar);
   unsigned long tmp3 = (unsigned long) addr;
@@ -286,7 +286,7 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
-    int                  ierr;
+    PetscErrorCode ierr;
     PetscScalar          *work;
     PetscObjectContainer container;
 
@@ -336,9 +336,10 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
 
     lx   - the array space that is to be passed to XXXXRestoreArray()
 */     
-int PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,int N,PetscScalar **lx)
+PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,int N,PetscScalar **lx)
 {
-  int                  ierr,shift;
+  PetscErrorCode ierr;
+  int shift;
   PetscObjectContainer container;
   PetscScalar          *tlx;
 
@@ -385,9 +386,9 @@ int PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,in
 
 .seealso: MPIFortranCommToCComm()
 @*/
-int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
+PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   /* call to MPI_Comm_size() is for error checking on comm */
@@ -424,9 +425,9 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 
 .seealso: MPICCommToFortranComm()
 @*/
-int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
+PetscErrorCode MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);

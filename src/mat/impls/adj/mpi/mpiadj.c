@@ -6,10 +6,11 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAdj_ASCII"
-int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
-  int               ierr,i,j,m = A->m;
+  PetscErrorCode ierr;
+  int i,j,m = A->m;
   char              *name;
   PetscViewerFormat format;
 
@@ -37,9 +38,9 @@ int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAdj"
-int MatView_MPIAdj(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -54,10 +55,10 @@ int MatView_MPIAdj(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAdj"
-int MatDestroy_MPIAdj(Mat mat)
+PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)mat->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
@@ -76,7 +77,7 @@ int MatDestroy_MPIAdj(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAdj"
-int MatSetOption_MPIAdj(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
 
@@ -109,7 +110,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMarkDiagonal_MPIAdj"
-int MatMarkDiagonal_MPIAdj(Mat A)
+PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
   int        i,j,*diag,m = A->m,ierr;
@@ -131,7 +132,7 @@ int MatMarkDiagonal_MPIAdj(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIAdj"
-int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
   int        *itmp;
@@ -155,7 +156,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIAdj"
-int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -163,7 +164,7 @@ int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetBlockSize_MPIAdj"
-int MatGetBlockSize_MPIAdj(Mat A,int *bs)
+PetscErrorCode MatGetBlockSize_MPIAdj(Mat A,int *bs)
 {
   PetscFunctionBegin;
   *bs = 1;
@@ -173,10 +174,10 @@ int MatGetBlockSize_MPIAdj(Mat A,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPIAdj"
-int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
+PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  flag;
 
   PetscFunctionBegin;
@@ -197,9 +198,10 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
-int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
 {
-  int        ierr,size,i;
+  PetscErrorCode ierr;
+  int size,i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
@@ -220,7 +222,7 @@ int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
-int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
 {
   int        i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
@@ -328,10 +330,10 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation_MPIAdj"
-int MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
+PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
 {
   Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
-  int        ierr;
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_BOPT_g)
   int        ii;
 #endif
@@ -379,7 +381,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAdj"
-int MatCreate_MPIAdj(Mat B)
+PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj *b;
   int        ii,ierr,size,rank;
@@ -440,9 +442,9 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
 @*/
-int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
+PetscErrorCode MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 {
-  int ierr,(*f)(Mat,int*,int*,int*);
+  PetscErrorCode ierr,(*f)(Mat,int*,int*,int*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -489,9 +491,9 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 
 .seealso: MatCreate(), MatConvert(), MatGetOrdering()
 @*/
-int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
+PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,PETSC_DETERMINE,n,A);CHKERRQ(ierr);
@@ -503,7 +505,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertTo_MPIAdj"
-int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
+PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
 {
   Mat               B;
   int               i,ierr,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;

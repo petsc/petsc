@@ -3,9 +3,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BiCG"
-int KSPSetUp_BiCG(KSP ksp)
+PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* check user parameters and functions */
@@ -23,9 +23,10 @@ int KSPSetUp_BiCG(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_BiCG"
-int  KSPSolve_BiCG(KSP ksp)
+PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
-  int          ierr,i;
+  PetscErrorCode ierr;
+  int i;
   PetscTruth   diagonalscale;
   PetscScalar  dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
   PetscReal    dp;
@@ -138,9 +139,9 @@ int  KSPSolve_BiCG(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_BiCG" 
-int KSPDestroy_BiCG(KSP ksp)
+PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
@@ -162,7 +163,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BiCG"
-int KSPCreate_BiCG(KSP ksp)
+PetscErrorCode KSPCreate_BiCG(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

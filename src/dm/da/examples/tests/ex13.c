@@ -8,7 +8,8 @@ static char help[] = "Tests loading DA vector from file.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr,M = PETSC_DECIDE,N = PETSC_DECIDE;
+  PetscErrorCode ierr;
+  int M = PETSC_DECIDE,N = PETSC_DECIDE;
   DA          da;
   Vec         global;
   PetscViewer bviewer;

@@ -23,7 +23,7 @@ EXTERN_C_END
 static int PCSetUp_Shell(PC pc)
 {
   PC_Shell *shell;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
@@ -38,7 +38,7 @@ static int PCSetUp_Shell(PC pc)
 static int PCApply_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
@@ -52,7 +52,7 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
@@ -65,7 +65,7 @@ static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyRichardson_Shell"
 static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int it)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   PC_Shell *shell;
 
   PetscFunctionBegin;
@@ -79,7 +79,7 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscR
 static int PCDestroy_Shell(PC pc)
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (shell->name) {ierr = PetscFree(shell->name);}
@@ -92,7 +92,7 @@ static int PCDestroy_Shell(PC pc)
 static int PCView_Shell(PC pc,PetscViewer viewer)
 {
   PC_Shell   *shell = (PC_Shell*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -113,7 +113,7 @@ static int PCView_Shell(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetSetUp_Shell"
-int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
+PetscErrorCode PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
 {
   PC_Shell *shell;
 
@@ -127,7 +127,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApply_Shell"
-int PCShellSetApply_Shell(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
+PetscErrorCode PCShellSetApply_Shell(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
 
@@ -142,7 +142,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetView_Shell"
-int PCShellSetView_Shell(PC pc,int (*view)(void*,PetscViewer))
+PetscErrorCode PCShellSetView_Shell(PC pc,int (*view)(void*,PetscViewer))
 {
   PC_Shell *shell;
 
@@ -156,7 +156,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyTranspose_Shell"
-int PCShellSetApplyTranspose_Shell(PC pc,int (*applytranspose)(void*,Vec,Vec))
+PetscErrorCode PCShellSetApplyTranspose_Shell(PC pc,int (*applytranspose)(void*,Vec,Vec))
 {
   PC_Shell *shell;
 
@@ -170,10 +170,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetName_Shell"
-int PCShellSetName_Shell(PC pc,const char name[])
+PetscErrorCode PCShellSetName_Shell(PC pc,const char name[])
 {
   PC_Shell *shell;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
@@ -185,7 +185,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellGetName_Shell"
-int PCShellGetName_Shell(PC pc,char *name[])
+PetscErrorCode PCShellGetName_Shell(PC pc,char *name[])
 {
   PC_Shell *shell;
 
@@ -199,7 +199,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-int PCShellSetApplyRichardson_Shell(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
+PetscErrorCode PCShellSetApplyRichardson_Shell(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
 {
   PC_Shell *shell;
 
@@ -239,9 +239,9 @@ EXTERN_C_END
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetApply()
 @*/
-int PCShellSetSetUp(PC pc,int (*setup)(void*))
+PetscErrorCode PCShellSetSetUp(PC pc,int (*setup)(void*))
 {
-  int ierr,(*f)(PC,int (*)(void*));
+  PetscErrorCode ierr,(*f)(PC,int (*)(void*));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -278,9 +278,9 @@ int PCShellSetSetUp(PC pc,int (*setup)(void*))
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
-int PCShellSetView(PC pc,int (*view)(void*,PetscViewer))
+PetscErrorCode PCShellSetView(PC pc,int (*view)(void*,PetscViewer))
 {
-  int ierr,(*f)(PC,int (*)(void*,PetscViewer));
+  PetscErrorCode ierr,(*f)(PC,int (*)(void*,PetscViewer));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -318,9 +318,9 @@ int PCShellSetView(PC pc,int (*view)(void*,PetscViewer))
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
-int PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
+PetscErrorCode PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 {
-  int ierr,(*f)(PC,int (*)(void*,Vec,Vec),void *);
+  PetscErrorCode ierr,(*f)(PC,int (*)(void*,Vec,Vec),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -360,9 +360,9 @@ int PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply()
 @*/
-int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
+PetscErrorCode PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
 {
-  int ierr,(*f)(PC,int (*)(void*,Vec,Vec));
+  PetscErrorCode ierr,(*f)(PC,int (*)(void*,Vec,Vec));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -391,9 +391,9 @@ int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
 
 .seealso: PCShellGetName()
 @*/
-int PCShellSetName(PC pc,const char name[])
+PetscErrorCode PCShellSetName(PC pc,const char name[])
 {
-  int ierr,(*f)(PC,const char []);
+  PetscErrorCode ierr,(*f)(PC,const char []);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -424,9 +424,9 @@ int PCShellSetName(PC pc,const char name[])
 
 .seealso: PCShellSetName()
 @*/
-int PCShellGetName(PC pc,char *name[])
+PetscErrorCode PCShellGetName(PC pc,char *name[])
 {
-  int ierr,(*f)(PC,char *[]);
+  PetscErrorCode ierr,(*f)(PC,char *[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -473,9 +473,9 @@ int PCShellGetName(PC pc,char *name[])
 
 .seealso: PCShellSetApply()
 @*/
-int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
+PetscErrorCode PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
 {
-  int ierr,(*f)(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *);
+  PetscErrorCode ierr,(*f)(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -511,9 +511,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Shell"
-int PCCreate_Shell(PC pc)
+PetscErrorCode PCCreate_Shell(PC pc)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   PC_Shell *shell;
 
   PetscFunctionBegin;

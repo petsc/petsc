@@ -2,62 +2,62 @@
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN int MatCreate_MAIJ(Mat);
-EXTERN int MatCreate_IS(Mat);
-EXTERN int MatCreate_MPIRowbs(Mat);
-EXTERN int MatCreate_SeqAIJ(Mat);
-EXTERN int MatCreate_MPIAIJ(Mat);
-EXTERN int MatCreate_AIJ(Mat);
-EXTERN int MatCreate_SeqBAIJ(Mat);
-EXTERN int MatCreate_MPIBAIJ(Mat);
-EXTERN int MatCreate_BAIJ(Mat);
-EXTERN int MatCreate_SeqSBAIJ(Mat);
-EXTERN int MatCreate_MPISBAIJ(Mat);
-EXTERN int MatCreate_SBAIJ(Mat);
-EXTERN int MatCreate_SeqBDiag(Mat);
-EXTERN int MatCreate_MPIBDiag(Mat);
-EXTERN int MatCreate_BDiag(Mat);
-EXTERN int MatCreate_SeqDense(Mat);
-EXTERN int MatCreate_MPIDense(Mat);
-EXTERN int MatCreate_Dense(Mat);
-EXTERN int MatCreate_MPIAdj(Mat);
-EXTERN int MatCreate_Shell(Mat);
+EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_IS(Mat);
+EXTERN PetscErrorCode MatCreate_MPIRowbs(Mat);
+EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_AIJ(Mat);
+EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_BAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_SBAIJ(Mat);
+EXTERN PetscErrorCode MatCreate_SeqBDiag(Mat);
+EXTERN PetscErrorCode MatCreate_MPIBDiag(Mat);
+EXTERN PetscErrorCode MatCreate_BDiag(Mat);
+EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
+EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
+EXTERN PetscErrorCode MatCreate_Dense(Mat);
+EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
+EXTERN PetscErrorCode MatCreate_Shell(Mat);
 #if defined(__cplusplus)
-EXTERN int MatCreate_ESI(Mat);
-EXTERN int MatCreate_PetscESI(Mat);
+EXTERN PetscErrorCode MatCreate_ESI(Mat);
+EXTERN PetscErrorCode MatCreate_PetscESI(Mat);
 #endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SeqAIJSpooles(Mat);
-EXTERN int MatCreate_SeqSBAIJSpooles(Mat);
-EXTERN int MatCreate_MPIAIJSpooles(Mat);
-EXTERN int MatCreate_MPISBAIJSpooles(Mat);
-EXTERN int MatCreate_AIJSpooles(Mat);
-EXTERN int MatCreate_SBAIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_SeqAIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_MPIAIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_MPISBAIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_AIJSpooles(Mat);
+EXTERN PetscErrorCode MatCreate_SBAIJSpooles(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SuperLU(Mat);
+EXTERN PetscErrorCode MatCreate_SuperLU(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SuperLU_DIST(Mat);
+EXTERN PetscErrorCode MatCreate_SuperLU_DIST(Mat);
 #endif
 #if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_UMFPACK(Mat);
+EXTERN PetscErrorCode MatCreate_UMFPACK(Mat);
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
-EXTERN int MatCreate_Essl(Mat);
+EXTERN PetscErrorCode MatCreate_Essl(Mat);
 #endif
 #if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_LUSOL(Mat);
+EXTERN PetscErrorCode MatCreate_LUSOL(Mat);
 #endif
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_AIJMUMPS(Mat);
-EXTERN int MatCreate_SBAIJMUMPS(Mat);
+EXTERN PetscErrorCode MatCreate_AIJMUMPS(Mat);
+EXTERN PetscErrorCode MatCreate_SBAIJMUMPS(Mat);
 #endif
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_DSCPACK(Mat);
+EXTERN PetscErrorCode MatCreate_DSCPACK(Mat);
 #endif
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_Matlab(Mat);
+EXTERN PetscErrorCode MatCreate_Matlab(Mat);
 #endif
 EXTERN_C_END
   
@@ -81,9 +81,9 @@ EXTERN PetscTruth MatRegisterAllCalled;
 
 .seealso:  MatRegisterDestroy()
 @*/
-int MatRegisterAll(const char path[])
+PetscErrorCode MatRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatRegisterAllCalled = PETSC_TRUE;

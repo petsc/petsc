@@ -28,9 +28,9 @@
 
 .seealso: PetscPOpen(), PetscPClose()
 @*/
-int PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
+PetscErrorCode PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
-  int  ierr;
+  PetscErrorCode ierr;
   FILE *fd;
   char command[512];
 #if defined(PETSC_HAVE_UCBPS)

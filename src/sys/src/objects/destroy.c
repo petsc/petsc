@@ -22,9 +22,9 @@
     Concepts: deleting object
 
 @*/
-int PetscObjectDestroy(PetscObject obj)
+PetscErrorCode PetscObjectDestroy(PetscObject obj)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -53,9 +53,9 @@ int PetscObjectDestroy(PetscObject obj)
    Level: intermediate
 
 @*/
-int PetscObjectView(PetscObject obj,PetscViewer viewer)
+PetscErrorCode PetscObjectView(PetscObject obj,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -95,9 +95,9 @@ int PetscObjectView(PetscObject obj,PetscViewer viewer)
    Concepts: object type^comparing
 
 @*/
-int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
+PetscErrorCode PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!obj) {
@@ -139,7 +139,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[256];
 
 .seealso: PetscObjectRegisterDestroyAll()
 @*/
-int PetscObjectRegisterDestroy(PetscObject obj)
+PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -160,9 +160,9 @@ int PetscObjectRegisterDestroy(PetscObject obj)
 
 .seealso: PetscObjectRegisterDestroy()
 @*/
-int PetscObjectRegisterDestroyAll(void)
+PetscErrorCode PetscObjectRegisterDestroyAll(void)
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {

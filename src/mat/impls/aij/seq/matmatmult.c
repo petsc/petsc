@@ -104,9 +104,9 @@ static int logkey_matmatmult_numeric  = 0;
 
 .seealso: MatMatMultSymbolic(),MatMatMultNumeric()
 @*/
-int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -133,9 +133,9 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
-int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C) 
+PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C) 
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){ 
@@ -150,8 +150,8 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
-int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
-  int ierr;
+PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
@@ -186,11 +186,11 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
 
 .seealso: MatMatMult(),MatMatMultNumeric()
 @*/
-int MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
+PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
-  int  ierr;
+  PetscErrorCode ierr;
   char symfunct[80];
   int  (*symbolic)(Mat,Mat,PetscReal,Mat *);
 
@@ -223,12 +223,12 @@ int MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatDestroy_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
-int MatDestroy_MPIAIJ_MatMatMult(Mat A)
+PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   Mat_MatMatMultMPI *mult=(Mat_MatMatMultMPI*)A->spptr; 
 
   PetscFunctionBegin;
@@ -247,10 +247,11 @@ int MatDestroy_MPIAIJ_MatMatMult(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
-int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
-  int               ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
+  PetscErrorCode ierr;
+  int               *idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
   Mat_MatMatMultMPI *mult;
  
   PetscFunctionBegin;
@@ -296,9 +297,9 @@ int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
-int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  int            ierr;
+  PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
@@ -407,11 +408,11 @@ int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 
 .seealso: MatMatMult(),MatMatMultSymbolic()
 @*/
-int MatMatMultNumeric(Mat A,Mat B,Mat C){
+PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C){
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultNumeric_<type of A><type of B>". */
-  int ierr;
+  PetscErrorCode ierr;
   char numfunct[80];
   int (*numeric)(Mat,Mat,Mat);
 
@@ -455,9 +456,9 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
 /* This routine is called ONLY in the case of reusing previously computed symbolic C */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
-int MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   Mat_MatMatMultMPI *mult=(Mat_MatMatMultMPI*)C->spptr;
 
   PetscFunctionBegin;
@@ -473,9 +474,10 @@ int MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqAIJ"
-int MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
-  int        ierr,flops=0;
+  PetscErrorCode ierr;
+  int        flops=0;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
@@ -529,8 +531,9 @@ int MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "RegisterMatMatMultRoutines_Private"
-int RegisterMatMatMultRoutines_Private(Mat A) {
-  int ierr;
+PetscErrorCode RegisterMatMatMultRoutines_Private(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!logkey_matmatmult_symbolic) {

@@ -29,7 +29,7 @@
     symmetric structure.  It is required since those routines call 
     SparsePak routines that expect a symmetric  matrix.
 */
-int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int **iia,int **jja)
+PetscErrorCode MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int **iia,int **jja)
 {
   int *work,*ia,*ja,*j,i,nz,row,col,ierr;
 

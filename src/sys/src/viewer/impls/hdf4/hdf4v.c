@@ -15,9 +15,9 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_HDF4" 
-int PetscViewerDestroy_HDF4(PetscViewer v)
+PetscErrorCode PetscViewerDestroy_HDF4(PetscViewer v)
 {
- int ierr;
+ PetscErrorCode   ierr;
  PetscViewer_HDF4 *vhdf4 = (PetscViewer_HDF4 *)v->data;
 
  PetscFunctionBegin;
@@ -33,13 +33,13 @@ int PetscViewerDestroy_HDF4(PetscViewer v)
 }
 
 EXTERN_C_BEGIN 
-EXTERN int PetscViewerSetFilename_HDF4(PetscViewer,const char[]);
+EXTERN PetscErrorCode PetscViewerSetFilename_HDF4(PetscViewer,const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_HDF4" 
-int PetscViewerCreate_HDF4(PetscViewer v)
+PetscErrorCode PetscViewerCreate_HDF4(PetscViewer v)
 {  
- int ierr;
+ PetscErrorCode   ierr;
  PetscViewer_HDF4 *vhdf4;
  
  PetscFunctionBegin;
@@ -62,7 +62,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_HDF4" 
-int PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
+PetscErrorCode PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
 {
  PetscViewer_HDF4 *vhdf4 = (PetscViewer_HDF4 *)viewer->data;
  
@@ -74,9 +74,9 @@ int PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF4Open" 
-int PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType type, PetscViewer *hdf4v)
+PetscErrorCode PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType type, PetscViewer *hdf4v)
 {
- int ierr;
+ PetscErrorCode ierr;
  
  PetscFunctionBegin;
  ierr = PetscViewerCreate(comm,hdf4v);CE;
@@ -89,9 +89,10 @@ int PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType typ
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_HDF4" 
-int PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
+PetscErrorCode PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
 {
- int                   ierr, rank;
+ PetscErrorCode        ierr;
+ int                   rank;
  PetscViewer_HDF4      *vhdf4 = (PetscViewer_HDF4*)viewer->data;
  int32                 acc;
 
@@ -126,7 +127,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF4WriteSDS" 
-int PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
+PetscErrorCode PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
 {
  int                   i;
  PetscViewer_HDF4      *vhdf4 = (PetscViewer_HDF4*)viewer->data;

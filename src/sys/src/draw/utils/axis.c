@@ -22,8 +22,8 @@ struct _p_DrawAxis {
 
 #define MAXSEGS 20
 
-EXTERN int    PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
-EXTERN int    PetscADefLabel(PetscReal,PetscReal,char**);
+EXTERN PetscErrorCode    PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
+EXTERN PetscErrorCode    PetscADefLabel(PetscReal,PetscReal,char**);
 static int    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
 static int    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
@@ -53,11 +53,11 @@ static int PetscRint(PetscReal x,PetscReal *result)
    Level: advanced
 
 @*/
-int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
+PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
   PetscDrawAxis ad;
   PetscObject   obj = (PetscObject)draw;
-  int           ierr;
+  PetscErrorCode ierr;
   PetscTruth    isnull;
 
   PetscFunctionBegin;
@@ -101,9 +101,9 @@ int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     Level: advanced
 
 @*/
-int PetscDrawAxisDestroy(PetscDrawAxis axis)
+PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis axis)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -134,7 +134,7 @@ int PetscDrawAxisDestroy(PetscDrawAxis axis)
     Level: advanced
 
 @*/
-int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
+PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -157,9 +157,9 @@ int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
     Level: advanced
 
 @*/
-int PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
+PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -190,7 +190,7 @@ int PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel
 .seealso:  PetscDrawAxisSetLimits()
 
 @*/
-int PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
+PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -215,7 +215,7 @@ int PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
 .seealso:  PetscDrawAxisSetHoldLimits()
 
 @*/
-int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
+PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -245,7 +245,7 @@ int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,Pets
     effects may be generated.  These routines are part of the Axis
     structure (axis).
 @*/
-int PetscDrawAxisDraw(PetscDrawAxis axis)
+PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
 {
   int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
   size_t    len;
@@ -342,8 +342,8 @@ int PetscDrawAxisDraw(PetscDrawAxis axis)
 */
 static int PetscStripAllZeros(char *buf)
 {
-  int    i,ierr;
-  size_t n;
+  PetscErrorCode ierr;
+  size_t         i,n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -363,9 +363,9 @@ static int PetscStripAllZeros(char *buf)
 */
 static int PetscStripTrailingZeros(char *buf)
 {
-  int    ierr,i,m = -1;
-  char   *found;
-  size_t n;
+  PetscErrorCode ierr;
+  char           *found;
+  size_t         i,n,m = PETSC_MAX_INT;
 
   PetscFunctionBegin;
   /* if there is an e in string DO NOT strip trailing zeros */
@@ -378,7 +378,7 @@ static int PetscStripTrailingZeros(char *buf)
     if (buf[i] == '.') {m = i; break;}
   }
   /* if not decimal point then no zeros to remove */
-  if (m == -1) PetscFunctionReturn(0);
+  if (m == PETSC_MAX_INT) PetscFunctionReturn(0);
   /* start at right end of string removing 0s */
   for (i=n-1; i>m; i++) {
     if (buf[i] != '0') PetscFunctionReturn(0);
@@ -394,8 +394,8 @@ static int PetscStripTrailingZeros(char *buf)
 */
 static int PetscStripInitialZero(char *buf)
 {
-  int    i,ierr;
-  size_t n;
+  PetscErrorCode ierr;
+  size_t         i,n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -418,8 +418,8 @@ static int PetscStripInitialZero(char *buf)
 */
 static int PetscStripZeros(char *buf)
 {
-  int    i,j,ierr;
-  size_t n;
+  PetscErrorCode ierr;
+  size_t         i,j,n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -441,8 +441,8 @@ static int PetscStripZeros(char *buf)
 */
 static int PetscStripZerosPlus(char *buf)
 {
-  int    i,j,ierr;
-  size_t n;
+  PetscErrorCode ierr;
+  size_t         i,j,n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -473,11 +473,12 @@ static int PetscStripZerosPlus(char *buf)
    label; this is useful in determining how many significant figures to   
    keep.
  */
-int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
+PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 {
   static char buf[40];
   char        fmat[10];
-  int         ierr,w,d;
+  PetscErrorCode ierr;
+  int         w,d;
   PetscReal   rval;
 
   PetscFunctionBegin;
@@ -539,7 +540,7 @@ int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscADefTicks" 
 /* Finds "nice" locations for the ticks */
-int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
+PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
   int       i,power,ierr;
   PetscReal x,base;
@@ -620,7 +621,7 @@ static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 static int PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 {
   PetscReal  etmp,s,s2,m;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr    = PetscCopysign (0.5,(double)sign,&s);CHKERRQ(ierr);

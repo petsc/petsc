@@ -21,7 +21,7 @@
    Level: developer
 
 @*/
-int PetscObjectGetCookie(PetscObject obj,int *cookie)
+PetscErrorCode PetscObjectGetCookie(PetscObject obj,int *cookie)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -47,7 +47,7 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
    Level: developer
 
 @*/
-int PetscObjectExists(PetscObject obj,PetscTruth *exists)
+PetscErrorCode PetscObjectExists(PetscObject obj,PetscTruth *exists)
 {
   PetscFunctionBegin;
   *exists = PETSC_FALSE;

@@ -10,7 +10,7 @@
 #define __FUNCT__ "KSPSetUp_CGS"
 static int KSPSetUp_CGS(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,"no symmetric preconditioning for KSPCGS");
@@ -146,7 +146,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGS"
-int KSPCreate_CGS(KSP ksp)
+PetscErrorCode KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

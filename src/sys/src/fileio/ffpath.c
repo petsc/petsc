@@ -56,12 +56,12 @@
    Concepts: path^searching for file
 
 @*/
-int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
+PetscErrorCode PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
 #if !defined(PARCH_win32)
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   size_t     ln;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;

@@ -26,9 +26,9 @@
 
 .seealso: PetscDrawSynchronizedGetMouseButton()
 @*/
-int PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isnull;
 
   PetscFunctionBegin;
@@ -61,10 +61,11 @@ int PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_
 
 .seealso: PetscDrawGetMouseButton()
 @*/
-int PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscReal bcast[4];
-  int       ierr,rank;
+  PetscErrorCode ierr;
+  int       rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

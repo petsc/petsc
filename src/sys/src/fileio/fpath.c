@@ -53,10 +53,10 @@
 
 .seealso: PetscGetRelativePath()
 @*/
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   struct passwd *pwde;
-  int           ierr;
+  PetscErrorCode ierr;
   size_t        ln;
   PetscTruth    flg;
 
@@ -124,7 +124,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 #elif defined (PARCH_win32)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   PetscFunctionBegin;
   _fullpath(fullpath,path,flen);
@@ -133,9 +133,9 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullpath,path);CHKERRQ(ierr);

@@ -33,7 +33,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
-int PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
+PetscErrorCode PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
 {
   if (!mem) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
@@ -64,9 +64,9 @@ int PetscMallocAlign(size_t mem,int line,const char func[],const char file[],con
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeAlign"
-int PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
+PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
 
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
@@ -96,10 +96,10 @@ int PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeDefault"
-int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
+PetscErrorCode PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
-  int ierr = free(ptr); 
+  PetscErrorCode ierr = free(ptr); 
   if (ierr) {
     return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
   }
@@ -109,8 +109,8 @@ int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
   return 0;
 }
 
-int  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
-int  (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
+PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
+PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
@@ -133,7 +133,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-int PetscSetMalloc(int (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+PetscErrorCode PetscSetMalloc(int (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
                    int (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
@@ -160,7 +160,7 @@ int PetscSetMalloc(int (*imalloc)(size_t,int,const char[],const char[],const cha
     free() an address that was malloced by a different memory management system
 
 @*/
-int PetscClearMalloc(void)
+PetscErrorCode PetscClearMalloc(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;

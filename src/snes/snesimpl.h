@@ -134,8 +134,8 @@ typedef struct {
 	  } \
 	}
 
-int SNES_KSP_EW_Converged_Private(KSP,int,PetscReal,KSPConvergedReason*,void*);
-int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
-int SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PetscErrorCode SNES_KSP_EW_Converged_Private(KSP,int,PetscReal,KSPConvergedReason*,void*);
+PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
+PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 #endif

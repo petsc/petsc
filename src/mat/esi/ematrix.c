@@ -6,7 +6,8 @@
 
 esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
 {
-  int      ierr,rn,rN,cn,cN;
+  PetscErrorCode ierr;
+  int  rn,rN,cn,cN;
   MPI_Comm *icomm;
 
   ierr = inrmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(icomm));
@@ -43,7 +44,7 @@ esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 
 esi::petsc::Matrix<double,int>::~Matrix()
 {
-  int ierr;
+  PetscErrorCode ierr;
   if (this->mat) {ierr = MatDestroy(this->mat);if (ierr) return;}
   if (this->rmap) {ierr = this->rmap->deleteReference();if (ierr) return;}
   if (this->cmap) {ierr = this->cmap->deleteReference();if (ierr) return;}
@@ -88,7 +89,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv 
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py,px;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
@@ -99,7 +100,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &x
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = MatAssemblyBegin(this->mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return MatAssemblyEnd(this->mat,MAT_FINAL_ASSEMBLY);
 }
@@ -134,7 +135,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::allocate(int rowlengths[])
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,int> &diagVector)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec py;
 
   ierr = diagVector.getInterface("Vec",reinterpret_cast<void*&>(py));CHKERRQ(ierr);
@@ -153,7 +154,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getLocalSizes(int& rows, int& col
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowNonzeros(int row,int &length)
 {
-  int ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  PetscErrorCode ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   return  MatRestoreRow(this->mat,row,&length,PETSC_NULL,PETSC_NULL);
 }
 
@@ -168,7 +169,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs
   const int         *col;
   const PetscScalar *values;
   
-  int ierr = MatGetRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
+  PetscErrorCode ierr = MatGetRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
   if (length > alength) SETERRQ(1,"Not enough room for values");
   ierr = PetscMemcpy(coefs,values,length*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(colIndices,col,length*sizeof(int));CHKERRQ(ierr);
@@ -218,7 +219,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::sumIntoRow(int row, double* coefs
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
 {
-  int               ierr,length,i;
+  PetscErrorCode ierr;
+  int length,i;
   const PetscScalar *values;
 
   ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
@@ -232,7 +234,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
 {
-  int               ierr,length,i;
+  PetscErrorCode ierr;
+  int length,i;
   const PetscScalar *values;
 
   ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
@@ -304,7 +307,7 @@ template<class Scalar,class Ordinal> class MyPetra_ESI_CRS_Matrix : public virtu
   virtual ~MyPetra_ESI_CRS_Matrix(void) { };
 
   virtual esi::ErrorCode copyIntoRow(Ordinal row, Scalar* coefs, Ordinal* colIndices, Ordinal length)
-    { int ierr;
+    { PetscErrorCode ierr;
       ierr = graph_->InsertGlobalIndices(row, length, colIndices);CHKERRQ(((ierr == 1) ? 0 : ierr));
       ierr = Petra_ESI_CRS_Matrix<Scalar,Ordinal>::copyIntoRow(row,coefs,colIndices,length);CHKERRQ(ierr); 
       //  ierr = this->setup();CHKERRQ(ierr);
@@ -329,7 +332,7 @@ template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : publi
     // Construct a Operator
     virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
     {
-      int       ierr;
+      PetscErrorCode ierr;
       Petra_Map *rowmap,*colmap;
       ierr = rmap.getInterface("Petra_Map",reinterpret_cast<void *&>(rowmap));CHKERRQ(ierr);
       if (!rowmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");

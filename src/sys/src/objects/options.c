@@ -38,11 +38,11 @@ static PetscOptionsTable *options = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtoi"
-int PetscOptionsAtoi(const char name[],int *a)
+PetscErrorCode PetscOptionsAtoi(const char name[],int *a)
 {
-  int        i,ierr;
-  size_t     len;
-  PetscTruth decide,tdefault,mouse;
+  PetscErrorCode ierr;
+  size_t         i,len;
+  PetscTruth     decide,tdefault,mouse;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
@@ -80,9 +80,9 @@ int PetscOptionsAtoi(const char name[],int *a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtod"
-int PetscOptionsAtod(const char name[],PetscReal *a)
+PetscErrorCode PetscOptionsAtod(const char name[],PetscReal *a)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   size_t     len;
   PetscTruth decide,tdefault;
 
@@ -132,9 +132,9 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
     array of length len.  On some machines the program name includes 
     its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
 @*/
-int PetscGetProgramName(char name[],int len)
+PetscErrorCode PetscGetProgramName(char name[],int len)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call PetscInitialize() first");
@@ -145,9 +145,9 @@ int PetscGetProgramName(char name[],int len)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetProgramName"
-int PetscSetProgramName(const char name[])
+PetscErrorCode PetscSetProgramName(const char name[])
 { 
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->namegiven = PETSC_TRUE;
@@ -179,11 +179,11 @@ int PetscSetProgramName(const char name[])
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
 
 @*/
-int PetscOptionsInsertString(const char in_str[])
+PetscErrorCode PetscOptionsInsertString(const char in_str[])
 {
   char       *str,*first,*second,*third,*final;
   size_t     len;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscToken *token;
 
   PetscFunctionBegin;
@@ -241,13 +241,13 @@ int PetscOptionsInsertString(const char in_str[])
           PetscOptionsList(), PetscOptionsEList()
 
 @*/
-int PetscOptionsInsertFile(const char file[])
+PetscErrorCode PetscOptionsInsertFile(const char file[])
 {
-  char       string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
-  int        ierr,i,startIndex;
-  size_t     len;
-  FILE       *fd;
-  PetscToken *token;
+  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
+  PetscErrorCode ierr;
+  size_t         i,len,startIndex;
+  FILE           *fd;
+  PetscToken     *token;
 
   PetscFunctionBegin;
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
@@ -321,9 +321,10 @@ int PetscOptionsInsertFile(const char file[])
 
 .seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint()
 @*/
-int PetscOptionsInsert(int *argc,char ***args,const char file[])
+PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
-  int        ierr,rank;
+  PetscErrorCode ierr;
+  int        rank;
   char       pfile[PETSC_MAX_PATH_LEN];
   PetscToken *token;
 
@@ -444,7 +445,7 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
 
 .seealso: PetscOptionsAllUsed()
 @*/
-int PetscOptionsPrint(FILE *fd)
+PetscErrorCode PetscOptionsPrint(FILE *fd)
 {
   int i,ierr;
 
@@ -477,7 +478,7 @@ int PetscOptionsPrint(FILE *fd)
 
 .seealso: PetscOptionsAllUsed(), PetscOptionsPrint()
 @*/
-int PetscOptionsGetAll(char *copts[])
+PetscErrorCode PetscOptionsGetAll(char *copts[])
 {
   int    i,ierr;
   size_t len = 1,lent;
@@ -523,7 +524,7 @@ int PetscOptionsGetAll(char *copts[])
 
 .seealso: PetscOptionsInsert()
 @*/
-int PetscOptionsDestroy(void)
+PetscErrorCode PetscOptionsDestroy(void)
 {
   int i;
 
@@ -565,7 +566,7 @@ int PetscOptionsDestroy(void)
 
 .seealso: PetscOptionsInsert()
 @*/
-int PetscOptionsSetValue(const char iname[],const char value[])
+PetscErrorCode PetscOptionsSetValue(const char iname[],const char value[])
 {
   size_t     len;
   int        N,n,i,ierr;
@@ -651,7 +652,7 @@ int PetscOptionsSetValue(const char iname[],const char value[])
    Concepts: options database^removing option
 .seealso: PetscOptionsInsert()
 @*/
-int PetscOptionsClearValue(const char iname[])
+PetscErrorCode PetscOptionsClearValue(const char iname[])
 {
   int        N,n,i,ierr;
   char       **names,*name=(char*)iname;
@@ -712,9 +713,10 @@ int PetscOptionsClearValue(const char iname[])
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsSetAlias(const char inewname[],const char ioldname[])
+PetscErrorCode PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
-  int    ierr,n = options->Naliases;
+  PetscErrorCode ierr;
+  int    n = options->Naliases;
   size_t len;
   char   *newname = (char *)inewname,*oldname = (char*)ioldname;
 
@@ -798,9 +800,9 @@ static int PetscOptionsFindPair_Private(const char pre[],const char name[],char 
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsReject(const char name[],const char mess[])
+PetscErrorCode PetscOptionsReject(const char name[],const char mess[])
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -840,10 +842,10 @@ int PetscOptionsReject(const char name[],const char mess[])
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
+PetscErrorCode PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 {
   char       *value;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isfalse,flag;
 
   PetscFunctionBegin;
@@ -893,10 +895,10 @@ int PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg)
 {
   char       *value;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -946,11 +948,11 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
 {
   char       *value;
   PetscTruth flag,istrue,isfalse;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1026,10 +1028,10 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *flg)
 {
   char       *value;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -1076,11 +1078,11 @@ int PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,Pet
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *flg)
 {
   char       *value;
   PetscTruth flag;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1148,7 +1150,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],int *nmax,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   int        n = 0,ierr;
@@ -1207,7 +1209,7 @@ int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   int        n = 0,ierr;
@@ -1274,10 +1276,10 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetString(const char pre[],const char name[],char string[],int len,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetString(const char pre[],const char name[],char string[],int len,PetscTruth *flg)
 {
   char       *value;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -1335,7 +1337,7 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],int *nmax,PetscTruth *flg)
+PetscErrorCode PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   size_t     len;
@@ -1383,7 +1385,7 @@ int PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[
 
 .seealso: PetscOptionsPrint()
 @*/
-int PetscOptionsAllUsed(int *N)
+PetscErrorCode PetscOptionsAllUsed(int *N)
 {
   int  i,n = 0;
 
@@ -1409,7 +1411,7 @@ int PetscOptionsAllUsed(int *N)
 
 .seealso: PetscOptionsAllUsed()
 @*/
-int PetscOptionsLeft(void)
+PetscErrorCode PetscOptionsLeft(void)
 {
   int        i,ierr;
 
@@ -1432,9 +1434,9 @@ int PetscOptionsLeft(void)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCreate"
-int PetscOptionsCreate(void)
+PetscErrorCode PetscOptionsCreate(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));

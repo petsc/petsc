@@ -9,7 +9,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 
-EXTERN int PetscRegisterCookie(int*);
+EXTERN PetscErrorCode PetscRegisterCookie(int*);
 
 /*
    All major PETSc data structures have a common core; this is defined 
@@ -89,8 +89,8 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
-EXTERN int PetscHeaderDestroy_Private(PetscObject);
+EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
+EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 
 typedef int (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
 typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
@@ -273,18 +273,18 @@ struct _p_PetscObject {
   PETSCHEADER(int)
 };
 
-EXTERN int PetscObjectPublishBaseBegin(PetscObject);
-EXTERN int PetscObjectPublishBaseEnd(PetscObject);
+EXTERN PetscErrorCode PetscObjectPublishBaseBegin(PetscObject);
+EXTERN PetscErrorCode PetscObjectPublishBaseEnd(PetscObject);
 
-EXTERN int PetscObjectIncreaseState(PetscObject);
-EXTERN int PetscObjectGetState(PetscObject obj,int*);
-EXTERN int PetscRegisterComposedData(int *id);
-EXTERN int PetscObjectIncreaseIntComposedData(PetscObject obj);
-EXTERN int PetscObjectIncreaseIntstarComposedData(PetscObject obj);
-EXTERN int PetscObjectIncreaseRealComposedData(PetscObject obj);
-EXTERN int PetscObjectIncreaseRealstarComposedData(PetscObject obj);
-EXTERN int PetscObjectIncreaseScalarComposedData(PetscObject obj);
-EXTERN int PetscObjectIncreaseScalarstarComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseState(PetscObject);
+EXTERN PetscErrorCode PetscObjectGetState(PetscObject obj,int*);
+EXTERN PetscErrorCode PetscRegisterComposedData(int *id);
+EXTERN PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject obj);
+EXTERN PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject obj);
 EXTERN int globalcurrentstate,globalmaxstate;
 /*MC
    PetscObjectSetIntComposedData - attach integer data to a PetscObject
@@ -307,7 +307,7 @@ EXTERN int globalcurrentstate,globalmaxstate;
    Level: developer
 M*/
 #define PetscObjectSetIntComposedData(obj,id,data)                   \
-0; {int ierr_;                                                       \
+0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->int_idmax < globalmaxstate) {                           \
     ierr_ = PetscObjectIncreaseIntComposedData(obj); CHKERRQ(ierr_);  \
   }                                                                  \
@@ -372,7 +372,7 @@ M*/
    Level: developer
 M*/
 #define PetscObjectSetIntstarComposedData(obj,id,data)                    \
-0; {int ierr_;                                                            \
+0; {PetscErrorCode ierr_;                                                            \
   if ((obj)->intstar_idmax < globalmaxstate) {                            \
     ierr_ = PetscObjectIncreaseIntstarComposedData(obj); CHKERRQ(ierr_);  \
   }                                                                       \
@@ -438,7 +438,7 @@ M*/
    Level: developer
 M*/
 #define PetscObjectSetRealComposedData(obj,id,data)                  \
-0; {int ierr_;                                                       \
+0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->real_idmax < globalmaxstate) {                          \
     ierr_ = PetscObjectIncreaseRealComposedData(obj); CHKERRQ(ierr_); \
   }                                                                  \
@@ -505,7 +505,7 @@ M*/
    Level: developer
 M*/
 #define PetscObjectSetRealstarComposedData(obj,id,data)                  \
-0; {int ierr_;                                                       \
+0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->realstar_idmax < globalmaxstate) {                          \
     ierr_ = PetscObjectIncreaseRealstarComposedData(obj); CHKERRQ(ierr_); \
   }                                                                  \
@@ -574,7 +574,7 @@ M*/
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectSetScalarComposedData(obj,id,data)                 \
-0; {int ierr_;                                                        \
+0; {PetscErrorCode ierr_;                                                        \
   if ((obj)->scalar_idmax < globalmaxstate) {                         \
     ierr_ = PetscObjectIncreaseScalarComposedData(obj); CHKERRQ(ierr_);\
   }                                                                   \
@@ -649,7 +649,7 @@ M*/
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectSetScalarstarComposedData(obj,id,data)                   \
-0; {int ierr_;                                                              \
+0; {PetscErrorCode ierr_;                                                              \
   if ((obj)->scalarstar_idmax < globalmaxstate) {                           \
     ierr_ = PetscObjectIncreaseScalarstarComposedData(obj); CHKERRQ(ierr_); \
   }                                                                         \

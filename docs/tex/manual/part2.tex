@@ -4836,7 +4836,7 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of KSPSolve() are
 given, respectively, below, where \trl{ierr} denotes the error variable:
 \begin{tabbing}
-   call KSPSolve(KSP ksp,Vec b,Vec x,int ierr)\\
+   call KSPSolve(KSP ksp,Vec b,Vec x,PetscErrorCode ierr)\\
   KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
 
@@ -6435,7 +6435,7 @@ one should set it by calling
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 
 \begin{tabbing}
-  ierr = PetscRoutine(...);CHKERRQ(int ierr);
+  ierr = PetscRoutine(...);CHKERRQ(PetscErrorCode ierr);
 \end{tabbing}
 Likewise, all memory allocations should be checked with 
 \begin{tabbing}

@@ -51,9 +51,9 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-int PCSetType(PC pc,const PCType type)
+PetscErrorCode PCSetType(PC pc,const PCType type)
 {
-  int        ierr,(*r)(PC);
+  PetscErrorCode ierr,(*r)(PC);
   PetscTruth match;
 
   PetscFunctionBegin;
@@ -115,9 +115,9 @@ int PCSetType(PC pc,const PCType type)
 .seealso: PCRegisterAll(), PCRegisterAll()
 
 @*/
-int PCRegisterDestroy(void)
+PetscErrorCode PCRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PCList) {
@@ -149,14 +149,14 @@ int PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-int PCGetType(PC pc,PCType *meth)
+PetscErrorCode PCGetType(PC pc,PCType *meth)
 {
   PetscFunctionBegin;
   *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
 }
 
-EXTERN int PCGetDefaultType_Private(PC,const char*[]);
+EXTERN PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions"
@@ -177,9 +177,9 @@ EXTERN int PCGetDefaultType_Private(PC,const char*[]);
 .seealso: 
 
 @*/
-int PCSetFromOptions(PC pc)
+PetscErrorCode PCSetFromOptions(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       type[256];
   const char *def;
   PetscTruth flg;

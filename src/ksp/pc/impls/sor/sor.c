@@ -15,7 +15,7 @@ typedef struct {
 static int PCDestroy_SOR(PC pc)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(jac);CHKERRQ(ierr);
@@ -27,7 +27,8 @@ static int PCDestroy_SOR(PC pc)
 static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
-  int    ierr,flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
+  PetscErrorCode ierr;
+  int flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
 
   PetscFunctionBegin;
   ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,jac->lits,y);CHKERRQ(ierr);
@@ -39,7 +40,7 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %d iterations\n",its);
@@ -50,10 +51,10 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRea
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_SOR"
-int PCSetFromOptions_SOR(PC pc)
+PetscErrorCode PCSetFromOptions_SOR(PC pc)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -77,12 +78,12 @@ int PCSetFromOptions_SOR(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_SOR"
-int PCView_SOR(PC pc,PetscViewer viewer)
+PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
   MatSORType sym = jac->sym;
   const char *sortype;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -113,7 +114,7 @@ int PCView_SOR(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetSymmetric_SOR"
-int PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
+PetscErrorCode PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac;
 
@@ -127,7 +128,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetOmega_SOR"
-int PCSORSetOmega_SOR(PC pc,PetscReal omega)
+PetscErrorCode PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac;
 
@@ -142,7 +143,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetIterations_SOR"
-int PCSORSetIterations_SOR(PC pc,int its,int lits)
+PetscErrorCode PCSORSetIterations_SOR(PC pc,int its,int lits)
 {
   PC_SOR *jac;
 
@@ -194,9 +195,9 @@ EXTERN_C_END
 
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
-int PCSORSetSymmetric(PC pc,MatSORType flag)
+PetscErrorCode PCSORSetSymmetric(PC pc,MatSORType flag)
 {
-  int ierr,(*f)(PC,MatSORType);
+  PetscErrorCode ierr,(*f)(PC,MatSORType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -228,9 +229,9 @@ int PCSORSetSymmetric(PC pc,MatSORType flag)
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
 @*/
-int PCSORSetOmega(PC pc,PetscReal omega)
+PetscErrorCode PCSORSetOmega(PC pc,PetscReal omega)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -265,9 +266,9 @@ int PCSORSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/
-int PCSORSetIterations(PC pc,int its,int lits)
+PetscErrorCode PCSORSetIterations(PC pc,int its,int lits)
 {
-  int ierr,(*f)(PC,int,int);
+  PetscErrorCode ierr,(*f)(PC,int,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -308,9 +309,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SOR"
-int PCCreate_SOR(PC pc)
+PetscErrorCode PCCreate_SOR(PC pc)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_SOR *jac;
 
   PetscFunctionBegin;

@@ -1,16 +1,16 @@
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
-EXTERN int ISDuplicate_General(IS,IS *);
-EXTERN int ISDestroy_General(IS);
-EXTERN int ISGetIndices_General(IS,int **);
-EXTERN int ISRestoreIndices_General(IS,int **);
-EXTERN int ISGetSize_General(IS,int *);
-EXTERN int ISGetLocalSize_General(IS,int *);
-EXTERN int ISInvertPermutation_General(IS,int,IS *);
-EXTERN int ISView_General(IS,PetscViewer);
-EXTERN int ISSort_General(IS);
-EXTERN int ISSorted_General(IS,PetscTruth*);
+EXTERN PetscErrorCode ISDuplicate_General(IS,IS *);
+EXTERN PetscErrorCode ISDestroy_General(IS);
+EXTERN PetscErrorCode ISGetIndices_General(IS,int **);
+EXTERN PetscErrorCode ISRestoreIndices_General(IS,int **);
+EXTERN PetscErrorCode ISGetSize_General(IS,int *);
+EXTERN PetscErrorCode ISGetLocalSize_General(IS,int *);
+EXTERN PetscErrorCode ISInvertPermutation_General(IS,int,IS *);
+EXTERN PetscErrorCode ISView_General(IS,PetscViewer);
+EXTERN PetscErrorCode ISSort_General(IS);
+EXTERN PetscErrorCode ISSorted_General(IS,PetscTruth*);
 
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetLocalSize_General,
@@ -40,9 +40,10 @@ static struct _ISOps myops = { ISGetSize_General,
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISCreateGeneral()
 @*/
-int ISStrideToGeneral(IS inis)
+PetscErrorCode ISStrideToGeneral(IS inis)
 {
-  int        ierr,step;
+  PetscErrorCode ierr;
+  int        step;
   IS_General *sub;
   PetscTruth stride,flg;
 

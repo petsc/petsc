@@ -23,7 +23,7 @@ typedef struct {
 #define __FUNCT__ "PCApply_Composite_Multiplicative"
 static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   PetscScalar      one = 1.0,mone = -1.0;
@@ -58,7 +58,7 @@ alpha I + R
 #define __FUNCT__ "PCApply_Composite_Special"
 static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -79,7 +79,7 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_Composite_Additive"
 static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   PetscScalar      one = 1.0;
@@ -101,7 +101,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCSetUp_Composite"
 static int PCSetUp_Composite(PC pc)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -122,7 +122,7 @@ static int PCSetUp_Composite(PC pc)
 static int PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  int              ierr;
+  PetscErrorCode ierr;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
@@ -142,7 +142,8 @@ static int PCDestroy_Composite(PC pc)
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  int              ierr,nmax = 8,i,indx;
+  PetscErrorCode ierr;
+  int nmax = 8,i,indx;
   PC_CompositeLink next;
   char             *pcs[8];
   const char       *types[] = {"multiplicative","additive","special"};
@@ -179,7 +180,7 @@ static int PCSetFromOptions_Composite(PC pc)
 static int PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  int              ierr;
+  PetscErrorCode ierr;
   PC_CompositeLink next = jac->head;
   PetscTruth       iascii;
 
@@ -210,7 +211,7 @@ static int PCView_Composite(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
-int PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
+PetscErrorCode PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
   PetscFunctionBegin;
@@ -222,7 +223,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSetType_Composite"
-int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
+PetscErrorCode PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
@@ -241,11 +242,12 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeAddPC_Composite"
-int PCCompositeAddPC_Composite(PC pc,PCType type)
+PetscErrorCode PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
   PC_CompositeLink next,link;
-  int              ierr,cnt = 0;
+  PetscErrorCode ierr;
+  int cnt = 0;
   char             *prefix,newprefix[8];
 
   PetscFunctionBegin;
@@ -279,7 +281,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeGetPC_Composite"
-int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
+PetscErrorCode PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
 {
   PC_Composite     *jac;
   PC_CompositeLink next;
@@ -302,7 +304,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSetUseTrue_Composite"
-int PCCompositeSetUseTrue_Composite(PC pc)
+PetscErrorCode PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite   *jac;
 
@@ -332,9 +334,9 @@ EXTERN_C_END
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
-int PCCompositeSetType(PC pc,PCCompositeType type)
+PetscErrorCode PCCompositeSetType(PC pc,PCCompositeType type)
 {
-  int ierr,(*f)(PC,PCCompositeType);
+  PetscErrorCode ierr,(*f)(PC,PCCompositeType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -361,9 +363,9 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
-int PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
+PetscErrorCode PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
-  int ierr,(*f)(PC,PetscScalar);
+  PetscErrorCode ierr,(*f)(PC,PetscScalar);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -389,9 +391,9 @@ int PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 
 .keywords: PC, composite preconditioner, add
 @*/
-int PCCompositeAddPC(PC pc,PCType type)
+PetscErrorCode PCCompositeAddPC(PC pc,PCType type)
 {
-  int ierr,(*f)(PC,PCType);
+  PetscErrorCode ierr,(*f)(PC,PCType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -422,9 +424,9 @@ int PCCompositeAddPC(PC pc,PCType type)
 
 .seealso: PCCompositeAddPC()
 @*/
-int PCCompositeGetPC(PC pc,int n,PC *subpc)
+PetscErrorCode PCCompositeGetPC(PC pc,int n,PC *subpc)
 {
-  int ierr,(*f)(PC,int,PC *);
+  PetscErrorCode ierr,(*f)(PC,int,PC *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -463,9 +465,9 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCKSPSetUseTrue()
 @*/
-int PCCompositeSetUseTrue(PC pc)
+PetscErrorCode PCCompositeSetUseTrue(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -504,9 +506,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Composite"
-int PCCreate_Composite(PC pc)
+PetscErrorCode PCCreate_Composite(PC pc)
 {
-  int            ierr;
+  PetscErrorCode ierr;
   PC_Composite   *jac;
 
   PetscFunctionBegin;

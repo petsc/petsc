@@ -80,7 +80,7 @@ void PETSC_STDCALL dasetblockfills_(DA *da,int *dfill,int *ofill,int *ierr)
 static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*j1d)(info,&in[info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -88,7 +88,7 @@ static int ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
 static void (PETSC_STDCALL *j2d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*j2d)(info,&in[info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -96,7 +96,7 @@ static int ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
 static void (PETSC_STDCALL *j3d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*j3d)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -104,7 +104,7 @@ static int ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
 static void (PETSC_STDCALL *f1d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f1d)(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -112,7 +112,7 @@ static int ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 static void (PETSC_STDCALL *f2d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f2d)(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -120,7 +120,7 @@ static int ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **out,void *pt
 static void (PETSC_STDCALL *f3d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f3d)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }

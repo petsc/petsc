@@ -160,14 +160,14 @@ EXTERN_C_END
 /* These are not extern C because they are passed into non-extern C user level functions */
 static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f7)(&ts,&t,&x,&y,ctx,&ierr);
   return ierr;
 }
 
 static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f8)(&ts,&x,&y,ctx,&ierr);
   return ierr;
 }
@@ -563,28 +563,28 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,vo
 
 static int ourmult(Mat mat,Vec x,Vec y)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
 static int ourmulttranspose(Mat mat,Vec x,Vec y)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[2]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
 static int ourmultadd(Mat mat,Vec x,Vec y,Vec z)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[1]))(&mat,&x,&y,&z,&ierr);
   return ierr;
 }
 
 static int ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[3]))(&mat,&x,&y,&z,&ierr);
   return ierr;
 }

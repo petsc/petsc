@@ -24,7 +24,7 @@
 /***************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdqt" 
-int SPARSEPACKqmdqt(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKqmdqt(int *root, int *xadj, int *adjncy, 
 	int *marker, int *rchsze, int *rchset, int *nbrhd)
 {
     /* System generated locals */

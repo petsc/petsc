@@ -18,7 +18,7 @@ int CreateError(int n)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRQ(ierr);

@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExtremeSingularValues_GMRES"
-int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
+PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
 #if defined(PETSC_MISSING_LAPACK_GESVD) 
   PetscFunctionBegin;
@@ -50,7 +50,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
 #if defined(PETSC_HAVE_ESSL)
   KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;

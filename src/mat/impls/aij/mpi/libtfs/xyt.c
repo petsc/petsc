@@ -95,7 +95,7 @@ static int do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
 #ifdef MLSRC
 void ML_XYT_solve(xyt_ADT xyt_handle, int lx, double *x, int lb, double *b);
-int  ML_XYT_factor(xyt_ADT xyt_handle, int *local2global, int n, int m,
+PetscErrorCode  ML_XYT_factor(xyt_ADT xyt_handle, int *local2global, int n, int m,
 		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
 #endif
 
@@ -141,7 +141,7 @@ Output:
 Return:
 Description:
 **************************************xyt.c***********************************/
-int 
+PetscErrorCode 
 XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
@@ -323,7 +323,7 @@ Description:
 
 ML requires that the solver call be checked in
 **************************************xyt.c***********************************/
-int 
+PetscErrorCode 
 ML_XYT_factor(xyt_ADT xyt_handle,  /* prev. allocated xyt  handle */
 	      int *local2global,   /* global column mapping       */
 	      int n,               /* local num rows              */

@@ -14,7 +14,7 @@ typedef struct _Space {
   int           local_remaining;
 } FreeSpace;  
 
-int GetMoreSpace(int size,FreeSpaceList *list);
-int MakeSpaceContiguous(FreeSpaceList *head,int *space);
+PetscErrorCode GetMoreSpace(int size,FreeSpaceList *list);
+PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,int *space);
 
 #endif

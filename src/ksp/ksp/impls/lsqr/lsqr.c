@@ -13,7 +13,8 @@ typedef struct {
 #define __FUNCT__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
-  int      ierr,nw;
+  PetscErrorCode ierr;
+  int  nw;
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
@@ -156,10 +157,10 @@ static int KSPSolve_LSQR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_LSQR" 
-int KSPDestroy_LSQR(KSP ksp)
+PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -192,10 +193,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_LSQR"
-int KSPCreate_LSQR(KSP ksp)
+PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(KSP_LSQR),&lsqr);CHKERRQ(ierr);

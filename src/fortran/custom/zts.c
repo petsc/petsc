@@ -51,28 +51,28 @@
 
 static int ourtsbcfunction(TS ts,PetscReal d,Vec x,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[0]))(&ts,&d,&x,ctx,&ierr);
   return 0;
 }
 
 static int ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[1]))(&ts,&d,&x,&f,ctx,&ierr);
   return 0;
 }
 
 static int ourtsmatrix(TS ts,PetscReal d,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[2]))(&ts,&d,m,p,type,ctx,&ierr);
   return 0;
 }
 
 static int ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[3]))(&ts,&d,&x,m,p,type,ctx,&ierr);
   return 0;
 }
@@ -82,7 +82,7 @@ static int ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* typ
 */
 static int ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
 {
-  int        ierr = 0;
+  PetscErrorCode ierr = 0;
   void       (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
   (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,FCNVOID,int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
@@ -90,7 +90,7 @@ static int ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
 
 static int ourtsdestroy(void *ctx)
 {
-  int         ierr = 0;
+  PetscErrorCode ierr = 0;
   TS          ts = (TS)ctx;
   void        (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
   (*(void (PETSC_STDCALL *)(FCNVOID,int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);

@@ -10,7 +10,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
-int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -97,11 +97,12 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
-int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  int                ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscErrorCode ierr;
+  int  i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   int                *ajtmpold,*ajtmp,nz,row;
   int                *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar          *pv,*v,*rtmp,*pc,*w,*x;
@@ -182,7 +183,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1"
-int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -249,9 +250,9 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqBAIJ"
-int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         C;
 
   PetscFunctionBegin;

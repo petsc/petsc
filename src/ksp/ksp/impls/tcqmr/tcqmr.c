@@ -16,7 +16,7 @@ static int KSPSolve_TCQMR(KSP ksp)
   PetscScalar theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
   PetscScalar deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
   PetscScalar dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ksp->its = 0;
@@ -147,7 +147,7 @@ static int KSPSolve_TCQMR(KSP ksp)
 #define __FUNCT__ "KSPSetUp_TCQMR"
 static int KSPSetUp_TCQMR(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
@@ -172,7 +172,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TCQMR"
-int KSPCreate_TCQMR(KSP ksp)
+PetscErrorCode KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                = (void*)0;

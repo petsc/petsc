@@ -24,7 +24,7 @@
   gnuplot plotpetsctol 
 
 */
-int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
+PetscErrorCode KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
 {
   char     filename[161];
   FILE     *ftol;
@@ -67,7 +67,7 @@ int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
      rnorm - 2-norm (preconditioned) residual value (may be estimated)
      dummy - optional user-defined monitor context (unused here)
 */
-int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
+PetscErrorCode KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 {
   char     filename[161];
   FILE     *ftol;
@@ -101,12 +101,13 @@ int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 /*
     KSPMonitorWriteResVecs - Write residual vectors to file. 
 */ 
-int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
+PetscErrorCode KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 {
   PetscScalar *values; 
   Vec         t, v, V; 
   char        filename[161];
-  int         ierr, i, numnodes; 
+  PetscErrorCode ierr;
+  int  i, numnodes; 
   CONVHIST    *convhist;
   FILE        *fout; 
 
@@ -141,7 +142,7 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ConvhistDestroy"
-int ConvhistCtxDestroy(CONVHIST *convhist)
+PetscErrorCode ConvhistCtxDestroy(CONVHIST *convhist)
 {
    PetscFree(convhist);
    return 0; 
@@ -150,10 +151,10 @@ int ConvhistCtxDestroy(CONVHIST *convhist)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MyConvTest"
-int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason, 
+PetscErrorCode MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason, 
                void* ctx)
 {
-  int ierr; 
+  PetscErrorCode ierr; 
   double   bnrm2, rtol; 
   CONVHIST *convhist = (CONVHIST*) ctx;
  
@@ -171,7 +172,7 @@ int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason,
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ReorderSubmatrices"
-int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
+PetscErrorCode ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int               i, ierr;
   IS                isrow,iscol;      /* row and column permutations */
@@ -187,7 +188,7 @@ int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PrintSubMatrices"
-int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
+PetscErrorCode PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int    i, j, ierr, nloc, *glo_row_ind;
 
@@ -208,7 +209,7 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ViewSubMatrices"
-int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
+PetscErrorCode ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int         i, ierr;
   PetscViewer viewer; 
@@ -230,9 +231,9 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MyMatView"
-int MyMatView(Mat mat,void *dummy)
+PetscErrorCode MyMatView(Mat mat,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer viewer; 
   PetscDraw   draw; 
 
@@ -249,9 +250,10 @@ int MyMatView(Mat mat,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PrintMatrix"
-int PrintMatrix(Mat mat, char* path, char* base)
+PetscErrorCode PrintMatrix(Mat mat, char* path, char* base)
 {
-   int               ierr,numrows, numcols, numnonzero, I, j, ncols_getrow;
+   PetscErrorCode ierr;
+   int numrows, numcols, numnonzero, I, j, ncols_getrow;
    const int         *cols_getrow;
    PetscViewer       viewer; 
    char              filename[80]; 
@@ -304,9 +306,10 @@ int PrintMatrix(Mat mat, char* path, char* base)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PrintVector"
-int PrintVector(Vec vec, char* path, char* base) 
+PetscErrorCode PrintVector(Vec vec, char* path, char* base) 
 {
-   int         ierr,size,i;
+   PetscErrorCode ierr;
+   int size,i;
    PetscViewer viewer; 
    char        filename[80]; 
    PetscScalar *values; 

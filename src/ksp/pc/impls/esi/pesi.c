@@ -25,11 +25,11 @@ typedef struct {
 
 .keywords: PC, ESI
 @*/
-int PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
+PetscErrorCode PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
 {
   PC_ESI     *x = (PC_ESI*)xin->data;
   PetscTruth tesi;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)xin,0,&tesi);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
 static int PCSetUp_ESI(PC pc)
 {
   PC_ESI                      *jac = (PC_ESI*)pc->data;
-  int                         ierr;
+  PetscErrorCode ierr;
   ::esi::Operator<double,int> *em;
 
   PetscFunctionBegin;
@@ -67,7 +67,7 @@ static int PCApply_ESI(PC pc,Vec x,Vec y)
 {
   PC_ESI                  *jac = (PC_ESI*)pc->data;
   esi::Vector<double,int> *xx,*yy;
-  int                     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecESIWrap(x,&xx);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ static int PCApply_ESI(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplySymmetricLeft_ESI"
 static int PCApplySymmetricLeft_ESI(PC pc,Vec x,Vec y)
 {
-  int                     ierr;
+  PetscErrorCode ierr;
   PC_ESI                  *jac = (PC_ESI*)pc->data;
   esi::Vector<double,int> *xx,*yy;
 
@@ -95,7 +95,7 @@ static int PCApplySymmetricLeft_ESI(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplySymmetricRight_ESI"
 static int PCApplySymmetricRight_ESI(PC pc,Vec x,Vec y)
 {
-  int                     ierr;
+  PetscErrorCode ierr;
   PC_ESI                  *jac = (PC_ESI*)pc->data;
   esi::Vector<double,int> *xx,*yy;
 
@@ -111,7 +111,7 @@ static int PCApplySymmetricRight_ESI(PC pc,Vec x,Vec y)
 static int PCDestroy_ESI(PC pc)
 {
   PC_ESI *jac = (PC_ESI*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = jac->epc->deleteReference();
@@ -127,7 +127,7 @@ static int PCDestroy_ESI(PC pc)
 static int PCSetFromOptions_ESI(PC pc)
 {
   /* PC_ESI  *jac = (PC_ESI*)pc->data; */
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("ESI options");CHKERRQ(ierr);
@@ -152,9 +152,9 @@ extern PetscFList CCAList;
    Level: intermediate
 
 @*/
-int PCESISetType(PC V,const char *name)
+PetscErrorCode PCESISetType(PC V,const char *name)
 {
-  int                                        ierr;
+  PetscErrorCode ierr;
   ::esi::Preconditioner<double,int>          *ve;
   ::esi::Preconditioner<double,int>::Factory *f,*(*r)(void);
 
@@ -172,11 +172,11 @@ int PCESISetType(PC V,const char *name)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCESISetFromOptions"
-int PCESISetFromOptions(PC V)
+PetscErrorCode PCESISetFromOptions(PC V)
 {
   char       string[PETSC_MAX_PATH_LEN];
   PetscTruth flg;
-  int        ierr;
+  PetscErrorCode ierr;
  
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)V,PCESI,&flg);CHKERRQ(ierr);
@@ -205,10 +205,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ESI"
-int PCCreate_ESI(PC pc)
+PetscErrorCode PCCreate_ESI(PC pc)
 {
   PC_ESI *jac;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -248,9 +248,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PetscESI"
-int PCCreate_PetscESI(PC V)
+PetscErrorCode PCCreate_PetscESI(PC V)
 {
-  int                                    ierr;
+  PetscErrorCode ierr;
   PC                                     v;
   esi::petsc::Preconditioner<double,int> *ve;
 

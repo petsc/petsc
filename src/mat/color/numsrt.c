@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKnumsrt" 
-int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *next)
+PetscErrorCode MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *next)
 {
     /* System generated locals */
     int i__1, i__2;

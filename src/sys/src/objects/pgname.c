@@ -20,9 +20,9 @@
 
 .seealso: PetscObjectSetName()
 @*/
-int PetscObjectGetName(PetscObject obj,char *name[])
+PetscErrorCode PetscObjectGetName(PetscObject obj,char *name[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");

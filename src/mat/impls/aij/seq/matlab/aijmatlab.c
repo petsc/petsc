@@ -19,9 +19,9 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEnginePut_Matlab"
-int MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
+PetscErrorCode MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B = (Mat)obj;
   mxArray     *mat; 
   Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
@@ -44,9 +44,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEngineGet_Matlab"
-int MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
+PetscErrorCode MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
 {
-  int        ierr,ii;
+  PetscErrorCode ierr;
+  int        ii;
   Mat        mat = (Mat)obj;
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
   mxArray    *mmat; 
@@ -82,8 +83,8 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
-int MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
-  int        ierr;
+PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+  PetscErrorCode ierr;
   Mat        B=*newmat;
   Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
 
@@ -106,8 +107,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Matlab"
-int MatDestroy_Matlab(Mat A) {
-  int         ierr;
+PetscErrorCode MatDestroy_Matlab(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatConvert_Matlab_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
@@ -117,9 +119,9 @@ int MatDestroy_Matlab(Mat A) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_Matlab"
-int MatSolve_Matlab(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 {
-  int             ierr;
+  PetscErrorCode ierr;
   char            *_A,*_b,*_x;
 
   PetscFunctionBegin;
@@ -140,10 +142,10 @@ int MatSolve_Matlab(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Matlab"
-int MatLUFactorNumeric_Matlab(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
-  int             ierr;
+  PetscErrorCode ierr;
   size_t          len;
   char            *_A,*name;
 
@@ -162,9 +164,9 @@ int MatLUFactorNumeric_Matlab(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_Matlab"
-int MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   Mat_SeqAIJ *f;
 
   PetscFunctionBegin;
@@ -183,9 +185,9 @@ int MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_Matlab_QR"
-int MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 {
-  int             ierr;
+  PetscErrorCode ierr;
   char            *_A,*_b,*_x;
 
   PetscFunctionBegin;
@@ -206,9 +208,9 @@ int MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Matlab_QR"
-int MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
 {
-  int             ierr;
+  PetscErrorCode ierr;
   size_t          len;
   char            *_A,*name;
 
@@ -226,9 +228,9 @@ int MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_Matlab_QR"
-int MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
@@ -246,9 +248,9 @@ int MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_Matlab"
-int MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
+PetscErrorCode MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   size_t     len;
   char       *_A,*name;
 
@@ -277,9 +279,9 @@ int MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_Matlab"
-int MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
+PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin; 
   ierr = PetscViewerASCIIPrintf(viewer,"Matlab run parameters:  -- not written yet!\n");CHKERRQ(ierr);
@@ -288,8 +290,8 @@ int MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_Matlab"
-int MatView_Matlab(Mat A,PetscViewer viewer) {
-  int               ierr;
+PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) {
+  PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_Matlab        *lu=(Mat_Matlab*)(A->spptr);
@@ -308,8 +310,8 @@ int MatView_Matlab(Mat A,PetscViewer viewer) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Matlab"
-int MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
-  int        ierr;
+PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
 
   PetscFunctionBegin;
@@ -321,10 +323,10 @@ int MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
-int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATMATLAB */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
-  int        ierr;
+  PetscErrorCode ierr;
   Mat        B=*newmat;
   Mat_Matlab *lu;
   PetscTruth qr;
@@ -397,8 +399,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Matlab"
-int MatCreate_Matlab(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_Matlab(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMATLAB);CHKERRQ(ierr);

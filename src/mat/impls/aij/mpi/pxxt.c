@@ -14,14 +14,14 @@ typedef struct {
 } Mat_MPIAIJ_XXT;
 
 
-EXTERN int MatDestroy_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_XXT"
-int MatDestroy_MPIAIJ_XXT(Mat A)
+PetscErrorCode MatDestroy_MPIAIJ_XXT(Mat A)
 {
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)A->spptr;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* free the XXT datastructures */
@@ -33,11 +33,11 @@ int MatDestroy_MPIAIJ_XXT(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIAIJ_XXT"
-int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)A->spptr;
   PetscScalar    *bb,*xx;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XXT"
-int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -61,7 +61,7 @@ int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 static int LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data; 
-  int            ierr;
+  PetscErrorCode ierr;
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)A->spptr;
 
   PetscFunctionBegin;
@@ -79,11 +79,12 @@ static int LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XXT"
-int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  int            ierr,*localtoglobal,ncol,i;
+  PetscErrorCode ierr;
+  int            *localtoglobal,ncol,i;
   Mat_MPIAIJ_XXT *xxt;
 
   PetscFunctionBegin;
@@ -140,14 +141,14 @@ typedef struct {
 } Mat_MPIAIJ_XYT;
 
 
-EXTERN int MatDestroy_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_XYT"
-int MatDestroy_MPIAIJ_XYT(Mat A)
+PetscErrorCode MatDestroy_MPIAIJ_XYT(Mat A)
 {
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)A->spptr;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* free the XYT datastructures */
@@ -159,11 +160,11 @@ int MatDestroy_MPIAIJ_XYT(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIAIJ_XYT"
-int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)A->spptr;
   PetscScalar    *bb,*xx;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
@@ -176,7 +177,7 @@ int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XYT"
-int MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -187,7 +188,7 @@ int MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 static int LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data; 
-  int            ierr;
+  PetscErrorCode ierr;
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)A->spptr;
 
   PetscFunctionBegin;
@@ -205,11 +206,12 @@ static int LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XYT"
-int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  int            ierr,*localtoglobal,ncol,i;
+  PetscErrorCode ierr;
+  int            *localtoglobal,ncol,i;
   Mat_MPIAIJ_XYT *xyt;
 
   PetscFunctionBegin;
@@ -259,9 +261,9 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_TFS"
-int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"Using TFS for MPIAIJ LU factorization and solves");
@@ -277,7 +279,7 @@ int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "dummy83"
-int dummy83(int a)
+PetscErrorCode dummy83(int a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

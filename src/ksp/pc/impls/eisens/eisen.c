@@ -18,7 +18,7 @@ typedef struct {
 #define __FUNCT__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PC           pc;
   PC_Eisenstat *eis;
 
@@ -34,7 +34,7 @@ static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
@@ -48,7 +48,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
   PetscTruth   nonzero;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,"Cannot have different mat and pmat"); 
@@ -82,7 +82,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
@@ -98,7 +98,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 static int PCDestroy_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data; 
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (eis->b)     {ierr = VecDestroy(eis->b);CHKERRQ(ierr);}
@@ -113,7 +113,7 @@ static int PCDestroy_Eisenstat(PC pc)
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -132,7 +132,7 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 static int PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   iascii;
 
   PetscFunctionBegin;
@@ -154,7 +154,8 @@ static int PCView_Eisenstat(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_Eisenstat"
 static int PCSetUp_Eisenstat(PC pc)
 {
-  int          ierr,M,N,m,n;
+  PetscErrorCode ierr;
+  int M,N,m,n;
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
@@ -181,7 +182,7 @@ static int PCSetUp_Eisenstat(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
-int PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
+PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat  *eis;
 
@@ -196,7 +197,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
-int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
+PetscErrorCode PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
 
@@ -238,9 +239,9 @@ $    -pc_type  sor  -pc_sor_symmetric
 
 .seealso: PCSORSetOmega()
 @*/
-int PCEisenstatSetOmega(PC pc,PetscReal omega)
+PetscErrorCode PCEisenstatSetOmega(PC pc,PetscReal omega)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -276,9 +277,9 @@ int PCEisenstatSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCEisenstatSetOmega()
 @*/
-int PCEisenstatNoDiagonalScaling(PC pc)
+PetscErrorCode PCEisenstatNoDiagonalScaling(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -314,9 +315,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Eisenstat"
-int PCCreate_Eisenstat(PC pc)
+PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;

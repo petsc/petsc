@@ -65,7 +65,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
   PetscScalar      dot;
-  int              ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
@@ -116,7 +116,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
-  int              ierr;
+  PetscErrorCode ierr;
   PetscTruth       iascii;
 
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 */
 static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
 
   PetscFunctionBegin;
@@ -170,7 +170,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 */
 static int MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ EXTERN_C_BEGIN
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
+PetscErrorCode MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
 {
   MatSNESMFCtx     ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFDefault *hctx;
@@ -219,9 +219,9 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
+PetscErrorCode MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 {
-  int ierr,(*f)(Mat,PetscReal);
+  PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -243,10 +243,10 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatSNESMFCreate()
 
 */
-int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
+PetscErrorCode MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 {
   MatSNESMFDefault *hctx;
-  int              ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 

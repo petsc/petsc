@@ -22,7 +22,7 @@ T*/
 */
 #include "petscksp.h"
 
-EXTERN int kspex(int,char**);
+EXTERN PetscErrorCode kspex(int,char**);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

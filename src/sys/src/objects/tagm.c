@@ -35,9 +35,9 @@ EXTERN_C_BEGIN
           which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
           extern "C".
 */
-int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+PetscErrorCode Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm);
@@ -71,9 +71,10 @@ EXTERN_C_END
 
 .seealso: PetscCommGetNewTag()
 @*/
-int PetscObjectGetNewTag(PetscObject obj,int *tag)
+PetscErrorCode PetscObjectGetNewTag(PetscObject obj,int *tag)
 {
-  int        ierr,*tagvalp=0,*maxval;
+  PetscErrorCode ierr;
+  int        *tagvalp=0,*maxval;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -119,9 +120,10 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
 .seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
-int PetscCommGetNewTag(MPI_Comm comm,int *tag)
+PetscErrorCode PetscCommGetNewTag(MPI_Comm comm,int *tag)
 {
-  int        ierr,*tagvalp=0,*maxval;
+  PetscErrorCode ierr;
+  int        *tagvalp=0,*maxval;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -170,9 +172,10 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
 @*/
-int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
-  int        ierr,*tagvalp,*maxval;
+  PetscErrorCode ierr;
+  int        *tagvalp,*maxval;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -243,9 +246,10 @@ int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
    Concepts: communicator^destroy
 
 @*/
-int PetscCommDestroy(MPI_Comm *comm)
+PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
 {
-  int        ierr,*tagvalp;
+  PetscErrorCode ierr;
+  int        *tagvalp;
   PetscTruth flg;
 
   PetscFunctionBegin;

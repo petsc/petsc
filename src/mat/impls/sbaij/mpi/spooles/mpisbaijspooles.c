@@ -7,8 +7,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
-int MatDestroy_MPISBAIJSpooles(Mat A) {
-  int ierr;
+PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   /* MPISBAIJ_Spooles isn't really the matrix that USES spooles, */
@@ -23,8 +24,9 @@ int MatDestroy_MPISBAIJSpooles(Mat A) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_MPISBAIJSpooles"
-int MatAssemblyEnd_MPISBAIJSpooles(Mat A,MatAssemblyType mode) {
-  int         ierr,bs;
+PetscErrorCode MatAssemblyEnd_MPISBAIJSpooles(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
+  int bs;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
@@ -45,10 +47,11 @@ int MatAssemblyEnd_MPISBAIJSpooles(Mat A,MatAssemblyType mode) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_MPISBAIJSpooles"
-int MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
+PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
 { 
   Mat_Spooles *lu = (Mat_Spooles*)F->spptr; 
-  int         ierr,neg,zero,pos,sbuf[3],rbuf[3];
+  PetscErrorCode ierr;
+  int neg,zero,pos,sbuf[3],rbuf[3];
 
   PetscFunctionBegin;
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
@@ -61,11 +64,11 @@ int MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJSpooles"
-int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
   Mat           B;
   Mat_Spooles   *lu;   
-  int           ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;	
 
@@ -92,11 +95,11 @@ int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJSpooles"
-int MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat         A;
   Mat_Spooles *lu = (Mat_Spooles*)B->spptr; 
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -116,10 +119,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
-int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATMPISBAIJ matrix */
   /* to a MATMPISBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
   void        (*f)(void);
@@ -206,8 +209,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJSpooles"
-int MatCreate_MPISBAIJSpooles(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_MPISBAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of MPISBAIJ */

@@ -8,7 +8,7 @@ static int LINPACKcgtql1(int*,PetscReal *,PetscReal *,int *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_CG"
-int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
   PetscScalar *d,*e;
@@ -40,7 +40,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
-int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
+PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
   PetscScalar *d,*e;

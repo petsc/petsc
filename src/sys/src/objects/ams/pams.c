@@ -8,11 +8,11 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublishBaseBegin"
-int PetscObjectPublishBaseBegin(PetscObject obj)
+PetscErrorCode PetscObjectPublishBaseBegin(PetscObject obj)
 {
   AMS_Memory amem;
   AMS_Comm   acomm;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
@@ -37,10 +37,10 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublishBaseEnd"
-int PetscObjectPublishBaseEnd(PetscObject obj)
+PetscErrorCode PetscObjectPublishBaseEnd(PetscObject obj)
 {
   AMS_Memory amem = (AMS_Memory) obj->amem;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (amem < 0) SETERRQ(PETSC_ERR_ORDER,"Called without a call to PetscObjectPublishBaseBegin()");
@@ -53,7 +53,7 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "mydummy"
-int mydummy(void)
+PetscErrorCode mydummy(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

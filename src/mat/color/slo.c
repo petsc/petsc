@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKslo" 
-int MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
+PetscErrorCode MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
          int * maxclq,	 int *iwa1,int * iwa2,int * iwa3,int * iwa4)
 {
     /* System generated locals */

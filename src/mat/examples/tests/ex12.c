@@ -4,8 +4,8 @@ This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ ma
 
 #include "petscmat.h"
 
-EXTERN int TestMatZeroRows_Basic(Mat,IS,const PetscScalar[] );
-EXTERN int TestMatZeroRows_with_no_allocation(Mat,IS,const PetscScalar[]);
+EXTERN PetscErrorCode TestMatZeroRows_Basic(Mat,IS,const PetscScalar[] );
+EXTERN PetscErrorCode TestMatZeroRows_with_no_allocation(Mat,IS,const PetscScalar[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -78,10 +78,10 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_Basic"
-int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
+PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 {
   Mat        B;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth keepzeroedrows;
 
   /* Now copy A into B, and test it with MatZeroRows() */
@@ -100,10 +100,10 @@ int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
-int TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar diag[])
+PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar diag[])
 {
   Mat         B;
-  int         ierr;
+  PetscErrorCode ierr;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);

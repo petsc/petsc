@@ -20,10 +20,10 @@
    src/mat/impls/baij/seq
 */
 
-EXTERN int  LINPACKdgefa(MatScalar*,int,int*);
-EXTERN int  LINPACKdgedi(MatScalar*,int,int*,MatScalar*);
-EXTERN int  Kernel_A_gets_inverse_A_2(MatScalar*);
-EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar*);
+EXTERN PetscErrorCode  LINPACKdgefa(MatScalar*,int,int*);
+EXTERN PetscErrorCode  LINPACKdgedi(MatScalar*,int,int*,MatScalar*);
+EXTERN PetscErrorCode  Kernel_A_gets_inverse_A_2(MatScalar*);
+EXTERN PetscErrorCode  Kernel_A_gets_inverse_A_3(MatScalar*);
 
 #define Kernel_A_gets_inverse_A_4_nopivot(mat) 0;\
 {\
@@ -99,15 +99,13 @@ EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar*);
   mat[10] += mat[11] * mat[14] * di;\
 }
 
-EXTERN int  Kernel_A_gets_inverse_A_4(MatScalar *);
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *);
 # if defined(PETSC_HAVE_SSE)
-EXTERN int  Kernel_A_gets_inverse_A_4_SSE(MatScalar *);
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_4_SSE(MatScalar *);
 # endif
-
-EXTERN int  Kernel_A_gets_inverse_A_5(MatScalar *);
-EXTERN int  Kernel_A_gets_inverse_A_6(MatScalar *);
-EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
-
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *);
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_6(MatScalar *);
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 
 /*
     A = inv(A)    A_gets_inverse_A
@@ -116,11 +114,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
    pivots - integer work array of length bs
    W      -  bs by 1 work array
 */
-#define Kernel_A_gets_inverse_A(bs,A,pivots,W)\
-{ \
-  ierr = LINPACKdgefa((A),(bs),(pivots));CHKERRQ(ierr); \
-  ierr = LINPACKdgedi((A),(bs),(pivots),(W));CHKERRQ(ierr); \
-}
+#define Kernel_A_gets_inverse_A(bs,A,pivots,W) (LINPACKdgefa((A),(bs),(pivots)) || LINPACKdgedi((A),(bs),(pivots),(W)))
 
 /* -----------------------------------------------------------------------*/
 
@@ -137,8 +131,8 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  PetscScalar _one = 1.0,_zero = 0.0; \
-  int         _ierr; \
+  PetscScalar    _one = 1.0,_zero = 0.0; \
+  PetscErrorCode _ierr; \
   _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_one,(W),&(bs),(B),&(bs),&_zero,(A),&(bs));\
 }

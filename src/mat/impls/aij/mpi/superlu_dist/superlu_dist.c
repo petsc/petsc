@@ -48,13 +48,13 @@ typedef struct {
   PetscTruth CleanUpSuperLU_Dist;
 } Mat_SuperLU_DIST;
 
-EXTERN int MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
-int MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,Mat *newmat) {
-  int              ierr;
+PetscErrorCode MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,Mat *newmat) {
+  PetscErrorCode ierr;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST *)A->spptr;
 
@@ -79,9 +79,10 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
-int MatDestroy_SuperLU_DIST(Mat A)
+PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
-  int              ierr,size;
+  PetscErrorCode ierr;
+  int              size;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
     
   PetscFunctionBegin;
@@ -122,10 +123,11 @@ int MatDestroy_SuperLU_DIST(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SuperLU_DIST"
-int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
+PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
-  int              ierr, size;
+  PetscErrorCode ierr;
+  int              size;
   int              m=A->M, N=A->N; 
   SuperLUStat_t    stat;  
   double           berr[1];
@@ -202,7 +204,7 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
-int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 {
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;
@@ -394,11 +396,12 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
-int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat               B;
   Mat_SuperLU_DIST  *lu;   
-  int               ierr,M=A->M,N=A->N,size,indx;
+  PetscErrorCode ierr;
+  int               M=A->M,N=A->N,size,indx;
   superlu_options_t options;
   PetscTruth        flg;
   const char        *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","COLAMD"}; 
@@ -507,8 +510,8 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SuperLU_DIST"
-int MatAssemblyEnd_SuperLU_DIST(Mat A,MatAssemblyType mode) {
-  int              ierr;
+PetscErrorCode MatAssemblyEnd_SuperLU_DIST(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST*)(A->spptr);
 
   PetscFunctionBegin;
@@ -520,11 +523,11 @@ int MatAssemblyEnd_SuperLU_DIST(Mat A,MatAssemblyType mode) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_SuperLU_DIST"
-int MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
+PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)A->spptr;
   superlu_options_t options;
-  int               ierr;
+  PetscErrorCode ierr;
   char              *colperm;
 
   PetscFunctionBegin;
@@ -556,9 +559,9 @@ int MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SuperLU_DIST"
-int MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)(A->spptr);
@@ -580,11 +583,12 @@ int MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
-int MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
   /* or MATMPIAIJ otherwise, so we will ignore 'MatType type'. */
-  int              ierr, size;
+  PetscErrorCode ierr;
+  int              size;
   MPI_Comm         comm;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu;
@@ -631,8 +635,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SuperLU_DIST"
-int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
-  int              ierr;
+PetscErrorCode MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST *)A->spptr;
 
   PetscFunctionBegin;
@@ -679,8 +683,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU_DIST"
-int MatCreate_SuperLU_DIST(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_SuperLU_DIST(Mat A) 
+{
+  PetscErrorCode ierr,size;
   Mat A_diag;
 
   PetscFunctionBegin;

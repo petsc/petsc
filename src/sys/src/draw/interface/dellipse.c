@@ -21,10 +21,10 @@
 .keywords: draw, ellipse
 .seealso: PetscDrawRectangle(), PetscDrawTriangle()
 @*/
-int PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
+PetscErrorCode PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
   PetscTruth isdrawnull;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);

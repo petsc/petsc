@@ -18,7 +18,8 @@ typedef struct {
 static int PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
-  int          ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
   PetscTruth   iascii,isstring;
   PetscViewer  sviewer;
 
@@ -53,7 +54,8 @@ static int PCView_Redundant(PC pc,PetscViewer viewer)
 static int PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
-  int            ierr,mstart,mlocal,m,size;
+  PetscErrorCode ierr;
+  int mstart,mlocal,m,size;
   IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
@@ -124,7 +126,7 @@ static int PCSetUp_Redundant(PC pc)
 static int PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant      *red = (PC_Redundant*)pc->data;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* move all values to each processor */
@@ -146,7 +148,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 static int PCDestroy_Redundant(PC pc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (red->scatterin)  {ierr = VecScatterDestroy(red->scatterin);CHKERRQ(ierr);}
@@ -172,10 +174,10 @@ static int PCSetFromOptions_Redundant(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
-int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   red->scatterin  = in; 
@@ -204,9 +206,9 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
-  int ierr,(*f)(PC,VecScatter,VecScatter);
+  PetscErrorCode ierr,(*f)(PC,VecScatter,VecScatter);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -222,7 +224,7 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetPC_Redundant"
-int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
+PetscErrorCode PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -249,9 +251,9 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-int PCRedundantGetPC(PC pc,PC *innerpc)
+PetscErrorCode PCRedundantGetPC(PC pc,PC *innerpc)
 {
-  int ierr,(*f)(PC,PC*);
+  PetscErrorCode ierr,(*f)(PC,PC*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -266,7 +268,7 @@ int PCRedundantGetPC(PC pc,PC *innerpc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
-int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -295,9 +297,9 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {
-  int ierr,(*f)(PC,Mat*,Mat*);
+  PetscErrorCode ierr,(*f)(PC,Mat*,Mat*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -328,9 +330,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Redundant"
-int PCCreate_Redundant(PC pc)
+PetscErrorCode PCCreate_Redundant(PC pc)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PC_Redundant *red;
   char         *prefix;
 

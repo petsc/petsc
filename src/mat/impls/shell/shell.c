@@ -38,9 +38,9 @@ typedef struct {
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
 @*/
-int MatShellGetContext(Mat mat,void **ctx)
+PetscErrorCode MatShellGetContext(Mat mat,void **ctx)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -54,9 +54,9 @@ int MatShellGetContext(Mat mat,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Shell"
-int MatDestroy_Shell(Mat mat)
+PetscErrorCode MatDestroy_Shell(Mat mat)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   Mat_Shell *shell;
 
   PetscFunctionBegin;
@@ -68,10 +68,10 @@ int MatDestroy_Shell(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_Shell"
-int MatMult_Shell(Mat A,Vec x,Vec y)
+PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell   *shell = (Mat_Shell*)A->data;  
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*shell->mult)(A,x,y);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int MatMult_Shell(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_Shell"
-int MatShift_Shell(const PetscScalar *a,Mat Y)
+PetscErrorCode MatShift_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
   PetscFunctionBegin;
@@ -104,7 +104,7 @@ int MatShift_Shell(const PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_Shell"
-int MatScale_Shell(const PetscScalar *a,Mat Y)
+PetscErrorCode MatScale_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
   PetscFunctionBegin;
@@ -121,7 +121,7 @@ int MatScale_Shell(const PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_Shell"
-int MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
+PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
 
@@ -136,7 +136,7 @@ int MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-extern int MatConvert_Shell(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_Shell(Mat,const MatType,Mat*);
 
 static struct _MatOps MatOps_Values = {0,
        0,
@@ -236,10 +236,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Shell"
-int MatCreate_Shell(Mat A)
+PetscErrorCode MatCreate_Shell(Mat A)
 {
   Mat_Shell *b;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr            = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -334,9 +334,9 @@ $
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext()
 @*/
-int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
+PetscErrorCode MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
@@ -361,10 +361,10 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
-int MatShellSetContext(Mat mat,void *ctx)
+PetscErrorCode MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell  *shell = (Mat_Shell*)mat->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -416,9 +416,9 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext()
 @*/
-int MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
+PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -472,9 +472,9 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/
-int MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
+PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;

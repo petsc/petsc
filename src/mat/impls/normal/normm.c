@@ -8,10 +8,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_Normal"
-int MatMult_Normal(Mat N,Vec x,Vec y)
+PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal *Na = (Mat_Normal*)N->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMult(Na->A,x,Na->w);CHKERRQ(ierr);
@@ -21,10 +21,10 @@ int MatMult_Normal(Mat N,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Normal"
-int MatDestroy_Normal(Mat N)
+PetscErrorCode MatDestroy_Normal(Mat N)
 {
   Mat_Normal *Na = (Mat_Normal*)N->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
@@ -38,11 +38,12 @@ int MatDestroy_Normal(Mat N)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_Normal"
-int MatGetDiagonal_Normal(Mat N,Vec v)
+PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
   Mat               A = Na->A;
-  int               ierr,i,j,rstart,rend,nnz;
+  PetscErrorCode ierr;
+  int i,j,rstart,rend,nnz;
   const int         *cols;
   PetscScalar       *diag,*work,*values;
   const PetscScalar *mvalues;
@@ -87,9 +88,10 @@ int MatGetDiagonal_Normal(Mat N,Vec v)
           object performs the matrix-vector product by first multiplying by
           A and then A'
 @*/
-int MatCreateNormal(Mat A,Mat *N)
+PetscErrorCode MatCreateNormal(Mat A,Mat *N)
 {
-  int        ierr,m,n;
+  PetscErrorCode ierr;
+  int m,n;
   Mat_Normal *Na;  
 
   PetscFunctionBegin;

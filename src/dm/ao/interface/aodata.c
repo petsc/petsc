@@ -24,7 +24,7 @@
 
 .seealso:  AODataSegmentGetInfo()
 @*/ 
-int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
+PetscErrorCode AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 {
   int       n,i,ierr;
   AODataKey *key = ao->keys;
@@ -61,7 +61,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
    Level: advanced
 
 */
-int AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTruth *flag,AODataKey **key)
+PetscErrorCode AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTruth *flag,AODataKey **key)
 {
   PetscTruth  match;
   int         ierr;
@@ -115,9 +115,9 @@ int AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTruth *flag,AO
    Level: advanced
 
 @*/
-int AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
+PetscErrorCode AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iflag;
   AODataKey  *ikey;
 
@@ -152,9 +152,9 @@ int AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
    Level: advanced
 
 */
-int AODataSegmentFind_Private(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag,AODataKey **key,AODataSegment **seg)
+PetscErrorCode AODataSegmentFind_Private(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag,AODataKey **key,AODataSegment **seg)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscTruth    keyflag,match;
   AODataAlias   *t = aodata->aliases;
   const char    *name;
@@ -211,9 +211,9 @@ int AODataSegmentFind_Private(AOData aodata,const char keyname[],const char segn
    Level: advanced
 
 @*/
-int AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
+PetscErrorCode AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscTruth    iflag;
   AODataKey     *ikey;
   AODataSegment *iseg;
@@ -254,9 +254,9 @@ int AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActive(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
+PetscErrorCode AODataKeyGetActive(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -289,9 +289,9 @@ int AODataKeyGetActive(AOData aodata,const char name[],const char segment[],int 
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
+PetscErrorCode AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
 {
-  int ierr,n,*keys;
+  PetscErrorCode ierr,n,*keys;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(in,&n);CHKERRQ(ierr);
@@ -327,9 +327,9 @@ int AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
+PetscErrorCode AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -362,9 +362,9 @@ int AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[]
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
+PetscErrorCode AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
 {
-  int ierr,n,*keys;
+  PetscErrorCode ierr,n,*keys;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(in,&n);CHKERRQ(ierr);
@@ -401,9 +401,9 @@ int AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGet(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
+PetscErrorCode AODataSegmentGet(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -434,9 +434,9 @@ int AODataSegmentGet(AOData aodata,const char name[],const char segment[],int n,
 
 .seealso: AODataSegmentRestoreIS()
 @*/
-int AODataSegmentRestore(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
+PetscErrorCode AODataSegmentRestore(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -465,9 +465,9 @@ int AODataSegmentRestore(AOData aodata,const char name[],const char segment[],in
 .keywords: database transactions
 
 @*/
-int AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
-  int ierr,n,*keys;
+  PetscErrorCode ierr,n,*keys;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -502,9 +502,9 @@ int AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS i
 
 .seealso: AODataSegmentRestore()
 @*/
-int AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -541,9 +541,9 @@ int AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
+PetscErrorCode AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -573,9 +573,9 @@ int AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],i
 .keywords: database transactions
 
 @*/
-int AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
+PetscErrorCode AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -606,9 +606,9 @@ int AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment
 
 .seealso: AODataSegmentRestoreLocalIS()
 @*/
-int AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
-  int ierr,n,*keys;
+  PetscErrorCode ierr,n,*keys;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -643,9 +643,9 @@ int AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[]
 
 .seealso: AODataSegmentGetLocalIS()
 @*/
-int AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -682,9 +682,9 @@ int AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segme
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighborsIS()
 @*/
-int AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *keys,IS *is)
+PetscErrorCode AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *keys,IS *is)
 {
-  int ierr;
+  PetscErrorCode ierr;
   IS  reduced,input;
 
   PetscFunctionBegin;
@@ -727,9 +727,9 @@ int AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *keys,IS *is
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighbors()
 @*/
-int AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
+PetscErrorCode AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
 {
-  int ierr;
+  PetscErrorCode ierr;
   IS  reduced;
 
   PetscFunctionBegin;
@@ -776,9 +776,9 @@ int AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[],int n,int *keys,IS *is)
+PetscErrorCode AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[],int n,int *keys,IS *is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -810,9 +810,9 @@ int AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[]
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[],void *vmax,void *vmin)
+PetscErrorCode AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[],void *vmax,void *vmin)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -851,9 +851,9 @@ int AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[]
 
 .seealso:
 @*/
-int AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment[],IS is,IS *isout)
+PetscErrorCode AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment[],IS is,IS *isout)
 {
-  int ierr,n,*keys;
+  PetscErrorCode ierr,n,*keys;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -887,9 +887,9 @@ int AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment
 
 .seealso: AODataKeyGetLocalToGlobalMapping()
 @*/
-int AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping map)
+PetscErrorCode AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping map)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   AODataKey  *ikey;
 
@@ -930,9 +930,9 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGl
 
 .seealso: AODataKeySetLocalToGlobalMapping()
 @*/
-int AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping *map)
+PetscErrorCode AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping *map)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   AODataKey  *ikey;
 
@@ -968,9 +968,9 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGl
 
 .seealso: AODataKeyGetInfo()
 @*/
-int AODataKeyGetOwnershipRange(AOData aodata,const char name[],int *rstart,int *rend)
+PetscErrorCode AODataKeyGetOwnershipRange(AOData aodata,const char name[],int *rstart,int *rend)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   AODataKey  *key;
 
@@ -1009,9 +1009,10 @@ int AODataKeyGetOwnershipRange(AOData aodata,const char name[],int *rstart,int *
 
 .seealso: AODataKeyGetOwnershipRange()
 @*/
-int AODataKeyGetInfo(AOData aodata,const char name[],int *nglobal,int *nlocal,int *nsegments,char ***segnames)
+PetscErrorCode AODataKeyGetInfo(AOData aodata,const char name[],int *nglobal,int *nlocal,int *nsegments,char ***segnames)
 {
-  int           ierr,i,n=0;
+  PetscErrorCode ierr;
+  int i,n=0;
   AODataKey     *key;
   AODataSegment *seg;
   PetscTruth    flag;
@@ -1060,9 +1061,9 @@ int AODataKeyGetInfo(AOData aodata,const char name[],int *nglobal,int *nlocal,in
 
 .seealso:  AODataGetInfo()
 @*/
-int AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[],int *bs,PetscDataType *dtype)
+PetscErrorCode AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[],int *bs,PetscDataType *dtype)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   PetscTruth    flag;
   AODataKey     *key;
   AODataSegment *seg;
@@ -1106,9 +1107,9 @@ int AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[]
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-int AODataView(AOData aodata,PetscViewer viewer)
+PetscErrorCode AODataView(AOData aodata,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1123,7 +1124,7 @@ int AODataView(AOData aodata,PetscViewer viewer)
 static int AODataAliasDestroy_Private(AODataAlias *aliases)
 {
   AODataAlias *t = aliases;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (t) {
@@ -1144,10 +1145,10 @@ static int AODataAliasDestroy_Private(AODataAlias *aliases)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataAliasAdd" 
-int AODataAliasAdd(AOData aodata,const char alias[],const char name[])
+PetscErrorCode AODataAliasAdd(AOData aodata,const char alias[],const char name[])
 {
   AODataAlias *t = aodata->aliases;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (t) {
@@ -1180,9 +1181,9 @@ int AODataAliasAdd(AOData aodata,const char alias[],const char name[])
 
 .seealso: AODataCreateBasic()
 @*/
-int AODataDestroy(AOData aodata)
+PetscErrorCode AODataDestroy(AOData aodata)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -1216,9 +1217,9 @@ int AODataDestroy(AOData aodata)
 
 .seealso: AODataKeyGetAdjacency()
 @*/
-int AODataKeyRemap(AOData aodata,const char key[],AO ao)
+PetscErrorCode AODataKeyRemap(AOData aodata,const char key[],AO ao)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1247,9 +1248,9 @@ int AODataKeyRemap(AOData aodata,const char key[],AO ao)
 
 .seealso: AODataKeyRemap()
 @*/
-int AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
+PetscErrorCode AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1276,9 +1277,9 @@ int AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
 .seealso: AODataKeyPartition(), AODataPartitionAndSetupLocal()
 
 @*/
-int AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
+PetscErrorCode AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
 {
-  int             ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1288,13 +1289,14 @@ int AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataPublish_Petsc"
-int AODataPublish_Petsc(PetscObject obj)
+PetscErrorCode AODataPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   AOData        ao = (AOData) obj;
   AODataKey     *key = 0;
   AODataSegment *segment = 0;
-  int           ierr,keys,segments;
+  PetscErrorCode ierr;
+  int keys,segments;
   char          tmp[1024];
 #endif
 
@@ -1358,9 +1360,9 @@ int AODataPublish_Petsc(PetscObject obj)
 
 .seealso:
 @*/
-int AODataKeyRemove(AOData aodata,const char name[])
+PetscErrorCode AODataKeyRemove(AOData aodata,const char name[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1386,9 +1388,9 @@ int AODataKeyRemove(AOData aodata,const char name[])
 
 .seealso:
 @*/
-int AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
+PetscErrorCode AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1415,9 +1417,10 @@ int AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
 
 .seealso:
 @*/
-int AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
+PetscErrorCode AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
 {
-  int        ierr,size,rank,i;
+  PetscErrorCode ierr;
+  int size,rank,i;
   size_t     len;
   AODataKey  *key,*oldkey;
   MPI_Comm   comm = aodata->comm;
@@ -1495,9 +1498,9 @@ int AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
 
 .seealso: AODataSegmentAddIS()
 @*/
-int AODataSegmentAdd(AOData aodata,const char name[],const char segment[],int bs,int n,int *keys,void *data,PetscDataType dtype)
+PetscErrorCode AODataSegmentAdd(AOData aodata,const char name[],const char segment[],int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -1541,7 +1544,7 @@ int AODataSegmentAdd(AOData aodata,const char name[],const char segment[],int bs
 
 .seealso: AODataSegmentAdd()
 @*/
-int AODataSegmentAddIS(AOData aodata,const char name[],const char segment[],int bs,IS is,void *data,PetscDataType dtype)
+PetscErrorCode AODataSegmentAddIS(AOData aodata,const char name[],const char segment[],int bs,IS is,void *data,PetscDataType dtype)
 {
   int n,*keys,ierr;
 

@@ -5,7 +5,7 @@
 
 static char help[] = "Does PETSc multigrid cycling using hierarchy build by SAMG\n\n";
 
-int samgmgpetsc(const int numnodes, double* Asky, int* ia, 
+PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia, 
                 int* ja, double* rhs, double* u_approx, 
                 const OPTIONS *options)
 {
@@ -16,7 +16,8 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    PC       pc;           /* preconditioner context */
    PCType   pctype;       /* preconditioning technique */
    KSP      ksp;          /* KSP context */
-   int      ierr, its;    /* Error messages and number of iterations */
+   PetscErrorCode ierr;
+   int  its;    /* Error messages and number of iterations */
    /*..Other variables for the PETSc interface..*/
    int      *nnz_per_row; /* integer vector to hold the number of nonzeros */
                           /* of each row. This vector will be used to      */

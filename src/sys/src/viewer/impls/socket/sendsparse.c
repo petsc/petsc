@@ -32,10 +32,11 @@ $     MatView(Mat matrix,PetscViewer viewer)
 
 .seealso: PetscViewerSocketOpen(), MatView()
 */
-int PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,PetscScalar *v,int *r,int *c)
+PetscErrorCode PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,PetscScalar *v,int *r,int *c)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)vw->data;
-  int                ierr,t = vmatlab->port,type = SPARSEREAL,value;
+  PetscErrorCode     ierr;
+  int                t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);

@@ -16,9 +16,9 @@
   Input Parameters:
 . ksp  - iterative context
  */
-int KSPDefaultFreeWork(KSP ksp)
+PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->work)  {
@@ -48,7 +48,7 @@ int KSPDefaultFreeWork(KSP ksp)
 
 .seealso: KSPComputeResidual()
 @*/
-int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
+PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -80,7 +80,7 @@ int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 
 .seealso: KSPComputeResidual(), KSPGetResidualNorm()
 @*/
-int KSPGetIterationNumber(KSP ksp,int *its)
+PetscErrorCode KSPGetIterationNumber(KSP ksp,int *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -117,10 +117,10 @@ int KSPGetIterationNumber(KSP ksp,int *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   PetscReal emin,emax,c;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -158,9 +158,9 @@ int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
 @*/
-int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
@@ -196,9 +196,9 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -238,9 +238,9 @@ int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Vec          resid,work;
   PetscReal    scnorm;
   PC           pc;
@@ -278,9 +278,9 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
+PetscErrorCode KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -324,7 +324,7 @@ int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
-int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -370,7 +370,7 @@ $      rnorm > dtol * rnorm_0,
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
 @*/
-int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -417,9 +417,9 @@ int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason
 
 .seealso: KSPGetSolution(), KSPDefaultBuildResidual()
 */
-int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
+PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->pc) {
@@ -464,9 +464,9 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 
 .seealso: KSPDefaultBuildSolution()
 */
-int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
+PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   MatStructure pflag;
   Vec          T;
   PetscScalar  mone = -1.0;
@@ -494,9 +494,9 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 .  work - the array of vectors created
 
  */
-int  KSPGetVecs(KSP ksp,int nw,Vec **work)
+PetscErrorCode  KSPGetVecs(KSP ksp,int nw,Vec **work)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec vec;
 
   PetscFunctionBegin;
@@ -525,9 +525,9 @@ int  KSPGetVecs(KSP ksp,int nw,Vec **work)
   Notes:
   Call this only if no work vectors have been allocated 
  */
-int  KSPDefaultGetWork(KSP ksp,int nw)
+PetscErrorCode  KSPDefaultGetWork(KSP ksp,int nw)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
@@ -546,9 +546,9 @@ int  KSPDefaultGetWork(KSP ksp,int nw)
   Input Parameter: 
 . ksp - the iterative context
 */
-int KSPDefaultDestroy(KSP ksp)
+PetscErrorCode KSPDefaultDestroy(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -597,7 +597,7 @@ int KSPDefaultDestroy(KSP ksp)
 
 .seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason
 @*/
-int KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
+PetscErrorCode KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

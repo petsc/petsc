@@ -13,10 +13,10 @@ EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-int VecLoad_Binary(PetscViewer,const VecType, Vec*);
-int VecLoad_Netcdf(PetscViewer, Vec*);
-int VecLoadIntoVector_Binary(PetscViewer, Vec);
-int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
+EXTERN int VecLoad_Binary(PetscViewer,const VecType, Vec*);
+EXTERN int VecLoad_Netcdf(PetscViewer, Vec*);
+EXTERN int VecLoadIntoVector_Binary(PetscViewer, Vec);
+EXTERN int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad"
@@ -68,9 +68,9 @@ and PetscWriteBinary() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-int VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
+PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  isbinary,isnetcdf,flg;
   char        vtype[256],*prefix;
 
@@ -119,7 +119,7 @@ int VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Netcdf"
-int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
+PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
   int         i,N,ierr,n,rank,bs;
@@ -166,7 +166,7 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
-int VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
+PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
   Vec         vec;
@@ -247,10 +247,10 @@ int VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Default"
-int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
+PetscErrorCode VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
   PetscTruth isbinary,isnetcdf;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -268,7 +268,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Netcdf"
-int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
+PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
   int         i,N,rows,ierr,n,rank,bs;
@@ -313,7 +313,7 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Binary"
-int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
+PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   PetscScalar *avec;

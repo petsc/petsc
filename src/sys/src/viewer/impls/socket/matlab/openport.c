@@ -55,7 +55,7 @@ typedef unsigned long   u_long;
 #include "petscfix.h"
 #include "mex.h"
 
-EXTERN int SOCKConnect_Private(int);
+EXTERN PetscErrorCode SOCKConnect_Private(int);
 #define ERROR(a) {fprintf(stdout,"OPENPORT: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
@@ -100,7 +100,7 @@ static int listenport;
 extern int establish(u_short);
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKConnect_Private"
-int SOCKConnect_Private(int portnumber)
+PetscErrorCode SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa; 
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
@@ -130,10 +130,11 @@ int SOCKConnect_Private(int portnumber)
 #define MAXHOSTNAME 100
 #undef __FUNCT__  
 #define __FUNCT__ "establish"
-int establish(u_short portnum)
+PetscErrorCode establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
-  int                s,ierr;
+  int                s;
+  PetscErrorCode     ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
   struct utsname     utname;

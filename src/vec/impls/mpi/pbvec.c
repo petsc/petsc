@@ -13,7 +13,7 @@ static int VecPublish_MPI(PetscObject obj)
 #if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) obj;
   Vec_MPI      *s = (Vec_MPI*)v->data;
-  int          ierr,(*f)(AMS_Memory,char *,Vec);
+  PetscErrorCode ierr,(*f)(AMS_Memory,char *,Vec);
 #endif  
 
   PetscFunctionBegin;
@@ -40,10 +40,10 @@ static int VecPublish_MPI(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPI"
-int VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar  sum,work;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
@@ -54,10 +54,10 @@ int VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecTDot_MPI"
-int VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar  sum,work;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecTDot_Seq(xin,yin,&work);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetOption_MPI"
-int VecSetOption_MPI(Vec v,VecOption op)
+PetscErrorCode VecSetOption_MPI(Vec v,VecOption op)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
@@ -79,16 +79,16 @@ int VecSetOption_MPI(Vec v,VecOption op)
   PetscFunctionReturn(0);
 }
     
-EXTERN int VecDuplicate_MPI(Vec,Vec *);
+EXTERN PetscErrorCode VecDuplicate_MPI(Vec,Vec *);
 EXTERN_C_BEGIN
-EXTERN int VecView_MPI_Draw(Vec,PetscViewer);
+EXTERN PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPlaceArray_MPI"
-int VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
+PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 {
-  int     ierr;
+  PetscErrorCode ierr;
   Vec_MPI *v = (Vec_MPI *)vin->data;
 
   PetscFunctionBegin;
@@ -157,10 +157,11 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap map)
+PetscErrorCode VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap map)
 {
   Vec_MPI *s;
-  int     ierr,size,rank;
+  PetscErrorCode ierr;
+  int     size,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(v->comm,&size);CHKERRQ(ierr);
@@ -230,9 +231,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"
-int VecCreate_MPI(Vec vv)
+PetscErrorCode VecCreate_MPI(Vec vv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (vv->bs > 0) {
@@ -280,9 +281,9 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Vec *vv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (n == PETSC_DECIDE) { 
@@ -326,9 +327,9 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Ve
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
 @*/
-int VecGhostGetLocalForm(Vec g,Vec *l)
+PetscErrorCode VecGhostGetLocalForm(Vec g,Vec *l)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isseq,ismpi;
 
   PetscFunctionBegin;
@@ -371,7 +372,7 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
 
 .seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
 @*/
-int VecGhostRestoreLocalForm(Vec g,Vec *l)
+PetscErrorCode VecGhostRestoreLocalForm(Vec g,Vec *l)
 {
   PetscFunctionBegin;
   PetscObjectDereference((PetscObject)*l);
@@ -419,10 +420,10 @@ int VecGhostRestoreLocalForm(Vec g,Vec *l)
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-int VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE,1);
@@ -481,10 +482,10 @@ int VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE,1);
@@ -534,9 +535,9 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Vec_MPI      *w;
   PetscScalar  *larray;
   IS           from,to;
@@ -603,9 +604,9 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
+PetscErrorCode VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
@@ -614,9 +615,9 @@ int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_MPI"
-int VecDuplicate_MPI(Vec win,Vec *v)
+PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 #if defined(PETSC_HAVE_AMS)
@@ -711,9 +712,9 @@ int VecDuplicate_MPI(Vec win,Vec *v)
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   Vec_MPI      *w;
   PetscScalar  *larray;
   IS           from,to;
@@ -787,9 +788,9 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
 
 @*/ 
-int VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],Vec *vv)
+PetscErrorCode VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],Vec *vv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
@@ -803,9 +804,9 @@ int VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int gh
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetLocalToGlobalMapping_FETI"
-int VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
+PetscErrorCode VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
 {
-  int     ierr;
+  PetscErrorCode ierr;
   Vec_MPI *v = (Vec_MPI *)vv->data;
 
   PetscFunctionBegin;
@@ -826,9 +827,9 @@ int VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesLocal_FETI"
-int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,InsertMode mode)
+PetscErrorCode VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,InsertMode mode)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   Vec_MPI *v = (Vec_MPI *)vv->data;
 
   PetscFunctionBegin;
@@ -839,9 +840,9 @@ int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_FETI"
-int VecCreate_FETI(Vec vv)
+PetscErrorCode VecCreate_FETI(Vec vv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecSetType(vv,VECMPI);CHKERRQ(ierr);

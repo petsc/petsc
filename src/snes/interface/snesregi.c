@@ -2,9 +2,9 @@
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-EXTERN int SNESCreate_LS(SNES);
-EXTERN int SNESCreate_TR(SNES);
-EXTERN int SNESCreate_Test(SNES);
+EXTERN PetscErrorCode SNESCreate_LS(SNES);
+EXTERN PetscErrorCode SNESCreate_TR(SNES);
+EXTERN PetscErrorCode SNESCreate_Test(SNES);
 EXTERN_C_END
   
 /*
@@ -27,9 +27,9 @@ extern PetscTruth SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-int SNESRegisterAll(const char path[])
+PetscErrorCode SNESRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;

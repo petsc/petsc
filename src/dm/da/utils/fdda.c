@@ -3,10 +3,10 @@
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
 
 
-EXTERN int DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 
 /*
    For ghost i that may be negative or greater than the upper bound this
@@ -18,7 +18,7 @@ EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 #define __FUNCT__ "DASetBlockFills_Private"
 static int DASetBlockFills_Private(int *dfill,int w,int **rfill)
 {
-  int ierr,i,j,nz,*fill;
+  PetscErrorCode ierr,i,j,nz,*fill;
 
   PetscFunctionBegin;
   /* count number nonzeros */
@@ -82,9 +82,9 @@ $                            0, 1, 1}
 .seealso DAGetMatrix(), DASetGetMatrix()
 
 @*/
-int DASetBlockFills(DA da,int *dfill,int *ofill)
+PetscErrorCode DASetBlockFills(DA da,int *dfill,int *ofill)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dfill) {
@@ -120,9 +120,10 @@ int DASetBlockFills(DA da,int *dfill,int *ofill)
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int        ierr,dim;
+  PetscErrorCode ierr;
+  int        dim;
 
   PetscFunctionBegin;
   /*
@@ -170,9 +171,10 @@ int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring2d_MPIAIJ" 
-int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
   int                    m,n,M,N,dim,s,k,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
@@ -245,9 +247,10 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring3d_MPIAIJ" 
-int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,gxs,gys,gnx,gny;           
   int                    m,n,p,dim,s,k,nc,col,size,zs,gzs,ii,l,nz,gnz,M,N,P;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
@@ -324,9 +327,10 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring1d_MPIAIJ" 
-int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,nx,i,i1,gxs,gnx,l;           
+  PetscErrorCode ierr;
+  int xs,nx,i,i1,gxs,gnx,l;           
   int                    m,M,dim,s,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
@@ -385,9 +389,10 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
-int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int            ierr,xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
   int            m,n,dim,s,k,nc;
   MPI_Comm       comm;
   DAPeriodicType wrap;
@@ -448,13 +453,13 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 }
 
 /* =========================================================================== */
-EXTERN int DAGetMatrix1d_MPIAIJ(DA,Mat);
-EXTERN int DAGetMatrix2d_MPIAIJ(DA,Mat);
-EXTERN int DAGetMatrix2d_MPIAIJ_Fill(DA,Mat);
-EXTERN int DAGetMatrix3d_MPIAIJ(DA,Mat);
-EXTERN int DAGetMatrix3d_MPIAIJ_Fill(DA,Mat);
-EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat);
-EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix1d_MPIAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix" 
@@ -481,9 +486,10 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 
 @*/
-int DAGetMatrix(DA da,const MatType mtype,Mat *J)
+PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
 {
-  int      ierr,dim,dof,nx,ny,nz,dims[3],starts[3];
+  PetscErrorCode ierr;
+  int dim,dof,nx,ny,nz,dims[3],starts[3];
   Mat      A;
   MPI_Comm comm;
   MatType  Atype;
@@ -582,9 +588,10 @@ int DAGetMatrix(DA da,const MatType mtype,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ" 
-int DAGetMatrix2d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
@@ -684,9 +691,10 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ_Fill" 
-int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz;
   int                    ifill_col,*ofill = da->ofill, *dfill = da->dfill;
@@ -811,9 +819,10 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ" 
-int DAGetMatrix3d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
@@ -924,9 +933,10 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix1d_MPIAIJ" 
-int DAGetMatrix1d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 {
-  int                    ierr,xs,nx,i,i1,slot,gxs,gnx;           
+  PetscErrorCode ierr;
+  int xs,nx,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
   int                    istart,iend;
   PetscScalar            *values;
@@ -985,9 +995,10 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIBAIJ" 
-int DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
@@ -1134,9 +1145,10 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 /* BAD! Almost identical to the BAIJ one */
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPISBAIJ" 
-int DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
@@ -1286,9 +1298,10 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ_Fill" 
-int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
 {
-  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscErrorCode ierr;
+  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   int                    ifill_col,*dfill = da->dfill,*ofill = da->ofill;

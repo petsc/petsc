@@ -14,7 +14,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_4"
-int Kernel_A_gets_inverse_A_4(MatScalar *a)
+PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[4],kb,k3;
     int        k4,j3;
@@ -154,7 +154,7 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
 
 #undef __FUNCT__
 #define __FUNCT__ "Kernel_A_gets_inverse_A_4_SSE"
-int Kernel_A_gets_inverse_A_4_SSE(float *a)
+PetscErrorCode Kernel_A_gets_inverse_A_4_SSE(float *a)
 {
   /* 
      This routine is converted from Intel's Small Matrix Library.

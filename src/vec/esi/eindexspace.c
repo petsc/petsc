@@ -7,7 +7,7 @@
 
 esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = PetscMapCreateMPI(icomm,n,N,&this->map);if (ierr) return;
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
@@ -86,7 +86,7 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
-  int ierr,*iglobaloffsets;
+  PetscErrorCode ierr,*iglobaloffsets;
   int size;   
 
   ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
-  int ierr,i,n,*globalranges;
+  PetscErrorCode ierr,i,n,*globalranges;
 
 
   ierr = MPI_Comm_size(this->comm,&n);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ template<class Ordinal> class Petra_ESI_IndexSpaceFactory : public virtual ::esi
     virtual ::esi::ErrorCode create(const char * name,void *comm,int m,int M,int base,::esi::IndexSpace<Ordinal>*&v)
     {
       PetscTruth ismpi;
-      int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
+      PetscErrorCode ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
       if (!ismpi) SETERRQ1(1,"%s not supported, only MPI supported as RunTimeModel",name);
       Petra_Comm *pcomm = new Petra_Comm(*(MPI_Comm*)comm);
       v = new Petra_ESI_IndexSpace<Ordinal>(-1,m,0,*pcomm); 

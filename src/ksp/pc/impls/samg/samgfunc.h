@@ -80,9 +80,9 @@ void apply_shift(int*ia, int nnu, int ia_shift, int* ja, int nna,
 
 /*..Functions for verifying intermediate results: printing interpolation 
   and coarser grid matrices to file..*/ 
-int SamgPetscWriteOperator(const int numnodes, const double* Asky, 
+PetscErrorCode SamgPetscWriteOperator(const int numnodes, const double* Asky, 
                            const int* ia, const int* ja, int extension);      
-int SamgPetscWriteInterpol(const int numrows, const double* weights, 
+PetscErrorCode SamgPetscWriteInterpol(const int numrows, const double* weights, 
                   const int* iweights, const int* jweights, int extension); 
  
 #endif//SAMGFUNC_H

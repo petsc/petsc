@@ -20,10 +20,10 @@ struct _PetscOList {
 
 .seealso: PetscOListDestroy()
 */
-int PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
+PetscErrorCode PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
   PetscOList olist,nlist,prev;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth match;
 
   PetscFunctionBegin;
@@ -89,10 +89,10 @@ int PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     Input Parameter:
 .   fl   - pointer to list
 */
-int PetscOListDestroy(PetscOList *fl)
+PetscErrorCode PetscOListDestroy(PetscOList *fl)
 {
   PetscOList   tmp, entry = *fl;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while (entry) {
@@ -125,9 +125,9 @@ int PetscOListDestroy(PetscOList *fl)
 .seealso: PetscOListReverseFind()
 
 */
-int PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
+PetscErrorCode PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth match;
 
   PetscFunctionBegin;
@@ -163,7 +163,7 @@ int PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 .seealso: PetscOListFind()
 
 */
-int PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -192,9 +192,9 @@ int PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 
 
 */
-int PetscOListDuplicate(PetscOList fl,PetscOList *nl)
+PetscErrorCode PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while (fl) {

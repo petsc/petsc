@@ -42,11 +42,11 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-int TSSetType(TS ts, const TSType type)
+PetscErrorCode TSSetType(TS ts, const TSType type)
 {
   int      (*r)(TS);
   PetscTruth match;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -93,9 +93,9 @@ int TSSetType(TS ts, const TSType type)
 .keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
-int TSGetType(TS ts, TSType *type)
+PetscErrorCode TSGetType(TS ts, TSType *type)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -116,10 +116,10 @@ int TSGetType(TS ts, TSType *type)
 
   Level: advanced
 @*/
-int TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
+PetscErrorCode TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
 {
   char fullname[PETSC_MAX_PATH_LEN];
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
@@ -142,9 +142,9 @@ int TSRegister(const char sname[], const char path[], const char name[], int (*f
 .keywords: TS, timestepper, register, destroy
 .seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
 @*/
-int TSRegisterDestroy(void)
+PetscErrorCode TSRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSList != PETSC_NULL) {

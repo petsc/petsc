@@ -92,7 +92,7 @@ static int do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
 #ifdef MLSRC
 void ML_XXT_solve(xxt_ADT xxt_handle, int lx, double *x, int lb, double *b);
-int  ML_XXT_factor(xxt_ADT xxt_handle, int *local2global, int n, int m,
+PetscErrorCode  ML_XXT_factor(xxt_ADT xxt_handle, int *local2global, int n, int m,
 		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
 #endif
 
@@ -137,7 +137,7 @@ Output:
 Return:
 Description:
 **************************************xxt.c***********************************/
-int 
+PetscErrorCode 
 XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
@@ -315,7 +315,7 @@ Description:
 
 ML requires that the solver call be checked in
 **************************************xxt.c***********************************/
-int 
+PetscErrorCode 
 ML_XXT_factor(xxt_ADT xxt_handle,  /* prev. allocated xxt  handle */
 		int *local2global, /* global column mapping       */
 		int n,             /* local num rows              */

@@ -8,9 +8,10 @@ EXTERN_C_BEGIN
 */    
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_RCM"
-int MatOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
+PetscErrorCode MatOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
-  int        ierr,i,  *mask,*xls,nrow,*ia,*ja,*perm;
+  PetscErrorCode ierr;
+  int i,  *mask,*xls,nrow,*ia,*ja,*perm;
   PetscTruth done;
 
   PetscFunctionBegin;

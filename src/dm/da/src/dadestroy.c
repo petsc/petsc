@@ -5,8 +5,8 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-int DA_COOKIE = 0;
-int DAEvents[DA_MAX_EVENTS] = {0};
+PetscCookieCode DA_COOKIE = 0;
+PetscLogCode    DAEvents[DA_MAX_EVENTS] = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DADestroy"
@@ -24,9 +24,9 @@ int DAEvents[DA_MAX_EVENTS] = {0};
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 @*/
-int DADestroy(DA da)
+PetscErrorCode DADestroy(DA da)
 {
-  int ierr,i,cnt = 0;
+  PetscErrorCode ierr,i,cnt = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -170,7 +170,7 @@ int DADestroy(DA da)
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMappingBlck()
 @*/
-int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -206,7 +206,7 @@ int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMapping()
 @*/
-int DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

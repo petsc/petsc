@@ -7,9 +7,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolationScale"
-int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
+PetscErrorCode DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   Vec    fine;
   PetscScalar one = 1.0;
 
@@ -25,9 +25,10 @@ int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_1D_Q1"
-int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 {
-  int            ierr,i,i_start,m_f,Mx,*idx_f;
+  PetscErrorCode ierr;
+  int i,i_start,m_f,Mx,*idx_f;
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
@@ -117,9 +118,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_1D_Q0"
-int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 {
-  int            ierr,i,i_start,m_f,Mx,*idx_f;
+  PetscErrorCode ierr;
+  int i,i_start,m_f,Mx,*idx_f;
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
@@ -189,9 +191,10 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_2D_Q1"
-int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 {
-  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  PetscErrorCode ierr;
+  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
   int            row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
@@ -363,9 +366,10 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_3D_Q1"
-int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 {
-  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
+  PetscErrorCode ierr;
+  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
   int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
   int            row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratioi,ratioj,ratiok;
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
@@ -593,9 +597,10 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 
 .seealso: DARefine(), DAGetInjection()
 @*/
-int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
+PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 {
-  int            ierr,dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  PetscErrorCode ierr;
+  int dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
   DAStencilType  stc,stf;
 
@@ -644,9 +649,10 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInjection_2D"
-int DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
+PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 {
-  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  PetscErrorCode ierr;
+  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
   int            row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
@@ -733,9 +739,10 @@ int DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
 .seealso: DARefine(), DAGetInterpolation()
 @*/
-int DAGetInjection(DA dac,DA daf,VecScatter *inject)
+PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
 {
-  int            ierr,dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  PetscErrorCode ierr;
+  int dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
   DAStencilType  stc,stf;
 

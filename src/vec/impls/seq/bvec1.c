@@ -10,10 +10,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_Seq"
-int VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar *ya,*xa;
-  int         ierr;
+  PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
   int         one = 1;
 #endif
@@ -44,10 +44,10 @@ int VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecTDot_Seq"
-int VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar *ya,*xa;
-  int         ierr;
+  PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
  int     one = 1;
 #endif
@@ -76,7 +76,7 @@ int VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScale_Seq"
-int VecScale_Seq(const PetscScalar *alpha,Vec xin)
+PetscErrorCode VecScale_Seq(const PetscScalar *alpha,Vec xin)
 {
   Vec_Seq *x = (Vec_Seq*)xin->data;
   int     one = 1;
@@ -89,11 +89,11 @@ int VecScale_Seq(const PetscScalar *alpha,Vec xin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCopy_Seq"
-int VecCopy_Seq(Vec xin,Vec yin)
+PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscScalar *ya;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -106,11 +106,12 @@ int VecCopy_Seq(Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSwap_Seq"
-int VecSwap_Seq(Vec xin,Vec yin)
+PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscScalar *ya;
-  int         ierr,one = 1;
+  PetscErrorCode ierr;
+  int         one = 1;
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -123,7 +124,7 @@ int VecSwap_Seq(Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_Seq"
-int VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
+PetscErrorCode VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   int          one = 1,ierr;
@@ -139,7 +140,7 @@ int VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPBY_Seq"
-int VecAXPBY_Seq(const PetscScalar *alpha,const PetscScalar *beta,Vec xin,Vec yin)
+PetscErrorCode VecAXPBY_Seq(const PetscScalar *alpha,const PetscScalar *beta,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   int          n = xin->n,i,ierr;

@@ -19,9 +19,9 @@
    Concepts: clear^window
 
 @*/
-int PetscDrawSynchronizedClear(PetscDraw draw)
+PetscErrorCode PetscDrawSynchronizedClear(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->synchronizedclear) {

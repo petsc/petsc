@@ -17,7 +17,7 @@ typedef struct {
   esi::MatrixRowWriteAccess<double,int> *wmat;
 } Mat_ESI;
 
-EXTERN int MatLoad_ESI(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_ESI(PetscViewer,const MatType,Mat*);
 
 /*
     Wraps a PETSc matrix to look like an ESI matrix and stashes the wrapper inside the
@@ -25,10 +25,10 @@ EXTERN int MatLoad_ESI(PetscViewer,const MatType,Mat*);
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatESIWrap"
-int MatESIWrap(Mat xin,::esi::Operator<double,int> **v)
+PetscErrorCode MatESIWrap(Mat xin,::esi::Operator<double,int> **v)
 {
   esi::petsc::Matrix<double,int> *t;
-  int                            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!xin->esimat) {
@@ -50,7 +50,7 @@ int MatESIWrap(Mat xin,::esi::Operator<double,int> **v)
 {
   Mat_ESI    *x = (Mat_ESI*)xin->data;
   PetscTruth tesi;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -108,9 +108,9 @@ extern PetscFList CCAList;
     MatESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
           by name and wraps the ESI operator to look like a PETSc matrix.
 @*/
-int MatESISetType(Mat V,const char *name)
+PetscErrorCode MatESISetType(Mat V,const char *name)
 {
-  int                                  ierr;
+  PetscErrorCode ierr;
   ::esi::Operator<double,int>          *ve;
   ::esi::Operator<double,int>::Factory *f;
   ::esi::Operator<double,int>::Factory *(*r)(void);
@@ -139,11 +139,11 @@ int MatESISetType(Mat V,const char *name)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatESISetFromOptions"
-int MatESISetFromOptions(Mat V)
+PetscErrorCode MatESISetFromOptions(Mat V)
 {
   char       string[PETSC_MAX_PATH_LEN];
   PetscTruth flg;
-  int        ierr;
+  PetscErrorCode ierr;
  
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)V,MATESI,&flg);CHKERRQ(ierr);
@@ -160,10 +160,11 @@ int MatESISetFromOptions(Mat V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_ESI"
-int MatSetValues_ESI(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_ESI(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_ESI *iesi = (Mat_ESI*)mat->data;
-  int      ierr,i,j,rstart = iesi->rstart,rend = iesi->rend;
+  PetscErrorCode ierr;
+  int i,j,rstart = iesi->rstart,rend = iesi->rend;
  
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -184,9 +185,10 @@ int MatSetValues_ESI(Mat mat,int m,const int im[],int n,const int in[],const Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_ESI"
-int MatAssemblyBegin_ESI(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyBegin_ESI(Mat mat,MatAssemblyType mode)
 { 
-  int         ierr,nstash,reallocs,*rowners;
+  PetscErrorCode ierr;
+  int nstash,reallocs,*rowners;
   InsertMode  addv;
 
   PetscFunctionBegin;
@@ -208,7 +210,7 @@ int MatAssemblyBegin_ESI(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_ESI"
-int MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
 { 
   Mat_ESI     *a = (Mat_ESI*)mat->data;
   int         i,j,rstart,ncols,n,ierr,flg;
@@ -237,10 +239,10 @@ int MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_ESI"
-int MatMult_ESI(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_ESI(Mat A,Vec xx,Vec yy)
 {
   Mat_ESI                 *a = (Mat_ESI*)A->data;
-  int                     ierr;
+  PetscErrorCode ierr;
   esi::Vector<double,int> *x,*y;
 
   PetscFunctionBegin;
@@ -252,10 +254,10 @@ int MatMult_ESI(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_ESI"
-int MatDestroy_ESI(Mat v)
+PetscErrorCode MatDestroy_ESI(Mat v)
 {
   Mat_ESI *vs = (Mat_ESI*)v->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (vs->eop) {
@@ -269,10 +271,11 @@ int MatDestroy_ESI(Mat v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_ESI"
-int MatView_ESI(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_ESI(Mat A,PetscViewer viewer)
 {
   Mat_ESI              *a = (Mat_ESI*)A->data;
-  int                  ierr,i,rstart,m,*cols,nz,j;
+  PetscErrorCode ierr;
+  int i,rstart,m,*cols,nz,j;
   PetscTruth           issocket,iascii,isbinary,isdraw;
   esi::IndexSpace<int> *rmap,*cmap;
   PetscScalar          *values;
@@ -409,9 +412,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_ESI"
-int MatCreate_ESI(Mat B)
+PetscErrorCode MatCreate_ESI(Mat B)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   Mat_ESI    *b;
 
   PetscFunctionBegin;
@@ -432,7 +435,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_ESI"
-int MatLoad_ESI(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_ESI(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   PetscScalar  *vals,*svals;
@@ -629,9 +632,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_PetscESI"
-int MatCreate_PetscESI(Mat V)
+PetscErrorCode MatCreate_PetscESI(Mat V)
 {
-  int                            ierr;
+  PetscErrorCode ierr;
   Mat                            v;
   esi::petsc::Matrix<double,int> *ve;
 

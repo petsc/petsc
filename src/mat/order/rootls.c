@@ -22,7 +22,7 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKrootls"
-int SPARSEPACKrootls(int *root, int *xadj, int *adjncy, 
+PetscErrorCode SPARSEPACKrootls(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */

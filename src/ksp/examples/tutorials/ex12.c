@@ -40,7 +40,7 @@ T*/
 #include "petscksp.h"
 
 EXTERN_C_BEGIN
-extern int PCCreate_Jacobi(PC);
+EXTERN PetscErrorCode PCCreate_Jacobi(PC);
 EXTERN_C_END
 
 #undef __FUNCT__

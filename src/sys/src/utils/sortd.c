@@ -56,7 +56,7 @@ static int PetsciDqsort(PetscReal *v,int right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-int PetscSortReal(int n,PetscReal v[])
+PetscErrorCode PetscSortReal(int n,PetscReal v[])
 {
   int       j,k;
   PetscReal tmp,vk;

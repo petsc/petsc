@@ -23,9 +23,9 @@
    Concepts: graphics^in subset of window
 
 @*/
-int PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+PetscErrorCode PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
@@ -57,7 +57,7 @@ int PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,P
 .seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
 
 @*/
-int PetscDrawSplitViewPort(PetscDraw draw)
+PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 {
   int        rank,size,n,ierr;
   PetscTruth isnull;
@@ -118,7 +118,7 @@ int PetscDrawSplitViewPort(PetscDraw draw)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-int PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
+PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
 {
   int        i,ierr,n;
   PetscTruth isnull;
@@ -185,9 +185,9 @@ int PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **port
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsCreate()
 
 @*/
-int PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
+PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -220,9 +220,9 @@ int PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 
 @*/
-int PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
+PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ports) { 

@@ -29,7 +29,7 @@
 .seealso: ISDestroy(), ISView(), ISSum()
 
 @*/
-int ISDifference(IS is1,IS is2,IS *isout)
+PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
@@ -118,7 +118,7 @@ int ISDifference(IS is1,IS is2,IS *isout)
    Concepts: IS^difference
 
 @*/
-int ISSum(IS is1,IS is2,IS *isout)
+PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;

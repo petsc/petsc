@@ -42,7 +42,7 @@ static void PetscSignalHandler_Private(int sig,int code,struct sigcontext * scp,
 static void PetscSignalHandler_Private(int sig)
 #endif
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!sh || !sh->handler) {
@@ -70,9 +70,9 @@ EXTERN_C_END
    Concepts: signal handler^default
 
 @*/
-int PetscDefaultSignalHandler(int sig,void *ptr)
+PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   const char  *SIGNAME[64];
 
   PetscFunctionBegin;
@@ -192,10 +192,10 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 .seealso: PetscPopSignalHandler()
 
 @*/
-int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
+PetscErrorCode PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 {
   struct  SH *newsh;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!SignalSet && routine) {
@@ -340,7 +340,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 .seealso: PetscPushSignalHandler()
 
 @*/
-int PetscPopSignalHandler(void)
+PetscErrorCode PetscPopSignalHandler(void)
 {
   struct SH *tmp;
 

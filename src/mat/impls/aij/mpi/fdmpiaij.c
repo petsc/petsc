@@ -1,13 +1,13 @@
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN int CreateColmap_MPIAIJ_Private(Mat);
-EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
-EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
+EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
-int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
+PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
   int        i,*is,n,nrows,j,k,m,*rows = 0,ierr,*A_ci,*A_cj,ncols,col;

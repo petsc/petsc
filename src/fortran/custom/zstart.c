@@ -106,17 +106,17 @@ EXTERN_C_BEGIN
 extern void PetscMaxSum_Local(void*,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
-EXTERN int PetscOptionsCheckInitial_Private(void);
-EXTERN int PetscOptionsCheckInitial_Components(void);
-EXTERN int PetscInitialize_DynamicLibraries(void);
-EXTERN int PetscLogBegin_Private(void);
+EXTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
+EXTERN PetscErrorCode PetscOptionsCheckInitial_Components(void);
+EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
+EXTERN PetscErrorCode PetscLogBegin_Private(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
   all processors and adds them to Options database.
 */
 
-int PETScParseFortranArgs_Private(int *argc,char ***argv)
+PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
 #if defined (PETSC_USE_NARGS)
   short i,flg;
@@ -146,13 +146,15 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
       (*argv)[i+1] = (*argv)[i] + warg;
 #if defined(PETSC_HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
-       int  ierr,ilen;
+       PetscErrorCode ierr;
+       int ilen;
        PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
       {char *tmp = (*argv)[i];
-      int  ierr,ilen;
+      PetscErrorCode ierr;
+      int ilen;
       getarg_(&i,tmp,&ilen,&ierr,warg);CHKERRQ(ierr);
       tmp[ilen] = 0;
       }

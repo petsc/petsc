@@ -2,9 +2,9 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "GetMoreSpace"
-int GetMoreSpace(int size,FreeSpaceList *list) {
+PetscErrorCode GetMoreSpace(int size,FreeSpaceList *list) {
   FreeSpaceList a;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(FreeSpace),&a);CHKERRQ(ierr);
@@ -27,9 +27,9 @@ int GetMoreSpace(int size,FreeSpaceList *list) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MakeSpaceContiguous"
-int MakeSpaceContiguous(FreeSpaceList *head,int *space) {
+PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,int *space) {
   FreeSpaceList a;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while ((*head)!=NULL) {

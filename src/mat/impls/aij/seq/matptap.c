@@ -7,7 +7,7 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN int RegisterMatMatMultRoutines_Private(Mat);
+EXTERN PetscErrorCode RegisterMatMatMultRoutines_Private(Mat);
 
 static int MAT_PtAPSymbolic = 0;
 static int MAT_PtAPNumeric  = 0;
@@ -36,8 +36,8 @@ static int MAT_PtAPNumeric  = 0;
 
 .seealso: MatPtAPSymbolic(),MatPtAPNumeric(),MatMatMult()
 @*/
-int MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
-  int ierr;
+PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -63,9 +63,9 @@ int MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
-int MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
+PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
@@ -99,8 +99,8 @@ int MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 
 .seealso: MatPtAP(),MatPtAPNumeric(),MatMatMultSymbolic()
 @*/
-int MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
-  int ierr;
+PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
+  PetscErrorCode ierr;
   char funct[80];
   int (*f)(Mat,Mat,Mat*);
 
@@ -139,8 +139,8 @@ int MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ"
-int MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) {
-  int            ierr;
+PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) {
+  PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
   int            *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
@@ -262,9 +262,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqMAIJ"
-int MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
+PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
   /* This routine requires testing -- I don't think it works. */
-  int            ierr;
+  PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
   Mat            P=pp->AIJ;
@@ -411,8 +411,8 @@ EXTERN_C_END
 
 .seealso: MatPtAP(),MatPtAPSymbolic(),MatMatMultNumeric()
 @*/
-int MatPtAPNumeric(Mat A,Mat P,Mat C) {
-  int ierr;
+PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) {
+  PetscErrorCode ierr;
   char funct[80];
   int (*f)(Mat,Mat,Mat);
 
@@ -457,8 +457,10 @@ int MatPtAPNumeric(Mat A,Mat P,Mat C) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ"
-int MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
-  int        ierr,flops=0;
+PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) 
+{
+  PetscErrorCode ierr;
+  int        flops=0;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
@@ -541,8 +543,9 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "RegisterPtAPRoutines_Private"
-int RegisterPtAPRoutines_Private(Mat A) {
-  int ierr;
+PetscErrorCode RegisterPtAPRoutines_Private(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!MAT_PtAPSymbolic) {

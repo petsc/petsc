@@ -29,9 +29,9 @@
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-int VecCreateSeq(MPI_Comm comm,int n,Vec *v)
+PetscErrorCode VecCreateSeq(MPI_Comm comm,int n,Vec *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,v);CHKERRQ(ierr);

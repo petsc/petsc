@@ -8,7 +8,7 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 int main(int argc,char **args)
 {
   PC  pc;
-  int ierr,n = 5;
+  PetscErrorCode ierr,n = 5;
   Mat mat;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -63,7 +63,7 @@
 .seealso: PetscMemmove()
 
 @*/
-int PetscMemcpy(void *a,const void *b,size_t n)
+PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
@@ -129,7 +129,7 @@ int PetscMemcpy(void *a,const void *b,size_t n)
 .seealso: PetscMemmove(), PetscMemcpy()
 
 @*/
-int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
+PetscErrorCode PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
 {
   char *aa = (char *)a,*bb = (char *)b;
   int  dsize,ierr;
@@ -172,7 +172,7 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 
 .seealso: PetscMemcpy()
 @*/
-int PetscMemzero(void *a,size_t n)
+PetscErrorCode PetscMemzero(void *a,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0) {
@@ -221,7 +221,7 @@ int PetscMemzero(void *a,size_t n)
    Note: 
    This routine is anologous to memcmp()
 @*/
-int PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
+PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
 {
   int r;
 
@@ -260,7 +260,7 @@ int PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
 
 .seealso: PetscMemcpy()
 @*/
-int PetscMemmove(void *a,void *b,size_t n)
+PetscErrorCode PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
 #if !defined(PETSC_HAVE_MEMMOVE)

@@ -29,7 +29,7 @@
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
-int VecStrideScale(Vec v,int start,PetscScalar *scale)
+PetscErrorCode VecStrideScale(Vec v,int start,PetscScalar *scale)
 {
   int         i,n,ierr,bs;
   PetscScalar *x,xscale = *scale;
@@ -90,7 +90,7 @@ int VecStrideScale(Vec v,int start,PetscScalar *scale)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
+PetscErrorCode VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 {
   int         i,n,ierr,bs;
   PetscScalar *x;
@@ -178,7 +178,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
+PetscErrorCode VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs;
   PetscScalar *x;
@@ -259,7 +259,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
+PetscErrorCode VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs;
   PetscScalar *x;
@@ -329,7 +329,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecStrideScaleAll(Vec v,PetscScalar *scales)
+PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -386,7 +386,7 @@ int VecStrideScaleAll(Vec v,PetscScalar *scales)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
+PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -481,7 +481,7 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
+PetscErrorCode VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -560,7 +560,7 @@ int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
+PetscErrorCode VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs,j;
   PetscScalar *x;
@@ -644,7 +644,7 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
+PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
   int          i,n,ierr,bs,j,k,*bss,nv,jj,nvc;
   PetscScalar  *x,**y;
@@ -746,7 +746,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
+PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
   int          i,n,ierr,bs,j,jj,k,*bss,nv,nvc;
   PetscScalar  *x,**y;
@@ -852,7 +852,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
-int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
+PetscErrorCode VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 {
   int          i,n,ierr,bs,ns;
   PetscScalar  *x,*y;
@@ -930,7 +930,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
-int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
+PetscErrorCode VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 {
   int          i,n,ierr,bs,ns;
   PetscScalar  *x,*y;
@@ -981,7 +981,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecReciprocal_Default"
-int VecReciprocal_Default(Vec v)
+PetscErrorCode VecReciprocal_Default(Vec v)
 {
   int         i,n,ierr;
   PetscScalar *x;
@@ -1015,11 +1015,11 @@ int VecReciprocal_Default(Vec v)
 
 .keywords: vector, sqrt, square root
 @*/
-int VecSqrt(Vec v)
+PetscErrorCode VecSqrt(Vec v)
 {
   PetscScalar *x;
   int         i, n;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1);
@@ -1051,7 +1051,7 @@ int VecSqrt(Vec v)
 
 .seealso: VecNorm()
 @*/
-int VecSum(Vec v,PetscScalar *sum)
+PetscErrorCode VecSum(Vec v,PetscScalar *sum)
 {
   int         i,n,ierr;
   PetscScalar *x,lsum = 0.0;
@@ -1089,7 +1089,7 @@ int VecSum(Vec v,PetscScalar *sum)
    Concepts: vector^adding constant
 
 @*/
-int VecShift(const PetscScalar *shift,Vec v)
+PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
 {
   int         i,n,ierr;
   PetscScalar *x,lsum = *shift;
@@ -1121,7 +1121,7 @@ int VecShift(const PetscScalar *shift,Vec v)
    Concepts: vector^absolute value
 
 @*/
-int VecAbs(Vec v)
+PetscErrorCode VecAbs(Vec v)
 {
   int         i,n,ierr;
   PetscScalar *x;
@@ -1154,12 +1154,12 @@ int VecAbs(Vec v)
 .seealso: MatPermute()
 .keywords: vec, permute
 @*/
-int VecPermute(Vec x, IS row, PetscTruth inv)
+PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
 {
   PetscScalar *array, *newArray;
   int         *idx;
   int          i;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
@@ -1203,7 +1203,7 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
    Concepts: vector^equality
 
 @*/
-int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
+PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
   PetscScalar  *v1,*v2;
   int          n1,n2,ierr;

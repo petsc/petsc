@@ -33,10 +33,11 @@
           MatFDColoringSetFunction()
 
 @*/
-int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
-  int           ierr,freq,it;
+  PetscErrorCode ierr;
+  int freq,it;
   Vec           f;
 
   PetscFunctionBegin;

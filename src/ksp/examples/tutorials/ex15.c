@@ -267,7 +267,7 @@ int SampleShellPCCreate(SampleShellPC **shell)
 int SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
 {
   Vec diag;
-  int ierr;
+  PetscErrorCode ierr;
 
   ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pmat,diag);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ int SampleShellPCApply(void *ctx,Vec x,Vec y)
 */
 int SampleShellPCDestroy(SampleShellPC *shell)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   ierr = VecDestroy(shell->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);

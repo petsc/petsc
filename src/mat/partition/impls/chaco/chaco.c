@@ -65,7 +65,7 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Chaco"
 static int MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
 {
-    int ierr, *parttab, *locals, i, size, rank;
+    PetscErrorCode ierr, *parttab, *locals, i, size, rank;
     Mat mat = part->adj, matMPI, matSeq;
     int nb_locals;              
     Mat_MPIAdj *adj;
@@ -203,18 +203,17 @@ static int MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
     if (matMPI != mat) {
         ierr = MatDestroy(matMPI);CHKERRQ(ierr);
     }
-
     PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Chaco"
-int MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
+PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
 {
 
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    int ierr, rank;
+    PetscErrorCode ierr, rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;
@@ -246,7 +245,7 @@ int MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobalType method)
+PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobalType method)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
@@ -286,7 +285,7 @@ int MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobalType method
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalType method)
+PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalType method)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
@@ -318,7 +317,7 @@ int MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalType method)
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
@@ -347,7 +346,7 @@ int MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level)
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetEigenSolver(MatPartitioning part,
+PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part,
     MPChacoEigenType method)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
@@ -379,7 +378,7 @@ int MatPartitioningChacoSetEigenSolver(MatPartitioning part,
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal tol)
+PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal tol)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
@@ -406,7 +405,7 @@ int MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal tol)
    Level: advanced
 
 @*/
-int MatPartitioningChacoSetEigenNumber(MatPartitioning part, int num)
+PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, int num)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
@@ -423,9 +422,9 @@ int MatPartitioningChacoSetEigenNumber(MatPartitioning part, int num)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Chaco"
-int MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 {
-    int ierr, i;
+    PetscErrorCode ierr, i;
     PetscReal r;
     PetscTruth flag;
     const char *global[] =
@@ -479,10 +478,10 @@ int MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Chaco"
-int MatPartitioningDestroy_Chaco(MatPartitioning part)
+PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    int ierr;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
 
@@ -498,9 +497,9 @@ int MatPartitioningDestroy_Chaco(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Chaco"
-int MatPartitioningCreate_Chaco(MatPartitioning part)
+PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     MatPartitioning_Chaco *chaco;
 
     PetscFunctionBegin;

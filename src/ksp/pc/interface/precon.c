@@ -4,15 +4,16 @@
 #include "src/ksp/pc/pcimpl.h"            /*I "petscksp.h" I*/
 
 /* Logging support */
-int PC_COOKIE = 0;
-int PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
-int PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
+PetscCookieCode PC_COOKIE = 0;
+PetscLogCode    PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
+PetscLogCode    PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetDefaultType_Private"
-int PCGetDefaultType_Private(PC pc,const char* type[])
+PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 {
-  int        ierr,size;
+  PetscErrorCode ierr;
+  int size;
   PetscTruth flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
@@ -66,9 +67,9 @@ int PCGetDefaultType_Private(PC pc,const char* type[])
 
 .seealso: PCCreate(), PCSetUp()
 @*/
-int PCDestroy(PC pc)
+PetscErrorCode PCDestroy(PC pc)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -110,7 +111,7 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCDiagonalScaleSet()
 @*/
-int PCDiagonalScale(PC pc,PetscTruth *flag)
+PetscErrorCode PCDiagonalScale(PC pc,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -143,9 +144,9 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCDiagonalScale()
 @*/
-int PCDiagonalScaleSet(PC pc,Vec s)
+PetscErrorCode PCDiagonalScaleSet(PC pc,Vec s)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -191,9 +192,9 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleSet(), PCDiagonalScaleRight(), PCDiagonalScale()
 @*/
-int PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
+PetscErrorCode PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -233,9 +234,9 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleSet(), PCDiagonalScale()
 @*/
-int PCDiagonalScaleRight(PC pc,Vec in,Vec out)
+PetscErrorCode PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -255,7 +256,7 @@ static int PCPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   PC          v = (PC) obj;
-  int         ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -294,10 +295,10 @@ static int PCPublish_Petsc(PetscObject obj)
 
 .seealso: PCSetUp(), PCApply(), PCDestroy()
 @*/
-int PCCreate(MPI_Comm comm,PC *newpc)
+PetscErrorCode PCCreate(MPI_Comm comm,PC *newpc)
 {
   PC  pc;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(newpc,1)
@@ -358,9 +359,9 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 
 .seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
-int PCApply(PC pc,Vec x,Vec y)
+PetscErrorCode PCApply(PC pc,Vec x,Vec y)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -400,9 +401,9 @@ int PCApply(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplySymmetricRight()
 @*/
-int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
+PetscErrorCode PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -443,9 +444,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplySymmetricLeft()
 @*/
-int PCApplySymmetricRight(PC pc,Vec x,Vec y)
+PetscErrorCode PCApplySymmetricRight(PC pc,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -483,9 +484,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCHasApplyTranspose()
 @*/
-int PCApplyTranspose(PC pc,Vec x,Vec y)
+PetscErrorCode PCApplyTranspose(PC pc,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -523,7 +524,7 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
 
 .seealso: PCApplyTranspose()
 @*/
-int PCHasApplyTranspose(PC pc,PetscTruth *flg)
+PetscErrorCode PCHasApplyTranspose(PC pc,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -554,9 +555,9 @@ int PCHasApplyTranspose(PC pc,PetscTruth *flg)
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
-int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
+PetscErrorCode PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -640,9 +641,9 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorAB()
 @*/
-int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
+PetscErrorCode PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -695,7 +696,7 @@ int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
 .seealso: PCApplyRichardson()
 @*/
-int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
+PetscErrorCode PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -739,9 +740,9 @@ int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 
 .seealso: PCApplyRichardsonExists()
 @*/
-int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
+PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -779,9 +780,9 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, Pet
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
-int PCSetUp(PC pc)
+PetscErrorCode PCSetUp(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   const char *def;
 
   PetscFunctionBegin;
@@ -832,9 +833,9 @@ int PCSetUp(PC pc)
 
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
 @*/
-int PCSetUpOnBlocks(PC pc)
+PetscErrorCode PCSetUpOnBlocks(PC pc)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -886,7 +887,7 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: PCModifySubMatrices()
 @*/
-int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -934,9 +935,9 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],v
 
 .seealso: PCSetModifySubMatrices()
 @*/
-int PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
+PetscErrorCode PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
@@ -1003,9 +1004,9 @@ int PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],Mat submat[
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
-int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isbjacobi,isrowbs;
 
   PetscFunctionBegin;
@@ -1058,7 +1059,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
 .seealso: PCSetOperators()
 @*/
-int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
+PetscErrorCode PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1087,9 +1088,9 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 
 .keywords: PC, get, factored, matrix
 @*/
-int PCGetFactoredMatrix(PC pc,Mat *mat)
+PetscErrorCode PCGetFactoredMatrix(PC pc,Mat *mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1123,9 +1124,9 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 
 .seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-int PCSetOptionsPrefix(PC pc,const char prefix[])
+PetscErrorCode PCSetOptionsPrefix(PC pc,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1156,9 +1157,9 @@ int PCSetOptionsPrefix(PC pc,const char prefix[])
 
 .seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-int PCAppendOptionsPrefix(PC pc,const char prefix[])
+PetscErrorCode PCAppendOptionsPrefix(PC pc,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1189,9 +1190,9 @@ int PCAppendOptionsPrefix(PC pc,const char prefix[])
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
-int PCGetOptionsPrefix(PC pc,char *prefix[])
+PetscErrorCode PCGetOptionsPrefix(PC pc,char *prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1231,9 +1232,9 @@ int PCGetOptionsPrefix(PC pc,char *prefix[])
 
 .seealso: PCPostSolve()
 @*/
-int PCPreSolve(PC pc,KSP ksp)
+PetscErrorCode PCPreSolve(PC pc,KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec x,rhs;
   Mat A,B;
 
@@ -1288,9 +1289,9 @@ int PCPreSolve(PC pc,KSP ksp)
 
 .seealso: PCPreSolve(), KSPSolve()
 @*/
-int PCPostSolve(PC pc,KSP ksp)
+PetscErrorCode PCPostSolve(PC pc,KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Vec x,rhs;
   Mat A,B;
 
@@ -1344,10 +1345,10 @@ int PCPostSolve(PC pc,KSP ksp)
 
 .seealso: KSPView(), PetscViewerASCIIOpen()
 @*/
-int PCView(PC pc,PetscViewer viewer)
+PetscErrorCode PCView(PC pc,PetscViewer viewer)
 {
   PCType            cstr;
-  int               ierr;
+  PetscErrorCode ierr;
   PetscTruth        mat_exists,iascii,isstring;
   PetscViewerFormat format;
 
@@ -1416,9 +1417,9 @@ int PCView(PC pc,PetscViewer viewer)
 
   Level: advanced
 @*/
-int PCRegister(const char sname[],const char path[],const char name[],int (*function)(PC))
+PetscErrorCode PCRegister(const char sname[],const char path[],const char name[],int (*function)(PC))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -1454,10 +1455,11 @@ int PCRegister(const char sname[],const char path[],const char name[],int (*func
 .keywords: PC, compute, explicit, operator
 
 @*/
-int PCComputeExplicitOperator(PC pc,Mat *mat)
+PetscErrorCode PCComputeExplicitOperator(PC pc,Mat *mat)
 {
   Vec      in,out;
-  int      ierr,i,M,m,size,*rows,start,end;
+  PetscErrorCode ierr;
+  int i,M,m,size,*rows,start,end;
   MPI_Comm comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
 

@@ -7,7 +7,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISSetUp"
-int PCISSetUp(PC pc)
+PetscErrorCode PCISSetUp(PC pc)
 {
   PC_IS      *pcis = (PC_IS*)(pc->data);
   Mat_IS     *matis = (Mat_IS*)pc->mat->data; 
@@ -207,10 +207,10 @@ int PCISSetUp(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISDestroy"
-int PCISDestroy(PC pc)
+PetscErrorCode PCISDestroy(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -305,7 +305,7 @@ int PCISCreate(PC pc)
 #define __FUNCT__ "PCIterSuApplySchur"
 int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscScalar m_one = -1.0;
   PC_IS       *pcis = (PC_IS*)(pc->data);
 
@@ -396,7 +396,7 @@ int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, Sc
 #define __FUNCT__ "PCISApplyInvSchur"
 int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PC_IS       *pcis = (PC_IS*)(pc->data);
   PetscScalar zero  = 0.0;
 
