@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.140 2000/07/10 03:39:13 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.141 2000/08/01 20:01:24 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -430,7 +430,7 @@ int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
 
   PetscFunctionBegin;
-  MPI_Startall_irecv(gen_from->starts[gen_from->n],gen_from->n,gen_from->requests); 
+  MPI_Startall_irecv(gen_from->starts[gen_from->n]*gen_from->bs,gen_from->n,gen_from->requests); 
   PetscFunctionReturn(0);
 }
 
@@ -688,7 +688,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 
     if (!gen_from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
 
     if (!gen_to->sendfirst) {
@@ -944,7 +944,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 
     if (!gen_from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
 
     if (!gen_to->sendfirst) {
@@ -1167,7 +1167,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 
     if (!gen_from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
 
     if (!gen_to->sendfirst) {
@@ -1381,7 +1381,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 
     if (!gen_from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
 
     if (!gen_to->sendfirst) {
@@ -1588,7 +1588,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 
     if (!gen_from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
 
     if (!gen_to->sendfirst) {
