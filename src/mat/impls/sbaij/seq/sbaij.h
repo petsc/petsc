@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.4 2000/07/10 19:13:56 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.5 2000/07/24 20:16:26 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -38,7 +38,7 @@ typedef struct {
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
 } Mat_SeqSBAIJ;
 
-extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatILUInfo*,Mat *);
+extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
 extern int MatConvert_SeqSBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
