@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.175 1996/06/21 03:17:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.176 1996/07/02 18:06:07 bsmith Exp curfman $";
 #endif
 
 /*
@@ -314,7 +314,7 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
 /* --------------------------------------------------------*/
 /*@
-   MatMult - Computes matrix-vector product.
+   MatMult - Computes the matrix-vector product, y = Ax.
 
    Input Parameters:
 .  mat - the matrix
