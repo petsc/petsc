@@ -1,23 +1,27 @@
-/* $Id: dot.h,v 1.4 1997/09/15 16:23:05 bsmith Exp bsmith $ */
+/* $Id: dot.h,v 1.5 1997/09/17 23:14:08 bsmith Exp balay $ */
 
 #ifndef DOT
 
 #if defined(USE_FORTRAN_KERNELS)
 
 #if defined(HAVE_FORTRAN_CAPS)
-#define fortranmdot4_   FORTRANMDOT4
-#define fortranmdot3_   FORTRANMDOT3
-#define fortranmdot2_   FORTRANMDOT2
-#define fortranmdot1_   FORTRANMDOT1
-#define fortrannormsqr_ FORTRANNORMSQR
-#define fortranmultaij_ FORTRANMULTAIJ
+#define fortranmdot4_      FORTRANMDOT4
+#define fortranmdot3_      FORTRANMDOT3
+#define fortranmdot2_      FORTRANMDOT2
+#define fortranmdot1_      FORTRANMDOT1
+#define fortrannormsqr_    FORTRANNORMSQR
+#define fortranmultaij_    FORTRANMULTAIJ
+#define fortranmultaddaij_ FORTRANMULTADDAIJ
+#define fortransolveaij_   FORTRANSOLVEAIJ
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortranmdot4_   fortranmdot4
-#define fortranmdot3_   fortranmdot3
-#define fortranmdot2_   fortranmdot2
-#define fortranmdot1_   fortranmdot1
-#define fortrannormsqr_ fortrannormsqr
-#define fortranmultaij_ fortranmultaij
+#define fortranmdot4_      fortranmdot4
+#define fortranmdot3_      fortranmdot3
+#define fortranmdot2_      fortranmdot2
+#define fortranmdot1_      fortranmdot1
+#define fortrannormsqr_    fortrannormsqr
+#define fortranmultaij_    fortranmultaij
+#define fortranmultaddaij_ fortranmultaddaij
+#define fortransolveaij_   fortransolveaij
 #endif
 
 #if defined(__cplusplus)
@@ -33,6 +37,8 @@ extern void fortranmdot1_(void *,void *,int *,
                            void *);
 extern void fortrannormsqr_(void *,int *,void *);
 extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
+extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #if defined(__cplusplus)
 }
 #endif

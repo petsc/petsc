@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.86 1997/08/04 17:15:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.87 1997/08/22 15:13:29 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
+#include "src/inline/dot.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatOrder_Flow_SeqAIJ"
@@ -371,6 +372,9 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
 
+#if defined(USE_FORTRAN_KERNELS_N)
+  fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
+#else
   /* forward solve the lower triangular */
   x[0] = b[0];
   for ( i=1; i<n; i++ ) {
@@ -393,7 +397,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
     while (nz--) sum -= *v++ * x[*vi++];
     x[i]    = sum*aa[adiag_i];
   }
-
+#endif
   PLogFlops(2*a->nz - a->n);
   return 0;
 }
