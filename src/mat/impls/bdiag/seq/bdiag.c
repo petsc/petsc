@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.152 1998/04/09 04:13:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.153 1998/04/13 17:38:19 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2190,13 +2190,13 @@ $     as needed.
    Output Parameters:
 .  A - the matrix
 
-    Collective on MPI_Comm
-
-  Options database:
+   Options Database Keys:
 .  -mat_blocksize bs
 .  -mat_bdiag_diags s1,s2,s3,...
 
    Notes:
+   This routine is collective over all processes in the communicator, comm.  
+
    See the users manual for further details regarding this storage format.
 
    Fortran Note:
