@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.26 1996/03/10 23:35:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.27 1996/03/19 21:29:28 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -247,8 +247,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 /*
   MatrixFreeHessian
  */
-int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
-                      void *ptr)
+int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
 
@@ -299,7 +298,7 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
 
   if (fg & GradientEval) {
-    ierr = VecSet((Scalar*)&zero,gvec); CHKERRQ(ierr);
+    ierr = VecSet(&zero,gvec); CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -626,7 +625,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
-    ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
+    ierr = VecScale(&area,gvec); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -767,8 +766,8 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        }
     }
   }
-  ierr = VecRestoreArray(svec,(Scalar**)&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(svec,&s); CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,&x); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
 
@@ -788,7 +787,8 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
 int BoundaryValues(AppCtx *user)
 {
   int    maxit=5, i, j, k, limit, nx = user->mx, ny = user->my;
-  double one=1.0, two=2.0, three=3.0, tol=1.0e-10;
+  double three=3.0, tol=1.0e-10;
+  Scalar one=1.0, two=2.0;
   Scalar b=-.50, t=.50, l=-.50, r=.50, det, fnorm, xt, yt;
   Scalar nf[2], njac[2][2], u[2], hx = user->hx, hy = user->hy;
   Scalar *bottom, *top, *left, *right;
@@ -809,7 +809,7 @@ int BoundaryValues(AppCtx *user)
       case 3:
         yt = b; xt = r; limit = ny + 2; break;
       default:
-        SETERRQ(1,"Only cases 0,1,2,3 are valid");
+        SETERRQ(1,"BoundaryValues: Only cases 0,1,2,3 are valid");
     }
     /* Use Newton's method to solve xt = u + u*(v**2) - (u**3)/3,
        yt = -v - (u**2)*v + (v**3)/3. */
