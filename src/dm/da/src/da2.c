@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.64 1997/01/01 03:41:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.65 1997/01/06 20:43:20 bsmith Exp gropp $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -165,6 +165,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
+    /* This should use MPI_Dims_create instead */
     m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)N) ));
     if (m == 0) m = 1;
     while (m > 0) {
@@ -180,6 +181,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (M < m) SETERRQ(1,0,"Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,0,"Partition in y direction is too fine!");
 
+  /* We should create an MPI Cartesian topology here, with reorder
+     set to true.  That would create a NEW communicator that we would
+     need to use for operations on this distributed array */
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
   if (flg1) {  /* Block Comm type Distribution */
