@@ -1,6 +1,7 @@
 import bk
 import bs
 import fileset
+import logging
 import target
 import transform
 import BSTemplates.compileDefaults as compileDefaults
@@ -8,7 +9,7 @@ import BSTemplates.sidlDefaults as sidlDefaults
 
 import os
 
-class Defaults:
+class Defaults(logging.Logger):
   def __init__(self, project, sources = None, bootstrapPackages = []):
     self.project    = project
     self.sources    = sources
