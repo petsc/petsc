@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1997/11/14 00:23:08 balay Exp balay $ 
+# $Id: base.site,v 1.10 1997/12/12 20:35:32 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -60,8 +60,8 @@ MPE_LIB        = /home/petsc/mpich/lib/rs6000/ch_mpe/libmpe.a
 #
 # Optional location of BlockSolve 
 #
-BS_INCLUDE = 
-BS_LIB     = 
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional Matlab location, remove if not needed.
 #
