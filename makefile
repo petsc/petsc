@@ -3,12 +3,11 @@ IPETSCDIR = .
 CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-WSOURCE = 
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
            maint/builddist FAQ Installation Performance\
-           maint/buildlinks maint/wwwman maint/xclude maint/crontab
+           maint/buildlinks maint/wwwman maint/xclude maint/crontab\
+           bmake/common
 OBJSC    =
-WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = src include pinclude docs
@@ -49,7 +48,6 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 #  To locate later occurrences, use M-,
 
 etags:
-	-@$(OMAKE)  ACTION=C2f77delete  tree
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*.c
@@ -62,6 +60,7 @@ etags:
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
+	etags -a -f TAGS bmake/solaris/solaris*
 	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.15 1995/07/20 03:58:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: fp.c,v 1.16 1995/08/01 18:18:52 curfman Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -183,6 +183,7 @@ int PetscSetFPTrap(int on)
    This is the reason for the fptrap( FP_TRAP_SYNC ) call */
 /* Also, this needs to be AIX 3.2 or later */
 #elif defined(PARCH_rs6000) 
+struct sigcontext;
 #include <fpxcp.h>
 #include <fptrap.h>
 #include <stdlib.h>
