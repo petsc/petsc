@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.66 1997/10/17 04:09:03 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.67 1997/10/17 19:46:37 curfman Exp $";
 #endif
 
 /***************************************************************************
@@ -663,7 +663,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,app->dxx,
-           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te,
+           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,
            app->xc,app->yc,app->zc); CHKERRQ(ierr); 
 
     /* Build Fvec(X) directly, without using VecSetValues() */
