@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 1999/07/17 16:54:04 balay Exp bsmith $ 
+# $Id: makefile,v 1.6 2000/01/27 16:34:58 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -30,7 +30,7 @@ OBJSC          = inpututils.o
 DOCS           = readme
 CLEANFILES     = 
 EXAMPLESC      = input.c triconvert.c
-TESTEXAMPLES_1 = input.PETSc triconvert.PETSc
+TESTEXAMPLES_1 = input.PETSc input.rm triconvert.PETSc triconvert.rm
 
 input: chkopts input.o
 	-${CLINKER} -o input input.o ${PETSC_LIB}
