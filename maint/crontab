@@ -15,6 +15,6 @@
 15 0 * * * /home/bsmith/petsc/maint/buildtest 5
 15 0 * * * /home/bsmith/petsc/maint/buildtest 6
 15 0 * * * /home/bsmith/petsc/maint/buildtest 7
-30 7 * * * /usr/ucb/rsh eagle /home/bsmith/petsc/maint/checknightly
+30 7 * * * /usr/ucb/rsh eagle /home/bsmith/petsc/maint/checknightly.tcl
 #
 45 23 * * * /home/bsmith/petsc/maint/accesslogs/www/buildwwwlogs
