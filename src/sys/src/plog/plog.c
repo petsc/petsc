@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.134 1996/11/19 16:33:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.135 1996/11/27 17:27:36 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -912,17 +912,22 @@ int PLogBegin()
 }
 
 /*@
-    PLogTraceBegin - Turns on trace logging. Prints event to screen 
-        every time an event is begun or end.
+    PLogTraceBegin - Activates trace logging.  Every time a PETSc event
+    begins or ends, the event name is printed.
 
-   Input Parameter:
+    Input Parameter:
 .   file - file to print trace in (e.g. stdout)
 
-   Options Database Keyes:
-$   -log_trace :
+    Options Database Keyes:
+$   -log_trace [filename]:
 
     Notes:
-      Prints processor number, event begin or end followed by the event name.
+    PLogTraceBegin() prints the processor number, then
+    "Event begin:" or "Event end:" followed by the event name.
+
+    PLogTraceBegin() allows tracing of all PETSc calls, which is useful
+    to determine where a program is hanging without running in the 
+    debugger.  Can be used in conjunction with the -log_info option. 
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogBegin()
 @*/

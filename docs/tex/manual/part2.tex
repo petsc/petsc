@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.171 1996/11/27 22:58:30 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.172 1996/11/29 22:31:01 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1101,8 +1101,8 @@ The {\tt -log\_info} \findex{-log_info} option causes the routines
 information about the success of the preallocation.  Consider the
 following example for the {\tt MATSEQAIJ} matrix format:
 \begin{verbatim}
-   MatAssemblyEnd_SeqAIJ:Unneeded storage space 2000 used 1000 rows 100
-   MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues 0
+   MatAssemblyEnd_SeqAIJ:Matrix size 100 X 100; storage space: 2000 unneeded, 1000 used
+   MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is 0
 \end{verbatim}
 The first line indicates that the user preallocated 3000 spaces but only
 1000 were used. The second line indicates that the user preallocated
@@ -1111,8 +1111,8 @@ space (an expensive operation).  In the next example the user did not
 preallocate sufficient space, as indicated by the fact that the number
 of mallocs is very large (bad for efficiency):
 \begin{verbatim}
-   MatAssemblyEnd_SeqAIJ:Unneeded storage space 47 used 100000 rows 1000
-   MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues 40000
+   MatAssemblyEnd_SeqAIJ:Matrix size 1000 X 1000; storage space: 47 unneeded, 100000 used
+   MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is 40000
 \end{verbatim}
  
 Although at first glance such procedures for determining the matrix
@@ -4403,6 +4403,7 @@ specified for an installation of PETSc in the file {\tt
 \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_all} \findex{-log_summary} \findex{-log} \findex{-log_info}
+\findex{-log_trace}
 \begin{itemize}
 \item {\tt -log\_summary} - Prints an ASCII version of performance data
      at program's conclusion. These statistics are comprehensive and concise
@@ -4422,6 +4423,10 @@ Section~\ref{sec:makeflags}.  The profiling options include the following:
      This option provides details about algorithms, data structures, etc.
      Since the overhead of printing such output slows a code, this
      option should not be used when evaluating a program's performance.
+\item {\tt -log\_trace [logfile]} - Traces the beginning and ending of all
+     PETSc events.  This option, which can be used in conjunction with 
+     {\tt -log\_info}, is useful to see where a program is hanging
+     without running in the debugger.  
 \end{itemize}
 For the options {\tt -log} and {\tt -log\_file}, the file {\tt
 logfile} stores profiling information for later interpretation with

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.110 1996/11/19 21:16:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.111 1996/11/25 19:37:49 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -255,19 +255,6 @@ int OptionsSetProgramName(char *name)
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
-   Options Database Keys:
-$  -start_in_debugger [noxterm,dbx,xdb,...]
-$  -debugger_nodes node1,node2,...
-$  -debugger_pause sleeptime (in seconds)
-$  -trdebug
-$  -trmalloc
-$  -trmalloc_off
-$  -no_signal_handler : Turns off the signal handler
-$  -fp_trap : Stops on floating point exceptions
-$      Note: On the IBM RS6000 this slows code by
-$            at least a factor of 10.
-
-
    Fortran Version:
    In Fortran this routine has the format
 $       call PetscInitialize(file,ierr)
@@ -280,6 +267,27 @@ $       call PetscInitialize(file,ierr)
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use PETSC_NULL as 
    in the C version.  See the users manual for details.
+
+   Options Database Keys:
+$  -start_in_debugger [noxterm,dbx,xdb,...]
+$  -debugger_nodes node1,node2,...
+$  -debugger_pause sleeptime (in seconds)
+$  -trdebug
+$  -trmalloc
+$  -trmalloc_off
+$  -no_signal_handler : Turns off the signal handler
+$  -fp_trap : Stops on floating point exceptions
+$      Note: On the IBM RS6000 this slows code by
+$            at least a factor of 10.
+
+   Options Database Keys for Profiling:
+   See the 'Profiling' chapter of the users manual for
+   details.
+$  -log_trace [filename]: prints traces of all PETSc calls
+$      to the screen (useful to determine where a program
+$      hangs without running in the debugger).  See
+$      PLogTraceBegin().
+$  -log_info : prints verbose information to the screen.
 
 .keywords: initialize, options, database, startup
 
@@ -349,22 +357,28 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 $  -optionstable : Calls OptionsPrint()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
-$  -log_all : Prints extensive log information (for
-$      code compiled with PETSC_LOG)
-$  -log : Prints basic log information (for code 
-$      compiled with PETSC_LOG)
-$  -log_summary : Prints summary of flop and timing
-$      information to screen (for code compiled with 
-$      PETSC_LOG)
-$  -log_mpe : creates a logfile viewable by the 
-$      utility upshot/nupshot (in MPICH distribution)
-$  -log_trace : prints traces of all PETSc calls to the screen
 $  -mpidump : Calls PetscMPIDump()
 $  -trdump : Calls PetscTrDump()
 $  -trinfo : Prints total memory usage
 $  -trdebug : Calls malloc_debug(2) to activate memory
 $      allocation diagnostics (used by PETSC_ARCH=sun4, 
 $      BOPT=[g,g_c++,g_complex] only!)
+
+   Options Database Keys for Profiling:
+   See the 'Profiling' chapter of the users manual for
+   details.
+$  -log_summary : Prints summary of flop and timing
+$      information to screen (for code compiled with 
+$      PETSC_LOG).  See PLogPrintSummary().
+$  -log_all [filename]: Logs extensive profiling information
+$      (for code compiled with PETSC_LOG). See PLogDump(). 
+$  -log [filename]: Logs basic profiline information (for
+$      code compiled with PETSC_LOG).  See PLogDump().
+$  -log_mpe [filename]: Creates a logfile viewable by the 
+$      utility Upshot/Nupshot (in MPICH distribution)
+
+   Note:
+   See PetscInitialize() for more general runtime options.
 
 .keywords: finalize, exit, end
 
