@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.26 2001/04/25 16:13:33 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.27 2001/04/25 16:21:22 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -381,50 +381,6 @@ void ad_AD_Init();
 void ad_AD_Final();
 #include "adic_utils.h"
 
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetStructArray2d"
-/*
-    Input Parameter:
-+    info - information about my local patch
--    ghosted - do you want arrays for the ghosted or nonghosted patch
-
-    Output Parameters:
-+    ptr - array data structured to be passed to ad_FormFunctionLocal()
-.    array_start - actual start of 1d array of all values that adiC can access directly
--    tdof - total number of degrees of freedom represented in array_start
-*/
-static int PetscGetStructArray2d(DALocalInfo *info,PetscTruth ghosted,void ***ptr,void **array_start,int *tdof)
-{
-  int  ierr,j,deriv_type_size,xs,ys,xm,ym;
-  void *tmpptr;
-  
-  PetscFunctionBegin;
-  if (ghosted) {
-    xs = info->gxs*info->dof;
-    ys = info->gys;
-    xm = info->gxm*info->dof;
-    ym = info->gym;
-  } else {
-    xs = info->xs*info->dof;
-    ys = info->ys;
-    xm = info->xm*info->dof;
-    ym = info->ym;
-  }
-  *tdof = xm*ym;
-
-  deriv_type_size = my_AD_GetDerivTypeSize();
-
-  ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,(void **)array_start);CHKERRQ(ierr);
-  *ptr  = (void**)(*array_start + xm*ym*deriv_type_size - ys*sizeof(void*));
-
-  for(j=ys;j<ys+ym;j++) {
-    (*ptr)[j] = *array_start + deriv_type_size*(xm*(j-ys) - xs);
-  }
-  ierr = PetscMemzero(*array_start,xm*ym*deriv_type_size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormJacobianWithAD"
 /*
@@ -451,8 +407,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(&info,PETSC_TRUE,(void ***)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
-  ierr = PetscGetStructArray2d(&info,PETSC_FALSE,(void ***)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
   /* copy over function inputs to derivate enhanced variable */
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
