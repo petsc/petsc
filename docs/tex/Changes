@@ -40,6 +40,10 @@ add to it).
 
   PC
 
+   MGSetRestriction and MGSetInterpolation now accept either the appropriate matrix or its transpose;
+  PETSc figures out which one it is based on the number of rows and columns. Now you don't need to use
+  the Shell matrices if you computed it "the other way then PETSc use to expect".
+
   
 
  

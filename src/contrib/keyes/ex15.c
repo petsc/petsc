@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.3 1999/10/06 19:10:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.4 1999/10/06 19:31:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -51,7 +51,7 @@ typedef struct {
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
    SLES       sles;
-   Mat        R;
+   Mat        R;                /* R and Rscale are not set on the finest grid */
    Vec        Rscale;
 } GridCtx;
 
@@ -87,28 +87,38 @@ int main( int argc, char **argv )
   SLES          sles;
   PC            pc;
   PLogDouble    v1, v2, elapsed;
-/*
+
+  /*
     Initialize PETSc, note that default options in ex15options can be 
     overridden at the command line
-*/
+  */
   PetscInitialize( &argc, &argv,"ex15options",help );
 
-  user.ratio = 2;
-  user.grid[0].mx = 5; user.grid[0].my = 5; 
-  user.tleft = 1.0; user.tright = 0.1;
-  user.beta = 2.5; user.bm1 = 1.5; user.coef = 1.25;
-  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.grid[0].mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.grid[0].my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,&flg); CHKERRA(ierr);
+  /* set problem parameters */
+  user.tleft  = 1.0; 
+  user.tright = 0.1;
+  user.beta   = 2.5; 
+  user.bm1    = 1.5; 
+  user.coef   = 1.25;
   ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,&flg);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,&flg); CHKERRA(ierr);
-  user.grid[1].mx = user.ratio*(user.grid[0].mx-1)+1; user.grid[1].my = user.ratio*(user.grid[0].my-1)+1;
+
+  user.ratio = 2;
+  user.grid[0].mx = 5; 
+  user.grid[0].my = 5; 
+  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.grid[0].mx,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.grid[0].my,&flg); CHKERRA(ierr);
+
+  user.grid[1].mx = user.ratio*(user.grid[0].mx-1)+1; 
+  user.grid[1].my = user.ratio*(user.grid[0].my-1)+1;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.grid[1].mx,user.grid[1].my);CHKERRA(ierr);
-  n = user.grid[1].mx*user.grid[1].my; N = user.grid[0].mx*user.grid[0].my;
+  n = user.grid[1].mx*user.grid[1].my; 
+  N = user.grid[0].mx*user.grid[0].my;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
@@ -216,17 +226,18 @@ int main( int argc, char **argv )
   PetscFinalize();
 
   return 0;
-}/* --------------------  Form initial approximation ----------------- */
+}
+/* --------------------  Form initial approximation ----------------- */
 #undef __FUNC__
 #define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
-  double  one = 1.0, hx, hy, hxdhy, hydhx;
-  double  tleft, tright;
+  double  one = 1.0, hx, hy, hxdhy, hydhx, tleft, tright;
   Scalar  *x;
   Vec     localX = user->grid[1].localX;
 
+  PetscFunctionBegin;
   mx = user->grid[1].mx;       my = user->grid[1].my;            
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
@@ -248,8 +259,12 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->grid[1].da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
-  return 0;
-} /* --------------------  Evaluate Function F(x) --------------------- */
+  PetscFunctionReturn(0);
+}
+/* --------------------  Evaluate Function F(x) --------------------- */
+/*
+       This ONLY works on the finest grid
+*/
 #undef __FUNC__
 #define __FUNC__ "FormFunction"
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
@@ -263,7 +278,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   Scalar  *x,*f;
   Vec     localX = user->grid[1].localX, localF = user->grid[1].localF; 
 
-  mx = user->grid[1].mx;       my = user->grid[1].my;       
+  PetscFunctionBegin;
+  mx = user->grid[1].mx;    my = user->grid[1].my;       
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
@@ -422,9 +438,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->grid[1].da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
   PLogFlops(11*ym*xm);
-  return 0; 
+  PetscFunctionReturn(0);
 } 
-
+/* --------------------  Evaluate Jacobian F(x) --------------------- */
+/*
+      This works on ANY grid
+*/
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
@@ -440,6 +459,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   Scalar  v[5], *x;
   Vec     localX = grid->localX;
 
+  PetscFunctionBegin;
   mx = grid->mx;            my = grid->my; 
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
@@ -741,10 +761,13 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* --------------------  Evaluate Jacobian F'(x) --------------------- */
+/*
+      This evaluates the Jacobian on all of the grids 
+*/
 #undef __FUNC__
 #define __FUNC__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -754,6 +777,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   SLES    sles;
   PC      pc;
 
+  PetscFunctionBegin;
   *flag = SAME_NONZERO_PATTERN;
   ierr = FormJacobian_Grid(user,&user->grid[1],X,J,B); CHKERRQ(ierr);
 
@@ -766,15 +790,16 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
     /* restrict X to coarse grid */
     ierr = MGRestrict(user->grid[0].R,X,user->grid[0].x);CHKERRQ(ierr);
+
+    /* scale to "natural" scaling for that grid */
     ierr = VecPointwiseMult(user->grid[0].Rscale,user->grid[0].x,user->grid[0].x);CHKERRQ(ierr);
+
     /* form Jacobian on coarse grid */
     ierr = FormJacobian_Grid(user,&user->grid[0],user->grid[0].x,&user->grid[0].J,&user->grid[0].J);CHKERRQ(ierr);
     
     ierr = SLESSetOperators(user->grid[0].sles,user->grid[0].J,user->grid[0].J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
-
   }
-
-  return 0;
+  PetscFunctionReturn(0);;
 }
 
 #undef __FUNC__
@@ -794,6 +819,7 @@ int FormInterpolation(AppCtx *user)
   Mat      mat;
   Vec	   Rscale; 
 
+  PetscFunctionBegin;
   ierr = DAGetCorners(user->grid[1].da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->grid[1].da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(user->grid[1].da,PETSC_NULL,&idx); CHKERRQ(ierr);
@@ -866,6 +892,6 @@ int FormInterpolation(AppCtx *user)
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->grid[0].Rscale = Rscale;
   user->grid[0].R      = mat;
-  return 0;
+  PetscFunctionReturn(0);;
 }
 
