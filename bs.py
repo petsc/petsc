@@ -114,9 +114,8 @@ class BS (maker.Maker):
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     sourceDB.setFromArgs(argDB)
-    if not int(argDB['restart']):
-      for source in sourceDB:
-        sourceDB.clearUpdateFlag(source)
+    for source in sourceDB:
+      sourceDB.clearUpdateFlag(source)
     return
 
   def getSIDLDefaults(self):
@@ -282,7 +281,6 @@ class BS (maker.Maker):
     try:
       if target is None:               target = argDB.target
       if not isinstance(target, list): target = [target]
-      print target
       map(self.executeTarget, target)
     except Exception, e:
       print str(e)
