@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.2 1998/04/09 21:16:50 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.3 1998/04/09 21:50:26 balay Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -27,11 +27,15 @@
 #define HAVE_BROKEN_REQUEST_FREE 
 #define HAVE_STRINGS_H
 
+#if !defined(HAVE_XLF90)
 #define HAVE_XLF90
+#endif
 
 #define PREFER_BZERO
 
 #define HAVE_READLINK
 #define HAVE_MEMMOVE
+
+#define HAVE_PRAGMA_DISJOINT
 
 #endif

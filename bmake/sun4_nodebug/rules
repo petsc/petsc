@@ -1,4 +1,4 @@
-# $Id: base,v 1.5 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.6 1998/03/26 19:39:56 balay Exp bsmith $ 
 
 #
 #
@@ -21,12 +21,6 @@ RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS}
 FLINKER  = f77 ${FOPTFLAGS}
-
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE 
-CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
-           -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_STRINGS_H \
-           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME ${FCONF} 
 
 include ${PETSC_DIR}/bmake/common
 

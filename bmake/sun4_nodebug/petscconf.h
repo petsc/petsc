@@ -20,6 +20,10 @@
 #define HAVE_FORTRAN_UNDERSCORE
 
 #define HAVE_READLINK
-#define HAVE_MEMMOVE
+#define HAVE_GETWD
+#define HAVE_REALPATH
+#define HAVE_SLOW_NRM2
+
+#define HAVE_DOUBLE_ALIGN
 
 #endif

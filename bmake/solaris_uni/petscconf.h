@@ -25,4 +25,6 @@
 #define HAVE_READLINK
 #define HAVE_MEMMOVE
 
+#define HAVE_DOUBLE_ALIGN
+
 #endif

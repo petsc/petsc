@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.222 1998/04/09 04:04:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.223 1998/04/09 18:04:04 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -13,7 +13,7 @@ DOCS	 = maint/addlinks maint/builddist \
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
 	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
            include/finclude/generateincludes bin/petscviewinfo.text \
-           bin/petscoptsinfo.text
+           bin/petscoptsinfo.text bmake/*/petscconf.h
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
@@ -40,8 +40,7 @@ info:
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags: ${CONF}"
-	-@if [ -r bmake/${PETSC_ARCH}/petscconf.h ] ; then \
-	  grep "define " bmake/${PETSC_ARCH}/petscconf.h ; fi
+	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
@@ -139,7 +138,7 @@ build_fortran90:
 # Builds PETSc Fortran kernels; some numerical kernels have
 # a Fortran version that may give better performance on certain 
 # machines. These always provide better performance for complex numbers.
-fortrankernels: info chkpetsc_dir 
+fortrankernels: chkpetsc_dir 
 	-${RM} -f ${PDIR}/libpetsckernels.*
 	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
 	-@echo "========================================="
@@ -348,7 +347,7 @@ allmanualpages: deletemanualpages
 	-cd src/fortran/custom; make manualpages_buildcite
 	-cd src/fortran/custom; make manualpages
 	-make ACTION=manualpages tree
-	-maint/wwwman
+	-maint/wwwman ${PETSC_DIR}
 	-maint/examplesindex.tcl
 	-maint/htmlkeywords.tcl
 	-@chmod g+w docs/manualpages/man*/*

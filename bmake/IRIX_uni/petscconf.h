@@ -20,7 +20,8 @@
 
 #define HAVE_FORTRAN_UNDERSCORE 
 
-#undef HAVE_MEMMOVE
 #define NEEDS_GETTIMEOFDAY_PROTO
+
+#define HAVE_DOUBLE_ALIGN
 
 #endif

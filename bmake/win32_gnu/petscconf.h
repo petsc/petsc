@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:49:01 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.2 1998/04/09 21:16:44 balay Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -22,5 +22,7 @@
 
 #define HAVE_READLINK
 #define HAVE_MEMMOVE
+
+#define CANNOT_START_DEBUGGER
 
 #endif

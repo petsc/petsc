@@ -1,12 +1,12 @@
 #!/bin/csh
-# $Id: wwwman,v 1.5 1997/09/10 19:46:49 balay Exp bsmith $ 
+# $Id: wwwman,v 1.6 1998/01/03 22:36:10 bsmith Exp bsmith $ 
 
 #
 # yet another HORRIBLE script we have to get rid of.
 #
 #  This creates .html pages for each PETSc man section
 #
-foreach dir (${PETSC_DIR}/docs/manualpages/man?)
+foreach dir ($1/docs/manualpages/man?)
   pushd $dir
   ls > .tmp
     set REF = $dir:t

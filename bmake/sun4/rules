@@ -1,4 +1,4 @@
-# $Id: base,v 1.31 1998/03/26 19:38:15 balay Exp balay $ 
+# $Id: base,v 1.32 1998/04/09 00:20:41 balay Exp bsmith $ 
 
 #
 #
@@ -13,7 +13,7 @@ CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
 #
 CCV      = ${CC} --version
 #
-FC       = f77
+FC       = f77 -u
 AR       = ar
 RM       = rm -f
 OMAKE    = make
@@ -22,11 +22,6 @@ SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS}
 FLINKER  = f77 ${FOPTFLAGS}
 
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE 
-CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
-           -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_STRINGS_H \
-           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME  ${FCONF} 
 
 include ${PETSC_DIR}/bmake/common
 

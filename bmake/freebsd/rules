@@ -1,4 +1,4 @@
-# $Id: base,v 1.38 1998/03/26 19:59:48 balay Exp balay $ 
+# $Id: base,v 1.39 1998/04/09 00:13:45 balay Exp bsmith $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
@@ -26,12 +26,6 @@ SHELL    = /bin/sh
 CLINKER  = /usr/local/gcc-2.7.2/bin/gcc ${COPTFLAGS}
 FLINKER  = f77 ${FOPTFLAGS}
 
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE 
-CONF     = -DHAVE_PWD_H -DHAVE_STDLIB_H -DHAVE_STRING_H \
-           -DHAVE_SWAPPED_BYTES -DHAVE_X11 \
-           -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
-           -DHAVE_UNISTD_H  \
-           -DHAVE_UNAME -DHAVE_SYS_TIME_H ${FCONF}
 SYS_LIB  = 
 
 include ${PETSC_DIR}/bmake/common

@@ -1,4 +1,4 @@
-# $Id: base,v 1.31 1998/04/08 22:30:03 balay Exp bsmith $ 
+# $Id: base,v 1.32 1998/04/09 04:04:17 bsmith Exp bsmith $ 
 
 PARCH    = solaris
 #
@@ -20,8 +20,6 @@ RANLIB   = true
 SHELL    = /bin/sh
 CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
-
-CONF     = -DHAVE_PETSCCONF_H
 
 SYS_LIB  = -lnsl -lsocket -lgen
 

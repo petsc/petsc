@@ -1,4 +1,4 @@
-# $Id: base,v 1.10 1998/04/07 04:06:02 balay Exp balay $ 
+# $Id: base,v 1.11 1998/04/07 19:41:58 balay Exp bsmith $ 
 
 
 #
@@ -25,11 +25,7 @@ SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS}
 FLINKER  = f90 -f77 ${FOPTFLAGS}
 
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_NAGF90
-CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
-           -DHAVE_MALLOC_H -DHAVE_X11  ${FCONF} -DHAVE_STRINGS_H \
-           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME 
+FCONF    = -DHAVE_NAGF90
 
 include ${PETSC_DIR}/bmake/common
 

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.43 1998/04/09 17:15:29 balay Exp balay $ 
+# $Id: builddist,v 1.44 1998/04/09 18:04:18 balay Exp bsmith $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -15,9 +15,6 @@ echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run cor
 echo "(7) Made sure Fortran include files match C ones?"
 echo "(8) Fixed default flag -DUSE_FORTRAN_KERNELS (or not) in base.O_complex, base.g_complex files?"
 
-#echo "(5) Removed the option -u from BASEOPTF in bmake/sun4/base.g?"
-#echo "(9) Converted hpux/base.* files to nonshared mode?"
-#echo "(10) Taken away chmod g+* from petsc/makefile?"
 #
 if ($#argv == 1) then
   set version=$1

@@ -16,7 +16,10 @@
 #define HAVE_UNISTD_H 
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNAME  
+
+#if !defined(HAVE_64BITS)
 #define HAVE_64BITS
+#endif
 
 #define HAVE_FORTRAN_UNDERSCORE
 

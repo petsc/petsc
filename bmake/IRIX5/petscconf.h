@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:30:46 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.2 1998/04/09 21:15:05 balay Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -22,4 +22,7 @@
 
 #define HAVE_MEMMOVE
 #define NEEDS_GETTIMEOFDAY_PROTO
+
+#define HAVE_DOUBLE_ALIGN
+
 #endif
