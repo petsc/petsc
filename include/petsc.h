@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.243 1999/03/16 16:42:18 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.244 1999/03/31 03:40:39 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -13,12 +13,12 @@
     docs/tex/manual/manual.tex and
     docs/tex/manual/manual_tex.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.24, Released April 1, 1999"
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.24, Released April 6, 1999"
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
 #define PETSC_VERSION_SUBMINOR 24
-#define PETSC_VERSION_DATE     "April 1, 1998"
+#define PETSC_VERSION_DATE     "April 6, 1998"
 #define PETSC_AUTHOR_INFO      "The PETSc Team:\
  Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n\
  Bug reports, questions: petsc-maint@mcs.anl.gov\n\
