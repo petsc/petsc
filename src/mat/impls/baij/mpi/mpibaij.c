@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.83 1997/10/19 03:26:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.84 1997/10/28 14:23:15 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1804,10 +1804,9 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
-  }
-    
-  if (header[3] < 0) {
-    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as MPIBAIJ");
+    if (header[3] < 0) {
+      SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as MPIBAIJ");
+    }
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
