@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.52 2000/01/11 20:59:26 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.53 2000/02/02 20:08:15 bsmith Exp curfman $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -599,7 +599,7 @@ int FListDuplicate(FList fl,FList *nl)
 
     Output Parameters:
 .   fullname - the name that is the union of the path and the library name,
-               delimited by a semicolon. i.e path:name
+               delimited by a semicolon, i.e., path:name
 
     Notes:
     If the path is NULL, assumes that the name, specified also includes
