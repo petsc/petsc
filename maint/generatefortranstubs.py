@@ -75,7 +75,7 @@ def main():
 	files    = os.listdir(dir)
         for f in files:
           if f.endswith('.c'):
-            try: os.path.unlink(os.path.join(dir,f))
+            try: os.unlink(os.path.join(dir,f))
             except: pass
 	os.path.walk(os.getcwd(),processDir,[petscdir,sys.argv[1]])
         FixDir(os.getcwd())
