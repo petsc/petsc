@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.126 1998/05/12 22:05:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.127 1998/05/13 16:39:48 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -96,9 +96,12 @@ DLList KSPList = 0;
 @*/
 int KSPSetAvoidNorms(KSP ksp)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->avoidnorms = PETSC_TRUE;
+  ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
