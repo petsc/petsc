@@ -6,6 +6,7 @@ EXTERN_C_BEGIN
 EXTERN int KSPCreate_Richardson(KSP);
 EXTERN int KSPCreate_Chebychev(KSP);
 EXTERN int KSPCreate_CG(KSP);
+EXTERN int KSPCreate_CGNE(KSP);
 EXTERN int KSPCreate_TCQMR(KSP);
 EXTERN int KSPCreate_GMRES(KSP);
 EXTERN int KSPCreate_BCGS(KSP);
@@ -50,6 +51,7 @@ int KSPRegisterAll(const char path[])
   KSPRegisterAllCalled = PETSC_TRUE;
 
   ierr = KSPRegisterDynamic(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPCGNE,       path,"KSPCreate_CGNE",      KSPCreate_CGNE);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);

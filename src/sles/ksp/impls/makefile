@@ -3,7 +3,7 @@
 ALL: lib
 
 LIBBASE  = libpetscsles
-DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg fgmres minres symmlq lgmres
+DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg fgmres minres symmlq lgmres cgne
 LOCDIR   = src/sles/ksp/impls/
 
 include ${PETSC_DIR}/bmake/common/base

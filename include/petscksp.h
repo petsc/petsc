@@ -30,6 +30,7 @@ E*/
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
+#define KSPCGNE       "cgne"
 #define KSPGMRES      "gmres"
 #define KSPTCQMR      "tcqmr"
 #define KSPBCGS       "bcgs"
