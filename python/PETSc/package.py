@@ -110,12 +110,13 @@ class Package(config.base.Configure):
       dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
       yield('User specified '+self.PACKAGE+' root directory',self.generateLibList(os.path.join(dir,self.libdir)),os.path.join(dir,self.includedir))
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
-      dir1 = os.path.abspath(self.framework.argDB['with-'+self.package+'-lib'])
-      if os.path.isdir(dir1): libs = self.generateLibList(dir1)
-      else: libs = dir1
-      if not isinstance(libs, list): libs = [libs]
-      dir2 = os.path.abspath(self.framework.argDB['with-'+self.package+'-include'])      
-      yield('User specified '+self.PACKAGE+' root directory',libs,dir2)
+      libs = self.framework.argDB['with-'+self.package+'-lib']
+      if not isinstance(libs, list):
+        libs = [libs]
+      libs = [os.path.abspath(l) for l in libs]
+      if len(libs) == 1 and os.path.isdir(libs[0]):
+        libs = self.generateLibList(libs[0])
+      yield('User specified '+self.PACKAGE+' root directory', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
     if self.download and self.framework.argDB['download-'+self.package] == 2:
       dir = os.path.join(self.Install(),self.arch.arch)
       yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
