@@ -7,10 +7,12 @@ if __name__ == '__main__':
 
     configure_options = [
     # Using MPICH for Windows 2000/NT available from http://www.mcs.anl.gov/mpi/mpich
-    '--with-mpi-dir=/software/MPI/mpich-nt.1.2.5/SDK',
-    '--with-mpi-compilers=0',
+    #'--with-mpi-dir=/cygdrive/c/Program\ Files/MPICH/SDK',
+    #
     # Using Intel's MKL available from http://www.intel.com
-    '--with-blas-lapack-dir=/software/BLAS/MKL',
+    #'--with-blas-lapack-dir=/cygdrive/c/Program\ Files/Intel/MKL',
+    #
+    # Using Intel Compilers
     '--with-vendor-compilers=intel'
     ]
 

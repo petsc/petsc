@@ -202,7 +202,11 @@ class Configure(config.base.Configure):
         dir = os.path.join(os.getenv('HOME'),dir)
         if os.path.isdir(dir):
           yield ('Frequent user install location (~/*mpich*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-        
+    # Try MPICH install locations under Windows
+    dir = os.path.join('/cygdrive','c','Program\\ Files','MPICH')
+    yield('Default MPICH install location (C:\Program Files\MPICH with MS compatible SDK',self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
+    yield('Default MPICH install location (C:\Program Files\MPICH with SDK.gcc',self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
+    
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
