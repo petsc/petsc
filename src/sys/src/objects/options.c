@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.253 2001/09/19 16:07:10 bsmith Exp balay $*/
+/*$Id: options.c,v 1.254 2001/09/25 00:20:32 balay Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -1008,7 +1008,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
       PetscToken *token;
       char       *tvalue = 0;
 
-      ierr = PetscTokenBegin(value,',',&token);CHKERRQ(ierr);
+      ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(1,"unknown string specified\n"); }
       ierr    = PetscOptionsAtod(tvalue,&re);CHKERRQ(ierr);
