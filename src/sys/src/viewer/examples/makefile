@@ -10,14 +10,14 @@ OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscvec
 EXAMPLES_2    = 
-EXAMPLESC     = ex1.c ex2.c
+EXAMPLESC     = ex1.c ex2.c ex1.m
 RUNEXAMPLES_2 = 
-EXAMPLES_4    = ex1.c ex2.c
+EXAMPLES_4    = ex1 ex2
 RUNEXAMPLES_4 = 
 
 runex2:
 	@echo "There are no externally runable examples in this directory"
-	
+
 ex1: ex1.o   chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
