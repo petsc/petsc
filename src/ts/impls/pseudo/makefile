@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../../../..
+#PETSC_DIR = ../../../..
 
 ALL: lib
 
@@ -10,7 +10,7 @@ OBJSC    = posindep.o
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = t
-LOCDIR   = src/ts/impls/pseudo/posindep/
+LOCDIR   = src/ts/impls/pseudo/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
