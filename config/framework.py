@@ -245,11 +245,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
   
   def filterCompileOutput(self, output):
-    if self.framework.argDB['ignoreCompileOutput']:
+    if self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()
-      if self.framework.argDB['ignoreWarnings']:
+      if self.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
       # GCC: Ignore stupid warning about builtins
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
@@ -263,7 +263,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       output = ''
     elif output:
       lines = output.splitlines()
-      if self.framework.argDB['ignoreWarnings']:
+      if self.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
@@ -623,7 +623,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def configureBatch(self):
     '''F'''
-    if self.framework.batchBodies:
+    if self.batchBodies:
       import nargs
       import sys
 
@@ -646,7 +646,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0):
         sys.exit('Unable to generate test file for batch system\n')
       self.compilers.CPPFLAGS = oldFlags
-      self.framework.logClear()
+      self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
       print ' 1) Submit ./conftest to your batch system (this will generate the file reconfigure)\r'
@@ -664,7 +664,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputBanner()
     for child in graph.DirectedGraph.topologicalSort(self.childGraph):
       child.configure()
-    if self.framework.argDB['with-batch']:
+    if self.argDB['with-batch']:
       self.configureBatch()
     self.cleanup()
     return 1
