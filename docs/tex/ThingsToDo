@@ -11,6 +11,9 @@ Meta priorities:
 
   Fix ex5f90.F to match ex5.c modern stuff
 
+  make a snes example where the Jacobian has a null space; copy relevent code (3 lines)
+  from petsc.surplus/ex13.c
+
   Redo complex-macros - use STD_COMPLEX as default, and add USE_ANTIQUE_COMPLEX for old
   way of doing things.
 
