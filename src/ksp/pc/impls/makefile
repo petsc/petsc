@@ -3,7 +3,7 @@
 ALL: lib
 
 LIBBASE  = libpetscksp
-DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm sles composite redundant milu spai is cholesky pbjacobi \
+DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm sles composite redundant spai is cholesky pbjacobi \
            esi mat hypre ramg samg
 LOCDIR   = src/ksp/pc/impls/
 
