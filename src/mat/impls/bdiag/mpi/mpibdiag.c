@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.87 1996/07/02 18:06:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.88 1996/07/08 22:19:44 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -228,8 +228,8 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
     if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
     tmp[mlocal->diag[i] + mbd->brstart + Mblock] = 1;
   }
-  PetscFree(tmp);
   MPI_Allreduce(tmp,tmp2,len,MPI_INT,MPI_SUM,mat->comm);
+  PetscFree(tmp);
   ict = 0;
   for (i=0; i<len; i++) {
     if (tmp2[i]) {
