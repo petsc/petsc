@@ -314,6 +314,8 @@ void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *ierr PE
 #else
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
 #endif
+  FIXRETURNCHAR(name,len);
+
 }
 
 void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),

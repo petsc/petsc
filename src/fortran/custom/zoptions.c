@@ -162,6 +162,7 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
   *ierr = PetscOptionsGetString(c1,c2,c3,len3,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
+  FIXRETURNCHAR(string,len);
 }
 
 void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
@@ -173,6 +174,8 @@ void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PET
 #else
   *ierr = PetscGetArchType(str,len);
 #endif
+  FIXRETURNCHAR(str,len);
+
 }
 
 void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),int *ierr PETSC_END_LEN(len_in))
@@ -187,6 +190,7 @@ void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),int *i
   len = len_in - 1;
 #endif
   *ierr = PetscGetProgramName(tmp,len);
+  FIXRETURNCHAR(name,len_in);
 }
 
 EXTERN_C_END

@@ -200,6 +200,8 @@ void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),int *ierr
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
+  FIXRETURNCHAR(name,len);
+
 }
 
 void PETSC_STDCALL kspgetpreconditionerside_(KSP *ksp,PCSide *side,PetscErrorCode *ierr){

@@ -71,6 +71,7 @@ EXTERN_C_END
   } \
 }
 #define FREECHAR(a,b) if (b) PetscFree(b);
+#define FIXRETURNCHAR(a,n)
 
 #else
 
@@ -92,6 +93,13 @@ EXTERN_C_END
 }
 
 #define FREECHAR(a,b) if (a != b) PetscFree(b);
+
+#define FIXRETURNCHAR(a,n) \
+{ \
+  int __i; \
+  for (__i=0; __i<n && a[__i] != 0; __i++) ; \
+  for (; __i<n; __i++) a[__i] = ' ' ; \
+}
 
 #endif
 

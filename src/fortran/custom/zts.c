@@ -220,6 +220,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
+  FIXRETURNCHAR(name,len);
 }
 
 #if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

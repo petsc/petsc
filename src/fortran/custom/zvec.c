@@ -183,7 +183,7 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr 
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
-
+  FIXRETURNCHAR(name,len);
 }
 
 void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Vec *newvec,int *ierr PETSC_END_LEN(len))
