@@ -1,7 +1,6 @@
 #
 #   The name of the C compiler to use
 #
-#CC       = cc -DPARCH_hpux -Aa
 CC       = cc -DPARCH_hpux -Aa +z
 #
 #   Fortran compiler to use
