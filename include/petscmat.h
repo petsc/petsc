@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.118 1996/11/19 16:34:06 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.119 1996/11/27 22:58:13 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -48,7 +48,8 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
               MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,MAT_INODE_LIMIT_2,
               MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,MAT_INODE_LIMIT_5,
-              MAT_IGNORE_OFF_PROCESSOR_ENTRIES} MatOption;
+              MAT_IGNORE_OFF_PROCESSOR_ENTRIES,MAT_ROWS_UNSORTED,
+              MAT_COLUMNS_UNSORTED} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
