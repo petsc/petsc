@@ -1,7 +1,5 @@
 #!/usr/local/bin/tcsh
-# $Id: addlinks,v 1.14 1997/09/10 19:38:27 balay Exp balay $ 
-
-#!/bin/csh  #csh is unable to handle a VERY long list of files in the foreach loop (eg:adic/lapack)
+# $Id: addlinks,v 1.15 1998/11/12 16:25:00 balay Exp bsmith $ 
 #
 # Add the individual links for the PETSc shadow directory.  This script
 # should be called from buildlinks.
