@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.14 1996/01/18 23:14:46 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.15 1996/02/29 22:22:38 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -12,6 +12,21 @@ static char vcid[] = "$Id: memc.c,v 1.14 1996/01/18 23:14:46 balay Exp balay $";
 #include <memory.h>
 #include "pinclude/petscfix.h"
 
+
+
+#if defined(PARCH_rs6000_test)
+void PetscMemcpy(void *a,void *b,int n)
+{
+  double *aa, *bb;
+  int  i;
+#pragma disjoint(aa,bb)
+  aa = (double *) a; bb = (double *) b;
+  n = n/sizeof(double);
+  for ( i=0; i<n; i++ ) {
+    aa[i] = bb[i];
+  }
+}
+#else
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b to the space
    beginning at location a.
@@ -32,6 +47,7 @@ void PetscMemcpy(void *a,void *b,int n)
 {
   memcpy((char*)(a),(char*)(b),n);
 }
+#endif
 
 /*@C
    PetscMemzero - Zeros the specified memory.
