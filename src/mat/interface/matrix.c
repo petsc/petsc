@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.295 1998/05/20 13:43:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.296 1998/05/20 13:44:48 bsmith Exp curfman $";
 #endif
 
 /*
@@ -2654,9 +2654,9 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
 #define __FUNC__ "MatGetArray"
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
-   The result of this routine is dependent on the underlying matrix data-structure, 
-   and may not even work for certain matrix types. You MUST call MatRestoreArray() when you no 
-   longer need to access the array.
+   The result of this routine is dependent on the underlying matrix data
+   structure, and may not even work for certain matrix types.  You MUST
+   call MatRestoreArray() when you no longer need to access the array.
 
    Not Collective
 
@@ -2666,8 +2666,8 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
    Output Parameter:
 .  v - the location of the values
 
-   Currently only returns an array for the dense formats, giving access to the local portion
-   of the matrix in the usual Fortran column oriented format.
+   Currently returns an array only for the dense formats, giving access to
+   the local portion of the matrix in the usual Fortran column-oriented format.
 
    Fortran Note:
    This routine is used differently from Fortran
@@ -2684,7 +2684,7 @@ $      ...... other code
 $       call MatRestoreArray(mat,mat_array,i_mat,ierr)
 
    See the Fortran chapter of the users manual and 
-   petsc/src/mat/examples/tests for details
+   petsc/src/mat/examples/tests for details.
 
 .keywords: matrix, array, elements, values
 
