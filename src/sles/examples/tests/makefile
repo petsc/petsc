@@ -135,39 +135,39 @@ runexamples:
            $(RM) -f ex8_2.tmp
 
 ex1: ex1.o 
-	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
 	$(RM) ex1.o
 
 ex2: ex2.o 
-	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex2 ex2.o  $(SYSLIB)
 	$(RM) ex2.o
 
 ex3: ex3.o 
-	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex3 ex3.o  $(SYSLIB)
 	$(RM) ex3.o
 
 ex4: ex4.o 
-	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex4 ex4.o  $(SYSLIB)
 	$(RM) ex4.o
 
 ex5: ex5.o 
-	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex5 ex5.o  $(SYSLIB)
 	$(RM) ex5.o
 
 ex6: ex6.o 
-	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex6 ex6.o  $(SYSLIB)
 	$(RM) ex6.o
 
 ex7: ex7.o 
-	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex7 ex7.o  $(SYSLIB)
 	$(RM) ex7.o
 
 ex8: ex8.o 
-	-$(CLINKER) -o ex8 ex8.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex8 ex8.o  $(SYSLIB)
 	$(RM) ex8.o
 
 ex9: ex9.o 
-	-$(CLINKER) -o ex9 ex9.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex9 ex9.o  $(SYSLIB)
 	$(RM) ex9.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
