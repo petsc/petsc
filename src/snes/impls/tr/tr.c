@@ -1,5 +1,5 @@
-/*$Id: tr.c,v 1.124 2001/06/15 21:55:13 curfman Exp curfman $*/
-
+/*$Id: tr.c,v 1.125 2001/06/18 21:28:57 curfman Exp curfman $*/
+ 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
 /*
