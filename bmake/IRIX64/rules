@@ -1,4 +1,4 @@
-# $Id: base,v 1.27 1997/09/10 18:15:18 balay Exp bsmith $ 
+# $Id: base,v 1.28 1997/09/17 04:31:45 bsmith Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -9,6 +9,7 @@ CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 CCV      = unknown
 #
 FC       = f77 -64
+LD       = ld -64
 AR       = ar
 RM       = rm -f
 RANLIB   = true
