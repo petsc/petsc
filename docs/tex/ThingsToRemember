@@ -107,7 +107,7 @@ Multimedia lab SP2:
 
 Nersc Cray T3E
 machine: mcurie.nersc.gov
-login:   bsmith
+login:   bsmith,balay
 passwd:  petsc-password
 
 scheduler : qsub, which is actually a link to cqsub (mpirun also works)
