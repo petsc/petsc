@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.65 1996/07/08 22:20:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.66 1996/08/08 14:44:27 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -400,14 +400,23 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 }
 
 /*@
-   SLESSetUpOnBlocks - For block Jacobi, Gauss-Seidel and overlapping Schwarz 
-        block methods sets up the preconditioner for each block. Same as 
-        calling PCSetUpOnBlocks() on the PC inside the SLES.
+   SLESSetUpOnBlocks - Sets up the preconditioner for each block in
+   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
+   methods.
 
    Input parameters:
 .  pc - the preconditioner context
 
-.keywords: PC, setup
+   Notes:
+   SLESSetUpOnBlocks() is a routine that the user can optinally call for
+   more precise profiling (via -log_summary) of the setup phase for these
+   block preconditioners.  If the user does not call SLESSetUpOnBlocks(),
+   it will automatically be called from within SLESSolve().
+   
+   Calling SLESSetUpOnBlocks() is the same as calling PCSetUpOnBlocks()
+   on the PC context within the SLES context.
+
+.keywords: SLES, setup, blocks
 
 .seealso: PCSetUpOnBlocks(), SLESSetUp(), PCSetUp()
 @*/

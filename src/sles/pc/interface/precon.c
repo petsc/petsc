@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.94 1996/08/15 12:46:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.95 1996/08/17 14:36:22 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -396,13 +396,19 @@ int PCSetUp(PC pc)
 }
 
 /*@
-   PCSetUpOnBlocks - For block Jacobi, Gauss-Seidel and overlapping Schwarz 
-        block methods sets up the preconditioner for each block.
+   PCSetUpOnBlocks - Sets up the preconditioner for each block in
+   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
+   methods.
 
    Input parameters:
 .  pc - the preconditioner context
 
-.keywords: PC, setup
+   PCSetUpOnBlocks() is a routine that the user can optinally call for
+   more precise profiling (via -log_summary) of the setup phase for these
+   block preconditioners.  If the user does not call PCSetUpOnBlocks(),
+   it will automatically be called from within PCSetUp().
+
+.keywords: PC, setup, blocks
 
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
 @*/
