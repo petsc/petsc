@@ -64,7 +64,7 @@ typedef struct {
 static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
-  PetscReal        norm,sum,umin = hctx->umin;
+  PetscReal        nrm,sum,umin = hctx->umin;
   PetscScalar      dot;
   int              ierr;
 
@@ -77,15 +77,15 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
     */
     ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
     ierr = VecNormBegin(a,NORM_1,&sum);CHKERRQ(ierr);
-    ierr = VecNormBegin(a,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecNormBegin(a,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecDotEnd(U,a,&dot);CHKERRQ(ierr);
     ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
-    ierr = VecNormEnd(a,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecNormEnd(a,NORM_2,&nrm);CHKERRQ(ierr);
 
     /* 
       Safeguard for step sizes that are "too small"
     */
-    if (!sum) {dot = 1.0; norm = 1.0;}
+    if (!sum) {dot = 1.0; nrm = 1.0;}
 #if defined(PETSC_USE_COMPLEX)
     else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
     else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
@@ -93,11 +93,11 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
     else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
     else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
-    *h = ctx->error_rel*dot/(norm*norm);
+    *h = ctx->error_rel*dot/(nrm*nrm);
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ3(1,"Differencing parameter is not a number sum = %g dot = %g norm = %g",sum,PetscRealPart(dot),norm);
+  if (*h != *h) SETERRQ3(1,"Differencing parameter is not a number sum = %g dot = %g norm = %g",sum,PetscRealPart(dot),nrm);
   ctx->count++;
   PetscFunctionReturn(0);
 } 

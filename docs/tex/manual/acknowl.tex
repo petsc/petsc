@@ -22,7 +22,7 @@ have been written by
   \item Tony Caola, the SPARSEKIT2 ilutp() interface,
   \item Chad Carroll, Win32 graphics,
   \item Cameron Cooper, portions of the VecScatter routines, 
-  \item Victor Eijkhout, KSP type BICG, VecPipeline() and VecXXXBegin()/End() routines, 
+  \item Victor Eijkhout,
   \item Paulo Goldfeld, balancing Neumann-Neumann preconditioner,
   \item Matt Hille, 
   \item Domenico Lahaye, the interface to John Ruge and Klaus Stueben's AMG,
@@ -45,7 +45,7 @@ PETSc uses routines from
   \item SPARSPAK     matrix reordering routines, converted to C using {\tt f2c},
   \item SPARSEKIT2   written by Yousef Saad, iludtp(), converted to C using {\tt f2c}. These routines 
                      are copyrighted by Saad under the GNU copyright, see \trl{${PETSC_DIR}/src/mat/impls/aij/seq/ilut.c}.
-  \item libtfs the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer.
+  \item libtfs, the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer for the direct solution of a coarse grid problem (a linear system with very few degrees of freedom per processor).
 \end{itemize}
 
 
@@ -66,6 +66,7 @@ PETSc interfaces to the following external software:
   \item PVODE        parallel ODE integrator, \trllink{http://www.llnl.gov/CASC/PVODE}{http://www.llnl.gov/CASC/PVODE},
   \item SPAI         for parallel sparse approximate inverse preconditiong, 
                      \trllink{http://www.sam.math.ethz.ch/~grote/spai/}{http://www.sam.math.ethz.ch/~grote/spai/}.
+  \item SuperLU and SuperLU\_Dist, the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, \trllink{http://www.nersc.gov/~xiaoye/SuperLU}{http://www.nersc.gov/~xiaoye/SuperLU} 
 \end{itemize}
 These are all optional packages and do not need to be installed to use PETSc.
 

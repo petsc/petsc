@@ -27,10 +27,8 @@ EXTERN int PCCreate_SPAI(PC);
 EXTERN int PCCreate_RAMG(PC);
 #endif
 EXTERN int PCCreate_mILU(PC);
-#if defined(PETSC_HAVE_ESI)
 EXTERN int PCCreate_PetscESI(PC);
 EXTERN int PCCreate_ESI(PC);
-#endif
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -80,10 +78,8 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ESI)
   ierr = PCRegisterDynamic(PCESI          ,path,"PCCreate_ESI",PCCreate_ESI);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCPETSCESI     ,path,"PCCreate_PetscESI",PCCreate_PetscESI);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

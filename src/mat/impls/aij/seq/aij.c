@@ -1359,7 +1359,7 @@ int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqAIJ"
-int MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *norm)
+int MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   PetscScalar  *v = a->a;
@@ -1375,29 +1375,29 @@ int MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *norm)
       sum += (*v)*(*v); v++;
 #endif
     }
-    *norm = sqrt(sum);
+    *nrm = sqrt(sum);
   } else if (type == NORM_1) {
     PetscReal *tmp;
     int    *jj = a->j;
     ierr = PetscMalloc((A->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
     ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
-    *norm = 0.0;
+    *nrm = 0.0;
     for (j=0; j<a->nz; j++) {
         tmp[*jj++ + shift] += PetscAbsScalar(*v);  v++;
     }
     for (j=0; j<A->n; j++) {
-      if (tmp[j] > *norm) *norm = tmp[j];
+      if (tmp[j] > *nrm) *nrm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
-    *norm = 0.0;
+    *nrm = 0.0;
     for (j=0; j<A->m; j++) {
       v = a->a + a->i[j] + shift;
       sum = 0.0;
       for (i=0; i<a->i[j+1]-a->i[j]; i++) {
         sum += PetscAbsScalar(*v); v++;
       }
-      if (sum > *norm) *norm = sum;
+      if (sum > *nrm) *nrm = sum;
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"No support for two norm");

@@ -18,7 +18,7 @@ EXTERN int MatCreate_SeqDense(Mat);
 EXTERN int MatCreate_MPIDense(Mat);
 EXTERN int MatCreate_MPIAdj(Mat);
 EXTERN int MatCreate_Shell(Mat);
-#if defined(PETSC_HAVE_ESI) && defined(__cplusplus)
+#if defined(__cplusplus)
 EXTERN int MatCreate_ESI(Mat);
 EXTERN int MatCreate_PetscESI(Mat);
 #endif
@@ -76,7 +76,7 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATSEQDENSE,  path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ESI) && defined(__cplusplus)
+#if defined(__cplusplus)
   ierr = MatRegisterDynamic(MATESI,       path,"MatCreate_ESI",    MatCreate_ESI);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATPETSCESI,  path,"MatCreate_PetscESI",    MatCreate_PetscESI);CHKERRQ(ierr);
 #endif

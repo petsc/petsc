@@ -52,7 +52,7 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATMPIBAIJ,path,"MatLoad_MPIBAIJ",MatLoad_MPIBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATSEQSBAIJ,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATMPISBAIJ,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
   ierr = MatLoadRegisterDynamic(MATESI,path,"MatLoad_ESI",MatLoad_ESI);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(__cplusplus)

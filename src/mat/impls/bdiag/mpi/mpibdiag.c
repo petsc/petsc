@@ -643,7 +643,7 @@ int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_MPIBDiag"
-int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
+int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)A->data;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)mbd->A->data;
@@ -664,8 +664,8 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
 #endif
       }
     }
-    ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
-    *norm = sqrt(*norm);
+    ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
+    *nrm = sqrt(*nrm);
     PetscLogFlops(2*A->n*A->m);
   } else if (type == NORM_1) { /* max column norm */
     PetscReal *tmp,*tmp2;
@@ -673,17 +673,17 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
     ierr = PetscMalloc((mbd->A->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
     ierr = PetscMalloc((mbd->A->n+1)*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
     ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp,mbd->A->n);CHKERRQ(ierr);
-    *norm = 0.0;
+    *nrm = 0.0;
     ierr = MPI_Allreduce(tmp,tmp2,mbd->A->n,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     for (j=0; j<mbd->A->n; j++) {
-      if (tmp2[j] > *norm) *norm = tmp2[j];
+      if (tmp2[j] > *nrm) *nrm = tmp2[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
     ierr = PetscFree(tmp2);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* max row norm */
     PetscReal normtemp;
     ierr = MatNorm(mbd->A,type,&normtemp);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&normtemp,norm,1,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&normtemp,nrm,1,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

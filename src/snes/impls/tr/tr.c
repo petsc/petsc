@@ -14,7 +14,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedRe
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_EQ_TR          *neP = (SNES_EQ_TR*)snes->data;
   Vec                 x;
-  PetscReal           norm;
+  PetscReal           nrm;
   int                 ierr;
 
   PetscFunctionBegin;
@@ -30,10 +30,10 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedRe
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm >= neP->delta) {
+  ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
+  if (nrm >= neP->delta) {
     PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-    PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
+    PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,nrm);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -59,7 +59,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   Vec                 X,F,Y,G,TMP,Ytmp;
   int                 maxits,i,ierr,lits,breakout = 0;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,norm,ynorm,norm1;
+  PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         mone = -1.0,cnorm;
   KSP                 ksp;
   SLES                sles;
@@ -111,25 +111,25 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     ierr = SLESSolve(snes->sles,F,Ytmp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     PetscLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
-    ierr = VecNorm(Ytmp,NORM_2,&norm);CHKERRQ(ierr);
-    norm1 = norm;
+    ierr = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
+    norm1 = nrm;
     while(1) {
       ierr = VecCopy(Ytmp,Y);CHKERRQ(ierr);
-      norm = norm1;
+      nrm = norm1;
 
       /* Scale Y if need be and predict new value of F norm */
-      if (norm >= delta) {
-        norm = delta/norm;
-        gpnorm = (1.0 - norm)*fnorm;
-        cnorm = norm;
-        PetscLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",norm);
+      if (nrm >= delta) {
+        nrm = delta/nrm;
+        gpnorm = (1.0 - nrm)*fnorm;
+        cnorm = nrm;
+        PetscLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",nrm);
         ierr = VecScale(&cnorm,Y);CHKERRQ(ierr);
-        norm = gpnorm;
+        nrm = gpnorm;
         ynorm = delta;
       } else {
         gpnorm = 0.0;
         PetscLogInfo(snes,"SNESSolve_EQ_TR: Direction is in Trust Region\n");
-        ynorm = norm;
+        ynorm = nrm;
       }
       ierr = VecAYPX(&mone,X,Y);CHKERRQ(ierr);            /* Y <- X - Y */
       ierr = VecCopy(X,snes->vec_sol_update_always);CHKERRQ(ierr);

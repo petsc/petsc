@@ -137,11 +137,11 @@ One can examine a vector with the command \findex{VecView()}
   VecView(Vec x,PetscViewer v);
 \end{verse}
 To print the vector to the screen, one can use the viewer
-\findex{VIEWER_STDOUT_WORLD} \trl{VIEWER_STDOUT_WORLD}, which ensures
+\findex{PETSC_VIEWER_STDOUT_WORLD} \trl{PETSC_VIEWER_STDOUT_WORLD}, which ensures
 that parallel vectors are printed correctly to \trl{stdout}. To display the vector in an X-window,
-one can use the default X-windows viewer \trl{VIEWER_DRAW_WORLD},
-\findex{VIEWER_DRAW_WORLD}
-or one can create a viewer with the routine \trl{ViewerDrawOpenX()}.
+one can use the default X-windows viewer \trl{PETSC_VIEWER_DRAW_WORLD},
+\findex{PETSC_VIEWER_DRAW_WORLD}
+or one can create a viewer with the routine \trl{PetscViewerDrawOpenX()}.
 A variety of viewers are discussed further in Section \ref{sec:viewers}.
 
 To create a new vector of the same format as an existing vector, one uses
@@ -1638,12 +1638,12 @@ command
 \begin{verse}
   MatView(Mat mat,PETSC\_VIEWER\_DRAW\_WORLD);
 \end{verse}
-Use \findex{VIEWER_DRAW_WORLD}
+Use \findex{PETSC_VIEWER_DRAW_WORLD}
 \begin{verse}
   MatView(Mat mat,PetscViewer viewer);
 \end{verse}
-where \trl{viewer} was obtained with \trl{ViewerDrawOpenX()}.
-\findex{ViewerDrawOpenX} 
+where \trl{viewer} was obtained with \trl{PetscViewerDrawOpenX()}.
+\findex{PetscViewerDrawOpenX} 
 Additional viewers \findex{MatCopy()} and options are given in the \trl{MatView()} man
 page and Section~\ref{sec:viewers}.
 
@@ -2988,8 +2988,8 @@ it is not clear whether one would ever wish to do such a thing.
 %----------------------------------------------------------------------
 \subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec:mg}
 
-See also \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for a higher level
-interface to the multigrid solvers using the \trl{DMMG} object.
+See also Chapter \ref{chapter:dmmg} for a higher level
+interface to the multigrid solvers for linear and nonlinear problems using the \trl{DMMG} object.
 
 A large suite of routines is available for using multigrid as a
 preconditioner. In the \trl{PC} framework the user is required to provide 
@@ -4217,6 +4217,8 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
       has not yet been created.
 \end{itemize}
 
+\chapter{High Level Support for Multigrid with DMMG}
+\label{chapter:dmmg}
 
 \chapter{Using ADIC and ADIFOR with PETSc}
 
@@ -4267,20 +4269,22 @@ command line options \trl{-vec_view_matlab} or \trl{-mat_view_matlab}. This caus
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
 is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
 over when and what vectors and matrices are dumped one can use the VecView() and 
-MatView() functions with a viewer type of ASCII (see \trl{ViewerASCIIOpen()}, 
-\trl{VIEWER_STDOUT_WORLD}, \trl{VIEWER_STDOUT_SELF}, or \trl{VIEWER_STDOUT_(MPI_Comm)}). Before calling
-the viewer set the output type with \trl{ViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB,char *name)} or
-\trl{ViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB}. \findex{PETSC_VIEWER_ASCII_MATLAB}
+MatView() functions with a viewer type of ASCII (see \trl{PetscViewerASCIIOpen()}, 
+\trl{PETSC_VIEWER_STDOUT_WORLD}, \trl{PETSC_VIEWER_STDOUT_SELF}, or \trl{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
+the viewer set the output type with 
 \begin{verse}
   PetscViewerSetFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
   VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);\\
-  PetscViewerSetFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
+  PetscViewerPushFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{verse}
 
-\section{Sending Data to Running Matlab}
+\section{Sending Data to Interactive Running Matlab Session}
 
-One creates a viewer to Matlab via \trl{ViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v)}
+One creates a viewer to Matlab via 
+\begin{verse}
+PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
+\end{verse}
 (port is usally set to \trl{PETSC_DEFAULT}) and then sends matrices or vectors via
 \begin{verse}
   VecView(Vec A,v);\\
@@ -4295,9 +4299,9 @@ One can also send arrays or integer arrays via
 One may start the Matlab program manually or use the PETSc command
 \trl{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \trl{PETSC_NULL}.
 
-To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab}
+To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
 is in your Matlab path. Use \trl{p = openport;} (or \trl{p = openport(portnum)} if you provided a port number in
-your call to \trl{ViewerSocketOpen()}), then \trl{a = receive(p);} returns the object you have passed from PETSc.
+your call to \trl{PetscViewerSocketOpen()}), then \trl{a = receive(p);} returns the object you have passed from PETSc.
 \trl{receive()} may be called any number of times. You many call \trl{closeport()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
@@ -4340,7 +4344,7 @@ or
 PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
 \end{verse}
 There is a short-cut to starting the Matlab engine
-with \trl{MATLAB_ENGINE_(MPI_Comm)}.
+with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
 
 
@@ -4640,7 +4644,7 @@ or \trl{SCALAR} depending on the type of argument required);
 the code.   Note
 that the C convention of passing \trl{PETSC_NULL} (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
-routine \trl{OptionsGetInt()}, one must use the following command in
+routine \trl{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
 \begin{verse}
     call PetscOptionsGetInt(PETSC\_NULL\_CHARACTER,'-name',N,flg,ierr)
@@ -4719,7 +4723,7 @@ manual pages and previous discussion in this chapter for details:
 \item \trl{VecGetArray()}, \trl{MatGetArray()}
 \item \trl{ISGetIndices()}, \trl{DAGetGlobalIndices()}
 \item \trl{VecDuplicateVecs()}, \trl{VecDestroyVecs()}
-\item \trl{OptionsGetString()}
+\item \trl{PetscOptionsGetString()}
 \end{itemize}
 The following functions are not supported in Fortran:
 \begin{itemize}
@@ -4728,9 +4732,9 @@ The following functions are not supported in Fortran:
 \item \trl{PetscLogInfo()}
 \item \trl{PetscSetDebugger()}
 \item \trl{VecGetArrays()}, \trl{VecRestoreArrays()}
-\item \trl{ViewerASCIIGetPointer()}, \trl{ViewerBinaryGetDescriptor()}
-\item \trl{ViewerStringOpen()}, \trl{ViewerStringSPrintf()}
-\item \trl{OptionsGetStringArray()}
+\item \trl{PetscViewerASCIIGetPointer()}, \trl{PetscViewerBinaryGetDescriptor()}
+\item \trl{PetscViewerStringOpen()}, \trl{PetscViewerStringSPrintf()}
+\item \trl{PetscOptionsGetStringArray()}
 \end{itemize}
 
 \subsection{Fortran90}
@@ -5869,53 +5873,53 @@ saving objects through commands of the form
   XXXView(XXX obj,PetscViewer viewer);
 \end{verse}
 Here \trl{obj} is any PETSc object of type
-\trl{XXX}, \findex{Viewer} where \trl{XXX} 
+\trl{XXX}, \findex{PetscViewer} where \trl{XXX} 
 is \trl{Mat}, \trl{Vec}, \trl{SNES}, etc. There are several
 predefined viewers:
 \begin{itemize}
 \item Passing in a zero for the viewer causes the object to be printed 
       to the screen; this is most useful when viewing an object in 
       a debugger.
-\item \trl{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF} and 
-      \trl{VIEWER_STDOUT_WORLD} \findex{VIEWER_STDOUT_WORLD}
+\item \trl{PETSC_VIEWER_STDOUT_SELF} \findex{PETSC_VIEWER_STDOUT_SELF} and 
+      \trl{PESC_VIEWER_STDOUT_WORLD} \findex{PETSC_VIEWER_STDOUT_WORLD}
       cause the object to be printed to the screen.
 
-\item \trl{VIEWER_DRAW_SELF} \findex{VIEWER_DRAW_SELF} and 
-      \trl{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
+\item \trl{PETSC_VIEWER_DRAW_SELF} \findex{PETSC_VIEWER_DRAW_SELF} and 
+      \trl{PETSC_VIEWER_DRAW_WORLD} \findex{PETSC_VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
-      \trl{ViewerDrawOpenX()} causes the object to be displayed graphically.
+      \trl{PetscViewerDrawOpenX()} causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
-      \trl{ViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.  
-      This object is \findex{ViewerASCIIOpen()}
-      analogous to \trl{VIEWER_STDOUT_SELF} (for a communicator of
+      \trl{PetscViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.  
+      This object is \findex{PetscViewerASCIIOpen()}
+      analogous to \trl{PETSC_VIEWER_STDOUT_SELF} (for a communicator of
       \trl{MPI_COMM_SELF}) and 
-      \trl{VIEWER_STDOUT_WORLD} (for a parallel communicator).
+      \trl{PETSC_VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \trl{ViewerBinaryOpen(MPI_Comm} \trl{comm,char* file,PetscViewerBinaryType} \trl{type,
-      PetscViewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
+      \trl{PetscViewerBinaryOpen(MPI_Comm} \trl{comm,char* file,PetscViewerBinaryType} \trl{type,
+      PetscViewer *viewer)}. \findex{PetscViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
-      with a viewer created by \trl{ViewerMatlabOpen(MPI_Comm comm,
-      char *machine, int port, PetscViewer *viewer)}. \findex{ViewerMatlabOpen()} 
+      with a viewer created by \trl{PetscViewerMatlabOpen(MPI_Comm comm,
+      char *machine, int port, PetscViewer *viewer)}. \findex{PetscViewerMatlabOpen()} 
       On the Matlab side, one must first run \trl{v = openport(int port)}
       and then \trl{A = receive(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
       with \trl{closeport(v)}. On the PETSc side, one should destroy
-      the viewer object with \findex{ViewerDestroy()} \trl{
+      the viewer object with \findex{PetscViewerDestroy()} \trl{
       PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
       files are located in \trl{${PETSC_DIR}/src/viewer/impls/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
-created by \trl{ViewerASCIIOpen()} by calling
+created by \trl{PetscViewerASCIIOpen()} by calling
 \begin{verse}
   PetscViewerSetFormat(PetscViewer viewer,int format);
 \end{verse}  
 \findex{PETSC_VIEWER_ASCII_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
-\findex{PETSC_VIEWER_ASCII_IMPL} \findex{ViewerSetFormat()}
+\findex{PETSC_VIEWER_ASCII_IMPL} \findex{PetscViewerSetFormat()}
 Possible formats include 
 \trl{PETSC_VIEWER_ASCII_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
 \break \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
@@ -5931,10 +5935,10 @@ The routines
   PetscViewerPopFormat(PetscViewer viewer);
 \end{verse} 
 allow one to temporarily change the format of a viewer.
-\findex{ViewerPushFormat()} \findex{ViewerPopFormat}
+\findex{PetscViewerPushFormat()} \findex{PetscViewerPopFormat}
 
 As discussed above, one can output PETSc objects in binary format by
-first opening a binary viewer with \trl{ViewerBinaryOpen()} and
+first opening a binary viewer with \trl{PetscViewerBinaryOpen()} and
 then using \trl{MatView()}, \trl{VecView()}, etc.  The corresponding
 routines for input of a binary object have the form \trl{XXXLoad()}.  In
 particular, matrix and vector binary input is handled by the
@@ -6249,14 +6253,14 @@ to try to provide direct interfaces.
 \subsection{Windows as PetscViewers}
 For drawing predefined PETSc objects such as matrices and vectors, one must 
 first create a viewer using the 
-command \findex{ViewerDrawOpenX()}
+command \findex{PetscViewerDrawOpenX()}
 \begin{verse}
   PetscViewerDrawOpenX(MPI\_Comm comm,char *display,char *title,int x,\\
                        int y,int w,int h,PetscViewer *viewer);
 \end{verse}
 This viewer may be passed to any of the \trl{XXXView()} routines.
 To draw into the viewer, one must obtain the \trl{Draw} object with the
-command \findex{ViewerDrawGetDraw()}
+command \findex{PetscViewerDrawGetDraw()}
 \begin{verse}
   PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 \end{verse}
@@ -6264,9 +6268,9 @@ Then one can call any of the \trl{DrawXXX} commands on the \trl{draw}
 object. If one obtains the \trl{draw} object in this manner, 
 one does not call the \trl{DrawOpenX()} command discussed below.
 
-\findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
-Predefined viewers, \trl{VIEWER_DRAW_WORLD} 
-and \trl{VIEWER_DRAW_SELF}, may be used at any time. Their initial
+\findex{PETSC_VIEWER_DRAW_WORLD} \findex{PETSC_VIEWER_DRAW_SELF} 
+Predefined viewers, \trl{PETSC_VIEWER_DRAW_WORLD} 
+and \trl{PETSC_VIEWER_DRAW_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
 \medskip
