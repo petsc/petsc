@@ -405,7 +405,7 @@ proc main { }  {
     cd $PETSC_DIR
     
     # All the tutorial files containg formated comments
-    set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} ]
+    set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} src/*/examples/tutorials/umin/{*.F,*.c}]
 
     # Initailise the data structures
     set concepts {}
@@ -519,10 +519,11 @@ proc main { }  {
         set routines_file {}
         set temp [ catch { glob docs/www/man*/$routine_name.html} routines_file ]
         if { $temp != 0 } {
-            set mesg $routines_file
+            set mesg "Skipping update of docs/www/man*/$routine_name.html. File doesn't exist"
             puts stderr $mesg
-            puts stderr "Fix the error and start building from scratch"
-            return 0
+            set mesg "$routine_name specified in $RoutinesFile($routine)"
+            puts stderr $mesg
+            continue
         }
 
         set routines_fileid [ open $routines_file  r ]
