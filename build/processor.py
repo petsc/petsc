@@ -300,8 +300,8 @@ class Linker(Processor):
           flags.append(lib)
         else:
           if dir:
-            if self.argDB['RPATH']:
-              flags.extend(['-L'+dir, self.argDB['RPATH']+dir])
+            if 'C_LINKER_SLFLAG' in self.argDB:
+              flags.extend(['-L'+dir, self.argDB['C_LINKER_SLFLAG']+dir])
             else:
               flags.extend(['-L'+dir])
           flags.append('-l'+base[3:])
