@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.40 1995/09/11 18:49:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.41 1995/09/12 03:26:11 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -20,8 +20,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.40 1995/09/11 18:49:22 bsmith Exp bsmit
 .  V - location to stash resulting matrix
 
    Options Database Keywords:
-$  -mat_SeqAIJ      : AIJ type, uses MatCreateSeqAIJ()
-$  -mat_mpiaij   : MatCreateMPIAIJ()
+$  -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
+$  -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
+$  -mat_aij      : AIJ type, (Seq or MPI depending on comm) 
 $  -mat_dense    : dense type, uses MatCreateSeqDense()
 $  -mat_row      : row type, uses MatCreateSeqRow()
 $  -mat_mpirow   : MatCreateMPIRow()
