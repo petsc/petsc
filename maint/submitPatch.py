@@ -170,7 +170,7 @@ class Patch (object):
     num = set.split('.')
     if len(num) > 2:
       raise RuntimeError('A merge set should not be the first change set')
-    return num[0]+str(int(num[1])-1)
+    return num[0]+'.'+str(int(num[1])-1)
 
   def makePatch(self):
     '''Make a patch from the pushed change sets'''
