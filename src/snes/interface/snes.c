@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.179 1999/04/02 04:18:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.180 1999/04/02 15:11:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
-#include "src/sys/nreg.h"      
 
 int SNESRegisterAllCalled = 0;
 FList SNESList = 0;
