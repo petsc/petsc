@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.90 1996/09/28 15:58:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.91 1996/10/24 17:28:04 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -524,6 +524,11 @@ int VecDestroy(Vec v)
    Use VecDestroyVecs() to free the space. Use VecDuplicate() to form a single
    vector.
 
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the Fortran chapter of the users manual and 
+   petsc/src/vec/examples for details.
+
 .keywords: vector, get 
 
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate()
@@ -541,6 +546,11 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
    Input Parameters:
 .  vv - pointer to array of vector pointers
 .  m - the number of vectors previously obtained
+
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the Fortran chapter of the users manual and 
+   petsc/src/vec/examples for details.
 
 .keywords: vector, free
 
