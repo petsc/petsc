@@ -179,7 +179,9 @@ class Configure(config.base.Configure):
       args.append('--with-F77="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
     #
     if self.mpi.include:
-      args.append('--with-mpi-include="'+' '.join(map(self.libraries.getIncludeArgument, self.mpi.include))+'"')
+      if len(self.mpi.include) > 1:
+        raise RuntimeError("hypre assumes there is a single MPI include directory")
+      args.append('--with-mpi-include="'+self.mpi.include[0].replace('-I','')+'"')
     libdirs = []
     for l in self.mpi.lib:
       ll = os.path.dirname(l)

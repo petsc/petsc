@@ -291,15 +291,11 @@ allfortranstubs:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common/base bmake/common/test \
-	     bmake/predefined/*/rules bmake/predefined/*/variables bmake/predefined/*/packages \
-	     bmake/predefined/*/petscconf.h bmake/predefined/*/petscfix.h bmake/config/packages.in \
-	     bmake/config/petscfix.h.in  bmake/config/rules.in  \
-	     bmake/config/variables.in bmake/adic.init bmake/adicmf.init
+BMAKEFILES = bmake/common/base bmake/common/test bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme
 SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
              maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
-             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris maint/fixtags.py \
+             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris  \
              maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
              maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
              python/PETSc/Configure.py python/PETSc/Options.py \

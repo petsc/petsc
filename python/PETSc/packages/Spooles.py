@@ -54,12 +54,7 @@ class Configure(config.base.Configure):
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in incl:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
-    mpiincl = ''
-    if not self.mpi.include is '':
-      mpiincl += ' -I' + ' -I'.join(self.mpi.include)
-    self.framework.argDB['CPPFLAGS'] += mpiincl
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl+self.mpi.include])              
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:

@@ -52,10 +52,7 @@ class Configure(config.base.Configure):
     '''Check that BSsparse.h is present'''
     if not isinstance(bs95incl,list):bs95incl = [bs95incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in bs95incl:
-      if not self.mpi.include is None:
-        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include+self.mpi.include])
     found = self.checkPreprocess('#include <BSsparse.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -85,10 +82,6 @@ class Configure(config.base.Configure):
   def checkLib(self,bs95lib):
     if not isinstance(bs95lib,list): bs95lib = [bs95lib]
     oldLibs = self.framework.argDB['LIBS']
-    # This next line is really ugly
-    # ' '.join(map(self.libraries.getLibArgument',self.mpi.lib)
-    # takes the location of the MPI library and separates it into a string that looks like:
-    # -L<MPI_DIR> -l<mpi library>
     found = self.libraries.check(bs95lib,'BSinit',otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
     self.framework.argDB['LIBS']=oldLibs
     if found:
