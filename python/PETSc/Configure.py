@@ -311,7 +311,7 @@ class Configure(config.base.Configure):
     return
 
   def configureMissingFunctions(self):
-    '''Checks for SOCKETS'''
+    '''Checks for socket and other functions the standard test fails to locate correctly'''
     if not self.functions.haveFunction('socket'):
       # solaris requires these two libraries for socket()
       if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
