@@ -64,37 +64,25 @@ class Framework(config.base.Configure):
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles = {}
     self.header     = 'matt_config.h'
-    self.setFromOptions()
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.setupChildren()
     return
 
   def setupArgDB(self, clArgs):
     return nargs.ArgDict('ArgDict', localDict = 1)
 
-  def setFromOptions(self):
-    if not self.argDB.has_key('configModules'):
+  def setupChildren(self):
+    self.argDB['configModules'] = nargs.findArgument('configModules', self.clArgs)
+    if self.argDB['configModules'] is None:
       self.argDB['configModules'] = []
-    if not isinstance(self.argDB['configModules'], list):
+    elif not isinstance(self.argDB['configModules'], list):
       self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
       try:
         self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
       except ImportError, e:
         print 'Could not import config module '+moduleName+': '+str(e)
-    return
-
-  def setupArguments(self, clArgs = None):
-    '''Set initial arguments into the database, and setup initial types'''
-    self.help = Help(self)
-    self.help.setTitle('Python Configure Help')
-
-    self.configureHelp(self.help)
-    for child in self.children:
-      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
-
-    self.argDB.insertArgs(clArgs)
-    self.argDB.insertArgs(os.environ)
     return
 
   def require(self, moduleName, depChild = None, keywordArgs = {}):
@@ -275,6 +263,19 @@ class Framework(config.base.Configure):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif /* '+guard+' */\n')
     f.close()
+    return
+
+  def setupArguments(self, clArgs = None):
+    '''Set initial arguments into the database, and setup initial types'''
+    self.help = Help(self)
+    self.help.setTitle('Python Configure Help')
+
+    self.configureHelp(self.help)
+    for child in self.children:
+      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
+
+    self.argDB.insertArgs(clArgs)
+    self.argDB.insertArgs(os.environ)
     return
 
   def configureHelp(self, help):

@@ -336,6 +336,8 @@ class Configure:
     return not len(self.outputCompile(includes, body, cleanup))
 
   def outputLink(self, includes, body, cleanup = 1):
+    import sys
+
     out = self.outputCompile(includes, body, cleanup = 0)
     if len(out): return out
     command = self.getLinkerCmd()
@@ -353,6 +355,8 @@ class Configure:
         self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
     err.close()
     output.close()
+    if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
+      self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return out
