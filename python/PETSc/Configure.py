@@ -290,6 +290,8 @@ class Configure(config.base.Configure):
       flag = '-rpath '
     elif self.framework.archBase.startswith('osf'):
       flag = '-Wl,-rpath,'
+    elif self.framework.archBase.startswith('freebsd'):
+      flag = '-Wl,-R,'
     elif self.framework.archBase.startswith('solaris'):
       flag = '-R'
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)

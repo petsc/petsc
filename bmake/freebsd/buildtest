@@ -4,8 +4,9 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/home/petsc/petsc-test
-set MACH=eris.disturbed.net
-set ARCH=freebsd
+set MACH=dreamcast
+set CONFIGURE='yes'
+set ARCH=freebsd5.1
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
