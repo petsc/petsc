@@ -75,9 +75,9 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
    
   } else {
     Mat_MPISBAIJ  *mat =  (Mat_MPISBAIJ*)A->data;
-    if (mat->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", mat->bs);
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
+    if (mat->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", mat->bs);
     nz = aa->s_nz + bb->nz;
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
     garray = mat->garray;
