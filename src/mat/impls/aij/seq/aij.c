@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.173 1996/06/27 02:46:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.175 1996/07/02 20:28:02 bsmith Exp curfman $";
 #endif
 
 /*
@@ -115,8 +115,6 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
   int        *imax = a->imax, *ai = a->i, *ailen = a->ilen,roworiented = a->roworiented;
   int        *aj = a->j, nonew = a->nonew,shift = a->indexshift;
   Scalar     *ap,value, *aa = a->a;
-
-int ierr;
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k];   
