@@ -111,7 +111,7 @@ class UsingCompiler(maker.Maker):
   def getExecutableLinkTarget(self, project):
     libraries = fileset.FileSet()
     # Might be all internal clients
-    if os.path.isfile(self.getClientLibrary(project, self.getLanguage())[0]):
+    if self.getClientLibrary(project, self.getLanguage()) and os.path.isfile(self.getClientLibrary(project, self.getLanguage())[0]):
       libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries['executable'])
     libraries.extend(self.usingSIDL.getExtraLibraries()['executable'])
