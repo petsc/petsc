@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.140 1997/09/08 21:24:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.141 1997/09/26 02:18:19 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -864,11 +864,19 @@ int OptionsCheckInitial_Private()
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsGetProgramName"
-char *OptionsGetProgramName()
+/*@
+    OptionsGetProgramName - Gets the name of the running program. 
+
+  Output Parameter:
+.   name - the name of the running program
+
+@*/
+int  OptionsGetProgramName(char **name)
 {
-  if (!options) return (char *) 0;
-  if (!options->namegiven) return (char *) 0;
-  return options->programname;
+  if (!options) SETERRQ(1,1,"Must call PetscInitialize() first");
+  if (!options->namegiven) SETERRQ(1,1,"Unable to determine program name");
+  *name = options->programname;
+  return 0;
 }
 
 
