@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.68 2000/09/28 21:08:54 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.69 2000/09/28 23:07:49 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -211,7 +211,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
-  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
+  PetscError(0,"unknownfunction","Unknown file",0,PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 

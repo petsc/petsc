@@ -1,4 +1,4 @@
-/*$Id: dlinegw.c,v 1.29 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dlinegw.c,v 1.30 2000/09/28 23:02:25 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -37,7 +37,7 @@ int DrawLineGetWidth(Draw draw,PetscReal *width)
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
-  if (!draw->ops->linegetwidth) SETERRQ(PETSC_ERR_SUP,xc0);
+  if (!draw->ops->linegetwidth) SETERRQ(PETSC_ERR_SUP,0);
   ierr = (*draw->ops->linegetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
