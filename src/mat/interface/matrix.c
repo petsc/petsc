@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.364 2000/05/12 16:43:02 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.365 2000/05/12 16:43:21 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -22,8 +22,8 @@
 
    Output Parameters:
 +  ncols -  the number of nonzeros in the row
-.  cols - if nonzero, the column numbers
--  vals - if nonzero, the values
+.  cols - if not NULL, the column numbers
+-  vals - if not NULL, the values
 
    Notes:
    This routine is provided for people who need to have direct access
