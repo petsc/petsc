@@ -166,7 +166,7 @@ typedef double PetscLogDouble;
 #if defined(AD_DERIV_H)
 /* extern  MPI_Datatype  MPIU_PETSCLOGDOUBLE; */
 #else
-#if !defined(PETSC_HAVE_MPI_UNI)
+#if !defined(_petsc_mpi_uni)
 #define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
 #endif
 #endif

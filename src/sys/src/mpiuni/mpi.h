@@ -66,7 +66,7 @@
 #error You cannot use MPI-uni with SPAI
 #endif
 
-#define PETSC_HAVE_MPI_UNI
+#define _petsc_mpi_uni
 
 /*
 

@@ -94,7 +94,7 @@ EXTERN_C_END
 /* ------------------------------------------------------------------
     Some machines have very fast MPI_Wtime()
 */
-#if (defined(PETSC_HAVE_FAST_MPI_WTIME) && !defined(PETSC_HAVE_MPI_UNI))
+#if (defined(PETSC_HAVE_FAST_MPI_WTIME) && !defined(_petsc_mpi_uni))
 #define PetscTime(v)         (v)=MPI_Wtime();
 
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();

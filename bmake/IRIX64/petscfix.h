@@ -34,4 +34,8 @@ extern int gettimeofday(struct timeval *,...);
 }
 #else
 #endif
+
+#define MPI_Comm_f2c(a)  (a)
+#define MPI_Comm_c2f(a)  (a)
+
 #endif

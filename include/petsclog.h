@@ -272,7 +272,7 @@ struct _StageLog {
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(PETSC_HAVE_MPI_UNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(_petsc_mpi_uni) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
@@ -364,7 +364,7 @@ struct _StageLog {
   MPI_Start(requests)\
 )
 
-#endif /* !PETSC_HAVE_MPI_UNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !_petsc_mpi_uni && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 
