@@ -10,7 +10,7 @@ OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscdraw
 
-RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
+RUNEXAMPLES_2 = runex1 runex2 runex3 runex4 runex4_2
 EXAMPLES_2    = ex1 ex2 ex3 ex4
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF     = ex5.F
@@ -26,6 +26,8 @@ runex3:
 	-@$(MPIRUN) ex3
 runex4:
 	-@$(MPIRUN) ex4
+runex4_2:
+	-@$(MPIRUN) -np 2 ex4
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
