@@ -120,38 +120,32 @@ http://www.tc.cornell.edu/Resources/
 spstatus
 use kpasswd to change the password
 
-MPI96 meeting demo machines
- Login:  mpid1
-  Passwd: usual (new) PETSc passwd
-1) Machines for pre-conference use
+Accounts on NAS machines
+For your convenience NAS User Services is available to answer questions
+and resolve problems 24 hours each day, 7 days each week.  They can be
+reached via telephone at  numbers:(415) 604-4444, FTS 464-4444, (800)
+331-8737 or Autovon 359-6771, or via  e-mail at nashelp@nas.nasa.gov.
 
-  Sparc/Solaris:
-    angelico.helios.nd.edu
-    vermeer.helios.nd.edu
-    vandyck.helios.nd.edu
-    rembrandt.helios.nd.edu
-    ccesun1.cce.nd.edu
+The message of the day (MOTD) is used at NAS to alert you to problems
+or system changes to software or hardware.  Please make note of it each
+time you log into the systems.
 
-  RS6K/AIX 4.1: 
-    bond.spi.nd.edu
-    uncle.spi.nd.edu
+        Welcome to your lovelace(*) account.
+
+        You will notice that a set of initial "dot" files have
+        been added to your home directory.
+
+        Your account has been installed with your current "chuck" password.
+
+        Before you customize these files, please read them carefully.
+
+        Lovelace is a general support system for Parallel Systems.
+        You may wish to look on the WWW for Parallel Systems Home Page at:
+        http://lovelace.nas.nasa.gov/Parallel/home.html 
+        for further information on Parallel Systems.
 
 
-2) Machines for at-conference demos
-
-  Sparc/Solaris:
-    ccesun1
-    ccesun2
-    ccesun3
-    ccesun4
-
-  RS6K/AIX 4.1: 
-    cceibm1
-    cceibm2
-
-   ~lsc/Software/mpi/mpich
-   ~lsc/Software/mpi/lam
- http://www.nd.edu:80/~doc/General/G0001.HTML
+        (*) This machine is named for Lady Ada Lovelace.
 
 ----------------------------------------------------------------------
 
