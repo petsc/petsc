@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.64 1999/05/11 19:10:50 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.65 1999/05/12 03:35:13 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -13,7 +13,9 @@
 #include <sys/time.h>
 #endif
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
+EXTERN_C_BEGIN
 extern int gettimeofday(struct timeval *,struct timezone *);
+EXTERN_C_END
 #endif
 #include "pinclude/petscfix.h"
 
