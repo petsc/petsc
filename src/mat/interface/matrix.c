@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.146 1996/02/24 00:02:06 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.147 1996/02/27 18:30:59 bsmith Exp balay $";
 #endif
 
 /*
@@ -1551,7 +1551,8 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
    This routine  is implementation dependent, and may not even work for 
-   certain matrix types.
+   certain matrix types. You MUST call MatRestoreArray() when you no 
+   longer need to access the array.
 
    Input Parameter:
 .  mat - the matrix
@@ -1564,13 +1565,38 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
    See the users manual and petsc/src/mat/examples for details.
 
 .keywords: matrix, array, elements, values
+
+.seeaols: MatRestoreArray()
 @*/
 int MatGetArray(Mat mat,Scalar **v)
 {
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!v) SETERRQ(1,"MatGetArray:Bad input, array pointer location");
-  if (!mat->ops.getarray) SETERRQ(PETSC_ERR_SUP,"MatGetArraye");
+  if (!mat->ops.getarray) SETERRQ(PETSC_ERR_SUP,"MatGetArray");
   return (*mat->ops.getarray)(mat,v);
+}
+
+/*@C
+   MatRestoreArray - Restores the matrix after MatGetArray has been called.
+
+   Input Parameter:
+.  mat - the matrix
+.  v - the location of the values
+
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the users manual and petsc/src/mat/examples for details.
+
+.keywords: matrix, array, elements, values, resrore
+
+.seealso: MatGetArray()
+@*/
+int MatRestoreArray(Mat mat,Scalar **v)
+{
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!v) SETERRQ(1,"MatRestoreArray:Bad input, array pointer location");
+  if (!mat->ops.restorearray) SETERRQ(PETSC_ERR_SUP,"MatResroreArray");
+  return (*mat->ops.restorearray)(mat,v);
 }
 
 /*@C

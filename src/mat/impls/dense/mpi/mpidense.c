@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.28 1996/02/01 18:52:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.29 1996/03/04 05:15:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -73,6 +73,20 @@ static int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar 
       SETERRQ(1,"MatGetValues_MPIDense:Only local values currently supported");
     }
   }
+  return 0;
+}
+
+static int MatGetArray_MPIDense(Mat A,Scalar **array)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *) A->data;
+  int ierr;
+
+  ierr = MatGetArray(a->A,array); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatRestoreArray_MPIDense(Mat A,Scalar **array)
+{
   return 0;
 }
 
@@ -766,8 +780,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        0,0,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
-       0,0,
-       0,0,0,0,0,MatConvertSameType_MPIDense,
+       0,0, MatGetArray_MPIDense, MatRestoreArray_MPIDense,
+       0,0,0,MatConvertSameType_MPIDense,
        0,0,0,0,0,
        0,0,MatGetValues_MPIDense};
 
