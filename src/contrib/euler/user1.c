@@ -36,6 +36,7 @@ Runtime options include:\n\
   -Nx <nx> -Ny <ny> -Nz <nz> : Number of processors in the x-, y-, z-directions\n\
   -problem <1,2,3,4>         : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
+  -2d                        : use 2D problem only\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
     -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
@@ -1240,6 +1241,13 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->global_grid = 1;
   /*  if (app->post_process) app->global_grid = 1; */
   if (app->global_grid) PetscPrintf(app->comm,"Using global grid (needed for post processing only)\n");
+
+  /* 2-dimensional variant */
+  ierr = OptionsHasName(PETSC_NULL,"-2d",&app->dim2); CHKERRA(ierr);
+  app->nktot = nk1;
+  if (app->dim2) {
+    nk1 = 3;
+  }
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
    /* 

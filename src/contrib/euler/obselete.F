@@ -576,16 +576,8 @@ c           ijkn = lower neighbor (k=nk)
 
 c ----------------------------------------------------------------------
 c
-c      integer function rbuild( Fvec, sctype, dt, dr, dru, 
-c     &                drv, drw, de, ltog, nloc,
-      integer function rbuild( Fvec, sctype, dt, dxx,
-     &                ltog, nloc,
-     &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &                fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &                fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &                fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
+      integer function rbuild( Fvec, sctype, dt, dxx, fff,
+     &                ltog, nloc )
 c
 c  rbuild - Assembles residual vector.
 c
@@ -617,7 +609,6 @@ c     uniprocessor grid!
 #include "dt.h"
 #include "dvarbls.h"
 #include "ibcwork.h"
-
 
       double precision  val(5)
       integer i,j,k,jk,sctype,ijkx,ierr,ik
@@ -1075,13 +1066,7 @@ c
      &                 d,dt,xx,p,xx_bc,p_bc,
      &                 br,bl,be,sadai,sadaj,sadak,
      &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2,
-     &                 fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &                 fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &                 fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &                 fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &                 fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &                 fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2, ao )
+     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2,fff,ao)
 c
 c jformdt - Computes the Jacobian matrix, J(x) and stores it in the 
 c           (intermediate) Eagle format for later conversion to a PETSc
@@ -1134,7 +1119,6 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 c      COMMON /BCINFO/  b1bc(5,5,4,nj,nk), b2bc(5,5,ni,4,nk),
 c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
-
       double precision  qer(5),qel(5),eps,epsi,dql,dqr
       integer i,j,k,l,m,dummy,ierr,ndm,ndem
       AO      ao
@@ -1152,13 +1136,7 @@ c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
      &          dummy,dummy,dummy,dummy,
      &          xx,p,xx_bc,p_bc,
      &          sadai,sadaj,sadak,
-     &          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &          fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &          fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &          fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &          fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &          fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &          fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2, ao )
+     &          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,ao)
 
       if (ierr .ne. 0) then
          jformdt = -1
@@ -1168,13 +1146,7 @@ c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
      &          dummy,dummy,dummy,
      &          xx,p,
      &          sadai,sadaj,sadak,
-     &          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &          fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &          fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &          fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &          fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &          fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &          fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
+     &          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       if (ierr .ne. 0) then
          jformdt = -1
          return 
@@ -1260,7 +1232,7 @@ c nd - Uses finite differencing to compute a numerical Jacobian
 c      estimation for the interior grid points only (no boundary
 c      points).  This version stores the Jacobian in intermediate
 c      work arrays in the Eagle format, for later translation to
-c      a PETSc matrix.  This approach is less efficeent than
+c      a PETSc matrix.  This approach is less efficient than
 c      directly assembling the PETSc matrix as in the routien nd2().
 c
 c      This routine is called by jform() (explicit boundary conditions)

@@ -270,6 +270,7 @@ int UserSetGrid(Euler *app)
   char       filename[64];
   VecScatter vscat;
 
+  if (app->dim2) mz_g = app->nktot;
   /* Mesh coordinates */
   glen  = mx_g * my_g * mz_g;
   glenb = glen * 3;
@@ -300,6 +301,19 @@ int UserSetGrid(Euler *app)
   } else {
     ierr = VecCreateMPI(MPI_COMM_WORLD,0,glenb,&vc_global); CHKERRQ(ierr);
   }
+
+  if (app->dim2) {
+    for (k=0; k<app->nk1; k++) {
+      for (j=0; j<my_g; j++) {
+        for (i=0; i<mx_g; i++) {
+          xin[k*mx_g*my_g + j*mx_g + i] = xin[mx_g*my_g + j*mx_g + i];
+          yin[k*mx_g*my_g + j*mx_g + i] = yin[mx_g*my_g + j*mx_g + i];
+          zin[k*mx_g*my_g + j*mx_g + i] = zin[mx_g*my_g + j*mx_g + i] + k*1.0-0.5;
+        }
+      }
+    }
+  }
+
   return 0;
   if (app->global_grid) return 0;
   /*  if (app->global_grid || app->size == 1) return 0; */
