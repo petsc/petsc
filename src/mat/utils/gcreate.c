@@ -1,17 +1,18 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.53 1995/10/23 20:31:16 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.54 1995/10/24 15:18:29 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
-/*@
+/*@C
    MatGetFormatFromOptions - Determines from the options database what matrix
    format the user has specified.
 
    Input Parameter:
 .  comm - the MPI communicator
 .  type - the type of matrix desired, for example MATSEQAIJ, MATMPIAIJ
+.  pre - optional string to prepend to the name
 
    Output Parameters:
 .  set - flag indicating whether user set matrix type option.
@@ -23,74 +24,79 @@ static char vcid[] = "$Id: gcreate.c,v 1.53 1995/10/23 20:31:16 curfman Exp curf
 
 .seealso: MatCreate()
 @*/
-int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
+
+int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
   int size;
+  char *p = "-";
+  if (pre) p = pre;
   MPI_Comm_size(comm,&size);
   if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
-    MPIU_printf(comm,"  -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"  -mat_dense, -mat_seqdense, -mat_mpidense\n");
-    MPIU_printf(comm,"  -mat_mpirowbs, -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag\n"); 
+    MPIU_printf(comm,"Matrix format options:\n");
+    MPIU_printf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
+    MPIU_printf(comm,"  %smat_row, %smat_seqrow, %smat_mpirow\n",p,p,p);
+    MPIU_printf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
+    MPIU_printf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
+    /* We need to move the following to MatPrintHelp or some analogous routine */
     MPIU_printf(comm,"More matrix options:\n");
-    MPIU_printf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"  %smat_view_info : view basic matrix info during MatAssemblyEnd()\n",p);
+    MPIU_printf(comm,"  %smat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n",p);
+    MPIU_printf(comm,"  %smat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n",p);
     MPIU_printf(comm,"      -pause <sec> : set seconds of display pause\n");
     MPIU_printf(comm,"      -display <name> : set alternate display\n");
   }
-  if (OptionsHasName(0,"-mat_seqdense")) {
+  if (OptionsHasName(pre,"-mat_seqdense")) {
     *type = MATSEQDENSE;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_mpidense")) {
+  else if (OptionsHasName(pre,"-mat_mpidense")) {
     *type = MATMPIDENSE;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_seqbdiag")) {
+  else if (OptionsHasName(pre,"-mat_seqbdiag")) {
     *type = MATSEQBDIAG;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_mpibdiag")) {
+  else if (OptionsHasName(pre,"-mat_mpibdiag")) {
     *type = MATMPIBDIAG;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_mpirowbs")) {
+  else if (OptionsHasName(pre,"-mat_mpirowbs")) {
     *type = MATMPIROWBS;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_mpirow")) {
+  else if (OptionsHasName(pre,"-mat_mpirow")) {
     *type = MATMPIROW;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_seqrow")){
+  else if (OptionsHasName(pre,"-mat_seqrow")){
     *type = MATSEQROW;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_mpiaij")) {
+  else if (OptionsHasName(pre,"-mat_mpiaij")) {
     *type = MATMPIAIJ;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_seqaij")){
+  else if (OptionsHasName(pre,"-mat_seqaij")){
     *type = MATSEQAIJ;
     *set = 1;
   }
-  else if (OptionsHasName(0,"-mat_aij")){
+  else if (OptionsHasName(pre,"-mat_aij")){
     if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
     *set = 1;
   }  
-  else if (OptionsHasName(0,"-mat_row")){
+  else if (OptionsHasName(pre,"-mat_row")){
     if (size == 1) *type = MATSEQROW;
     else *type = MATMPIROW;
     *set = 1;
   }  
-  else if (OptionsHasName(0,"-mat_bdiag")){
+  else if (OptionsHasName(pre,"-mat_bdiag")){
     if (size == 1) *type = MATSEQBDIAG;
     else *type = MATMPIBDIAG;
     *set = 1;
   }  
-  else if (OptionsHasName(0,"-mat_dense")){
+  else if (OptionsHasName(pre,"-mat_dense")){
     if (size == 1) *type = MATSEQDENSE;
     else *type = MATMPIDENSE;
     *set = 1;
@@ -152,7 +158,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   MatType type;
   int     set,ierr;
 
-  ierr = MatGetFormatFromOptions(comm,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE) {
     return MatCreateSeqDense(comm,m,n,V);
   }
