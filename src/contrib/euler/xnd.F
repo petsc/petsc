@@ -1,5 +1,5 @@
 C
-C    "$Id: xnd.F,v 1.24 1997/10/11 18:39:18 curfman Exp curfman $";
+C    "$Id: xnd.F,v 1.25 1997/10/16 22:01:00 curfman Exp curfman $";
 C
 C This file contains routines that are used by both the Julianne 
 C and PETSc solvers.
@@ -347,14 +347,27 @@ c      CONV=ACOS(PetscDoubleExp(-1.0,0))/180.
       ALPHA=ALPHA*CONV
       BETA=BETA*CONV
       PHI=PHI*CONV
-      RINIT=one
-      RUINIT=FSMACH*COS(ALPHA)*COS(BETA)
-      RVINIT=FSMACH*(SIN(PHI)*SIN(ALPHA)*COS(BETA)
+      if (problem .eq. 1 .or. problem .eq. 2 .or. 
+     &    problem .eq. 3) then
+        RINIT=one
+        RUINIT=FSMACH*COS(ALPHA)*COS(BETA)
+        RVINIT=FSMACH*(SIN(PHI)*SIN(ALPHA)*COS(BETA)
      1   -COS(PHI)*SIN(BETA))
-      RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
+        RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
      1  +SIN(PHI)*COS(ALPHA)*SIN(BETA))
-       EINIT=one/(GAM*GM1)+p5*FSMACH**2
-      PINIT=GM1*(EINIT-p5*FSMACH**2)
+        EINIT=one/(GAM*GM1)+p5*FSMACH**2
+        PINIT=GM1*(EINIT-p5*FSMACH**2)
+      else if (problem .eq. 5 .or. problem .eq. 6) then
+        RINIT=one
+        RUINIT=FSMACH
+        RVINIT=0.0
+        RWINIT=0.0
+        EINIT=one/(GAM*GM1)+p5*FSMACH**2
+        PINIT=GM1*(EINIT-p5*FSMACH**2)
+      else
+        write(6,*) 'ERROR: unsupported problem'
+        stop
+      endif
       do 2 k=gzsf1,gzefp1
       do 2 j=gysf1,gyefp1
       do 2 i=gxsf1,gxefp1
