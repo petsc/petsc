@@ -303,7 +303,7 @@ AC_SEARCH_LIBS(socket,socket)
 # BLAS are in sunperf.  They include a C version, so we need only test for
 # the C name
 # LAPACK is also in sunperf (check for sgebak)
-# Note that sunperf expect -lm
+# Note that sunperf expects -lm
 # sunperf is actually licensed, so you need bizarre syntax to access it
 # It also doesn't want to work with the C compiler/linker (apparently it
 # expects to be linked with Fortran always)
@@ -603,6 +603,27 @@ AC_CACHE_CHECK([whether dreal is provided in Fortran],ac_cv_prog_f77_dreal,
 ],ac_cv_prog_f77_dreal=yes,ac_cv_prog_f77_dreal=no)])
 if test "$ac_cv_prog_f77_dreal" != "yes" ; then
     AC_DEFINE(MISSING_DREAL)
+fi
+dnl
+dnl I believe that the blas are required.  Here's a test for that
+AC_CACHE_CHECK([whether the BLAS are available],ac_cv_func_blas,
+[save_LIBS="$LIBS"
+LIBS="$LIBS $BLAS_LIB"
+AC_TRY_LINK(,[
+    call dgemm()
+    call ddot()
+],ac_cv_func_blas=yes,ac_cv_func_blas=no)
+LIBS="$save_LIBS"
+])
+if test "$ac_cv_func_blas" != "yes" ; then
+    AC_MSG_ERROR([configure could not find the BLAS library.  If no
+    BLAS library is available, see the installation instructions about
+    downloading one.  If one is available in an unusual place, use the
+    --with-blas=path and --with-lapack=path options to configure to 
+    specify the location.
+
+    Since many PETSc routines require the BLAS, configure is stopping here.
+    Rerun configure when the BLAS are available.])
 fi
 dnl
 dnl
