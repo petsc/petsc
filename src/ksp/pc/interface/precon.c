@@ -52,48 +52,6 @@ int PCGetDefaultType_Private(PC pc,const char* type[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCNullSpaceAttach"
-/*@C
-   PCNullSpaceAttach - attaches a null space to a preconditioner object.
-        This null space will be removed from the resulting vector whenever
-        the preconditioner is applied.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  nullsp - the null space object
-
-   Level: developer
-
-   Notes:
-      Overwrites any previous null space that may have been attached
-
-  Users manual sections:
-.   sec_singular
-
-.keywords: PC, destroy, null space
-
-.seealso: PCCreate(), PCSetUp(), MatNullSpaceCreate(), MatNullSpace
-
-@*/
-int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_COOKIE,2);
-
-  if (pc->nullsp) {
-    ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);
-  }
-  pc->nullsp = nullsp;
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy"
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
@@ -121,7 +79,6 @@ int PCDestroy(PC pc)
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
 
   if (pc->ops->destroy)       {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  if (pc->nullsp)             {ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
   if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
   if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
 
@@ -355,7 +312,6 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->bops->publish      = PCPublish_Petsc;
   pc->mat                = 0;
   pc->setupcalled        = 0;
-  pc->nullsp             = 0;
   pc->data               = 0;
   pc->diagonalscale      = PETSC_FALSE;
   pc->diagonalscaleleft  = 0;
@@ -403,7 +359,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 
 .seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
-int PCApply(PC pc,Vec x,Vec y,PCSide side)
+int PCApply(PC pc,Vec x,Vec y)
 {
   int        ierr;
 
@@ -416,23 +372,9 @@ int PCApply(PC pc,Vec x,Vec y,PCSide side)
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-
-  /* Remove null space from input vector y */
-  if (side == PC_RIGHT && pc->nullsp) {
-    Vec tmp;
-    ierr = MatNullSpaceRemove(pc->nullsp,x,&tmp);CHKERRQ(ierr);
-    x    = tmp;
-    SETERRQ(1,"Cannot deflate out null space if using right preconditioner!");
-  }
-
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-
-  /* Remove null space from preconditioned vector y */
-  if (side == PC_LEFT && pc->nullsp) {
-    ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -640,21 +582,17 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = VecDuplicate(x,&work2);CHKERRQ(ierr);
       ierr = PCDiagonalScaleRight(pc,x,work2);CHKERRQ(ierr);
       ierr = (*pc->ops->applyBA)(pc,side,work2,y,work);CHKERRQ(ierr);
-      /* Remove null space from preconditioned vector y */
-      if (pc->nullsp) {
-        ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
-      }
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
       ierr = VecDestroy(work2);CHKERRQ(ierr);
     } else if (side == PC_RIGHT) {
       ierr = PCDiagonalScaleRight(pc,x,y);CHKERRQ(ierr);
-      ierr = PCApply(pc,y,work,side);CHKERRQ(ierr);
+      ierr = PCApply(pc,y,work);CHKERRQ(ierr);
       ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
     } else if (side == PC_LEFT) {
       ierr = PCDiagonalScaleRight(pc,x,y);CHKERRQ(ierr);
       ierr = MatMult(pc->mat,y,work);CHKERRQ(ierr);
-      ierr = PCApply(pc,work,y,side);CHKERRQ(ierr);
+      ierr = PCApply(pc,work,y);CHKERRQ(ierr);
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
     } else if (side == PC_SYMMETRIC) {
       SETERRQ(1,"Cannot provide diagonal scaling with symmetric application of preconditioner");
@@ -662,16 +600,12 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   } else {
     if (pc->ops->applyBA) {
       ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
-      /* Remove null space from preconditioned vector y */
-      if (pc->nullsp) {
-        ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
-      }
     } else if (side == PC_RIGHT) {
-      ierr = PCApply(pc,x,work,side);CHKERRQ(ierr);
+      ierr = PCApply(pc,x,work);CHKERRQ(ierr);
       ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
     } else if (side == PC_LEFT) {
       ierr = MatMult(pc->mat,x,work);CHKERRQ(ierr);
-      ierr = PCApply(pc,work,y,side);CHKERRQ(ierr);
+      ierr = PCApply(pc,work,y);CHKERRQ(ierr);
     } else if (side == PC_SYMMETRIC) {
       /* There's an extra copy here; maybe should provide 2 work vectors instead? */
       ierr = PCApplySymmetricRight(pc,x,work);CHKERRQ(ierr);
@@ -877,13 +811,6 @@ int PCSetUp(PC pc)
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   pc->setupcalled = 2;
-  if (pc->nullsp) {
-    PetscTruth test;
-    ierr = PetscOptionsHasName(pc->prefix,"-pc_test_null_space",&test);CHKERRQ(ierr);
-    if (test) {
-      ierr = MatNullSpaceTest(pc->nullsp,pc->mat);CHKERRQ(ierr);
-    }
-  }
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1567,7 +1494,7 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     /* should fix, allowing user to choose side */
-    ierr = PCApply(pc,in,out,PC_LEFT);CHKERRQ(ierr);
+    ierr = PCApply(pc,in,out);CHKERRQ(ierr);
     
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 

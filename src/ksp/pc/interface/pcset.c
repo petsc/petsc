@@ -203,20 +203,6 @@ int PCSetFromOptions(PC pc)
       ierr = PCSetType(pc,def);CHKERRQ(ierr);
     } 
 
-    ierr = PetscOptionsName("-pc_constant_null_space","Add constant null space to preconditioner","PCNullSpaceAttach",&flg);CHKERRQ(ierr);
-    if (flg) {
-      MatNullSpace nsp;
-
-      ierr = MatNullSpaceCreate(pc->comm,1,0,0,&nsp);CHKERRQ(ierr);
-      ierr = PCNullSpaceAttach(pc,nsp);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
-    }
-
-    /* option is actually checked in PCSetUp() */
-    if (pc->nullsp) {
-      ierr = PetscOptionsName("-pc_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
-    }
-
     if (pc->ops->setfromoptions) {
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }

@@ -34,7 +34,7 @@ int MAT_NULLSPACE_COOKIE = 0;
 
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), PCNullSpaceAttach(), MatNullSpace
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace
 @*/
 int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNullSpace *SP)
 {

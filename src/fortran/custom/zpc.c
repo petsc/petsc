@@ -30,7 +30,6 @@
 #define pcgettype_                 PCGETTYPE
 #define pcsettype_                 PCSETTYPE
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
-#define pcnullspaceattach_         PCNULLSPACEATTACH
 #define matnullspacecreate_        MATNULLSPACECREATE
 #define pcview_                    PCVIEW
 #define mgsetlevels_               MGSETLEVELS
@@ -49,7 +48,6 @@
 #define pcasmgetlocalsubmatrices_  pcasmgetlocalsubmatrices
 #define pcasmgetlocalsubdomains_   pcasmgetlocalsubdomains
 #define matnullspacecreate_        matnullspacecreate
-#define pcnullspaceattach_         pcnullspaceattach
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
 #define pccreate_                  pccreate
@@ -167,11 +165,6 @@ void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)
 void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,int *ierr)
 {
   *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*comm),*has_cnst,*n,vecs,SP);
-}
-
-void PETSC_STDCALL pcnullspaceattach_(PC *pc,MatNullSpace *nullsp,int *ierr)
-{
-  *ierr = PCNullSpaceAttach(*pc,*nullsp);
 }
 
 void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))

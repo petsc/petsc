@@ -32,7 +32,6 @@ int main(int argc,char **args)
   Vec          u,b;
   KSP          ksp;
   MatNullSpace nullsp;
-  PC           pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -80,9 +79,8 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
-    ierr = PCNullSpaceAttach(pc,nullsp);CHKERRQ(ierr);
+    ierr = KSPSetNullSpace(ksp,nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);

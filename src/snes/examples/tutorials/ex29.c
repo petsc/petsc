@@ -110,7 +110,7 @@ extern int Initialize(DMMG *);
 extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int Gnuplot(DA da, Vec X, double time);
-extern int AttachNullSpace(PC,Vec);
+extern int AttachNullSpace(KSP,Vec);
 extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
 #undef __FUNCT__
@@ -285,18 +285,17 @@ int main(int argc,char **argv)
     /* attach nullspace to each level of the preconditioner */
     {
       KSP       subksp,ksp;
-      PC         pc,subpc;
+      PC         pc;
       PetscTruth mg;
 
       ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&pc);
-      ierr = AttachNullSpace(pc,DMMGGetx(dmmg));CHKERRQ(ierr);
+      ierr = AttachNullSpace(ksp,DMMGGetx(dmmg));CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&mg);CHKERRQ(ierr);
       if (mg) {
         for (i=0; i<param.mglevels; i++) {
 	  ierr = MGGetSmoother(pc,i,&subksp);CHKERRQ(ierr);
-	  ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
-	  ierr = AttachNullSpace(subpc,dmmg[i]->x);CHKERRQ(ierr);
+	  ierr = AttachNullSpace(subksp,dmmg[i]->x);CHKERRQ(ierr);
         }
       }
     }
@@ -704,6 +703,8 @@ int Update(DMMG *dmmg)
   ierr = Initialize(dmmg);
   CHKERRQ(ierr);
 
+  snes = DMMGGetSNES(dmmg);
+
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
 
     if ((param->second_order) && (tsCtx->itstep > 0))
@@ -730,7 +731,6 @@ int Update(DMMG *dmmg)
     ierr = DMMGSolve(dmmg);
     CHKERRQ(ierr); 
 
-    snes = DMMGGetSNES(dmmg);
 
 
     if (tsCtx->itstep == 665000)
@@ -929,7 +929,7 @@ int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AttachNullSpace"
-int AttachNullSpace(PC pc,Vec model)
+int AttachNullSpace(KSP ksp,Vec model)
 {
   int          i,ierr,rstart,rend,N;
   MatNullSpace sp;
@@ -950,7 +950,7 @@ int AttachNullSpace(PC pc,Vec model)
   vs[0] = v;
   ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,0,1,vs,&sp);CHKERRQ(ierr);
   ierr  = VecDestroy(v);CHKERRQ(ierr);
-  ierr  = PCNullSpaceAttach(pc,sp);CHKERRQ(ierr);
+  ierr  = KSPSetNullSpace(ksp,sp);CHKERRQ(ierr);
   ierr  = MatNullSpaceDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

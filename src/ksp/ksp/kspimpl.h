@@ -88,10 +88,12 @@ struct _p_KSP {
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
-  PetscTruth dscale;      /* diagonal scale system; used with KSPSetDiagonalScale() */
-  PetscTruth dscalefix;   /* unscale system after solve */
-  PetscTruth dscalefix2;  /* system has been unscaled */
-  Vec        diagonal;    /* 1/sqrt(diag of matrix) */
+  PetscTruth   dscale;      /* diagonal scale system; used with KSPSetDiagonalScale() */
+  PetscTruth   dscalefix;   /* unscale system after solve */
+  PetscTruth   dscalefix2;  /* system has been unscaled */
+  Vec          diagonal;    /* 1/sqrt(diag of matrix) */
+
+  MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 };
 
 #define KSPLogResidualHistory(ksp,norm) \
@@ -118,10 +120,12 @@ EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
        These allow the various Krylov methods to apply to either the linear system
     or its transpose.
 */
+#define KSP_RemoveNullSpace(ksp,y) ((ksp->nullsp && ksp->pc_side == PC_LEFT) ? MatNullSpaceRemove(ksp->nullsp,y,PETSC_NULL) : 0)
+
 #define KSP_MatMult(ksp,A,x,y)               (!ksp->transpose_solve) ?  MatMult(A,x,y)               : MatMultTranspose(A,x,y) 
 #define KSP_MatMultTranspose(ksp,A,x,y)      (!ksp->transpose_solve) ?  MatMultTranspose(A,x,y)      : MatMult(A,x,y) 
-#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  PCApply(B,x,y,ksp->pc_side)  : PCApplyTranspose(B,x,y) 
-#define KSP_PCApplyTranspose(ksp,B,x,y)      (!ksp->transpose_solve) ?  PCApplyTranspose(B,x,y)      : PCApply(B,x,y,ksp->pc_side) 
-#define KSP_PCApplyBAorAB(ksp,pc,side,x,y,w) (!ksp->transpose_solve) ?  PCApplyBAorAB(pc,side,x,y,w) : PCApplyBAorABTranspose(pc,side,x,y,w)
+#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  (PCApply(B,x,y) || KSP_RemoveNullSpace(ksp,y)) : PCApplyTranspose(B,x,y) 
+#define KSP_PCApplyTranspose(ksp,B,x,y)      (!ksp->transpose_solve) ?  PCApplyTranspose(B,x,y)      : (PCApply(B,x,y) || KSP_RemoveNullSpace(ksp,y)) 
+#define KSP_PCApplyBAorAB(ksp,B,side,x,y,w)  (!ksp->transpose_solve) ?  (PCApplyBAorAB(B,side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(B,side,x,y,w)
 
 #endif

@@ -175,7 +175,7 @@ int PCISSetUp(PC pc)
 	if (!(not_remove_nullspace_floating)){
 	  MatNullSpace nullsp;
 	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
-	  ierr = PCNullSpaceAttach(pc_ctx,nullsp);CHKERRQ(ierr);
+	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
 	  ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
 	}
       } else {  /* fixed subdomain */
@@ -186,7 +186,7 @@ int PCISSetUp(PC pc)
 	if (remove_nullspace_fixed) {
 	  MatNullSpace nullsp;
 	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
-	  ierr = PCNullSpaceAttach(pc_ctx,nullsp);CHKERRQ(ierr);
+	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
 	  ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
 	}
       }

@@ -37,13 +37,13 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
-  ierr = PCApply(next->pc,x,y,PC_LEFT);CHKERRQ(ierr);
+  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
   while (next->next) {
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
     ierr = VecWAXPY(&mone,jac->work1,x,jac->work2);CHKERRQ(ierr);
-    ierr = PCApply(next->pc,jac->work2,jac->work1,PC_LEFT);CHKERRQ(ierr);
+    ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(&one,jac->work1,y);CHKERRQ(ierr);
   }
 
@@ -71,8 +71,8 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
     SETERRQ(1,"Special composite preconditioners requires exactly two PCs");
   }
 
-  ierr = PCApply(next->pc,x,jac->work1,PC_LEFT);CHKERRQ(ierr);
-  ierr = PCApply(next->next->pc,jac->work1,y,PC_LEFT);CHKERRQ(ierr);
+  ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
+  ierr = PCApply(next->next->pc,jac->work1,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,10 +89,10 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   if (!next) {
     SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
-  ierr = PCApply(next->pc,x,y,PC_LEFT);CHKERRQ(ierr);
+  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = PCApply(next->pc,x,jac->work1,PC_LEFT);CHKERRQ(ierr);
+    ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(&one,jac->work1,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

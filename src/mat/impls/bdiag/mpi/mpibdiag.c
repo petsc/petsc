@@ -873,7 +873,7 @@ int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScal
   if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive");
 
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
-  B->n = B->N = PetscMax(B->n,B->N);
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
 
   if ((B->N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
   if ((B->m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");
@@ -936,7 +936,7 @@ int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScal
   }
 
   /* Form local matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);

@@ -113,11 +113,11 @@ int  KSPSolve_CGNE(KSP ksp)
   } else { 
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-  ierr = PCApply(ksp->B,R,T,ksp->pc_side); CHKERRQ(ierr);
+  ierr = KSP_PCApply(ksp,ksp->B,R,T); CHKERRQ(ierr);
   if (transpose_pc) {
-    ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,ksp->B,T,Z); CHKERRQ(ierr);
   } else {
-    ierr = PCApply(ksp->B,T,Z,ksp->pc_side); CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,ksp->B,T,Z); CHKERRQ(ierr);
   }
 
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
@@ -172,11 +172,11 @@ int  KSPSolve_CGNE(KSP ksp)
      ierr = VecAXPY(&a,P,X);CHKERRQ(ierr);          /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-       ierr = PCApply(ksp->B,R,T,ksp->pc_side); CHKERRQ(ierr);
+       ierr = KSP_PCApply(ksp,ksp->B,R,T); CHKERRQ(ierr);
        if (transpose_pc) {
-	 ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+	 ierr = KSP_PCApplyTranspose(ksp,ksp->B,T,Z); CHKERRQ(ierr);
        } else {
-	 ierr = PCApply(ksp->B,T,Z,ksp->pc_side); CHKERRQ(ierr);
+	 ierr = KSP_PCApply(ksp,ksp->B,T,Z); CHKERRQ(ierr);
        }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {

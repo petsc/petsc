@@ -231,6 +231,15 @@ int KSPSetUp(KSP ksp)
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->B);CHKERRQ(ierr);
+  if (ksp->nullsp) {
+    PetscTruth test;
+    ierr = PetscOptionsHasName(ksp->prefix,"-ksp_test_null_space",&test);CHKERRQ(ierr);
+    if (test) {
+      Mat mat;
+      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(ksp->nullsp,mat);CHKERRQ(ierr);
+    }
+  }
   ksp->setupcalled = 2;
   PetscFunctionReturn(0);
 }
@@ -337,7 +346,8 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
-    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);CHKERRQ(ierr);
+    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
@@ -533,7 +543,7 @@ int KSPSolveTranspose(KSP ksp,Vec b,Vec x)
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
-   Level: developer
+   Level: beginner
 
 .keywords: KSP, destroy
 

@@ -3185,9 +3185,9 @@ Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} in
 if the null space contains the constant functions. (If the null space contains the constant
 functions you do not need to include it in the \trl{basis} vectors you provide).
 
-One then tells the PC object you are using what the null space is with the call
+One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-PCNullSpaceAttach(PC pc,MatNullSpace nsp);
+KSPSetNullSpace(KSP ksp,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution process.
 

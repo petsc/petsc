@@ -3,7 +3,9 @@
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS\
+#define kspsetnullspace_           KSPSETNULLSPACE
+#define kspgetnullspace_           KSPGETNULLSPACE
 #define kspgetresidualnorm_        KSPGETRESIDUALNORM
 #define kspgetconvergedreason_     KSPGETCONVERGEDREASON
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
@@ -41,9 +43,11 @@
 #define kspgmressetrestart_        KSPGMRESSETRESTART
 #define kspsetnormtype_            KSPSETNORMTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define kspsetnullspace_           kspsetnullspace
+#define kspgetnullspace_           kspsetnullspace
 #define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
-#define kspfgmresmodifypcksp_     kspfgmresmodifypcksp
+#define kspfgmresmodifypcksp_      kspfgmresmodifypcksp
 #define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
 #define kspdefaultconverged_       kspdefaultconverged
 #define kspskipconverged_          kspskipconverged
@@ -141,6 +145,16 @@ void PETSC_STDCALL kspgetconvergedreason_(KSP *ksp,KSPConvergedReason *reason,in
 }
 
 /* function */
+void PETSC_STDCALL kspsetnullspace_(KSP *ksp,MatNullSpace *sp, int *ierr)
+{
+  *ierr = KSPSetNullSpace(*ksp,*sp);
+}
+
+void PETSC_STDCALL kspgetnullspace_(KSP *ksp,MatNullSpace *sp, int *ierr)
+{
+  *ierr = KSPGetNullSpace(*ksp,sp);
+}
+
 void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, int *ierr)
 {
   PetscViewer v;

@@ -82,6 +82,7 @@ class Configure(config.base.Configure):
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
     self.mapnames = os.path.join(self.binDir, 'mapnames')
+    self.bib2html = os.path.join(self.binDir, 'bib2html')    
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
@@ -93,11 +94,13 @@ class Configure(config.base.Configure):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
       self.framework.getExecutable('bfort', getFullPath = 1)
       self.framework.getExecutable('doctext', getFullPath = 1)
-      self.framework.getExecutable('mapnames', getFullPath = 1)      
+      self.framework.getExecutable('mapnames', getFullPath = 1)
+      self.framework.getExecutable('bib2html', getFullPath = 1)            
       if hasattr(self.framework, 'bfort'):
         self.bfort    = self.framework.bfort
         self.doctext  = self.framework.doctext
         self.mapnames = self.framework.mapnames
+        self.mapnames = self.framework.bib2html        
       else:
         self.downLoadSowing()
         
@@ -105,6 +108,7 @@ class Configure(config.base.Configure):
         self.framework.addSubstitution('BFORT', self.bfort)
         self.framework.addSubstitution('DOCTEXT', self.doctext)
         self.framework.addSubstitution('MAPNAMES', self.mapnames)
+        self.framework.addSubstitution('BIB2HTML', self.bib2html)        
 
         self.framework.getExecutable('pdflatex', getFullPath = 1)
         if hasattr(self.framework, 'pdflatex'):

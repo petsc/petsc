@@ -590,7 +590,7 @@ int KSPDefaultDestroy(KSP ksp)
                                 residual. Try a different preconditioner, or a different initial guess.
  
 
-   Level: intermediate
+   Level: beginner
 
    Notes: Can only be called after the call the KSPSolve() is complete.
 

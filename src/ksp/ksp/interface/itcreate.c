@@ -37,7 +37,7 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
 
-   Level: developer
+   Level: beginner
 
 .keywords: KSP, view
 
@@ -254,7 +254,7 @@ int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
    orthogonalization.
 
-   Level: developer
+   Level: beginner
 
 .keywords: KSP, create, context
 
@@ -471,6 +471,8 @@ $                       save on communication overhead
 $                    preconditioned - default for left preconditioning 
 $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
+.    -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
+.    -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_cancelmonitors - cancel all previous convergene monitor routines set
 .   -ksp_monitor - print residual norm at each iteration
@@ -482,7 +484,7 @@ $                    natural - see KSPSetNormType()
    To see all options, run your program with the -help option
    or consult the users manual.
 
-   Level: developer
+   Level: beginner
 
 .keywords: KSP, set, from, options, database
 
@@ -545,6 +547,21 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsName("-ksp_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","KSPSetDiagonalScaleFix",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetDiagonalScaleFix(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+
+
+    ierr = PetscOptionsName("-ksp_constant_null_space","Add constant null space to Krylov solver","KSPSetNullSpace",&flg);CHKERRQ(ierr);
+    if (flg) {
+      MatNullSpace nsp;
+
+      ierr = MatNullSpaceCreate(ksp->comm,1,0,0,&nsp);CHKERRQ(ierr);
+      ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
+    }
+
+    /* option is actually checked in KSPSetUp() */
+    if (ksp->nullsp) {
+      ierr = PetscOptionsName("-ksp_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
     }
 
     /*
@@ -638,7 +655,6 @@ int KSPSetFromOptions(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRegister"
 /*@C
@@ -656,3 +672,54 @@ int KSPRegister(const char sname[],const char path[],const char name[],int (*fun
   ierr = PetscFListAdd(&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetNullSpace"
+/*@C
+  KSPSetNullSpace - Sets the null space of the operator
+
+  Collective on KSP
+
+  Input Parameters:
++  ksp - the Krylov space object
+-  nullsp - the null space of the operator
+
+  Level: advanced
+
+.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace()
+@*/
+int KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
+{
+  int  ierr;
+
+  PetscFunctionBegin;
+  if (ksp->nullsp) {
+    ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);
+  }
+  ksp->nullsp = nullsp;
+  ierr = PetscObjectReference((PetscObject)ksp->nullsp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetNullSpace"
+/*@C
+  KSPGetNullSpace - Gets the null space of the operator
+
+  Collective on KSP
+
+  Input Parameters:
++  ksp - the Krylov space object
+-  nullsp - the null space of the operator
+
+  Level: advanced
+
+.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
+@*/
+int KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
+{
+  PetscFunctionBegin;
+  *nullsp = ksp->nullsp;
+  PetscFunctionReturn(0);
+}
+

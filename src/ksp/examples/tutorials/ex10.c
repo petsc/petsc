@@ -52,7 +52,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
-  PetscTruth     preload=PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric,cknorm=PETSC_FALSE;
+  PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE;
   int            num_numfac;
   PetscScalar    sigma;
 
@@ -289,18 +289,6 @@ int main(int argc,char **args)
       ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
       ierr = VecDestroy(scale);CHKERRQ(ierr);
 
-    }
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-null_space", &hasNullSpace);CHKERRQ(ierr);
-    if (hasNullSpace == PETSC_TRUE) {
-      MatNullSpace nullSpace;
-      PC           pc;
-
-      ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, 1, 0, PETSC_NULL, &nullSpace);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(nullSpace, A);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCNullSpaceAttach(pc, nullSpace);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(nullSpace);CHKERRQ(ierr); 
     }
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -

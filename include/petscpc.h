@@ -83,7 +83,7 @@ EXTERN int PCCreate(MPI_Comm,PC*);
 EXTERN int PCSetType(PC,const PCType);
 EXTERN int PCSetUp(PC);
 EXTERN int PCSetUpOnBlocks(PC);
-EXTERN int PCApply(PC,Vec,Vec,PCSide);
+EXTERN int PCApply(PC,Vec,Vec);
 EXTERN int PCApplySymmetricLeft(PC,Vec,Vec);
 EXTERN int PCApplySymmetricRight(PC,Vec,Vec);
 EXTERN int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
@@ -163,8 +163,6 @@ EXTERN int PCView(PC,PetscViewer);
 EXTERN int PCSetOptionsPrefix(PC,const char[]);
 EXTERN int PCAppendOptionsPrefix(PC,const char[]);
 EXTERN int PCGetOptionsPrefix(PC,char*[]);
-
-EXTERN int PCNullSpaceAttach(PC,MatNullSpace);
 
 EXTERN int PCComputeExplicitOperator(PC,Mat*);
 

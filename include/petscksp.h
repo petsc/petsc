@@ -133,6 +133,8 @@ EXTERN int KSPSetSolution(KSP,Vec);
 EXTERN int KSPGetSolution(KSP,Vec *);
 EXTERN int KSPGetResidualNorm(KSP,PetscReal*);
 EXTERN int KSPGetIterationNumber(KSP,int*);
+EXTERN int KSPSetNullSpace(KSP,MatNullSpace);
+EXTERN int KSPGetNullSpace(KSP,MatNullSpace*);
 
 EXTERN int KSPSetPC(KSP,PC);
 EXTERN int KSPGetPC(KSP,PC*);
