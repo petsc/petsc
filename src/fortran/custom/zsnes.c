@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.27 1999/04/05 00:10:39 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.28 1999/04/05 18:25:29 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -63,7 +63,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.27 1999/04/05 00:10:39 bsmith Exp balay $
 
 EXTERN_C_BEGIN
 
-void matsnesmfsettype_(Mat *mat,char *ftype, int *__ierr,int len )
+void matsnesmfsettype_(Mat *mat,CHAR ftype, int *__ierr,int len )
 {
   char *t;
   FIXCHAR(ftype,len,t);

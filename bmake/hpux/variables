@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 1999/03/24 20:41:39 balay Exp bsmith $ 
+# $Id: base_variables,v 1.5 1999/03/31 18:38:56 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -21,7 +21,7 @@ C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
 G_COPTFLAGS      = -g 
 G_FOPTFLAGS      = -g
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O
+O_COPTFLAGS      = -O +Onolimit
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
@@ -37,13 +37,13 @@ CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O 
+OCXX_COPTFLAGS   = -O +Onolimit
 OCXX_FOPTFLAGS   = -O 
 # -------------------------- BOPT=g_complex options ------------------------
 GCOMP_COPTFLAGS  = -g 
 GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O
+OCOMP_COPTFLAGS  = -O +Onolimit
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 #
