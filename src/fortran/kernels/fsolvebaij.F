@@ -11,9 +11,9 @@
       implicit none
       MatScalar        a(0:*)
       PetscScalar      x(0:*),b(0:*)
-      integer          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
 
-      integer          i,j,jstart,jend,idx,ax,jdx
+      PetscInt          i,j,jstart,jend,idx,ax,jdx
       PetscScalar      s1,s2,s3,s4
       PetscScalar      x1,x2,x3,x4
 !     
@@ -93,9 +93,9 @@
       implicit none
       MatScalar        a(0:*),w(0:*)
       PetscScalar      x(0:*),b(0:*)
-      integer          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
 
-      integer          i,j,jstart,jend,idx,ax,jdx,kdx
+      PetscInt          i,j,jstart,jend,idx,ax,jdx,kdx
       MatScalar        s(0:3)
 !     
 !     Forward Solve
@@ -192,9 +192,9 @@
       implicit none
       MatScalar        a(0:*)
       PetscScalar      x(0:*),b(0:*),w(0:*)
-      integer          n,ai(0:*),aj(0:*),adiag(0:*),ii,jj
+      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*),ii,jj
 
-      integer          i,j,jstart,jend,idx,ax,jdx,kdx,nn
+      PetscInt          i,j,jstart,jend,idx,ax,jdx,kdx,nn
       PetscScalar      s(0:3)
 !     
 !     Forward Solve

@@ -8,9 +8,9 @@
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))
@@ -24,9 +24,9 @@
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n,4
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                                         &

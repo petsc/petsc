@@ -6,11 +6,11 @@
 !
       subroutine MSGemv(bs,ncols,A,x,y)
       implicit none
-      integer          bs,ncols
+      PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
-      integer          i,j
+      PetscInt          i,j
 
       do 5, j=1,bs
         y(j) = 0.0d0
@@ -27,11 +27,11 @@
 
       subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
-      integer          bs,ncols
+      PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
-      integer          i,j
+      PetscInt          i,j
 
       do 10, i=1,ncols
         do 20, j=1,bs
@@ -44,11 +44,11 @@
 
       subroutine MSGemvm(bs,ncols,A,x,y)
       implicit none
-      integer          bs,ncols
+      PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
-      integer          i,j
+      PetscInt          i,j
 
       do 10, i=1,ncols
         do 20, j=1,bs
@@ -61,11 +61,11 @@
 
       subroutine MSGemvt(bs,ncols,A,x,y)
       implicit none
-      integer          bs,ncols
+      PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
       PetscScalar      x(bs),y(ncols)
 
-      integer          i,j
+      PetscInt          i,j
       PetscScalar      sum
 
       do 10, i=1,ncols
@@ -81,11 +81,11 @@
 
       subroutine MSGemm(bs,A,B,C)
       implicit none
-      integer          bs
+      PetscInt          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
       PetscScalar      sum
 
-      integer          i,j,k
+      PetscInt          i,j,k
 
       do 10, i=1,bs
         do 20, j=1,bs
@@ -102,11 +102,11 @@
 
       subroutine MSGemmi(bs,A,C,B)
       implicit none
-      integer          bs
+      PetscInt          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
       PetscScalar      sum
 
-      integer          i,j,k
+      PetscInt          i,j,k
 
       do 10, i=1,bs
         do 20, j=1,bs
