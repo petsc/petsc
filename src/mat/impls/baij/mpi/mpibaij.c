@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.139 1998/12/17 22:10:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.140 1999/01/08 16:55:04 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -23,13 +23,20 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ*) baij->B->data;
-  int         nbs = B->nbs,i,bs=B->bs;;
+  int         nbs = B->nbs,i,bs=B->bs,ierr;
 
   PetscFunctionBegin;
+#if defined (USE_CTABLE)
+  ierr = TableCreate( &baij->colmap, baij->nbs/5 ); CHKERRQ(ierr); 
+  for ( i=0; i<nbs; i++ ){
+    ierr = TableAdd( baij->colmap, baij->garray[i] + 1, i*bs+1 );CHKERRQ(ierr);
+  }
+#else
   baij->colmap = (int *) PetscMalloc((baij->Nbs+1)*sizeof(int));CHKPTRQ(baij->colmap);
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
   PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));
   for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i*bs+1;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +242,11 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
             if (!baij->colmap) {
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
+#if defined (USE_CTABLE)
+	    col = TableFind( baij->colmap, in[j]/bs + 1 ) - 1 + in[j]%bs;
+#else
             col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
+#endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
               col =  in[j]; 
@@ -330,9 +341,18 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             }
 
 #if defined(USE_PETSC_BOPT_g)
+#if defined (USE_CTABLE)
+            if( (TableFind( baij->colmap, in[j] + 1 ) - 1) % bs)
+	      {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
+#else
             if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
 #endif
+#endif
+#if defined (USE_CTABLE)
+	    col = (TableFind( baij->colmap, in[j] + 1 ) - 1)/bs;
+#else
             col = (baij->colmap[in[j]] - 1)/bs;
+#endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
               col =  in[j];              
@@ -590,7 +610,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int        bs=baij->bs,ierr,i,j, bsrstart = baij->rstart*bs, bsrend = baij->rend*bs;
-  int        bscstart = baij->cstart*bs, bscend = baij->cend*bs,row,col;
+  int        bscstart = baij->cstart*bs, bscend = baij->cend*bs,row,col,data;
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
@@ -608,10 +628,14 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
-          if((baij->colmap[idxn[j]/bs]-1 < 0) || 
-             (baij->garray[(baij->colmap[idxn[j]/bs]-1)/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
+#if defined (USE_CTABLE)
+          data = TableFind( baij->colmap, idxn[j]/bs + 1 ) - 1;
+#else
+          data = baij->colmap[idxn[j]/bs]-1;
+#endif
+          if((data < 0) || (baij->garray[data/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
-            col  = (baij->colmap[idxn[j]/bs]-1) + idxn[j]%bs;
+            col  = data + idxn[j]%bs;
             ierr = MatGetValues_SeqBAIJ(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
           } 
         }
@@ -899,7 +923,11 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);
           }
+#if defined (USE_CTABLE)
+	  col = TableFind( baij->colmap, col/bs + 1 ) - 1 + col%bs;
+#else
           col = (baij->colmap[col/bs]) - 1 + col%bs;
+#endif
           if (col < 0  && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
             ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
             col = (int) PetscReal(values[3*i+1]);
@@ -1133,7 +1161,11 @@ int MatDestroy_MPIBAIJ(Mat mat)
   PetscFree(baij->rowners); 
   ierr = MatDestroy(baij->A); CHKERRQ(ierr);
   ierr = MatDestroy(baij->B); CHKERRQ(ierr);
+#if defined (USE_CTABLE)
+  if (baij->colmap) TableDelete(baij->colmap);
+#else
   if (baij->colmap) PetscFree(baij->colmap);
+#endif
   if (baij->garray) PetscFree(baij->garray);
   if (baij->lvec)   VecDestroy(baij->lvec);
   if (baij->Mvctx)  VecScatterDestroy(baij->Mvctx);
@@ -2174,9 +2206,13 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
+#if defined (USE_CTABLE)
+  ierr = TableCreateCopy( &a->colmap,oldmat->colmap ); CHKERRQ(ierr); 
+#else
     a->colmap = (int *) PetscMalloc((a->Nbs)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->Nbs)*sizeof(int));
     PetscMemcpy(a->colmap,oldmat->colmap,(a->Nbs)*sizeof(int));
+#endif
   } else a->colmap = 0;
   if (oldmat->garray && (len = ((Mat_SeqBAIJ *) (oldmat->B->data))->nbs)) {
     a->garray = (int *) PetscMalloc(len*sizeof(int)); CHKPTRQ(a->garray);

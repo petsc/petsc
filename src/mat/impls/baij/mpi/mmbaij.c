@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.16 1997/11/03 04:46:15 bsmith Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.17 1998/01/10 05:12:13 balay Exp balay $";
 #endif
 
 
@@ -136,8 +136,12 @@ int DisAssemble_MPIBAIJ(Mat A)
   ierr = VecDestroy(baij->lvec); CHKERRQ(ierr); baij->lvec = 0;
   ierr = VecScatterDestroy(baij->Mvctx); CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
+#if defined (USE_CTABLE)
+    TableDelete(baij->colmap); baij->colmap = 0;
+#else
     PetscFree(baij->colmap); baij->colmap = 0;
     PLogObjectMemory(A,-Bbaij->nbs*sizeof(int));
+#endif
   }
 
   /* make sure that B is assembled so we can access its values */
