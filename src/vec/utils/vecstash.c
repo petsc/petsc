@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.5 1999/03/17 23:40:48 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.6 1999/03/18 01:20:46 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -24,16 +24,25 @@ static char vcid[] = "$Id: vecstash.c,v 1.5 1999/03/17 23:40:48 balay Exp balay 
 #define __FUNC__ "VecStashCreate_Private"
 int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE;
+  int ierr,flg,max=DEFAULT_STASH_SIZE,*opt,nopt;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
   ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-vecstash_initial_size",&max,&flg);CHKERRQ(ierr);
-  ierr = VecStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank); CHKERRQ(ierr);
+
+  nopt = stash->size;
+  opt  = (int*) PetscMalloc(nopt*sizeof(int)); CHKPTRQ(opt);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (nopt == 1)                max = opt[0];
+    else if (nopt == stash->size) max = opt[stash->rank];
+    else if (stash->rank < nopt)  max = opt[stash->rank];
+    /* else use the default */
+  }
+  ierr = VecStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
 
   if (bs <= 0) bs = 1;
 
