@@ -1,4 +1,3 @@
-/*$Id: ex19.c,v 1.30 2001/08/07 21:31:17 bsmith Exp $*/
 
 static char help[] = "Steady-state 2D subduction flow, pressure and temperature solver.\n\\n\
 The flow is driven by the subducting slab.\n\

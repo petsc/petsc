@@ -1,4 +1,3 @@
-/*$Id: dagetarray.c,v 1.13 2001/08/06 21:18:33 bsmith Exp $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 

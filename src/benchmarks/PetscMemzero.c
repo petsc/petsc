@@ -1,4 +1,3 @@
-/*$Id: PetscMemzero.c,v 1.23 2001/08/29 20:59:28 balay Exp $*/
 
 #include "petsc.h"
 

@@ -1,4 +1,3 @@
-/*$Id: daload.c,v 1.23 2001/03/23 23:25:00 balay Exp $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 

@@ -1,4 +1,3 @@
-! "$Id: ex1f.F,v 1.56 2001/08/10 16:48:34 balay Exp $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular

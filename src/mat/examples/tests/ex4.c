@@ -1,4 +1,3 @@
-/*$Id: ex4.c,v 1.23 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests MatGetSubMatrices() and MatZeroEntries().\n\n";
 

@@ -1,4 +1,3 @@
-/*$Id: ex15.c,v 1.24 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Solves a linear system in parallel with KSP.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\

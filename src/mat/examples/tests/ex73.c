@@ -1,4 +1,3 @@
-/*$Id: ex73.c,v 1.11 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
 

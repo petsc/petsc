@@ -1,4 +1,3 @@
-/*$Id: zoom.c,v 1.20 2001/03/23 23:20:24 balay Exp $*/
 
 #include "petscdraw.h"     /*I "petscdraw.h"  I*/
 

@@ -1,5 +1,3 @@
-/*$Id: mmbaij.c,v 1.46 2001/09/25 00:31:36 balay Exp $*/
-
 /*
    Support for the parallel BAIJ matrix vector multiply
 */

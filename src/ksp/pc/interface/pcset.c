@@ -1,4 +1,3 @@
-/*$Id: pcset.c,v 1.118 2001/08/21 21:03:13 bsmith Exp $*/
 /*
     Routines to set PC methods and options.
 */

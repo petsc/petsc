@@ -1,4 +1,3 @@
-/*$Id: pfall.c,v 1.14 2001/08/06 21:19:08 bsmith Exp $*/
 
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 

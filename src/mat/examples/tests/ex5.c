@@ -1,4 +1,3 @@
-/*$Id: ex5.c,v 1.27 2001/08/07 21:30:08 bsmith Exp $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";

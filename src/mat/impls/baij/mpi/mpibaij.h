@@ -1,5 +1,3 @@
-/* $Id: mpibaij.h,v 1.30 2001/08/07 03:02:58 balay Exp $ */
-
 
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H

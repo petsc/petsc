@@ -1,5 +1,3 @@
-/*$Id: comb.c,v 1.40 2001/09/07 20:08:55 bsmith Exp $*/
-
 /*
       Split phase global vector reductions with support for combining the
    communication portion of several operations. Using MPI-1.1 support only

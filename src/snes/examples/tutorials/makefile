@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.108 2001/08/22 18:02:14 balay Exp $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  

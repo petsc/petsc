@@ -1,4 +1,3 @@
-/*$Id: hue.c,v 1.10 2001/03/23 23:20:24 balay Exp $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 

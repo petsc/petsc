@@ -1,4 +1,3 @@
-/*$Id: lu.c,v 1.149 2001/08/07 21:30:26 bsmith Exp $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies

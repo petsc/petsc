@@ -1,5 +1,3 @@
-/* $Id: isimpl.h,v 1.27 2001/06/21 21:15:49 bsmith Exp $ */
-
 /*
     Index sets for scatter-gather type operations in vectors
 and matrices. 

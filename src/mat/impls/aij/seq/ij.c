@@ -1,4 +1,3 @@
-/*$Id: ij.c,v 1.38 2001/03/23 23:21:51 balay Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 

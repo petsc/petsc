@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.19 2001/08/22 18:02:18 balay Exp $
 
 ALL: lib
 

@@ -1,4 +1,3 @@
-/*$Id: ex34.c,v 1.17 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Reads a matrix and vector from a file and writes to another. Input options:\n\
   -fin <input_file> : file to load.  For an example of a 5X5 5-pt. stencil,\n\

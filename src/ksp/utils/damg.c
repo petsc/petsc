@@ -1,4 +1,3 @@
-/*$Id: damg.c,v 1.35 2001/07/20 21:25:12 bsmith Exp $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscksp.h"    /*I      "petscksp.h"    I*/

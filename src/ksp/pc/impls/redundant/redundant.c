@@ -1,4 +1,3 @@
-/*$Id: redundant.c,v 1.29 2001/04/10 19:36:17 bsmith Exp $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 

@@ -1,4 +1,3 @@
-/*$Id: spoolesOptions.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 /* 
    Default and runtime options used by seq and MPI Spooles' interface for both aij and sbaij mat objects
 */

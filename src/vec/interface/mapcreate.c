@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mapcreate.c,v 1.1 1999/06/21 02:03:50 knepley Exp $";
-#endif
 
 #include "vecimpl.h"      /*I "petscvec.h"  I*/
 

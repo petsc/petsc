@@ -1,4 +1,3 @@
-/*$Id: iterativ.c,v 1.108 2001/08/07 03:03:45 balay Exp $*/
 
 /*
    This file contains some simple default routines.  

@@ -1,5 +1,4 @@
 !
-!  $Id: petscis.h,v 1.24 2001/06/21 21:20:08 bsmith Exp $;
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !

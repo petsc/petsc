@@ -1,4 +1,3 @@
-/*$Id: fdda.c,v 1.75 2001/08/07 21:31:51 bsmith Exp $*/
  
 #include "src/dm/da/daimpl.h" /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/

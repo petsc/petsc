@@ -1,5 +1,3 @@
-/* $Id: petscmatlab.h,v 1.4 2001/08/06 21:19:20 bsmith Exp $ */
-
 /*
     Defines an interface to the Matlab Engine from PETSc
 */

@@ -1,4 +1,3 @@
-/* $Id: fdate.c,v 1.41 2001/03/23 23:20:44 balay Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"

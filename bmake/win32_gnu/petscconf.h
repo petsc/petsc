@@ -1,7 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.25 2001/06/20 21:20:06 buschelm Exp $"
-"Defines the configuration for this machine"
-#endif
 
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H

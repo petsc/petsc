@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.12 2001/08/06 21:16:36 bsmith Exp $*/
+
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies

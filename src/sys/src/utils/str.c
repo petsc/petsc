@@ -1,4 +1,3 @@
-/*$Id: str.c,v 1.51 2001/04/05 21:06:52 balay Exp $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 

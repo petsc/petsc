@@ -1,4 +1,3 @@
-/*$Id: maij.c,v 1.19 2001/08/07 03:03:00 balay Exp $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 

@@ -1,4 +1,3 @@
-/* $Id: petscdraw.h,v 1.79 2001/09/07 20:07:55 bsmith Exp $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */

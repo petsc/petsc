@@ -1,4 +1,3 @@
-/*$Id: ex78.c,v 1.14 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
 Writes them using the PETSc sparse format.\n\

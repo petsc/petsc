@@ -1,5 +1,3 @@
-
-!      "$Id: ex79f.F,v 1.3 2001/08/07 03:03:07 balay Exp $";
 !
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !

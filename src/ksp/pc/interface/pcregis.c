@@ -1,4 +1,3 @@
-/*$Id: pcregis.c,v 1.66 2001/08/10 03:32:21 bsmith Exp $*/
 
 #include "src/ksp/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 

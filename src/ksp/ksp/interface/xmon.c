@@ -1,4 +1,3 @@
-/*$Id: xmon.c,v 1.50 2001/04/10 19:36:24 bsmith Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"              /*I  "petscksp.h"   I*/
 

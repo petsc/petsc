@@ -1,4 +1,3 @@
-/*$Id: degr.c,v 1.11 2001/03/23 23:22:57 balay Exp $*/
 
 /* degr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 

@@ -1,4 +1,3 @@
-/*$Id: ex17.c,v 1.21 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 

@@ -1,5 +1,3 @@
-/*$Id: aobasic.c,v 1.60 2001/03/23 23:24:52 balay Exp $*/
-
 /*
     The most basic AO application ordering routines. These store the 
   entire orderings on each processor.

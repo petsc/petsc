@@ -1,4 +1,3 @@
-/*$Id: ex42.c,v 1.25 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
 This example is similar to ex40.c; here the index sets used are random.\n\

@@ -1,4 +1,3 @@
-/*$Id: ex13.c,v 1.29 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Solves a variable Poisson problem with KSP.\n\n";
 

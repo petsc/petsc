@@ -1,4 +1,3 @@
-/*$Id: dlregis.c,v 1.20 2001/03/23 23:23:29 balay Exp $*/
 
 #include "petscksp.h"
 

@@ -1,4 +1,3 @@
-/*$Id: viewers.c,v 1.16 2001/04/10 19:34:10 bsmith Exp $*/
 
 #include "petscviewer.h"
 

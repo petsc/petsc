@@ -1,4 +1,3 @@
-/*$Id: ao.c,v 1.39 2001/03/23 23:24:50 balay Exp $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */

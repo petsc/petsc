@@ -1,4 +1,3 @@
-/*$Id: ex11.c,v 1.38 1999/11/05 14:47:16 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\

@@ -1,4 +1,3 @@
-/*$Id: vcreatea.c,v 1.20 2001/06/21 21:15:11 bsmith Exp $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 

@@ -1,4 +1,3 @@
-/* $Id: f90_t3e.h,v 1.3 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined (__F90_T3E_H)
 #define __F90_T3E_H

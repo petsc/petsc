@@ -1,5 +1,3 @@
-/*$Id: pmap.c,v 1.21 2001/07/20 21:18:16 bsmith Exp $*/
-
 /*
    This file contains routines for basic map object implementation.
 */

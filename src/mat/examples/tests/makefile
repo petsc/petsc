@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.252 2001/09/07 20:10:28 bsmith Exp $ 
 
 CFLAGS		 = 
 FFLAGS		 = 

@@ -1,4 +1,3 @@
-/*$Id: cmesh.c,v 1.75 2001/09/07 20:08:55 bsmith Exp $*/
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 

@@ -1,5 +1,3 @@
-/*$Id: shell.c,v 1.88 2001/09/07 20:09:41 bsmith Exp $*/
-
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create a very simple matrix class for use with KSP without coding 

@@ -1,5 +1,4 @@
 !
-!      "$Id: ex58f.F,v 1.12 2001/08/07 03:03:07 balay Exp $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !

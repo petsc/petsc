@@ -1,4 +1,3 @@
-/*$Id: ex4.c,v 1.12 2001/08/07 21:28:44 bsmith Exp $*/
 
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 

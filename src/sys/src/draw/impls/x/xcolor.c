@@ -1,4 +1,3 @@
-/*$Id: xcolor.c,v 1.72 2001/03/23 23:20:15 balay Exp $*/
 
 /*
     Code for managing color the X implementation of the PetscDraw routines.

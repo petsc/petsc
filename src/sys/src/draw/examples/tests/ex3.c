@@ -1,4 +1,3 @@
-/*$Id: ex3.c,v 1.42 2001/08/07 21:28:44 bsmith Exp $*/
 
 static char help[] = "Plots a simple line graph.\n";
 

@@ -1,4 +1,3 @@
-/* $Id: drawimpl.h,v 1.32 2001/08/06 21:13:34 bsmith Exp $ */
 /*
        Abstract data structure and functions for graphics.
 */

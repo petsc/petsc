@@ -1,4 +1,3 @@
-/*$Id: zmat.c,v 1.100 2001/08/07 03:05:11 balay Exp $*/
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 #include "src/fortran/custom/zpetsc.h"

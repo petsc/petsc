@@ -1,5 +1,3 @@
-/*$Id: mmaij.c,v 1.59 2001/08/07 03:02:49 balay Exp $*/
-
 /*
    Support for the parallel AIJ matrix vector multiply
 */

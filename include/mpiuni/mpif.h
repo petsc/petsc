@@ -1,5 +1,4 @@
 !
-!     $Id: mpif.h,v 1.13 2000/05/26 13:59:56 balay Exp $
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed

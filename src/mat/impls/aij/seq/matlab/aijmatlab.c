@@ -1,5 +1,3 @@
-/*$Id: aijmatlab.c,v 1.12 2001/08/06 21:15:14 bsmith Exp $*/
-
 /* 
         Provides an interface for the Matlab engine sparse solver
 

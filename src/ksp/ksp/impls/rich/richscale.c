@@ -1,4 +1,3 @@
-/*$Id: richscale.c,v 1.22 2001/04/10 19:36:34 bsmith Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"         /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/rich/richctx.h"

@@ -1,4 +1,3 @@
-/*$Id: cholbs.c,v 1.64 2001/08/07 03:02:51 balay Exp $*/
 
 #include "petsc.h"
 

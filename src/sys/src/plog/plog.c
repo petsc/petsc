@@ -1,4 +1,3 @@
-/*$Id: plog.c,v 1.262 2001/08/22 17:59:37 balay Exp $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */

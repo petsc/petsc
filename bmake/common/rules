@@ -1,4 +1,3 @@
-# $Id: rules,v 1.203.1.111.1.125 2001/08/22 17:57:34 balay Exp $ 
 #
 #
 # Checks that PETSC_DIR variable is set and creates library directory
@@ -491,8 +490,8 @@ chk_manualpage_dir:
 
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; export DOCTEXT_PATH ; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/docs/tex/doctext; export TEXTFILTER_PATH ; \
+	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/docs/tex/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
@@ -500,7 +499,7 @@ manualpages_buildcite: chk_manualpage_dir
 #
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
+	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; export DOCTEXT_PATH; \
 	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/docs/tex/doctext/html.def \

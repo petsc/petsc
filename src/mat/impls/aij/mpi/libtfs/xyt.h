@@ -1,4 +1,4 @@
-/*$Id: xyt.h,v 1.2 2001/04/10 19:37:38 bsmith Exp $*/
+
 /*************************************xyt.h************************************
 Module Name: xyt
 Module Info: need xyt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 

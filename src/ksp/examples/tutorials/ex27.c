@@ -1,4 +1,3 @@
-/*$Id: ex10.c,v 1.58 2001/09/11 16:33:29 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves the normal equations.\n\n";
 /*T

@@ -1,5 +1,4 @@
-/*$Id: functions.c,v 1.2 2000/01/06 20:43:21 bsmith Exp $*/
-/* functions.c */
+
 #include <math.h>
 
 /* forcing fucntions */

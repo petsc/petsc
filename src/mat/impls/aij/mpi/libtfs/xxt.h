@@ -1,4 +1,4 @@
-/*$Id: xxt.h,v 1.2 2001/04/10 19:37:38 bsmith Exp $*/
+
 /*************************************xxt.h************************************
 Module Name: xxt
 Module Info: need xxt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 

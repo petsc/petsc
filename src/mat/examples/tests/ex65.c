@@ -1,4 +1,3 @@
-/*$Id: ex65.c,v 1.15 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 

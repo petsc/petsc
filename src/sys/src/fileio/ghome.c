@@ -1,4 +1,3 @@
-/*$Id: ghome.c,v 1.39 2001/03/23 23:20:30 balay Exp $*/
 /*
       Code for manipulating files.
 */

@@ -1,4 +1,3 @@
-/*$Id: smg.c,v 1.24 2001/08/07 03:03:36 balay Exp $*/
 /*
      Additive Multigrid V Cycle routine    
 */

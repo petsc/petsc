@@ -1,5 +1,3 @@
-/*$Id: dgedi.c,v 1.18 2001/03/23 23:22:07 balay Exp $*/
-
 /*  
               This file creating by running f2c 
             linpack. this version dated 08/14/78 

@@ -1,4 +1,3 @@
-/* "$Id: cgctx.h,v 1.12 2001/08/07 21:30:43 bsmith Exp $"; */
 
 /*  
     Private Krylov Context Structure (KSP) for Conjugate Gradient 

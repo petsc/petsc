@@ -1,4 +1,3 @@
-/*$Id: ex14.c,v 1.12 2001/08/07 21:29:12 bsmith Exp $*/
 
 /* 
    Tests PetscOptionsGetScalar() for complex numbers

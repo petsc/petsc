@@ -1,4 +1,3 @@
-/*$Id: $*/
 
 /*#define HAVE_DA_HDF*/
 

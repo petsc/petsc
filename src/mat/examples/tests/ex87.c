@@ -1,4 +1,3 @@
-/*$Id: ex31.c,v 1.27 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests MatGetSubMatrices() for SBAIJ matrices\n\n";
 

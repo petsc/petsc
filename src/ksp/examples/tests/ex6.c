@@ -1,4 +1,3 @@
-/*$Id: ex6.c,v 1.74 2001/09/11 16:33:24 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\

@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.14 2001/08/22 18:02:45 balay Exp $ 
 #
 #    ad_grad.c and ad_utils.c are automatically included into application codes that
 #  use adiC. They are ALSO compiled into the PETSc libraries so that apps that do not 

@@ -1,7 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $";
-#endif
-
 /* 
         Written by Matt Knepley, knepley@cs.purdue.edu 7/23/97
         Major overhall for interactivity               11/14/97

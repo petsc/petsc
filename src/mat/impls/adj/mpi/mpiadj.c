@@ -1,5 +1,3 @@
-/*$Id: mpiadj.c,v 1.66 2001/08/07 03:02:59 balay Exp $*/
-
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure. 
 */

@@ -1,4 +1,3 @@
-/*$Id: ex16.c,v 1.17 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 

@@ -1,5 +1,3 @@
-/*$Id: appview.c,v 1.9 2001/08/07 03:04:51 balay Exp $*/
-
 
 /*
        Demonstrates how to draw two dimensional grids and solutions. See appctx.h

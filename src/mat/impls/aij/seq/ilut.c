@@ -1,4 +1,3 @@
-/*$Id: ilut.c,v 1.7 2001/08/06 21:15:14 bsmith Exp $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
      The Fortran version of this code was developed by Yousef Saad.

@@ -1,4 +1,3 @@
-/*$Id: ex12.c,v 1.51 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does case when we are merely selecting the local part of the\n\

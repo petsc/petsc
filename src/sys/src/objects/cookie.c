@@ -1,4 +1,3 @@
-/*$Id: cookie.c,v 1.26 2001/03/23 23:20:38 balay Exp $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 

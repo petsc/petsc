@@ -1,4 +1,3 @@
-/*$Id: gmreig.c,v 1.28 2001/08/07 03:03:51 balay Exp $*/
 
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"

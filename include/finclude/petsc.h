@@ -1,5 +1,4 @@
 !
-!  $Id: petsc.h,v 1.100 2001/08/30 19:57:08 balay Exp $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !

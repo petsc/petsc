@@ -1,6 +1,4 @@
 !
-! "$Id: ex1f.F,v 1.39 2001/08/07 03:04:24 balay Exp $";
-!
 !       Formatted test for TS routines.
 !
 !          Solves U_t = U_xx 

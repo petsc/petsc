@@ -1,4 +1,3 @@
-/*$Id: ex74.c,v 1.47 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 

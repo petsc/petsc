@@ -1,4 +1,3 @@
-/* $Id: ts.c,v 1.43 2001/09/07 20:12:01 bsmith Exp $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */

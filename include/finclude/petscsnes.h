@@ -1,6 +1,4 @@
 !
-!  $Id: petscsnes.h,v 1.32 2001/06/21 21:20:08 bsmith Exp $;
-!
 !  Include file for Fortran use of the SNES package in PETSc
 !
 #if !defined (__PETSCSNES_H)

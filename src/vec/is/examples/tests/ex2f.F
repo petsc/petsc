@@ -1,6 +1,4 @@
 !
-!  "$Id: ex2f.F,v 1.19 2001/01/17 22:20:50 bsmith Exp $"
-!
 !  Formatted Test for IS stride routines
 !
       program main

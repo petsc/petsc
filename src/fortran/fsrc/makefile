@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.1 2001/09/04 17:59:04 balay Exp $ 
 
 ALL: lib
 SPECIALFASTLIB = yes

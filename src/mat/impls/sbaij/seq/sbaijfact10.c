@@ -1,4 +1,4 @@
-/*$Id: sbaijfact10.c,v 1.7 2001/09/07 15:09:35 bsmith Exp $*/
+
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/inline/ilu.h"
 

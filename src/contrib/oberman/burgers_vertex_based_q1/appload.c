@@ -1,4 +1,3 @@
-/*$Id: appload.c,v 1.9 2001/03/23 23:25:33 balay Exp $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 

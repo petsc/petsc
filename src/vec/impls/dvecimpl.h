@@ -1,4 +1,3 @@
-/* $Id: dvecimpl.h,v 1.23 2001/09/11 16:31:56 bsmith Exp $ */
 /* 
    This should not be included in users code.
 

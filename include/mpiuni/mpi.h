@@ -1,5 +1,3 @@
-/* $Id: mpi.h,v 1.87 2001/04/10 19:34:44 bsmith Exp $ */
-
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
  

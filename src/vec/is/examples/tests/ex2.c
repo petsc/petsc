@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.21 2001/04/10 19:34:49 bsmith Exp $*/
 
 /*
        Formatted test for ISStride routines.

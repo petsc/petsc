@@ -1,5 +1,4 @@
 function ex12(np,opt)
-% $Id: ex12.m,v 1.8 2001/03/22 20:32:50 bsmith Exp $
 %
 %   ex12(np) 
 % creates a series of vectors in PETSc and displays them in Matlab

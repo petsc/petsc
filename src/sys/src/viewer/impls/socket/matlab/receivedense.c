@@ -1,4 +1,3 @@
-/*$Id: receivedense.c,v 1.15 2001/03/23 23:19:53 balay Exp $*/
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 

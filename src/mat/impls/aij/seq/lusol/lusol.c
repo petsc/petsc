@@ -1,4 +1,3 @@
-/*$Id: lusol.c,v 1.11 2001/08/06 21:15:14 bsmith Exp $*/
 /* 
         Provides an interface to the LUSOL package of ....
 

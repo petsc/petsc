@@ -1,4 +1,3 @@
-/* $Id: viewerimpl.h,v 1.6 2001/01/20 03:33:35 bsmith Exp $ */
 
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL

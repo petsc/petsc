@@ -1,4 +1,3 @@
-/*$Id: dscatter.c,v 1.38 2001/04/10 19:34:23 bsmith Exp $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter

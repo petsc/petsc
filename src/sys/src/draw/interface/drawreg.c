@@ -1,4 +1,3 @@
-/*$Id: drawreg.c,v 1.45 2001/06/21 21:15:18 bsmith Exp $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */

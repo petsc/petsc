@@ -1,4 +1,3 @@
-/* $Id: mpidense.h,v 1.18 2001/08/07 03:02:46 balay Exp $ */
 
 #include "src/mat/impls/dense/seq/dense.h"
 

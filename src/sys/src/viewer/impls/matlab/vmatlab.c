@@ -1,4 +1,3 @@
-/* $Id: matlab.c,v 1.17 2001/08/06 21:14:26 bsmith Exp $ #include "petsc.h" */
 
 #include "src/sys/src/viewer/viewerimpl.h"
 #include "mat.h"

@@ -1,4 +1,3 @@
-/*$Id: gcookie.c,v 1.25 2001/03/23 23:20:38 balay Exp $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */

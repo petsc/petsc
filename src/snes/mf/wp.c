@@ -1,4 +1,3 @@
-/*$Id: wp.c,v 1.36 2001/08/06 21:17:13 bsmith Exp $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code

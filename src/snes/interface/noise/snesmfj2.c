@@ -1,4 +1,3 @@
-/*$Id: snesmfj2.c,v 1.35 2001/08/21 21:03:55 bsmith Exp $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 

@@ -1,4 +1,3 @@
-/*$Id: ex6.c,v 1.19 2001/08/07 21:30:37 bsmith Exp $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test MatIncreaseOverlap (needed for aditive schwarts preconditioner. \n\
   -m <size>       : problem size\n\

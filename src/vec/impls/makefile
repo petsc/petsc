@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.32 2001/09/07 20:08:59 bsmith Exp $
 
 ALL: lib
 

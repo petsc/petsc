@@ -1,4 +1,3 @@
-/*$Id: Index.c,v 1.35 2001/08/29 20:59:23 balay Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"

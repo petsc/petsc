@@ -1,4 +1,3 @@
-/*$Id: ex4.c,v 1.17 2001/04/10 19:37:18 bsmith Exp $*/
 
 static char help[] = "Tests AOData loading.\n\n";
 

@@ -1,4 +1,3 @@
-/*$Id: matregis.c,v 1.10 2001/06/21 21:16:17 bsmith Exp $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 

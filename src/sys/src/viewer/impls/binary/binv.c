@@ -1,4 +1,3 @@
-/*$Id: binv.c,v 1.99 2001/04/10 19:34:06 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include "petscsys.h"

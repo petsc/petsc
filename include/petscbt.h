@@ -1,5 +1,3 @@
-/* $Id: petscbt.h,v 1.22 2001/09/07 20:13:16 bsmith Exp $ */
-
 /*    
 
           BT - Bit array objects: used to compactly store logical arrays of variables.

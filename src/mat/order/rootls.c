@@ -1,4 +1,3 @@
-/*$Id: rootls.c,v 1.15 2001/03/23 23:22:51 balay Exp $*/
 /* rootls.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

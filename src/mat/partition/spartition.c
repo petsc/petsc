@@ -1,4 +1,3 @@
-/*$Id: spartition.c,v 1.23 2001/03/23 23:22:49 balay Exp $*/
  
 #include "petsc.h"
 #include "petscmat.h"

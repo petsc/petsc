@@ -1,4 +1,3 @@
-/*$Id: dgefa3.c,v 1.22 2001/04/07 15:45:14 bsmith Exp $*/
 /*
      Inverts 3 by 3 matrix using partial pivoting.
 

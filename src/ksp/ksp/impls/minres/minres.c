@@ -1,4 +1,3 @@
-/*$Id: minres.c,v 1.18 2001/08/10 18:14:38 bsmith Exp $*/
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {

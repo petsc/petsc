@@ -1,5 +1,3 @@
-/*$Id: zoptions.c,v 1.82 2001/08/10 16:50:43 balay Exp $*/
-
 /*
   This file contains Fortran stubs for Options routines. 
   These are not generated automatically since they require passing strings

@@ -1,5 +1,3 @@
-/*$Id: da3.c,v 1.136 2001/09/07 20:12:17 bsmith Exp $*/
-
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
    File created by Peter Mell  7/14/95

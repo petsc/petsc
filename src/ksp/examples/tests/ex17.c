@@ -1,4 +1,3 @@
-/*$Id: ex17.c,v 1.43 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "Solves a linear system with KSP.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";

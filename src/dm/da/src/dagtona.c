@@ -1,5 +1,3 @@
-/*$Id: dagtona.c,v 1.10 2001/03/23 23:25:00 balay Exp $*/
- 
 /*
      Tools to help solve the coarse grid problem redundantly.
   Provides two scatter contexts that (1) map from the usual global vector

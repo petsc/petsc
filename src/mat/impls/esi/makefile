@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.1 2001/09/12 03:29:26 bsmith Exp bsmith $
 
 #requireslanguage  CPP
 #requiresscalar    real 

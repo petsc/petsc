@@ -1,4 +1,3 @@
-/*$Id: ex16.c,v 1.12 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 

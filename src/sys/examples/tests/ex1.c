@@ -1,5 +1,3 @@
-/*$Id: ex1.c,v 1.23 2001/03/23 23:20:59 balay Exp $*/
-
 /* 
    Demonstrates PETSc error handlers.
  */

@@ -4,8 +4,6 @@
 #define FALSE_ 0
 #define TRUE_ 1
 
-/*  "$Id: snesdnest.F,v 1.6 1998/03/25 17:15:03 balay Exp bsmith $"; */
-
 /*  Noise estimation routine, written by Jorge More'.  Details are below. */
 
 /* Subroutine */ int dnest_(int *nf, double *fval,double *h__,double *fnoise, double *fder2, double *hopt, int *info, double *eps)

@@ -1,4 +1,3 @@
-/*$Id: ex11.c,v 1.8 2001/03/23 23:20:59 balay Exp $*/
 
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 

@@ -1,4 +1,3 @@
-/*$Id: damgsnes.c,v 1.51 2001/08/06 21:18:06 bsmith Exp $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/

@@ -1,4 +1,3 @@
-!  $Id: user.F,v 1.38 2001/08/10 03:35:11 bsmith Exp $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)

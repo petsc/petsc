@@ -1,5 +1,4 @@
 !
-!    "$Id: ex3f.F,v 1.15 2001/01/15 21:44:21 bsmith Exp $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.

@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.36 2001/08/07 21:31:27 bsmith Exp $*/
 /*
        Formatted test for TS routines.
 

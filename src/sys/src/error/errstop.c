@@ -1,4 +1,3 @@
-/*$Id: errstop.c,v 1.17 2001/04/10 19:34:27 bsmith Exp $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 

@@ -1,4 +1,3 @@
-/* $Id: vsilo.h,v 1.2 1999/11/20 21:47:40 knepley Exp $ */
 /* 
    This is the definition of the SILO viewer structure.
    Note: each viewer has a different data structure.

@@ -1,4 +1,3 @@
-/*$Id: f90_common.c,v 1.8 2001/03/23 23:20:56 balay Exp $*/
 
 #include "petscf90.h"
 

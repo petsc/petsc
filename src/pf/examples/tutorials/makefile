@@ -1,7 +1,3 @@
-# $Id: makefile,v 1.7 2001/08/22 18:02:56 balay Exp $ 
-
-
-
 #
 CFLAGS		 = 
 FFLAGS		 = 

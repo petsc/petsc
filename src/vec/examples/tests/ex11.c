@@ -1,4 +1,3 @@
-/*$Id: ex11.c,v 1.52 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
 

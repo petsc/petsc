@@ -1,4 +1,3 @@
-/*$Id: itcreate.c,v 1.206 2001/08/06 21:16:38 bsmith Exp $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */

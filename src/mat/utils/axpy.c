@@ -1,4 +1,3 @@
-/*$Id: axpy.c,v 1.54 2001/08/06 21:16:10 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 

@@ -1,4 +1,3 @@
-/*$Id: tfqmr.c,v 1.61 2001/08/07 03:03:54 balay Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"
 

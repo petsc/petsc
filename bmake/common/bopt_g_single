@@ -1,4 +1,3 @@
-# $Id: bopt_g_single,v 1.2 2001/08/28 20:00:24 bsmith Exp $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}

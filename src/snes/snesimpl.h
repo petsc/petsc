@@ -1,4 +1,3 @@
-/* $Id: snesimpl.h,v 1.59 2001/08/21 21:03:47 bsmith Exp $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H

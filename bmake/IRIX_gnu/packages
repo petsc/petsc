@@ -1,4 +1,3 @@
-# $Id: base.site,v 1.10 2001/03/27 22:17:30 balay Exp $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 2001/08/22 18:00:45 balay Exp $ 
+
 #requirespackage   'PETSC_HAVE_DSCPACK'
 #requiresprecision double
 #requiresscalar    real

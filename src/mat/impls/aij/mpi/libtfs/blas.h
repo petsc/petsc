@@ -1,4 +1,4 @@
-/*$Id: blas.h,v 1.3 2001/03/29 18:34:02 balay Exp $*/
+
 #if   defined(BLAS)
 #if   defined(r8)
 double ddot (int n, double *x, int incx, double *y, int incy);

@@ -1,4 +1,3 @@
-/*$Id: mpiov.c,v 1.26.1.76.2.22 2001/09/07 20:09:38 bsmith Exp $*/
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.

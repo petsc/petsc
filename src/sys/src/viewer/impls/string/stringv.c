@@ -1,4 +1,3 @@
-/*$Id: stringv.c,v 1.44 2001/04/10 19:34:06 bsmith Exp $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)

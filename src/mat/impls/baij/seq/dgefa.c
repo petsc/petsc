@@ -1,4 +1,3 @@
-/*$Id: dgefa.c,v 1.22 2001/03/23 23:22:07 balay Exp $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 

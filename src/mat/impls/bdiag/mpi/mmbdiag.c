@@ -1,5 +1,3 @@
-/*$Id: mmbdiag.c,v 1.40 2001/03/23 23:22:05 balay Exp $*/
-
 /*
    Support for the MPIBDIAG matrix-vector multiply
 */

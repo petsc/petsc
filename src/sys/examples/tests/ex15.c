@@ -1,4 +1,3 @@
-/*$Id: ex15.c,v 1.4 2001/03/23 23:20:59 balay Exp $*/
 
 /* 
    Demonstrates PetscPopUpSelect()

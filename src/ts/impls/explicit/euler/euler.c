@@ -1,4 +1,3 @@
-/*$Id: euler.c,v 1.30 2001/08/07 03:04:22 balay Exp $*/
 /*
        Code for Timestepping with explicit Euler.
 */

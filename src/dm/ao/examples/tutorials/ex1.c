@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.21 2001/06/21 21:19:06 bsmith Exp $*/
 
 static char help[] = "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
     -f input_file : Specifies input file\n\

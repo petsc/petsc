@@ -1,4 +1,3 @@
-/*$Id: baijfact2.c,v 1.72 2001/09/11 16:32:33 bsmith Exp $*/
 /*
     Factorization code for BAIJ format. 
 */

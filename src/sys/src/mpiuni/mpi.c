@@ -1,5 +1,3 @@
-/*$Id: mpi.c,v 1.59 2000/02/12 02:59:59 bsmith Exp $*/
-
 /*
       This provides a few of the MPI-uni functions that cannot be implemented
     with C macros

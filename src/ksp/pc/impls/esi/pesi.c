@@ -1,5 +1,3 @@
-/*$Id: jacobi.c,v 1.75 2001/08/07 03:03:32 balay Exp $*/
-
 
 #include "src/ksp/pc/pcimpl.h"          /*I "petscpc.h" I*/
 #include "esi/petsc/preconditioner.h"

@@ -1,6 +1,4 @@
 
-/*      "$Id: ex3.c,v 1.21 2001/03/23 23:21:14 balay Exp $"; */
-
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
 /*T

@@ -1,4 +1,3 @@
-/*$Id: err.c,v 1.130 2001/09/07 15:24:29 bsmith Exp $*/
 /*
       Code that allows one to set the error handlers
 */

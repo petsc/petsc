@@ -1,4 +1,3 @@
-/* "$Id: general.h,v 1.7 2000/05/25 22:38:58 bsmith Exp $"; */
 
 #if !defined(__GENERAL_H)
 #define __GENERAL_H

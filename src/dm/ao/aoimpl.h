@@ -1,4 +1,3 @@
-/* $Id: aoimpl.h,v 1.25 2001/08/07 21:31:33 bsmith Exp $ */
 /* 
    This private file should not be included in users' code.
 */

@@ -1,4 +1,3 @@
-/*$Id: essl.c,v 1.49 2001/08/07 03:02:47 balay Exp $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver

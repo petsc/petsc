@@ -1,5 +1,4 @@
 !
-!  "$Id: fsolvebaij.F,v 1.9 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.

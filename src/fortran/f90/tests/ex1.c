@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.6 2000/09/22 18:54:00 balay Exp $*/
 
 #include <stdio.h>
 #include "petscf90.h"

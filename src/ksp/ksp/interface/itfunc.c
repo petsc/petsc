@@ -1,4 +1,3 @@
-/*$Id: itfunc.c,v 1.159 2001/08/07 03:03:45 balay Exp $*/
 /*
       Interface KSP routines that the user calls.
 */

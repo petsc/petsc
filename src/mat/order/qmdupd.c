@@ -1,4 +1,3 @@
-/*$Id: qmdupd.c,v 1.19 2001/03/23 23:22:51 balay Exp $*/
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

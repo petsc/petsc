@@ -1,5 +1,3 @@
-/* $Id: petscda.h,v 1.77 2001/09/11 16:34:35 bsmith Exp $ */
-
 /*
       Regular array object, for easy parallelism of simple grid 
    problems on regular distributed arrays.

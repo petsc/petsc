@@ -1,4 +1,3 @@
-/* $Id: pfimpl.h,v 1.8 2001/08/06 21:19:07 bsmith Exp $ */
 
 #ifndef _PFIMPL
 #define _PFIMPL

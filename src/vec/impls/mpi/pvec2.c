@@ -1,5 +1,3 @@
-/*$Id: pvec2.c,v 1.57 2001/09/11 16:32:01 bsmith Exp $*/
-
 /*
      Code for some of the parallel vector primatives.
 */

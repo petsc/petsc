@@ -1,4 +1,3 @@
-/*$Id: inherit.c,v 1.70 2001/06/21 21:15:31 bsmith Exp $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */

@@ -1,4 +1,3 @@
-/* $Id: petscvec.h,v 1.127 2001/09/11 16:31:30 bsmith Exp $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions

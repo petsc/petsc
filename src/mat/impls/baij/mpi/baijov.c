@@ -1,5 +1,3 @@
-/*$Id: baijov.c,v 1.65 2001/08/06 21:15:42 bsmith Exp $*/
-
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.

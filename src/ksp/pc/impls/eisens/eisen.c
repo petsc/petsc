@@ -1,5 +1,3 @@
-/*$Id: eisen.c,v 1.113 2001/08/06 21:16:28 bsmith Exp $*/
-
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
  %50 of the usual amount of floating point ops used for SSOR + Krylov 

@@ -1,4 +1,3 @@
-/*$Id: aijnode.c,v 1.128 2001/08/07 03:02:47 balay Exp $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).

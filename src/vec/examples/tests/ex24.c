@@ -1,4 +1,3 @@
-/*$Id: ex24.c,v 1.22 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";

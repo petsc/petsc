@@ -1,4 +1,3 @@
-/*$Id: ex11.c,v 1.37 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Solves a linear system in parallel with KSP.\n\n";
 

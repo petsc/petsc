@@ -1,4 +1,3 @@
-/*$Id: pf.c,v 1.25 2001/08/07 03:05:06 balay Exp $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */

@@ -1,4 +1,3 @@
-/* $Id: petscvu.c,v 1.0 2001/04/10 19:34:05 knepley Exp $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include <stdarg.h>

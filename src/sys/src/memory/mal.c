@@ -1,4 +1,3 @@
-/*$Id: mal.c,v 1.57 2001/08/07 03:02:00 balay Exp $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */

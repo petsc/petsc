@@ -1,6 +1,4 @@
 !
-!    "$Id: ex1f.F,v 1.30 2001/08/07 03:04:00 balay Exp $";
-!
 !   Description: Solves a tridiagonal linear system with KSP.
 !
 !/*T

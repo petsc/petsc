@@ -1,4 +1,3 @@
-/*$Id: pams.c,v 1.9 2001/03/23 23:20:42 balay Exp $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 

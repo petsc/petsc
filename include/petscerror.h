@@ -1,4 +1,3 @@
-/* $Id: petscerror.h,v 1.59 2001/09/07 20:13:16 bsmith Exp $ */
 /*
     Contains all error handling code for PETSc.
 */

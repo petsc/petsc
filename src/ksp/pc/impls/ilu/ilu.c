@@ -1,4 +1,3 @@
-/*$Id: ilu.c,v 1.172 2001/08/07 21:30:27 bsmith Exp $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */

@@ -1,4 +1,3 @@
-/*$Id: partition.c,v 1.60 2001/06/21 21:17:23 bsmith Exp $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 

@@ -1,4 +1,3 @@
-/*$Id: tr.c,v 1.128 2001/08/07 03:04:11 balay Exp $*/
  
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 

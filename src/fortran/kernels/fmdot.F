@@ -1,5 +1,4 @@
 !
-!  "$Id: fmdot.F,v 1.10 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for the MDot() vector routine
 !

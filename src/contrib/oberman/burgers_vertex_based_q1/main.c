@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.11 2001/03/23 23:25:33 balay Exp $*/
+
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 

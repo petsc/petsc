@@ -1,4 +1,3 @@
-/*$Id: fndsep.c,v 1.22 2001/03/23 23:22:51 balay Exp $*/
 /* fndsep.f -- translated by f2c (version 19931217).
 */
 

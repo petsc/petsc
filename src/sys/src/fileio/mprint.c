@@ -1,4 +1,3 @@
-/*$Id: mprint.c,v 1.64 2001/08/28 01:01:27 bsmith Exp $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */

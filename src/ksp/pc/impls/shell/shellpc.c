@@ -1,5 +1,3 @@
-/*$Id: shellpc.c,v 1.77 2001/08/21 21:03:18 bsmith Exp $*/
-
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create their own preconditioner without writing much interface code.

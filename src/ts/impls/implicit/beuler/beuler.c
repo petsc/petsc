@@ -1,4 +1,3 @@
-/*$Id: beuler.c,v 1.61 2001/09/11 16:34:19 bsmith Exp $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */

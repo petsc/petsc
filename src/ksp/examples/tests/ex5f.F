@@ -1,6 +1,4 @@
 !
-!      "$Id: ex5f.F,v 1.9 2000/09/27 20:08:42 bsmith Exp $";
-!
       program main
        implicit none
 

@@ -1,4 +1,3 @@
-/* "$Id: ex19.c,v 1.12 2001/08/07 21:30:50 bsmith Exp $" */
 
 static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\

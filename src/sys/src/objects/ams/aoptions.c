@@ -1,4 +1,3 @@
-/*$Id: aoptions.c,v 1.34 2001/08/31 16:19:18 bsmith Exp $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.

@@ -1,5 +1,3 @@
-/*$Id: da1.c,v 1.129 2001/09/07 20:12:17 bsmith Exp $*/
-
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
    This file was created by Peter Mell   6/30/95    

@@ -1,6 +1,4 @@
 
-/*      "$Id: ex2.c,v 1.20 2001/03/23 23:21:14 balay Exp $"; */
-
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
 /*T

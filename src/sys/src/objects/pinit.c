@@ -1,4 +1,3 @@
-/*$Id: pinit.c,v 1.58 2001/08/10 03:28:54 bsmith Exp $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */

@@ -1,4 +1,3 @@
-/*$Id: aodataalias.c,v 1.8 2001/03/23 23:24:50 balay Exp $*/
 
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 

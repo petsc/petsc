@@ -1,5 +1,3 @@
-/* $Id: ls.h,v 1.12 2001/08/06 21:17:15 bsmith Exp $ */
-
 /* 
    Private context for a Newton line search method for solving
    systems of nonlinear equations

@@ -1,5 +1,3 @@
-/* $Id: ex20.c,v 1.20 2001/08/07 21:31:17 bsmith Exp $ */
-
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
 Uses 3-dimensional distributed arrays.\n\

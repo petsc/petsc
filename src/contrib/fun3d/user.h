@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.19 2001/08/07 03:04:53 balay Exp $*/
+
 #include "petsc.h" 
                   
 #define max_colors  200

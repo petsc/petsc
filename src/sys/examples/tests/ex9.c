@@ -1,4 +1,3 @@
-/*$Id: ex9.c,v 1.12 2001/03/23 23:20:59 balay Exp $*/
 
 /*
      Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()

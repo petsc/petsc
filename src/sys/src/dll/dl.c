@@ -1,5 +1,4 @@
 
-/*$Id: dl.c,v 1.71 2001/04/10 19:34:28 bsmith Exp $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.

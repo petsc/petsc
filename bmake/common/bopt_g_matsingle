@@ -1,4 +1,3 @@
-# $Id: bopt_g_matsingle,v 1.2 2001/08/28 20:00:33 bsmith Exp $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}

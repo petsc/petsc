@@ -1,4 +1,3 @@
-/*$Id: zplog.c,v 1.29 2001/02/17 21:23:33 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"

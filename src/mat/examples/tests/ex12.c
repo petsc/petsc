@@ -1,4 +1,3 @@
-/*$Id: ex12.c,v 1.29 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";

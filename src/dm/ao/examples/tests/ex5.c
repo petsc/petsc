@@ -1,4 +1,3 @@
-/*$Id: ex5.c,v 1.19 2001/04/10 19:37:18 bsmith Exp $*/
 
 static char help[] = "Tests AODataRemap(). \n\n";
 

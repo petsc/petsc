@@ -1,4 +1,3 @@
-/* $Id: mpirowbs.c,v 2.9 2001/08/10 03:30:53 bsmith Exp $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 

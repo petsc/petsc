@@ -1,4 +1,3 @@
-/*$Id: ex7.c,v 1.13 2001/08/07 03:03:43 balay Exp $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 

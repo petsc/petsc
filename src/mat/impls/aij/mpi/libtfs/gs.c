@@ -1,4 +1,4 @@
-/*$Id: gs.c,v 1.6 2001/05/10 18:50:11 balay Exp $*/
+
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 

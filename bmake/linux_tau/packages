@@ -1,5 +1,3 @@
-# $Id: packages,v 1.63 2001/10/10 18:50:03 balay Exp $ 
-
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.

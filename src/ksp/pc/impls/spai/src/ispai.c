@@ -1,5 +1,3 @@
-/* $Id: ispai.c,v 1.28 2001/08/07 03:03:40 balay Exp $*/
-
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
 */

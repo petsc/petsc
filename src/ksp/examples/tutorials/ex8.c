@@ -1,4 +1,3 @@
-/*$Id: ex8.c,v 1.50 2001/08/07 03:04:00 balay Exp $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\

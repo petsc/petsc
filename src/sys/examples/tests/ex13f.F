@@ -1,6 +1,4 @@
 !
-! "$Id: ex13f.F,v 1.5 2000/01/11 20:59:47 bsmith Exp $";
-!
 !
 !     Tests PetscSetCommWorld()
 !

@@ -1,4 +1,3 @@
-/*$Id: ex47.c,v 1.24 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests the various routines in MatBAIJ format.\n\
 Input arguments are:\n\

@@ -1,4 +1,3 @@
-/* $Id: mpiadj.h,v 1.8 2000/10/11 17:49:33 bsmith Exp $ */
 
 #if !defined(__ADJ_H)
 #define __ADJ_H

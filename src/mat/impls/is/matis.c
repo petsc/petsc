@@ -1,4 +1,3 @@
-/*$Id: is.c,v 1.15 2001/08/06 21:15:46 bsmith Exp $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 

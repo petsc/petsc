@@ -1,5 +1,4 @@
 !
-!    "$Id: ex2f.F,v 1.15 2001/08/07 03:02:34 balay Exp $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds

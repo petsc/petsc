@@ -1,4 +1,3 @@
-/*$Id: zviewer.c,v 1.33 2001/08/06 21:19:11 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"

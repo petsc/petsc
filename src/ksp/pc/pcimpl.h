@@ -1,4 +1,3 @@
-/* $Id: pcimpl.h,v 1.32 2001/08/21 21:03:12 bsmith Exp $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL

@@ -1,6 +1,4 @@
 !
-!    "$Id: ex13f90.F,v 1.24 2001/08/07 03:04:00 balay Exp $";
-!
 !
 !/*T
 !   Concepts: KSP^basic sequential example

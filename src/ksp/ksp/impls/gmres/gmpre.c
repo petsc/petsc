@@ -1,4 +1,3 @@
-/*$Id: gmpre.c,v 1.29 2001/04/10 19:36:32 bsmith Exp $*/
 
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 

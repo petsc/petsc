@@ -1,4 +1,3 @@
-/*$Id: ptype.c,v 1.7 2001/08/06 21:14:10 bsmith Exp $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */

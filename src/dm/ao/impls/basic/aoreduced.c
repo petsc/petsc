@@ -1,4 +1,3 @@
-/*$Id: aoreduced.c,v 1.28 2001/03/23 23:24:52 balay Exp $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"

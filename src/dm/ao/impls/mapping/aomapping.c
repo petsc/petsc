@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aomapping.c,v 1.3 2000/01/10 03:15:40 knepley Exp $";
-#endif
 
 /*
   These AO application ordering routines do not require that the input

@@ -1,7 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.6 2001/08/07 03:04:09 balay Exp $";
-#endif
-
 
 #include "src/snes/snesimpl.h"
 
