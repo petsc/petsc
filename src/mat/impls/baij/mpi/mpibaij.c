@@ -2047,7 +2047,7 @@ EXTERN int MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
 /*MC
-   MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
+   MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
    Options Database Keys:
 . -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
@@ -2153,7 +2153,7 @@ int MatCreate_MPIBAIJ(Mat B)
 EXTERN_C_END
 
 /*MC
-   MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
+   MATBAIJ - MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
 
    This matrix type is identical to MATSEQBAIJ when constructed with a single process communicator,
    and MATMPIBAIJ otherwise.

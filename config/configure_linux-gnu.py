@@ -5,7 +5,6 @@ if __name__ == '__main__':
 
     # build on harley
     configure_options = [
-        '--with-mpi',
         '--with-mpi-include=/home/petsc/soft/linux-rh73/mpich-1.2.4/include',
         '--with-mpi-lib=[/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libmpich.a,/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libpmpich.a]',
         '--with-mpirun=mpirun',

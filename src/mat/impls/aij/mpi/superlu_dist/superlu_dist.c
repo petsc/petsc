@@ -664,7 +664,7 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSUPERLU_DIST = "superlu_dist" - A matrix type providing direct solvers (LU) for parallel matrices 
+  MATSUPERLU_DIST - MATSUPERLU_DIST = "superlu_dist" - A matrix type providing direct solvers (LU) for parallel matrices 
   via the external package SuperLU_DIST.
 
   If SuperLU_DIST is installed (see the manual for

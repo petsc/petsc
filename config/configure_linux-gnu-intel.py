@@ -8,7 +8,6 @@ if __name__ == '__main__':
         '--with-cc=icc',
 	'--with-fc=ifc -w90 -w',
 	'--with-cxx=icc -Kc++ -Kc++eh',
-        '--with-mpi',
         '--with-mpi-include=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5/include',
         '--with-mpi-lib=[/home/petsc/soft/linux-rh73-intel/mpich-1.2.5/lib/libmpich.a,libpmpich.a]',
         '--with-mpirun=mpirun',

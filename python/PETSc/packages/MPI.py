@@ -381,6 +381,8 @@ int checkInit(void) {
     return
 
   def configure(self):
+    if 'with-mpi' in self.framework.argDB and not self.framework.argDB['with-mpi']:
+      return
     self.executeTest(self.configureLibrary)
     if self.foundMPI:
       self.executeTest(self.configureTypes)

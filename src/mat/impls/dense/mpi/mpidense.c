@@ -982,7 +982,7 @@ int MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 EXTERN_C_END
 
 /*MC
-   MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
+   MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
 
    Options Database Keys:
 . -mat_type mpidense - sets the matrix type to "mpidense" during a call to MatSetFromOptions()
@@ -1058,7 +1058,7 @@ int MatCreate_MPIDense(Mat mat)
 EXTERN_C_END
 
 /*MC
-   MATDENSE = "dense" - A matrix type to be used for dense matrices.
+   MATDENSE - MATDENSE = "dense" - A matrix type to be used for dense matrices.
 
    This matrix type is identical to MATSEQDENSE when constructed with a single process communicator,
    and MATMPIDENSE otherwise.

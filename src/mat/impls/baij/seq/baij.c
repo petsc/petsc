@@ -1730,7 +1730,7 @@ int MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,int bs,int nz,int *nnz)
 EXTERN_C_END
 
 /*MC
-   MATSEQBAIJ = "seqbaij" - A matrix type to be used for sequential block sparse matrices, based on 
+   MATSEQBAIJ - MATSEQBAIJ = "seqbaij" - A matrix type to be used for sequential block sparse matrices, based on 
    block sparse compressed row format.
 
    Options Database Keys:

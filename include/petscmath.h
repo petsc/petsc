@@ -23,6 +23,8 @@ extern  MPI_Datatype        MPIU_2SCALAR;
 
 */
 
+#define PetscExpPassiveScalar(a) PetscExpScalar()
+
 #if defined(PETSC_USE_COMPLEX)
 
 /*

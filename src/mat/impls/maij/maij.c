@@ -99,7 +99,7 @@ int MatDestroy_MPIMAIJ(Mat A)
 }
 
 /*MC
-  MATMAIJ = "maij" - A matrix type to be used for restriction and interpolation operations for 
+  MATMAIJ - MATMAIJ = "maij" - A matrix type to be used for restriction and interpolation operations for 
   multicomponent problems, interpolating or restricting each component the same way independently.
   The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
 

@@ -198,7 +198,7 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 }
 
 /*MC
-   MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
+   MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
    assembles only its local Neumann problem and the parallel matrix vector 
    product is handled "implicitly".

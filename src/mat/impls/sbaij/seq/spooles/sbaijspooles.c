@@ -139,7 +139,7 @@ int MatDuplicate_SeqSBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSEQSBAIJSPOOLES = "seqsbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential symmetric
+  MATSEQSBAIJSPOOLES - MATSEQSBAIJSPOOLES = "seqsbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential symmetric
   matrices via the external package Spooles.
 
   If Spooles is installed (see the manual for

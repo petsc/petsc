@@ -399,7 +399,7 @@ static struct _MatOps MatOps_Values = {
 };
 
 /*MC
-  MATESI = "esi" - A matrix type for use with the Equation Solver Interface (ESI).
+  MATESI - MATESI = "esi" - A matrix type for use with the Equation Solver Interface (ESI).
 
   More information about the Equation Solver Interface (ESI) can be found at:
   http://z.ca.sandia.gov/esi/
@@ -619,7 +619,7 @@ int MatLoad_ESI(PetscViewer viewer,MatType type,Mat *newmat)
 }
 
 /*MC
-  MATPETSCESI = "petscesi" - A matrix type which wraps a PETSc matrix as an ESI matrix.
+  MATPETSCESI - MATPETSCESI = "petscesi" - A matrix type which wraps a PETSc matrix as an ESI matrix.
 
   More information about the Equation Solver Interface (ESI) can be found at:
   http://z.ca.sandia.gov/esi/

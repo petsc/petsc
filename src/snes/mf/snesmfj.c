@@ -542,7 +542,7 @@ int MatSNESMFSetFromOptions(Mat mat)
 }
 
 /*MC
-  MATMFFD = "mffd" - A matrix free matrix type.
+  MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
 
   Level: advanced
 

@@ -14,7 +14,6 @@ if __name__ == '__main__':
     '-LDFLAGS=-Wl,-woff,84,-woff,85,-woff,113',
     '--with-f90-header=f90impl/f90_IRIX.h',
     '--with-f90-source=src/sys/src/f90/f90_IRIX.c',
-    '--with-mpi',
     '--with-mpi-include=/home/petsc/software/mpich-1.2.0/IRIX/include',
     '--with-mpi-lib=/home/petsc/software/mpich-1.2.0/IRIX/lib/libmpich.a',
     '--with-mpirun=mpirun',

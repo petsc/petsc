@@ -82,6 +82,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
     help.addArgument('PETSc', 'FFLAGS_g',                    nargs.Arg(None, '-g',      'Flags for the Fortran compiler with BOPT=g'))
     help.addArgument('PETSc', 'FFLAGS_O',                    nargs.Arg(None, '-O',      'Flags for the Fortran compiler with BOPT=O'))
+    help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, 'ranlib', 'Specify ranlib'))
@@ -616,9 +617,13 @@ acfindx:
 
   def configureMPIUNI(self):
     '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
-    if self.mpi.foundMPI: return
+    if self.framework.argDB['with-mpi']:
+      if self.mpi.foundMPI:
+        return
+      else:
+        raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
-    print '**********     Use --with-mpi options to specify a full MPI    **********'
+    print '**********    Use --with-mpi-* options to specify a full MPI   **********'
     self.framework.addDefine('HAVE_MPI', 1)
     self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
     self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
