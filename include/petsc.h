@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.284 2001/03/22 20:33:30 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.285 2001/03/23 23:26:09 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -67,11 +67,66 @@ extern PetscTruth PetscInitializeCalled;
 EXTERN int        PetscSetCommWorld(MPI_Comm);
 EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Comm));
 
-/*
-    Defines the malloc employed by PETSc. Users may use these routines as well. 
-*/
+/*MC
+   PetscMalloc - Allocates memory
+
+   Input Parameter:
+.  m - number of bytes to allocate
+
+   Output Parameter:
+.  result - memory allocated
+
+   Synopsis:
+   int PetscMalloc(int m,void **result)
+
+   Level: beginner
+
+   Notes: Memory is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew()
+
+  Concepts: memory allocation
+
+M*/
 #define PetscMalloc(a,b)     (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b))
+/*MC
+   PetscNew - Allocates memory of a particular type
+
+   Input Parameter:
+. type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
+
+   Output Parameter:
+.  result - memory allocated
+
+   Synopsis:
+   int PetscNew(struct type,((type *))result)
+
+   Level: beginner
+
+.seealso: PetscFree(), PetscMalloc()
+
+  Concepts: memory allocation
+
+M*/
 #define PetscNew(A,b)        PetscMalloc(sizeof(A),(b))
+/*MC
+   PetscFree - Frees memory
+
+   Input Parameter:
+.   memory - memory to free
+
+   Synopsis:
+   int PetscFree(memory)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscNew() or PetscMalloc()
+
+.seealso: PetscNew(), PetscMalloc()
+
+  Concepts: memory allocation
+
+M*/
 #define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
 EXTERN int  (*PetscTrMalloc)(int,int,char*,char*,char*,void**);
 EXTERN int  (*PetscTrFree)(void *,int,char*,char*,char*);
@@ -90,7 +145,6 @@ EXTERN int   PetscTrLog(void);
 EXTERN int   PetscTrLogDump(FILE *);
 EXTERN int   PetscGetResidentSetSize(PetscLogDouble *);
 
-
 /*
     Variable type where we stash PETSc object pointers in Fortran.
     Assumes that sizeof(long) == sizeof(void*)which is true on 
@@ -98,10 +152,15 @@ EXTERN int   PetscGetResidentSetSize(PetscLogDouble *);
 */     
 #define PetscFortranAddr   long
 
-/*
-     Constants and functions used for handling different basic data types.
-     These are used, for example, in binary IO routines
-*/
+/*E
+    PetscDataType - Used for handling different basic data types.
+
+   Level: beginner
+
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
+          PetscDataTypeGetSize(), PetscDataTypeGetName()
+
+E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
               PETSC_LONG =3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_LOGICAL = 7} PetscDataType;
@@ -116,24 +175,6 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
 #define PETSC_REAL PETSC_DOUBLE
 #endif
 #define PETSC_FORTRANADDR PETSC_LONG
-
-typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_COMPLEX_SIZE = sizeof(Scalar),PETSC_LONG_SIZE=sizeof(long),
-              PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
-              PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
-
-#if defined(PETSC_USE_COMPLEX)
-#define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
-#else
-#define PETSC_SCALAR_SIZE PETSC_DOUBLE_SIZE
-#endif
-#if defined(PETSC_USE_SINGLE)
-#define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
-#else
-#define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
-#endif
-#define PETSC_FORTRANADDR_SIZE PETSC_LONG_SIZE
-
 
 EXTERN int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 EXTERN int PetscDataTypeGetSize(PetscDataType,int*);
@@ -241,13 +282,13 @@ EXTERN int PetscCommGetNewTag(MPI_Comm,int *);
 EXTERN int PetscObjectView(PetscObject,PetscViewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
-EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void *);
+EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)());
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void*)(d))
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void (*)())(d))
 #endif
-EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void **);
+EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void (**)());
 EXTERN int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
@@ -283,14 +324,14 @@ EXTERN int PetscOListDuplicate(PetscOList,PetscOList *);
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],int (*)(void *));
+EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],void (*)());
 EXTERN int PetscFListDestroy(PetscFList*);
-EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],int (**)(void*));
+EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)());
 EXTERN int PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],char *,char *,PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)
 #else
-#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(int (*)(void *))c)
+#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(void (*)())c)
 #endif
 EXTERN int PetscFListDuplicate(PetscFList,PetscFList *);
 EXTERN int PetscFListView(PetscFList,PetscViewer);
