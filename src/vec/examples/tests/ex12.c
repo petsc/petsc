@@ -1,8 +1,8 @@
 
-
-static char help[] = "Scatters from  a sequential vector to a parallel vector.\n\
-   Does case when we are merely selecting the local part of the\n\
-   parallel vector.\n";
+static char help[] = 
+"This example scatters from a sequential vector to a parallel vector.\n\
+This does case when we are merely selecting the local part of the\n\
+parallel vector.\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -50,9 +50,9 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(y,is2,x,is1,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(y,is2,x,is1,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  VecView(x,SYNC_STDOUT_VIEWER);
+  ierr = VecView(x,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

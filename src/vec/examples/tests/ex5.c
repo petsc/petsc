@@ -1,8 +1,8 @@
 
-
-static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
-   Does case when we are merely selecting the local part of the\n\
-   parallel vector.\n";
+static char help[] = 
+"This example scatters from a parallel vector to a sequential vector.\n\
+This does case when we are merely selecting the local part of the\n\
+parallel vector.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -45,20 +45,21 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
-  VecView(x,SYNC_STDOUT_VIEWER); if (!mytid) printf("----\n");
+  ierr = VecView(x,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  if (!mytid) VecView(y,STDOUT_VIEWER);
+  if (!mytid)
+   {printf("----\n"); VecView(y,STDOUT_VIEWER); CHKERRA(ierr);}
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is2); CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;

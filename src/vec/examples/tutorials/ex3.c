@@ -1,5 +1,5 @@
 
-static char help[] = "Displays a vector visually\n";
+static char help[] = "This example displays a vector visually.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -27,20 +27,20 @@ int main(int argc,char **argv)
 
   for ( i=0; i<n; i++ ) {
     v = (double) i;
-    VecSetValues(x,1,&i,&v,INSERTVALUES);
+    ierr = VecSetValues(x,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
   }
-  VecAssemblyBegin(x);
-  VecAssemblyEnd(x);
+  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&win); CHKERRA(ierr);
   ierr = DrawLGCreate(win,1,&lg); CHKERRA(ierr);
 
-  VecView(x,(Viewer) lg);
+  ierr = VecView(x,(Viewer) lg); CHKERRA(ierr);
 
   ierr = DrawLGDestroy(lg); CHKERRA(ierr);
 
   ierr = DrawDestroy(win); CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

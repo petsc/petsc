@@ -52,10 +52,9 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
-  if (!mytid) {
-    printf("scattered vector for processor 0\n"); 
-    ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
-  }
+  if (!mytid) 
+    {printf("----\n"); ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);}
+
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
