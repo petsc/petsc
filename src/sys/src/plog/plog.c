@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.16 1995/07/11 18:04:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.17 1995/07/11 19:38:44 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -263,14 +263,19 @@ int PLogObjectState(PetscObject obj,char *format,...)
 }
 
 /*@
-   PLogAllBegin - Turns on logging of objects and events. Logs all 
-   events. This creates large log files and slows the program down.
+   PLogAllBegin - Turns on extensive logging of objects and events. Logs 
+   all events. This creates large log files and slows the program down.
 
    Options Database Keys:
 $  -log_all : Prints extensive log information (for code compiled
 $      with PETSC_LOG)
 
-.keywords: log, begin
+   Notes:
+   A related routine is PLogBegin(), which is intended for production
+   runs since it logs only flop rates and object creation (and shouldn't
+   significantly slow the programs).
+
+.keywords: log, all, begin
 
 .seealso: PLogDump(), PLogBegin()
 @*/
@@ -290,7 +295,7 @@ int PLogAllBegin()
 
 /*@
     PLogBegin - Turns on logging of objects and events. This logs flop
-    rates and object creation. It should not slow programs down too much.
+    rates and object creation and should not slow programs down too much.
     This may be called more than once.
 
    Options Database Keys:
@@ -301,7 +306,7 @@ $      to screen (for code compiled with PETSC_LOG)
 
 .keywords: log, begin
 
-.seealso: PLogDump(), PLogAllBegin()
+.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
 @*/
 int PLogBegin()
 {
@@ -445,14 +450,32 @@ static char *(name[]) = {"MatMult         ",
                          " "," "," "," "," "};
 
 /*@
-    PLogEventRegister - Registers an event name for logging. Note:
-           you must include pinclude/plog.h to use this function.
+    PLogEventRegister - Registers an event name for logging operations in 
+    an application code.  Note that pinclude/plog.h must be included
+    in the user's code to employ this function.
 
-  Input Parameters:
-.   e - integer associated with the event > 70 < 89 
-.  string - name associated with the event.
+    Input Parameters:
+.   e - integer associated with the event (69 < e < 89) 
+.   string - name associated with the event
 
-.seealso: PLogBegin(), PLogEnd()
+    Notes: 
+    PETSc automatically logs library events if the code has been
+    compiled with -DPETSC_LOG (which is the default) and -log,
+    -log_summary, or -log_all are specified.  PLogEventRegister() is
+    intended for logging user events to supplement this PETSc
+    information.
+
+    Example of Usage:
+$     #define USER_EVENT 75
+$     PLogEventRegister(USER_EVENT,"User event");
+$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$     [code segment to monitor]
+$     PLogFlops(user_flops)
+$     PLogEventEnd(USER_EVENT,0,0,0,0);
+
+.keywords: log, event, register
+
+.seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops()
 @*/
 int PLogEventRegister(int e,char *string)
 {
@@ -470,7 +493,13 @@ int PLogEventRegister(int e,char *string)
 .  comm - communicator, only the first processor prints
 
    Options Database Keys:
-$  -log_summary : Prints summary of log information 
+$  -log_summary : Prints summary of log information (for code
+   compiled with PETSC_LOG)
+
+   Notes:
+   More extensive examination of the log information can be done with 
+   PLogDump (activated by -log or -log_all) in combination with
+   tkreview. 
    
 .keywords: log, dump, print
 
