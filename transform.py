@@ -11,7 +11,7 @@ import types
 class Transform (bs.Maker):
   def __init__(self, sources = None):
     bs.Maker.__init__(self)
-    if sources:
+    if isinstance(sources, fileset.FileSet):
       self.sources = sources
     else:
       self.sources = fileset.FileSet()
