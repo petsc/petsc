@@ -12,13 +12,13 @@
 */
 
 typedef struct {
-  int              *rowners;         /* ranges owned by each processor */
-  int              rstart,rend;     /* start and end of local rows */
-  int              nz;
-  int              *diag;            /* pointers to diagonal elements, if they exist */
-  int              *i;               /* pointer to beginning of each row */
-  int              *j;               /* column values: j + i[k] - 1 is start of row k */
-  int              *values;          /* numerical values */
+  PetscInt         *rowners;         /* ranges owned by each processor */
+  PetscInt         rstart,rend;      /* start and end of local rows */
+  PetscInt         nz;
+  PetscInt         *diag;            /* pointers to diagonal elements, if they exist */
+  PetscInt         *i;               /* pointer to beginning of each row */
+  PetscInt         *j;               /* column values: j + i[k] - 1 is start of row k */
+  PetscInt         *values;          /* numerical values */
   PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
   PetscTruth       freeaij;          /* call PetscFree() on a, i,j at destroy */
 } Mat_MPIAdj;

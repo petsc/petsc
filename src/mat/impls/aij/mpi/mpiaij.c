@@ -1626,7 +1626,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatSetOption_MPIAIJ,
        MatZeroEntries_MPIAIJ,
 /*25*/ MatZeroRows_MPIAIJ,
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_64BIT_INT)
        MatLUFactorSymbolic_MPIAIJ_TFS,
 #else
        0,
