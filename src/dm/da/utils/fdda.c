@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.50 2000/08/01 20:58:11 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.51 2000/09/28 21:15:40 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -88,6 +88,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   Scalar                 *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
+  DAStencilType          st;
 
   PetscFunctionBegin;
   /*     
@@ -95,7 +96,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
 
   nc     = w;
@@ -121,12 +122,15 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 
   /* Create the matrix */
   if (J) {
+    int bs = nc;
+    /* create empty Jacobian matrix */
+    ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
+
     values  = (Scalar*)PetscMalloc(col*col*nc*nc*sizeof(Scalar));CHKPTRQ(values);
     ierr    = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
     rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
     cols    = (int*)PetscMalloc(col*col*nc*nc*sizeof(int));CHKPTRQ(cols);
-
-    ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
     ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -145,7 +149,9 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
         for (k=0; k<nc; k++) {
           for (l=lstart; l<lend+1; l++) {
             for (p=pstart; p<pend+1; p++) {
-              cols[cnt++]  = k + nc*(slot + gnx*l + p);
+              if ((st == DA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
+                cols[cnt++]  = k + nc*(slot + gnx*l + p);
+              }
             }
           }
           rows[k] = k + nc*(slot);
@@ -153,8 +159,10 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
         ierr = MatPreallocateSetLocal(ltog,nc,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
-    /* create empty Jacobian matrix */
-    ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);  
+    /* set matrix type and preallocation information */
+    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
+    ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
@@ -178,7 +186,9 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
         for (k=0; k<nc; k++) {
           for (l=lstart; l<lend+1; l++) {
             for (p=pstart; p<pend+1; p++) {
-              cols[cnt++]  = k + nc*(slot + gnx*l + p);
+              if ((st == DA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
+                cols[cnt++]  = k + nc*(slot + gnx*l + p);
+              }
             }
           }
           rows[k]      = k + nc*(slot);
@@ -208,6 +218,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   Scalar                 *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
+  DAStencilType          st;
 
   PetscFunctionBegin;
   /*     
@@ -215,7 +226,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col    = 2*s + 1;
 
@@ -242,12 +253,14 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the matrix */
   if (J) {
+    int bs = nc;
+    /* create empty Jacobian matrix */
+    ierr    = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
     values  = (Scalar*)PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar));CHKPTRQ(values);
     ierr    = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
     rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
     cols    = (int*)PetscMalloc(col*col*col*nc*sizeof(int));CHKPTRQ(cols);
-
-    ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
     ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -268,7 +281,9 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
             for (ii=istart; ii<iend+1; ii++) {
               for (jj=jstart; jj<jend+1; jj++) {
                 for (kk=kstart; kk<kend+1; kk++) {
-                  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  if ((st == DA_STENCIL_BOX) || (!ii || !jj || !kk)) {  /* entries on star  */
+                    cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
                 }
               }
             }
@@ -278,8 +293,10 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
         }
       }
     }
-    /* create empty Jacobian matrix */
-    ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);  
+    /* set matrix type and preallocation */
+    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
+    ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
@@ -305,7 +322,9 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
             for (ii=istart; ii<iend+1; ii++) {
               for (jj=jstart; jj<jend+1; jj++) {
                 for (kk=kstart; kk<kend+1; kk++) {
-                  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  if ((st == DA_STENCIL_BOX) || (!ii || !jj || !kk)) {  /* entries on star  */
+                    cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
                 }
               }
             }
@@ -373,13 +392,18 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 
   /* create empty Jacobian matrix */
   if (J) {
+    int bs = nc;
+
+    ierr    = MatCreate(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);
+    ierr    = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    ierr    = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
+    ierr    = MatMPIBAIJSetPreallocation(*J,bs,col,0,0,0);CHKERRQ(ierr);
+
     values  = (Scalar*)PetscMalloc(col*nc*nc*sizeof(Scalar));CHKPTRQ(values);
     ierr    = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
     rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
     cols    = (int*)PetscMalloc(col*nc*sizeof(int));CHKPTRQ(cols);
    
-    ierr = MatCreateMPIAIJ(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,col*nc,0,0,0,J);CHKERRQ(ierr);
-
     ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
