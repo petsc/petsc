@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.72 1997/02/17 04:08:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.73 1997/02/22 02:29:24 bsmith Exp curfman $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: da2.c,v 1.72 1997/02/17 04:08:29 bsmith Exp bsmith $"
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_2d" /* ADIC Ignore */
-static int DAView_2d(PetscObject dain,Viewer viewer)
+int DAView_2d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
   int         rank, ierr;

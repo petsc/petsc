@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.31 1997/02/28 00:34:09 balay Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.32 1997/03/03 18:53:09 balay Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -64,7 +64,7 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_BinaryFile" /* ADIC Ignore */
-static int ViewerDestroy_BinaryFile(PetscObject obj)
+int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   int    rank;
   Viewer v = (Viewer) obj;

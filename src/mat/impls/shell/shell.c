@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.44 1997/01/27 18:16:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.45 1997/02/22 02:25:22 bsmith Exp curfman $";
 #endif
 
 /*
@@ -48,7 +48,7 @@ int MatShellGetContext(Mat mat,void **ctx)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSize_Shell" /* ADIC Ignore */
-static int MatGetSize_Shell(Mat mat,int *M,int *N)
+int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
   *M = shell->M; *N = shell->N;
@@ -57,7 +57,7 @@ static int MatGetSize_Shell(Mat mat,int *M,int *N)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetLocalSize_Shell" /* ADIC Ignore */
-static int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
+int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
   *m = shell->n; *n = shell->n;
@@ -66,7 +66,7 @@ static int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_Shell" /* ADIC Ignore */
-static int MatDestroy_Shell(PetscObject obj)
+int MatDestroy_Shell(PetscObject obj)
 {
   int       ierr;
   Mat       mat = (Mat) obj;
@@ -80,7 +80,7 @@ static int MatDestroy_Shell(PetscObject obj)
   return 0;
 }
 
-static int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
+int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
 {
   MPI_Scan(&mat->m,rend,1,MPI_INT,MPI_SUM,mat->comm);
   *rstart = *rend - mat->m;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.18 1997/01/06 20:24:23 balay Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.19 1997/02/22 02:25:00 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -32,7 +32,7 @@ extern int MatDestroy_SeqAIJ(PetscObject);
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqAIJ_Essl" /* ADIC Ignore */
-static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
+extern int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
   Mat             A = (Mat) obj;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
@@ -45,7 +45,7 @@ static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolve_SeqAIJ_Essl"
-static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
+extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
@@ -63,7 +63,7 @@ static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_Essl"
-static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
+extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 {
   Mat             B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data, *b;
@@ -99,7 +99,7 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Essl"
-static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
+extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) (*F)->data;
   Mat_SeqAIJ      *aa = (Mat_SeqAIJ*) (A)->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.126 1997/02/22 02:25:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.127 1997/03/12 22:34:44 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1093,7 +1093,7 @@ static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetInfo_SeqBDiag"
-static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
+int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
@@ -1116,7 +1116,7 @@ static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetOwnershipRange_SeqBDiag" /* ADIC Ignore */
-static int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
+int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   *m = 0; *n = a->m;
@@ -1125,7 +1125,7 @@ static int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow_SeqBDiag"
-static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
+int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          nd = a->nd, bs = a->bs;
@@ -1234,7 +1234,7 @@ static int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRow_SeqBDiag"
-static int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
+int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   /* Work space is allocated during matrix creation and freed
      when matrix is destroyed */
@@ -1302,7 +1302,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,double *tmp,int n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatNorm_SeqBDiag"
-static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
+int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   double       sum = 0.0, *tmp;
@@ -1401,7 +1401,7 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
 
 #undef __FUNC__  
 #define __FUNC__ "MatTranspose_SeqBDiag"
-static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
+int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data, *anew;
   Mat          tmat;
@@ -1717,7 +1717,7 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqBDiag"
-static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
+int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
   ViewerType  vtype;
@@ -1741,7 +1741,7 @@ static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqBDiag"
-static int MatDestroy_SeqBDiag(PetscObject obj)
+int MatDestroy_SeqBDiag(PetscObject obj)
 {
   Mat          A = (Mat) obj;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -1775,7 +1775,7 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_SeqBDiag"
-static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
+int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, k, temp, *diag = a->diag, *bdlen = a->bdlen;
@@ -1811,7 +1811,7 @@ static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetOption_SeqBDiag"
-static int MatSetOption_SeqBDiag(Mat A,MatOption op)
+int MatSetOption_SeqBDiag(Mat A,MatOption op)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
@@ -1891,7 +1891,7 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroEntries_SeqBDiag"
-static int MatZeroEntries_SeqBDiag(Mat A)
+int MatZeroEntries_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          d, i, len, bs = a->bs;
@@ -1910,7 +1910,7 @@ static int MatZeroEntries_SeqBDiag(Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetBlockSize_SeqBDiag"
-static int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
+int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   *bs = a->bs;
@@ -1919,7 +1919,7 @@ static int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_SeqBDiag"
-static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
+int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, N, *rows, m = a->m - 1, nz, *col;
@@ -1947,7 +1947,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSize_SeqBDiag"
-static int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
+int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   *m = a->m; *n = a->n;
@@ -1956,7 +1956,7 @@ static int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqBDiag"
-static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
+int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
                                     Mat *submat)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -2006,7 +2006,7 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqBDiag"
-static int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {
   int ierr,i;
@@ -2042,7 +2042,7 @@ int MatScale_SeqBDiag(Scalar *alpha,Mat inA)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDiagonalScale_SeqBDiag"
-static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
+int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   Scalar       *l,*r, *dv;

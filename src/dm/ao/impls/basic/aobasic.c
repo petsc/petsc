@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.12 1997/01/06 20:31:25 balay Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.13 1997/02/22 02:30:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "AODestroy_Debug" /* ADIC Ignore */
-static int AODestroy_Debug(PetscObject obj)
+int AODestroy_Debug(PetscObject obj)
 {
   AO       ao = (AO) obj;
   AO_Debug *aodebug = (AO_Debug *) ao->data;
@@ -32,7 +32,7 @@ static int AODestroy_Debug(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "AOView_Debug" /* ADIC Ignore */
-static int AOView_Debug(PetscObject obj,Viewer viewer)
+int AOView_Debug(PetscObject obj,Viewer viewer)
 {
   AO          ao = (AO) obj;
   int         rank,ierr,i;
@@ -60,7 +60,7 @@ static int AOView_Debug(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "AOPetscToApplication_Debug"  /* ADIC Ignore */
-static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
+int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 {
   int      i;
   AO_Debug *aodebug = (AO_Debug *) ao->data;
@@ -73,7 +73,7 @@ static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 
 #undef __FUNC__  
 #define __FUNC__ "AOApplicationToPetsc_Debug" /* ADIC Ignore */
-static int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
+int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 {
   int      i;
   AO_Debug *aodebug = (AO_Debug *) ao->data;

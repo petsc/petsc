@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.12 1997/01/06 20:21:32 balay Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.13 1997/02/22 02:22:03 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -19,7 +19,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_Block" /* ADIC Ignore */
-static int ISDestroy_Block(PetscObject obj)
+int ISDestroy_Block(PetscObject obj)
 {
   IS       is = (IS) obj;
   IS_Block *is_block = (IS_Block *) is->data;
@@ -31,7 +31,7 @@ static int ISDestroy_Block(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetIndices_Block" /* ADIC Ignore */
-static int ISGetIndices_Block(IS in,int **idx)
+int ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
   int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
@@ -54,7 +54,7 @@ static int ISGetIndices_Block(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISRestoreIndices_Block" /* ADIC Ignore */
-static int ISRestoreIndices_Block(IS in,int **idx)
+int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
 
@@ -70,7 +70,7 @@ static int ISRestoreIndices_Block(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetSize_Block" /* ADIC Ignore */
-static int ISGetSize_Block(IS is,int *size)
+int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
   *size = sub->bs*sub->n; 
@@ -80,7 +80,7 @@ static int ISGetSize_Block(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Block" /* ADIC Ignore */
-static int ISInvertPermutation_Block(IS is, IS *isout)
+int ISInvertPermutation_Block(IS is, IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
   int      i,ierr, *ii,n = sub->n,*idx = sub->idx;
@@ -97,7 +97,7 @@ static int ISInvertPermutation_Block(IS is, IS *isout)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_Block" /* ADIC Ignore */
-static int ISView_Block(PetscObject obj, Viewer viewer)
+int ISView_Block(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
   IS_Block    *sub = (IS_Block *)is->data;
@@ -123,7 +123,7 @@ static int ISView_Block(PetscObject obj, Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "ISSort_Block" /* ADIC Ignore */
-static int ISSort_Block(IS is)
+int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
   int      ierr;
@@ -136,7 +136,7 @@ static int ISSort_Block(IS is)
 
 #undef __FUNC__  
 #define __FUNC__ "ISSorted_Block" /* ADIC Ignore */
-static int ISSorted_Block(IS is, PetscTruth *flg)
+int ISSorted_Block(IS is, PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
   *flg = (PetscTruth) sub->sorted;

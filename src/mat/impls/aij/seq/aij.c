@@ -1,7 +1,5 @@
-
-
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.209 1997/03/01 15:48:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.210 1997/03/12 22:32:57 curfman Exp curfman $";
 #endif
 
 /*
@@ -31,7 +29,7 @@ extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetRowIJ_SeqAIJ"
-static int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,
+int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,
                            PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -65,7 +63,7 @@ static int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int *
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRowIJ_SeqAIJ"
-static int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -234,7 +232,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetValues_SeqAIJ"
-static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
+int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
@@ -277,7 +275,7 @@ static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_Binary"
-static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
+extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i, fd, *col_lens, ierr;
@@ -312,7 +310,7 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_ASCII"
-static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
+extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg1,flg2;
@@ -390,7 +388,7 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_Draw"
-static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
+extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
@@ -545,7 +543,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ" /* ADIC Ignore */
-static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
+int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
@@ -571,7 +569,7 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 extern int Mat_AIJ_CheckInode(Mat);
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_SeqAIJ"
-static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
+int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax,ierr;
@@ -626,7 +624,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroEntries_SeqAIJ"
-static int MatZeroEntries_SeqAIJ(Mat A)
+int MatZeroEntries_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   PetscMemzero(a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar));
@@ -662,14 +660,14 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "MatCompress_SeqAIJ"
-static int MatCompress_SeqAIJ(Mat A)
+int MatCompress_SeqAIJ(Mat A)
 {
   return 0;
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetOption_SeqAIJ"
-static int MatSetOption_SeqAIJ(Mat A,MatOption op)
+int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   if      (op == MAT_ROW_ORIENTED)               a->roworiented = 1;
@@ -700,7 +698,7 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetDiagonal_SeqAIJ"
-static int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
+int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i,j, n,shift = a->indexshift;
@@ -979,7 +977,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetInfo_SeqAIJ"
-static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
+int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
 
@@ -1018,7 +1016,7 @@ extern int MatSolveTransAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_SeqAIJ"
-static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
+int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int         i,ierr,N, *rows,m = a->m - 1,shift = a->indexshift;
@@ -1052,7 +1050,7 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSize_SeqAIJ"
-static int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
+int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   *m = a->m; *n = a->n;
@@ -1061,7 +1059,7 @@ static int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetOwnershipRange_SeqAIJ"
-static int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
+int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   *m = 0; *n = a->m;
@@ -1103,7 +1101,7 @@ int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatNorm_SeqAIJ"
-static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
+int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *v = a->a;
@@ -1153,7 +1151,7 @@ static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
 
 #undef __FUNC__  
 #define __FUNC__ "MatTranspose_SeqAIJ"
-static int MatTranspose_SeqAIJ(Mat A,Mat *B)
+int MatTranspose_SeqAIJ(Mat A,Mat *B)
 { 
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Mat        C;
@@ -1203,7 +1201,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDiagonalScale_SeqAIJ"
-static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
+int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *l,*r,x,*v;
@@ -1238,7 +1236,7 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqAIJ"
-static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
+int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
   int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
@@ -1379,7 +1377,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
 */
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqAIJ"
-static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
+int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        ierr;
@@ -1406,7 +1404,7 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 #include "pinclude/plapack.h"
 #undef __FUNC__  
 #define __FUNC__ "MatScale_SeqAIJ"
-static int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
+int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        one = 1;
@@ -1417,7 +1415,7 @@ static int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqAIJ"
-static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {
   int ierr,i;
@@ -1434,7 +1432,7 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetBlockSize_SeqAIJ"
-static int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
+int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
 {
   *bs = 1;
   return 0;
@@ -1442,7 +1440,7 @@ static int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
 
 #undef __FUNC__  
 #define __FUNC__ "MatIncreaseOverlap_SeqAIJ"
-static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
+int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        shift, row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val;
@@ -1548,7 +1546,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #endif
   return 0;
 }
-static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
+extern int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
 extern int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
 
@@ -1868,7 +1866,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatEqual_SeqAIJ"
-static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
+int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 

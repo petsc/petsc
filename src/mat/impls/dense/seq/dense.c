@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.123 1997/01/27 18:16:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.124 1997/03/12 22:30:47 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -22,7 +22,7 @@ int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetInfo_SeqDense"
-static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
+int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data;
   int          i,N = a->m*a->n,count = 0;
@@ -49,7 +49,7 @@ static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNC__  
 #define __FUNC__ "MatScale_SeqDense"
-static int MatScale_SeqDense(Scalar *alpha,Mat inA)
+int MatScale_SeqDense(Scalar *alpha,Mat inA)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) inA->data;
   int          one = 1, nz;
@@ -65,7 +65,7 @@ static int MatScale_SeqDense(Scalar *alpha,Mat inA)
    rather than put it in the Mat->col slot.*/
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactor_SeqDense"
-static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
+int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          info;
@@ -84,7 +84,7 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
 
 #undef __FUNC__  
 #define __FUNC__ "MatConvertSameType_SeqDense"
-static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
+int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
   int          ierr;
@@ -102,14 +102,14 @@ static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorSymbolic_SeqDense"
-static int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,double f,Mat *fact)
+int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,double f,Mat *fact)
 {
   return MatConvertSameType_SeqDense(A,fact,PETSC_FALSE);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorNumeric_SeqDense"
-static int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
+int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*) A->data, *l = (Mat_SeqDense*) (*fact)->data;
   /* copy the numerical values */
@@ -120,21 +120,21 @@ static int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorSymbolic_SeqDense"
-static int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,double f,Mat *fact)
+int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,double f,Mat *fact)
 {
   return MatConvert(A,MATSAME,fact);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqDense"
-static int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
+int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
   return MatCholeskyFactor(*fact,0,1.0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactor_SeqDense"
-static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
+int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
   int           info;
@@ -153,7 +153,7 @@ static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolve_SeqDense"
-static int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
+int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          one = 1, info, ierr;
@@ -175,7 +175,7 @@ static int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolveTrans_SeqDense"
-static int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
+int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          one = 1, info;
@@ -197,7 +197,7 @@ static int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolveAdd_SeqDense"
-static int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
+int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          one = 1, info,ierr;
@@ -227,7 +227,7 @@ static int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolveTransAdd_SeqDense"
-static int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
+int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
   int           one = 1, info,ierr;
@@ -262,7 +262,7 @@ static int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatRelax_SeqDense"
-static int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
+int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
                           double shift,int its,Vec xx)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
@@ -373,7 +373,7 @@ int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 /* -----------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow_SeqDense"
-static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
+int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v;
@@ -394,7 +394,7 @@ static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRow_SeqDense"
-static int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
+int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   if (cols) { PetscFree(*cols); }
   if (vals) { PetscFree(*vals); }
@@ -403,7 +403,7 @@ static int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **v
 /* ----------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatSetValues_SeqDense"
-static int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
+int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
                                     int *indexn,Scalar *v,InsertMode addv)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
@@ -478,7 +478,7 @@ static int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetValues_SeqDense"
-static int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
+int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          i, j;
@@ -691,7 +691,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqDense"
-static int MatView_SeqDense(PetscObject obj,Viewer viewer)
+int MatView_SeqDense(PetscObject obj,Viewer viewer)
 {
   Mat          A = (Mat) obj;
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
@@ -714,7 +714,7 @@ static int MatView_SeqDense(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqDense"
-static int MatDestroy_SeqDense(PetscObject obj)
+int MatDestroy_SeqDense(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_SeqDense *l = (Mat_SeqDense *) mat->data;
@@ -736,7 +736,7 @@ static int MatDestroy_SeqDense(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "MatTranspose_SeqDense"
-static int MatTranspose_SeqDense(Mat A,Mat *matout)
+int MatTranspose_SeqDense(Mat A,Mat *matout)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          k, j, m, n;
@@ -773,7 +773,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
 
 #undef __FUNC__  
 #define __FUNC__ "MatEqual_SeqDense"
-static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
+int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense *) A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense *) A2->data;
@@ -793,7 +793,7 @@ static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetDiagonal_SeqDense"
-static int MatGetDiagonal_SeqDense(Mat A,Vec v)
+int MatGetDiagonal_SeqDense(Mat A,Vec v)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          i, n, len;
@@ -811,7 +811,7 @@ static int MatGetDiagonal_SeqDense(Mat A,Vec v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDiagonalScale_SeqDense"
-static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
+int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *l,*r,x,*v;
@@ -842,7 +842,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
 #undef __FUNC__  
 #define __FUNC__ "MatNorm_SeqDense"
-static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
+int MatNorm_SeqDense(Mat A,NormType type,double *norm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v;
@@ -891,7 +891,7 @@ static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetOption_SeqDense"
-static int MatSetOption_SeqDense(Mat A,MatOption op)
+int MatSetOption_SeqDense(Mat A,MatOption op)
 {
   Mat_SeqDense *aij = (Mat_SeqDense *) A->data;
   
@@ -917,7 +917,7 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroEntries_SeqDense"
-static int MatZeroEntries_SeqDense(Mat A)
+int MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense *l = (Mat_SeqDense *) A->data;
   PetscMemzero(l->v,l->m*l->n*sizeof(Scalar));
@@ -926,7 +926,7 @@ static int MatZeroEntries_SeqDense(Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetBlockSize_SeqDense"
-static int MatGetBlockSize_SeqDense(Mat A,int *bs)
+int MatGetBlockSize_SeqDense(Mat A,int *bs)
 {
   *bs = 1;
   return 0;
@@ -934,7 +934,7 @@ static int MatGetBlockSize_SeqDense(Mat A,int *bs)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_SeqDense"
-static int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
+int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqDense *l = (Mat_SeqDense *) A->data;
   int          n = l->n, i, j,ierr,N, *rows;
@@ -958,7 +958,7 @@ static int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSize_SeqDense"
-static int MatGetSize_SeqDense(Mat A,int *m,int *n)
+int MatGetSize_SeqDense(Mat A,int *m,int *n)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   *m = mat->m; *n = mat->n;
@@ -967,7 +967,7 @@ static int MatGetSize_SeqDense(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetOwnershipRange_SeqDense"
-static int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
+int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   *m = 0; *n = mat->m;
@@ -976,7 +976,7 @@ static int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetArray_SeqDense"
-static int MatGetArray_SeqDense(Mat A,Scalar **array)
+int MatGetArray_SeqDense(Mat A,Scalar **array)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   *array = mat->v;
@@ -985,7 +985,7 @@ static int MatGetArray_SeqDense(Mat A,Scalar **array)
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreArray_SeqDense"
-static int MatRestoreArray_SeqDense(Mat A,Scalar **array)
+int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 {
   return 0;
 }
@@ -1039,7 +1039,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqDense"
-static int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {
   int ierr,i;
@@ -1056,7 +1056,7 @@ static int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMa
 
 #undef __FUNC__  
 #define __FUNC__ "MatCopy_SeqDense"
-static int MatCopy_SeqDense(Mat A, Mat B)
+int MatCopy_SeqDense(Mat A, Mat B)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
   if (B->type != MATSEQDENSE) return MatCopy_Basic(A,B);

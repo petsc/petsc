@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.54 1997/02/22 02:28:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.55 1997/03/01 15:57:32 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -47,7 +47,7 @@ int ViewerDestroy_Private()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_File" /* ADIC Ignore */
-static int ViewerDestroy_File(PetscObject obj)
+int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
   int    rank = 0;

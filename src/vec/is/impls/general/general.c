@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.55 1997/01/06 20:21:29 balay Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.56 1997/02/22 02:21:58 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -16,7 +16,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_General" /* ADIC Ignore */
-static int ISDestroy_General(PetscObject obj)
+int ISDestroy_General(PetscObject obj)
 {
   IS         is = (IS) obj;
   IS_General *is_general = (IS_General *) is->data;
@@ -29,7 +29,7 @@ static int ISDestroy_General(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetIndices_General" /* ADIC Ignore */
-static int ISGetIndices_General(IS in,int **idx)
+int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
   *idx = sub->idx; return 0;
@@ -37,7 +37,7 @@ static int ISGetIndices_General(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISRestoreIndices_General" /* ADIC Ignore */
-static int ISRestoreIndices_General(IS in,int **idx)
+int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
   if (*idx != sub->idx ) {
@@ -48,7 +48,7 @@ static int ISRestoreIndices_General(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetSize_General" /* ADIC Ignore */
-static int ISGetSize_General(IS is,int *size)
+int ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
   *size = sub->n; return 0;
@@ -56,7 +56,7 @@ static int ISGetSize_General(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_General" /* ADIC Ignore */
-static int ISInvertPermutation_General(IS is, IS *isout)
+int ISInvertPermutation_General(IS is, IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
   int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
@@ -73,7 +73,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_General" /* ADIC Ignore */
-static int ISView_General(PetscObject obj, Viewer viewer)
+int ISView_General(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
   IS_General  *sub = (IS_General *)is->data;
@@ -98,7 +98,7 @@ static int ISView_General(PetscObject obj, Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "ISSort_General" /* ADIC Ignore */
-static int ISSort_General(IS is)
+int ISSort_General(IS is)
 {
   IS_General *sub = (IS_General *)is->data;
   int        ierr;
@@ -111,7 +111,7 @@ static int ISSort_General(IS is)
 
 #undef __FUNC__  
 #define __FUNC__ "ISSorted_General" /* ADIC Ignore */
-static int ISSorted_General(IS is, PetscTruth *flg)
+int ISSorted_General(IS is, PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
   *flg = (PetscTruth) sub->sorted;

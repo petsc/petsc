@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.52 1997/01/06 20:21:30 balay Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.53 1997/02/22 02:22:00 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -14,7 +14,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Stride" /* ADIC Ignore */
-static int ISInvertPermutation_Stride(IS is, IS *perm)
+int ISInvertPermutation_Stride(IS is, IS *perm)
 {
   IS_Stride *isstride = (IS_Stride *) is->data;
   int       ierr;
@@ -99,7 +99,7 @@ int ISStride(IS is,PetscTruth *flag)
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_Stride" /* ADIC Ignore */
-static int ISDestroy_Stride(PetscObject obj)
+int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
   PetscFree(is->data); 
@@ -109,7 +109,7 @@ static int ISDestroy_Stride(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetIndices_Stride" /* ADIC Ignore */
-static int ISGetIndices_Stride(IS in,int **idx)
+int ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride *) in->data;
   int       i;
@@ -125,7 +125,7 @@ static int ISGetIndices_Stride(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISRestoreIndices_Stride" /* ADIC Ignore */
-static int ISRestoreIndices_Stride(IS in,int **idx)
+int ISRestoreIndices_Stride(IS in,int **idx)
 {
   if (*idx) PetscFree(*idx);
   return 0;
@@ -133,7 +133,7 @@ static int ISRestoreIndices_Stride(IS in,int **idx)
 
 #undef __FUNC__  
 #define __FUNC__ "ISGetSize_Stride" /* ADIC Ignore */
-static int ISGetSize_Stride(IS is,int *size)
+int ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
   *size = sub->n; return 0;
@@ -141,7 +141,7 @@ static int ISGetSize_Stride(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_Stride" /* ADIC Ignore */
-static int ISView_Stride(PetscObject obj, Viewer viewer)
+int ISView_Stride(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
   IS_Stride   *sub = (IS_Stride *)is->data;
@@ -166,7 +166,7 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   
 #undef __FUNC__  
 #define __FUNC__ "ISSort_Stride" /* ADIC Ignore */
-static int ISSort_Stride(IS is)
+int ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
   if (sub->step >= 0 ) return 0;
@@ -177,7 +177,7 @@ static int ISSort_Stride(IS is)
 
 #undef __FUNC__  
 #define __FUNC__ "ISSorted_Stride" /* ADIC Ignore */
-static int ISSorted_Stride(IS is, PetscTruth* flg)
+int ISSorted_Stride(IS is, PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
   if (sub->step >= 0) *flg = PETSC_TRUE;

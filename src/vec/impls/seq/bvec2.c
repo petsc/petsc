@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.91 1997/03/09 17:56:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.92 1997/03/12 22:36:35 curfman Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -54,7 +54,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecGetOwnershipRange_Seq" /* ADIC Ignore */
-static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
+int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
   *low = 0; *high = x->n;
@@ -196,7 +196,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_Seq" /* ADIC Ignore */
-static int VecView_Seq(PetscObject obj,Viewer viewer)
+int VecView_Seq(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
   Vec_Seq     *x = (Vec_Seq *)xin->data;
@@ -221,7 +221,7 @@ static int VecView_Seq(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValues_Seq"
-static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
+int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   Scalar   *xx = x->array;
@@ -248,7 +248,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
 #undef __FUNC__  
 #define __FUNC__ "VecDestroy_Seq" /* ADIC Ignore */
-static int VecDestroy_Seq(PetscObject obj )
+int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v  = (Vec ) obj;
   Vec_Seq *vs = (Vec_Seq*) v->data;
@@ -267,7 +267,7 @@ static int VecDestroy_Seq(PetscObject obj )
   return 0;
 }
 
-static int VecDuplicate_Seq(Vec,Vec*);
+int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
             VecDuplicateVecs_Default, VecDestroyVecs_Default, 
@@ -388,7 +388,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 
 #undef __FUNC__  
 #define __FUNC__ "VecDuplicate_Seq" /* ADIC Ignore */
-static int VecDuplicate_Seq(Vec win,Vec *V)
+int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;
   Vec_Seq *w = (Vec_Seq *)win->data;

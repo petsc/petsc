@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.56 1997/02/17 04:08:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.57 1997/02/22 02:29:24 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: da1.c,v 1.56 1997/02/17 04:08:29 bsmith Exp bsmith $"
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_1d" /* ADIC Ignore */
-static int DAView_1d(PetscObject pobj,Viewer viewer)
+int DAView_1d(PetscObject pobj,Viewer viewer)
 {
   DA          da  = (DA) pobj;
   int         rank, ierr;
