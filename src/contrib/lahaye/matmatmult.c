@@ -1,4 +1,4 @@
-/*$Id$*/
+/*$Id: matmatmult.c,v 1.3 2001/08/31 19:06:18 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -30,11 +30,11 @@ static int logkey_numeric=0;
 int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
 {
   _p_free_space *free_space,*current_space;
-  Mat_SeqAIJ    *a = (Mat_SeqAIJ *)A->data,*b = (Mat_SeqAIJ *)B->data,*c;
+  Mat_SeqAIJ    *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   int           aishift=a->indexshift,bishift=b->indexshift;
   int           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   int           *ci,*bjj,*cj,*cj2,*densefill,*sparsefill;
-  int           an=A->N,am=A->M,bn=A->N,bm=A->M;
+  int           an=A->N,am=A->M,bn=B->N,bm=B->M;
   int           ierr,i,j,k,anzi,brow,bnzj,cnzi,free_space_size=bi[bn+1];
   MatScalar     *ca;
 
@@ -65,7 +65,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   current_space = free_space;
 
   /* Determine fill for each row: */
-  for (i=0;i<an;i++) {
+  for (i=0;i<am;i++) {
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
     for (j=0;j<anzi;j++) {
@@ -131,11 +131,13 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   ierr = PetscMalloc((ci[an]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
   
   /* put together the new matrix */
-  MatCreateSeqAIJWithArrays(A->comm,an,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flag to free them */
+  c = (Mat_SeqAIJ *)((*C)->data);
   c->freedata = PETSC_TRUE;
+
   ierr = PetscLogEventEnd(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
