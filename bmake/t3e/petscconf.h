@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.5 1998/04/20 19:27:19 bsmith Exp balay $ */
+/* $Id: petscconf.h,v 1.6 1998/04/23 21:02:25 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -31,6 +31,7 @@
 #define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define HAVE_FAST_MPI_WTIME
+#define HAVE_T3EF90
 
 #if !defined(HAVE_64BITS)
 #define HAVE_64BITS
