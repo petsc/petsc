@@ -7,22 +7,16 @@ if __name__ == '__main__':
 
     configure_options = [
     '-PETSC_ARCH=cygwin-ms',
-    '-PETSC_DIR=/home/Kris/petsc/petsc-2',
+    '-PETSC_DIR=/home/Kris/petsc/petsc-dev',
     # Using MPICH for Windows 2000/NT available from http://www.mcs.anl.gov/mpi/mpich
-    '--with-mpi-include=/software/MPI/mpich-nt.1.2.5/SDK/include',
-    '--with-mpi-lib=[/software/MPI/mpich-nt.1.2.5/SDK/lib/mpich.lib,ws2_32.lib]',
+    '--with-mpi-dir=/software/MPI/mpich-nt.1.2.5/SDK',
+    '--with-mpi-compilers=0',
     '--with-blas-lapack=/software/BLAS/MKL/ia32/lib/mkl_c_dll.lib',
+    # Using Microsoft C/C++ compiler
     '--with-cc=win32fe cl',
-    '--CFLAGS=-MT -W3',
-    '-CFLAGS_g=-Z7',
-    '-CFLAGS_O=-O3',
-    '--with-fc=win32fe f90',
-    '-FFLAGS_g=-threads -debug:full',
-    '-FFLAGS_O=-threads -optimize:5 -fast',
     '--with-cxx=win32fe cl',
-    '--CXXFLAGS=-MT -W3 -GX -GR',
-    '-CXXFLAGS_g=-TP -Z7',
-    '-CXXFLAGS_O=-TP -O3 -QxW'
+    # Using Compaq FORTRAN Compiler
+    '--with-fc=win32fe f90',
     ]
 
     configure.petsc_configure(configure_options)
