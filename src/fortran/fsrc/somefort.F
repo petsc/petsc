@@ -1,5 +1,5 @@
 !
-!  "$Id: somefort.F,v 1.18 1998/04/21 18:23:47 balay Exp balay $";
+!  "$Id: somefort.F,v 1.19 1998/04/23 01:55:16 balay Exp balay $";
 !
 !  Utility routine used to set some values into a Fortran common block
 
@@ -24,36 +24,4 @@
 
       return
       end
-
-#if defined(HAVE_NAGF90)
-!
-!  These functions are needed if you are using 
-!  MPICH, have not compiled MPICH for the NAG 
-!  Fortran 90 compiler, but are compiling PETSc
-!  with the NAG Fortran 90 compiler. 
-! 
-      integer function mpir_iargc()
-      use f90_unix
-      implicit none
-!
-
-
-      mpir_iargc = iargc()
-      return
-      end
-!     
-      subroutine mpir_getarg( i, s )
-      use f90_unix
-      implicit none
-!
-
-
-      integer       i
-      character*(*) s
-      call getarg(i,s)
-      return
-      end
-#endif
-
-
 
