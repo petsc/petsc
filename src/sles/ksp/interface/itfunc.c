@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.145 2000/05/05 22:17:27 balay Exp bsmith $*/
+/*$Id: itfunc.c,v 1.146 2000/05/10 18:52:47 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -227,33 +227,38 @@ int KSPSolve(KSP ksp,int *its)
   if (flag1 || flag2) {
     int       n = *its,i,neig;
     PetscReal *r,*c;
-    r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
-    c = r + n;
-    ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
-    if (flag1) {
-      ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
-      for (i=0; i<neig; i++) {
-        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
-        else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
-      }
-    }
-    if (flag2 && !rank) {
-      Viewer    viewer;
-      Draw      draw;
-      DrawSP    drawsp;
 
-      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
-                             PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-      ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
-      for (i=0; i<neig; i++) {
-        ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
+    if (!n) {
+      ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues");CHKERRQ(ierr);
+    } else {
+      r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
+      c = r + n;
+      ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
+      if (flag1) {
+        ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
+        for (i=0; i<neig; i++) {
+          if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
+          else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+        }
       }
-      ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
-      ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+      if (flag2 && !rank) {
+        Viewer    viewer;
+        Draw      draw;
+        DrawSP    drawsp;
+
+        ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
+                               PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
+        ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+        ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+        for (i=0; i<neig; i++) {
+          ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
+        }
+        ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
+        ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
+        ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(r);CHKERRQ(ierr);
     }
-    ierr = PetscFree(r);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
