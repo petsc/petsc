@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.51 1998/04/15 18:01:22 balay Exp balay $";
+!    "$Id: ex12.F,v 1.52 1998/04/21 18:33:02 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -17,6 +17,12 @@
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 !
+!
+! Macros to make setting/getting  values into vector clearer.
+! The element xx(ib) is the ibth element in the vector indicated by ctx(3)
+#define xx(ib)  vxx(ixx + (ib))
+#define ff(ib)  vff(iff + (ib))
+#define F2(ib)  vF2(iF2 + (ib))
 
        implicit none
 
@@ -151,12 +157,6 @@
       call VecGetArray(ctx(3),vxx,ixx,ierr)
       call VecGetArray(f,vff,iff,ierr)
       call VecGetArray(ctx(2),vF2,iF2,ierr)
-!
-! Macros to make setting/getting  values into vector clearer.
-! The element xx(ib) is the ibth element in the vector indicated by ctx(3)
-#define xx(ib)  vxx(ixx + (ib))
-#define ff(ib)  vff(iff + (ib))
-#define F2(ib)  vF2(iF2 + (ib))
 
       d = h*h
 
@@ -236,7 +236,6 @@
       integer          iend, i,j, n, rank, size, end, start, ierr
       Scalar           d, A, h, vxx(1)
 
-#define xx(ib)  vxx(ixx + (ib))
 
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
