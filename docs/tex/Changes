@@ -14,44 +14,26 @@ add to it).
 
   MAT
 
-  MatSolveTrans() and MatSolveTransAdd() are now MatSolveTransposeXXX()
-  MatMultTrans() and MatMultTransAdd() are now MatMultTransposeXXX()
-
+  
   Another MatSetOption, MAT_IGNORE_ZERO_ENTRIES for AIJ matrices with ADD_VALUES.
 
 added matrix option MAT_KEEP_ZEROED_ROWS causes MatZeroRows() to keep the original nonzero 
 data structure and just put 0.0 into the elements that are to be zeroed. Without this option
 it removes the locations from the nonzero structure    
 
-  MatCreateMPIAdj() changed to MatCreateMPICSR(); MatCreateSeqAdj() dropped.
+  
 
   KSP
 
-    KSPSolvetrans() is now KSPSolveTranspose()
-
-     Added flexible gmres (use gmres or KSPGMRES as the type) see KSPFGMRESSetModifyPC() for
-   how to change PC at each iteration.
+    
 
   SLES
  
-SLESSolveTrans() is now SLESSolveTranspose()
 
-  SLESSolve() now ALWAYS returns a 0 or positive iteration count. Call KSPGeeytConvergedReason()
-to see if converged or diverged and why.   
 
   PC
 
-  PCApplyTrans() is now PCApplyTranspose()
-
-  optiions -pc_ilu_mat_ordering_type <nd,...> and  -pc_lu_mat_ordering_type <nd,...> now set 
-  the ordering type.
-
-  We now provide a drop tolerance based ILU for SeqAIJ matrix format via Yousef Saad's SPARSEKIT2
-  software.
-
-Use -pc_ilu_use_drop_tolerance <dt,dtcol,rowmax> or
-PCILUSetUseDropTolerance(pc,dt,dtcol,rowmax).
-
+  
  
   AO
 
@@ -62,27 +44,18 @@ PCILUSetUseDropTolerance(pc,dt,dtcol,rowmax).
     
   Draw
 
-  DrawHistxxx  changed to DrawHGxxx
+  
 
    
   General
 
- PetsReal() and PetscImaginary() are now PetscRealPart() PetscImaginaryPart()
-
--optionstable -> -options_table -optionsleft -> -options_left but old left for compatibility
+ 
 
  
   Viewers
 
 
-  Binary and ASCII viewers can create compressed files by simply appending a .gz on the 
-filename.
-
-   PETSc now has a new viewer that generates rudimentary Postscript.
-Improvements, additions may be added as needed.
-  DrawOpenPS(), or DrawSetType(,DRAW_PS); or -draw_type ps
-
-
+ 
   SNES 
 
 
@@ -92,8 +65,5 @@ Improvements, additions may be added as needed.
 
   TS
 
-   TSSetMonitor() now takes an additional final optional argument that will destroy the
-monitor context.
-
-
+   
 
