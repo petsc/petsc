@@ -30,7 +30,7 @@ EXTERN int PCCreate_mILU(PC);
 EXTERN int PCCreate_PetscESI(PC);
 EXTERN int PCCreate_ESI(PC);
 EXTERN int PCCreate_Mat(PC);
-#if defined(PETSC_HAVE_HYPRE)
+#if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int PCCreate_HYPRE(PC);
 #endif
 EXTERN_C_END
