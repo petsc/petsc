@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.207 2000/06/15 22:00:05 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.208 2000/06/23 17:48:12 bsmith Exp buschelm $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2645,3 +2645,33 @@ int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
   ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"VecConjugate"
+/*@C
+   VecConjugate - Conjugates a vector.
+
+   Not Collective
+
+   Input Parameters:
++  x - the vector
+
+   Level: beginner
+
+.keywords: vector, conjugate, complex
+@*/
+int VecConjugate(Vec x)
+{
+#ifdef PETSC_USE_COMPLEX
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidType(x);
+  ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  return(0);
+#endif
+}
+
