@@ -18,7 +18,7 @@
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ"
 int MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
-  Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;;
+  Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   PetscScalar  *dd = fact_ptr->a;
   int          m = F->m,i;
 
