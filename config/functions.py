@@ -57,6 +57,12 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def checkRunExecutable(self):
+    '''Check we can run executable created'''
+    if not self.checkRun('', ''):
+      raise RuntimeError('Cannot run created executables')
+    return
+
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
     if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
@@ -110,6 +116,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.checkRunExecutable)
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
