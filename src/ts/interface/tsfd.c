@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.6 1998/04/13 17:50:17 bsmith Exp balay $";
+static char vcid[] = "$Id: tsfd.c,v 1.7 1998/05/29 22:51:18 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -12,27 +12,26 @@ static char vcid[] = "$Id: tsfd.c,v 1.6 1998/04/13 17:50:17 bsmith Exp balay $";
     TSDefaultComputeJacobianWithColoring - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
   
+    Collective on TS, Vec and Mat
+
     Input Parameters:
-.   ts - nonlinear solver object
++   ts - nonlinear solver object
 .   t - current time
 .   x1 - location at which to evaluate Jacobian
-.   ctx - coloring context, where
-$      ctx must have type MatFDColoring, 
-$      as created via MatFDColoringCreate()
+-   ctx - coloring context, where ctx must have type MatFDColoring, 
+          as created via MatFDColoringCreate()
 
     Output Parameters:
-.   J - Jacobian matrix (not altered in this routine)
++   J - Jacobian matrix (not altered in this routine)
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
-.   flag - flag indicating whether the matrix sparsity structure has changed
-
-    Collective on TS, Vec and Mat
+-   flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 
 
 .keywords: TS, finite differences, Jacobian, coloring, sparse
 
-.seealso: TSSetJacobian()
+.seealso: TSSetJacobian(), , MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
 int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
@@ -69,19 +68,22 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
       TSSetRHSJacobianDefault - Sets TS to use the default coloring
                                             computation of the Jacobian.
 
+    Collective on TS, MatFDColoring and Mat
+
    Input Parameters:
-.   ts - the time-step context
++   ts - the time-step context
 .   fd - the matrix coloring object
 .   A  - the Jacobian matrix
-.   B  - the preconditioner matrix (often the same as A)
-
-    Collective on TS, MatFDColoring and Mat
+-   B  - the preconditioner matrix (often the same as A)
 
     Note: This is equivalent to calling
       TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);
       but may be called from Fortran code.
  
 .keywords: Jacobian, coloring
+
+.seealso: TSSetRHSJacobian(), TSDefaultComputeJacobianWithColoring()
+
 @*/
 int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
 {
