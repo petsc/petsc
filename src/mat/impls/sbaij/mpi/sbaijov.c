@@ -67,7 +67,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   MPI_Comm    comm;
   MPI_Request *s_waits1,*s_waits2,r_req;
   MPI_Status  *s_status,r_status;
-  PetscBT     *table=0;  /* mark indices of this processor's is[] */
+  PetscBT     *table;  /* mark indices of this processor's is[] */
   PetscBT     table_i;
   PetscBT     otable; /* mark indices of other processors' is[] */ 
   int         bs=c->bs,Bn = c->B->n,Bnbs = Bn/bs,*Bowners;  
@@ -85,7 +85,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 
   /* create tables used in
      step 1: table[i] - mark c->garray of proc [i]
-     step 2: table[i] - mark indices of is[i] when whose=MINE     
+     step 3: table[i] - mark indices of is[i] when whose=MINE     
              table[0] - mark incideces of is[] when whose=OTHER */
   len = PetscMax(is_max, size);CHKERRQ(ierr);
   len_max = len*sizeof(PetscBT) + (Mbs/PETSC_BITS_PER_BYTE+1)*len*sizeof(char) + 1;
@@ -223,27 +223,26 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       k++;
     }
   }
-  
-  /* 2. Do local work on this processor's is[] */
-  /*-------------------------------------------*/
-  len_max = is_max*(Mbs+1); /* max space storing all is[] for this processor */
-  ierr = PetscMalloc((len_max+1)*sizeof(int),&data);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1_start[rank],MINE,data,table);CHKERRQ(ierr);
-  ierr = PetscFree(data1_start);CHKERRQ(ierr);
-  
-  /* 3. Receive other's is[] and process. Then send back */
+
+  /* 2. Receive other's is[] and process. Then send back */
   /*-----------------------------------------------------*/
   len = 0;
   for (i=0; i<nrqr; i++){
     if (len_r1[i] > len)len = len_r1[i];
     /* ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] expect to recv len=%d from [%d]\n",rank,len_r1[i],id_r1[i]); */
   }
+  ierr = PetscFree(len_r1);CHKERRQ(ierr);
+  ierr = PetscFree(id_r1);CHKERRQ(ierr);
+
+  for (proc_id=0; proc_id<size; proc_id++)
+    len_s[proc_id] = iwork[proc_id] = 0;
+  
   ierr = PetscMalloc((len+1)*sizeof(int),&odata1);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(int**),&odata2_ptr);CHKERRQ(ierr);
   ierr = PetscBTCreate(Mbs,otable);CHKERRQ(ierr);
 
   len_max = ois_max*(Mbs+1);  /* max space storing all is[] for each receive */
-  len_est = 2*len_max; /* estimated space of storing is[] for all receiving messages */
+  len_est = (int)(1.5*len_max); /* estimated space of storing is[] for all receiving messages */
   nodata2 = 0;       /* nodata2+1: num of PetscMalloc(,&odata2_ptr[]) called */
   ierr = PetscMalloc((len_est+1)*sizeof(int),&odata2_ptr[nodata2]);CHKERRQ(ierr);
   odata2     = odata2_ptr[nodata2];
@@ -281,20 +280,34 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       k++;
       odata2     += len;
       len_unused -= len;
+      len_s[proc_id] = len; /* num of messages sending back to [proc_id] by this proc */
     } 
   } 
   ierr = PetscFree(odata1);CHKERRQ(ierr); 
+  ierr = PetscBTDestroy(otable);CHKERRQ(ierr); 
 
-  /* 4. Receive work done on other processors, then merge */
-  /*------------------------------------------------------*/
-  data2 = odata2;
-  /* check if there is enough unused space in odata2(=data2) array */
+  /* 3. Do local work on this processor's is[] */
+  /*-------------------------------------------*/
+  data = odata2;
+  /* make sure there is enough unused space in odata2(=data) array */
+  len_max = is_max*(Mbs+1); /* max space storing all is[] for this processor */
   if (len_unused < len_max){ /* allocate more space for odata2 */
     ierr = PetscMalloc((len_est+1)*sizeof(int),&odata2_ptr[++nodata2]);CHKERRQ(ierr);
     data2 = odata2_ptr[nodata2];
     len_unused = len_est;
     /* ierr = PetscPrintf(PETSC_COMM_SELF, " [%d] Malloc data2, nodata2: %d\n",rank,nodata2); */
   }
+  
+  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1_start[rank],MINE,data,table);CHKERRQ(ierr);
+  ierr = PetscFree(data1_start);CHKERRQ(ierr);
+
+  /* 4. Receive work done on other processors, then merge */
+  /*------------------------------------------------------*/
+  /* get max number of messages that this processor expects to recv */
+  ierr = MPI_Allreduce(len_s,iwork,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects max_len=%d of data2 from others \n",rank,iwork[rank]); */
+  ierr = PetscMalloc((iwork[rank]+1)*sizeof(int),&data2);CHKERRQ(ierr);
+  ierr = PetscFree(len_s);CHKERRQ(ierr);
 
   k = 0;
   while (k < nrqs){
@@ -323,6 +336,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       k++;
     } 
   } 
+  ierr = PetscFree(data2);CHKERRQ(ierr);
+  ierr = PetscFree(table);CHKERRQ(ierr);
 
   /* phase 1 sends are complete */
   ierr = PetscMalloc(size*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
@@ -335,10 +350,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   if (nrqr){
     ierr = MPI_Waitall(nrqr,s_waits2,s_status);CHKERRQ(ierr);
   }
-  for (k=0; k<=nodata2; k++){
-    ierr = PetscFree(odata2_ptr[k]);CHKERRQ(ierr); 
-  }
-  ierr = PetscFree(odata2_ptr);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits1);CHKERRQ(ierr);
+  ierr = PetscFree(s_status);CHKERRQ(ierr); 
 
   /* 5. Create new is[] */
   /*--------------------*/ 
@@ -346,16 +359,10 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     data_i = data + 1 + is_max + Mbs*i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,data[1+i],data_i,is+i);CHKERRQ(ierr);
   }
- 
-  ierr = PetscFree(data);CHKERRQ(ierr); 
-  ierr = PetscFree(s_waits1);CHKERRQ(ierr);
-  ierr = PetscFree(s_status);CHKERRQ(ierr); 
-  if (table) {ierr = PetscFree(table);CHKERRQ(ierr);}
-  ierr = PetscBTDestroy(otable);CHKERRQ(ierr); 
-
-  ierr = PetscFree(len_s);CHKERRQ(ierr);
-  ierr = PetscFree(id_r1);CHKERRQ(ierr);
-  ierr = PetscFree(len_r1);CHKERRQ(ierr);
+  for (k=0; k<=nodata2; k++){
+    ierr = PetscFree(odata2_ptr[k]);CHKERRQ(ierr); 
+  }
+  ierr = PetscFree(odata2_ptr);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
