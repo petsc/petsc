@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.12 1997/09/22 15:25:40 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.13 1998/03/20 22:53:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -90,11 +90,10 @@ int main(int argc,char **argv)
   MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );
   PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
    
-
-  ierr = DADestroy(da); CHKERRA(ierr);
   ierr = VecDestroy(local_copy); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
