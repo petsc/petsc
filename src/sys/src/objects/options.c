@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.148 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.149 1997/11/03 04:43:55 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -162,7 +162,8 @@ int PetscCompareInt(int d)
 @*/
 int PetscCompareDouble(double d)
 {
-  double work = d,ierr;
+  double work = d;
+  int    ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
