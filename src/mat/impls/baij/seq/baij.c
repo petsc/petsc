@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.106 1997/07/07 19:35:15 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.107 1997/07/09 20:55:07 balay Exp bsmith $";
 #endif
 
 /*
@@ -753,12 +753,12 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
   int        m = a->m,*ip, N, *ailen = a->ilen;
-  int        mbs = a->mbs, bs2 = a->bs2,rmax;
+  int        mbs = a->mbs, bs2 = a->bs2,rmax = 0;
   Scalar     *aa = a->a, *ap;
 
   if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
-  rmax = ailen[0];
+  if (m) rmax = ailen[0];
   for ( i=1; i<mbs; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
     fshift += imax[i-1] - ailen[i-1];

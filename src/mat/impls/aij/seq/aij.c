@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.228 1997/07/02 22:25:28 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.229 1997/07/09 20:53:48 balay Exp bsmith $";
 #endif
 
 /*
@@ -626,12 +626,12 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax,ierr;
-  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift,rmax;
+  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift,rmax = 0;
   Scalar     *aa = a->a, *ap;
 
   if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
-  rmax = ailen[0]; /* determine row with most nonzeros */
+  if (m) rmax = ailen[0]; /* determine row with most nonzeros */
   for ( i=1; i<m; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
     fshift += imax[i-1] - ailen[i-1];
