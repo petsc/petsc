@@ -9,6 +9,7 @@ OBJSC    = symmlq.o
 OBJSF    =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/symmlq/
+MANSEC   = KSP
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
