@@ -7,7 +7,6 @@
 #    4 - uniprocessor version of 1 and 2
 #    5 - C examples that require complex numbers
 #    6 - C examples that don't work with complex numbers, require PETSc matrices
-#    7 - C examples that require BlockSolve
 #    8 - Fortran .F examples that don't work with complex numbers
 #    9 - uniprocessor version of 3
 #   10 - Fortran examples that require complex

@@ -19,10 +19,7 @@ source $dir/buildtests/$1
 set dir=`dirname $dir`
 
 
-#
-set RSYNC_DIR=$TMP
-
-rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$RSYNC_DIR
+rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$TMP
 # should delete all previously build libraries
 
 
@@ -35,6 +32,14 @@ if ("${CONFIGURE}" == "yes") then
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 endif
 
+
+$RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+
+$RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+$RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+#
+#  Now run the test examples
+#
 #  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
 set EJOBS=`$RSH $MACH -n grep PETSC_HAVE_ $TMP/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 
@@ -44,13 +49,6 @@ endif
 if ("${BOPT}" == "O_complex") then
   set EJOBS=""
 endif
-
-$RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-
-$RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-#
-#  Now run the test examples
 #
 $RSH $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
 foreach j ($JOBS $EJOBS)
