@@ -70,11 +70,12 @@ int MatDestroy_SuperLU(Mat A)
     Destroy_SuperMatrix_Store(&lu->A); 
     Destroy_SuperMatrix_Store(&lu->B);
     Destroy_SuperMatrix_Store(&lu->X); 
-    SUPERLU_FREE (lu->etree);
-    SUPERLU_FREE (lu->perm_r);
-    SUPERLU_FREE (lu->perm_c);
-    SUPERLU_FREE (lu->R);
-    SUPERLU_FREE (lu->C);
+
+    ierr = PetscFree(lu->etree);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+    ierr = PetscFree(lu->R);CHKERRQ(ierr);
+    ierr = PetscFree(lu->C);CHKERRQ(ierr);
     if ( lu->lwork >= 0 ) {
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
@@ -260,26 +261,11 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
   double        ferr, berr; 
   
   PetscFunctionBegin;
-  if (lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-    /* Set SuperLU options */
-    /* the default values for options argument:
-	options.Fact = DOFACT;
-        options.Equil = YES;
-    	options.ColPerm = COLAMD;
-	options.DiagPivotThresh = 1.0;
-    	options.Trans = NOTRANS;
-    	options.IterRefine = NOREFINE;
-    	options.SymmetricMode = NO;
-    	options.PivotGrowth = NO;
-    	options.ConditionNumber = NO;
-    	options.PrintStat = YES;
-    */
-    set_default_options(&lu->options);
-    lu->options.Equil = NO;  /* equilibration causes error in solve */
-  } else { /* successing numerical factorization */
+  if (lu->flg == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
+    lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A); 
-    if ( lu->lwork >= 0 ) { /* Deallocate storage associated with L and U. */
+    if ( lu->lwork >= 0 ) { 
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
       lu->options.Fact = SamePattern;
@@ -300,6 +286,7 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
   /* Initialize the statistics variables. */
   StatInit(&stat);
 
+  /* Numerical factorization */
   lu->lwork = 0;   /* allocate space internally by system malloc */
   lu->B.ncol = 0;  /* Indicate not to solve the system */
   dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -376,7 +363,6 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
   ierr = PetscFree(etree);CHKERRQ(ierr);
 #endif /* OLD */
 
-
 }
 
 /*
@@ -388,7 +374,11 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_SuperLU  *lu;
-  int          ierr,m=A->m,n=A->n;     /* *ca; */
+  int          ierr,m=A->m,n=A->n,indx;  
+  PetscTruth   flg;
+  char         *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by petsc interface yet */
+  char         *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
+  char         *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by petsc interface yet */
 
   PetscFunctionBegin;
   
@@ -402,36 +392,61 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   B->assembled            = PETSC_TRUE;  /* required by -sles_view */
   
   lu = (Mat_SuperLU*)(B->spptr);
+
+  /* Set SuperLU options */
+    /* the default values for options argument:
+	options.Fact = DOFACT;
+        options.Equil = YES;
+    	options.ColPerm = COLAMD;
+	options.DiagPivotThresh = 1.0;
+    	options.Trans = NOTRANS;
+    	options.IterRefine = NOREFINE;
+    	options.SymmetricMode = NO;
+    	options.PivotGrowth = NO;
+    	options.ConditionNumber = NO;
+    	options.PrintStat = YES;
+    */
+  set_default_options(&lu->options);
+  lu->options.Equil = NO;  /* equilibration causes error in solve */
+  lu->options.PrintStat = NO;
+
+  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
+  /* 
+  ierr = PetscOptionsLogical("-mat_superlu_Equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.Equil = YES; -- do not work!!!
+  */
+  ierr = PetscOptionsEList("-mat_superlu_ColPerm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
+  if (flg) {lu->options.ColPerm = (colperm_t)indx;}
+  ierr = PetscOptionsEList("-mat_superlu_IterRefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
+  if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
+  ierr = PetscOptionsLogical("-mat_superlu_SymmetricMode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.SymmetricMode = YES; 
+  ierr = PetscOptionsReal("-mat_superlu_DiagPivotThresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsLogical("-mat_superlu_PivotGrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.PivotGrowth = YES;
+  ierr = PetscOptionsLogical("-mat_superlu_ConditionNumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.ConditionNumber = YES;
+  ierr = PetscOptionsEList("-mat_superlu_RowPerm","RowPerm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
+  if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
+  ierr = PetscOptionsLogical("-mat_superlu_ReplaceTinyPivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.ReplaceTinyPivot = YES; 
+  ierr = PetscOptionsLogical("-mat_superlu_PrintStat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  if (flg) lu->options.PrintStat = YES; 
+  PetscOptionsEnd();
+
 #ifdef SUPERLU2
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
                                     (void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
-#ifdef OLD
-  /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
-  ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
 
-  /* use PETSc mat ordering */  
-  ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
-  lu->SuperluMatOdering = PETSC_FALSE;
-
-  lu->pivot_threshold = info->dtcol; 
-  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));
-#endif
   /* Allocate spaces (notice sizes are for the transpose) */
-  int            *perm_c; /* column permutation vector */
-  int            *perm_r; /* row permutations from partial pivoting */
-  if ( !(lu->etree = intMalloc(m)) ) ABORT("Malloc fails for etree[].");
-  if ( !(lu->perm_r = intMalloc(n)) ) ABORT("Malloc fails for perm_r[].");
-  if ( !(lu->perm_c = intMalloc(m)) ) ABORT("Malloc fails for perm_c[].");
-  if ( !(lu->R = (double *) SUPERLU_MALLOC(n * sizeof(double))) ) 
-    ABORT("SUPERLU_MALLOC fails for R[].");
-  if ( !(lu->C = (double *) SUPERLU_MALLOC(m * sizeof(double))) )
-    ABORT("SUPERLU_MALLOC fails for C[].");
-
-  /* create rhs and solution x without allocate space for Store */
+  ierr = PetscMalloc(m*sizeof(int),&lu->etree);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&lu->R);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(int),&lu->C);CHKERRQ(ierr);
+ 
+  /* create rhs and solution x without allocate space for .Store */
   dCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
   dCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
 
@@ -439,6 +454,7 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
+  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));
   PetscFunctionReturn(0);
 }
 
@@ -447,16 +463,27 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatFactorInfo_SuperLU"
 int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 {
-  Mat_SuperLU *lu= (Mat_SuperLU*)A->spptr;
-  int         ierr;
+  Mat_SuperLU       *lu= (Mat_SuperLU*)A->spptr;
+  int               ierr;
+  superlu_options_t options;
 
   PetscFunctionBegin;
+  /* check if matrix is superlu_dist type */
+  if (A->ops->solve != MatSolve_SuperLU) PetscFunctionReturn(0);
+
+  options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
-#ifdef OLD
-  if(lu->SuperluMatOdering) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
-  }
-#endif
+  ierr = PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ColPerm: %d\n",options.ColPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  IterRefine: %d\n",options.IterRefine);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  RowPerm: %d\n",options.RowPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES": "NO");CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
