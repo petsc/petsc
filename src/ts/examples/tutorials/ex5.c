@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.2 1999/02/15 21:58:32 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.3 1999/03/19 21:23:41 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -131,10 +131,10 @@ int main(int argc,char **argv)
      Set up displays to show graphs of the solution and error 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1); CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
 
