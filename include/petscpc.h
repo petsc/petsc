@@ -152,7 +152,8 @@ EXTERN int PCBJacobiSetLocalBlocks(PC,int,int*);
 
 EXTERN int PCSLESSetUseTrue(PC);
 
-EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*);
+EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*); 
+EXTERN int PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));
 EXTERN int PCShellSetSetUp(PC,int (*)(void*));
 EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
 EXTERN int PCShellSetView(PC,int (*)(void*,PetscViewer));
