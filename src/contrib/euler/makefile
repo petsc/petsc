@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.23 1998/03/19 18:43:02 curfman Exp balay $ 
+# $Id: makefile,v 1.24 1998/03/19 18:56:02 balay Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -107,6 +107,7 @@ ALL: ex1
 # Define C source code:
   OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o fdda.o
   SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c fdda.c
+  SOURCEH_MM = mm.h mmimpl.h mmfort.h 
   OBJSC      = user1.o grid.o jacob.o bc.o misc.o mfj.o monitor.o vrml.o ${OBJSC_MM}
   SOURCEC    = user1.c grid.c jacob.c bc.c misc.c mfj.c monitor.c vrml.c ${SOURCEC_MM}
 
@@ -121,9 +122,9 @@ ALL: ex1
 # SOURCEH_F - Fortran include files 
 # SOURCEH   - all application include files
 #
-  SOURCEH_C = user.h 
+  SOURCEH_C = user.h ${SOURCEH_MM}
   SOURCEH_F = matrixb.h diag.h dt.h varbls.h dvarbls.h param.h \
-              ang.h avctrs.h consts.h coord.h bc.h es.h fv.h \
+              ang.h avctrs.h consts.h coord.h bc.h es.h fv.h freq.h \
               gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h \
               aux_fp.h
   SOURCEH   = ${SOURCEH_C} ${SOURCEH_F}
@@ -145,16 +146,111 @@ ex1_alpha: chkopts ${OBJSC} ${OBJSF} ${SOURCEH}
 # Define program tests
 # -----------------------------------------------------------------------
 
-runex1:
-	-@${MPIRUN} ex1 -optionsleft > log.3d.me.p1 2>&1;	  \
-	   if (diff output/order2/log.3d.me.p1 log.3d.me.p1) then true; \
-	   else echo "Output differences as above"; 
+#
+#  All of these experiments use implicit boundary conditions.
+#
 
+# Explicitly form Jacobian via default Julianne FD
+runex1_1:
+	-@${MPIRUN} ex1 -optionsleft > log.m6c.3d.me.p1 2>&1; \
+	   if (diff output/order2/log.m6c.3d.me.p1 log.m6c.3d.me.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_p1.m
+
+# Same as runex1_1 except with 1st order discretization, no limiters
+runex1_1b:
+	-@${MPIRUN} ex1 -optionsleft -order 1 -limiter none > log.m6c.3d.me.p1 2>&1; \
+	   if (diff output/order1/log.m6c.3d.me.p1 log.m6c.3d.me.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_p1.m
+
+# Matrix-free multiplication, advancing CFL
+# Explicitly form preconditioning Jacobian via default Julianne FD
+# (no wake boundary conditions in preconditioning matrix)
 runex1_2:
 	-@${MPIRUN}  ex1 -optionsleft \
-	   -matrix_free -cfl_advance > log.3d.mf.p1 2>&1;	  \
-	   if (diff output/order2/log.3d.mf.p1 log.3d.me.p1) then true; \
-	   else echo "Output differences as above"; 
+	   -matrix_free -cfl_advance > log.m6c.3d.mf.p1 2>&1; \
+	   if (diff output/order2/log.m6c.3d.mf.p1 log.m6c.3d.mf.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_p1.m
+
+# Same as runex1_2 except with 1st order discretization, no limiters
+runex1_2b:
+	-@${MPIRUN}  ex1 -optionsleft -order 1 -limiter none \
+	   -matrix_free -cfl_advance > log.m6c.3d.mf.p1 2>&1; \
+	   if (diff output/order1/log.m6c.3d.mf.p1 log.m6c.3d.mf.p1) then true; \
+	   else echo "Output differenlog.m6n.3d.mf.asm2.p16ces as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_p1.m
+
+# Matrix-free multiplication, advancing CFL
+# Explicitly form preconditioning Jacobian via default Julianne FD
+# (include wake boundary conditions in preconditioning matrix)
+runex1_3:
+	-@${MPIRUN}  ex1 -optionsleft \
+	   -jac_wake -matrix_free -cfl_advance > log.m6c.3d.mf.jwake.p1 2>&1; \
+	   if (diff output/order2/log.m6c.3d.mf.jwake.p1 log.m6c.3d.mf.jwake.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_jwake_p1.m
+
+# Matrix-free multiplication, advancing CFL
+# Explicitly form preconditioning Jacobian via default Julianne FD
+# (no wake boundary conditions in preconditioning matrix)
+# 8 processors, PC type: Restricted Additive Schwarz (RASM) with overlap 2
+runex1_4:
+	-@${MPIRUN} -np 8 ex1 -optionsleft \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6c.3d.mf.asm2.p8 2>&1; \
+	   if (diff output/order2/log.m6c.3d.mf.p1 log.m6c.3d.mf.asm2.p8) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm2_p8.m f_m6c_3d_mf_asm2_p8.m
+
+# Same as runex1_4, except using problem 2 (m6f grid)
+runex2_4:
+	-@${MPIRUN} -np 8 ex1 -problem 2 -optionsleft \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6f.3d.mf.asm2.p8 2>&1; \
+	   if (diff output/order2/log.m6f.3d.mf.p1 log.m6f.3d.mf.asm2.p8) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6f_cc1_asm2_p8.m f_m6f_3d_mf_asm2_p8.m
+
+
+# Same as runex1_4, except using problem 3 (m6n grid) on 16 processors
+runex3_4:
+	-@${MPIRUN} -np 16 ex1 -problem 3 -optionsleft -jac_wake -cfl_snes_it 4 \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 2>&1; \
+	   if (diff output/order2/log.m6n.3d.mf.p1 log.m6n.3d.mf.asm2.p16) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6n_cc2_asm2_p16.m f_m6n_3d_cc2_mf_asm2_p16.m
+
+runex3_4:
+	-@${MPIRUN} -np 16 ex1 -problem 3 -optionsleft -order 1.5 \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 2>&1; \
+	   if (diff output/order2/log.m6n.3d.mf.p1 log.m6n.3d.mf.asm2.p16) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6n_cc2_asm2_p16.m f_m6n_3d_cc2_mf_asm2_p16.m
+
+runtest_1:
+	-@${MPIRUN} -np 2 ex1 -problem 1 -optionsleft -no_output -vecscatter_rr \
+	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6c.3d.mf.asm2.p2 \
+	   mv f_m6c_cc1_asm2_p2.m f_m6c_3d_cc1_mf_asm2_i0_o12_r3_nl_p2.m
+
+runtest_2:
+	-@${MPIRUN} -np 16 ex1 -problem 2 -optionsleft -no_output -vecscatter_rr \
+	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6f.3d.mf.asm2.p16 \
+	   mv f_m6f_cc1_asm2_p16.m f_m6f_3d_cc1_mf_asm2_i0_o12_r3_nl_p16.m
+
+runtest_3:
+	-@${MPIRUN} -np 16 ex1 -problem 3 -optionsleft -no_output -vecscatter_rr \
+	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
+	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
+	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 \
+	   mv f_m6n_cc1_asm2_p16.m f_m6n_3d_cc1_mf_asm2_i0_o12_r3_nl_p16.m
 
 # original solver (uniprocessor only!)
 # output in file nd.out.5
@@ -189,10 +285,10 @@ clean_c:
 	${RM} ${OBJSC}
 
 #
-# Make PETSc tar file (containing all but input files that define meshes)
+# Make PETSc tar file (containing all but input files that define grids)
 #
 tar_euler:
-	cp ${SOURCEC} ${SOURCEF} ${SOURCEH} makefile nd.in euler 
+	cp ${SOURCEC} ${SOURCEF} ${SOURCEH} makefile euler 
 	chmod 664 euler/*
 	tar -cf euler.tar euler
 	gzip euler.tar
@@ -244,3 +340,4 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 #	-cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
 #	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 ##	-${RM} $*.f 
+

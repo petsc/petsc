@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1998/04/09 15:36:30 balay Exp curfman $ 
+# $Id: makefile,v 1.25 1998/04/15 04:21:13 curfman Exp curfman $ 
 
 ALL: ex1
 
@@ -112,7 +112,7 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN}  -np 2 ex1 -vec_shared > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex1 > ex1_2.tmp 2>&1;\
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
@@ -122,7 +122,7 @@ runex1f:
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 runex1f_2:
-	-@${MPIRUN}  -np 2 ex1f -vec_shared > ex1f_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex1f > ex1f_2.tmp 2>&1;\
 	   if (diff output/ex1f_2.out ex1f_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
 	   ${RM} -f ex1f_2.tmp
