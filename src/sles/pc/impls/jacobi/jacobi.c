@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.52 1998/04/27 20:23:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.53 1998/05/29 20:36:30 bsmith Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -322,6 +322,7 @@ int PCCreate_Jacobi(PC pc)
       not needed.
   */
   pc->apply               = PCApply_Jacobi;
+  pc->applytrans          = PCApply_Jacobi;
   pc->setup               = PCSetUp_Jacobi;
   pc->destroy             = PCDestroy_Jacobi;
   pc->view                = 0;
