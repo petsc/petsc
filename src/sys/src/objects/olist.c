@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.3 1998/04/16 03:50:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.4 1998/05/08 16:12:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -135,7 +135,7 @@ int OListFind(OList fl, char *name, PetscObject *obj)
 #undef __FUNC__  
 #define __FUNC__ "OListDuplicate"
 /*
-    OListDuplicate - Creates a new list from a give olist.
+    OListDuplicate - Creates a new list from a give object list.
 
     Input Parameters:
 .   fl   - pointer to list

@@ -32,3 +32,7 @@ add to it).
     of iterations you set with KSPSetTolerances(). This is useful when using the 
     Krylov method as a smoother with a fixed, say 3, iterations.
 
+  AO
+
+    AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash
+    when passed a stride index set, now handle them correctly.
