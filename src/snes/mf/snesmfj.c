@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.43 1997/01/21 20:12:37 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.44 1997/01/22 01:42:26 curfman Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -141,14 +141,29 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
-   matrix operations such as matrix-vector products.
+   Jacobian-vector products, J(u)*a, via
+
+$       J(u)*a = [J(u+h*a) - J(u)]/h where
+$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
+$   where
+$        error_rel = square root of relative error in
+$                    function evaluation
+$        umin = minimum iterate parameter
+
+   The user can set these parameters via SNESSetMatrixFreeParameters().
+   See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.
 
+   Options Database Keys:
+$  -snes_mf_err <error_rel>
+$  -snes_mf_unim <umin>
+
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy()
+.seealso: MatDestroy(), SNESSetMatrixFreeParameters()
 @*/
 int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
 {
@@ -202,6 +217,8 @@ $
 .  umin - minimum allowable u-value
 
 .keywords: SNES, matrix-free, parameters
+
+.seealso: SNESDefaultMatrixFreeMatCreate()
 @*/
 int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
 {
