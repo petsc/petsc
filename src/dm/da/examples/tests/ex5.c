@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+static char vcid[] = "$Id: ex5.c,v 1.3 1995/08/22 02:39:44 curfman Exp curfman $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -34,8 +34,8 @@ int main(int argc,char **argv)
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); 
   CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
+  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
+  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtid); 
 
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
 
   /* Set Up Display to Show Heat Graph */
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&win); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(win); CHKERRQ(ierr);
+  ierr = DrawSetDoubleBuffer(win); CHKERRA(ierr);
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   }
 
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
 
   /* Assign Parameters */
   a=1;
@@ -72,8 +72,8 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
+    ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
     ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRQ(ierr);
+    ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRA(ierr);
   
     /* View Wave */ 
     ierr = VecView(global,(Viewer) win);  CHKERRA(ierr);

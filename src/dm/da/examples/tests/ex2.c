@@ -1,7 +1,8 @@
 
 /* This file was created by Peter Mell  6/30/95 */
  
-static char help[] = "This example tests various DA1 routines.\n\n";
+static char help[] = 
+"This example tests various 1-dimensional DA routines.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -9,7 +10,6 @@ static char help[] = "This example tests various DA1 routines.\n\n";
 #include "draw.h"
 #include <math.h>
 #include <sysio.h>
-
 
 int main(int argc,char **argv)
 {
@@ -58,8 +58,8 @@ int main(int argc,char **argv)
   MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
   ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
 
-  DAView(da,(Viewer) win2);
-  DADestroy(da);
+  ierr = DAView(da,(Viewer) win2); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

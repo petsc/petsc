@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+#endif
 
 static char help[] = "This example tests various DA routines.\n\n";
 
@@ -26,8 +29,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-n",&n);
 
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
-                    M,N,m,n,1,1,&da); 
-  CHKERRA(ierr);
+                    M,N,m,n,1,1,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
@@ -36,17 +38,14 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
-    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   value = mytid+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERRA(ierr);
 
   ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
-  
-
-
-  DAView(da,(Viewer) win);
-  DADestroy(da);
+  ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

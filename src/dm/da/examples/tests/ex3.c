@@ -1,7 +1,10 @@
+#ifndef lint
+static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+#endif
 
 /* This file created by Peter Mell   6/30/95 */ 
 
-static char help[] = "This example creates a 1d wave.\n\n";
+static char help[] = "This example creates a 1-dimensional wave equation.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -14,16 +17,13 @@ static char help[] = "This example creates a 1d wave.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       mytid, numtid, M = 60, ierr;
+  int       mytid, numtid, M = 60, ierr,  time_steps = 1000;
   DA        da;
   DrawCtx   win;
-  Vec       local,global,copy;
-  Scalar    value, *localptr, *copyptr;
-  int       time_steps = 1000, mysize;
-  double    a,h,k;
-  int       localsize, j, i, mybase,myend;
-  DrawLGCtx ctx;
-  double    tempx, tempy;
+  Vec       local, global, copy;
+  Scalar    *localptr, *copyptr;
+  double    a, h, k;
+  int       localsize, j, i, mybase, myend;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
@@ -33,21 +33,21 @@ int main(int argc,char **argv)
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
+  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
+  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtid); 
 
   /* Set Up Display to Show Wave Graph */
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&win); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(win); CHKERRQ(ierr);
+  ierr = DrawSetDoubleBuffer(win); CHKERRA(ierr);
 
   /* determine starting point of each processor */
-  VecGetOwnershipRange(global,&mybase,&myend);
+  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
 
   /* Initialize the Array */
-  VecGetLocalSize (local,&localsize);
-  VecGetArray (local,&localptr); 
+  ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
+  ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
   localptr[0] = 0.0;
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
@@ -56,12 +56,12 @@ int main(int argc,char **argv)
                         + 1.2 * sin( (PI*j*2)/((double)M) ) ) * 2;
   }
 
-  VecRestoreArray(local,&localptr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRQ(ierr);
+  ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
-  ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
+  ierr = VecGetArray(copy,&copyptr); CHKERRA(ierr);
 
   /* Assign Parameters */
   a= 1.0;
@@ -71,11 +71,11 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd  (da,global,INSERTVALUES,local); CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
+    ierr = DAGlobalToLocalEnd  (da,global,INSERTVALUES,local); CHKERRA(ierr);
 
     /*Extract local array */ 
-    VecGetArray (local,&localptr); 
+    ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -84,17 +84,16 @@ int main(int argc,char **argv)
                     (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
   
-    VecRestoreArray(copy,&copyptr);
+    ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRQ(ierr);
+    ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRA(ierr);
   
     /* View Wave */ 
-    VecView (global,(Viewer) win); 
-
+    ierr = VecView (global,(Viewer) win); CHKERRA(ierr);
   }
 
-  DADestroy(da);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
