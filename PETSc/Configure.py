@@ -9,6 +9,12 @@ class Configure(configure.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.defineAutoconfMacros()
+    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search',
+                                            'strings', 'stropts', 'unistd', 'machine/endian', 'sys/param',
+                                            'sys/procfs', 'sys/resource', 'sys/stat', 'sys/systeminfo', 'sys/time',
+                                            'sys/times', 'sys/utsname'])
+    framework.checkTypes()
+    framework.checkHeaders(headersC)
     return
 
   def defineAutoconfMacros(self):
@@ -113,14 +119,6 @@ class Configure(configure.Configure):
     self.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC, comment = 'C compiler')
     return
 
-  def configureHeaders(self):
-    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'stdlib',
-                                            'string', 'strings', 'stropts', 'unistd', 'machine/endian', 'sys/param',
-                                            'sys/procfs', 'sys/resource', 'sys/stat', 'sys/systeminfo', 'sys/time',
-                                            'sys/times', 'sys/utsname'])
-    map(self.checkHeader, headersC)
-    return
-
   def configure(self):
     self.configureDirectories()
     self.configureArchitecture()
@@ -128,5 +126,4 @@ class Configure(configure.Configure):
     self.configureCompilers()
     self.configureDebuggers()
     self.configureMissingPrototypes()
-    self.configureHeaders()
     return
