@@ -28,7 +28,7 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 MPI_LIB        = /c2/poplar/fa/bsmith/mpich/lib/solaris/ch_p4/libmpi.a \
                  -lnsl -lsocket -lgen
 MPI_INCLUDE    = -I/c2/poplar/fa/bsmith/mpich/include 
-MPIRUN         = /c2/poplar/fa/bsmith/mpich/bin/mpirun.solaris
+MPIRUN         = /c2/poplar/fa/bsmith/mpich/lib/solaris/ch_p4/mpirun
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
