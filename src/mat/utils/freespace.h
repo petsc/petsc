@@ -7,14 +7,14 @@ typedef struct _Space *FreeSpaceList;
 
 typedef struct _Space {
   FreeSpaceList more_space;
-  int           *array;
-  int           *array_head;
-  int           total_array_size;
-  int           local_used;
-  int           local_remaining;
+  PetscInt      *array;
+  PetscInt      *array_head;
+  PetscInt      total_array_size;
+  PetscInt      local_used;
+  PetscInt      local_remaining;
 } FreeSpace;  
 
-PetscErrorCode GetMoreSpace(int size,FreeSpaceList *list);
-PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,int *space);
+PetscErrorCode GetMoreSpace(PetscInt,FreeSpaceList*);
+PetscErrorCode MakeSpaceContiguous(FreeSpaceList*,PetscInt *);
 
 #endif
