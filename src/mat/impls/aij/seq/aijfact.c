@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.104 1998/07/14 14:48:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.105 1998/07/23 19:31:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -309,6 +309,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   if (mat->imax) PetscFree(mat->imax);
   if (mat->solve_work) PetscFree(mat->solve_work);
   if (mat->inode.size) PetscFree(mat->inode.size);
+  if (mat->icol) {ierr = ISDestroy(mat->icol);CHKERRQ(ierr);}
   PetscFree(mat);
 
   ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
