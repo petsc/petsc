@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.1 1997/08/18 21:59:23 bsmith Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.2 1998/01/19 19:00:42 balay Exp balay $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
       Create a local to global mapping. Each processor independently
      creates a mapping  
   */
-  ierr = ISLocalToGlobalMappingCreate(n,indices,&mapping); CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,&mapping); CHKERRA(ierr);
 
   /*
      Map a set of local indices to their global values 
