@@ -130,7 +130,7 @@ int PCISSetUp(PC pc)
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcis->ksp_D,"localD_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcis->ksp_D,"is_localD_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_D,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
     ierr = KSPSetType(pcis->ksp_D,KSPPREONLY);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ int PCISSetUp(PC pc)
     /* Neumann */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcis->ksp_N,"localN_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcis->ksp_N,"is_localN_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_N,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
     ierr = KSPSetType(pcis->ksp_N,KSPPREONLY);CHKERRQ(ierr);
@@ -426,7 +426,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   /* Checking for consistency of the RHS */
   {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-check_consistency",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_is_check_consistency",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscScalar average;
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);

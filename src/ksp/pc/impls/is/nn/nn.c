@@ -152,14 +152,21 @@ static int PCDestroy_NN(PC pc)
    Options Database Keys:
 +    -pc_nn_turn_off_first_balancing - do not balance the residual before solving the local Neumann problems
                                        (this skips the first coarse grid solve in the preconditioner)
--    -pc_nn_turn_off_second_balancing - do not balance the solution solving the local Neumann problems
+.    -pc_nn_turn_off_second_balancing - do not balance the solution solving the local Neumann problems
                                        (this skips the second coarse grid solve in the preconditioner)
+.    -pc_is_damp_fixed <fact> -
+.    -pc_is_remove_nullspace_fixed -
+.    -pc_is_set_damping_factor_floating <fact> -
+.    -pc_is_not_damp_floating -
++    -pc_is_not_remove_nullspace_floating - 
 
    Level: intermediates
 
    Notes: The matrix used with this preconditioner must be of type MATIS 
 
-          Options for the coarse grid preconditioner can be set with -coarse_pc_xxx
+          Options for the coarse grid preconditioner can be set with -nn_coarse_pc_xxx
+          Options for the Dirichlet subproblem preconditioner can be set with -is_localD_pc_xxx
+          Options for the Neumann subproblem preconditioner can be set with -is_localN_pc_xxx
 
    Contributed by Paulo Goldfeld
 
@@ -377,7 +384,7 @@ int PCNNCreateCoarseMatrix (PC pc)
     ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);               
     ierr = PCRedundantGetPC(pc_ctx,&inner_pc);CHKERRQ(ierr);           
     ierr = PCSetType(inner_pc,PCLU);CHKERRQ(ierr);                     
-    ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"coarse_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"nn_coarse_");CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcnn->ksp_coarse);CHKERRQ(ierr);
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
     ierr = KSPSetRhs(pcnn->ksp_coarse,pcnn->coarse_x);CHKERRQ(ierr);
@@ -391,7 +398,7 @@ int PCNNCreateCoarseMatrix (PC pc)
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-save_coarse_matrix",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_nn_save_coarse_matrix",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
@@ -482,7 +489,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, 
   */
   {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-turn_off_first_balancing",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_nn_turn_off_first_balancing",&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -505,7 +512,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, 
   */
   {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-turn_off_second_balancing",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_turn_off_second_balancing",&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
