@@ -61,9 +61,8 @@ class BabelPackageDict (UserDict.UserDict):
     self.data[key] = value
 
 class Defaults:
-  implRE       = re.compile(r'^(.*)_Impl$')
-  pythonImplRE = re.compile(r'^(.*)_Impl.py$')
-  libraryRE    = re.compile(r'^(.*)lib(.*).so$')
+  implRE    = re.compile(r'^(.*)_Impl$')
+  libraryRE = re.compile(r'^(.*)lib(.*).so$')
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
@@ -84,7 +83,6 @@ class Defaults:
 
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
-    if self.pythonImplRE.match(source):            return 1
     return 0
 
   def isNotLibrary(self, source):
@@ -182,6 +180,8 @@ class CompileDefaults (Defaults):
     Defaults.__init__(self, sidlSources, compilerFlags = compilerFlags)
     self.project               = project
     self.libDir                = os.path.abspath('lib')
+    self.pythonIncludeDir      = bs.argDB['PYTHON_INCLUDE']
+    self.pythonLib             = fileset.FileSet([bs.argDB['PYTHON_LIB']])
     self.babelDir              = os.path.abspath(bs.argDB['BABEL_DIR'])
     #self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
     self.babelIncludeDir       = os.path.join(self.babelDir, 'server-sidl')
@@ -251,7 +251,7 @@ class CompileDefaults (Defaults):
           if self.includeDirs.has_key(package):
             iorAction.includeDirs.extend(self.includeDirs[package])
           if lang == 'Python':
-            iorAction.includeDirs.append(bs.argDB['PYTHON_INCLUDE'])
+            iorAction.includeDirs.append(self.pythonIncludeDir)
             # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
             iorAction.includeDirs.append(os.path.join(self.babelDir, 'python'))
         else:
@@ -275,6 +275,10 @@ class CompileDefaults (Defaults):
         self.addBabelLib(libraries, package)
         if self.extraLibraries.has_key(package):
           libraries.extend(self.extraLibraries[package])
+        if lang == 'Python':
+          libraries.extend(self.pythonLib)
+          libraries.append('libpthread.so')
+          libraries.append('libutil.so')
 
         # Allow bootstrap
         linker = link.LinkSharedLibrary(extraLibraries = libraries)
@@ -324,7 +328,7 @@ class CompileDefaults (Defaults):
         libraries.extend(self.extraLibraries[lang])
 
       if lang == 'Python':
-        action.includeDirs.append(bs.argDB['PYTHON_INCLUDE'])
+        action.includeDirs.append(self.pythonIncludeDir)
         action = (babel.PythonModuleFixup(library, sourceDir), action)
 
       # Allow bootstrap
