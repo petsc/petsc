@@ -353,6 +353,7 @@ class SIDLMake(Make):
       if not language in compiler.includeDirectories:
         compiler.includeDirectories[language] = sets.Set()
       self.addDependencyIncludes(compiler, language)
+      compiler.includeDirectories[language].add(os.path.join(self.getRoot(), self.getSIDLClientDirectory(builder, sidlFile, language)))
     builder.popLanguage()
     builder.popConfiguration()
     return

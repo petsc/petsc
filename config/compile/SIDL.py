@@ -137,9 +137,9 @@ class Compiler(script.Script):
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
       if server in self.includeDirectories:
-        cmd.append('--includeDirs={'+server+':['+','.join(self.includeDirectories[server])+']}')
+        cmd.append('--includeDirs="{'+server+':['+','.join(self.includeDirectories[server])+']}"')
       if server in self.systemIncludeDirectories:
-        cmd.append('--systemIncludeDirs={'+server+':['+','.join(self.systemIncludeDirectories[server])+']}')
+        cmd.append('--systemIncludeDirs="{'+server+':['+','.join(self.systemIncludeDirectories[server])+']}"')
       cmd.append('--ior=0')
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
