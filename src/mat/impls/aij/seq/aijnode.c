@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.7 1995/11/17 23:44:02 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.8 1995/11/19 00:47:05 bsmith Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -427,10 +427,13 @@ int Mat_AIJ_CheckInode(Mat A)
     idx +=blk_size*nzx;
     i    = j;
   }
+  if (OptionsHasName(0, "-mat_aij_reorder_inode")){
+    A->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
+    /*A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;*/
+  }
   /* Update  Mat with new info. Later make ops default? */
   A->ops.mult          = MatMult_SeqAIJ_Inode;
   A->ops.solve         = MatSolve_SeqAIJ_Inode;
-  A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;
   a->inode.node_count  = node_count;
   a->inode.size        = ns;
   PLogInfo((PetscObject)A,"Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
@@ -818,10 +821,10 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
   IS         iscol = b->col, isrow = b->row, isicol;
-  int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
-  int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
-  int        *diag_offset = b->diag, node_max, nsz, *ns;
-  Scalar     *rtmp,*v, *pc, multiplier; 
+  int        *r,*ic, ierr, n = a->m, *bi = b->i, *bj = b->j, *ai = a->i, *aj = a->j;
+  int        *ajtmp, *bjtmp, nz, row, prow, *ics, shift = a->indexshift, i, j, idx;
+  int        *bd = b->diag, node_max, nsz, *ns;
+  Scalar     *rtmp,*v, *pc1, *pc2, tmp, mul1, mul2, *ba = b->a, *aa = a->a; 
   
   /* These declarations are for optimizations.  They reduce the number of
      memory references that are made by locally storing information; the
@@ -842,43 +845,122 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   
-  for ( i=0,row=0; i<node_max; i++ ) {
+  for ( i=0,row=0; i<node_max; i++ ) { /* make sure row is updated */
     nsz   = ns[i];
-    nz    = ai[row+1] - ai[row];
-    ajtmp = aj + ai[row] + shift;
-    for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
+    nz    = bi[row+1] - bi[row];
+    bjtmp = bj + bi[row] + shift;
+
+    switch (nsz){
+    case 1:
+      for  ( j=0; j<nz; j++ ){
+        idx        = bjtmp[j];
+        rtmps[idx] = 0.0;
+      }
+      break;
+    
+    case 2:
+      for  ( j=0; j<nz; j++ ) {
+        idx          = 2 * bjtmp[j];
+        rtmps[idx]   = 0.0;
+        rtmps[idx+1] = 0.0;
+      }
+      break;
+    default:
+      printf("Not yet supported - inode size %d \n", nsz);
+    }
 
     /* load in initial (unfactored row) */
-    nz       = a->i[r[i]+1] - a->i[r[i]];
-    ajtmpold = a->j + a->i[r[i]] + shift;
-    v        = a->a + a->i[r[i]] + shift;
-    for ( j=0; j<nz; j++ ) rtmp[ics[ajtmpold[j]]] =  v[j];
-
-    row = *ajtmp++ + shift;
-    while (row < i) {
-      pc = rtmp + row;
-      if (*pc != 0.0) {
-        pv         = b->a + diag_offset[row] + shift;
-        pj         = b->j + diag_offset[row] + (!shift);
-        multiplier = *pc * *pv++;
-        *pc        = multiplier;
-        nz         = ai[row+1] - diag_offset[row] - 1;
-        PLogFlops(2*nz);
-	/* The for-loop form can aid the compiler in overlapping 
-	   loads and stores */
-        /*while (nz-->0) rtmps[*pj++] -= multiplier* *pv++;  */
-	{int __i;
-	 for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
-	}
-      }      
-      row = *ajtmp++ + shift;
+    idx      = r[row];
+    nz       = ai[idx+1] - ai[idx];
+    ajtmp = aj + ai[idx] + shift;
+    v        = aa + ai[idx] + shift;
+    switch (nsz){
+    case 1:
+      for ( j=0; j<nz; j++ ) {
+        idx       = ics[ajtmp[j]];
+        rtmp[idx] =  v[j];
+      }
+      break;
+    case 2:
+      for ( j=0; j<nz; j++ ) {
+        idx       = 2 * ics[ajtmp[j]];
+        rtmp[idx] =  v[j];
+        rtmp[idx] =  v[j+1];
+      }
+      break;
+    default:
+      printf("Not yet supported - inode size %d \n", nsz);
     }
+
+    prow = *bjtmp + shift; bjtmp += nsz;
+    switch (nsz){
+    case 1    :
+      while (prow < row) {
+        pc1 = rtmp + prow;
+        if (*pc1 != 0.0){
+          pv   = ba + bd[prow] + shift;
+          pj   = bj + bd[prow] + (!shift);
+          mul1 = *pc1 * *pv++;
+          *pc1 = mul1;
+          nz   = bi[prow+1] - bd[prow] - 1;
+          PLogFlops(2*nz);
+          for (j=0; j<nz; j++) rtmps[pj[j]] -= mul1 * pv[j];
+        }
+        prow = *bjtmp++ + shift;
+      }
+      break;
+    case 2  :
+      while (prow < row) {
+        pc1 = rtmp + 2 * prow;
+        pc2 = pc1 + 1;
+        if (*pc1 != 0.0){        /* ????????????????? */
+          pv   = ba + bd[prow] + shift;
+          pj   = bj + bd[prow] + (!shift);
+          mul1 = *pc1 * *pv;
+          mul2 = *pc2 * *pv; ++pv;
+          *pc1 = mul1;
+          *pc2 = mul2;
+          
+          nz   = bi[prow+1] - bd[prow] - 1;
+          PLogFlops(2*2*nz);
+          for (j=0; j<nz; j++) {
+            idx = pj[j];
+            tmp = pv[j];
+            rtmps[idx]   -= mul1 * tmp;
+            rtmps[idx+1] -= mul2 * tmp;
+          }
+        }
+        prow = *bjtmp++ + shift;
+      }
+      /* Now take care of the odd element*/
+      pc2 = rtmp + 2 * prow;
+      if (*pc1 != 0.0){        /* ????????????????? */
+        pv      = ba + bd[prow] + shift;
+        pj      = bj + bd[prow] + (!shift);
+        mul2    = *pc2 / *(pc2 -1);
+        *pc2     = mul2;
+            
+        nz   = bi[prow+1] - bd[prow] - 1;
+        PLogFlops(2*2*nz);
+        for (j=0; j<nz; j++) {
+          idx = pj[j];
+          tmp = pv[j];
+          rtmps[idx]   -= mul1 * tmp;
+          rtmps[idx+1] -= mul2 * tmp;
+        }
+      }
+      break;
+    default:
+      printf("error\n");
+    }
+  
+    
     /* finished row so stick it into b->a */
-    pv = b->a + ai[i] + shift;
-    pj = b->j + ai[i] + shift;
-    nz = ai[i+1] - ai[i];
-    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
-    rtmp[i] = 1.0/rtmp[i];
+    pv = ba + bi[row] + shift;
+    pj = bj + bi[row] + shift;
+    nz = bi[row+1] - bi[row];
+    if (rtmp[row] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
+    rtmp[row] = 1.0/rtmp[row];
     for ( j=0; j<nz; j++ ) {pv[j] = rtmps[pj[j]];}
   } 
   PetscFree(rtmp);
