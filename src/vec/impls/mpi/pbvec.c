@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.108 1998/09/04 18:00:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.109 1998/10/09 19:19:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,14 +20,9 @@ static char vcid[] = "$Id: pbvec.c,v 1.108 1998/09/04 18:00:38 bsmith Exp bsmith
 static int VecPublish_MPI(PetscObject object)
 {
 #if defined(HAVE_AMS)
-
   Vec          v = (Vec) object;
   Vec_MPI      *s = (Vec_MPI *) v->data;
-  static int   counter = 0;
-  int          ierr,rank;
-  char         name[16];
-  AMS_Memory   amem;
-  AMS_Comm     acomm;
+  int          ierr;
   int          (*f)(AMS_Memory,char *,Vec);
   
   PetscFunctionBegin;
@@ -35,15 +30,8 @@ static int VecPublish_MPI(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
-  if (v->name) {
-    PetscStrcpy(name,v->name);
-  } else {
-    sprintf(name,"MPIVector_%d",counter++);
-  }
-  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
-  ierr = AMS_Memory_add_field(amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
+  ierr = PetscObjectPublishBaseBegin(object,"Vec");CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   /*
@@ -52,13 +40,9 @@ static int VecPublish_MPI(PetscObject object)
   */
   ierr = PetscObjectQueryFunction((PetscObject)v,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(amem,"values",v);CHKERRQ(ierr);
+    ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
-
-
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-  v->amem = (int) amem;
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
 
 #else
   PetscFunctionBegin;
@@ -229,6 +213,7 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   }
 
   *vv = v;
+  PetscPublishAll(v);
   PetscFunctionReturn(0);
 }
 
