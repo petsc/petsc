@@ -32,7 +32,13 @@ libf:
 libmember:    $(LIBNAME)($(LIBMEMBER))
 	@-true
 
-#######
+#########
+
+# This F.f rule ensures that the old *.f files are removed.
+#
+.F.f:
+        $(RM) $*.f
+        cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
 
 .F.o:
 	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f

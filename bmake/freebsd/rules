@@ -29,7 +29,13 @@ include $(PETSC_DIR)/bmake/common
 libc: $(LIBNAME)($(OBJSC))
 libf: $(LIBNAME)($(OBJSF))
 
-#############
+#########
+# This F.f rule ensures that the old *.f files are removed.
+#
+.F.f:
+        $(RM) $*.f
+	-cpp $(CPPFLAGS)  $*.F > $*.f 
+
 .F.o:
 	$(RM) $*.f
 	-cpp $(CPPFLAGS)  $*.F > $*.f 
