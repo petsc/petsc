@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: error.c,v 1.11 1995/04/13 14:40:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: error.c,v 1.12 1995/04/21 18:44:25 curfman Exp curfman $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -91,6 +91,7 @@ $    PetscAbortErrorHandler()
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
+@*/
 
 int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
