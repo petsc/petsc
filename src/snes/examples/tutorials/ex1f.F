@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.21 1998/04/15 18:01:17 balay Exp balay $";
+! "$Id: ex1f.F,v 1.22 1998/04/21 18:33:39 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -219,7 +219,7 @@
 !  Compute function
 
       lf_a(1) = lx_a(1)*lx_a(1)                                         &
-     &          + lx_a(1)*lx_a(2) - 3.0                                 &
+     &          + lx_a(1)*lx_a(2) - 3.0
       lf_a(2) = lx_a(1)*lx_a(2)                                         &
      &          + lx_a(2)*lx_a(2) - 6.0
 
