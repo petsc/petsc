@@ -307,6 +307,9 @@ class Configure(config.base.Configure):
         print '           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how'
         print '           to obtain bfort to generate the Fortran stubs or make sure'
         print '           bfort is in your path'
+        # Disable Fortran
+        del self.framework.argDB['FC']
+        self.compilers.addSubstitution('FC', '')
     return
 
   def configureDynamicLibraries(self):

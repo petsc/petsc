@@ -27,7 +27,7 @@ def petsc_configure(configure_options):
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   try:
-    framework.configure()
+    framework.configure(out = sys.stdout)
   except Exception, e:
     import traceback
 

@@ -20,6 +20,14 @@ class Configure(config.base.Configure):
     self.libraries.libraries.append(('dl', 'dlopen'))
     return
 
+  def __str__(self):
+    desc = ['MPI:']
+    desc.append('  Type: '+self.name)
+    desc.append('  Version: '+self.version)
+    desc.append('  Includes: '+str(self.include))
+    desc.append('  Library: '+str(self.lib))
+    return '\n'.join(desc)+'\n'
+
   def configureHelp(self, help):
     import nargs
     help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
@@ -333,8 +341,8 @@ int checkInit(void) {
       functionalMPI.append((name, self.lib, self.include, version))
     # User chooses one or take first (sort by version)
     if self.foundMPI:
-      name, self.lib, self.include, version = functionalMPI[0]
-      self.framework.log.write('Choose MPI '+version+' in '+name+'\n')
+      self.name, self.lib, self.include, self.version = functionalMPI[0]
+      self.framework.log.write('Choose MPI '+self.version+' in '+self.name+'\n')
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
