@@ -1,4 +1,4 @@
-# $Id: base,v 1.23 1998/04/23 23:14:11 balay Exp balay $ 
+# $Id: base,v 1.24 1998/04/25 23:38:29 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -64,17 +64,17 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 #
 .F.f:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f
 

@@ -1,4 +1,4 @@
-# $Id: base,v 1.16 1998/04/25 20:48:21 balay Exp balay $ 
+# $Id: base,v 1.17 1998/04/25 23:44:41 balay Exp balay $ 
 
 #
 #   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
@@ -45,17 +45,17 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 .F.f:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 .F.o:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
 	-${RM} /tmp/$*.f
 
 .F.a:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} /tmp/$*.f
 

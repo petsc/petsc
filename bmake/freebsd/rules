@@ -1,4 +1,4 @@
-# $Id: base,v 1.42 1998/04/25 20:47:40 balay Exp balay $ 
+# $Id: base,v 1.43 1998/04/25 23:35:11 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc
@@ -40,17 +40,17 @@ libf: ${LIBNAME}(${OBJSF})
 #
 .F.f:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f
 
