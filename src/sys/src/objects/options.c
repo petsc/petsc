@@ -654,7 +654,7 @@ int PetscOptionsClearValue(const char iname[])
   names = options->names; 
  
   for (i=0; i<N; i++) {
-    ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
+    ierr  = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
@@ -664,6 +664,8 @@ int PetscOptionsClearValue(const char iname[])
     }
     n++;
   }
+  if (n == N) PetscFunctionReturn(0); /* it was not listed */
+
   /* shift remaining values down 1 */
   for (i=n; i<N-1; i++) {
     names[i]           = names[i+1];
