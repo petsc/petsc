@@ -9,7 +9,7 @@ SOURCEH	        =
 OBJSC	        =
 OBJSF	        = 
 LIBBASE	        = libpetscvec
-LOCDIR          = src/vec/examples/
+LOCDIR          = src/ao/examples/
 DIRS            = tests tutorials
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
