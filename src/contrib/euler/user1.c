@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.56 1997/10/11 18:39:18 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.57 1997/10/12 17:21:54 curfman Exp $";
 #endif
 
 /***************************************************************************
@@ -37,8 +37,9 @@ static char help[] = "This program solves a 3D Euler problem, using either the\n
 original Julianne code's sequential solver or the parallel PETSc nonlinear solvers.\n\
 Runtime options include:\n\
   -Nx <nx> -Ny <ny> -Nz <nz> : Number of processors in the x-, y-, z-directions\n\
-  -problem <1,2,3,4>         : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
+  -problem <1,2,3,4,5>       : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
+                               5(duct flow 50x10x10)\n\
   -mm_type <euler,fp,hybrid,hybrid_e,hybrid_f> : multi-model variant\n\
   -dim2                      : use 2D problem only\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
@@ -809,8 +810,21 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ierr = OptionsGetInt(PETSC_NULL,"-nj1",&nj1,&flg); CHKERRQ(ierr);
       ierr = OptionsGetInt(PETSC_NULL,"-nk1",&nk1,&flg); CHKERRQ(ierr);
       break;
+    case 5:
+    /* full grid dimensions, including all boundaries */
+      ni1 = 50; nj1 = 10; nk1 = 10;
+    /* wing points, used to define BC scatters.  These are analogs
+       in C of Fortran points in input (shifted by -2 for explicit formulation) 
+       from m6c_duct: Fortran: itl=-1, itu=33, ile=17, ktip=-1 */
+      app->ktip = -3; app->itl = -3; app->itu = 31; app->ile = 15;   
+      app->eps_jac        = 1.0e-7;
+      app->eps_mf_default = 1.0e-6;
+      app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 20;   /* max number of KSP iterations */
+      app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
+      break;
     default:
-      SETERRQ(1,1,"Unsupported problem, only 1,2,3 or 4 supported");
+      SETERRQ(1,1,"Unsupported problem, only 1,2,3 (M6), 4 (test), or 5 (duct) supported");
   }
 
   /* Set various defaults */
