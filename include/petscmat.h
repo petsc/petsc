@@ -411,7 +411,7 @@ EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN int MatIncreaseOverlap(Mat,int,IS[],int);
 
 EXTERN int MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN int MatMatMultSymbolic(Mat,Mat,Mat*);
+EXTERN int MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 EXTERN int MatMatMultNumeric(Mat,Mat,Mat);
 
 EXTERN int MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
