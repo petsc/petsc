@@ -367,7 +367,7 @@ alldoc: alldoc1 alldoc2
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
-	cd src/docs/tex/manual; ${OMAKE} clean LOC=${LOC}; ${OMAKE} manual.pdf LOC=${LOC}
+	cd src/docs/tex/manual; ${OMAKE} build_manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree LOC=${LOC}

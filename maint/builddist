@@ -48,7 +48,7 @@ bk pull
 bk -r co -q
 
 # update petscapps* for www-fp
-cd $PETSC_DIR/docs
+cd $PETSC_DIR/src/docs
 make BOPT=g bib2html
 
 # create fortran stubdocs and cleanup
