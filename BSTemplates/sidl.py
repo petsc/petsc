@@ -151,9 +151,9 @@ class UsingSIDL (SIDLConstants):
 
   def getStubDir(self, lang, package):
     if lang in self.internalClientLanguages[package]:
-      stubDir = self.getServerRootDir(lang, package)
+      return self.getServerRootDir(lang, package)
     elif lang in self.clientLanguages:
-      stubDir = self.getClientRootDir(lang)
+      return self.getClientRootDir(lang)
     else:
       raise RuntimeError('Package '+package+' needs stubs for '+lang+' which have not been configured')
 
@@ -166,20 +166,25 @@ class UsingSIDL (SIDLConstants):
     else:
       return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.so')])
 
-class UsingC:
-  '''This class handles all interaction specific to the C language'''
+class UsingCompiler:
+  '''This class handles all interaction specific to a compiled language'''
   def __init__(self, usingSIDL):
     self.usingSIDL      = usingSIDL
     self.includeDirs    = SIDLPackageDict(usingSIDL)
     self.extraLibraries = SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
 
+class UsingC (UsingCompiler):
+  '''This class handles all interaction specific to the C language'''
+  def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
+
   def getLanguage(self):
     '''The language name'''
     return 'C'
 
   def getCompileSuffixes(self):
-    '''The suffix for Java files'''
+    '''The suffix for C files'''
     return ['.h', '.c']
 
   def getDefines(self):
@@ -263,7 +268,7 @@ class UsingCxx:
     return 'C++'
 
   def getCompileSuffixes(self):
-    '''The suffix for Java files'''
+    '''The suffix for C++ files'''
     return ['.hh', '.cc']
 
   def getDefines(self):
@@ -368,8 +373,8 @@ class UsingPython:
     return 'Python'
 
   def getCompileSuffixes(self):
-    '''The suffix for Java files'''
-    return ['.f', '.f90']
+    '''The suffix for Python files'''
+    return ['.py']
 
   def getDefines(self):
     return ['PIC']
@@ -384,7 +389,7 @@ class UsingPython:
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compiler  = compile.CompilePythonC(self.getClientLibrary(project, self.getLanguage()))
+    compiler  = compile.CompilePythonC()
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(sourceDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -436,7 +441,7 @@ class UsingF77:
     return 'F77'
 
   def getCompileSuffixes(self):
-    '''The suffix for Java files'''
+    '''The suffix for Fortran 77 files'''
     return ['.f', '.f90']
 
   def getDefines(self):
@@ -599,6 +604,8 @@ class Defaults:
     self.sources    = sources
     self.usingSIDL  = UsingSIDL(project, self.getPackages())
     self.compileExt = []
+    # Add C for the IOR
+    self.addLanguage('C')
 
   def getUsing(self, lang):
     return getattr(self, 'using'+lang.replace('+', 'x'))
