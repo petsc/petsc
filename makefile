@@ -124,7 +124,7 @@ blaslapack:
 #
 #  Compiles MPICH if found
 mpich:
-	-@releasename=`ls -d mpich*`;\
+	-@releasename=`ls -d mpich* 2> /dev/null`;\
         if [ -d $${releasename}/${PETSC_ARCH} -a ! -d $${releasename}/${PETSC_ARCH}/lib ] ; then cd $${releasename} ;\
           echo "=========================================";\
           echo "Compiling and installing " $${releasename};\

@@ -237,7 +237,7 @@ class Configure(config.base.Configure):
         os.unlink('patches2')        
       except: pass
       raise RuntimeError('Error applying source update.\nRun with --enable-update=0 to configure anyways')
-    self.strmsg = 'Updated source code from PETSc website (using latest patches)'
+    self.strmsg = 'Updated source code from PETSc website (using latest patches)\n'
 
     if self.framework.argDB.has_key('with-patch-petsc'):
       try:

@@ -45,7 +45,7 @@ File Description:
 int my_id            = 0;
 int num_nodes        = 1;
 int floor_num_nodes  = 0;
-int i_log2_num_nodes = 0;;
+int i_log2_num_nodes = 0;
 
 /* global program control variables */
 static int p_init = 0;
