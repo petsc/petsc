@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.176 1999/04/02 15:05:18 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.177 1999/04/16 16:12:20 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -53,6 +53,8 @@ extern int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
+extern int MatAssembled(Mat,PetscTruth*);
+
 #define MatSetValue(v,i,j,va,mode) \
 {int _ierr,_row = i,_col = j; Scalar _va = va; \
   _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
