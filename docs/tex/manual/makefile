@@ -48,13 +48,6 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's/&amp;gt;/   /g' \
             | sed 's/bullet://g' \
             | sed 's/$$ //g' \
-            | sed 's?<H2>PETSc 2.0 Users Manual</H2>?<center><H2>PETSc 2.0 Users Manual</H2></center>?g' \
-            | sed 's?Argonne National Laboratory<BR><BR></b><P>?Argonne National Laboratory<BR><BR></b><P></center>?g' \
-            | sed 's?<b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P>?<P> <center><IMG WIDTH=452 HEIGHT=392 ALIGN=BOTTOM SRC="petsc.gif"></center><BR><P><center><b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P></center>?g' \
-            | sed 's?<b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P>?<P> <center><IMG WIDTH=443 HEIGHT=386 ALIGN=BOTTOM SRC="components.gif"></center><BR><P><center><b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P></center>?g' \
-            | sed 's?<b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P>?<P> <center><IMG WIDTH=689 HEIGHT=684 ALIGN=BOTTOM SRC="directories.gif"></center><BR><P><center><b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P></center>?g' \
-            | sed 's?<b>Figure 10: </b><A NAME="Figure10">Ghost Points for Two Stencil Types on the Seventh Processor</a><P>?<P> <center><IMG WIDTH=490 HEIGHT=263 ALIGN=BOTTOM SRC="ghost.gif"></center><BR><P><center><b>Figure 10: </b><A NAME="Figure10">Ghost Points for Two Stencil Types on the Seventh Processor</a><P></center>?g' \
-            | sed 's?<b>Figure 11: </b><A NAME="Figure10">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P>?<P> <center><IMG WIDTH=542 HEIGHT=295 ALIGN=BOTTOM SRC="danumbering.gif"></center><BR><P><center><b>Figure 10: </b><A NAME="Figure10">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P></center>?g' \
             > manual.html
 	-@/bin/rm  ../../splitmanual/*
 	-mv manual.html *.xbm ../../manual
