@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.52 2001/01/15 21:48:06 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.53 2001/01/17 22:26:26 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -126,7 +126,8 @@
       my         = 4
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,    &
+     &     flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(1,' ',ierr)
@@ -165,8 +166,8 @@
 !  for the Jacobian.  See the users manual for a discussion of better 
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
-     &                    ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
+     &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL_INTEGER, &
      &        J,ierr)
@@ -257,8 +258,8 @@
 
 !      call PetscDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
 !                   300,0,300,300,draw,ierr)
-      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution', &
-     &               300,0,300,300,draw,ierr)
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,          &
+     &     'Solution',300,0,300,300,draw,ierr)
       call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)

@@ -1,5 +1,5 @@
 !
-!     "$Id: ex9f.F,v 1.8 2001/01/15 21:45:20 bsmith Exp bsmith $";
+!     "$Id: ex9f.F,v 1.9 2001/01/17 22:21:32 bsmith Exp balay $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -76,7 +76,8 @@
 !     the local vector (lx) and the global vector (gx) share the same 
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',         &
+     &     flag,ierr)
       if (flag .ne. 0) then
         call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.63 2000/10/24 20:28:01 bsmith Exp bsmith $*/
+/*$Id: zvec.c,v 1.64 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -39,8 +39,8 @@
 #define veccreateghost_           VECCREATEGHOST
 #define vecstridenorm_            VECSTRIDENORM
 #define vecmax_                   VECMAX
-#define drawtensorcontour_        DRAWTENSORCONTOUR
-#define vecsetrandom_              VECSETRANDOM
+#define petscdrawtensorcontour_   PETSCDRAWTENSORCONTOUR
+#define vecsetrandom_             VECSETRANDOM
 #define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY
 #define veccreateghostblock_          VECCREATEGHOSTBLOCK
 #define vecloadintovector_            VECLOADINTOVECTOR   
@@ -48,7 +48,7 @@
 #define vecloadintovector_            vecloadintovector
 #define veccreateghostblockwitharray_ veccreateghostblockwitharray
 #define veccreateghostblock_      veccreateghostblock
-#define drawtensorcontour_        drawtensorcontour
+#define petscdrawtensorcontour_   petscdrawtensorcontour
 #define vecsetfromoptions_        vecsetfromoptions
 #define vecsettype_               vecsettype
 #define vecstridenorm_            vecstridenorm
@@ -102,7 +102,7 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
   *ierr = VecSetRandom(*r,*x);
 }
 
-void PETSC_STDCALL drawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,Scalar *V,int *ierr)
+void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,Scalar *V,int *ierr)
 {
   double *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex63.F,v 1.8 2001/01/15 21:46:09 bsmith Exp balay $";
+!      "$Id: ex63.F,v 1.9 2001/01/19 23:20:49 balay Exp balay $";
 !
 !   This program tests storage of PETSc Dense matrix. 
 !   It Creates a Dense matrix, and stores it into a file,
@@ -52,7 +52,7 @@
 !        Read this matrix into a SeqDense matrix
 
          call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',            &
-     &        Binary_rdonly,view,ierr)
+     &        PETSC_BINARY_RDONLY,view,ierr)
          call MatLoad(view,MATSEQDENSE,A,ierr)
          write (6,200)
  200     format('The Contents of SeqDense Matrix read in from file')

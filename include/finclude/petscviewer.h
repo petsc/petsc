@@ -1,5 +1,5 @@
 !
-!  $Id: petscviewer.h,v 1.28 2001/01/19 23:22:59 balay Exp bsmith $;
+!  $Id: petscviewer.h,v 1.29 2001/01/20 03:37:43 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the PetscViewer package in PETSc
 !
@@ -33,7 +33,6 @@
 !
 !  PetscViewer formats
 !
-      integer  PETSC_VIEWER_ASCII_DEFAULT
       integer  PETSC_VIEWER_ASCII_DEFAULT
       integer  PETSC_VIEWER_ASCII_MATLAB
       integer  PETSC_VIEWER_ASCII_IMPL
