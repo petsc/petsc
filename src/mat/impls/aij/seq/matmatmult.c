@@ -368,7 +368,7 @@ int MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   int        *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   int        *ci=c->i,*cj=c->j,*cjj;
   int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
-  int        i,j,k,anzi,pnzi,apnzj,nextap,pnzj,cnzj,prow,crow;
+  int        i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
   MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
@@ -421,7 +421,6 @@ int MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
     for (j=0;j<pnzi;j++) {
       nextap = 0;
       crow   = *pJ++;
-      cnzj   = ci[crow+1] - ci[crow];
       cjj    = cj + ci[crow];
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
@@ -683,7 +682,7 @@ int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
       k2    = 0;
       while ((k1<panzj) && (k2<ptnzj)) {
         if (paj[k1]==ptj[k2]) {
-          sum += paa[paj[k1++]]*pta[k2++];
+          sum += paa[paj[k1++]]*ptaj[k2++];
         } else if (paj[k1] < ptj[k2]) {
           k1++;
         } else /* if (paj[k1] > ptj[k2]) */ {
