@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.132 1999/11/10 03:20:46 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.133 1999/11/24 21:54:52 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -52,7 +52,7 @@ static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 
-extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
+extern int KSPDefaultConverged_GMRES(KSP,int,double,KSPConvergedReason*,void*);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_GMRES"
@@ -145,8 +145,8 @@ static int GMRESResidual(  KSP ksp,int restart )
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
-  ierr = VecCopy( VEC_BINVF, VEC_VV(gmres->nprestart) );CHKERRQ(ierr);
-  ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(gmres->nprestart) );CHKERRQ(ierr);
+  ierr = VecCopy( VEC_BINVF, VEC_VV(0) );CHKERRQ(ierr);
+  ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(0) );CHKERRQ(ierr);
       /* inv(b)(f - a*x) into dest */
   PetscFunctionReturn(0);
 }
@@ -171,7 +171,7 @@ static int GMRESResidual(  KSP ksp,int restart )
  */
 #undef __FUNC__  
 #define __FUNC__ "GMREScycle"
-int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
+int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   double    res_norm, res;
@@ -183,13 +183,6 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   /* Note that hapend is ignored in the code */
 
   PetscFunctionBegin;
-
-  /*
-    Number of pseudo iterations since last restart is the number of prestart directions
-  */
-  it         = gmres->nprestart;
-  *converged = 0;
-
 
   if (it > 0) {
     /* orthogonalize input against previous directions and update Hessenberg matrix */
@@ -206,7 +199,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     /* check for the convergence */
     if (!tt) {
       if (itcount) *itcount = 0;
-      *converged = 1;
+      ksp->reason = KSP_CONVERGED_RTOL;
       PetscFunctionReturn(0);
     }
     tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it) );CHKERRQ(ierr);
@@ -221,7 +214,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     /* check for the convergence */
     if (!res) {
       if (itcount) *itcount = 0;
-      *converged = 1;
+      ksp->reason = KSP_CONVERGED_RTOL;
       PetscFunctionReturn(0);
     }
 
@@ -236,8 +229,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   ksp->rnorm = res;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
-  while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
-           && it < max_k && ksp->its < max_it) {
+  ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  while (!ksp->reason && it < max_k && ksp->its < max_it) {
     KSPLogResidualHistory(ksp,res);
     gmres->it = (it - 1);
     KSPMonitor(ksp,ksp->its,res); 
@@ -272,23 +265,18 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     ksp->its++;
     ksp->rnorm = res;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   KSPLogResidualHistory(ksp,res);
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (*converged || ksp->its >= max_it) {
+  if (ksp->reason || ksp->its >= max_it) {
     KSPMonitor( ksp,  ksp->its, res );
   }
 
   if (itcount) *itcount    = it;
 
-
-  /* Didn't go in any direction, current solution is correct */
-  if (it == gmres->nprestart) {
-    *converged = 1;
-    PetscFunctionReturn(0);
-  }
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
@@ -298,15 +286,6 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   /* Form the solution (or the solution so far) */
   ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1);CHKERRQ(ierr);
 
-  /* set the prestart counter */
-  if (gmres->nprestart_requested > 0 && gmres->nprestart == 0) {
-    /* 
-       Cut off to make sure number of directions is less than or equal
-       number of directions actually computed
-    */
-    gmres->nprestart = PetscMin(it-1,gmres->nprestart_requested);
-  }
-
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +293,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 #define __FUNC__ "KSPSolve_GMRES"
 int KSPSolve_GMRES(KSP ksp,int *outits )
 {
-  int       ierr, restart, its, itcount, converged;
+  int       ierr, restart, its, itcount;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -340,22 +319,25 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   if (!ksp->guess_zero) {
     ierr = GMRESResidual(  ksp, restart );CHKERRQ(ierr);
   } else {
-    ierr = VecCopy( VEC_BINVF, VEC_VV(gmres->nprestart) );CHKERRQ(ierr);
+    ierr = VecCopy( VEC_BINVF, VEC_VV(0) );CHKERRQ(ierr);
   }
     
-  ierr    = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+  ierr    = GMREScycle(&its, itcount, restart, ksp);CHKERRQ(ierr);
   itcount += its;
-  while (!converged) {
+  while (!ksp->reason) {
     restart  = 1;
     ierr     = GMRESResidual(  ksp, restart);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
-    ierr     = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+    ierr     = GMREScycle(&its, itcount, restart, ksp);CHKERRQ(ierr);
     itcount += its;  
   }
-  /* mark lack of convergence with negative the number of iterations */
-  if (itcount >= ksp->max_it) itcount = -itcount;
+  /* mark lack of convergence  */
+  if (itcount >= ksp->max_it) {
+    itcount--;
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
 
   *outits = itcount;  PetscFunctionReturn(0);
 }
@@ -545,7 +527,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   int       ierr;
 
   PetscFunctionBegin;
-  if (ptr == 0) {
+  if (!ptr) {
     if (!gmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&gmres->sol_temp);CHKERRQ(ierr);
       PLogObjectParent(ksp,gmres->sol_temp);
@@ -585,9 +567,6 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   }
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
-    if (gmres->nprestart > 0) {
-      ierr = ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);CHKERRQ(ierr);
-    }
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
@@ -605,7 +584,6 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_prestart <num>: GMRES prestart, defaults to 0\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);CHKERRQ(ierr);
@@ -656,7 +634,7 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,double fgnorm,void *dummy)
 #define __FUNC__ "KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
-  int        ierr,restart,prestart;
+  int        ierr,restart;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -668,8 +646,6 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_modifiedgramschmidt",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_prestart",&prestart,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESPrestartSet(ksp,prestart);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_krylov_monitor",&flg);CHKERRQ(ierr);
@@ -685,23 +661,6 @@ int KSPSetFromOptions_GMRES(KSP ksp)
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *,int *);
 
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESPrestartSet_GMRES" 
-int KSPGMRESPrestartSet_GMRES(KSP ksp,int pre)
-{
-  KSP_GMRES *gmres;
-
-  PetscFunctionBegin;
-  gmres                      = (KSP_GMRES *)ksp->data;
-  if (pre > gmres->max_k-1) {
-    SETERRQ(1,1,"Prestart count is too large for current restart");
-  }
-  gmres->nprestart_requested = pre;
-  gmres->nprestart           = 0; /*reset this so that it will be set after the first solve*/
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -777,9 +736,6 @@ int KSPCreate_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
                                     (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESPrestartSet_C",
-                                     "KSPGMRESPrestartSet_GMRES",
-                                    (void*)KSPGMRESPrestartSet_GMRES);CHKERRQ(ierr);
 
   gmres->haptol              = 1.0e-8;
   gmres->epsabs              = 1.0e-8;
@@ -790,9 +746,7 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp            = 0;
   gmres->max_k               = GMRES_DEFAULT_MAXK;
   gmres->Rsvd                = 0;
-  gmres->nprestart           = 0;
-  gmres->nprestart_requested = 0;
-  ksp->guess_zero            = 1; 
+  ksp->guess_zero            = PETSC_TRUE; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
