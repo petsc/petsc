@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.20 1999/06/07 19:15:09 balay Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.21 1999/06/30 23:49:24 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -7,13 +7,11 @@ static char vcid[] = "$Id: stack.c,v 1.20 1999/06/07 19:15:09 balay Exp balay $"
 
 #if defined(PETSC_USE_STACK)
 
-int         petscstacksize = 0;   /* current size of stack */
-int         petscstacksize_max;   /* maximum size we've allocated for */
 PetscStack *petscstack = 0;
 
 #if defined(PETSC_HAVE_AMS)
 /* AMS Variables */
-AMS_Memory stack_mem = -1;
+AMS_Memory stack_mem      = -1;
 AMS_Comm   Petsc_AMS_Comm = -1;
 int        stack_err;
 char       *msg;
@@ -36,8 +34,8 @@ int PetscStackPublish(void)
   ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
          
   /* Add a field to the memory */
-  ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack->function ,
-	                      petscstacksize,AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack->function,petscstack->currentsize,
+                              AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
                 
   /* Publish the memory */
   ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
@@ -67,30 +65,17 @@ int PetscStackDepublish(void)
   
 #undef __FUNC__  
 #define __FUNC__ "PetscStackCreate"
-int PetscStackCreate(int stacksize)
+int PetscStackCreate(void)
 {
   int ierr;
 
   PetscStack *petscstack_in;
-  if (stacksize <=0 ) return 0;
   if (petscstack) return 0;
   
-  petscstack_in      = (PetscStack *) PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
-  petscstacksize     = 0;
-  petscstacksize_max = stacksize;
-
-  petscstack_in->function =(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->function);
-  petscstack_in->line     =(int *) PetscMalloc(stacksize*sizeof(int));CHKPTRQ(petscstack_in->line);
-  petscstack_in->directory=(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
-  petscstack_in->file     =(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
-
-  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
-  ierr = PetscMemzero(petscstack_in->line,stacksize*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
-  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
-
+  petscstack_in              = (PetscStack *) PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
+  ierr = PetscMemzero(petscstack_in,sizeof(PetscStack));CHKERRQ(ierr);
+  petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
-
 
   return 0;
 }
@@ -109,7 +94,7 @@ int PetscStackView(Viewer viewer)
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for ( i=petscstacksize-1; i>=0; i-- ) {
+    for ( i=petscstack->currentsize-1; i>=0; i-- ) {
       (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
                                                    petscstack->function[i],
                                                    petscstack->line[i],
@@ -120,7 +105,7 @@ int PetscStackView(Viewer viewer)
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for ( i=petscstacksize-1; i>=0; i-- ) {
+    for ( i=petscstack->currentsize-1; i>=0; i-- ) {
       fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,
                                             petscstack->function[i],
                                             petscstack->line[i],
@@ -142,11 +127,42 @@ int PetscStackDestroy(void)
   if (petscstack){
     PetscStack *petscstack_in = petscstack;
     petscstack = 0;
-    ierr = PetscFree(petscstack_in->line);CHKERRQ(ierr);
-    ierr = PetscFree(petscstack_in->function);CHKERRQ(ierr);
-    ierr = PetscFree(petscstack_in->file);CHKERRQ(ierr);
-    ierr = PetscFree(petscstack_in->directory);CHKERRQ(ierr);
     ierr = PetscFree(petscstack_in);CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStackCopy"
+int PetscStackCopy(PetscStack* sint,PetscStack* sout)
+{
+  int i;
+
+  if (!sint) {
+    sout->currentsize = 0;
+  } else {
+    for (i=0; i<sint->currentsize; i++) {
+      sout->function[i]  = sint->function[i];
+      sout->file[i]      = sint->file[i];
+      sout->directory[i] = sint->directory[i];
+      sout->line[i]      = sint->line[i];
+    }
+    sout->currentsize = sint->currentsize;
+  }
+  return 0;
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStackPrint"
+int PetscStackPrint(PetscStack* sint,FILE *fp)
+{
+  int i;
+
+  if (!sint) return(0);
+  for (i=sint->currentsize-3; i>=0; i--) {
+    fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],
+            sint->directory[i],sint->file[i]);
   }
   return 0;
 }
@@ -160,17 +176,14 @@ int PetscStackDepublish(void)
 {
   return 0;
 }
-
-int PetscStackCreate(int stacksize)
+int PetscStackCreate(void)
 {
   return 0;
 }
-
 int PetscStackView(Viewer viewer)
 {
   return 0;
 }
-
 int PetscStackDestroy(void) 
 {
   return 0;
