@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.23 2000/08/02 19:03:32 bsmith Exp kaushik $
+c  $Id: user.F,v 1.24 2000/08/15 21:13:29 kaushik Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -932,7 +932,8 @@ c=============================================================================
      &                xyzn,
      &                sxn, syn, szn,
      &                vxn, vyn, vzn,
-     &                fxn, fyn, fzn, phi, irank,nvertices)
+     &                fxn,fyn,fzn,phi,
+     &                irank,nvertices)
       implicit none      
 #include "include/finclude/petscdef.h"
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
@@ -1033,10 +1034,14 @@ c=============================================================================
 #define eptr(i,j) evec(i,j)
 #endif
 #if defined(_OPENMP)
-       integer my_thread_id,omp_get_thread_num,ierr
+       integer my_thread_id,omp_get_thread_num,ierr,
+     1         tot_threads,omp_get_num_threads,
+     2         first_node,last_node,chunk
+#if defined(HAVE_REDUNDANT_WORK)
 #undef res(a,b)
 #define res(a,b) resd(a,b)
        call PetscMemzero(resd,8*4*nnodes,ierr)
+#endif
 #endif
 
        flops = 0
@@ -1057,7 +1062,7 @@ c
 !$omp9 c0,ubar0,t11,t21,t31,t41,t12,t22,t32,t42,t13,t23,t33,t43,t14,
 !$omp1 t24,t34,t44,pi,ui,vi,wi,unorm,rhs1,rhs2,rhs3,rhs4,ub,vb,wb,node3)
 !$omp2 reduction(+:flops)
-c!$omp8 private(my_thread_id)
+!$omp8 private(my_thread_id,tot_threads,first_node,last_node,chunk)
 c!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
 c!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
 c!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
@@ -1067,11 +1072,30 @@ c!$      my_thread_id = omp_get_thread_num()
 c!$omp   critical
 c!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
 c!$omp   end critical
-!$omp   do 
-       do n = 1, nedge
+#if defined(_OPENMP)
+#if defined(HAVE_REDUNDANT_WORK)
+!$omp  do 
+#else
+      tot_threads = omp_get_num_threads()
+      my_thread_id = omp_get_thread_num()
+      chunk = nnodes/tot_threads
+      first_node = my_thread_id*chunk+1
+      if (my_thread_id .eq. (size-1)) then
+         last_node = nnodes
+      else
+         last_node = (my_thread_id+1)*chunk
+      endif
+c     print *, 'On thread ', my_thread_id,', first node = ',first_node,
+c    1         ', last_node = ',last_node, ' chunk = ',chunk
+#endif
+#endif       
+      do n = 1, nedge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
-        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+        if (((node1.ge.first_node).and.(node1.le.last_node))
+     1       .or.((node2.ge.first_node).and.(node2.le.last_node))) then
+#endif
 c
 c Calculate unit normal to face and length of face
 c
@@ -1263,7 +1287,11 @@ c         call PLogFlops(318)
 	  flops = flops + 318
 
 c
-          if (node1 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+#else         
+          if (node1.le.nnodes) then
+#endif
            res(1,node1) = res(1,node1) + res1
            res(2,node1) = res(2,node1) + res2
            res(3,node1) = res(3,node1) + res3
@@ -1272,7 +1300,11 @@ c          call PLogFlops(4)
            flops = flops + 4
           endif
 c
-          if (node2 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+#else         
+          if (node2.le.nnodes) then
+#endif
            res(1,node2) = res(1,node2) - res1
            res(2,node2) = res(2,node2) - res2
            res(3,node2) = res(3,node2) - res3
@@ -1280,10 +1312,14 @@ c
 c          call PLogFlops(4)
            flops = flops + 4
           endif
-        endif
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+         endif
+#endif
 c
       enddo
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
+#endif
   
 c     c68 = 6./8.
 c     c18 = 1./8.
@@ -1293,7 +1329,9 @@ c
 c Close contour over the boundaries 
 c First do inviscid faces
 c
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
+#endif
       do n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
@@ -1335,36 +1373,52 @@ c
 c
 c              call PLogFlops(35)
                flops = flops + 35
-               if (node1 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+#else         
+          if (node1.le.nnodes) then
+#endif
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
 c               call PLogFlops(6)
 	        flops = flops + 6
-               endif
+          endif
 
-               if (node2 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+#else         
+          if (node2.le.nnodes) then
+#endif
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
 c               call PLogFlops(6)
 	        flops = flops + 6
-               endif
+          endif
 
-               if (node3 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node3.ge.first_node).and.(node3.le.last_node)) then
+#else         
+          if (node3.le.nnodes) then
+#endif
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
 c               call PLogFlops(6)
 	        flops = flops + 6
-               endif
+          endif
 
       enddo
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
+#endif
 c
 c Now viscous faces
 c
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
+#endif
       do n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
@@ -1407,33 +1461,47 @@ c
 c              call PLogFlops(35)
 	       flops = flops + 35
 c
-               if (node1 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+#else         
+          if (node1.le.nnodes) then
+#endif
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
 c               call PLogFlops(6)
                 flops = flops + 6
 
-               endif
+          endif
 
-               if (node2 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+#else         
+          if (node2.le.nnodes) then
+#endif
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
 c               call PLogFlops(6)
                 flops = flops + 6
-               endif
+          endif
 
-               if (node3 .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+          if ((node3.ge.first_node).and.(node3.le.last_node)) then
+#else         
+          if (node3.le.nnodes) then
+#endif
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
 c               call PLogFlops(6)
                 flops = flops + 6
-               endif
+          endif
 
       enddo
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
+#endif
 c
 c The next section of code is for when you dont care about
 c preserving linear data on boundary. Also, doing this 
@@ -1485,7 +1553,9 @@ c
 c
 c Now do far-field
 c
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
+#endif
        do i = 1,nfnode
          inode   = ifnode(i)
 c
@@ -1612,19 +1682,23 @@ c
 c        call PLogFlops(180)
          flops = flops + 180
 c
-         if (inode .le. nnodes) then
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+        if ((inode.ge.first_node).and.(inode.le.last_node)) then
+#else         
+        if (inode.le.nnodes) then
+#endif
           res(1,inode) = res(1,inode)+area*beta*ubar
           res(2,inode) = res(2,inode)+area*(ub*ubar + xnorm*pb)
           res(3,inode) = res(3,inode)+area*(vb*ubar + ynorm*pb)
           res(4,inode) = res(4,inode)+area*(wb*ubar + znorm*pb)
 c         call PLogFlops(18)
           flops = flops + 18
-         endif
+        endif
 c
        enddo
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
 !$omp critical (residual_update)
-#if defined(_OPENMP)
        do n = 1,nnodes
           resvec(1,n)=resvec(1,n)+res(1,n)
           resvec(2,n)=resvec(2,n)+res(2,n)
@@ -1633,8 +1707,8 @@ c
        enddo
        flops = flops + 4*nnodes
 c      print *, 'For thread ', omp_get_thread_num(),', n is',n
-#endif
 !$omp end critical (residual_update)
+#endif
 !$omp end parallel  
        call PLogFlops(flops)
 c

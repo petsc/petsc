@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.56 2000/08/14 07:04:15 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.57 2000/08/15 21:12:54 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -7,6 +7,9 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "petscsnes.h"
 #include "petscao.h"
 #include "user.h"
+#if defined(_OPENMP)
+#include "omp.h"
+#endif
 
 #define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
 #define FCALLOC(size,y) *(y) = (Scalar*)PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKPTRQ(*(y))
@@ -47,7 +50,7 @@ CGMCOM *c_gmcom;                               /* Pointer to COMMON GMCOM    */
 int  rank,size,rstart;
 REAL memSize = 0.0,grad_time = 0.0;
 #if defined(_OPENMP)
-int max_threads = 2;
+int max_threads = 2,tot_threads,my_thread_id;
 #endif
 
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
@@ -984,13 +987,15 @@ int GetLocalOrdering(GRID *grid)
     grid->eptr[i] = node1;
     grid->eptr[nedgeLoc+i] = node2;
 #endif
+    /*if (node1 > node2) 
+     printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
+            rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) {
       cross_edges++;
     }
   }
   ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
-
   /* Now make the local 'ia' and 'ja' arrays */
   ICALLOC(nnodesLoc+1,&grid->ia);
   /* Use tmp for a work array */
