@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.283 1998/07/16 15:54:18 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.284 1998/07/21 19:47:07 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1057,15 +1057,13 @@ sequential and parallel versions), as well as several specialized
 formats.  Additional formats can be added.
 
 This chapter describes the basics of using PETSc matrices in general
-(regardless of the particular format chosen) and discusses tips
-for efficient use of the several simple uniprocessor and parallel
-matrix types.  Details regarding the ever-expanding suite of
-PETSc matrices are given in Section~\ref{sec:matclasses}.
-The use of PETSc matrices involves the following actions: create a
-particular type of matrix, insert values into it, process the matrix,
-use the matrix for various computations, and finally destroy the
-matrix.  The application code does not need to know or care about the
-particular storage formats of the matrices.
+(regardless of the particular format chosen) and discusses tips for
+efficient use of the several simple uniprocessor and parallel matrix
+types.  The use of PETSc matrices involves the following actions:
+create a particular type of matrix, insert values into it, process the
+matrix, use the matrix for various computations, and finally destroy
+the matrix.  The application code does not need to know or care about
+the particular storage formats of the matrices.
 
 \section{Creating and Assembling Matrices}
 \label{sec:matcreate}
@@ -1140,7 +1138,7 @@ Note that these flags indicate the format of the data passed in with
 matrix data is stored internally in PETSc.
 
 After the matrix elements have been inserted or added into the matrix, 
-it must be processed before it can be used. The routines for matrix
+they must be processed before they can be used. The routines for matrix
 processing are \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{verbatim}
    ierr = MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
@@ -1193,21 +1191,19 @@ solving two linear systems that use the same matrix data structure.
 \subsection{Sparse Matrices}
 \label{sec:matsparse}
 
-\sindex{AIJ matrix format} 
-\sindex{CSR, compressed sparse row format}
-The default matrix representation within PETSc is the general sparse 
+\sindex{AIJ matrix format} \sindex{CSR, compressed sparse row format}
+The default matrix representation within PETSc is the general sparse
 AIJ format (also called the Yale sparse matrix format or compressed
-sparse row format, CSR).  This section discusses tips for {\em efficiently}
-using this matrix format for large-scale applications. Additional
-formats (such as block compressed row and block diagonal storage,
-which are generally much more efficient for problems with multiple
-degrees of freedom per node) are further discussed in
-Section~\ref{sec:matclasses}.  Beginning users need not concern
-themselves initially with such details and may wish to proceed
-directly to Section~\ref{sec:matoptions}.  However, when an
-application code progresses to the point of tuning for efficiency
-and/or generating timing results, it is {\em crucial} to read this
-information.
+sparse row format, CSR).  This section discusses tips for {\em
+efficiently} using this matrix format for large-scale
+applications. Additional formats (such as block compressed row and
+block diagonal storage, which are generally much more efficient for
+problems with multiple degrees of freedom per node) are discussed
+below.  Beginning users need not concern themselves initially with
+such details and may wish to proceed directly to
+Section~\ref{sec:matoptions}.  However, when an application code
+progresses to the point of tuning for efficiency and/or generating
+timing results, it is {\em crucial} to read this information.
 
 \subsubsection{Sequential AIJ Sparse Matrices}
 
@@ -2245,7 +2241,7 @@ number ({\tt it}) and the residual's $ l_2 $ norm ({\tt rnorm}).
 A helpful routine within user-defined monitors is 
 {\tt PetscObjectGetComm((PetscObject)ksp,MPI\_Comm *comm)}, which returns
 in {\tt comm} \findex{PetscObjectGetComm()} \sindex{communicator} the
-MPI communicator for the {\tt KSP} context.  See Chapter~\ref{chapter:design}
+MPI communicator for the {\tt KSP} context.  See section ~\ref{sec:writing}
 for more discussion of the use of MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, 
