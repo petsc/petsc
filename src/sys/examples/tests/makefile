@@ -21,7 +21,7 @@ BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F
 
 ex1: ex1.o chkopts
@@ -59,6 +59,10 @@ ex7f: ex7f.o chkopts
 ex8: ex8.o chkopts
 	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
 	$(RM) -f ex8.o
+
+ex9: ex9.o chkopts
+	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
+	$(RM) -f ex9.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
