@@ -288,6 +288,7 @@ class Configure(config.base.Configure):
     # We use the framework in order to remove the PETSC_ namespace
     self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
     self.framework.getExecutable('sed',  getFullPath = 1)
+    self.framework.getExecutable('mv',   getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
     # check if diff supports -w option for ignoring whitespace
     f = file('diff1', 'w')
