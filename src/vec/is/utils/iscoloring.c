@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.59 2000/05/05 22:14:51 balay Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.60 2000/05/06 20:11:51 bsmith Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -92,18 +92,44 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 
    Level: advanced
 
-.seealso: ISColoringView()
+.seealso: ISColoringRestoreIS(), ISColoringView()
 @*/
 int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
 {
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
-  *n  = iscoloring->n;
-  *is = iscoloring->is;
+  if (n)  *n  = iscoloring->n;
+  if (is) *is = iscoloring->is;
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"ISColoringRestoreIS"
+/*@C
+   ISColoringGetIS - Restores the index sets extracted from the coloring context
+
+   Collective on ISColoring 
+
+   Input Parameter:
++  iscoloring - the coloring context
+-  is - array of index sets
+
+   Level: advanced
+
+.seealso: ISColoringGetIS(), ISColoringView()
+@*/
+int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
+{
+  PetscFunctionBegin;
+  PetscValidPointer(iscoloring);
+  
+  /* currently nothing is done here */
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISColoringCreate"

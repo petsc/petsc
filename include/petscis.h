@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.52 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscis.h,v 1.53 2000/05/10 16:44:25 bsmith Exp balay $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -93,6 +93,7 @@ EXTERN int ISColoringCreate(MPI_Comm,int,const int[],ISColoring*);
 EXTERN int ISColoringDestroy(ISColoring);
 EXTERN int ISColoringView(ISColoring,Viewer);
 EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);
+EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
 
 /* --------------------------------------------------------------------------*/
 
