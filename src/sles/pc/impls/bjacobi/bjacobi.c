@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.151 2001/01/16 18:19:01 balay Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.152 2001/01/20 03:35:28 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -415,7 +415,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    Currently for some matrix implementations only 1 block per processor 
    is supported.
    
-   You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
+   You must call SLESSetUp() or PCSetUp() before calling PCBJacobiGetSubSLES().
 
    Level: advanced
 
