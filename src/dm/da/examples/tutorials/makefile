@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 2000/08/17 04:53:23 bsmith Exp balay $ 
+# $Id: makefile,v 1.18 2000/08/17 20:01:50 balay Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -19,15 +19,15 @@ ex2: ex2.o   chkopts
 	${RM} -f ex2.o
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   ${RM} -f ex1_1.tmp
+	-@${MPIRUN} -np 2 ex1
+runex2:
+	-@${MPIRUN} -np 3 ex2
+
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
 TESTEXAMPLES_5  =
-TESTEXAMPLES_13 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm
+TESTEXAMPLES_13 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
 
 include ${PETSC_DIR}/bmake/common_test
