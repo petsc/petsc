@@ -1,6 +1,6 @@
-# $Id: base,v 1.48 1998/12/04 21:53:01 balay Exp balay $ 
+# $Id: base,v 1.49 1998/12/04 23:43:18 balay Exp bsmith $ 
 
-# $Id: base,v 1.48 1998/12/04 21:53:01 balay Exp balay $ 
+# $Id: base,v 1.49 1998/12/04 23:43:18 balay Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -88,17 +88,19 @@ shared: chkopts_basic
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-	  flag=""; \
-	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+  	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
               flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	  else \
+	    else \
 	      flag="true"; \
-	  fi; \
-	  if [ "$$flag" != "" ]; then \
-	    echo "building $$LIBNAME.${SLSUFFIX}"; \
-	    ${AR} x ../$$LIBNAME.a ;\
-	    ${LD} -b  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	    ${RM} -f * ; \
+	    fi; \
+	    if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      ${LD} -b  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	      ${RM} -f * ; \
+	    fi; \
 	  fi; \
 	done ;\
 	cd ../ ; \
