@@ -3,7 +3,7 @@
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatConvertTo_MPIAdj(Mat,MatType,Mat*);
-EXTERN PetscErrorCode MatConvertTo_aij(Mat,MatType,Mat*);
+EXTERN PetscErrorCode MatConvertTo_AIJ(Mat,MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -28,6 +28,6 @@ PetscErrorCode MatConvertRegisterAll(const char path[])
   PetscFunctionBegin;
   MatConvertRegisterAllCalled = PETSC_TRUE;
   ierr = MatConvertRegisterDynamic(MATMPIADJ,path,"MatConvertTo_MPIAdj",MatConvertTo_MPIAdj);CHKERRQ(ierr);
-  ierr = MatConvertRegisterDynamic(MATAIJ,path,"MatConvertTo_aij",MatConvert_aij);CHKERRQ(ierr);
+  ierr = MatConvertRegisterDynamic(MATAIJ,path,"MatConvertTo_AIJ",MatConvert_AIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  

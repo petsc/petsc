@@ -2,6 +2,7 @@
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include "petscmat.h"
+/* Usage: mpirun -np <np> ex55 -display <0 or 1> */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -9,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat            C,A,B,D; 
   PetscErrorCode ierr;
-  PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,msglvl=0;
+  PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,display=0;
   PetscMPIInt    size,rank;
   /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ,MATMPIROWBS};*/ /* BlockSolve95 is required for MATMPIROWBS */
   const MatType  type[9]; 
@@ -19,17 +20,17 @@ int main(int argc,char **args)
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-display",&display,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (size == 1){
+  type[0] = MATAIJ;
+  if (size == 1){ 
     ntypes = 3;
-    type[0] = MATSEQAIJ;
     type[1] = MATSEQBAIJ;
     type[2] = MATSEQSBAIJ;
   } else {
     ntypes = 2; 
-    type[0] = MATMPIAIJ;
     type[1] = MATMPIBAIJ;
     type[2] = MATMPISBAIJ; /* Matconvert from mpisbaij mat to other formats are not supported */
   }
@@ -90,7 +91,7 @@ int main(int argc,char **args)
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) { 
-      if (msglvl>0) {
+      if (display>0) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
       }
 

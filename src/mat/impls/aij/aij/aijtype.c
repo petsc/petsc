@@ -70,7 +70,6 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_AIJ"
 PetscErrorCode MatDestroy_AIJ(Mat A)
 {
-  Mat_AIJ        *aij = (Mat_AIJ *)A->spptr;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -199,7 +198,6 @@ EXTERN_C_BEGIN
 PetscErrorCode MatConvertTo_AIJ(Mat A, const MatType type, Mat *newmat)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm;
   PetscMPIInt    size;
   Mat            B=*newmat;
 
