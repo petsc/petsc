@@ -14,30 +14,31 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc_r -q64
-C_FC		   = xlf -q64
+C_CC		   = mpcc_r -q64
+C_FC		   = mpxlf -q64
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
-C_CLINKER	   = cc_r -q64 -bmaxdata:0x70000000
+C_CLINKER	   = mpcc_r -q64 -bmaxdata:0x70000000
 # you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
-C_FLINKER	   = cc_r -q64 -bmaxdata:0x70000000
+C_FLINKER	   = mpcc_r -q64 -bmaxdata:0x70000000
 C_CCV		   = unknown
 C_FCV		   = unknown
-C_SYS_LIB	   = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
+C_SYS_LIB	   = -lisode -lxlf90_r -lm_r
+#/usr/lib/libxlf.a
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g  -qfullpath
 G_FOPTFLAGS	   = -g  -qfullpath
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O3 -qstrict -qspill=3000
-O_FOPTFLAGS	   = -O3 -w
+O_COPTFLAGS	   = -O3 -qmaxmem=-1 -w -qspill=8000 -qarch=auto -qtune=auto -qcache=auto -qhot
+O_FOPTFLAGS	   = -O3 -w -qmaxmem=-1 -qarch=auto -qtune=auto -qcache=auto -qhot
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = xlC_r -+ -q64
-CXX_FC		   = xlf -q64
+CXX_CC		   = mpxlC_r -+ -q64
+CXX_FC		   = mpxlf -q64
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = xlC_r -q64
-CXX_FLINKER	   = xlC_r -q64
+CXX_CLINKER	   = mpxlC_r -q64
+CXX_FLINKER	   = mpxlC_r -q64
 CXX_CCV		   = unknown
 CXX_SYS_LIB	   = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
