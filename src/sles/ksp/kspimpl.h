@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.33 1998/03/12 23:15:54 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.34 1998/04/03 23:13:19 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -76,6 +76,8 @@ struct _p_KSP {
   int    (*computeeigenvalues)(KSP,int,double*,double*);
   int    (*destroy)(KSP);
   int    (*view)(KSP,Viewer);
+
+  PetscTruth avoidnorms; /* does not compute residual norms when possible */
 };
 
 #define KSPMonitor(ksp,it,rnorm) \

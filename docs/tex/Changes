@@ -13,4 +13,13 @@ add to it).
  
    See petsc-maint # 1787 - added  VIEWER_FORMAT_ASCII_INDEX
 
+  MAT
+
+   Added MatSeqAIJSetColumnIndices() and MatSeqBAIJSetColumnIndices().
+
+   If the option MAT_IGNORE_OFF_PROC_ENTRIES is used the MatAssemblyBegin()
+    and End() will not cause any parallel communication or synchronization.
+
+   If the option MAT_NO_NEW_NONZERO_LOCATIONS is used, one less collective
+   call will be made in the MatAssemblyEnd routines for MPIAIJ and MPIBAIJ.
 

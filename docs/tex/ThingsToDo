@@ -40,10 +40,7 @@ West Bethesda, Md.  20817-5700
 (301) 227-5753 (fax)
 rcheng@oasys.dt.navy.mil
 
- - Fix MatAssemblyEnd_ MPIAIJ and MPIBAIJ to do no communication in setting up
-   matrix-vector product if no new nonzero was set.
 
- - Add MatSeqAIJSetColumnIndices() and for SeqBAIJ also.
 
   - Add support for all KSP methods not to compute the residual norms,
     or do convergence test.
@@ -1026,3 +1023,8 @@ are drawn on top of the contour plots (that's a separate problem).
 
   X make vecassembly print number off processor values for all processors
     with ploginfo not just processor 0.
+
+ X Fix MatAssemblyEnd_ MPIAIJ and MPIBAIJ to do no communication in setting up
+   matrix-vector product if no new nonzero was set.
+
+ X Add MatSeqAIJSetColumnIndices() and for SeqBAIJ also.
