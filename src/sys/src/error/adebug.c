@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.47 1996/07/18 02:55:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.48 1996/08/01 20:50:45 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -89,9 +89,13 @@ int PetscAttachDebugger()
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
     /*
-       This kill does not seem to be needed and causes trouble on most machines
-       so let's try removing it.    kill(child,SIGSTOP);
+      This kill does not seem to be needed and causes trouble on most machines
+      so let's try removing it.    kill(child,SIGSTOP);
     */
+#if defined (PARCH_alpha)
+    kill(child,SIGCONT);
+#endif
+
     sprintf(pid,"%d",child); 
     if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
