@@ -105,7 +105,7 @@ int VecSetFromOptions(Vec vec)
   if (vec->ops->setfromoptions != PETSC_NULL) {
     ierr = (*vec->ops->setfromoptions)(vec);                                                              CHKERRQ(ierr);
   }
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_NAMESPACE)
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = VecESISetFromOptions(vec);                                                                       CHKERRQ(ierr);
 #endif
 

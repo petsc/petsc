@@ -57,6 +57,6 @@
 
 #define PETSC_HAVE_F90_H "f90impl/f90_t3e.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_t3e.c"
-#define PETSC_HAVE_NAMESPACE
+#define PETSC_HAVE_CXX_NAMESPACE
 
 #endif
