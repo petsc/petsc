@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.132 1999/03/07 17:26:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.133 1999/03/17 23:22:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -765,11 +765,25 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (!ix && xin_type == VECSEQ) {
     ierr = ISCreateStride(comm,ctx->to_n,0,1,&ix);CHKERRQ(ierr);
     tix  = ix;
-  } else if (!iy && yin_type == VECSEQ) {
+  } else if (!ix && xin_type == VECMPI) {
+    int bign;
+    ierr = VecGetSize(xin,&bign);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,bign,0,1,&ix);CHKERRQ(ierr);
+    tix  = ix;
+  } else if (!ix) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"iy not given, but not Seq or MPI vector");
+  }
+
+  if (!iy && yin_type == VECSEQ) {
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
-  } else if (!ix || !iy) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must provide at least ix or iy");
+  } else if (!iy && yin_type == VECMPI) {
+    int bign;
+    ierr = VecGetSize(yin,&bign);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,bign,0,1,&iy);CHKERRQ(ierr);
+    tiy  = iy;
+  } else if (!iy) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"iy not given, but not Seq or MPI vector");
   }
 
   /*
