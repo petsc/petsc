@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.1 2000/11/09 15:45:35 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.2 2000/11/13 19:18:19 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -21,8 +21,12 @@ import java.lang.Thread;
 
 /*  These are the AMS API classes */
 import gov.anl.mcs.ams.*;
+import java.security.*;
 
 import java.net.*;
+
+/* for XY plots */
+import ptolemy.plot.*;
 
 /*
     This is the class that this file implements (must always be the same as
@@ -30,7 +34,7 @@ import java.net.*;
 
     Applet is a subclass of PanelFrame, i.e. it is itself the base window we draw onto
 */
-public class PETScView extends java.applet.Applet {
+public class PETScView extends JApplet {
     
   /*  AMSBean Object - this is where all the AMS "global" functions and 
                        "enum" types are stored                            */
@@ -41,14 +45,13 @@ public class PETScView extends java.applet.Applet {
   AMS_Comm   ams;
   AMS_Memory mem;
   int        count = 0;
+  Container japplet;
 
-  String     host = "fire.mcs.anl.gov";
+  String     host = "terra.mcs.anl.gov";
   int        port = 9000;
 
-  boolean    waiting = false; /* indicates choices have been presented on screen, waiting for user input */
-
   java.applet.AppletContext appletcontext;
-  java.applet.Applet applet;
+  JApplet applet;
 
   JTextField inputport;
   JTextField inputserver;
@@ -64,14 +67,34 @@ public class PETScView extends java.applet.Applet {
 
   public void init(){
     System.out.println("init called");
-    amsbean = new AMSBean() {
-      public void print_error(String mess){  /* overwrite the error message output*/
-        System.out.println("AMS Error Message: "+mess);
-        /* throw new RuntimeException("Stack traceback"); */
-      }
-    };
+
+    System.out.println("PETScOptions: codebase:"+this.getDocumentBase()+":");
+    System.out.println("PETScOptions: about to load amsacc library ");
+
+    try {
+      amsbean = new AMSBean() {
+        public void print_error(String mess) {  /* overwrite the error message output*/
+          System.out.println("AMS Error Message: "+mess);
+        }
+      };
+    } catch (UnsatisfiedLinkError oops) {
+      try {
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-amsacc.html"));
+      } catch (java.net.MalformedURLException ex) {;}
+    } catch (AccessControlException oops) {
+      try {
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
+      } catch (java.net.MalformedURLException ex) {;}
+    } catch (ExceptionInInitializerError oops) {
+      try {
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
+      } catch (java.net.MalformedURLException ex) {;}
+    } 
+    System.out.println("PETScOptions: done loading amsacc library ");
+
     appletcontext = this.getAppletContext();
     applet        = this;
+    japplet       = this.getContentPane();
     memories = new Hashtable();
   }
 
@@ -101,16 +124,16 @@ public class PETScView extends java.applet.Applet {
 
   public void getserver() { /* ------------------------------------------*/
 
-    this.removeAll();
-    this.setVisible(false);
+    japplet.removeAll();
+    japplet.setVisible(false);
     /*
 
          Make GUI to get host and port number from user 
     */
-    this.setLayout(new FlowLayout());
+    japplet.setLayout(new FlowLayout());
         
     JPanel tpanel = new JPanel(new GridLayout(3,1));
-    this.add(tpanel, BorderLayout.NORTH);
+    japplet.add(tpanel, BorderLayout.NORTH);
         
     inputserver = new JTextField(host,32);
     JPanelSimplePack text = new JPanelSimplePack("AMS Client machine",inputserver);
@@ -131,9 +154,12 @@ public class PETScView extends java.applet.Applet {
     }); 
     System.out.println("put up continue");
 
-    this.setVisible(true);
-    this.validate(); 
-    this.repaint(); 
+    Plot plot = new Plot();
+    japplet.add(plot);
+
+    japplet.setVisible(true);
+    japplet.validate(); 
+    japplet.repaint(); 
     System.out.println("put up continue done");
     return;
   }
@@ -148,8 +174,8 @@ public class PETScView extends java.applet.Applet {
     host = inputserver.getText();
     port = (new Integer(inputport.getText())).intValue();
         
-    this.removeAll();
-    this.setVisible(false);
+    japplet.removeAll();
+    japplet.setVisible(false);
 
     /* Get list of communicators */
     String list[] = AMSBean.get_comm_list(host,port);
@@ -196,12 +222,11 @@ public class PETScView extends java.applet.Applet {
             Clear the window of old options
     */
     System.out.println("About to remove panels");    
-    this.removeAll();
-    System.out.println("Removed panel; trying to get options");    
+    japplet.removeAll();
+    japplet.setVisible(false);
+    System.out.println("Removed panel; trying to get objects");    
 
-    this.setVisible(false);
-
-    this.setLayout(new FlowLayout());
+    japplet.setLayout(new FlowLayout());
         
 
 
@@ -217,7 +242,7 @@ public class PETScView extends java.applet.Applet {
     qbutton.addActionListener(new QuitActionListener());
         
     /* Add the Panel in the bottom of the Frame */
-    this.add(bpanel, BorderLayout.SOUTH);
+    japplet.add(bpanel, BorderLayout.SOUTH);
         
     /* Get the memorys (we ignore the rest) */
     String mems[] = ams.get_memory_list();
@@ -271,18 +296,19 @@ public class PETScView extends java.applet.Applet {
       }
 
     }
-
+    
     DefaultTreeModel tree = new DefaultTreeModel(root);
     JTree jtree = new JTree(tree);
     jtree.setCellRenderer(new MyTreeCellRenderer());
-    this.add(new JScrollPane(jtree), BorderLayout.NORTH); 
+    japplet.add(new JScrollPane(jtree), BorderLayout.NORTH); 
     jtree.setRowHeight(15);
     jtree.setPreferredSize(new Dimension(400,650));
-
+    
     System.out.println("Processed options set");    
-    this.setVisible(true);
-    this.validate(); 
-    this.repaint(); 
+    japplet.setVisible(true);
+    japplet.validate(); 
+    japplet.repaint(); 
+    System.out.println("Repainted");    
  }
     
     
@@ -300,7 +326,8 @@ public class PETScView extends java.applet.Applet {
   /* callback for the refresh button */
   class RefreshActionListener implements ActionListener {/*--------------------*/
     public void actionPerformed(ActionEvent e) {
-      applet.removeAll();
+      japplet.removeAll();
+      japplet.setVisible(false);
       System.out.println("User selected refresh");
       (new ThreadOptionUpdate()).start();
     }
@@ -344,6 +371,11 @@ public class PETScView extends java.applet.Applet {
     }
   }
 }
+
+
+
+
+
 
 
 
