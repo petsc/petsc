@@ -9,6 +9,7 @@ import cPickle
 import os
 import sys
 import traceback
+import re
 
 class BS (maker.Maker):
   targets     = {}
@@ -46,10 +47,18 @@ class BS (maker.Maker):
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
+    global sourceDB
+    newDB = sourceDatabase.SourceDB()
+    pwd = os.getcwd()
+    for key in sourceDB:
+      new_key = re.split(pwd,key)[-1]
+      newDB[new_key] = sourceDB[key]
+    sourceDB = newDB
+
     dbFile = open(self.sourceDBFilename, 'w')
     cPickle.dump(sourceDB, dbFile)
     dbFile.close()
-
+  
   def setupSourceDB(self):
     self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
     global sourceDB
@@ -58,6 +67,14 @@ class BS (maker.Maker):
       dbFile   = open(self.sourceDBFilename, 'r')
       sourceDB = cPickle.load(dbFile)
       dbFile.close()
+
+      newDB = sourceDatabase.SourceDB()
+      pwd = os.getcwd()
+      for key in sourceDB:
+        new_key = pwd+key
+        newDB[new_key] = sourceDB[key]
+      sourceDB = newDB
+      
     else:
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)

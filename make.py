@@ -15,6 +15,9 @@ def getpythoninclude():
 
 def getpythonlib():
     lib = distutils.sysconfig.get_config_var('LIBPL')+"/"+distutils.sysconfig.get_config_var('LDLIBRARY')
+    # if .so was not built then need to strip .a off of end
+    if lib[-2:] == '.a':
+        lib = lib[0:-2]
     lib = string.split(lib,'.so')[0]+'.so'
     return lib
 
@@ -22,6 +25,9 @@ class PetscMake(bs.BS):
   def __init__(self, args = None):
     bs.BS.__init__(self, args)
     bs.argDB['PYTHON_INCLUDE'] = getpythoninclude()
+    if not os.path.exists(getpythoninclude()+'/Numeric'):
+        print "Install requires Numeric Python to be installed"
+        raise RuntimeError,"Install requires Numeric Python to be installed"
     bs.argDB['PYTHON_LIB'] = getpythonlib()
     self.defineHelp()
     self.defineDirectories()
@@ -67,6 +73,9 @@ class PetscMake(bs.BS):
     self.targets['default'] = self.targets['compile']
 
 if __name__ ==  '__main__':
-  pm = PetscMake(sys.argv[1:])
+  try:
+      pm = PetscMake(sys.argv[1:])
+  except:
+     sys.exit(1)
   pm.main()
   pm.install()

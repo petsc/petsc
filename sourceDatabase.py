@@ -159,7 +159,7 @@ if __name__ == '__main__':
     sys.exit(0)
   newDB = SourceDB()
   for key in sourceDB:
-    (checksum, mtime, timestamp, dependencies) = sourceDB[key]
+    (checksum, mtime, timestamp, dependencies,w) = sourceDB[key]
     newDB[key] = (checksum, mtime, timestamp, dependencies, 0)
   sourceDB = newDB
   if len(sys.argv) > 2:
