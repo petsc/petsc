@@ -1,6 +1,5 @@
-/* $Id: ex18.c,v 1.15 2001/03/15 21:41:18 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.16 2001/03/15 22:20:49 bsmith Exp bsmith $ */
 
-#if !defined(PETSC_USE_COMPLEX)
 
 static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
 Uses 2-dimensional distributed arrays.\n\
@@ -158,10 +157,10 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
-  double  zero = 0.0,one = 1.0;
-  double  hx,hy,hxdhy,hydhx;
-  double  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  double  tleft,tright,beta;
+  Scalar  zero = 0.0,one = 1.0;
+  Scalar  hx,hy,hxdhy,hydhx;
+  Scalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  Scalar  tleft,tright,beta;
   Scalar  **x,**f;
   Vec     localX;
 
@@ -332,9 +331,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   AppCtx     *user = (AppCtx*)dmmg->user;
   Mat        jac = *J;
   int        ierr,i,j,mx,my,xs,ys,xm,ym;
-  double     one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
-  double     dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
-  double     tleft,tright,beta,bm1,coef;
+  Scalar     one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
+  Scalar     dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
+  Scalar     tleft,tright,beta,bm1,coef;
   Scalar     v[5],**x;
   Vec        localX;
   MatStencil col[5],row;
@@ -610,11 +609,3 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   PetscFunctionReturn(0);
 }
 
-
-#else
-
-int main(int argc,char **argv)
-{
-  return 0;
-}
-#endif
