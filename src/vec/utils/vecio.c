@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.38 1997/12/01 01:52:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.39 1998/04/13 17:26:10 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -19,27 +19,28 @@ static char vcid[] = "$Id: vecio.c,v 1.38 1997/12/01 01:52:36 bsmith Exp bsmith 
   VecLoad - Loads a vector that has been stored in binary format
   with VecView().
 
+  Collective on Viewer 
+
   Input Parameters:
 . viewer - binary file viewer, obtained from ViewerFileOpenBinary()
 
   Output Parameter:
 . newvec - the newly loaded vector
 
-   Collective on Viewer 
-
   Notes:
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-   Notes for advanced users:
-   Most users should not need to know the details of the binary storage
-   format, since VecLoad() and VecView() completely hide these details.
-   But for anyone who's interested, the standard binary matrix storage
-   format is
-
-$    int    VEC_COOKIE
-$    int    number of rows
-$    Scalar *values of all nonzeros
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since VecLoad() and VecView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     int    VEC_COOKIE
+     int    number of rows
+     Scalar *values of all nonzeros
+.ve
 
    Note for Cray users, the int's stored in the binary file are 32 bit
 integers; not 64 as they are represented in the memory, so if you

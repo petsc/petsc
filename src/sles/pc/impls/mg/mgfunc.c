@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.25 1998/04/13 17:33:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: mgfunc.c,v 1.26 1998/04/24 05:15:16 curfman Exp curfman $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -69,7 +69,7 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 
    Collective on PC and Mat
 
-   Input Paramters:
+   Input Parameters:
 +  pc       - the multigrid context
 .  l        - the level to supply
 .  residual - function used to form residual (usually MGDefaultResidual)

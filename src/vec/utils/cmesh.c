@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.50 1998/04/03 23:12:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.51 1998/04/13 17:26:10 bsmith Exp curfman $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -42,19 +42,18 @@ int DrawScalePopup(Draw popup,double min,double max)
    DrawTensorContour - Draws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.
 
+   Collective on Draw and Vec
+
    Input Parameters:
-.   win - the window to draw in
++   win - the window to draw in
 .   m,n - the global number of mesh points in the x and y directions
 .   x,y - the locations of the global mesh points (optional, use PETSC_NULL
           to indicate uniform spacing on [0,1])
-.   V - the vector
-
-    Collective on Draw and Vec
+-   V - the vector
 
    Options Database Keys:
-$  -draw_x_private_colormap
-$  -draw_contour_grid
-
++  -draw_x_private_colormap - Indicates use of private colormap
+-  -draw_contour_grid - Draws grid contour
 
     Note: 
     This may be a basic enough function to be a graphics primative
@@ -183,15 +182,15 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 #undef __FUNC__  
 #define __FUNC__ "VecContourScale"
 /*@
-     VecContourScale - Prepares a vector of values to be plotted using 
-          the DrawTriangle() contour plotter.
+    VecContourScale - Prepares a vector of values to be plotted using 
+    the DrawTriangle() contour plotter.
 
-   Collective on Vec
+    Collective on Vec
 
-  Input Paramters:
-.   v - the vector of values
+    Input Parameters:
++   v - the vector of values
 .   vmin - minimum value (for lowest color)
-.   vmax - maximum value (for highest color)
+-   vmax - maximum value (for highest color)
 
 @*/
 int VecContourScale(Vec v,double vmin,double vmax)

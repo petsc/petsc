@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.26 1998/04/04 00:04:06 balay Exp curfman $";
+static char vcid[] = "$Id: senddense.c,v 1.27 1998/04/27 14:28:12 curfman Exp curfman $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -56,11 +56,11 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
    Notes:
    Most users should not call this routine, but instead should employ
    either
-$     MatView(Mat matrix,Viewer viewer)
-$
-$              or
-$
-$     VecView(Vec vector,Viewer viewer)
+.vb
+     MatView(Mat matrix,Viewer viewer)
+              or
+     VecView(Vec vector,Viewer viewer)
+.ve
 
 .keywords: Viewer, Matlab, put, dense, array, vector
 

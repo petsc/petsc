@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.38 1998/04/03 23:12:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.39 1998/04/13 17:26:10 bsmith Exp curfman $";
 #endif
 /*
      Some useful vector utility functions.
@@ -12,13 +12,13 @@ static char vcid[] = "$Id: vinv.c,v 1.38 1998/04/03 23:12:53 bsmith Exp bsmith $
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
+   Collective on Vec
+
    Input Parameter:
 .  v - the vector 
 
    Output Parameter:
 .  v - the vector reciprocal
-
-   Collective on Vec
 
 .keywords: vector, reciprocal
 @*/
@@ -43,13 +43,13 @@ int VecReciprocal(Vec v)
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
+   Collective on Vec
+
    Input Parameter:
 .  v - the vector 
 
    Output Parameter:
 .  sum - the result
-
-   Collective on Vec
 
 .keywords: vector, sum
 
@@ -82,14 +82,14 @@ int VecSum(Vec v,Scalar *sum)
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 
+   Collective on Vec
+
    Input Parameters:
-.  v - the vector 
-.  sum - the shift
++  v - the vector 
+-  sum - the shift
 
    Output Parameter:
 .  v - the shifted vector 
-
-   Collective on Vec
 
 .keywords: vector, shift
 @*/
@@ -114,10 +114,10 @@ int VecShift(Scalar *shift,Vec v)
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
+   Collective on Vec
+
    Input Parameters:
 .  v - the vector 
-
-   Collective on Vec
 
 .keywords: vector,absolute value
 @*/
@@ -145,17 +145,17 @@ int VecAbs(Vec v)
    a user-provided one. This is useful to avoid copying an array
    into a vector.  FOR EXPERTS ONLY!
 
-   Input Parameters:
-.  vec - the vector
-.  array - the array
-
    Not Collective
 
-  Notes:
-  You should back up the original array by calling VecGetArray() and 
-  stashing the value somewhere.  Then when finished using the vector,
-  call VecPlaceArray() with that stashed value; otherwise, you may
-  lose access to the original array.
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Notes:
+   You should back up the original array by calling VecGetArray() and 
+   stashing the value somewhere.  Then when finished using the vector,
+   call VecPlaceArray() with that stashed value; otherwise, you may
+   lose access to the original array.
 
 .seealso: VecGetArray(), VecRestoreArray()
 
@@ -177,15 +177,14 @@ int VecPlaceArray(Vec vec,Scalar *array)
 /*@
    VecEqual - Compares two vectors.
 
+   Collective on Vec
+
    Input Parameters:
-.  vec1 - the first matrix
-.  vec2 - the second matrix
++  vec1 - the first matrix
+-  vec2 - the second matrix
 
    Output Parameter:
-.  flg : PETSC_TRUE if the vectors are equal;
-         PETSC_FALSE otherwise.
-
-   Collective on Vec
+.  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
 
 .keywords: vec, equal, equivalent
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fwd.c,v 1.13 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fwd.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -11,11 +11,11 @@ static char vcid[] = "$Id: fwd.c,v 1.13 1997/10/19 03:23:45 bsmith Exp bsmith $"
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
 
-   Input Paramters:
+   Not Collective
+
+   Input Parameters:
 .  path - use to hold the result value
 .  len  - maximum length of path
-
-   Not Collective
 
 .keywords, system, get, current, working, directory
 @*/
