@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.6 1997/10/13 18:33:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.7 1997/10/13 19:11:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,11 +26,11 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   TS           ts = (TS) P_data;
   TS_PVode     *cvode = (TS_PVode*) ts->data;
   PC           pc = cvode->pc;
-  int          ierr, i, locsize, low, high, loc;
+  int          ierr, locsize;
 
   Mat          Jac;
-  Vec          tmpy;
-  Scalar       one = 1.0, gm, tmp;
+  Vec          tmpy = cvode->w1;
+  Scalar       one = 1.0, gm;
   MatStructure str = SAME_NONZERO_PATTERN;
 
   /* get the local size of N_Vector y */
@@ -52,29 +52,16 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   else {
     /* jok = FALSE: generate the Jacobian and then copy it to Pcond */
     /* convert N_Vector y to petsc Vec tmpy */
-    /* we are only working on the local part */
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,locsize,N,&tmpy); CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(tmpy,&low,&high); CHKERRQ(ierr);
-    for(i=0;i<locsize;i++) {
-      loc = low+i;	 /* get the global position */
-      tmp = Ith(y,i+1);  /* the local component */
-      ierr = VecSetValues(tmpy,1,&loc,&tmp,INSERT_VALUES); CHKERRQ(ierr);
-    }
-    ierr = VecAssemblyBegin(tmpy); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tmpy); CHKERRQ(ierr);
+    ierr = VecPlaceArray(tmpy,&N_VIth(y,0));CHKERRQ(ierr);
 
     /* recompute the Jacobian */
-    ierr = (*ts->rhsjacobian)(ts,ts->ptime,tmpy,&Jac,&Jac,&str,ts->jacP);
-    CHKERRQ(ierr);
+    ierr = (*ts->rhsjacobian)(ts,ts->ptime,tmpy,&Jac,&Jac,&str,ts->jacP);CHKERRQ(ierr);
 
     /* copy the Jacobian matrix */
     ierr = MatCopy(Jac, cvode->pmat); CHKERRQ(ierr);
 
     /* set the flag */
     *jcurPtr = TRUE;
-
-    /* destroy vector tmpy */
-    ierr = VecDestroy(tmpy); CHKERRQ(ierr);
   }
 
   /* construct I-gamma*Jac  */
@@ -113,8 +100,8 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
   /*
       Make the PETSc work vectors rr and xx point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(rr,&N_VIth(y,0)); CHKERRQ(ierr);
-  ierr = VecPlaceArray(xx,&N_VIth(r,0)); CHKERRQ(ierr);
+  ierr = VecPlaceArray(rr,&N_VIth(r,0)); CHKERRQ(ierr);
+  ierr = VecPlaceArray(xx,&N_VIth(z,0)); CHKERRQ(ierr);
 
   /* solve the Px=r and put the result in xx */
   ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
