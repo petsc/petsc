@@ -244,7 +244,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   Vec            vu,vlambda,vfu,vflambda,vglambda;
   DA             da;
   VecPack        packer = (VecPack)dmmg->dm;
-  PetscTruth     useadic = 0;
+  PetscTruth     useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;
 #endif
