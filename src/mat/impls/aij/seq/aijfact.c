@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.160 2001/04/10 19:35:19 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.161 2001/04/23 15:12:05 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -275,17 +275,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   PetscReal  f;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(isrow,IS_COOKIE);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE);
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
-
-  if (!isrow) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
-  }
-  if (!iscol) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&iscol);CHKERRQ(ierr);
-  }
-
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -997,8 +987,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
-    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
-    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
+    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -[sub_]pc_ilu_fill %g or use \n",af);
+    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill([sub]pc,%g);\n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
     if (diagonal_fill) {
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replace %d missing diagonals",dcount);
