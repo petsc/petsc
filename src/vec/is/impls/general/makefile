@@ -1,12 +1,12 @@
-# $Id: makefile,v 1.26 1998/03/19 02:04:44 balay Exp balay $
+# $Id: makefile,v 1.27 1998/04/23 23:32:41 balay Exp bsmith $
 
 ALL: lib
 
 CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
-SOURCEC  = general.c 
+SOURCEC  = general.c strgen.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = general.o 
+SOURCEH  = general.h
+OBJSC    = general.o strgen.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 6
