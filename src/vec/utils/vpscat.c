@@ -567,8 +567,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     MPI_Request *rev_swaits,*rev_rwaits;
     PetscScalar *Ssvalues = out_to->values, *Srvalues = out_from->values;
 
-    ierr = PetscMalloc(in_to->n*sizeof(MPI_Request),&out_to->rev_requests);CHKERRQ(ierr);
-    ierr = PetscMalloc(in_from->n*sizeof(MPI_Request),&out_from->rev_requests);CHKERRQ(ierr);
+    ierr = PetscMalloc2(in_to->n,MPI_Request,&out_to->rev_requests,in_from->n,MPI_Request,&out_from->rev_requests);CHKERRQ(ierr);
 
     rev_rwaits = out_to->rev_requests;
     rev_swaits = out_from->rev_requests;

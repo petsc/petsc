@@ -446,6 +446,7 @@ fortranstubs:
           grep -v Anachronism | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
+          grep -v "ex20f.F:30: warning:" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           echo "--------------Error detected during compile or link!-----------------------";\

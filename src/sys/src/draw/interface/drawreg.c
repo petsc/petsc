@@ -109,10 +109,8 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-#if defined(PETSC_HAVE_X11)
   /*  User requests no graphics */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
-#endif
 
   /*
      This is not ideal, but it allows codes to continue to run if X graphics 
@@ -120,7 +118,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
    testing.
    */
 #if !defined(PETSC_HAVE_X11)
-  {
+  if (!flg) {
     ierr = PetscStrcmp(type,PETSC_DRAW_X,&match);CHKERRQ(ierr);
     if (match) {
       PetscTruth dontwarn = PETSC_TRUE;

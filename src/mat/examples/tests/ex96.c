@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   Mat            A,A_tmp,P,C;
   PetscScalar    *array,none = -1.0,alpha;
   PetscTruth     flg;
-  Vec           x,v1,v2;
+  Vec           x,v1,v2,v3,v4;
   PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom   rdm;
   PetscTruth    Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
@@ -198,7 +198,6 @@ int main(int argc,char **argv)
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   
-    Vec v3,v4;
     ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
     ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(v3);CHKERRQ(ierr);

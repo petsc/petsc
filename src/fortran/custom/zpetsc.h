@@ -6,7 +6,7 @@
 
 EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscScalar*,PetscScalar*,int,long*);
 EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,long,int,PetscScalar **);
-EXTERN long    PetscIntAddressToFortran(int*,int*);
+EXTERN long    PetscIntAddressToFortran(PetscInt*,PetscInt*);
 EXTERN int    *PetscIntAddressFromFortran(int*,long); 
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
