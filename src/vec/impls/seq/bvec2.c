@@ -8,7 +8,9 @@
 #include "src/inline/dot.h"
 #include "petscblaslapack.h"
 #if defined(PETSC_HAVE_NETCDF)
+EXTERN_C_BEGIN
 #include "pnetcdf.h"
+EXTERN_C_END
 #endif
 #if defined(PETSC_HAVE_AMS)
 EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
@@ -261,7 +263,7 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
   ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
   /* store the vector */
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&n,xarray); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray); CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif

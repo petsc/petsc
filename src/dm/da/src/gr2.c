@@ -5,9 +5,14 @@
 */
 
 #include "src/dm/da/daimpl.h"      /*I  "petscda.h"   I*/
+#include "src/vec/vecimpl.h" 
+
 #if defined(PETSC_HAVE_NETCDF)
+EXTERN_C_BEGIN
 #include "pnetcdf.h"
+EXTERN_C_END
 #endif
+
 
 /*
         The data that is passed into the graphics callback
@@ -340,12 +345,12 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   /* store the vector */
   ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&xin_n,xarray); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&xin_n,xarray); CHKERRQ(ierr);
   ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
   /* store the coordinate vector */
   ierr = VecGetArrayFast(xyz,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,&xstart,&xyz_n,xarray); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const size_t*)&xstart,(const size_t*)&xyz_n,xarray); CHKERRQ(ierr);
   ierr = VecRestoreArrayFast(xyz,&xarray);CHKERRQ(ierr);
   /* destroy the vectors and da */
   ierr = VecDestroy(natural);CHKERRQ(ierr);
