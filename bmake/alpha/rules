@@ -5,8 +5,8 @@ RM       = rm -f
 RANLIB   = ranlib
 OMAKE    = make 
 SHELL    = /bin/sh
-CLINKER  = cc $(BASEOPT)
-FLINKER  = f77 $(BASEOPTF)
+CLINKER  = cc $(COPTFLAGS)
+FLINKER  = f77 $(FOPTFLAGS)
 SYS_LIB  =
 
 CONF     = -DHAVE_64BITS -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_MALLOC_H \
@@ -21,29 +21,29 @@ libf: $(OBJSF)
 	ar crl $(LIBNAME) $(OBJSF)
 
 .c.a: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
 .c.o: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 .f.o: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 
 .f.a: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
 
 .F.o:
 	$(RM) $*.f
-	cpp $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	cpp $(CFLAGS) $(COPTFLAGS) -E $< | grep -v '^ *#' > $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 
 .F.a: 
 	$(RM) $*.f
-	cpp $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	cpp $(CFLAGS) $(COPTFLAGS) -E $< | grep -v '^ *#' > $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
