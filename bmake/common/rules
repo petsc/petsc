@@ -714,6 +714,43 @@ checkbadSource:
        fi; \
          done
 
+checkTestCoverage:
+	-@for filename in ex*.c; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .c`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .c`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.f; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .f`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .f`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.F; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .F`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .F`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.f90; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .f90`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .f90`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
 
 #
 # fixfortran target is used in one of the stages of generating the fortran
