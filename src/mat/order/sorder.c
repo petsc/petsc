@@ -51,7 +51,7 @@ int MatOrderNatural(int *N,int *ia,int* ja, int* permr, int* permc)
 
 .keywords: matrix, reordering, register
 
-.seealso: MatReorderingRegisterDestroy()
+.seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
 int  MatReorderingRegister(MatOrdering name,char *sname,
                           int (*order)(int*,int*,int*,int*,int*))
@@ -68,7 +68,7 @@ int  MatReorderingRegister(MatOrdering name,char *sname,
 
 .keywords: matrix, register, destroy
 
-.seealso: MatReorderingRegister()
+.seealso: MatReorderingRegister(), MatReorderingRegisterAll()
 @*/
 int MatReorderingRegisterDestroy()
 {

@@ -9,7 +9,7 @@ extern int MatOrderRCM(int*,int*,int*,int*,int*);
 
 /*@C
   MatReorderingRegisterAll - Registers all of the sequential matrix 
-                          reordering routines in PETSc.
+  reordering routines in PETSc.
 
   Adding new methods:
   To add a new method to the registry
@@ -28,11 +28,7 @@ $       routine requires recompilation.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscmat.a.
 
-  Notes:
-  To prevent all the methods from being registered and thus save
-  memory, copy this routine and register only those methods desired.
-
-.keywords: reordering, register, all
+.keywords: matrix, reordering, register, all
 
 .seealso: MatReorderingRegister(), MatReorderingRegisterDestroy()
 @*/
