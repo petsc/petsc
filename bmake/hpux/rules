@@ -1,7 +1,7 @@
 #
 #   The name of the C compiler to use
 #
-CC       = cc -DPARCH_hpux -Aa
+CC       = cc -DPARCH_hpux -Aa +z
 # If building shared libraries, use the following instead.
 # You MUST use +z for shared libraries.
 # CC       = cc -DPARCH_hpux -Aa +z
