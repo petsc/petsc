@@ -398,7 +398,7 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, language+' Stub '+baseName)
     builder.pushConfiguration(language+' Stub '+baseName)
     compiler = builder.getCompilerObject()
-    linker   = builder.getLinkerObject()
+    linker   = builder.getSharedLinkerObject()
     compiler.includeDirectories.update(self.python.include)
     compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     self.addDependencyIncludes(compiler, language)
@@ -429,7 +429,7 @@ class SIDLMake(Make):
     self.setupPythonSkeleton(builder, sidlFile, language)
     self.loadConfiguration(builder, language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
-    linker   = builder.getLinkerObject()
+    linker   = builder.getSharedLinkerObject()
     linker.libraries.clear()
     if not baseName == self.ase.baseName:
       linker.libraries.update(self.ase.lib)
@@ -442,7 +442,7 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, language+' Stub '+baseName)
     builder.pushConfiguration(language+' Stub '+baseName)
     compiler = builder.getCompilerObject()
-    linker   = builder.getLinkerObject()
+    linker   = builder.getSharedLinkerObject()
     compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     self.addDependencyIncludes(compiler, language)
     linker.libraries.clear()
@@ -471,7 +471,7 @@ class SIDLMake(Make):
     self.setupCxxSkeleton(builder, sidlFile, language)
     self.loadConfiguration(builder, language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
-    linker   = builder.getLinkerObject()
+    linker   = builder.getSharedLinkerObject()
     linker.libraries.clear()
     self.addDependencyLibraries(linker, language)
     if not baseName == self.ase.baseName:
@@ -619,7 +619,7 @@ class SIDLMake(Make):
     implObjects = self.buildCxxImplementation(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
     config      = builder.pushConfiguration(language+' Server '+baseName)
     library     = os.path.join(os.getcwd(), 'lib', 'lib-'+language.lower()+'-'+baseName+'.so')
-    linker      = builder.getLinkerObject()
+    linker      = builder.getSharedLinkerObject()
     if not os.path.isdir(os.path.dirname(library)):
       os.makedirs(os.path.dirname(library))
     for depSidlFile in builder.sourceDB.getDependencies(sidlFile)+(sidlFile,):
