@@ -91,8 +91,12 @@ info_h:
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\//g'  > MINFO_ ; true
-	-@cat MINFO_ | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
+	-@cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> MINFO_
+	-@cat MINFO_ | ${SED} -e 's/\//g'  > /dev/null; foobar=$?; \
+          if [ "$foobar" = "0" ]; then \
+	    cat MINFO_ | ${SED} -e 's/\//g' > ${MINFO}; \
+          else cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}; \
+          fi
 	-@$(RM) MINFO MINFO_
 
 #
