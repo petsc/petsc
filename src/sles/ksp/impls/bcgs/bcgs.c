@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.15 1995/06/18 16:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.16 1995/07/17 03:53:52 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -115,5 +115,6 @@ int KSPCreate_BCGS(KSP itP)
   itP->converged            = KSPDefaultConverged;
   itP->buildsolution        = KSPDefaultBuildSolution;
   itP->buildresidual        = KSPDefaultBuildResidual;
+  itP->view                 = 0;
   return 0;
 }

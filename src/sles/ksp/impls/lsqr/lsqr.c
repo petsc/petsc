@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.12 1995/05/18 22:44:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.13 1995/07/17 03:54:05 bsmith Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -115,16 +115,17 @@ for (i=0; i<maxit; i++) {
 
 int KSPCreate_LSQR(KSP itP)
 {
-itP->MethodPrivate        = (void *) 0;
-itP->type                 = KSPLSQR;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPSetUp_LSQR;
-itP->solver               = KSPSolve_LSQR;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
-itP->converged            = KSPDefaultConverged;
-itP->buildsolution        = KSPDefaultBuildSolution;
-itP->buildresidual        = KSPDefaultBuildResidual;
-return 0;
+  itP->MethodPrivate        = (void *) 0;
+  itP->type                 = KSPLSQR;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPSetUp_LSQR;
+  itP->solver               = KSPSolve_LSQR;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
+  itP->converged            = KSPDefaultConverged;
+  itP->buildsolution        = KSPDefaultBuildSolution;
+  itP->buildresidual        = KSPDefaultBuildResidual;
+  itP->view                 = 0;
+  return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.2 1995/07/22 19:34:33 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.3 1995/07/24 22:23:49 curfman Exp curfman $";
 #endif
 
 #include <stdio.h>
@@ -17,14 +17,14 @@ static int QuadraticRoots_Private(Vec,Vec,double*,double*,double*);
 
    subject to the Euclidean norm trust region constraint
 
-            || L^T * s || <= delta,
+            || D * s || <= delta,
 
    where 
 
      delta is the trust region radius, 
      g is the gradient vector, and
      H is Hessian matrix,
-     L is the incomplete Cholesky factor of H.
+     D is a scaling matrix.
 
    On termination pcgP->info is set as follows:
 $  1 if convergence is reached along a negative curvature direction,
@@ -49,13 +49,15 @@ int KSPSolve_QCG(KSP itP,int *its)
 
   KSP_QCG      *pcgP = (KSP_QCG *) itP->MethodPrivate;
   MatStructure pflag;
-  Mat          Amat, Pmat, Factmat;
+  Mat          Amat, Pmat;
   Vec          W, WA, R, P, ASP, BS, X, B;
   Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax;
   Scalar       beta, rntrn, step;
   double       dzero = 0.0, bsnrm, ptasp, q1, q2, wtasp, bstp, rtr;
   double       xnorm, step1, step2, rnrm, p5 = 0.5, *history;
   int          i, cerr, hist_len, maxit, ierr;
+  PC           pc = itP->B;
+/*  PCMethod     pcmethod; */
 #if defined(PETSC_COMPLEX)
   Scalar       cstep1, cstep2, ctasp, cbstp, crtr, cwtasp, cptasp;
 #endif
@@ -72,6 +74,9 @@ int KSPSolve_QCG(KSP itP,int *its)
   X        = itP->vec_sol;
   B        = itP->vec_rhs;
 
+/*  PCGetMethodFromContext(pc,&pcmethod);
+  if (pcmethod != PCICC && pcmethod != PCJACOBI) 
+    SETERRQ(1,"Use only PCICC and PCJACOBI methods"); */
   *its = 0;
   pcgP->info = 0;
   if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG: Input error: delta <= 0");
@@ -79,11 +84,11 @@ int KSPSolve_QCG(KSP itP,int *its)
   /* Initialize variables */
   VecSet(&zero,W);			/* W = 0 */
   VecSet(&zero,X);			/* X = 0 */
-  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  ierr = PCGetFactoredMatrix(itP->B,&Factmat); CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
-  /* Compute:  BS = L^{-1} B */
-  ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr);
+  /* Compute:  BS = D^{-1} B */
+  PCApply(pc,B,BS);
+  /* ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr); */
   VecNorm(BS,&bsnrm);
   MONITOR(itP,bsnrm,0);
   if (history) history[0] = bsnrm;
@@ -103,10 +108,12 @@ int KSPSolve_QCG(KSP itP,int *its)
   for (i=0; i<=maxit; i++) {
 
     /* Compute:  asp = L^{-1}*A*L^{-T}*p  */
-    VecCopy(P,WA);
-    MatBackwardSolve(Factmat,WA,WA);
-    MatMult(Amat,WA,ASP);
-    MatForwardSolve(Factmat,ASP,ASP);
+    /* VecCopy(P,WA);
+       MatBackwardSolve(Factmat,WA,WA);
+       MatMult(Amat,WA,ASP);
+       MatForwardSolve(Factmat,ASP,ASP); */
+    MatMult(Amat,P,WA);
+    PCApply(pc,WA,ASP);
 
     /* Check for negative curvature */
 #if defined(PETSC_COMPLEX)
@@ -237,7 +244,7 @@ int KSPSolve_QCG(KSP itP,int *its)
 #endif
     }
   }
-  MatBackwardSolve(Factmat,X,X);                   /* Unscale x */
+/*  MatBackwardSolve(Factmat,X,X); */                   /* Unscale x */
   MatMult(Amat,X,WA);
   VecDot(B,X,&btx);
   VecDot(X,WA,&xtax);
@@ -291,6 +298,7 @@ int KSPCreate_QCG(KSP itP)
   itP->converged            = KSPDefaultConverged;
   itP->buildsolution        = KSPDefaultBuildSolution;
   itP->buildresidual        = KSPDefaultBuildResidual;
+  itP->view                 = 0;
   return 0;
 }
 /* ---------------------------------------------------------- */

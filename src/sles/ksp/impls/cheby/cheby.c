@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.19 1995/07/17 03:54:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.20 1995/07/17 20:40:06 bsmith Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: cheby.c,v 1.19 1995/07/17 03:54:01 bsmith Exp bsmith 
 #include "petsc.h"
 #include "kspimpl.h"    /*I "ksp.h" I*/
 #include "chebctx.h"
-
+#include "pviewer.h"
 
 int KSPSetUp_Chebychev(KSP itP)
 {
@@ -19,12 +19,14 @@ int KSPSetUp_Chebychev(KSP itP)
   return KSPiDefaultGetWork( itP, 3 );
 }
 /*@
-     KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
-              of the preconditioned problem.
+   KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
+   of the preconditioned problem.
 
-  Input Parameters:
+   Input Parameters:
 .  itP - the Krylov space context
 .  emax, emin - the eigenvalue estimates
+
+.keywords: KSP, Chebyshev, set, eigenvalues
 @*/
 int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
@@ -141,6 +143,18 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   return 0;
 }
 
+static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
+{
+  KSP           itP = (KSP)obj;
+  KSP_Chebychev *cheb = (KSP_Chebychev *) itP->MethodPrivate;
+  FILE          *fd = ViewerFileGetPointer_Private(viewer);
+
+  MPIU_fprintf(itP->comm,fd,
+    "    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
+    cheb->emin,cheb->emax);
+  return 0;
+}
+
 int KSPCreate_Chebychev(KSP itP)
 {
   KSP_Chebychev *chebychevP;
@@ -163,5 +177,6 @@ int KSPCreate_Chebychev(KSP itP)
   itP->converged            = KSPDefaultConverged;
   itP->buildsolution        = KSPDefaultBuildSolution;
   itP->buildresidual        = KSPDefaultBuildResidual;
+  itP->view                 = KSPView_Chebychev;
   return 0;
 }
