@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.30 1995/06/08 03:12:06 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.31 1995/06/13 01:18:51 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -106,7 +106,7 @@ extern int PetscSetFPTrap(int);
 #define FP_TRAP_ALWAYS 2
 
 
-#if defined(PARCH_cray) || defined(PARCH_NCUBE)
+#if defined(PARCH_cray) || defined(PARCH_NCUBE) || defined(PARCH_t3d)
 #define FORTRANCAPS
 #elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_hpux)
 #define FORTRANUNDERSCORE
