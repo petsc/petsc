@@ -529,9 +529,9 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     row = mbd->rstart;
     m = mbd->A->m;
     for (i=0; i<m; i++) {
-      ierr = MatGetRow(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatGetRow_MPIBDiag(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatRestoreRow_MPIBDiag(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
       row++;
     } 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -616,6 +616,7 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIBDiag"
 int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
@@ -626,7 +627,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
   PetscFunctionBegin;
   if (row < mat->rstart || row >= mat->rend) SETERRQ(PETSC_ERR_SUP,"only for local rows")
   lrow = row - mat->rstart;
-  ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
+  ierr = MatGetRow_SeqBDiag(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -640,7 +641,7 @@ int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 
   PetscFunctionBegin;
   lrow = row - mat->rstart;
-  ierr = MatRestoreRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
+  ierr = MatRestoreRow_SeqBDiag(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

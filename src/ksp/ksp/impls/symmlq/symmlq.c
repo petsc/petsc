@@ -74,7 +74,10 @@ int  KSPSolve_SYMMLQ(KSP ksp)
   }
 
 #if !defined(PETSC_USE_COMPLEX)
-  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
+  if (dp < 0.0) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    PetscFunctionReturn(0);
+  }
 #endif
   dp = PetscSqrtScalar(dp); 
   beta = dp;                         /*  beta <- sqrt(r'*z)  */
@@ -140,38 +143,41 @@ int  KSPSolve_SYMMLQ(KSP ksp)
     }
 
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
+    if (dp < 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      break;
+    }
 #endif
-     beta = PetscSqrtScalar(dp);                    /*  beta = sqrt(dp); */
+    beta = PetscSqrtScalar(dp);                    /*  beta = sqrt(dp); */
 
-     /*    QR factorization    */
-     coold = cold; cold = c; soold = sold; sold = s;
-     rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */ 
-     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);   /* gamma     */
-     rho2 = sold * alpha + coold * cold * betaold;    /* delta     */
-     rho3 = soold * betaold;                          /* epsilon   */
+    /*    QR factorization    */
+    coold = cold; cold = c; soold = sold; sold = s;
+    rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */ 
+    rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);   /* gamma     */
+    rho2 = sold * alpha + coold * cold * betaold;    /* delta     */
+    rho3 = soold * betaold;                          /* epsilon   */
 
-     /* Givens rotation: [c -s; s c] (different from the Reference!) */
-     c = rho0 / rho1; s = beta / rho1;
+    /* Givens rotation: [c -s; s c] (different from the Reference!) */
+    c = rho0 / rho1; s = beta / rho1;
 
-     if (ksp->its==1){
-       ceta = beta1/rho1;
-     } else {
-       ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
-     }
+    if (ksp->its==1){
+      ceta = beta1/rho1;
+    } else {
+      ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
+    }
           
-     s_prod = s_prod*PetscAbsScalar(s);
-     if (c == 0.0){
-       np = s_prod*1.e16;
-     } else {
-       np = s_prod/PetscAbsScalar(c);       /* residual norm for xc_k (CGNORM) */
-     }
-     ksp->rnorm = np;
-     KSPLogResidualHistory(ksp,np);
-     KSPMonitor(ksp,i+1,np);
-     ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
-     if (ksp->reason) break;
-     i++;
+    s_prod = s_prod*PetscAbsScalar(s);
+    if (c == 0.0){
+      np = s_prod*1.e16;
+    } else {
+      np = s_prod/PetscAbsScalar(c);       /* residual norm for xc_k (CGNORM) */
+    }
+    ksp->rnorm = np;
+    KSPLogResidualHistory(ksp,np);
+    KSPMonitor(ksp,i+1,np);
+    ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+    if (ksp->reason) break;
+    i++;
   } while (i<ksp->max_it);
 
   /* move to the CG point: xc_(k+1) */

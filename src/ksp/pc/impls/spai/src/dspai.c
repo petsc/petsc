@@ -10,9 +10,10 @@
 */
 int MatDumpSPAI(Mat A,FILE *file)
 {
-  PetscScalar   *vals;
-  int      i,j,ierr,*cols,n,size,nz;
-  MPI_Comm comm;
+  const PetscScalar *vals;
+  int               i,j,ierr,n,size,nz;
+  const int         *cols;
+  MPI_Comm          comm;
 
   PetscObjectGetComm((PetscObject)A,&comm);
  

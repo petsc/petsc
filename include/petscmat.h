@@ -269,8 +269,8 @@ EXTERN int MatSetOption(Mat,MatOption);
 EXTERN int MatGetType(Mat,MatType*);
 
 EXTERN int MatGetValues(Mat,int,const int[],int,const int[],PetscScalar[]);
-EXTERN int MatGetRow(Mat,int,int *,int *[],PetscScalar*[]);
-EXTERN int MatRestoreRow(Mat,int,int *,int *[],PetscScalar*[]);
+EXTERN int MatGetRow(Mat,int,int *,const int *[],const PetscScalar*[]);
+EXTERN int MatRestoreRow(Mat,int,int *,const int *[],const PetscScalar*[]);
 EXTERN int MatGetColumn(Mat,int,int *,int *[],PetscScalar*[]);
 EXTERN int MatRestoreColumn(Mat,int,int *,int *[],PetscScalar*[]);
 EXTERN int MatGetColumnVector(Mat,Vec,int);

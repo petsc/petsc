@@ -80,7 +80,10 @@ int  KSPSolve_MINRES(KSP ksp)
   }
 
 #if !defined(PETSC_USE_COMPLEX)
-  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
+  if (dp < 0.0) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    PetscFunctionReturn(0);
+  }
 #endif
   dp   = PetscSqrtScalar(dp); 
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
@@ -126,7 +129,11 @@ int  KSPSolve_MINRES(KSP ksp)
      }
 
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) SETERRQ1(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner R'Z = %g",dp);
+     if (dp < 0.0) {
+       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+       break;
+     }
+
 #endif
      beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 

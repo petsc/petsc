@@ -176,6 +176,8 @@ int GMREScycle(int *itcount,KSP ksp)
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
+    if (ksp->reason) break;
+
     it++;
     gmres->it  = (it-1);  /* For converged */
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -383,7 +385,10 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
 #else
     tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
-    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Your matrix or preconditioner is the null operator");}
+    if (tt == 0.0) {
+      ksp->reason = KSP_DIVERGED_NULL;
+      PetscFunctionReturn(0);
+    }
     *cc       = *hh / tt;
     *ss       = *(hh+1) / tt;
     *GRS(it+1) = - (*ss * *GRS(it));

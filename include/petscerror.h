@@ -43,7 +43,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_LIB             76   /* error in library called by PETSc */
 #define PETSC_ERR_PLIB            77   /* PETSc library generated inconsistent data */
 #define PETSC_ERR_MEMC            78   /* memory corruption */
-#define PETSC_ERR_MAX_ITER        82   /* Maximum iterations reached */
+#define PETSC_ERR_CONV_FAILED     82   /* iterative method (KSP or SNES) failed */
 
 #define PETSC_ERR_ARG_SIZ         60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN         61   /* two arguments not allowed to be the same */
@@ -61,8 +61,6 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_FILE_READ       66   /* unable to read from file */
 #define PETSC_ERR_FILE_WRITE      67   /* unable to write to file */
 #define PETSC_ERR_FILE_UNEXPECTED 79   /* unexpected data in file */
-
-#define PETSC_ERR_KSP_BRKDWN      70   /* break down in a Krylov method */
 
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */

@@ -62,6 +62,9 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
   PetscFunctionReturn(0);
 }
 
+EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
@@ -80,7 +83,7 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   for (prow=0; prow<n; prow++) {
-    ierr = MatGetRow(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
     for (k=0; k<nz; k++) {if (icol[j[k]] == prow) break;}
     if (k >= nz || PetscAbsScalar(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
@@ -106,16 +109,16 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
           /* See if this one will work */
           repl  = icol[j[k]];
-          ierr = MatGetRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
+          ierr = MatGetRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
-              ierr = MatRestoreRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
+              ierr = MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
               SWAP(icol[col[prow]],icol[col[repl]]); 
               SWAP(col[prow],col[repl]); 
               goto found;
 	    }
           }
-          ierr = MatRestoreRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
+          ierr = MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
         }
       }
       /* 
@@ -123,7 +126,7 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
           Note: this will be very slow 
       */
       for (k=prow+1; k<n; k++) {
-        ierr = MatGetRow(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
+        ierr = MatGetRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
         for (kk=0; kk<nnz; kk++) {
           if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
             /* found a row */
@@ -131,12 +134,12 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
             goto found;
           }
         }
-        ierr = MatRestoreRow(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
+        ierr = MatRestoreRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
       }
 
       found:;
     }
-    ierr = MatRestoreRow(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISRestoreIndices(cis,&col);CHKERRQ(ierr);

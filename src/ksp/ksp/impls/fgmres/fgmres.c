@@ -274,6 +274,8 @@ int FGMREScycle(int *itcount,KSP ksp)
     /* Now apply rotations to new col of hessenberg (and right side of system), 
        calculate new rotation, and get new residual norm at the same time*/
     ierr = FGMRESUpdateHessenberg(ksp,loc_it,hapend,&res_norm);CHKERRQ(ierr);
+    if (ksp->reason) break;
+
     loc_it++;
     fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
  
@@ -542,7 +544,11 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 #else
     tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
-    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Your matrix or preconditioner is the null operator");}
+    if (tt == 0.0) {
+      ksp->reason = KSP_DIVERGED_NULL;
+      PetscFunctionReturn(0);
+    }
+
     *cc       = *hh / tt;   /* new cosine value */
     *ss       = *(hh+1) / tt;  /* new sine value */
 

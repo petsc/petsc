@@ -125,13 +125,14 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 @*/
 int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
 {
-  Mat          BA;
-  int          i,n,ierr,size,rank,dummy;
-  MPI_Comm     comm = ksp->comm;
-  PetscScalar  *array;
-  Mat          A;
-  int          m,row,nz,*cols;
-  PetscScalar  *vals;
+  Mat                BA;
+  int                i,n,ierr,size,rank,dummy;
+  MPI_Comm           comm = ksp->comm;
+  PetscScalar        *array;
+  Mat                A;
+  int                m,row,nz;
+  const int          *cols;
+  const PetscScalar  *vals;
 
   PetscFunctionBegin;
   ierr = KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 /*$Id: ex33.c,v 1.1 2001/09/24 21:04:45 balay Exp $*/
 
-static char help[] = "Tests the routines VecConvertMPIToSeqAll, VecConvertMPIToMPIZero\n\n";
+static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCreateToZero()\n\n";
 
 #include "petscvec.h"
 
@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   int           n = 3,ierr,size,rank,i,len;
   PetscScalar   value,*yy;
   Vec           x,y,z,y_t;
+  VecScatter    toall,tozero;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -31,7 +32,10 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecConvertMPIToSeqAll(x,&y);CHKERRQ(ierr);
+  ierr = VecScatterCreateToAll(x,&toall,&y);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,toall);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,toall);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(toall);CHKERRQ(ierr);
 
   /* Cannot view the above vector with VecView(), so place it in an MPI Vec
      and do a VecView() */
@@ -42,7 +46,10 @@ int main(int argc,char **argv)
   ierr = VecDestroy(y_t);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
-  ierr = VecConvertMPIToMPIZero(x,&z);CHKERRQ(ierr);
+  ierr = VecScatterCreateToAll(x,&tozero,&z);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,z,INSERT_VALUES,SCATTER_FORWARD,tozero);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,z,INSERT_VALUES,SCATTER_FORWARD,tozero);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(tozero);CHKERRQ(ierr);
   ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 

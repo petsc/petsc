@@ -7,9 +7,11 @@ static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat    C; 
-  int    i,j,m = 5,n = 5,I,J,ierr,*idx,nz;
-  PetscScalar v,*values;
+  Mat               C; 
+  int               i,j,m = 5,n = 5,I,J,ierr,nz;
+  const int         *idx;
+  PetscScalar       v;
+  const PetscScalar *values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

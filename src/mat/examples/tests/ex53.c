@@ -8,16 +8,18 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,B,C,At,Bt;
-  PetscViewer fd;
-  char        file[128];
-  PetscRandom rand;
-  Vec         xx,yy,s1,s2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
-  int         rstart,rend,rows[2],cols[2],m,n,i,j,ierr,M,N,rank,ct,row,ncols1;
-  int         *cols1,ncols2,*cols2,bs;
-  PetscScalar vals1[4],vals2[4],v,*v1,*v2;
-  PetscTruth  flg;
+  Mat               A,B,C,At,Bt;
+  PetscViewer       fd;
+  char              file[128];
+  PetscRandom       rand;
+  Vec               xx,yy,s1,s2;
+  PetscReal         s1norm,s2norm,rnorm,tol = 1.e-10;
+  int               rstart,rend,rows[2],cols[2],m,n,i,j,ierr,M,N,rank,ct,row,ncols1;
+  int               ncols2,bs;
+  const int         *cols1,*cols2;
+  PetscScalar       vals1[4],vals2[4],v;
+  const PetscScalar *v1,*v2;
+  PetscTruth        flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

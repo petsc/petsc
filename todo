@@ -20,8 +20,14 @@ PETSc configure
 KSP
    Manual pages for KSPConvergedReason
 
+     Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
+     Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
+   
+
 SNES
    Manual pages for SNESConvergedReason
+
+   Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
 
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
@@ -38,7 +44,13 @@ PC/Mat
 
   Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set
 
+  Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
+
+  MatGetRow/ColumnIJ should have const for arrays that are returned
+
 General
+
+  replace 1 in calls to SETERRQ**() with appropriate error code
 
   Make --download-mpich get the correct mpich under windows
 

@@ -503,11 +503,13 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertTo_MPIAdj"
-int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat) {
-  Mat          B;
-  int          i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
-  PetscScalar  *ra;
-  MPI_Comm     comm;
+int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
+{
+  Mat               B;
+  int               i,ierr,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
+  const int         *rj;
+  const PetscScalar *ra;
+  MPI_Comm          comm;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);

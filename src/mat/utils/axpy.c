@@ -51,8 +51,10 @@ int MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 #define __FUNCT__ "MatAXPY_Basic"
 int MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int         i,*row,start,end,j,ncols,ierr,m,n;
-  PetscScalar *val,*vals;
+  int               i,start,end,j,ncols,ierr,m,n;
+  const int         *row;
+  PetscScalar       *val;
+  const PetscScalar *vals;
 
   PetscFunctionBegin;
   ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
@@ -64,16 +66,16 @@ int MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
-      ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
+      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	vals[j] = (*a)*val[j];
+	val[j] = (*a)*vals[j];
       }
-      ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
-    ierr = PetscFree(vals);CHKERRQ(ierr);
+    ierr = PetscFree(val);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

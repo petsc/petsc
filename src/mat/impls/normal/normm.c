@@ -40,11 +40,13 @@ int MatDestroy_Normal(Mat N)
 #define __FUNCT__ "MatGetDiagonal_Normal"
 int MatGetDiagonal_Normal(Mat N,Vec v)
 {
-  Mat_Normal  *Na = (Mat_Normal*)N->data;
-  Mat         A = Na->A;
-  int         ierr,i,j,rstart,rend,nnz,*cols;
-  PetscScalar *diag,*work,*values;
-  PetscMap    cmap;
+  Mat_Normal        *Na = (Mat_Normal*)N->data;
+  Mat               A = Na->A;
+  int               ierr,i,j,rstart,rend,nnz;
+  const int         *cols;
+  PetscScalar       *diag,*work,*values;
+  const PetscScalar *mvalues;
+  PetscMap          cmap;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(2*A->N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
@@ -52,11 +54,11 @@ int MatGetDiagonal_Normal(Mat N,Vec v)
   ierr = PetscMemzero(work,A->N*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&nnz,&cols,&values);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
     for (j=0; j<nnz; j++) {
-      work[cols[j]] += values[j]*values[j];
+      work[cols[j]] += mvalues[j]*mvalues[j];
     }
-    ierr = MatRestoreRow(A,i,&nnz,&cols,&values);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
   ierr = MPI_Allreduce(work,diag,A->N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
   ierr = MatGetPetscMaps(A,PETSC_NULL,&cmap);CHKERRQ(ierr);
