@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.13 1998/10/08 17:59:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.14 1998/10/13 02:11:28 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: baijfact2.c,v 1.13 1998/10/08 17:59:44 bsmith Exp bsm
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
+#include "src/inline/dot.h"
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
