@@ -12,7 +12,7 @@
 }
 @Unpublished{tao-web-page,
   title   = "{Toolkit for Advanced Optimization (TAO)} {W}eb Page",
-  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor&eacute",
   url    = "http://www.mcs.anl.gov/tao",
 }
 @Unpublished{oil-reservoir-sim-web-page,
@@ -27,29 +27,29 @@
   Institution = "University of Tennessee",
   author      = "Victor Eijkhout"
 }
-@Unpublished{tipetsc,
+@Unpublished{tipetsc-web-page,
   title = 	"Ti-PETSc - an interface to PETSc from Titanium",
   Institution = "Berkeley",
   url = 	"http://www.cs.berkeley.edu/\~{ }liblit/ti-petsc/"
 }
-@Unpublished{
+@Unpublished{multiphase-web-page,
   Author = "Q. Zou",
   title = 	"Multiphase flow with PETSc",
   Institution = "LANL",
   url = 	"http://cnls-www.lanl.gov/\~{ }qzou/"
 }
-@Unpublished{
+@Unpublished{electromag-web-page,
   title = 	"Electromagnetics",
   Institution = "LLNL",
   url = 	"http://www.llnl.gov/casc/emsolve"
 }
-@Unpublished{
+@Unpublished{prometueus-web-page,
   Author =   "Mark Adams",
   Institution = "Berkeley",
   title = 	"Prometheus for Structural Mechanics Web page",
   url = 	"http://www.cs.berkeley.edu/\~{ }madams/#Prometheus"
 }
-@Unpublished{
+@Unpublished{fe-software-web-page,
   Institution = "Kuleuven",
   title =  "Finite element software",	
   url = 	"http://www.esat.kuleuven.ac.be/elen/research/software-development"
@@ -74,7 +74,7 @@
    url="http://www.cs.cmu.edu/\~{ }oghattas/papers/siag-opt/siag-opt.pdf"
 }
 @techreport{bmm99,
- Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor&eacute",
  TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
  year        = 1999,
  INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
@@ -87,12 +87,13 @@
              Interfaces",
    booktitle = "Procceedings of SC2000",
    url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf"
-
+}
 @inproceedings{hkms00,
-  title = "Second-order Matrix-free Methods in PDE-constrained
-           Optimization Using Automatic Differentiation"
+  title = "Using Automatic Differentiation for Second-order Matrix-free Methods
+          in PDE-constrained Optimization",
   author = "P. D. Hovland and D. E. Keyes and L. C. McInnes and W. Samyono",
   booktitle = "Proceedings of AD2000",
+  url = "http://www.icase.edu/\~{ }keyes/papers/ad2000.ps",
   note = "(to appear)"
 }
 
@@ -109,14 +110,6 @@
   pages = "287--295",
   year      = 1998
 }
-@TechReport{petsc_tidriri95,
-    Author = "M. D. Tidriri",
-    Title  = "Krylov Methods for Compressible Flows",
-    Institution = "ICASE",
-    Month  = Jun,
-    Year   = 1995,
-    Number = "95-48"
-    }
 @INPROCEEDINGS{pcfd97,
  AUTHOR=    "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
  TITLE=     "Parallel Implicit {PDE} Computations: Algorithms and Software",
@@ -132,6 +125,8 @@
     journal = "Int. J. High Performance Computing Applications",
     year    = 2000,
     volume  = 14,
+    note    = "(also available as Argonne preprint ANL/MCS-P788-0100)"
+    url     = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P788.ps.Z",
     pages   = "102-136"
 }
 @INPROCEEDINGS{AGKKS-SC99,  
@@ -181,7 +176,7 @@
 } 
 @INCOLLECTION{KKS97_cfd,
      AUTHOR = "D. E. Keyes and D. K. Kaushik and B. F. Smith",
-     TITLE = "Perspective for CFD on Petsflops Systems",
+     TITLE = "Perspectives for CFD on Petsflops Systems",
      BOOKTITLE = "CFD Review 1998",
      EDITOR = "M. Hafez and K. Oshima",
      PUBLISHER = "World Scientific, Singapore",
@@ -199,16 +194,6 @@
   month =	 AUG,
   annote =	 {to appear in IJHPCA}
 }
-@InProceedings{groppkeyesmcinnestidriri97,
-  author = 	 {W. D. Gropp and D. E. Keyes and L. C. McInnes and
-                  M. D. Tidriri}, 
-  title = 	 {Parallel Implicit {PDE} Computations: Algorithms and
-                  Software}, 
-  booktitle = 	 {Proceedings of Parallel CFD'97},
-  year =	 1997,
-  pages =        {333-344},
-  publisher =	 {Elsevier},
-}
 @techreport{hm99,
  AUTHOR=    "P. D. Hovland and L. C. McInnes",
  TITLE=     "Parallel Simulation of Compressible Flow Using Automatic
@@ -216,6 +201,7 @@
  year      = 2000,
  institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
  number      = "ANL/MCS-P796-0200",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P796.ps.Z",
  note        = "(to appear in  a special issue of {\em Parallel Computing} on 
                ``Parallel Computing in Aerospace'')"
 }
@@ -342,6 +328,14 @@
  year      = 1999,
  pages     = "21-29",
 }
+@unpublished{ bgms00,
+ author    = "S. Balay and W. D. Gropp and L. C. McInnes and B. F. Smith".
+ title     = "Software for the Scalable Solution of {PDEs}",
+ url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P834.ps.Z",
+ note      = "Argonne preprint ANL/MCS-P834-0700, also to appear in {\it {CRPC Handbook of 
+             Parallel Computing}, eds. J. Fongarra, I. Foster, G. Fox, K. Kennedy, 
+             L. Torczon, and A. White, Morgan Kaufmann Publishers"
+}
 @INPROCEEDINGS{ hovland_norris_smith98,
  AUTHOR=    "Paul Hovland and Boyana Norris and Barry Smith",
  TITLE=     "Developing a Derivative-Enhanced Object-Oriented Toolkit for Scientific Computations",
@@ -375,8 +369,9 @@
    title = "Integrating Automatic Differentiation with Object-Oriented
             Toolkits for High-Performance Scientific Computing",
    author = "J. Abate and S. Benson and L. Grignon and P. Hovland and
-             L.C. McInnes and B. Norris",
+             L. C. McInnes and B. Norris",
    booktitle = "Proceedings of AD2000",
+   url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P820.ps.Z",
    note = "(to appear), also available as Argonne preprint ANL/MCS-P820-0500"
 }
 @Unpublished{petsc-mpi-paper,
@@ -413,8 +408,8 @@
 }
 @article{dsneutral,
     Author = "Barry F. Smith and William D. Gropp",
-    Title  = "The design of data-structure-neutral libraries for the iterative
-		solution of sparse linear systems",
+    Title  = "The Design of Data-structure-neutral Libraries for the Iterative
+		Solution of Sparse Linear Systems",
     Year   = 1996,
     Journal = "Scientific Programming",
     Volume = 5,
@@ -462,6 +457,7 @@
   title       = " {PETSc} and Overture: Lessons Learned Developing an Interface between Components",
   institution = "Argonne National Laboratory",
   number      = "ANL/MCS-P858-1100",
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P858.ps.Z",
   year        = "2000"
 }
 %
@@ -632,11 +628,4 @@ Stergioulas, N. 1996, Ph.D. thesis, University
   url = 	 "http://www.oakland.edu/\~{ }w2zhang/sintering.htm",
   Institution = "Oakland University",
 }
-
-
-
-
-
-
-
 
