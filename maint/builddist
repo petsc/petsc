@@ -8,8 +8,8 @@
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in part1.tex, manual.tex, and intro.tex?"
-#echo "(2) Set the version number and release date in petsc.h?"
+#echo "(1) Set the version number in part1.tex, manual.tex, and intro.tex, website index.html?"
+#echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on terra"
 #echo "(5) Update update-docs.py with additional docs on the www-fp web page (for eg new changes file)"
