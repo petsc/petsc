@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.97 2001/04/11 03:12:24 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.98 2001/04/20 20:50:33 bsmith Exp bsmith $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -91,11 +91,14 @@ ex17: ex17.o chkopts
 ex18: ex18.o chkopts
 	-${CLINKER} -o ex18 ex18.o ${PETSC_SNES_LIB}
 	${RM} ex18.o
-ex19lf.ad.c: ex19lf.c
-	-${ADIC_CC}   ex19lf.c
-ex19: ex19.o ex19lf.ad.o chkopts
-	-${CLINKER} -o ex19 ex19.o ex19lf.ad.o ${PETSC_SNES_LIB}
-	${RM} ex19.o ex19lf.ad.o
+ex19.ad.c: ex19.c
+	adprocess.py ex19.c
+	-${ADIC_CC}   ex19.c.tmp
+	echo '#include "petscda.h"' > ex19.ad.c
+	cat ex19.c.ad.tmp >> ex19.ad.c
+ex19: ex19.o ex19.ad.o chkopts
+	-${CLINKER} -o ex19 ex19.o ex19.ad.o ${PETSC_SNES_LIB}
+	${RM} ex19.o ex19.ad.o
 ex20: ex20.o chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
 	${RM} ex20.o
