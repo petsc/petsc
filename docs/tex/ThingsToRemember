@@ -103,6 +103,21 @@ SGI Power Challenge (IRIX64):
 
 ---------
 
+Multimedia lab SP2:
+
+ - compile on: crag.mcs.anl.gov
+    - doesn't have ESSL
+    - doesn't have MPI (run directly with POE by rlogging into a node)
+    - wide nodes are:  [eyas5,eyas11,eyas13,eyas15].mcs.anl.gov
+ to run:  poe -hostfile hostfilename ex1
+   where hostfile lists hosts
+
+ Info on POE:
+    http://www.tc.cornell.edu/Edu/Tutor/POE
+    http://www.mhpcc.edu/training/workshop/html/poe/poe.html
+
+---------
+
 ICASE/NASA paragon: Back in action at Va-Tech :(
      machine:  sioux.cc.vt.edu
      account:  mcinnes
