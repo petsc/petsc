@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.73 1999/01/12 23:14:08 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.74 1999/01/27 19:46:16 bsmith Exp bsmith $ 
 
 ALL: lib 
 
-DIRS	  = error dll fileio memory objects time utils plog mpiuni
+DIRS	  = viewer draw error dll fileio memory objects time utils plog mpiuni
 LOCDIR	  = src/sys/src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
