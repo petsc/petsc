@@ -5583,6 +5583,7 @@ int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 
+  Level: advanced
 
 .seealso: MatCreate()
 @*/

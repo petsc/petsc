@@ -471,6 +471,8 @@ static int TSView_Rk(TS ts,PetscViewer viewer)
 
   Contributed by: Asbjorn Hoiland Aarrestad, asbjorn@aarrestad.com, http://asbjorn.aarrestad.com/
 
+  Level: beginner
+
 .seealso:  TSCreate(), TS, TSSetType(), TS_EULER, TSRKSetTolerance()
 
 M*/

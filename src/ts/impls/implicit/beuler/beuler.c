@@ -303,6 +303,8 @@ static int TSView_BEuler(TS ts,PetscViewer viewer)
 /*MC
       TS_BEULER - ODE solver using the implicit backward Euler method
 
+  Level: beginner
+
 .seealso:  TSCreate(), TS, TSSetType(), TS_EULER
 
 M*/

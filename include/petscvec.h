@@ -191,6 +191,8 @@ M*/
 /*MC
      NORM_MAX - see NORM_INFINITY
 
+   Level: beginner
+
 M*/
 
 EXTERN int VecNorm(Vec,NormType,PetscReal *);

@@ -82,6 +82,8 @@ static int TSView_Euler(TS ts,PetscViewer viewer)
 /*MC
       TS_EULER - ODE solver using the explicit forward Euler method
 
+  Level: beginner
+
 .seealso:  TSCreate(), TS, TSSetType(), TS_BEULER
 
 M*/

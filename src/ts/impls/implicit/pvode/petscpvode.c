@@ -847,6 +847,8 @@ int TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
 
     Contributed by: Liyang Xu
 
+    Level: beginner
+
 .seealso:  TSCreate(), TS, TSSetType(), TSPVodeSetType(), TSPVodeSetGMRESRestart(), TSPVodeSetLinearTolerance(),
            TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(), TSPVodeGetPC(), TSPVodeGetIterations(), TSPVodeSetExactFinalTime()
 
