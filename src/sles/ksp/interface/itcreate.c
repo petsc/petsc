@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.179 2000/01/11 21:01:56 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.180 2000/02/02 20:09:44 bsmith Exp curfman $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -683,8 +683,9 @@ $     -ksp_type my_solver
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
-  occuring in pathname will be replaced with appropriate values.
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   and others of the form ${any_environmental_variable} occuring in pathname will be 
+   replaced with appropriate values.
 
 .keywords: KSP, register
 

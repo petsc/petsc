@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.207 2000/03/01 02:59:15 bsmith Exp curfman $*/
+/*$Id: snes.c,v 1.208 2000/03/05 16:08:01 curfman Exp curfman $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -2540,6 +2540,10 @@ int SNESPrintHelp(SNES snes)
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   and others of the form ${any_environmental_variable} occuring in pathname will be 
+   replaced with appropriate values.
+
    Sample usage:
 .vb
    SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
@@ -2552,9 +2556,6 @@ $     SNESSetType(snes,"my_solver")
 $     -snes_type my_solver
 
    Level: advanced
-
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
-  occuring in pathname will be replaced with appropriate values.
 
 .keywords: SNES, nonlinear, register
 

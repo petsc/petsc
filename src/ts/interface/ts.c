@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.22 2000/03/05 16:07:49 curfman Exp bsmith $ */
+/* $Id: ts.c,v 1.23 2000/03/06 03:23:54 bsmith Exp curfman $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -1426,8 +1426,9 @@ $     -ts_type my_solver
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
-  occuring in pathname will be replaced with appropriate values.
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   and others of the form ${any_environmental_variable} occuring in pathname will be 
+   replaced with appropriate values.
 
 .keywords: TS, register
 
