@@ -27,6 +27,14 @@ it to the Fortran include files and fix the interface files as
 well if necessary; otherwise, indicate that this still needs to be
 fixed in the ThingsToDo file.
 
+freshmeat.net
+        username: petsc
+          e-mail: petsc-maint@mcs.anl.gov
+  displayed name: The PETSc Development Team
+        password: petsc-remote-password
+       http://core.freshmeat.net/lounge/settings.php3
+
+
   petsc-users mailing list password is bsbglmdk
 approve bsbglmdk subscribe petsc-users kamath2@llnl.gov
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.203 1999/02/05 18:41:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.204 1999/02/17 16:49:38 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -697,7 +697,7 @@ int PLogDefaultPHD(PetscObject obj)
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].id3     = -1;
   if (obj->parent) {
-    ierr = PetscObjectExists(parent,&exists); CHKERRQ(ierr);
+    ierr = PetscObjectExists(obj->parent,&exists); CHKERRQ(ierr);
     if (exists) {
       objects[obj->id].parent   = obj->parent->id;
     } else {
@@ -1381,7 +1381,7 @@ int PLogEventActivate(int event)
 .ve
 
    Notes:
-   By defult the summary is printed to stdout.
+   By default the summary is printed to stdout.
    More extensive examination of the log information can be done with 
    PLogDump(), which is activated by the option -log or -log_all, in 
    combination with petsc/bin/petscview.
