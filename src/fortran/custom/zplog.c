@@ -1,4 +1,4 @@
-/*$Id: zplog.c,v 1.23 2000/09/06 20:49:11 bsmith Exp balay $*/
+/*$Id: zplog.c,v 1.24 2000/09/06 21:03:24 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -80,8 +80,8 @@ void PETSC_STDCALL plogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObj
   *_ierr = PLogEventEnd(*e,*o1,*o2,*o3,*o4);
 }
 
-void PETSC_STDCALL plogflops_(int *f,int *ierr) {
-  ierr = PLogFlops(*f);
+void PETSC_STDCALL plogflops_(int *f,int *_ierr) {
+  *_ierr = PLogFlops(*f);
 }
 
 void PETSC_STDCALL plogstagepop_(int *ierr)
