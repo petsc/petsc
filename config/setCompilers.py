@@ -615,6 +615,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
     self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
     self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
+    self.framework.argDB['RANLIB']=self.RANLIB
     self.framework.argDB['AR_FLAGS']=flags
     self.framework.addArgumentSubstitution('AR_FLAGS','AR_FLAGS')
     self.AR_FLAGS = flags

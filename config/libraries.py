@@ -258,6 +258,7 @@ int checkInit(void) {
     else:
       suffix = 'a'
     self.addSubstitution('LIB_SUFFIX', suffix)
+    self.framework.argDB['LIB_SUFFIX'] = suffix
     self.framework.argDB['LIBS'] = oldLibs
     return
 
