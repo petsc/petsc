@@ -39,11 +39,11 @@ int main(int argc,char **args)
    /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
   ierr = VecCreateMPI(MPI_COMM_SELF,PETSC_DECIDE,rdim,&u); CHKERRA(ierr);
-  ierr = VecCreate(u,&b); CHKERRA(ierr);
-  ierr = VecCreate(b,&x); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=0; i<rdim; i++) {
     v = one*i;
-    ierr = VecSetValues(u,1,&i,&v,InsertValues); CHKERR(ierr);
+    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
   } 
   ierr = VecAssemblyBegin(u); CHKERR(ierr);
   ierr = VecAssemblyEnd(u); CHKERR(ierr);
@@ -203,9 +203,9 @@ int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
     for ( l2=0; l2<3; l2++ ) {
       if (ABS(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,AddValues); CHKERR(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
         row = r2+l2; col = r1+l1;
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,AddValues); CHKERR(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
     }
   }
