@@ -4,7 +4,8 @@
 # -----------------------------------------------------------------------
 
 PETSC_DIR = /home/petsc/petsc-2.0.14
-CFLAGS    = $(CPPFLAGS)
+CFLAGS    = $(CPPFLAGS) -I$(PETSC_DIR)/src/snes
+# CFLAGS    = $(CPPFLAGS)
 
 # -----------------------------------------------------------------------
 # Define application source and examples
@@ -28,6 +29,7 @@ ALL: pfull
 
 PFULL    = pfull.o pdsfi.o formjac.o
 PFULL_C  = pfull.c pdsfi.c formjac.c
+EX6      = ex6.o snesj2.o
 
 SOURCEC    = $(PFULL_C)
 SOURCEF    =
@@ -37,6 +39,9 @@ CLEANFILES = pfull
 # Both conventional and  matrix-free versions
 pfull: chkopts $(PFULL) $(SOURCEH)
 	-$(CLINKER) -o pfull $(PFULL) $(PETSC_LIB)
+
+ex6: chkopts $(EX6) $(SOURCEH)
+	-$(CLINKER) -o ex6 $(EX6) $(PETSC_LIB)
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -20,6 +20,17 @@
 #define Pinf     1
 #define gama     1.6666666667
 
+/* Coloring structure ... temporarily defined here */
+typedef struct {
+  int    nis;
+  IS     *isa;
+  Scalar *wscale, *scale;
+} Coloring;
+int MatCreateColoring(int,int,IS*,Coloring**);
+int MatDestroyColoring(Coloring*);
+int SNESSparseComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+/* Application-specific structure */
 typedef struct {
       Vec         X, F;           /* solution, function vectors */
       Vec         Fcopy;          /* copy of function vector */
