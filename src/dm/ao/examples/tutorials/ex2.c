@@ -70,13 +70,13 @@ T*/
     This is the user-defined grid data context 
 */
 typedef struct {
-  int    n_vert,n_ele;
-  int    mlocal_vert,mlocal_ele;
-  int    *ele;
+  PetscInt    n_vert,n_ele;
+  PetscInt    mlocal_vert,mlocal_ele;
+  PetscInt    *ele;
   PetscScalar *vert;
-  int    *ia,*ja;
+  PetscInt    *ia,*ja;
   IS     isnewproc;
-  int    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
+  PetscInt    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
 } GridData;
 
 /*
@@ -115,21 +115,21 @@ typedef struct {
    the profiling results are meaningless.
 */
 
-extern int DataRead(GridData *);
-extern int DataPartitionElements(GridData *);
-extern int DataMoveElements(GridData *);
-extern int DataPartitionVertices(GridData *);
-extern int DataMoveVertices(GridData *);
-extern int DataDestroy(GridData *);
+extern PetscErrorCode DataRead(GridData *);
+extern PetscErrorCode DataPartitionElements(GridData *);
+extern PetscErrorCode DataMoveElements(GridData *);
+extern PetscErrorCode DataPartitionVertices(GridData *);
+extern PetscErrorCode DataMoveVertices(GridData *);
+extern PetscErrorCode DataDestroy(GridData *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int          ierr;
-  int          READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
-  int          PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
-  GridData     gdata;
+  PetscErrorCode ierr;
+  PetscEvent     READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
+  PetscEvent     PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
+  GridData       gdata;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -168,14 +168,16 @@ int main(int argc,char **args)
   assigned a continuous chunk of vertex and element data. Later the data
   will be partitioned and moved to the appropriate processor.
 */
-int DataRead(GridData *gdata)
+PetscErrorCode DataRead(GridData *gdata)
 {
-  int          rank,size,n_vert,*mmlocal_vert,mlocal_vert,i,*ia,*ja,cnt,j;
-  int          mlocal_ele,*mmlocal_ele,*ele,*tmpele,n_ele,net,a1,a2,a3;
-  int          *iatmp,*jatmp,ierr;
-  char         msg[128];
-  PetscScalar  *vert,*tmpvert;
-  MPI_Status   status;
+  PetscMPIInt    rank,size;
+  PetscInt       n_vert,*mmlocal_vert,mlocal_vert,i,*ia,*ja,cnt,j;
+  PetscInt       mlocal_ele,*mmlocal_ele,*ele,*tmpele,n_ele,net,a1,a2,a3;
+  PetscInt       *iatmp,*jatmp;
+  PetscErrorCode ierr;
+  char           msg[128];
+  PetscScalar    *vert,*tmpvert;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   /*
@@ -404,11 +406,12 @@ int DataRead(GridData *gdata)
    new partitioning of the CELLS (elements) to reduce the number of cut edges between
    cells (elements).
 */
-int DataPartitionElements(GridData *gdata)
+PetscErrorCode DataPartitionElements(GridData *gdata)
 {
   Mat             Adj;                /* adjacency matrix */
-  int             *ia,*ja;
-  int             mlocal_ele,n_ele,ierr;
+  PetscInt        *ia,*ja;
+  PetscInt        mlocal_ele,n_ele;
+  PetscErrorCode  ierr;
   MatPartitioning part;
   IS              isnewproc; 
 
@@ -455,13 +458,15 @@ int DataPartitionElements(GridData *gdata)
       Moves the grid element data to be on the correct processor for the new
    element partitioning.
 */
-int DataMoveElements(GridData *gdata)
+PetscErrorCode DataMoveElements(GridData *gdata)
 {
-  int          ierr,*counts,rank,size,i,*idx;
-  Vec          vele,veleold;
-  PetscScalar  *array;
-  IS           isscat,isnum;
-  VecScatter   vecscat;
+  PetscErrorCode ierr;
+  PetscInt       *counts,i,*idx;
+  PetscMPIInt    rank,size;
+  Vec            vele,veleold;
+  PetscScalar    *array;
+  IS             isscat,isnum;
+  VecScatter     vecscat;
 
   PetscFunctionBegin;
 
@@ -580,12 +585,14 @@ int DataMoveElements(GridData *gdata)
      time. An advantage is it requires no searching or sorting.
      
 */
-int DataPartitionVertices(GridData *gdata)
+PetscErrorCode DataPartitionVertices(GridData *gdata)
 {
-  int        n_vert = gdata->n_vert,ierr,*localvert;
-  int        rank,size,mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
-  PetscBT    mask;
-  MPI_Status status;
+  PetscInt       n_vert = gdata->n_vert,*localvert;
+  PetscInt       mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscBT        mask;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -673,14 +680,16 @@ int DataPartitionVertices(GridData *gdata)
      Given the partitioning of the vertices; renumbers the element vertex lists for the 
      new vertex numbering and moves the vertex coordinate values to the correct processor
 */
-int DataMoveVertices(GridData *gdata)
+PetscErrorCode DataMoveVertices(GridData *gdata)
 {
-  AO           ao;
-  int          ierr,rank,i;
-  Vec          vert,overt;
-  VecScatter   vecscat;
-  IS           isscat;
-  PetscScalar  *avert;
+  AO             ao;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       i;
+  Vec            vert,overt;
+  VecScatter     vecscat;
+  IS             isscat;
+  PetscScalar    *avert;
 
   PetscFunctionBegin;
 
@@ -761,7 +770,7 @@ int DataMoveVertices(GridData *gdata)
 
 #undef __FUNCT__
 #define __FUNCT__ "DataDestroy"
-int DataDestroy(GridData *gdata)
+PetscErrorCode DataDestroy(GridData *gdata)
 {
   PetscErrorCode ierr;
 
