@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.51 1998/04/13 17:26:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: cmesh.c,v 1.52 1998/04/27 14:31:45 curfman Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -10,17 +10,17 @@ static char vcid[] = "$Id: cmesh.c,v 1.51 1998/04/13 17:26:10 bsmith Exp curfman
 int DrawScalePopup(Draw popup,double min,double max)
 {
   double   xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0,value;
-  int      i,c = DRAW_BASIC_COLORS,rank;
+  int      i,c = DRAW_BASIC_COLORS,rank,ierr;
   char     string[32];
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject) popup,&comm);
+  ierr = PetscObjectGetComm((PetscObject) popup,&comm);CHKERRQ(ierr);
   MPI_Comm_rank(comm,&rank);
   if (rank) PetscFunctionReturn(0);
 
   for ( i=0; i<10; i++ ) {
-    DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
+    ierr = DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);
     yl += .1; yr += .1; c = (int) ((double) c + (245.-DRAW_BASIC_COLORS)/9.);
   }
   for ( i=0; i<10; i++ ) {
@@ -28,10 +28,10 @@ int DrawScalePopup(Draw popup,double min,double max)
     /* look for a value that should be zero, but is not due to round-off */
     if (PetscAbsDouble(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
     sprintf(string,"%g",value);
-    DrawString(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
+    ierr = DrawString(popup,.2,.02 + i/10.0,DRAW_BLACK,string);CHKERRQ(ierr);
   }
-  DrawSetTitle(popup,"Contour Scale");
-  DrawFlush(popup);
+  ierr = DrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
+  ierr = DrawFlush(popup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.264 1998/05/13 14:13:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.265 1998/05/13 14:17:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -286,7 +286,7 @@ int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_Binary"
-extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
+int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i, fd, *col_lens, ierr;
@@ -322,7 +322,7 @@ extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_ASCII"
-extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
+int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg1,flg2;
@@ -453,26 +453,23 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqAIJ_Draw"
-extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqAIJ_Draw_Zoom"
+int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
+  Mat         A = (Mat) Aa;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
+  int         ierr, i,j, m = a->m, shift = a->indexshift,color;
   int         format;
-  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r,maxv = 0.0;
-  Draw        draw;
+  double      xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
   DrawButton  button;
   PetscTruth  isnull;
+  Viewer      viewer;
 
-  PetscFunctionBegin;  
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-  ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
+  PetscFunctionBegin; 
+  ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*) &viewer);CHKERRQ(ierr); 
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
-  xr += w;    yr += h;  xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr); CHKERRQ(ierr);
   /* loop over matrix elements drawing boxes */
 
   if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
@@ -487,7 +484,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 #else
         if (a->a[j] >=  0.) continue;
 #endif
-        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        ierr = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       } 
     }
     color = DRAW_CYAN;
@@ -496,7 +493,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
         if (a->a[j] !=  0.) continue;
-        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        ierr = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       } 
     }
     color = DRAW_RED;
@@ -509,7 +506,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 #else
         if (a->a[j] <=  0.) continue;
 #endif
-        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        ierr = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       } 
     }
   } else {
@@ -517,94 +514,50 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
     /* first determine max of all nonzero values */
     int    nz = a->nz,count;
     Draw   popup;
+    double scale;
 
     for ( i=0; i<nz; i++ ) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
-    ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
-    ierr = DrawScalePopup(popup,0.0,maxv); CHKERRQ(ierr);
+    scale = (245.0 - DRAW_BASIC_COLORS)/maxv; 
+    ierr  = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
+    ierr  = DrawScalePopup(popup,0.0,maxv); CHKERRQ(ierr);
     count = 0;
     for ( i=0; i<m; i++ ) {
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-        color = 32 + (int) ((200.0 - 32.0)*PetscAbsScalar(a->a[count])/maxv);
-        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        color = DRAW_BASIC_COLORS + scale*PetscAbsScalar(a->a[count]);
+        ierr  = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
         count++;
       } 
     }
   }
-  DrawSynchronizedFlush(draw); 
-  DrawGetPause(draw,&pause);
-  if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
+  PetscFunctionReturn(0);
+}
 
-  /* allow the matrix to zoom or shrink */
-  ierr = DrawCheckResizedWindow(draw);
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
-  while (button != BUTTON_RIGHT) {
-    DrawSynchronizedClear(draw);
-    if (button == BUTTON_LEFT) scale = .5;
-    else if (button == BUTTON_CENTER) scale = 2.;
-    xl = scale*(xl + w - xc) + xc - w*scale;
-    xr = scale*(xr - w - xc) + xc + w*scale;
-    yl = scale*(yl + h - yc) + yc - h*scale;
-    yr = scale*(yr - h - yc) + yc + h*scale;
-    w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
-    if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
-      /* Blue for negative, Cyan for zero and  Red for positive */
-      color = DRAW_BLUE;
-      for ( i=0; i<m; i++ ) {
-        y_l = m - i - 1.0; y_r = y_l + 1.0;
-        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-          x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(USE_PETSC_COMPLEX)
-          if (real(a->a[j]) >=  0.) continue;
-#else
-          if (a->a[j] >=  0.) continue;
-#endif
-          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-        } 
-      }
-      color = DRAW_CYAN;
-      for ( i=0; i<m; i++ ) {
-        y_l = m - i - 1.0; y_r = y_l + 1.0;
-        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-          x_l = a->j[j] + shift; x_r = x_l + 1.0;
-          if (a->a[j] !=  0.) continue;
-          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-        } 
-      }
-      color = DRAW_RED;
-      for ( i=0; i<m; i++ ) {
-        y_l = m - i - 1.0; y_r = y_l + 1.0;
-        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-          x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(USE_PETSC_COMPLEX)
-          if (real(a->a[j]) <=  0.) continue;
-#else
-          if (a->a[j] <=  0.) continue;
-#endif
-          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-        } 
-      }
-    } else {
-      /* use contour shading to indicate magnitude of values */
-      int count = 0;
-      for ( i=0; i<m; i++ ) {
-        y_l = m - i - 1.0; y_r = y_l + 1.0;
-        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-          x_l = a->j[j] + shift; x_r = x_l + 1.0;
-          color = 32 + (int) ((200.0 - 32.0)*PetscAbsScalar(a->a[count])/maxv);
-          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color); CHKERRQ(ierr);
-          count++;
-        } 
-      }
-    }
+#undef __FUNC__  
+#define __FUNC__ "MatView_SeqAIJ_Draw"
+int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*) A->data;
+  int        ierr;
+  Draw       draw;
+  double     xr,yr,xl,yl,h,w;
 
-    ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
-  }
+  PetscTruth isnull;
+
+  PetscFunctionBegin;
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
+  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  ierr = DrawZoom(draw,MatView_SeqAIJ_Draw_Zoom,A); CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
