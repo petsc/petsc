@@ -262,13 +262,19 @@ class Configure(config.base.Configure):
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
         if not vendor:
-          compilers.append('f77')
+          compilers.append('f90')
+        if vendor == 'ibm' or not vendor:
+          compilers.extend('xlf90')
         if vendor == 'ibm' or not vendor:
           compilers.extend('xlf')
         if vendor == 'intel' or not vendor:
           compilers.append('icf')
         if vendor == 'portland' or not vendor:
+          compilers.append('pgf90')
+        if vendor == 'portland' or not vendor:
           compilers.append('pgf77')
+        if not vendor:
+          compilers.append('f77')
     if not isinstance(compilers, list): compilers = [compilers]
     if self.getExecutables(compilers, resultName = 'FC'):
       self.framework.argDB['FC'] = self.FC
@@ -324,6 +330,7 @@ class Configure(config.base.Configure):
 
     # Link each test object against F77 driver.  If successful, then mangling found.
     self.pushLanguage('F77')
+    self.sourceExtension = '.F'
     for i in numtest:
       self.framework.argDB['LIBS'] += ' '+cobj[i]
       if self.checkLink(None,'       call d1chk()\n'):
