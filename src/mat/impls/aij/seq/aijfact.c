@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.21 1995/06/14 17:24:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.22 1995/06/27 21:26:14 curfman Exp bsmith $";
 #endif
 
 
@@ -172,6 +172,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
     pv = aijnew->a + ai[i] - 1;
     pj = aijnew->j + ai[i] - 1;
     nz = ai[i+1] - ai[i];
+    if (rtmp[i] == 0.0) {SETERRQ(1,"Zero pivot detected, sorry");}
     rtmp[i] = 1.0/rtmp[i];
     for ( j=0; j<nz; j++ ) {pv[j] = rtmp[pj[j]-1];}
   } 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.11 1995/06/08 03:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.12 1995/06/30 03:35:15 bsmith Exp bsmith $";
 #endif
 
 
@@ -90,9 +90,12 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat        B = aij->B,Bnew;
   Mat_AIJ    *Baij = (Mat_AIJ*)B->data;
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
+  int        *nz;
   Scalar     v;
 
+/*
 fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
+*/
 
   /* free stuff related to matrix-vec multiply */
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
@@ -104,7 +107,12 @@ fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
   MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,0,0,&Bnew); CHKERRQ(ierr);
+  nz = (int *) PETSCMALLOC( m*sizeof(int) ); CHKPTRQ(nz);
+  for ( i=0; i<m; i++ ) {
+    nz[i] = Baij->i[i+1]-Baij->i[i];
+  }
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
+  PETSCFREE(nz);
   for ( i=0; i<m; i++ ) {
     for ( j=Baij->i[i]-1; j<Baij->i[i+1]-1; j++ ) {
       col = garray[Baij->j[ct]-1];
@@ -118,4 +126,5 @@ fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
   aij->assembled = 0;
   return 0;
 }
+
 

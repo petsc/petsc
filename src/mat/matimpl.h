@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: matimpl.h,v 1.19 1995/06/07 16:35:14 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -15,7 +15,7 @@ struct _MatOps {
             (*solvetrans)(Mat,Vec,Vec),(*solvetransadd)(Mat,Vec,Vec,Vec),
             (*lufactor)(Mat,IS,IS),(*choleskyfactor)(Mat,IS),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
-            (*transpose)(Mat),
+            (*transpose)(Mat,Mat*),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),(*equal)(Mat,Mat),
             (*getdiagonal)(Mat,Vec),(*scale)(Mat,Vec,Vec),
             (*norm)(Mat,int,double*),
@@ -61,6 +61,28 @@ extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
 extern int StashInitialize_Private(Stash*);
 extern int StashBuild_Private(Stash*);
 extern int StashDestroy_Private(Stash*);
+
+typedef struct { 
+  int               n;  /* number of processors */
+  int               *starts,*rows,*procs;
+  MPI_Request       *requests;
+  Scalar            *values;
+} MatScatterCtx_MPISendRows;
+
+typedef struct { 
+  int               n;  /* number of processors */
+  int               *procs;
+  MPI_Request       *requests;
+  Scalar            *values;
+} MatScatterCtx_MPIRecvRows;
+
+struct _MatScatterCtx {
+  PETSCHEADER
+  int              inuse;
+  int              (*begin)(Mat,Mat,InsertMode,MatScatterCtx);
+  int              (*end)(Mat,Mat,InsertMode,MatScatterCtx);
+  void             *send,*receive;
+};
 
 #endif
 

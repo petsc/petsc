@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.52 1995/06/30 01:03:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.53 1995/06/30 03:35:06 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -973,8 +973,6 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
-  if (!mat->assembled) 
-    SETERRQ(1,"MatGetRow_MPIAIJ: Must assemble matrix first.");
   if (row < rstart || row >= rend) 
     SETERRQ(1,"MatGetRow_MPIAIJ: Currently you can get only local rows.")
   lrow = row - rstart;
@@ -990,7 +988,9 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     if (nztot) {
       /* Sort by increasing column numbers, assuming A and B already sorted */
       int imark, imark2;
-      for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
+      if (mat->assembled) {
+        for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
+      }
       if (v) {
         *v = (Scalar *) PETSCMALLOC( (nztot)*sizeof(Scalar) ); CHKPTRQ(*v);
         for ( i=0; i<nzB; i++ ) {

@@ -1,12 +1,12 @@
+
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.28 1995/06/20 22:01:51 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.29 1995/06/22 19:21:09 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
-#include "sysio.h"
-#include "mat.h"
+#include "mat.h"       /*I "mat.h"  I*/
 
-/*@C
+/*@
    MatCreate - Creates a matrix, where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.

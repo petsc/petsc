@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.40 1995/06/08 03:09:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.41 1995/06/14 17:24:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -376,20 +376,26 @@ static int MatDestroy_Dense(PetscObject obj)
   return 0;
 }
 
-static int MatTrans_Dense(Mat matin)
+static int MatTranspose_Dense(Mat matin,Mat *matout)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    k,j;
   Scalar *v = mat->v, tmp;
-  if (mat->m != mat->n) {
-    SETERRQ(1,"Cannot transpose rectangular dense matrix");
-  }
-  for ( j=0; j<mat->m; j++ ) {
-    for ( k=0; k<j; k++ ) {
-      tmp = v[j + k*mat->n]; 
-      v[j + k*mat->n] = v[k + j*mat->n];
-      v[k + j*mat->n] = tmp;
+
+  if (!matout) { /* in place transpose */
+    if (mat->m != mat->n) {
+      SETERRQ(1,"MatTranspose_Dense:Cannot transpose rectangular matrix");
     }
+    for ( j=0; j<mat->m; j++ ) {
+      for ( k=0; k<j; k++ ) {
+        tmp = v[j + k*mat->n]; 
+        v[j + k*mat->n] = v[k + j*mat->n];
+        v[k + j*mat->n] = tmp;
+      }
+    }
+  }
+  else {
+    SETERRQ(1,"MatTranspose_Dense:not out of place transpose yet");
   }
   return 0;
 }
@@ -611,7 +617,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatSolveTrans_Dense,MatSolveTransAdd_Dense,
        MatLUFactor_Dense,MatCholeskyFactor_Dense,
        MatRelax_Dense,
-       MatTrans_Dense,
+       MatTranspose_Dense,
        MatGetInfo_Dense,MatEqual_Dense,
        MatGetDiagonal_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,

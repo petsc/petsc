@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.14 1995/06/21 05:27:39 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.15 1995/06/23 13:44:57 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -495,7 +495,7 @@ static int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 static int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  *m = mbd->m; *n = mbd->n;
+  *m = mbd->m; *n = mbd->N;
   return 0;
 }
 
