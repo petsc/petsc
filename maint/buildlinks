@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildlinks,v 1.24 1997/12/06 15:34:01 bsmith Exp balay $ 
+# $Id: buildlinks,v 1.25 1997/12/08 04:55:22 balay Exp bsmith $ 
 
 #
 # Builds PETSc shadow directory.  This is used in conjunction with addlinks.
@@ -14,15 +14,15 @@ cd $petscdir
 #
 # make ACTION=clean tree >>& /dev/null
 #
-find . \(  -name man -prune -o -name www -prune \) \
+find . \(  -name man -prune -o -name manualpages -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
          \; >>& /dev/null
 
 #
 # make links directly to docs/www
 #
-if (! -e $shadowdir/docs/www) then
-        ln -s $petscdir/docs/www $shadowdir/docs/www
+if (! -e $shadowdir/docs/manualpages) then
+        ln -s $petscdir/docs/manualpages $shadowdir/docs/manualpages
 endif
 if (! -e $shadowdir/src/mat/examples/matrices) then
         ln -s $petscdir/src/mat/examples/matrices $shadowdir/src/mat/examples/matrices 
