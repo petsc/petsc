@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.146 2000/03/22 19:50:28 balay Exp bsmith $ 
+# $Id: crontab,v 1.147 2000/06/20 16:24:53 bsmith Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -46,7 +46,7 @@
 #
 # Copy over www access log files for the past 24 hours
 #
-45 23 * * * /home/bsmith/petsc/maint/accesslogs/www/buildwwwlogs
+### 45 23 * * * /home/bsmith/petsc/maint/accesslogs/www/buildwwwlogs
 #
 # Backup the PETSc source dir
 #
