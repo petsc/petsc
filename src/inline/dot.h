@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.12 1998/10/09 19:18:54 bsmith Exp bsmith $ */
+/* $Id: dot.h,v 1.13 1998/10/19 22:16:03 bsmith Exp balay $ */
 
 #ifndef DOT
 
@@ -64,7 +64,7 @@ extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
 #if defined(HAVE_FORTRAN_CAPS)
-#define fortransolvebaij4_         FORTRANSOLVEBAIJ4_
+#define fortransolvebaij4_         FORTRANSOLVEBAIJ4
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
@@ -73,7 +73,7 @@ extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *)
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
 #if defined(HAVE_FORTRAN_CAPS)
-#define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL_
+#define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
@@ -82,7 +82,7 @@ extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
 #if defined(HAVE_FORTRAN_CAPS)
-#define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS_
+#define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
