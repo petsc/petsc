@@ -5,9 +5,7 @@ if __name__ == '__main__':
 
     # build on harley
     configure_options = [
-        '--with-cc=cc',
-        '--with-cxx=cxx -x cxx -tlocal',
-        '--with-fc=f90',
+        '--with-gnu-compilers=0',
         '--with-mpi-include=/home/petsc/software/mpich-1.2.2.3/alpha/include',
         '--with-mpi-lib=/home/petsc/software/mpich-1.2.2.3/alpha/lib/libmpich.a',
         '--with-mpirun=mpirun',

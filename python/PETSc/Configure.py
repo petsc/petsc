@@ -160,7 +160,7 @@ class Configure(config.base.Configure):
         if self.framework.argDB['FFLAGS_O']   == 'Unknown':
           self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
-    # does C++ compiler (IBM's xlC) need special for .c files as c++?
+    # does C++ compiler (IBM's xlC, OSF5) need special for .c files as c++?
     if self.framework.argDB['CXX']:
       self.pushLanguage('C++')
       self.sourceExtension = '.c'
@@ -168,7 +168,9 @@ class Configure(config.base.Configure):
         oldFlags = self.framework.argDB['CXXFLAGS']
         self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
         if not self.checkCompile('class somename { int i; };'):
-          self.framework.argDB['CXXFLAGS'] = oldFlags
+          self.framework.argDB['CXXFLAGS'] = oldFlags+' -x cxx -tlocal'
+          if not self.checkCompile('class somename { int i; };'):
+            self.framework.argDB['CXXFLAGS'] = oldFlags
       self.popLanguage()
 
 

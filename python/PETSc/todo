@@ -2,5 +2,4 @@
 Check if fortran compiler needs -cpp 
 Check if fortran compiler needs -xpp=cpp
 Add support for requesting 32 bit or 64 bit code
-Check if compiler requires cxx -x cxx -tlocal
 Put in crazy windows compiler flags
