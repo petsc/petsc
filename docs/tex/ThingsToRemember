@@ -85,8 +85,10 @@ userid : barrys
 password: petsc-password
 ---------
 
-ANL Solaris machines: caffeine,tiamat,dew
+ANL 
+    Solaris machines: caffeine,tiamat,dew
     DEC Alpha: dactile
+    Linux    : butthead
 
 
 ---------
