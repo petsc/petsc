@@ -14,14 +14,14 @@
 \markright{Summary of Routines}
 
 % A tight version of framebox
-\def\tightboxit#1{\vbox{\hsize=6.1in \hrule\hbox{\vrule\vbox{\box{#1}}\vrule\hss}\hrule}}
+\def\tightboxit#1{\vbox{\hsize=6.1in \hrule\hbox{\vrule\vbox{\hbox{#1}}\vrule\hss}\hrule}}
 % k is used to put sorting information in a regular place, and to 
 % hold the table lines.  Note that we do not use a tabular environment
 % so that a multipage table can be generated.
 % The first argument is used for sorting purposes only
-\def\k#1#2#3{\framebox{\parindent=0pt \begin{tabular}{l} #2 \\ #3 \end{tabular}}}
+\def\k#1#2#3{\tightboxit{\parindent=0pt \begin{tabular}{l} #2 \\ #3 \end{tabular}}}
 \def\CoDe#1{{\tt #1}}
-\def\DeFn#1{\hskip.5in
+\def\DeFn#1{ \hskip.3in
     \parbox[t]{6.0in}{\raggedright\vspace{2pt}#1\vskip2pt}\break}
 \catcode`\_=13
 \def_{{\tt \char`\_}}
@@ -40,67 +40,90 @@
 
 
 
-\section{Routine Prefixes}
-\begin{tabular}{ll}
-Mat&Matrix routines\\
-Vec&Vector\\
-SLES&Linear Equation Solvers\\
-KSP&Krylov Space Methods\\
-PC&Preconditioners\\
-IS&Index sets\\
-Options&Options Database\\
-SY&Miscellaneous system\\
-tr&Tracing space management\\
+\noindent {\Large \bf Routine Prefixes}
+
+\vspace{.2cm}
+
+\begin{tabular}{llll}
+ Vec&Vector&Mat&Matrix routines\\
+SLES&Linear Equation Solvers& KSP&Krylov Space Methods\\
+PC&Preconditioners&IS&Index sets\\
+Options&Options Database&SY&Miscellaneous system\\
+tr&Tracing space management& Draw & Drawing graphics routines\\
 \end{tabular}
 
 \section{Vector routines}
 
+\noindent {  \#include ``vec.h''}
+
 {\small
 \noindent
-\input rsum/rsum1
+\input rsum/ssum1
 }
 
-\section{Sparse Matrix Routines}
+\section{Matrix Routines}
+
+\noindent {  \#include ``mat.h''}
 
 {\small
 \noindent
-\input rsum/rsum2
+\input rsum/ssum2
 }
 
 \section{Simplified Solvers}
+
+\noindent {  \#include ``sles.h''}
+
 {\small
 \noindent
-\input rsum/rsum3
+\input rsum/ssum3
 }
 
 \section{Preconditioners}
+
+\noindent {  \#include ``pc.h''}
+
 {\small
 \noindent
-\input rsum/rsum4
+\input rsum/ssum4
 }
 
 \section{Krylov Methods}
+
+\noindent {  \#include ``ksp.h''}
+
 {\small
 \noindent
-\input rsum/rsum5
+\input rsum/ssum5
 }
 
 \section{Index Sets}
+
+\noindent {  \#include ``is.h''}
+
 {\small
 \noindent
-\input rsum/rsum6
+\input rsum/ssum6
 }
 
 \section{System Calls}
+
+\noindent {  \#include ``sys.h''} \\
+{  \#include ``options.h''} \\
+{  \#include ``sysio.h''}
+
 {\small
 \noindent
-\input rsum/rsum7
+\input rsum/ssum7
 }
 
 \section{Graphics Routines}
+
+\noindent {  \#include ``options.h''}
+
 {\small
 \noindent
-\input rsum/rsumx
+\input rsum/ssumx
 }
 
 \end{document}
