@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:34:40 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:35:34 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -22,7 +22,7 @@ C_SYS_LIB        = -lpthread -lfortran -lftn -lfastm
 G_COPTFLAGS      = -g -trapuv 
 G_FOPTFLAGS      = -g -trapuv
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -OPT:Olimit=6000 -O3
+O_COPTFLAGS      = -OPT:Olimit=6500 -O3
 O_FOPTFLAGS      = -O3
 # ########################## C++ compiler ##################################
 #
@@ -39,13 +39,13 @@ CXX_C_SYS_LIB    = -lcomplex -lpthread -lfortran -lftn -lfastm
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O3 -OPT:Olimit=6000
+OCXX_COPTFLAGS   = -O3 -OPT:Olimit=6500
 OCXX_FOPTFLAGS   = -O3
 # -------------------------- BOPT=g_complex options ------------------------
 GCOMP_COPTFLAGS  = -g 
 GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O3 -OPT:Olimit=6000
+OCOMP_COPTFLAGS  = -O3 -OPT:Olimit=6500
 OCOMP_FOPTFLAGS  = -O3
 # ########################### PETSc install options ###########################
 #

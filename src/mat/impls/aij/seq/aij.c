@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.312 1999/03/10 18:56:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.313 1999/03/17 23:22:51 bsmith Exp balay $";
 #endif
 
 /*
@@ -983,7 +983,7 @@ int MatMissingDiag_SeqAIJ(Mat A)
 int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int its,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb,*idiag;
+  Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t=0,scale,*ts, *xb,*idiag=0;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
   PetscFunctionBegin;
