@@ -482,20 +482,20 @@ PetscErrorCode PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDou
 @*/
 PetscErrorCode PetscTrDump(FILE *fp)
 {
-  TRSPACE *head;
+  TRSPACE        *head;
   PetscErrorCode ierr;
-  int     rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = stdout;
   if (TRallocated > 0) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %D bytes\n",rank,(PetscInt)TRallocated);CHKERRQ(ierr);
+    fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)TRallocated);
   }
   head = TRhead;
   while (head) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%2d]%D bytes %s() line %d in %s%s\n",rank,(PetscInt)head->size,
-            head->functionname,head->lineno,head->dirname,head->filename);CHKERRQ(ierr);
+    fprintf(fp,"[%2d]%d bytes %s() line %d in %s%s\n",rank,(int)head->size,
+            head->functionname,head->lineno,head->dirname,head->filename);
 #if defined(PETSC_USE_STACK)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
