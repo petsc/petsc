@@ -340,7 +340,7 @@ int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=0; i<appctx->m; i++) {
-    s_localptr[i] = sin(sc1*(double)i)*ex1 + 3.*sin(sc2*(double)i)*ex2;
+    s_localptr[i] = sin(PetscRealPart(sc1)*(double)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(double)i)*ex2;
   }
 
   /* 
