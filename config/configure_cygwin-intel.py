@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     configure_options = [
     '-PETSC_ARCH=cygwin-intel',
-    '-PETSC_DIR=/home/Kris/petsc/petsc-2',
+    '-PETSC_DIR=/home/Kris/petsc/petsc-dev',
     # Using MPICH for Windows 2000/NT available from http://www.mcs.anl.gov/mpi/mpich
     '--with-mpi-include=/software/MPI/mpich-nt.1.2.5/SDK/include',
     '--with-mpi-lib=[/software/MPI/mpich-nt.1.2.5/SDK/lib/mpich.lib,ws2_32.lib]',

@@ -7,7 +7,9 @@ if __name__ == '__main__':
 
     configure_options = [
     '-PETSC_ARCH=cygwin',
-    '-PETSC_DIR=/home/Kris/petsc/petsc-2',
+    '-PETSC_DIR=/home/Kris/petsc/petsc-dev',
+    # Using mpiuni
+    #'--with-mpi=0',
     # Using MPICH for Windows 2000/NT available from http://www.mcs.anl.gov/mpi/mpich
     '--with-mpi-dir=/software/MPI/mpich-nt.1.2.5/SDK.gcc',
     # Using reference BLAS/LAPACK available from http://www.netlib.org/lapack
