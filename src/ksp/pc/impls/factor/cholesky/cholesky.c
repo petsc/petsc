@@ -78,12 +78,12 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   if (flg) {
     ierr = PCCholeskySetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsName("-pc_cholesky_damping","Damping added to diagonal","PCCholestkySetDamping",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCCholeskySetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&lu->info);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-pc_cholesky_damping","Damping added to diagonal","PCCholeskySetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
-  ierr = PetscOptionsName("-pc_cholesky_shift","Manteuffel shift applied to diagonal","PCCholeskySetShift",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",lu->info.shiftnz,&lu->info.shiftnz,0);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCholeskySetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -287,9 +287,9 @@ PetscErrorCode PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 1.e-12;
+    dir->info.shiftnz = 1.e-12;
   } else {
-    dir->info.damping = damping;
+    dir->info.shiftnz = damping;
   }
   PetscFunctionReturn(0);
 }
@@ -304,7 +304,7 @@ PetscErrorCode PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
   
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
-  dir->info.shift = shift;
+  dir->info.shiftpd = shift;
   if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
@@ -641,8 +641,8 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
   dir->inplace                = PETSC_FALSE;
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->info.fill              = 5.0;
-  dir->info.damping           = 0.0;
-  dir->info.shift             = PETSC_FALSE;
+  dir->info.shiftnz           = 0.0;
+  dir->info.shiftpd           = PETSC_FALSE;
   dir->info.shift_fraction    = 0.0;
   dir->info.pivotinblocks     = 1.0;
   dir->col                    = 0;

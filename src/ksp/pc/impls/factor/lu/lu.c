@@ -88,7 +88,7 @@ PetscErrorCode PCLUSetShift_LU(PC pc,PetscTruth shift)
  
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
-  dir->info.shift = shift;
+  dir->info.shiftnz = shift;
   if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
@@ -118,7 +118,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     if (flg) {
         ierr = PCLUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",lu->info.shiftnz,&lu->info.shiftnz,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_lu_shift","Manteuffel shift applied to diagonal","PCLUSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCLUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %g\n",lu->info.zeropivot);CHKERRQ(ierr);
-    if (lu->info.shift) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (lu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
@@ -324,9 +324,9 @@ PetscErrorCode PCLUSetDamping_LU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 1.e-12;
+    dir->info.shiftnz = 1.e-12;
   } else {
-    dir->info.damping = damping;
+    dir->info.shiftnz = damping;
   }
   PetscFunctionReturn(0);
 }
@@ -833,10 +833,10 @@ PetscErrorCode PCCreate_LU(PC pc)
 
   dir->info.fill           = 5.0;
   dir->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  dir->info.damping        = 0.0;
+  dir->info.shiftnz        = 0.0;
   dir->info.zeropivot      = 1.e-12;
   dir->info.pivotinblocks  = 1.0;
-  dir->info.shift          = PETSC_FALSE;
+  dir->info.shiftpd        = PETSC_FALSE;
   dir->info.shift_fraction = 0.0;
   dir->col                 = 0;
   dir->row                 = 0;
