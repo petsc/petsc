@@ -2,3 +2,10 @@ This file contains a list of the special definitions needed by PETSc,
 along with a brief description (including the system where the need was
 discovered).
 
+   USES_FORTRAN_SINGLE - for machines where Fortran single precision is
+                         64 bits. For Cray T3D. Used in 
+                         include/pinclude/plapack.h
+
+   USES_CPTOFCD - Fortran charactor strings are passed using a FCD pointer.
+                  For Cray T3D. Used in plapack.h fortran/custom/*
+
