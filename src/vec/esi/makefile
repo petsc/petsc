@@ -9,8 +9,8 @@ ALL: lib
 
 CFLAGS   = ${CCA_INCLUDE} ${TRILINOS_INCLUDE}
 FFLAGS   =
-SOURCEC  = eindexspace.c evector.c
-OBJSC    = eindexspace.o evector.o
+SOURCEC  = eindexspace.c evector.c ecomp.c
+OBJSC    = eindexspace.o evector.o ecomp.o
 SOURCEH  = ../../../include/esi/petsc/indexspace.h ../../../include/esi/petsc/vector.h
 LIBBASE  = libpetscvec
 MANSEC   = 
