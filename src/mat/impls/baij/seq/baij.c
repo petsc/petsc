@@ -1022,7 +1022,8 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,fd,*col_lens,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
+  PetscInt       i,*col_lens,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
+  int            fd;
   PetscScalar    *aa;
   FILE           *file;
 
@@ -1077,7 +1078,7 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file) {
-    fprintf(file,"-matload_block_size %d\n",a->bs);
+    fprintf(file,"-matload_block_size %d\n",(int)a->bs);
   }
   PetscFunctionReturn(0);
 }
@@ -2377,9 +2378,11 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_seqaij_C",
                                      "MatConvert_SeqBAIJ_SeqAIJ",
                                       MatConvert_SeqBAIJ_SeqAIJ);CHKERRQ(ierr);
+#if !defined(PETSC_USE_64BIT_INT)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_seqsbaij_C",
                                      "MatConvert_SeqBAIJ_SeqSBAIJ",
                                       MatConvert_SeqBAIJ_SeqSBAIJ);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetPreallocation_C",
                                      "MatSeqBAIJSetPreallocation_SeqBAIJ",
                                       MatSeqBAIJSetPreallocation_SeqBAIJ);CHKERRQ(ierr);
@@ -2465,10 +2468,12 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer,const MatType type,Mat *A)
   Mat_SeqBAIJ    *a;
   Mat            B;
   PetscErrorCode ierr;
-  PetscInt       i,nz,fd,header[4],size,*rowlengths=0,M,N,bs=1;
+  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs=1;
   PetscInt       *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   PetscInt       kmax,jcount,block,idx,point,nzcountb,extra_rows;
   PetscInt       *masked,nmask,tmp,bs2,ishift;
+  PetscMPIInt    size;
+  int            fd;
   PetscScalar    *aa;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
 

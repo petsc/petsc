@@ -533,7 +533,9 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     if self.framework.argDB['with-64-bit-int']:
-      self.addDefine('USE_64BIT_INT', 1)      
+      self.addDefine('USE_64BIT_INT', 1)
+    else:
+      self.addDefine('USE_32BIT_INT', 1)
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureFortranCommandline)

@@ -189,6 +189,32 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_MatMatMultMPI    *ptap;
   PetscObjectContainer cont_merge,cont_ptap;
 
+  PetscInt       flops=0;
+  Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ     *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
+  Mat            C_seq;
+  Mat_SeqAIJ     *p_loc,*p_oth; 
+  PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend,col;
+  PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pjj;
+  PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
+  PetscInt       *cjj;
+  MatScalar      *ada=ad->a,*aoa=ao->a,*apa,*paj,*cseqa,*caj; 
+  MatScalar      *pa_loc,*pA,*pa_oth;
+  PetscInt       am=A->m,cN=C->N; 
+
+  MPI_Comm             comm=C->comm;
+  PetscMPIInt          size,rank,taga,*len_s;
+  PetscInt             *owners; 
+  PetscInt             proc;
+  PetscInt             **buf_ri,**buf_rj;  
+  PetscInt             cseqnzi,*bj_i,*bi,*bj,cseqrow,bnzi,nextcseqj; /* bi, bj, ba: for C (mpi mat) */
+  PetscInt             nrows,**buf_ri_k,**nextrow,**nextcseqi;
+  MPI_Request          *s_waits,*r_waits; 
+  MPI_Status           *status;
+  MatScalar            **abuf_r,*ba_i;
+  Mat_SeqAIJ           *cseq;
+  PetscInt             *cseqi,*cseqj;
+
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"MatMergeSeqsToMPI",(PetscObject *)&cont_merge);CHKERRQ(ierr);
   if (cont_merge) { 
@@ -202,8 +228,203 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   } 
+#ifdef OLD
   ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(A,ptap->B_loc,ptap->B_oth,ptap->brstart,merge->C_seq);CHKERRQ(ierr);
+#endif /* OLD */
+   /*--------------------------------------------------------------*/
+
+  p_loc=(Mat_SeqAIJ*)(ptap->B_loc)->data;
+  p_oth=(Mat_SeqAIJ*)(ptap->B_oth)->data;
+  pi_loc=p_loc->i; pj_loc=p_loc->j; pJ=pj_loc; pa_loc=p_loc->a; pA=pa_loc; 
+  pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+
+  C_seq=merge->C_seq;
+  cseq=(Mat_SeqAIJ*)C_seq->data;
+  cseqi=cseq->i; cseqj=cseq->j;
+  cseqa=cseq->a;
+
+  /* Allocate temporary array for storage of one row of A*P */
+  ierr = PetscMalloc(cN*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cN*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+  apj      = (PetscInt *)(apa + cN);
+  apjdense = apj + cN;
+
+  /* Clear old values in C_Seq */
+  ierr = PetscMemzero(cseqa,cseqi[cN]*sizeof(MatScalar));CHKERRQ(ierr);
+
+  for (i=0;i<am;i++) {
+    /* Form i-th sparse row of A*P */
+     apnzj = 0;
+    /* diagonal portion of A */
+    anzi  = adi[i+1] - adi[i];
+    for (j=0;j<anzi;j++) {
+      prow = *adj; 
+      adj++;
+      pnzj = pi_loc[prow+1] - pi_loc[prow];
+      pjj  = pj_loc + pi_loc[prow];
+      paj  = pa_loc + pi_loc[prow];
+      for (k=0;k<pnzj;k++) {
+        if (!apjdense[pjj[k]]) {
+          apjdense[pjj[k]] = -1; 
+          apj[apnzj++]     = pjj[k];
+        }
+        apa[pjj[k]] += (*ada)*paj[k];
+      }
+      flops += 2*pnzj;
+      ada++;
+    }
+    /* off-diagonal portion of A */
+    anzi  = aoi[i+1] - aoi[i];
+    for (j=0;j<anzi;j++) {
+      col = a->garray[*aoj];
+      if (col < cstart){
+        prow = *aoj;
+      } else if (col >= cend){
+        prow = *aoj; 
+      } else {
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Off-diagonal portion of A has wrong column map");
+      }
+      aoj++;
+      pnzj = pi_oth[prow+1] - pi_oth[prow];
+      pjj  = pj_oth + pi_oth[prow];
+      paj  = pa_oth + pi_oth[prow];
+      for (k=0;k<pnzj;k++) {
+        if (!apjdense[pjj[k]]) {
+          apjdense[pjj[k]] = -1; 
+          apj[apnzj++]     = pjj[k];
+        }
+        apa[pjj[k]] += (*aoa)*paj[k];
+      }
+      flops += 2*pnzj;
+      aoa++;
+    }
+    /* Sort the j index array for quick sparse axpy. */
+    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
+
+    /* Compute P_loc[i,:]^T*AP[i,:] using outer product */
+    pnzi = pi_loc[i+1] - pi_loc[i];
+    for (j=0;j<pnzi;j++) {
+      nextap = 0;
+      crow   = *pJ++;  
+      cjj    = cseqj + cseqi[crow];
+      caj    = cseqa + cseqi[crow];
+      /* Perform sparse axpy operation.  Note cjj includes apj. */
+      for (k=0;nextap<apnzj;k++) {
+        if (cjj[k]==apj[nextap]) {
+          caj[k] += (*pA)*apa[apj[nextap++]];
+        }
+      }
+      flops += 2*apnzj;
+      pA++;
+    }
+
+    /* Zero the current row info for A*P */
+    for (j=0;j<apnzj;j++) {
+      apa[apj[j]]      = 0.;
+      apjdense[apj[j]] = 0;
+    }
+  }
+
+  /* Assemble the final matrix and clean up */
+  ierr = MatAssemblyBegin(C_seq,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C_seq,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(apa);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  
+#ifdef OLD1
   ierr = MatMerge_SeqsToMPINumeric(merge->C_seq,C);CHKERRQ(ierr); 
+#endif /* OLD1 */
+  /*--------------------------------------------------------------*/
+  
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  
+  bi     = merge->bi;
+  bj     = merge->bj;
+  buf_ri = merge->buf_ri;
+  buf_rj = merge->buf_rj;
+  
+  ierr   = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
+  ierr   = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
+  
+  /* send and recv matrix values */
+  /*-----------------------------*/
+  len_s  = merge->len_s;
+  ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&taga);CHKERRQ(ierr);
+  ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waits);CHKERRQ(ierr);
+  for (proc=0,k=0; proc<size; proc++){  
+    if (!len_s[proc]) continue;
+    i = owners[proc];
+    ierr = MPI_Isend(cseqa+cseqi[i],len_s[proc],MPIU_MATSCALAR,proc,taga,comm,s_waits+k);CHKERRQ(ierr);
+    k++;
+  } 
+
+  ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);
+  ierr = PetscFree(status);CHKERRQ(ierr);
+
+  ierr = PetscFree(s_waits);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits);CHKERRQ(ierr);
+
+  /* insert mat values of mpimat */
+  /*----------------------------*/
+  ierr = PetscMalloc(cN*sizeof(MatScalar),&ba_i);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*merge->nrecv+1)*sizeof(PetscInt**),&buf_ri_k);CHKERRQ(ierr);
+  nextrow = buf_ri_k + merge->nrecv;
+  nextcseqi  = nextrow + merge->nrecv;
+
+  for (k=0; k<merge->nrecv; k++){
+    buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
+    nrows = *(buf_ri_k[k]);
+    nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
+    nextcseqi[k]   = buf_ri_k[k] + (nrows + 1);/* poins to the next i-structure of k-th recved i-structure  */
+  }
+
+  /* set values of ba */
+  for (i=0; i<C->m; i++) {
+    cseqrow = owners[rank] + i; 
+    bj_i = bj+bi[i];  /* col indices of the i-th row of C */
+    bnzi = bi[i+1] - bi[i];
+    ierr = PetscMemzero(ba_i,bnzi*sizeof(MatScalar));CHKERRQ(ierr);
+
+    /* add local non-zero vals of this proc's C_seq into ba */
+    cseqnzi = cseqi[cseqrow+1] - cseqi[cseqrow];
+    cseqj   = cseq->j + cseqi[cseqrow]; 
+    cseqa   = cseq->a + cseqi[cseqrow]; 
+    nextcseqj = 0;
+    for (j=0; nextcseqj<cseqnzi; j++){
+      if (*(bj_i + j) == cseqj[nextcseqj]){ /* bcol == cseqcol */
+        ba_i[j] += cseqa[nextcseqj++];
+      }
+    }
+
+    /* add received vals into ba */
+    for (k=0; k<merge->nrecv; k++){ /* k-th received message */
+      /* i-th row */
+      if (i == *nextrow[k]) {
+        cseqnzi = *(nextcseqi[k]+1) - *nextcseqi[k]; 
+        cseqj   = buf_rj[k] + *(nextcseqi[k]);
+        cseqa   = abuf_r[k] + *(nextcseqi[k]);
+        nextcseqj = 0;
+        for (j=0; nextcseqj<cseqnzi; j++){ 
+          if (*(bj_i + j) == cseqj[nextcseqj]){ /* bcol == cseqcol */
+            ba_i[j] += cseqa[nextcseqj++];
+          }
+        }
+        nextrow[k]++; nextcseqi[k]++;
+      } 
+    }
+    ierr = MatSetValues(C,1,&cseqrow,bnzi,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr);
+  } 
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+
+  ierr = PetscFree(abuf_r);CHKERRQ(ierr);
+  ierr = PetscFree(ba_i);CHKERRQ(ierr);
+  ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
+ 
   PetscFunctionReturn(0);
 }
 

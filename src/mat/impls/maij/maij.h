@@ -4,12 +4,12 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 typedef struct {
-  int        dof;         /* number of components */
+  PetscInt   dof;         /* number of components */
   Mat        AIJ;        /* representation of interpolation for one component */
 } Mat_SeqMAIJ;
 
 typedef struct {
-  int        dof;         /* number of components */
+  PetscInt   dof;         /* number of components */
   Mat        AIJ,OAIJ;    /* representation of interpolation for one component */
   Mat        A;
   VecScatter ctx;         /* update ghost points for parallel case */

@@ -7,33 +7,33 @@
 #if defined (PETSC_USE_CTABLE)
 #define PETSCTABLE PetscTable
 #else
-#define PETSCTABLE int*
+#define PETSCTABLE PetscInt*
 #endif
 
 #define MPIBAIJHEADER \
-  int           *rowners,*cowners;      /* ranges owned by each processor, in blocks */        \
-  int           *rowners_bs;            /* rowners*bs */                                       \
-  int           rstart,rend;           /* starting and ending owned rows */                    \
-  int           cstart,cend;           /* starting and ending owned columns */                 \
+  PetscInt      *rowners,*cowners;      /* ranges owned by each processor, in blocks */        \
+  PetscInt      *rowners_bs;            /* rowners*bs */                                       \
+  PetscInt      rstart,rend;           /* starting and ending owned rows */                    \
+  PetscInt      cstart,cend;           /* starting and ending owned columns */                 \
   Mat           A,B;                   /* local submatrices: A (diag part),                    \
                                            B (off-diag part) */                                \
-  int           size;                   /* size of communicator */                             \
-  int           rank;                   /* rank of proc in communicator */                     \
-  int           bs,bs2;                /* block size, bs2 = bs*bs */                           \
-  int           Mbs,Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */      \
-  int           mbs,nbs;               /* number block rows/cols on processor; m/bs, n/bs */   \
+  PetscMPIInt   size;                   /* size of communicator */                             \
+  PetscMPIInt   rank;                   /* rank of proc in communicator */                     \
+  PetscInt      bs,bs2;                /* block size, bs2 = bs*bs */                           \
+  PetscInt      Mbs,Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */      \
+  PetscInt      mbs,nbs;               /* number block rows/cols on processor; m/bs, n/bs */   \
                                                                                                \
   /* The following variables are used for matrix assembly */                                   \
                                                                                                \
   PetscTruth    donotstash;             /* if 1, off processor entries dropped */              \
   MPI_Request   *send_waits;            /* array of send requests */                           \
   MPI_Request   *recv_waits;            /* array of receive requests */                        \
-  int           nsends,nrecvs;         /* numbers of sends and receives */                     \
+  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */                     \
   MatScalar     *svalues,*rvalues;     /* sending and receiving data */                        \
-  int           rmax;                   /* maximum message length */                           \
+  PetscInt      rmax;                   /* maximum message length */                           \
   PETSCTABLE    colmap;                 /* local col number of off-diag col */                 \
                                                                                                \
-  int           *garray;                /* work array */                                       \
+  PetscInt     *garray;                /* work array */                                       \
                                                                                                \
   /* The following variable is used by blocked matrix assembly */                              \
   MatScalar     *barray;                /* Block array of size bs2 */                          \
@@ -46,21 +46,21 @@
                                                                                                \
   /* The following variables are for MatGetRow() */                                            \
                                                                                                \
-  int           *rowindices;       /* column indices for row */                                \
+  PetscInt      *rowindices;       /* column indices for row */                                \
   PetscScalar   *rowvalues;        /* nonzero values in row */                                 \
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */                   \
                                                                                                \
   /* Some variables to make MatSetValues and others more efficient */                          \
-  int           rstart_bs,rend_bs;                                                             \
-  int           cstart_bs,cend_bs;                                                             \
-  int           *ht;                      /* Hash table to speed up matrix assembly */         \
+  PetscInt      rstart_bs,rend_bs;                                                             \
+  PetscInt      cstart_bs,cend_bs;                                                             \
+  PetscInt      *ht;                      /* Hash table to speed up matrix assembly */         \
   MatScalar     **hd;                     /* Hash table data */                                \
-  int           ht_size;                                                                       \
-  int           ht_total_ct,ht_insert_ct; /* Hash table statistics */                          \
+  PetscInt      ht_size;                                                                       \
+  PetscInt      ht_total_ct,ht_insert_ct; /* Hash table statistics */                          \
   PetscTruth    ht_flag;                  /* Flag to indicate if hash tables are used */       \
   double        ht_fact;                  /* Factor to determine the HT size */                \
                                                                                                \
-  int           setvalueslen;    /* only used for single precision computations */             \
+  PetscInt      setvalueslen;    /* only used for single precision computations */             \
   MatScalar     *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied\
                                       before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */
 
@@ -70,5 +70,5 @@ typedef struct {
 
 EXTERN PetscErrorCode MatLoad_MPIBAIJ(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
-EXTERN PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 #endif

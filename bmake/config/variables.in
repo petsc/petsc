@@ -13,6 +13,7 @@ OMAKE              = @MAKE@ @MAKE_FLAGS@
 RANLIB             = @RANLIB@
 MKDIR              = @MKDIR@
 @SET_MAKE@
+@SET_DATAFILESPATH@
 #
 PARCH              = @PETSC_ARCH@
 LIB_SUFFIX         = @LIB_SUFFIX@

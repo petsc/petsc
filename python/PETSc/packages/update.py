@@ -17,9 +17,10 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-default-arch=<bool>',         nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    help.addArgument('PETSc', '-with-default-arch=<bool>',                nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc', '-with-default-language=<c,c++,complex,0>', nargs.Arg(None, 'c', 'Specifiy default language of libraries. 0 indicates no default'))
-    help.addArgument('PETSc', '-with-default-optimization=<g,O,0>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries. 0 indicates no default'))
+    help.addArgument('PETSc', '-with-default-optimization=<g,O,0>',       nargs.Arg(None, 'g', 'Specifiy default optimization of libraries. 0 indicates no default'))
+    help.addArgument('PETSc', '-DATAFILESPATH=directory',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
     return
 
   def configureDirectories(self):
@@ -127,8 +128,25 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default optimization to '+bopt+' in bmake/common/bopt_')
     return
 
+  def datafilespath(self):
+    '''Checks what DATAFILESPATH should be'''
+    datafilespath = None
+    if self.framework.argDB.has_key('DATAFILESPATH'):
+      datafilespath = self.framework.argDB['DATAFILESPATH']
+    elif os.path.isdir(os.path.join('/home','petsc','datafiles')):
+      datafilespath = os.path.join('/home','petsc','datafiles')
+    elif os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')):
+      datafilespath = os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')
+      
+    if datafilespath:
+      self.framework.addSubstitution('SET_DATAFILESPATH', 'DATAFILESPATH ='+datafilespath)
+    else:
+      self.framework.addSubstitution('SET_DATAFILESPATH', '')
+    return
+
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
     self.executeTest(self.configureOptimization)
+    self.executeTest(self.datafilespath)
     return

@@ -10,9 +10,9 @@
 typedef struct {
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*mult)(Mat,Vec,Vec);
-  PetscTruth  scale,shift;
-  PetscScalar vscale,vshift;
-  void        *ctx;
+  PetscTruth     scale,shift;
+  PetscScalar    vscale,vshift;
+  void           *ctx;
 } Mat_Shell;      
 
 #undef __FUNCT__  
@@ -41,7 +41,7 @@ typedef struct {
 PetscErrorCode MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -57,7 +57,7 @@ PetscErrorCode MatShellGetContext(Mat mat,void **ctx)
 PetscErrorCode MatDestroy_Shell(Mat mat)
 {
   PetscErrorCode ierr;
-  Mat_Shell *shell;
+  Mat_Shell      *shell;
 
   PetscFunctionBegin;
   shell = (Mat_Shell*)mat->data;
@@ -70,7 +70,7 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
 #define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
-  Mat_Shell   *shell = (Mat_Shell*)A->data;  
+  Mat_Shell      *shell = (Mat_Shell*)A->data;  
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -90,6 +90,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 PetscErrorCode MatShift_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
+
   PetscFunctionBegin;
   if (shell->scale || shell->shift) {
     shell->vshift += *a;
@@ -107,6 +108,7 @@ PetscErrorCode MatShift_Shell(const PetscScalar *a,Mat Y)
 PetscErrorCode MatScale_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
+
   PetscFunctionBegin;
   if (shell->scale || shell->shift) {
     shell->vscale *= *a;
@@ -251,7 +253,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_Shell"
 PetscErrorCode MatCreate_Shell(Mat A)
 {
-  Mat_Shell *b;
+  Mat_Shell      *b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -347,7 +349,7 @@ $
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext()
 @*/
-PetscErrorCode MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
+PetscErrorCode MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -376,9 +378,9 @@ PetscErrorCode MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Ma
 @*/
 PetscErrorCode MatShellSetContext(Mat mat,void *ctx)
 {
-  Mat_Shell  *shell = (Mat_Shell*)mat->data;
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -432,7 +434,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -441,7 +443,7 @@ PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     if (flg) {
        Mat_Shell *shell = (Mat_Shell*)mat->data;
        shell->destroy                 = (PetscErrorCode (*)(Mat)) f;
-    } else mat->ops->destroy            = (PetscErrorCode (*)(Mat)) f;
+    } else mat->ops->destroy          = (PetscErrorCode (*)(Mat)) f;
   } 
   else if (op == MATOP_VIEW) mat->ops->view  = (PetscErrorCode (*)(Mat,PetscViewer)) f;
   else                       (((void(**)(void))mat->ops)[op]) = f;
@@ -488,7 +490,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

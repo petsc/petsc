@@ -8,11 +8,11 @@ PetscCookie DRAWAXIS_COOKIE = 0;
 
 struct _p_DrawAxis {
     PETSCHEADER(int)
-    PetscReal  xlow,ylow,xhigh,yhigh;     /* User - coord limits */
+    PetscReal      xlow,ylow,xhigh,yhigh;     /* User - coord limits */
     PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
-               (*xlabelstr)(PetscReal,PetscReal,char **);
+                   (*xlabelstr)(PetscReal,PetscReal,char **);
     PetscErrorCode (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
-               (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
+                   (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
     PetscDraw  win;
     int        ac,tc,cc;                     /* axis,tick, character color */
@@ -55,10 +55,10 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 @*/
 PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
-  PetscDrawAxis ad;
-  PetscObject   obj = (PetscObject)draw;
+  PetscDrawAxis  ad;
+  PetscObject    obj = (PetscObject)draw;
   PetscErrorCode ierr;
-  PetscTruth    isnull;
+  PetscTruth     isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -247,11 +247,11 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRea
 @*/
 PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
 {
-  int       i,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
-  size_t    len;
-  PetscReal tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
-  char      *p;
-  PetscDraw draw = axis->win;
+  int            i,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
+  size_t         len;
+  PetscReal      tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
+  char           *p;
+  PetscDraw      draw = axis->win;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -476,11 +476,11 @@ static PetscErrorCode PetscStripZerosPlus(char *buf)
  */
 PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 {
-  static char buf[40];
-  char        fmat[10];
+  static char    buf[40];
+  char           fmat[10];
   PetscErrorCode ierr;
-  int         w,d;
-  PetscReal   rval;
+  int            w,d;
+  PetscReal      rval;
 
   PetscFunctionBegin;
   /* Find the string */
@@ -544,8 +544,8 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
   PetscErrorCode ierr;
-  int       i,power;
-  PetscReal x,base;
+  int            i,power;
+  PetscReal      x,base;
 
   PetscFunctionBegin;
   /* patch if low == high */
@@ -622,7 +622,7 @@ static PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
  */
 static PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 {
-  PetscReal  etmp,s,s2,m;
+  PetscReal      etmp,s,s2,m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -643,7 +643,7 @@ static PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscR
 {
   PetscReal        base,ftemp,e10;
   static PetscReal base_try[5] = {10.0,5.0,2.0,1.0,0.5};
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   int              i;
 
   PetscFunctionBegin;
