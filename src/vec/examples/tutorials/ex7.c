@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.4 1996/05/28 22:46:47 balay Exp bsmith $";
+static char vcid[] = "$Id: ex24.c,v 1.5 1996/07/08 22:16:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -7,7 +7,18 @@ static char help[] = "Demonstrates calling a Fortran computational routine from 
 #include <stdio.h>
 #include "vec.h"
 
+/*
+     This is because some machines REQUIRE linking with the Fortran linker if you 
+   do any Fortran IO. The Fortran linker requires one of these routines, even though
+   it will never be called.
+*/
+
 int MAIN__()
+{
+  return 0;
+}
+
+int __main()
 {
   return 0;
 }

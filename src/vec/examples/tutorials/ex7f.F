@@ -1,5 +1,5 @@
 
-C    "$Id: ex24f.F,v 1.4 1996/05/28 22:46:53 balay Exp bsmith $";
+C    "$Id: ex24f.F,v 1.5 1996/07/08 22:16:40 bsmith Exp bsmith $";
 
        subroutine ex24f(vec)
 
@@ -15,6 +15,8 @@ C
        integer          ierr
 
        two  = 2.0
+
+       print*, 'In the Fortran routine'
 
        call VecSet(two,vec,ierr)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.30 1996/02/22 17:28:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.31 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various vector routines\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* create a vector */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
   ierr = VecDuplicate(x,&w); CHKERRA(ierr);
   ierr = VecDuplicateVecs(x,3,&z); CHKERRA(ierr); 
@@ -39,58 +39,58 @@ int main(int argc,char **argv)
   ierr = VecDot(x,x,&dot); CHKERRA(ierr);
   ierr = VecMDot(3,x,z,dots); CHKERRA(ierr);
 #if defined(PETSC_COMPLEX)
-  PetscPrintf(MPI_COMM_WORLD,"Vector length %d\n", int (real(dot)));
-  PetscPrintf(MPI_COMM_WORLD,"Vector length %d %d %d\n",(int)real(dots[0]),
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (real(dot)));
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)real(dots[0]),
                              (int)real(dots[1]),(int)real(dots[2]));
 #else
-  PetscPrintf(MPI_COMM_WORLD,"Vector length %d\n",(int) dot);
-  PetscPrintf(MPI_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
                              (int)dots[1],(int)dots[2]);
 #endif
 
-  PetscPrintf(MPI_COMM_WORLD,"All other values should be near zero\n");
+  PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");
   ierr = VecScale(&two,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecScale %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);
 
   ierr = VecCopy(x,w); CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm); CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecCopy  %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);
 
   ierr = VecAXPY(&three,x,y); CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
   v = norm-8.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecAXPY %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);
 
   ierr = VecAYPX(&two,x,y); CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecAXPY %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);
 
   ierr = VecSwap(x,y); CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecSwap  %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecSwap  %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);
 
   ierr = VecWAXPY(&two,x,y,w); CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm); CHKERRA(ierr);
   v = norm-38.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecWAXPY %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);
 
   ierr = VecPointwiseMult(y,x,w); CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm); CHKERRA(ierr); 
   v = norm-36.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecPointwiseMult %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);
 
   ierr = VecPointwiseDivide(x,y,w); CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm); CHKERRA(ierr);
   v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(MPI_COMM_WORLD,"VecPointwiseDivide %g\n",v);
+  PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);
   
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);
