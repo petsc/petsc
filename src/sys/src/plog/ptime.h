@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.10 1995/12/05 05:03:05 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.11 1995/12/05 05:20:34 bsmith Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -14,18 +14,18 @@ struct timezone {
         int     tz_dsttime;     /* type of dst correction */
 };
 extern "C" {
-extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+extern int gettimeofday(struct timeval *, struct timezone *);
 }
 #else
 #include <sys/types.h>
 #include <sys/time.h>
 #endif
-#if defined(PARCH_sun4)
-extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+#if defined(PARCH_sun4) && !defined(__cplusplus)
+extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
-#if defined(PARCH_solaris) && defined(__cplusplus)
+#if (defined(PARCH_solaris) || defined(PARCH_sun4)) && defined(__cplusplus)
 extern "C" {
-extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+extern int gettimeofday(struct timeval *, struct timezone *);
 }
 #endif
 
