@@ -458,7 +458,9 @@ EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 
 #undef __FUNCT__  
@@ -528,8 +530,8 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
   /*
      We do not provide a getmatrix function in the DA operations because 
    the basic DA does not know about matrices. We think of DA as being more 
-   more low-level then matrices. This is kind of cheating but, cause sometimes 
-   we think of DA has higher level then matrices.
+   more low-level than matrices. This is kind of cheating but, cause sometimes 
+   we think of DA has higher level than matrices.
 
      We could switch based on Atype (or mtype), but we do not since the
    specialized setting routines depend only the particular preallocation
@@ -538,6 +540,14 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   if (!aij) {
     ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
+  if (!baij) {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
+  if (!sbaij) {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
   }
   if (aij) {
     if (dim == 1) {
@@ -555,25 +565,23 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
         DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     }
-  } else if (dim == 3) {
-    ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
-    if (!baij) {
-      ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
-    }
-    if (baij) {
+  } else if (baij) {
+    if (dim == 2) {
+      ierr = DAGetMatrix2d_MPIBAIJ(da,A);CHKERRQ(ierr);
+    } else if (dim == 3) {
       ierr = DAGetMatrix3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
-      if (!sbaij) {
-        ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
-      }
-      if (sbaij) {
-        ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
-      } else {
-        SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s!\n" \
-                               "Send mail to petsc-maint@mcs.anl.gov for code",
-                               dim,Atype);
-      }
+      SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s!\n" \
+                               "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype);
+    }
+  } else if (sbaij) {
+    if (dim == 2) {
+      ierr = DAGetMatrix2d_MPISBAIJ(da,A);CHKERRQ(ierr);
+    } else if (dim == 3) {
+      ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
+    } else {
+      SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s!\n" \
+                               "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype);
     }
   } else {
     SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and matrix type: %s!\n" \
@@ -987,6 +995,133 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetMatrix2d_MPIBAIJ" 
+PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
+{
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,nc,col,cnt,*dnz,*onz;
+  PetscInt               istart,iend,jstart,jend,ii,jj;
+  MPI_Comm               comm;
+  PetscScalar            *values;
+  DAPeriodicType         wrap;
+  DAStencilType          st;
+  ISLocalToGlobalMapping ltog;
+
+  PetscFunctionBegin;
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
+  col = 2*s + 1;
+
+  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+
+  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+
+  /* determine the matrix preallocation information */
+  ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
+  for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
+    for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
+      slot = i - gxs + gnx*(j - gys); /* + gnx*gny*(k - gzs); */
+
+      /* Find block columns in block row */
+      cnt  = 0;
+      if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            cols[cnt++]  = slot + ii + gnx*jj; 
+          }
+        }
+      } else {  /* Star stencil */
+        cnt  = 0;
+        for (ii=istart; ii<iend+1; ii++) {
+          if (ii) {
+            /* jj and kk must be zero */
+            cols[cnt++]  = slot + ii;
+          } else {
+            for (jj=jstart; jj<jend+1; jj++) {
+              if (jj) {
+                /* ii and kk must be zero */
+                cols[cnt++]  = slot + gnx*jj;
+              } else { 
+                /* ii and jj must be zero */
+                cols[cnt++]  = slot;
+              } 
+            } 
+          } 
+        }
+      }
+      ierr = MatPreallocateSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+    } 
+  }
+  ierr = MatSeqBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
+
+  /*
+    For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
+    for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
+      slot = i - gxs + gnx*(j - gys); 
+      cnt  = 0;
+      if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            cols[cnt++]  = slot + ii + gnx*jj; 
+          }
+        }
+      } else {  /* Star stencil */
+        cnt  = 0;
+        for (ii=istart; ii<iend+1; ii++) {
+          if (ii) {
+            /* jj and kk must be zero */
+            cols[cnt++]  = slot + ii;
+          } else {
+            for (jj=jstart; jj<jend+1; jj++) {
+              if (jj) {
+                /* ii and kk must be zero */
+                cols[cnt++]  = slot + gnx*jj;
+              } else { 
+                /* ii and jj must be zero */
+                cols[cnt++]  = slot; 
+              }
+            }
+          }
+        }
+      } 
+      ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
