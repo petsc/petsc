@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.309 2000/06/11 14:29:59 bsmith Exp balay $ 
+# $Id: makefile,v 1.310 2000/07/07 20:25:42 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -132,20 +132,17 @@ petscblas: info chkpetsc_dir
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
-
-
+#
 # Builds PETSc test examples for a given BOPT and architecture
+#
 testexamples: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_1  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_1  tree 
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
-
-# Builds PETSc test examples for a given BOPT and architecture
 testfortran: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
 	-@echo "========================================="
@@ -153,19 +150,15 @@ testfortran: info chkopts
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_3  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
-
-# Builds PETSc test examples for a given BOPT and architecture
 testexamples_uni: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_4  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_4  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
 testfortran_uni: info chkopts
@@ -173,8 +166,7 @@ testfortran_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=testexamples_9  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_9  tree 
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
 matlabcodes:
