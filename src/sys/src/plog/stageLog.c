@@ -169,11 +169,13 @@ int StageLogPush(StageLog stageLog, int stage)
   ierr = StackEmpty(stageLog->stack, &empty);                                                             CHKERRQ(ierr);
   if (empty == PETSC_FALSE) {
     ierr = StackTop(stageLog->stack, &curStage);                                                          CHKERRQ(ierr);
-    PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
-    stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
-    stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+    if (stageLog->stageInfo[curStage].perfInfo.active) {
+      PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
+      stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
+      stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
+      stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
+      stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+    }
   }
   /* Activate the stage */
   ierr = StackPush(stageLog->stack, stage);                                                               CHKERRQ(ierr);
@@ -181,11 +183,13 @@ int StageLogPush(StageLog stageLog, int stage)
   stageLog->stageInfo[stage].perfInfo.count++;
   stageLog->curStage = stage;
   /* Subtract current quantities so that we obtain the difference when we pop */
-  PetscTimeSubtract(stageLog->stageInfo[stage].perfInfo.time);
-  stageLog->stageInfo[stage].perfInfo.flops         -= _TotalFlops;
-  stageLog->stageInfo[stage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-  stageLog->stageInfo[stage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-  stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct;
+  if (stageLog->stageInfo[stage].perfInfo.active) {
+    PetscTimeSubtract(stageLog->stageInfo[stage].perfInfo.time);
+    stageLog->stageInfo[stage].perfInfo.flops         -= _TotalFlops;
+    stageLog->stageInfo[stage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
+    stageLog->stageInfo[stage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
+    stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -231,20 +235,24 @@ int StageLogPop(StageLog stageLog)
   PetscFunctionBegin;
   /* Record flops/time of current stage */
   ierr = StackPop(stageLog->stack, &curStage);                                                            CHKERRQ(ierr);
-  PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
-  stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
-  stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-  stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-  stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+  if (stageLog->stageInfo[curStage].perfInfo.active) {
+    PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
+    stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
+    stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
+    stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
+    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+  }
   ierr = StackEmpty(stageLog->stack, &empty);                                                             CHKERRQ(ierr);
   if (empty == PETSC_FALSE) {
     /* Subtract current quantities so that we obtain the difference when we pop */
     ierr = StackTop(stageLog->stack, &curStage);                                                          CHKERRQ(ierr);
-    PetscTimeSubtract(stageLog->stageInfo[curStage].perfInfo.time);
-    stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
-    stageLog->stageInfo[curStage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[curStage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct;
+    if (stageLog->stageInfo[curStage].perfInfo.active) {
+      PetscTimeSubtract(stageLog->stageInfo[curStage].perfInfo.time);
+      stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
+      stageLog->stageInfo[curStage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
+      stageLog->stageInfo[curStage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
+      stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct;
+    }
     stageLog->curStage                           = curStage;
   } else {
     stageLog->curStage                           = -1;

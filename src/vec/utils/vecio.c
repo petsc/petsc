@@ -135,6 +135,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   PetscFunctionReturn(0);
   /* tell the other processors we've had an error */
   handleerror:
+    ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     rows = -1;
     MPI_Bcast(&rows,1,MPI_INT,0,comm);
     SETERRQ(ierr,"Error loading vector");

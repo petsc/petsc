@@ -269,8 +269,7 @@ EXTERN int PCSPAISetVerbose(PC,int);
 EXTERN int PCSPAISetSp(PC,int);
 
 EXTERN int PCHYPRESetType(PC,char*);
-
-
-
+EXTERN int PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
+EXTERN int PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
 
 #endif /* __PETSCPC_H */
