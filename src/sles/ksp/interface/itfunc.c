@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.56 1996/04/20 04:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.57 1996/07/02 15:38:14 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -617,17 +617,17 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
    Input Parameter:
 .  ctx - iterative context obtained from KSPCreate()
 
-   Output Parameter:
-.  v - optional location to stash solution.  If v is not provided,
-       then a default location is used. 
-.  V - the solution is returned in this vector. This vector should NOT be 
-       destroyed by the user with a VecDestroy().
+   Output Parameter: Provide exactly one of
+.  v - location to stash solution.   
+.  V - the solution is returned in this vector. This vector is created 
+       internally. This vector should NOT be  destroyed by the user with
+       a VecDestroy().
 
    Notes:
     This routine must be called after SLESSolve().
     This routine can be used in one of two ways
 $  KSPBuildSolution(ctx,PETSC_NULL,&V) or
-$  KSPBuildSolution(ctx,v,&v); 
+$  KSPBuildSolution(ctx,v,PETSC_NULL); 
    In the first case an internal vector is allocated to store the solution
    (you cannot destroy this vector). In the second case the solution
    is generated in the vector that you provide. Note that for certain 
@@ -642,7 +642,8 @@ $  KSPBuildSolution(ctx,v,&v);
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
   PetscValidHeaderSpecific(ctx,KSP_COOKIE);
-  if (!V) SETERRQ(1,"KSPBuildSolution:User must provide third argument");
+  if (!V && !v) SETERRQ(1,"KSPBuildSolution:Must provide either v or V");
+  if (!V) V = &v;
   return (*ctx->buildsolution)(ctx,v,V);
 }
 
