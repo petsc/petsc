@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.41 1999/10/13 20:36:44 bsmith Exp bsmith $*/
+/*$Id: mem.c,v 1.42 1999/10/24 14:01:27 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "sys.h"
@@ -81,10 +81,10 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
-#elif defined(PARCH_t3d)
+#elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   long            *ii = sbreak(0); 
   int             fd = ii - (long*)0; 
-#elif defined(PARCH_hpux) || defined(PARCH_win32)
+#elif defined(PETSC_HAVE_NO_GETRUSAGE)
 #else
   static struct   rusage temp;
 #endif
@@ -100,14 +100,13 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   }
   *foo = (double) prusage.pr_byrssize;
   close(fd);
-#elif defined(PARCH_t3d)
+#elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
-#elif defined(PARCH_hpux) || defined(PARCH_win32)
+#elif defined(PETSC_HAVE_NO_GETRUSAGE)
   *foo = 0.0;
 #else
   getrusage(RUSAGE_SELF,&temp);
-#if defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64) \
-  || defined(PARCH_IRIX5) || defined (PARCH_ascired)
+#if defined(PETSC_USE_KBYTES_FOR_SIZE)
   *foo = 1024.0 * ((double) temp.ru_maxrss);
 #else
   *foo = ( (double) getpagesize())*( (double) temp.ru_maxrss );
