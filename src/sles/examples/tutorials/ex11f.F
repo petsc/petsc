@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.7 1996/10/02 19:41:23 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.8 1996/10/24 15:30:16 curfman Exp balay $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -124,7 +124,7 @@ C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
 C   - Always specify global rows and columns of matrix entries.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,"-norandom",flg,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
       if (flg .eq. 1) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i
