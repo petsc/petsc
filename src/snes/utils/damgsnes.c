@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.14 2001/04/10 19:37:08 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.15 2001/04/18 16:01:35 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -151,6 +151,8 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   PetscFunctionReturn(0);
 }
 
+extern int DMMGFormJacobianWithAD(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveSNES"
 int DMMGSolveSNES(DMMG *dmmg,int level)
@@ -217,6 +219,28 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 
     ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
     ierr = DMMGSetUpLevel(dmmg,sles,i+1);CHKERRQ(ierr);
+    
+    /*
+       if the number of levels is > 1 then we want the coarse solve in the grid sequencing to use LU
+       when possible 
+    */
+    if (nlevels > 1 && i == 0) {
+      PCType     stype;
+      PC         pc;
+      SLES       csles;
+      PetscTruth flg1,flg2,flg3;
+
+      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = MGGetCoarseSolve(pc,&csles);CHKERRQ(ierr);
+      ierr = SLESGetPC(csles,&pc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);
+      if (flg1 || flg2 || flg3) {
+        ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      }
+    }
+
     ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
     dmmg[i]->solve = DMMGSolveSNES;
     dmmg[i]->computejacobian = jacobian;
@@ -234,6 +258,12 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
       dmmg[i]->computejacobian = SNESDefaultComputeJacobianColor;
     }
+#if defined(PETSC_HAVE_ADIC)
+  } else if (jacobian == DMMGFormJacobianWithAD) {
+    for (i=0; i<nlevels; i++) {
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
+    }
+#endif
   }
 
   for (i=0; i<nlevels; i++) {
@@ -379,9 +409,11 @@ int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,
 
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 
+#if defined(PETSC_HAVE_ADIC)
+
 typedef struct {
 	double value;
-	double grad[20];
+	double grad[ad_GRAD_MAX];
 } DERIV_TYPE;
 
 #define DERIV_val(a) ((a).value)
@@ -391,6 +423,25 @@ void ad_AD_Final();
 #include "ad_grad.h"
 
 /* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PetscGetStructArray2d"
+static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void ***ptr)
+{
+  int  ierr,j;
+  void *tmpptr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc((ym)*sizeof(void *)+xm*ym*structsize,(void **)ptr);CHKERRQ(ierr);
+  tmpptr = *ptr + ym;
+  *ptr  -= ys;
+
+  for(j=ys;j<ys+ym;j++) {
+    (*ptr)[j] = tmpptr + structsize*(xm*(j-ys) - xs);
+  }
+  ierr = PetscMemzero(tmpptr,xm*ym*structsize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormJacobianWithAD"
 /*
@@ -416,6 +467,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   DAPeriodicType periodicity;
 
   DA      da= (DA) dmmg->dm;
+  int *colorptr;
+  DERIV_TYPE *derivptr;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -450,45 +503,24 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   */
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
 
-  /* allocate space for derivative objects.  Should be able to use something 
-     like:
-
-      ierr = DAVecGetStructArray(da,localX,(void **)&ad_x,sizeof(DERIV_TYPE));CHKERRQ(ierr);
-      ierr = DAVecGetStructArray(da,F,(void **)&ad_f,sizeof(DERIV_TYPE));CHKERRQ(ierr);
-
-      instead. */
-
-  ierr = PetscMalloc((gym)*sizeof(DERIV_TYPE *),(void **)&ad_x);CHKERRQ(ierr);
-  ad_x -= gys;
+  /* allocate space for derivative objects.  */
+  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,sizeof(DERIV_TYPE),(void ***)&ad_x); CHKERRQ(ierr);
   for(j=gys;j<gys+gym;j++) {
-    ierr = PetscMalloc((dof*gxm)*sizeof(DERIV_TYPE),(void **)&ad_ptr);CHKERRQ(ierr);
-    ad_x[j] = ad_ptr - dof*gxs;
-    for(i=dof*gxs;i<dof*(gxs+gxm);i++) DERIV_val(ad_x[j][i]) = x[j][i];
-  }
-
-  ierr = PetscMalloc((ym)*sizeof(DERIV_TYPE *),(void**)&ad_f);CHKERRQ(ierr); 
-  ad_f -= ys; 
-  for(j=ys;j<ys+ym;j++) {
-    ierr = PetscMalloc((dof*xm)*sizeof(DERIV_TYPE),(void**)&ad_ptr);CHKERRQ(ierr);
-    ad_f[j] = ad_ptr - dof*xs;
-  }
-
-  ad_AD_Init(stencil_size*dof);
-
-  /* Fake ADIC into thinking there are stencil_size*dof independent variables - fix this */
-  for(i=0;i<stencil_size*dof;i++) ad_AD_SetIndep(dummy);
-  ad_AD_SetIndepDone();
-
-  /* Initialize seed matrix, using coloring */
-  for(j=gys;j<gys+gym;j++) {
-    for(i=gxs;i<gxs+gxm;i++) {
-      for(k=0;k<dof;k++) {
-        color = colors[(j-gys)*gxm+i-gxs];
-	ad_AD_ClearGrad(DERIV_grad(ad_x[j][i*dof+k])); 
-	DERIV_grad(ad_x[j][i*dof+k])[color] = 1.0;
-      }
+    for(i=dof*gxs;i<dof*(gxs+gxm);i++) {
+      DERIV_val(ad_x[j][i]) = x[j][i];
     }
   }
+  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,sizeof(DERIV_TYPE),(void ***)&ad_f); CHKERRQ(ierr);
+
+  ad_AD_Init(dmmg->iscoloring->n);
+  ad_AD_ResetIndep();
+  for(j=gys;j<gys+gym;j++) {
+    derivptr = &(ad_x[j][dof*gxs]);
+    colorptr = &(colors[j*gxm*dof]);
+    ad_AD_SetIndepArrayColored(derivptr,dof*gxm,&colors[(j-gys)*gxm*dof]);
+  }
+  ad_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
+  ad_AD_SetIndepDone();
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
@@ -499,8 +531,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
-  ierr = MatADSetColoring_SeqAIJ(B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatADSetValues_SeqAIJ(B,(Scalar**)ad_f,20);CHKERRQ(ierr);
+  ierr = MatADSetColoring_SeqAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
+  ierr = MatADSetValues_SeqAIJ(*B,(Scalar**)&ad_f[ys][xs],ad_GRAD_MAX);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -542,6 +574,7 @@ int DMMGSetSNESLocalWithAD(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocal
   PetscFunctionReturn(0);
 }
 
+#endif
 
 
 

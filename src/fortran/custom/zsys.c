@@ -1,10 +1,11 @@
-/*$Id: zsys.c,v 1.88 2001/03/22 20:33:25 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.89 2001/04/19 15:44:02 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
 #include "petscengine.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define petscgetcputime_           PETSCGETCPUTIME
 #define petscfopen_                PETSCFOPEN
 #define petscfclose_               PETSCFCLOSE
 #define petscfprintf_              PETSCFPRINTF
@@ -104,6 +105,7 @@
 #define petscbinaryseek_           petscbinaryseek
 #define petscsynchronizedflush_    petscsynchronizedflush
 #define petscfptrap_               petscfptrap
+#define petscgetcputime_           petscgetcputime
 #endif
 
 EXTERN_C_BEGIN
