@@ -18,7 +18,8 @@ Meta priorities:
    vectors to be on a different number of processors (but one is a subset of the other)
    this is for restriction/interpolation in MG for example.
 
- - Support preconditioning in LSQR code.
+ - Support preconditioning in LSQR code - requested by Victor and some other petsc-maint 
+   person.
 
  add Real and setup PETSc with a USE_PETSC_SINGLE that allows compiling and
  running everything in single precision.
