@@ -110,7 +110,6 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_Matlab"
 int MatDestroy_Matlab(Mat A) {
   int         ierr;
-  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
 
   PetscFunctionBegin;
   ierr = MatConvert_Matlab_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
@@ -259,7 +258,7 @@ int MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
   ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
-  (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
+  (*F)->ops->solve           = MatSolve_Matlab;
   (*F)->factor               = FACTOR_LU;
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
   _A   = A->name;
@@ -305,6 +304,20 @@ int MatView_Matlab(Mat A,PetscViewer viewer) {
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_Matlab"
+int MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
+  int        ierr;
+  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Matlab));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
 int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
@@ -356,18 +369,6 @@ int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Matlab"
-int MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
-  int        ierr;
-  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Matlab));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /*MC
   MATMATLAB - MATMATLAB = "matlab" - A matrix type providing direct solvers (LU and QR) and drop tolerance
