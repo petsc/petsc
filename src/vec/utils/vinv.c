@@ -811,7 +811,9 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
   ierr = VecGetSize(vec2,&n2);CHKERRQ(ierr);
-  if (n1 != n2) {
+  if (vec1 == vec2) {
+    flg1 = PETSC_TRUE;
+  } else if (n1 != n2) {
     flg1 = PETSC_FALSE;
   } else {
     ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
