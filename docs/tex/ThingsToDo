@@ -30,6 +30,8 @@ gmake[1]: [../../../lib/libO_complex/freebsd_nolog/libpetscfortran.a(somefort.o)
 ] Error 33 (ignored)
 f77 -c  -O somefort.f
 
+  - Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
+    -O flags on some machines, for example paragon.
 
   - find LAgesvd_ on Cray T3D.
 
@@ -48,9 +50,6 @@ f77 -c  -O somefort.f
 
   - Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
-
-  - Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
-    -O flags on some machines, for example paragon.
 
  (Barry)  - Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
