@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.63 2000/07/10 03:39:42 bsmith Exp balay $*/
+/*$Id: baij2.c,v 1.64 2000/08/16 15:15:06 balay Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1269,7 +1269,7 @@ int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
   int         ierr;
 
   PetscFunctionBegin;
-  if (B->type !=MATSEQBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
+  if (B->type != MATSEQBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| (a->nz != b->nz)) {
