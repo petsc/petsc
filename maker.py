@@ -6,6 +6,7 @@ class Make(script.Script):
   '''Template for individual project makefiles. All project makes start with a local RDict.'''
   def __init__(self, builder = None):
     import RDict
+    import project
     import sys
 
     script.Script.__init__(self, sys.argv[1:], RDict.RDict())
@@ -133,6 +134,10 @@ class Make(script.Script):
     '''Override this method to execute all build operations. This method does nothing.'''
     return
 
+  def install(self, builder, argDB):
+    '''Override this method to execute all install operations. This method does nothing.'''
+    return
+
   def outputBanner(self):
     import time
 
@@ -158,6 +163,7 @@ class Make(script.Script):
     self.executeSection(self.configure, self.builder)
     self.build(self.builder)
     self.updateDependencies(self.builder.sourceDB)
+    self.install(self.builder, self.argDB)
     self.logPrint('Ending Build', debugSection = 'build')
     return 1
 
@@ -423,6 +429,7 @@ class SIDLMake(Make):
     return
 
   def buildSIDL(self, builder, sidlFile):
+    self.logPrint('Building '+sidlFile)
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     config   = builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
@@ -564,6 +571,8 @@ class SIDLMake(Make):
     return sets.Set()
 
   def build(self, builder):
+    import shutil
+
     for f in self.sidl:
       self.executeSection(self.setupSIDL, builder, f)
       for language in self.serverLanguages:
@@ -579,4 +588,28 @@ class SIDLMake(Make):
         self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
       for language in self.clientLanguages:
         self.executeSection(getattr(self, 'build'+language+'Client'), builder, f, language, generatedSource)
+      self.argDB.save(force = 1)
+      shutil.copy(self.argDB.saveFilename, self.argDB.saveFilename+'.bkp')
+      builder.sourceDB.save()
+      shutil.copy(str(builder.sourceDB.filename), str(builder.sourceDB.filename)+'.bkp')
+    return
+
+  def install(self, builder, argDB):
+    '''Install all necessary data for this project into the current RDict
+       - FIX: Build project graph
+       - FIX: Update language specific information'''
+    if not 'installedprojects' in argDB:
+      return
+    for sidlFile in self.sidl:
+      baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+      self.loadConfiguration(builder, 'SIDL '+baseName)
+      for language in self.serverLanguages:
+        self.project.appendPath(language, os.path.join(self.root, self.getSIDLServerDirectory(builder, sidlFile, language)))
+      for language in self.clientLanguages:
+        self.project.appendPath(language, os.path.join(self.root, self.getSIDLClientDirectory(builder, sidlFile, language)))
+    # self.compileTemplate.install()
+    projects = filter(lambda project: not project.getUrl() == self.project.getUrl(), argDB['installedprojects'])
+    argDB['installedprojects'] = projects+[self.project]
+    self.logPrint('Installed project '+str(self.project), debugSection = 'install')
+    # Update project in 'projectDependenceGraph'
     return
