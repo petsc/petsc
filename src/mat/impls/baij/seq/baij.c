@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.42 1996/04/30 19:19:34 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.43 1996/04/30 23:04:41 balay Exp balay $";
 #endif
 
 /*
@@ -681,12 +681,13 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
   Scalar          *xg,*zg,*zb;
   register Scalar *x,*z,*v,*xb,x1,x2,x3,x4,x5;
-  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval;
+  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,N=a->n;
   int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+  PetscMemzero(z,N*sizeof(Scalar));
 
   idx   = a->j;
   v     = a->a;
@@ -699,7 +700,8 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       xb = x + i; x1 = xb[0];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        z[ib[j]] = *v++ * x1;
+        rval    = ib[j];
+        z[rval] += *v++ * x1;
       }
     }
     break;
@@ -709,9 +711,9 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       xb = x + 2*i; x1 = xb[0]; x2 = xb[1];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        rval = ib[j]*2;
-        z[rval++] = v[0]*x1 + v[1]*x2;
-        z[rval++] = v[2]*x1 + v[3]*x2;
+        rval      = ib[j]*2;
+        z[rval++] += v[0]*x1 + v[1]*x2;
+        z[rval++] += v[2]*x1 + v[3]*x2;
         v += 4;
       }
     }
@@ -722,10 +724,10 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       xb = x + 3*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        rval = ib[j]*3;
-        z[rval++] = v[0]*x1 + v[1]*x2 + v[2]*x3;
-        z[rval++] = v[3]*x1 + v[4]*x2 + v[5]*x3;
-        z[rval++] = v[6]*x1 + v[7]*x2 + v[8]*x3;
+        rval      = ib[j]*3;
+        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
+        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
+        z[rval++] += v[6]*x1 + v[7]*x2 + v[8]*x3;
         v += 9;
       }
     }
@@ -736,11 +738,11 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       xb = x + 4*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        rval = ib[j]*4;
-        z[rval++] =  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
-        z[rval++] =  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
-        z[rval++] =  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
-        z[rval++] = v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+        rval      = ib[j]*4;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
+        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
+        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
+        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
         v += 16;
       }
     }
@@ -752,12 +754,12 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       x4 = xb[3];   x5 = xb[4];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        rval = ib[j]*5;
-        z[rval++] =  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
-        z[rval++] =  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
-        z[rval++] = v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
-        z[rval++] = v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
-        z[rval++] = v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
+        rval      = ib[j]*5;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
+        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
+        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
+        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
+        z[rval++] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
         v += 25;
       }
     }
@@ -781,7 +783,7 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
         workt = work;
         for ( j=0; j<n; j++ ) {
           zb = z + bs*(*idx++);
-          for ( k=0; k<bs; k++ ) zb[k] = workt[k] ;
+          for ( k=0; k<bs; k++ ) zb[k] += workt[k] ;
           workt += bs;
         }
       }

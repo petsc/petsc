@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.19 1996/04/24 22:30:14 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.20 1996/04/28 02:09:52 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -859,6 +859,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   if (mat->ilen) PetscFree(mat->ilen);
   if (mat->imax) PetscFree(mat->imax);
   if (mat->solve_work) PetscFree(mat->solve_work);
+  if (mat->mult_work) PetscFree(mat->mult_work);
   PetscFree(mat);
 
   PetscMemcpy(A,C,sizeof(struct _Mat));
