@@ -8,6 +8,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
+
   - There is no man page for AOCreateDebug() why and fix?
 
   - add documentation on -ksp_smonitor and -snes_smonitor
