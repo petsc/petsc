@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.62 2001/07/13 15:08:04 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.63 2001/07/13 15:16:18 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2894,8 +2894,14 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
     if (sse_enabled) {
 #if defined(PETSC_HAVE_SSE)
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
+      ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
+      if (flg) {
+        a->single_precision_solves = single_prec;
+      }
+      if (a->single_precision_solves) {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+        PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
+      }
 #else
       /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
       SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
