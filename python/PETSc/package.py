@@ -24,6 +24,7 @@ class Package(config.base.Configure):
     self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
+    self.version      = ''
     # ***********  these are optional items set in the particular packages file
     self.complex      = 0
     # urls where bk or tarballs may be found
@@ -42,6 +43,7 @@ class Package(config.base.Configure):
     output=''
     if self.found:
       output  = self.name+':\n'
+      if self.version: output += '  Version: '+self.version+'\n'
       if self.include: output += '  Includes: '+str(self.include)+'\n'
       if self.lib:     output += '  Library: '+str(self.lib)+'\n'
     return output

@@ -2,13 +2,14 @@
 from __future__ import generators
 import user
 import config.base
+import PETSc.package
 
 import re
 import os
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
+    PETSc.package.Package.__init__(self, framework)
     self.headerPrefix  = ''
     self.substPrefix   = ''
     self.found         = 0
