@@ -40,20 +40,20 @@ EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
 /* DSC function */
 #undef __FUNCT__  
 #define __FUNCT__ "isort2"
-void isort2(int size, int *list, int *index) {
+void isort2(int size, int *list, int *idx_dsc) {
   /* in increasing order */
-  /* index will contain indices such that */
+  /* idx_dsc will contain indices such that */
   /* list can be accessed in sorted order */
   int i, j, x, y;
   
-  for (i=0; i<size; i++) index[i] =i;
+  for (i=0; i<size; i++) idx_dsc[i] =i;
 
   for (i=1; i<size; i++){
-    y= index[i];
-    x=list[index[i]];
-    for (j=i-1; ((j>=0) && (x<list[index[j]])); j--)
-      index[j+1]=index[j];
-    index[j+1]=y;
+    y= idx_dsc[i];
+    x=list[idx_dsc[i]];
+    for (j=i-1; ((j>=0) && (x<list[idx_dsc[j]])); j--)
+      idx_dsc[j+1]=idx_dsc[j];
+    idx_dsc[j+1]=y;
   }
 }/*end isort2*/
 
@@ -259,12 +259,12 @@ int MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
 int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
   Mat_SeqBAIJ    *a_seq;
   Mat_DSC        *lu=(Mat_DSC*)(*F)->spptr; 
-  Mat            *tseq,A_seq;
+  Mat            *tseq,A_seq=0;
   RealNumberType *my_a_nonz;
   int            ierr, M=A->M, Mbs=M/lu->bs, size,
                  max_mem_estimate, max_single_malloc_blk,
                  number_of_procs,i,j,next,iold,
-                 *idx,*iidx,*itmp;
+                 *idx,*iidx=0,*itmp;
   IS             my_cols_sorted;
 	
   PetscFunctionBegin;
@@ -559,7 +559,7 @@ int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 {
   Mat_DSC *lu=(Mat_DSC*)A->spptr;  
   int     ierr;
-  char    *s;
+  char    *s=0;
   
   PetscFunctionBegin;   
   ierr = PetscViewerASCIIPrintf(viewer,"DSCPACK run parameters:\n");CHKERRQ(ierr);
