@@ -473,17 +473,18 @@ class ImportSharedLinker(SharedLinker):
 
   def getLibExt(self):
     if self._libExt is None:
-      if self.argDB['HAVE_CYGWIN']:
-        return 'dll.a'
-      else:
-        return 'a'
+      return 'dll.a'
     return self._libExt
   libExt = property(getLibExt, Linker.setLibExt, doc = 'The library extension')
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
-    import tempfile
-    return ['-o '+os.path.join(tempfile.tempdir, 'import_dummy')+' -Wl,--out-implib='+self.getLibrary(source)]
+    implibname = self.getLibrary(source)
+    # This is a really ugly hack.
+    # Since the dllname is a symbol in the implib, we should be generating the implibname from the dllname,
+    # not by hoping the dllname is the implibname without the .a
+    dllname    = implibname[:-2]
+    return ['-o '+dllname+' -Wl,--out-implib='+implibname]
 
   def handleErrors(self, command, status, output):
     '''Ignore errors when trying to link libraries

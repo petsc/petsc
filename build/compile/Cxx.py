@@ -39,7 +39,7 @@ class Compiler (build.processor.Compiler):
   def getWarningFlags(self, source = None):
     '''Return a list of the compiler warning flags. The default is most of the GCC warnings.'''
     if self.warningFlags is None:
-      return ['-Wall', '-Wundef', '-Wpointer-arith', '-Wbad-function-cast', '-Wcast-align', '-Wwrite-strings',
-              '-Wconversion', '-Wsign-compare', '-Wstrict-prototypes', '-Wmissing-prototypes', '-Wmissing-declarations',
-              '-Wmissing-noreturn', '-Wredundant-decls', '-Wnested-externs', '-Winline']
+      return ['-Wall', '-Wundef', '-Wpointer-arith', '-Wcast-align', '-Wwrite-strings',
+              '-Wconversion', '-Wsign-compare', '-Wstrict-prototypes', '-Wmissing-prototypes',
+              '-Wmissing-noreturn', '-Wredundant-decls', '-Winline']
     return self.warningFlags
