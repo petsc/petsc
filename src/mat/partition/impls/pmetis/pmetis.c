@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.36 2000/08/24 22:42:13 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.37 2000/09/02 02:48:35 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -52,7 +52,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
     SETERRQ(1,1,"Does not support any processor with no entries");
   }
-#if defined(PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   /* check that matrix has no diagonal entries */
   {
     int j,rstart;
