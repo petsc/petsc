@@ -53,6 +53,7 @@ class Defaults(maker.Maker):
     return
 
   def addServerLanguage(self, lang):
+    self.addClientLanguage(lang)
     if lang in self.argDB['installedLanguages']:
       if not lang in self.usingSIDL.serverLanguages:
         self.usingSIDL.serverLanguages.append(lang)

@@ -671,13 +671,14 @@ class UsingMatlab(UsingCompiler):
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
-    compileCxx = compile.CompileMatlabCxx(self.usingSIDL.sourceDB, library)
+    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
     compileCxx.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.append(self.argDB['MATLAB_INCLUDE'])
     for dir in self.usingSIDL.repositoryDirs:
       includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
       if os.path.isdir(includeDir):
