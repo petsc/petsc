@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.13 1996/07/10 01:50:45 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.14 1996/09/12 16:26:46 bsmith Exp curfman $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -58,5 +58,8 @@ struct _Viewer {
 
 extern int ViewerDestroy_Draw(PetscObject);
 extern int ViewerFlush_Draw(Viewer);
+extern int  DrawTensorMapMesh_VRML(Draw,double*,double*,double*,int,int,int,double,double,double,int,int,int);
+extern int  DrawTensorMapSurfaceContourPartial_VRML(Draw,double*,double*,double*,int,int,int,double*,double,double,double,int,int,int,double,int,int,int,int,int,int);
+extern int  DrawTensorMapMeshPartial_VRML(Draw,double*,double*,double*,int,int,int,double,double,double,int,int,int,int,int,int,int,int,int);
 
 #endif
