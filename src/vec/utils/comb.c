@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.10 1999/03/17 23:22:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: comb.c,v 1.11 1999/03/31 23:04:12 curfman Exp curfman $";
 #endif
 
 /*
@@ -285,7 +285,7 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
 #undef __FUNC__
 #define __FUNC__ "VecDotBegin"
 /*@
-   VecDotBegin - Starts a split phase dot product.
+   VecDotBegin - Starts a split phase dot product computation.
 
    Input Parameters:
 +   x - the first vector
@@ -325,7 +325,7 @@ int VecDotBegin(Vec x, Vec y,Scalar *result)
 #undef __FUNC__
 #define __FUNC__ "VecDotEnd"
 /*@
-   VecDotEnd - Ends a split phase dot product.
+   VecDotEnd - Ends a split phase dot product computation.
 
    Input Parameters:
 +  x - the first vector (can be PETSC_NULL)
