@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.56 1998/04/13 17:37:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.57 1998/05/29 20:37:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -110,7 +110,7 @@ int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
 
 
 
-static struct _MatOps MatOps = {0,
+static struct _MatOps MatOps_Values = {0,
        0,
        0, 
        0,
@@ -147,7 +147,35 @@ static struct _MatOps MatOps = {0,
        0,
        0,
        0,
-       0 };
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateShell"
@@ -217,7 +245,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   PLogObjectCreate(B);
   B->factor    = 0;
   B->assembled = PETSC_TRUE;
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy   = MatDestroy_Shell;
 
   b          = PetscNew(Mat_Shell); CHKPTRQ(b);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.91 1998/05/29 20:37:01 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.92 1998/05/29 22:49:59 balay Exp bsmith $";
 #endif
 
 /*
@@ -846,8 +846,8 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
-    PetscOps       *Abops;
-    struct _MatOps *Aops;
+    PetscOps *Abops;
+    MatOps   Aops;
 
     /* This isn't really an in-place transpose, but free data struct from a */
     PetscFree(a->rowners); 
@@ -891,28 +891,71 @@ int MatScale_MPIDense(Scalar *alpha,Mat inA)
 static int MatConvertSameType_MPIDense(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_MPIDense,
-       MatGetRow_MPIDense,MatRestoreRow_MPIDense,
-       MatMult_MPIDense,MatMultAdd_MPIDense,
-       MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
-       0,0,
-       0,0,
-       0,0,
-       0,MatTranspose_MPIDense,
-       MatGetInfo_MPIDense,0,
-       MatGetDiagonal_MPIDense,0,MatNorm_MPIDense,
-       MatAssemblyBegin_MPIDense,MatAssemblyEnd_MPIDense,
+static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
+       MatGetRow_MPIDense,
+       MatRestoreRow_MPIDense,
+       MatMult_MPIDense,
+       MatMultAdd_MPIDense,
+       MatMultTrans_MPIDense,
+       MatMultTransAdd_MPIDense,
        0,
-       MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
-       0,0,
-       0,0,
-       MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatTranspose_MPIDense,
+       MatGetInfo_MPIDense,0,
+       MatGetDiagonal_MPIDense,
+       0,
+       MatNorm_MPIDense,
+       MatAssemblyBegin_MPIDense,
+       MatAssemblyEnd_MPIDense,
+       0,
+       MatSetOption_MPIDense,
+       MatZeroEntries_MPIDense,
+       MatZeroRows_MPIDense,
+       0,
+       0,
+       0,
+       0,
+       MatGetSize_MPIDense,
+       MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
-       0,0, MatGetArray_MPIDense, MatRestoreArray_MPIDense,
+       0,
+       0, 
+       MatGetArray_MPIDense, 
+       MatRestoreArray_MPIDense,
        MatConvertSameType_MPIDense,
-       0,0,0,0,0,
-       0,0,MatGetValues_MPIDense,0,0,MatScale_MPIDense,
-       0,0,0,MatGetBlockSize_MPIDense};
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetValues_MPIDense,
+       0,
+       0,
+       MatScale_MPIDense,
+       0,
+       0,
+       0,
+       MatGetBlockSize_MPIDense,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIDense"
@@ -965,7 +1008,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
-  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
   mat->ops->destroy    = MatDestroy_MPIDense;
   mat->ops->view       = MatView_MPIDense;
   mat->factor          = 0;
@@ -1038,7 +1081,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,A->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
-  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
   mat->ops->destroy   = MatDestroy_MPIDense;
   mat->ops->view      = MatView_MPIDense;
   mat->factor         = A->factor;
