@@ -19,6 +19,10 @@ class RemoteBuild (base.Base):
     import nargs
 
     argDB.setType('dryRun', nargs.ArgBool(None, 0, 'Display but do not execute commands', isTemporary = 1), forceLocal = 1)
+
+    self.argDB['debugLevel']    = 3
+    self.argDB['debugSections'] = []
+
     base.Base.setupArgDB(self, argDB, clArgs)
     return argDB
 
