@@ -43,7 +43,7 @@ class Configure(config.base.Configure):
       interpreter = os.path.join(matlab,'bin','matlab')
       output      = ''
       try:
-        output = self.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"')
+        output = self.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"')[0]
         match  = versionPattern.search(output)
         if not match:
           matlab = None

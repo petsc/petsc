@@ -38,14 +38,6 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     return
 
-  def executeShellCommand(self, command):
-    '''Execute a shell command returning the output, and optionally provide a custom error checker'''
-    import commands
-
-    (status, output) = commands.getstatusoutput(command)
-    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
-    return output
-
   def checkLib(self, libraries):
     '''Check for MPI_Init and MPI_Comm_create in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
@@ -208,9 +200,9 @@ class Configure(config.base.Configure):
 
     if PETSC_ARCH and PETSC_DIR:
       try:
-        libArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')
-        incArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')
-        runArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')
+        libArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')[0]
+        incArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')[0]
+        runArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')[0]
 
         libArgs = self.splitLibs(libArgs)
         incArgs = self.splitIncludes(incArgs)

@@ -37,9 +37,9 @@ class Configure(config.base.Configure):
     if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
     try:
       # Guess host type (should allow user to specify this
-      host = self.executeShellCommand(self.shell+' '+configGuess)
+      host = self.executeShellCommand(self.shell+' '+configGuess)[0]
       # Get full host description
-      output = self.executeShellCommand(self.shell+' '+configSub+' '+host)
+      output = self.executeShellCommand(self.shell+' '+configSub+' '+host)[0]
     except RuntimeError, e:
       raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
     # Parse output
@@ -82,7 +82,7 @@ class Configure(config.base.Configure):
     '''Returns 1 if it is GNU patch or equivilent, exception if cannot run'''
     if self.framework.archBase.startswith('solaris') or self.framework.archBase.startswith('alpha'):
       try:
-        output = self.executeShellCommand(patch+' --help')
+        output = self.executeShellCommand(patch+' --help')[0]
       except:
         raise RuntimeError('Unable to run '+patch+' command')
       if output.find('gnu.org') == -1: return 0
@@ -102,8 +102,8 @@ class Configure(config.base.Configure):
     import re
     self.framework.log.write('Checking if can downloading latest source with bk\n')
     try:
-      output1 = self.executeShellCommand('bk sfiles -lgpC')
-      output2 = self.executeShellCommand('bk changes -L -v')
+      output1 = self.executeShellCommand('bk sfiles -lgpC')[0]
+      output2 = self.executeShellCommand('bk changes -L -v')[0]
       if output2.startswith('Pseudo-terminal will not be allocated because stdin is not a terminal.') and len(output2) <= 72:
         output2 = ''
       if output1 or output2:
@@ -116,7 +116,7 @@ class Configure(config.base.Configure):
 
     self.framework.log.write('Downloading latest source with bk\n')
     try:
-      output1 = self.executeShellCommand('bk pull')
+      output1 = self.executeShellCommand('bk pull')[0]
       if output1.find('error') >= 0:
         raise RuntimeError('Error pulling latest source code from PETSc BK website\nRun with --enable-update=0 to configure without updating')
       if output1.find('Nothing to pull') >= 0:
@@ -138,8 +138,8 @@ class Configure(config.base.Configure):
     import re
     self.framework.log.write('Checking if can downloading latest source with bk\n')
     try:
-      output1 = self.executeShellCommand('cd python/BuildSystem; bk sfiles -lgpC')
-      output2 = self.executeShellCommand('cd python/BuildSystem; bk changes -L -v')
+      output1 = self.executeShellCommand('cd python/BuildSystem; bk sfiles -lgpC')[0]
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk changes -L -v')[0]
       if output2.startswith('Pseudo-terminal will not be allocated because stdin is not a terminal.') and len(output2) <= 72:
         output2 = ''
       if output1 or output2:
@@ -152,7 +152,7 @@ class Configure(config.base.Configure):
 
     self.framework.log.write('Downloading latest BuildSystem source with bk\n')
     try:
-      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')[0]
       if output2.find('error') >= 0:
         raise RuntimeError('Error pulling latest source code from BuildSystem  BK website\nRun with --enable-update=0 to configure anyways')
       if output2.find('Nothing to pull') >= 0:
@@ -216,9 +216,9 @@ class Configure(config.base.Configure):
       self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
       return
     try:
-      output1 = self.executeShellCommand('echo '+patch+' -Np1 < patches1')
+      output1 = self.executeShellCommand('echo '+patch+' -Np1 < patches1')[0]
       os.unlink('patches1')
-      output2 = self.executeShellCommand('cd python/BuildSystem; echo '+patch+' -Np1 < ../../patches2')
+      output2 = self.executeShellCommand('cd python/BuildSystem; echo '+patch+' -Np1 < ../../patches2')[0]
       os.unlink('patches2')
       if output1.find('error') >= 0 or output2.find('error') >= 0:
         self.framework.log.write(output1+'\n')
@@ -234,7 +234,7 @@ class Configure(config.base.Configure):
 
     if self.framework.argDB.has_key('with-patch-petsc'):
       try:
-        output1 = self.executeShellCommand(patch+' -Np1 < '+self.framework.argDB['with-patch-petsc'])
+        output1 = self.executeShellCommand(patch+' -Np1 < '+self.framework.argDB['with-patch-petsc'])[0]
       except:
         raise RuntimeError('Unable to apply patch from '+self.framework.argDB['with-patch-petsc']+'with '+patch) 
       if output1.find('error') >= 0:
@@ -242,7 +242,7 @@ class Configure(config.base.Configure):
         raise RuntimeError('Error applying '+self.framework.argDB['with-patch-petsc']+' update.\n')
     if self.framework.argDB.has_key('with-patch-buildsystem'):
       try:
-        output1 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < '+self.framework.argDB['with-patch-buildsystem'])
+        output1 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < '+self.framework.argDB['with-patch-buildsystem'])[0]
       except:
         raise RuntimeError('Unable to apply patch from '+self.framework.argDB['with-patch-buildsystem']+'with '+patch) 
       if output1.find('error') >= 0:
