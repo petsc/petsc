@@ -15,17 +15,9 @@ class Defaults(logging.Logger):
     self.sources    = sources
     self.usingSIDL  = sidlDefaults.UsingSIDL(project, self.getPackages(), bootstrapPackages = bootstrapPackages)
     self.compileExt = []
+    self.masterCompiler = str(self.usingSIDL.compilerDefaults.getCompilerModule())
     # Add C for the IOR
     self.addLanguage('C')
-    # Setup compiler specific defaults
-    if bs.argDB.has_key('babelCrap') and int(bs.argDB['babelCrap']):
-      self.debugPrint('Compiling SIDL with Babel', 3, 'sidl')
-      import BSTemplates.babelTargets
-      self.compilerDefaults = BSTemplates.babelTargets.Defaults(self)
-    else:
-      self.debugPrint('Compiling SIDL with Scandal', 3, 'sidl')
-      import BSTemplates.scandalTargets
-      self.compilerDefaults = BSTemplates.scandalTargets.Defaults(self)
     return
 
   def getUsing(self, lang):
@@ -50,9 +42,11 @@ class Defaults(logging.Logger):
     self.addLanguage(lang)
 
   def isImpl(self, source):
+    if not str(self.usingSIDL.compilerDefaults.getCompilerModule()) == self.masterCompiler:
+      return 0
     if os.path.splitext(source)[1] == '.pyc':
       return 0
-    if self.compilerDefaults.getImplRE().match(os.path.dirname(source)):
+    if self.usingSIDL.compilerDefaults.getImplRE().match(os.path.dirname(source)):
       return 1
     return 0
 
@@ -78,33 +72,33 @@ class Defaults(logging.Logger):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], sources)
 
   def getSIDLServerCompiler(self, lang, rootDir, generatedRoots):
-    compiler           = self.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
-                                                                                   compilerFlags = self.usingSIDL.getCompilerFlags())
+    compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
+                                                                                               compilerFlags = self.usingSIDL.getCompilerFlags())
     compiler.language  = lang
     compiler.outputDir = rootDir
-    self.compilerDefaults.setupIncludes(compiler)
+    self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
   def getSIDLClientCompiler(self, lang, rootDir):
-    compiler           = self.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
-                                                                                     compilerFlags = self.usingSIDL.getCompilerFlags())
+    compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
+                                                                                               compilerFlags = self.usingSIDL.getCompilerFlags())
     compiler.language  = lang
     compiler.outputDir = rootDir
-    self.compilerDefaults.setupIncludes(compiler)
+    self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
   def getSIDLPrintCompiler(self, outputDir = None, printer = None):
-    compiler = self.compilerDefaults.getCompilerModule().CompileSIDLPrint(compilerFlags = self.usingSIDL.getCompilerFlags())
+    compiler = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLPrint(compilerFlags = self.usingSIDL.getCompilerFlags())
     if outputDir: compiler.outputDir = outputDir
     if printer:   compiler.printer   = printer
-    self.compilerDefaults.setupIncludes(compiler)
+    self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
   def getRepositoryTargets(self):
-    action = self.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getCompilerFlags())
+    action = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getCompilerFlags())
     action.outputDir = os.path.join(self.usingSIDL.repositoryDir, 'xml')
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
-    return [target.Target(None, [self.compilerDefaults.getTagger('repository'), action])]
+    return [target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('repository'), action])]
 
   def getSIDLServerTargets(self):
     targets = []
@@ -124,18 +118,18 @@ class Defaults(logging.Logger):
 
       defActions = transform.Transform(fileset.ExtensionFileSet(serverSourceRoots, self.compileExt))
 
-      targets.append(target.Target(None, [self.compilerDefaults.getTagger('server'), target.If(self.isNewSidl, genActions, defActions)]))
+      targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('server'), target.If(self.isNewSidl, genActions, defActions)]))
     return targets
 
   def getSIDLClientTargets(self):
     targets = []
     for lang in self.usingSIDL.clientLanguages:
-      targets.append(target.Target(None, [self.compilerDefaults.getTagger('client'),
+      targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('client'),
                                           self.getSIDLClientCompiler(lang, self.usingSIDL.getClientRootDir(lang))]))
     # Some clients have to be linked with the corresponding server (like the Bable bootstrap)
     for package in self.getPackages():
       for lang in self.usingSIDL.internalClientLanguages[package]:
-        targets.append(target.Target(None, [self.compilerDefaults.getTagger('client'),
+        targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('client'),
                                             self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package))]))
     return targets
 

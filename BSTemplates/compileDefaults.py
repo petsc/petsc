@@ -3,6 +3,7 @@ import compile
 import fileset
 import link
 import nargs
+import transform
 import BSTemplates.sidlDefaults as sidlDefaults
 
 import distutils.sysconfig
@@ -17,6 +18,7 @@ class UsingCompiler:
     self.includeDirs    = sidlDefaults.SIDLPackageDict(usingSIDL)
     self.extraLibraries = sidlDefaults.SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
+    return
 
   def getDefines(self):
     return self.defines
@@ -31,12 +33,16 @@ class UsingCompiler:
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
+    # Client filter
+    tag       = self.getLanguage().lower().replace('+', 'x')
+    filter    = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isClient(source, sourceDir), tags = tag)
+    # Client compiler
     compiler  = self.getCompiler(self.getClientLibrary(project, self.getLanguage()))
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(sourceDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [self.getTagger(sourceDir), compiler]
+    return [self.getTagger(sourceDir), filter, compiler]
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
@@ -129,11 +135,15 @@ class UsingCxx (UsingCompiler):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
+    # IOR Filter
+    iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = 'c')
     # IOR compiler
     compileC = compile.CompileC(library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    # Server Filter
+    serverFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isServer, tags = 'cxx')
     # Server compiler
     compileCxx = compile.CompileCxx(library)
     compileCxx.defines.extend(self.getDefines())
@@ -142,7 +152,8 @@ class UsingCxx (UsingCompiler):
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = rootDir), compileC, compile.TagCxx(root = rootDir), compileCxx]
+    targets = [compile.TagC(root = rootDir), iorFilter, compileC, compile.TagCxx(root = rootDir), serverFilter, compileCxx]
+    return targets
 
 class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''

@@ -1,5 +1,6 @@
 import bs
 import fileset
+import logging
 import transform
 
 import os
@@ -60,7 +61,7 @@ class SIDLPackageDict (dict, SIDLPackages):
     if not type(value) == types.ListType: raise ValueError('Entries must be lists')
     dict.__setitem__(self, key, value)
 
-class UsingSIDL:
+class UsingSIDL (logging.Logger):
   '''This class handles all interaction specific to the SIDL language'''
   def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None, bootstrapPackages = []):
     self.project  = project
@@ -84,6 +85,15 @@ class UsingSIDL:
     # Packages which must be compiled before the clients
     self.bootstrapPackages = SIDLPackageList(self)
     self.bootstrapPackages.extend(bootstrapPackages)
+    # Setup compiler specific defaults
+    if bs.argDB.has_key('babelCrap') and int(bs.argDB['babelCrap']):
+      self.debugPrint('Compiling SIDL with Babel', 3, 'sidl')
+      import BSTemplates.babelTargets
+      self.compilerDefaults = BSTemplates.babelTargets.Defaults(self)
+    else:
+      self.debugPrint('Compiling SIDL with Scandal', 3, 'sidl')
+      import BSTemplates.scandalTargets
+      self.compilerDefaults = BSTemplates.scandalTargets.Defaults(self)
     # Flags for the SIDL compiler
     self.compilerFlags  = ''
     self.includeDirs    = SIDLPackageDict(self)
@@ -144,14 +154,10 @@ class UsingSIDL:
     return os.path.abspath(bs.argDB['SIDL_DIR'])
 
   def getServerRootDir(self, lang, package = None):
-    path  = self.serverBaseDir
-    path += '-'+lang.lower()
-    if package:
-      path += '-'+package
-    return path
+    return self.compilerDefaults.getServerRootDir(lang, package, self.serverBaseDir)
 
   def getClientRootDir(self, lang):
-    return os.path.abspath(lang.lower())
+    return self.compilerDefaults.getClientRootDir(lang)
 
   def getStubDir(self, lang, package):
     if lang in self.internalClientLanguages[package]:

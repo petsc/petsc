@@ -5,21 +5,57 @@ import os
 import re
 
 class Defaults:
-  def __init__(self, defaults):
-    self.defaults = defaults
+  def __init__(self, usingSIDL):
+    self.usingSIDL = usingSIDL
+    self.IORRE     = re.compile(r'^(.*)_IOR$')
+    self.implRE    = re.compile(r'^(.*)_impl$')
+    self.serverRE  = re.compile(r'^(.*)_(Skel|Impl)')
     # Get runtime AST
-    defaults.usingSIDL.repositoryDirs.append(self.defaults.usingSIDL.getRootDir())
+    self.usingSIDL.repositoryDirs.append(self.usingSIDL.getRootDir())
     return
 
   def getCompilerModule(self):
     return scandal
 
+  def getServerRootDir(self, lang, package = None, base = None):
+    if base:
+      path = base+'-'
+    else:
+      path = ''
+    path += lang.lower()
+    if package:
+      path += '-'+package
+    return path
+
+  def getClientRootDir(self, lang):
+    return os.path.abspath(lang.lower()+'-scandal')
+
   def getImplRE(self):
-    return re.compile(r'^(.*)_impl$')
+    return self.implRE
+
+  def isIOR(self, source):
+    if self.IORRE.match(os.path.dirname(source)):
+      return 1
+    return 0
+
+  def isClient(self, source, root):
+    dir = os.path.dirname(source)
+    # Anything not in the root or below root/src
+    pattern = '^'+os.path.join(root, 'src').replace('+', r'\+')+r'.*$'
+    if dir == root or re.match(pattern, dir):
+      return 0
+    return 1
+
+  def isServer(self, source):
+    # The best we can do is exclude the skels and impls from Babel, but IORs and internal clients are still there
+    if self.serverRE.match(os.path.dirname(source)):
+      return 0
+    return 1
 
   def getTagger(self, type):
     return BSTemplates.sidlDefaults.TagSIDL()
 
   def setupIncludes(self, action):
-    action.repositoryDirs.extend(self.defaults.usingSIDL.repositoryDirs)
+    action.repositoryDirs.append(self.usingSIDL.repositoryDir)
+    action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return

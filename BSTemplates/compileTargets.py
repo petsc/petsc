@@ -29,7 +29,8 @@ class Defaults:
     try:
       if doCompile: compiler = self.sidlTargets.getUsing(lang).getServerCompileTarget(self.sidlTargets.project, package)
       if doLink:    linker   = self.sidlTargets.getUsing(lang).getServerLinkTarget(self.sidlTargets.project, package, self.doLibraryCheck())
-    except AttributeError:
+    except AttributeError, e:
+      print e
       raise RuntimeError('Unknown server language: '+lang)
     return compiler+linker+[transform.Update()]
 
