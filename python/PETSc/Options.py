@@ -18,6 +18,8 @@ class Options(config.base.Configure):
         if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
           flags.extend(['-Wshadow', '-Wwrite-strings'])
       elif bopt == 'g':
+        if self.framework.argDB['with-gcov']:
+          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
       elif bopt == 'O':
         flags.extend(['-O', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
