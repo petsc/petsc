@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.6 1998/01/15 02:29:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.7 1998/01/15 02:58:52 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -218,9 +218,10 @@ int DLOpen(char *libname,void **handle)
   }
 
   /* run the function DLRegister() if it is in the library */
-  ((void *) func)   = dlsym(handle,"DLRegister");
+  ((void *) func)   = dlsym(*handle,"DLRegisterLibrary");
   if (func) {
     ierr = (*func)();CHKERRQ(ierr);
+    PLogInfo(0,"DLOpen:Loading registered routines from %s\n",libname);
   }
 
   PetscFree(par2);
