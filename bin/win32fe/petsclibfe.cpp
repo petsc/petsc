@@ -1,4 +1,4 @@
-/* $Id: petsclibfe.cpp,v 1.9 2001/05/03 11:03:30 buschelm Exp $ */
+/* $Id: petsclibfe.cpp,v 1.10 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include "petsclibfe.h"
 
 using namespace PETScFE;
@@ -78,7 +78,7 @@ void lib::AddPaths(void) {
     addpath = VisualStudioDir + "Common7\\IDE";
     KnownVersion=true;
   } else {
-    cerr << "Warning: win32fe cl version not recognized." << endl;
+    cerr << "Warning: win32fe Visual Studio version not recognized." << endl;
   }
   if (KnownVersion) {
     arg.push_back("--path");

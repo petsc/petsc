@@ -1,4 +1,4 @@
-/* $Id: petscclfe.cpp,v 1.19 2001/05/04 21:29:54 buschelm Exp $ */
+/* $Id: petscclfe.cpp,v 1.20 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include "petscclfe.h"
 #include "Windows.h"
@@ -42,7 +42,7 @@ void cl::AddPaths(void) {
     addpath = VisualStudioDir + "Common7\\IDE";
     KnownVersion=true;
   } else {
-    cerr << "Warning: win32fe cl version not recognized." << endl;
+    cerr << "Warning: win32fe Visual Studio version not recognized." << endl;
   }
   if (KnownVersion) {
     arg.push_back("--path");
@@ -57,8 +57,8 @@ void cl::AddPaths(void) {
 void cl::Help(void) {
   compiler::Help();
   cout << "cl specific help:" << endl;
-  cout << "  Note: Different versions of cl require the use of additional .dll's" << endl;
-  cout << "        which may require the use of --path <arg> to specify the location" << endl;
+  cout << "  Note: Different versions of Visual Studio require the use of additional" << endl;
+  cout << "        .dll's which may require the use of --path <arg> to specify." << endl;
   cout << "  Alternatively, you can add the required location through the Windows" << endl;
   cout << "        Start Menu->Control Panel->System folder, or by invoking win32fe" << endl;
   cout << "        and cl from a specialized command prompt provided with cl." << endl << endl;
