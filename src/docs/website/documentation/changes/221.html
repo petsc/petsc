@@ -94,10 +94,13 @@ in PETSc 2.2.0 </font></p>
 
       <p><u><b>PC:</b></u>
         <ul> <li> ICC now uses Manteuffel shift by default</li>
-        <li> If matrix is symmetric, defaults to ICC when possible</li>
+        <li> If matrix is symmetric, PC defaults to ICC when possible, if you told with MatSetOption(mat,MAT_SYMMETRIC)</li>
         <li> PCSetVector() is gone (no longer needed) </li>
         <li> PCNullSpaceAttach() is gone, use KSPSetNullSpace() </li>
-        <li>MatGetSubmatrices() now preserves symmetric flag of original matrix</li></ul>
+        <li>MatGetSubmatrices() now preserves symmetric flag of original matrix</li>
+        <li> hypre BoomerAMG (-pc_type hypre -pc_hypre_type boomeramg) now uses one 1 cycle of multigrid as preconditioner
+             (Previously it used either a decrease in residual of 10^-7 or a maximum of 20 iterations</li>
+       </ul>
 
 
       </b></u></p>

@@ -30,6 +30,7 @@ typedef struct {
   /* options for pilut and BoomerAMG*/
   int                maxiter;
   double             tol;
+  PetscTruth         applyrichardson;
 
   /* options for pilut */
   int                factorrowsize;
@@ -117,9 +118,8 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscScalar        zero=0.0;
   int                hierr;
 
-
   PetscFunctionBegin;
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  if (!jac->applyrichardson) {ierr = VecSet(&zero,x);CHKERRQ(ierr);}
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   HYPREReplacePointer(jac->b,bv,sbv);
@@ -291,13 +291,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
   PetscFunctionBegin;
   jac->maxlevels       = 25;
-  jac->maxiter         = 20;
+  jac->maxiter         = 1;
   jac->tol             = 1.e-7;
   jac->strongthreshold = .25;
   jac->maxrowsum       = .9;
   jac->coarsentype     = 6;
   jac->measuretype     = 0;
-  
+  jac->applyrichardson = PETSC_FALSE;  
 
   /* this is terrible; HYPRE frees this array so we have to malloc it */
   jac->gridsweeps    = (int*)malloc(4*sizeof(int));
@@ -312,29 +312,29 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
     if (flg) {
       if (jac->maxlevels < 2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be at least two",jac->maxlevels);
-      ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
-    } 
+    }
+    ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
     if (flg) {
       if (jac->maxiter < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
-      ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
-    } 
+    }
+    ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
     if (flg) {
       if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be great than or equal zero",jac->tol);
-      ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
-    } 
+    }
+    ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
     if (flg) {
       if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
-      ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
-    } 
+    }
+    ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
     if (flg) {
       if (jac->maxrowsum < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
       if (jac->maxrowsum > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
-      ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     } 
+    ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     
     n = 4;
     ierr = PetscOptionsIntArray("-pc_hypre_boomeramg_grid_sweeps","Grid sweeps for fine,down,up,coarse","None",jac->gridsweeps,&n,&flg);CHKERRQ(ierr);
@@ -401,7 +401,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     for (i=0; i<jac->gridsweeps[3]; i++) {
       jac->gridrelaxpoints[3][i] = 0;
     }
-    ierr = HYPRE_BoomerAMGSetGridRelaxPoints(jac->hsolver,jac->gridrelaxpoints);CHKERRQ(ierr);
+    //ierr = HYPRE_BoomerAMGSetGridRelaxPoints(jac->hsolver,jac->gridrelaxpoints);CHKERRQ(ierr);
 
     ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -430,6 +430,26 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_BoomerAMG"
+static PetscErrorCode PCApplyRichardson_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
+{
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscLogInfo(pc,"PCApplyRichardson_hypre_BoomerAMG: Warning, convergence critera ignored, using %D iterations\n",its);
+  ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,its);CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,rtol);CHKERRQ(ierr);
+  jac->applyrichardson = PETSC_TRUE;
+  ierr = PCApply_HYPRE(pc,b,y);CHKERRQ(ierr);
+  jac->applyrichardson = PETSC_FALSE;
+  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_HYPRE_BoomerAMG"
@@ -603,12 +623,13 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   ierr = PetscStrcmp("boomeramg",name,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr                    = HYPRE_BoomerAMGCreate(&jac->hsolver);
-    pc->ops->setfromoptions = PCSetFromOptions_HYPRE_BoomerAMG;
-    pc->ops->view           = PCView_HYPRE_BoomerAMG;
-    jac->destroy            = HYPRE_BoomerAMGDestroy;
-    jac->setup              = HYPRE_BoomerAMGSetup;
-    jac->solve              = HYPRE_BoomerAMGSolve;
+    ierr                     = HYPRE_BoomerAMGCreate(&jac->hsolver);
+    pc->ops->setfromoptions  = PCSetFromOptions_HYPRE_BoomerAMG;
+    pc->ops->view            = PCView_HYPRE_BoomerAMG;
+    jac->destroy             = HYPRE_BoomerAMGDestroy;
+    jac->setup               = HYPRE_BoomerAMGSetup;
+    jac->solve               = HYPRE_BoomerAMGSolve;
+    pc->ops->applyrichardson = PCApplyRichardson_BoomerAMG;
     PetscFunctionReturn(0);
   }
   SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
