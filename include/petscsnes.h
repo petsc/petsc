@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.43 1996/01/29 21:45:47 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.44 1996/02/06 16:17:14 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -89,6 +89,7 @@ extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,void*),
 
 /* Unconstrained minimization routines */
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
+extern int SNESGetHessian(SNES,Mat*,Mat*,void **);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 extern int SNESGetGradient(SNES,Vec*);
 extern int SNESGetGradientNorm(SNES,Scalar*);
