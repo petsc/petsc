@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.7 1996/09/26 15:30:31 curfman Exp curfman $";
+C    "$Id: ex1f.F,v 1.8 1996/09/28 14:11:03 curfman Exp balay $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -78,7 +78,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       none = -1.0
       one  = 1.0
       n    = 10
-      call OptionsGetInt(PETSC_NULL_CHARACTER,"-n",n,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C         Compute the matrix and right-hand-side vector that define

@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.33 1996/09/26 02:53:51 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.34 1996/09/28 22:28:18 curfman Exp balay $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -188,7 +188,7 @@ C     SLESSetFromOptions();
 C  Set user-defined monitoring routine if desired
 
       flg = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,"-my_ksp_monitor",
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
