@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.184 2000/04/12 04:23:30 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.185 2000/05/04 16:25:35 bsmith Exp balay $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -1032,7 +1032,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   if (dset) {ierr = PetscFree(diag);CHKERRQ(ierr);}
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIBDiag",
-                                     (void*)MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
+                                      MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }

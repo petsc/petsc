@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.112 2000/04/12 04:26:20 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.113 2000/05/04 16:26:49 bsmith Exp balay $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -357,9 +357,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscPublishAll(da);  
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
   if (((PetscObject)global)->amem > -1) {
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }

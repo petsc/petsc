@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/02/02 21:24:03 balay Exp balay $ 
+# $Id: makefile,v 1.8 1999/04/13 20:47:30 balay Exp balay $ 
 
 ALL: lib 
 
@@ -15,12 +15,4 @@ DIRS	  =
 LOCDIR	  = src/sys/src/time/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
-rs6000_asmtime: rs6000_asmtime.s
-	-@if [ "${PARCH}" = "rs6000" ]; then \
-	${CC} -c rs6000_asmtime.s ; \
-	${AR} cr ${LIBNAME} rs6000_asmtime.o ; \
-	${RM} -f rs6000_asmtime.o; \
-	fi
-
 

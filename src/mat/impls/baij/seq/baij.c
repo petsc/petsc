@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.205 2000/04/18 15:59:06 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.206 2000/05/04 16:25:36 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1682,13 +1682,13 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
-                                     (void*)MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
+                                      MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqBAIJ",
-                                     (void*)MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
+                                      MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
-                                     (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+                                      MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

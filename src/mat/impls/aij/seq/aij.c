@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.342 2000/04/12 04:23:03 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.343 2000/05/04 16:25:26 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2322,13 +2322,13 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
-                                     (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
+                                     MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqAIJ",
-                                     (void*)MatStoreValues_SeqAIJ);CHKERRQ(ierr);
+                                     MatStoreValues_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
-                                     (void*)MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
+                                     MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
