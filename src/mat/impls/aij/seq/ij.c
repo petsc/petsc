@@ -1,9 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.23 1996/10/11 21:07:47 balay Exp balay $";
+static char vcid[] = "$Id: ij.c,v 1.24 1996/10/16 21:08:02 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatToSymmetricIJ_SeqAIJ"
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
            to IJ format (ignore the "A" part) Allocates the space needed. Uses only 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.11 1996/08/15 12:48:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.12 1996/09/14 03:08:37 bsmith Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -15,6 +15,8 @@ extern int MatGetRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
 
  
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCompressIndicesGeneral_MPIBAIJ"
 static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
@@ -43,6 +45,8 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCompressIndicesSorted_MPIBAIJ"
 static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
@@ -78,6 +82,8 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatExpandIndices_MPIBAIJ"
 static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
@@ -102,6 +108,8 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatIncreaseOverlap_MPIBAIJ"
 int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
 {
   int i, ierr;
@@ -144,6 +152,8 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
   nrqs - no of requests sent (or to be sent out)
   nrqr - no of requests recieved (which have to be or which have been processed
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatIncreaseOverlap_MPIBAIJ_Once"
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ *) C->data;
@@ -469,6 +479,8 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatIncreaseOverlap_MPIBAIJ_Local"
 /*  
    MatIncreaseOverlap_MPIBAIJ_Local - Called by MatincreaseOverlap, to do 
        the work on the local processor.
@@ -525,6 +537,8 @@ static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,char **table,int *isz
   }
   return 0;
 }
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatIncreaseOverlap_MPIBAIJ_Receive"
 /*     
       MatIncreaseOverlap_MPIBAIJ_Receive - Process the recieved messages,
          and return the output
@@ -662,6 +676,8 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
 
 static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSubMatrices_MPIBAIJ"
 int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat **submat)
 { 
@@ -686,6 +702,8 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
 }
 
 /* -------------------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSubMatrices_MPIBAIJ_local"
 static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat **submat)
 { 

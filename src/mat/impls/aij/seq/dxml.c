@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: dxml.c,v 1.5 1996/08/08 14:42:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.6 1996/11/19 16:30:54 bsmith Exp balay $";
 #endif
 
 /* 
@@ -12,6 +12,8 @@ static char vcid[] = "$Id: dxml.c,v 1.5 1996/08/08 14:42:46 bsmith Exp bsmith $"
 
 #if defined(HAVE_DXML) && !defined(__cplusplus)
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqAIJ_DXML"
 static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data;
@@ -26,6 +28,8 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
@@ -36,6 +40,8 @@ int MatUseDXML_SeqAIJ(Mat A)
 
 #else
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   return 0;

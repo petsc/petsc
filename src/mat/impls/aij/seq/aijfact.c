@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.68 1996/11/19 16:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.69 1996/12/08 20:07:38 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatOrder_Flow_SeqAIJ"
 int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   SETERRQ(PETSC_ERR_SUP,"MatOrder_Flow_SeqAIJ:Code not written");
@@ -13,6 +15,8 @@ int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
 /*
     Factorization code for AIJ format. 
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLUFactorSymbolic_SeqAIJ"
 int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
@@ -145,6 +149,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 /* ----------------------------------------------------------- */
 int Mat_AIJ_CheckInode(Mat);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLUFactorNumeric_SeqAIJ"
 int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -263,6 +269,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   return 0;
 }
 /* ----------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLUFactor_SeqAIJ"
 int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
 {
   Mat_SeqAIJ *mat = (Mat_SeqAIJ *) A->data;
@@ -287,6 +295,8 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   return 0;
 }
 /* ----------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSolve_SeqAIJ"
 int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -331,6 +341,9 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   PLogFlops(2*a->nz - a->n);
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSolveAdd_SeqAIJ"
 int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -377,6 +390,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   return 0;
 }
 /* -------------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSolveTrans_SeqAIJ"
 int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -432,6 +447,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSolveTransAdd_SeqAIJ"
 int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -489,6 +506,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 }
 /* ----------------------------------------------------------------*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatILUFactorSymbolic_SeqAIJ"
 int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;

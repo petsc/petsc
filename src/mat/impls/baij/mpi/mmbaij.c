@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.8 1996/11/19 16:31:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.9 1996/11/27 22:53:55 bsmith Exp balay $";
 #endif
 
 
@@ -9,6 +9,8 @@ static char vcid[] = "$Id: mmbaij.c,v 1.8 1996/11/19 16:31:35 bsmith Exp bsmith 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUpMultiply_MPIBAIJ"
 int MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
@@ -114,6 +116,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
    Kind of slow! But that's what application programmers get when 
    they are sloppy.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "DisAssemble_MPIBAIJ"
 int DisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) A->data;
