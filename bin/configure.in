@@ -41,8 +41,9 @@ dnl that must be present.  Initialize configure (this will process the
 dnl command line)
 AC_INIT(../include/petsc.h)
 dnl
-dnl Insist on autoconf 2.12 or later
-AC_PREREQ(2.12)
+dnl Insist on autoconf 2.13 or later
+AC_PREREQ(2.13)
+AC_CONFIG_AUX_DIR(config)
 dnl
 dnl Find the root PETSC directory if it hasn't been specified
 if test -z "$PETSC_DIR" ; then 
@@ -344,7 +345,7 @@ dnl
 dnl Fortran support
 export CC
 export FC
-FC_LIB=`bin/findftnlibs | tr '\012' ' '`
+FC_LIB=`bin/config/findftnlibs | tr '\012' ' '`
 if test -n "$FC_LIB" ; then
     echo "Fortran linker needs $FC_LIB"
 fi
