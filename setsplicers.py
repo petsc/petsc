@@ -6,7 +6,7 @@ import sys
 import re
 import cPickle
 
-def getSplicersDir(splicedimpls,dir,names):
+def setSplicersDir(splicedimpls,dir,names):
 
   reg = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
 
@@ -24,8 +24,11 @@ def getSplicersDir(splicedimpls,dir,names):
     if f.endswith('.so'): continue
     if not os.path.isfile(os.path.join(dir,f)): continue
     fd = open(os.path.join(dir,f),'r')
+    foundreplacement = 0
+    text = ''
     line = fd.readline()
     while line:
+      text = text+line
       if not line.find('splicer.begin') == -1:
         fl = reg.search(line)
         name = fl.group(1)
@@ -35,23 +38,38 @@ def getSplicersDir(splicedimpls,dir,names):
         while line.find('splicer.end') == -1:
           body = body + line
           line = fd.readline()
-        splicedimpls[name] = body
 
+        # replace body with saved splicer block
+        if name in splicedimpls and not body == splicedimpls[name]:
+          foundreplacement = 1
+          print 'Replacing -------'+name
+          print body
+          print 'with ------------'
+          print splicedimpls[name]
+          body = splicedimpls[name]
+
+        text = text+body
+        text = text+line
       line = fd.readline()
     fd.close()
+
+    if foundreplacement:
+      print 'Replaced blocks in '+os.path.join(dir,f)
+
+#    print text
   
-def getSplicers(directory):
-  splicedimpls = {}
+def setSplicers(directory):
+
+  f    = open('splicerblocks', 'r')
+  splicedimpls = cPickle.load(f)
+  f.close()
 
   if not directory: directory = os.getcwd()
-  os.path.walk(directory,getSplicersDir,splicedimpls)
+  os.path.walk(directory,setSplicersDir,splicedimpls)
 
-  f    = open('splicerblocks', 'w')
-  cPickle.dump(splicedimpls,f)
-  f.close()
     
 if __name__ ==  '__main__':
   if len(sys.argv) > 2: sys.exit('Usage: getsplicers.py <directory>')
   sys.argv.append(None)
-  getSplicers(sys.argv[1])
+  setSplicers(sys.argv[1])
 
