@@ -48,6 +48,14 @@ class Bootstrapper(script.Script):
     return
   compilerRepository = property(getCompilerRepository, setCompilerRepository, doc = 'The repository containing the SIDL compiler')
 
+  def checkNumeric(self):
+    try:
+      import Numeric
+    except ImportError:
+      import sys
+      sys.exit('ERROR: No Numeric found in this python. Go to http://www.numpy.org for a current version.')
+    return
+
   def clone(self, url):
     path = os.path.join(self.baseDir, self.mapper.getRepositoryPath(url))
     dir = os.path.dirname(path)
@@ -118,6 +126,7 @@ class Bootstrapper(script.Script):
     return 0
 
   def run(self):
+    self.checkNumeric()
     [self.safeRemove(f) for f in ['RDict.db', 'RDict.log']]
     self.setup()
     if self.argDB['download']:

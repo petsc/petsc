@@ -135,21 +135,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
     help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
-    help.addArgument('Framework', '-cleanup',             nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
+    help.addArgument('Framework', '-doCleanup',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-with-batch',         nargs.ArgBool(None, 0, 'Machine uses a batch system to submit jobs'))
+    help.addArgument('Framework', '-with-batch',          nargs.ArgBool(None, 0, 'Machine uses a batch system to submit jobs'))
     return help
 
   def getCleanup(self):
-    if not hasattr(self, '_cleanup'):
-      return self.argDB['cleanup']
-    return self._cleanup
-  def setCleanup(self):
-    self._cleanup = cleanup
+    if not hasattr(self, '_doCleanup'):
+      return self.argDB['doCleanup']
+    return self._doCleanup
+  def setCleanup(self, doCleanup):
+    self._doCleanup = doCleanup
     return
-  cleanup = property(getCleanup, setCleanup, doc = 'Flag for deleting generating files')
+  doCleanup = property(getCleanup, setCleanup, doc = 'Flag for deleting generated files')
 
   def setupArguments(self, argDB):
     '''Change titles and setup all children'''
@@ -194,7 +194,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def addChild(self, config):
-    '''Add a confgiure module to the framework'''
+    '''Add a configure module to the framework'''
     self.childGraph.addVertex(config)
     return
 
@@ -616,3 +616,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       child.configure()
     self.cleanup()
     return 1
+
+if __name__ == '__main__':
+  framework = Framework(sys.argv[1:], loadArgDB = 0)
+  framework.configure(out = sys.stdout)
