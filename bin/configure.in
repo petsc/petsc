@@ -481,7 +481,7 @@ if test -z "$CC_SHARED_OPT" ; then
 fi
 if test -z "$CC_SHARED_OPT" ; then
     PAC_CHECK_COMPILER_OPTION(-KPIC,CC_SHARED_OPT=-KPIC)
-    if test $ARCH = "solaris" ; then
+    if test "$ARCH" = "solaris" ; then
 	    SHAREDKIND=solaris
     fi
 fi
@@ -771,7 +771,7 @@ dnl Note that the input and output filenames are not handled correctly
 dnl by configure in the case where configure lives in a subdirectory.
 dnl To work around this, we use the output:input file name options
 dnl
-AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:../bmake/config/base.in bmake/config/base_variables:../bmake/config/base_variables.in)
+AC_OUTPUT(bmake/config/packages:../bmake/config/packages.in bmake/config/rules:../bmake/config/rules.in bmake/config/variables:../bmake/config/variables.in)
 dnl
 dnl
 dnl  Make stdout come back to the screen
@@ -796,12 +796,12 @@ echo "***************************************************************"
 
 dnl Move the files into the bmake area in their own directory
 
-rm  -rf                                                                                  bmake/$BMAKEDIR
+rm  -rf                                                                                 bmake/$BMAKEDIR
 if test ! -d bmake/$BMAKEDIR ; then mkdir bmake/$BMAKEDIR ; fi
-mv  -f bmake/config/base.site                                                            bmake/$BMAKEDIR/base.site
-mv  -f bmake/config/base_variables                                                       bmake/$BMAKEDIR/base_variables
-mv  -f bmake/config/base                                                                 bmake/$BMAKEDIR/base
-cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' >  bmake/$BMAKEDIR/petscconf.h
-touch                                                                                    bmake/$BMAKEDIR/petscfix.h    
+mv  -f bmake/config/packages                                                            bmake/$BMAKEDIR/packages
+mv  -f bmake/config/variables                                                           bmake/$BMAKEDIR/variables
+mv  -f bmake/config/rules                                                               bmake/$BMAKEDIR/rules
+cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/$BMAKEDIR/petscconf.h
+touch                                                                                   bmake/$BMAKEDIR/petscfix.h    
 rm  -f bmake/config/petscconf.h
 
