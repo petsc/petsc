@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.21 1998/07/02 02:47:54 bsmith Exp ibrahba $ */
+/* $Id: petscerror.h,v 1.22 1998/08/21 22:30:25 ibrahba Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -124,7 +124,8 @@ extern PetscStack *petscstack;
 #if !defined(HAVE_AMS)
 
 #define PetscFunctionBegin \
-  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__DIR__);\
+   if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = __FUNC__; \
     petscstack->file[petscstacksize]      = __FILE__; \
     petscstack->directory[petscstacksize] = __SDIR__; \
@@ -151,59 +152,62 @@ extern PetscStack *petscstack;
   }};
 
 #define PetscFunctionReturn(a) \
-  {PetscStackPop; \
+  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__DIR__);\
+  PetscStackPop; \
   return(a);}
 
 #define PetscStackActive (petscstack != 0)
 
 #else
 
-/* Duplicate Code for HAVE_AMS */
-extern AMS_Comm stack_comm;
+/*
+    Duplicate Code for when the ALICE Memory Snooper (AMS)
+  is being used. When HAVE_AMS is defined.
+
+     stack_mem is the AMS memory that contains fields for the 
+               number of stack frames and names of the stack frames
+*/
+
 extern AMS_Memory stack_mem;
-extern stack_err;
+extern int        stack_err;
 
 #define PetscFunctionBegin \
-  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_take_access(stack_mem);\
+  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__DIR__);\
+   if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
     petscstack->function[petscstacksize]  = __FUNC__; \
     petscstack->file[petscstacksize]      = __FILE__; \
     petscstack->directory[petscstacksize] = __SDIR__; \
     petscstack->line[petscstacksize]      = __LINE__; \
     petscstacksize++; \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_grant_access(stack_mem);\
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }}
 
 #define PetscStackPush(n) \
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_take_access(stack_mem);\
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
     petscstack->function[petscstacksize]  = n; \
     petscstack->file[petscstacksize]      = 0; \
     petscstack->directory[petscstacksize] = 0; \
     petscstack->line[petscstacksize]      = 0; \
     petscstacksize++; \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_grant_access(stack_mem);\
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }}
 
 #define PetscStackPop \
   {if (petscstack && petscstacksize > 0) {     \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_take_access(stack_mem);\
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
     petscstacksize--; \
     petscstack->function[petscstacksize]  = 0; \
     petscstack->file[petscstacksize]      = 0; \
     petscstack->directory[petscstacksize] = 0; \
     petscstack->line[petscstacksize]      = 0; \
-    if (!(stack_mem < 0)) \
-        stack_err = AMS_Memory_grant_access(stack_mem);\
+    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }};
 
 #define PetscFunctionReturn(a) \
-  {PetscStackPop; \
+  {PetscTrValid(__LINE__,__FUNC__,__FILE__,__DIR__);\
+  PetscStackPop; \
   return(a);}
 
 #define PetscStackActive (petscstack != 0)
@@ -224,4 +228,20 @@ extern int PetscStackCreate(int);
 extern int PetscStackView(Viewer);
 extern int PetscStackDestroy(void);
 
+/*
+          For locking and unlocking AMS memories associated with 
+    PETSc objects
+*/
+
+#if defined(HAVE_AMS)
+#define PetscAMSTakeAccess(obj)   \
+    ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem));
+#define PetscAMSGrantAccess(obj)  \
+    ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem));
+#else
+#define PetscAMSTakeAccess(obj) 
+#define PetscAMSGrantAccess(obj)
 #endif
+
+#endif
+
