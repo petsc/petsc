@@ -55,15 +55,15 @@ class ArgDict (dict, logging.Logger):
 
   def __setitem__(self, key, item):
     if self.metadata['saveinparent'].has_key(key):
-      dict.__setitem__.(self.getParent(key), key, item)
+      dict.__setitem__(self.getParent(key), key, item)
     else:
-      dict.__setitem__.(self, key, item)
+      dict.__setitem__(self, key, item)
     
   def __getitem__(self, key):
     if dict.has_key(self, key): return dict.__getitem__(self, key)
     (ok, item) = self.getMissingItem(key)
     if ok:
-      dict.__setitem__.(self, key, item)
+      dict.__setitem__(self, key, item)
       return item
     else:
       return None
