@@ -278,8 +278,8 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
   Concepts: drawing^opening PetscViewer
 
 
-.seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PetscViewer_DRAW_,
-          PetscViewer_DRAW_WORLD, PetscViewer_DRAW_SELF
+.seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PETSC_VIEWER_DRAW_,
+          PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF
 @*/
 int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
 {

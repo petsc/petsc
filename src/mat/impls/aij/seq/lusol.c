@@ -187,8 +187,6 @@ int MatDestroy_SeqAIJ_LUSOL(Mat A)
      int             ierr;
 
      PetscFunctionBegin;
-
-     a = (Mat_SeqAIJ *)A->data;
      lusol = (Mat_SeqAIJ_LUSOL *)A->spptr;
 
      ierr = PetscFree(lusol->ip);CHKERRQ(ierr);

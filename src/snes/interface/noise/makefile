@@ -2,6 +2,8 @@
 
 ALL: lib
 
+#requiresscalar real 
+
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = snesmfj2.c snesnoise.c
@@ -10,7 +12,7 @@ SOURCEH  =
 OBJSC    = snesmfj2.o snesnoise.o
 OBJSF    = snesdnest.o
 LIBBASE  = libpetscsnes
-MANSEC   = n
+MANSEC   = SNES
 LOCDIR   = src/snes/interface/noise
 
 include ${PETSC_DIR}/bmake/common/base

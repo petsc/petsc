@@ -95,9 +95,10 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
 {
   DIFFPAR_MORE *neP = (DIFFPAR_MORE *)nePv;
   Vec         w, xp, fvec;    /* work vectors to use in computing h */
-  double      zero = 0.0, hl, hu, h, fnoise_s, fder2_s, alpha;
-  double      fval[7], tab[7][7], eps[7];
-  double      f, rerrf, fder2;
+  double      zero = 0.0, hl, hu, h, fnoise_s, fder2_s;
+  PetscScalar alpha;
+  PetscScalar fval[7], tab[7][7], eps[7], f;
+  double      rerrf, fder2;
   int         iter, k, i, j, ierr, info;
   int         nf = 7;         /* number of function evaluations */
   int         fcount;
@@ -243,7 +244,8 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   double       h;        /* differencing parameter */
   Vec          f;
   MatStructure sparsity = DIFFERENT_NONZERO_PATTERN;
-  PetscScalar  alpha, yy1n, yy2n, enorm;
+  PetscScalar  alpha;
+  PetscReal    yy1n,yy2n,enorm;
   int          i, ierr;
   PetscTruth   printv;
   char         filename[32];

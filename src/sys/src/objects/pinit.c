@@ -140,7 +140,7 @@ void PetscADMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   }
 
   for (i=0; i<count/2; i++) {
-    if (xout[2*i] < xin[2*i]) {
+    if (PetscRealPart(xout[2*i]) < PetscRealPart(xin[2*i])) {
       xout[2*i]   = xin[2*i];
       xout[2*i+1] = xin[2*i+1];
     }
@@ -168,7 +168,7 @@ void PetscADMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   }
 
   for (i=0; i<count/2; i++) {
-    if (xout[2*i] > xin[2*i]) {
+    if (PetscRealPart(xout[2*i]) > PetscRealPart(xin[2*i])) {
       xout[2*i]   = xin[2*i];
       xout[2*i+1] = xin[2*i+1];
     }

@@ -266,6 +266,8 @@ int PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
 + draw - the drawing context
 - display - the X windows display
 
+  Level: advanced
+
 @*/
 int PetscDrawSetDisplay(PetscDraw draw,char *display)
 {

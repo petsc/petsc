@@ -186,6 +186,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
    Output Parameter:
 .  J - the matrix-free matrix
 
+   Level: advanced
+
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
@@ -284,7 +286,7 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESDefaultMatrixFreeSetParameters2"
-/*@
+/*@C
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
 
@@ -302,6 +304,8 @@ $
      the relative error in the function evaluations)
 .  umin - minimum allowable u-value
 -  h - differencing parameter
+
+   Level: advanced
 
    Notes:
    If the user sets the parameter h directly, then this value will be used
