@@ -1,4 +1,6 @@
-/* $Id$ */
+/* $Id: sseenabled.c,v 1.4 2001/04/13 19:10:40 buschelm Exp bsmith $ */
+#define "petsc.h"
+
 #ifdef PETSC_HAVE_ICL
 
 /* Processor specific version for PentiumIII and Pentium4 */
