@@ -15,17 +15,17 @@ if ($day == Sun || $day == Wed || $day == Fri) then
     set M=(snake    merlin      )
     set B=(O        O_complex   )
     set A=(hpux     sun4        )
-    set J=(fortran  nofortran   )
+    set J=(fortran  fortran   )
 else if ($day == Mon || $day == Sat) then
     set M=(ptera      ryan      )
     set B=(O_complex  O         )
     set A=(alpha      IRIX      )
-    set J=(nofortran  fortran   )
+    set J=(fortran  fortran   )
 else
     set M=(ptera      puck)
     set B=(O          O_complex)
     set A=(alpha      IRIX)
-    set J=(fortran    nofortran)
+    set J=(fortran    fortran)
 endif
 
 #
