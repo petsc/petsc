@@ -31,7 +31,7 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler  *app = (Euler *)dummy;
-  Scalar   negone = -1.0, ratio;
+  Scalar   negone = -1.0, ratio, cfl_min = 7.5;
   Vec      DX;
   int      ierr;
   Viewer   view1;
@@ -51,15 +51,20 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
   }
 
   if (its) {
-    /* Compute new CFL number */
-    if (app->cfl_advance) {
-      if (fnorm/app->fnorm0 <= app->f_reduction) {
-        ratio = app->fnorm_last / fnorm;
-        if (ratio < 1.0 || app->cfl <= app->cfl_max) {
-          app->cfl = PetscMin(app->cfl * ratio,app->cfl_max);
-          if (!app->no_output) PetscPrintf(comm,"New CFL: ratio=%g, cfl=%g\n",ratio,app->cfl);
-        } else 
-          if (!app->no_output) PetscPrintf(comm,"Same CFL: cfl = %g, cfl_max = %g\n",app->cfl,app->cfl_max);
+    /* Compute new CFL number (if we are past iteration 12, where BCs are changed) */
+    if (app->cfl_advance && its > 12) {
+      /* Modify the CFL (increase or decrease) if we are past the threshold ratio
+         or cfl > cfl_min and fnorm is increasing */
+      ratio = app->fnorm_last / fnorm;
+      if ((fnorm/app->fnorm0 <= app->f_reduction) || 
+          (app->cfl > cfl_min && ratio < 1.0)) {
+        app->cfl = PetscMin(app->cfl * ratio,app->cfl_max);
+        app->cfl = PetscMax(app->cfl,cfl_min);
+        if (!app->no_output) {
+          if (app->cfl != app->cfl_max) PetscPrintf(comm,"New CFL: ratio=%g, cfl=%g\n",ratio,app->cfl);
+          else PetscPrintf(comm,"Max CFL: cfl=%g\n",app->cfl);
+        }
+      /* Otherwise hold constant if not past the threshold ratio */
       } else {
         if (!app->no_output) PetscPrintf(comm,"Same CFL: fnorm/fnorm0 = %g, f_reduction ratio = %g, cfl = %g\n",
           fnorm/app->fnorm0,app->f_reduction,app->cfl);
@@ -547,7 +552,7 @@ int JulianneConvergenceTest(SNES snes,double xnorm,double pnorm,double fnorm,voi
         if (ratio < app->fstagnate_ratio) fstagnate++;
         printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",iter,i,ratio,app->fstagnate_ratio,fstagnate);
       }
-      if (fstagnate == last_k) {
+      if (fstagnate > last_k-4) {
         PLogInfo(snes,"JulianneConvergenceTest: Stagnation at fnorm = %g\n",fnorm);
         return 3;
       }
