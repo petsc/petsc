@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import bs
 import fileset
+import BSTemplates.babelTargets
 import BSTemplates.scandalTargets
 import BSTemplates.compileTargets
 
@@ -40,13 +41,16 @@ class PetscMake(bs.BS):
     self.filesets['sidl'] = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
 
   def defineTargets(self):
-    scandal = BSTemplates.scandalTargets.Defaults('bs', self.filesets['sidl'])
-    scandal.addServerLanguage('C++')
-    scandal.addClientLanguage('C++')
-    scandal.addClientLanguage('Python')
-    compile = BSTemplates.compileTargets.Defaults(scandal)
+    if bs.argDB.has_key('babelCrap'):
+      sidl = BSTemplates.babelTargets.Defaults('bs', self.filesets['sidl'])
+    else:
+      sidl = BSTemplates.scandalTargets.Defaults('bs', self.filesets['sidl'])
+    sidl.addServerLanguage('C++')
+    sidl.addClientLanguage('C++')
+    sidl.addClientLanguage('Python')
+    compile = BSTemplates.compileTargets.Defaults(sidl)
 
-    self.targets['sidl']    = scandal.getSIDLTarget()
+    self.targets['sidl']    = sidl.getSIDLTarget()
     self.targets['compile'] = compile.getCompileTarget()
     self.targets['default'] = self.targets['compile']
 
