@@ -465,13 +465,3 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "RegisterMatMatMultRoutines_Private"
-PetscErrorCode RegisterMatMatMultRoutines_Private(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}

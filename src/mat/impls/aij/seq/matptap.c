@@ -7,8 +7,6 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN PetscErrorCode RegisterMatMatMultRoutines_Private(Mat);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
 /*@
@@ -468,18 +466,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RegisterPtAPRoutines_Private"
-PetscErrorCode RegisterPtAPRoutines_Private(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = RegisterMatMatMultRoutines_Private(A);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
