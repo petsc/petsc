@@ -62,10 +62,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(PetscInt)+sizeof(PetscScalar))+(am+1)*sizeof(PetscInt); \
-        ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr); \
-        new_j   = (PetscInt*)(new_a + new_nz); \
-        new_i   = new_j + new_nz; \
+        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,am+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];} \
@@ -77,11 +74,13 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         ierr = PetscMemcpy(new_a+ai[row]+nrow1+CHUNKSIZE,aa+ai[row]+nrow1,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
-        ierr = PetscFree(a->a);CHKERRQ(ierr);  \
-        if (!a->singlemalloc) { \
-           ierr = PetscFree(a->i);CHKERRQ(ierr); \
-           ierr = PetscFree(a->j);CHKERRQ(ierr); \
-        } \
+       if (!a->singlemalloc) {\
+          ierr = PetscFree(a->a);CHKERRQ(ierr);\
+          ierr = PetscFree(a->i);CHKERRQ(ierr);\
+          ierr = PetscFree(a->j);CHKERRQ(ierr);\
+        } else {\
+          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);\
+        }\
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
         a->singlemalloc = PETSC_TRUE; \
  \
@@ -131,10 +130,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(PetscInt)+sizeof(PetscScalar))+(bm+1)*sizeof(PetscInt); \
-        ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr); \
-        new_j   = (PetscInt*)(new_a + new_nz); \
-        new_i   = new_j + new_nz; \
+        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,bm+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = bi[ii];} \
@@ -146,11 +142,13 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         ierr = PetscMemcpy(new_a+bi[row]+nrow2+CHUNKSIZE,ba+bi[row]+nrow2,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
-        ierr = PetscFree(b->a);CHKERRQ(ierr);  \
-        if (!b->singlemalloc) { \
-          ierr = PetscFree(b->i);CHKERRQ(ierr); \
-          ierr = PetscFree(b->j);CHKERRQ(ierr); \
-        } \
+        if (!a->singlemalloc) {\
+          ierr = PetscFree(b->a);CHKERRQ(ierr);\
+          ierr = PetscFree(b->i);CHKERRQ(ierr);\
+          ierr = PetscFree(b->j);CHKERRQ(ierr);\
+        } else {\
+          ierr = PetscFree3(b->a,b->i,b->j);CHKERRQ(ierr);\
+        }\
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
         b->singlemalloc = PETSC_TRUE; \
  \

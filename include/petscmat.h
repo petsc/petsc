@@ -744,6 +744,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices(Mat,PetscInt[
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 
+#define MAT_SKIP_ALLOCATION -4
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat,PetscInt,const PetscInt[]);

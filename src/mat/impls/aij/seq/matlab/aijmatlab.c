@@ -49,20 +49,24 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  int        ii;
-  Mat        mat = (Mat)obj;
-  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
-  mxArray    *mmat; 
+  int            ii;
+  Mat            mat = (Mat)obj;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
+  mxArray        *mmat; 
 
   PetscFunctionBegin;
-  ierr = PetscFree(aij->a);CHKERRQ(ierr);
+  if (!aij->singlemalloc) {
+    ierr = PetscFree(aij->a);CHKERRQ(ierr);
+    ierr = PetscFree(aij->j);CHKERRQ(ierr);
+    ierr = PetscFree(aij->i);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree3(aij->a,aij->j,aij->i);CHKERRQ(ierr);
+  }
 
   mmat = engGetVariable((Engine *)mengine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->m];
-  ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
-  aij->j            = (int*)(aij->a + aij->nz);
-  aij->i            = aij->j + aij->nz;
+  ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->m+1,PetscInt,&aij->i);CHKERRQ(ierr);
   aij->singlemalloc = PETSC_TRUE;
   aij->freedata     = PETSC_TRUE;
 

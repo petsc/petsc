@@ -43,7 +43,7 @@ int MatReleaseValuesMemory_SeqAIJ(Mat mat)
     aij->j = new_j;
     PetscFree(aij->a);
     aij->a = 0; /* so we don't accidently reuse it */
-    aij->singlemalloc = 0;
+    aij->singlemalloc = PETSC_FALSE;
   }
   return 0;
 }

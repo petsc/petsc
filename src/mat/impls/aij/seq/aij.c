@@ -168,17 +168,14 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
-        PetscInt         new_nz = ai[A->m] + CHUNKSIZE,*new_i,*new_j;
+        PetscInt    new_nz = ai[A->m] + CHUNKSIZE,*new_i,*new_j;
         size_t      len;
         PetscScalar *new_a;
 
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix requiring new malloc()",row,col);
 
         /* malloc new storage space */
-        len     = ((size_t) new_nz)*(sizeof(PetscInt)+sizeof(PetscScalar))+(A->m+1)*sizeof(PetscInt);
-	ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr);
-        new_j   = (PetscInt*)(new_a + new_nz);
-        new_i   = new_j + new_nz;
+        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,A->m+1,PetscInt,&new_i);CHKERRQ(ierr);
 
         /* copy over old data into new slots */
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
@@ -189,10 +186,12 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
         ierr = PetscMemcpy(new_a,aa,(((size_t) ai[row])+nrow)*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+ai[row]+nrow+CHUNKSIZE,aa+ai[row]+nrow,len*sizeof(PetscScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-        ierr = PetscFree(a->a);CHKERRQ(ierr);
         if (!a->singlemalloc) {
+          ierr = PetscFree(a->a);CHKERRQ(ierr);
           ierr = PetscFree(a->i);CHKERRQ(ierr);
           ierr = PetscFree(a->j);CHKERRQ(ierr);
+        } else {
+          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
         }
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = PETSC_TRUE;
@@ -674,10 +673,12 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->m,A->n,a->nz);
 #endif
   if (a->freedata) {
-    ierr = PetscFree(a->a);CHKERRQ(ierr);
     if (!a->singlemalloc) {
+      ierr = PetscFree(a->a);CHKERRQ(ierr);
       ierr = PetscFree(a->i);CHKERRQ(ierr);
       ierr = PetscFree(a->j);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree3(a->a,a->j,a->i);CHKERRQ(ierr);
     }
   }
   if (a->row) {
@@ -2524,8 +2525,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
   PetscFunctionReturn(0);
 }
 
-#define SKIP_ALLOCATION -4
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJSetPreallocation"
 /*@C
@@ -2554,6 +2553,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For large problems you MUST preallocate memory or you 
    will get TERRIBLE performance, see the users' manual chapter on matrices.
+
+   Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
+   entries or columns indices
 
    By default, this format uses inodes (identical nodes) when possible, to 
    improve numerical efficiency of matrix-vector products and solves. We 
@@ -2597,7 +2599,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 
   PetscFunctionBegin;
   
-  if (nz == SKIP_ALLOCATION) {
+  if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
     nz             = 0;
   }
@@ -2627,11 +2629,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 
   if (!skipallocation) {
     /* allocate the matrix space */
-    len             = ((size_t) nz)*(sizeof(PetscInt) + sizeof(PetscScalar)) + (B->m+1)*sizeof(PetscInt);
-    ierr            = PetscMalloc(len,&b->a);CHKERRQ(ierr);
-    b->j            = (PetscInt*)(b->a + nz);
-    ierr            = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    b->i            = b->j + nz;
+    ierr = PetscMalloc3(nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->m+1,PetscInt,&b->i);CHKERRQ(ierr);
+    ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
     b->i[0] = 0;
     for (i=1; i<B->m+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
@@ -2756,7 +2755,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,m = A->m;
-  size_t         len;
 
   PetscFunctionBegin;
   *B = 0;
@@ -2783,11 +2781,8 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   }
 
   /* allocate the matrix space */
+  ierr = PetscMalloc3(a->i[m],PetscScalar,&c->a,a->i[m],PetscInt,&c->j,m+1,PetscInt,&c->i);CHKERRQ(ierr);
   c->singlemalloc = PETSC_TRUE;
-  len   = ((size_t) (m+1))*sizeof(PetscInt)+(a->i[m])*(sizeof(PetscScalar)+sizeof(PetscInt));
-  ierr  = PetscMalloc(len,&c->a);CHKERRQ(ierr);
-  c->j  = (PetscInt*)(c->a + a->i[m] );
-  c->i  = c->j + a->i[m];
   ierr = PetscMemcpy(c->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   if (m > 0) {
     ierr = PetscMemcpy(c->j,a->j,(a->i[m])*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2798,7 +2793,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  ierr = PetscLogObjectMemory(C,len+2*(m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));CHKERRQ(ierr);
   c->sorted            = a->sorted;
   c->ignorezeroentries = a->ignorezeroentries;
   c->roworiented       = a->roworiented;
@@ -2975,10 +2969,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscI
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,m,n,mat);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*mat,SKIP_ALLOCATION,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*mat,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(*mat)->data;
 
-  if (i[0] != 0) {
+  if (i[0]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   }
   aij->i = i;
