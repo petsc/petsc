@@ -1,4 +1,3 @@
-!  $Id: user.F,v 1.3 2000/01/16 15:40:08 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -20,7 +19,7 @@ c============================================================================
       Scalar time
 
 c      time = second(time)
-      time = 1.0
+      time = 1.0d0
 
       return
       end
@@ -73,7 +72,7 @@ c
 c Comment out old coefficients
 c      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
 c
-       data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.2,0.5/
+       data cv1,ct1,ct2,ct3,ct4/7.1d0,1.0d0,2.0d0,1.2d0,0.5d0/
 
       end
 
@@ -116,37 +115,37 @@ c=====================================================================72
 #define qnode(i,j) qvec(j,i)
 #endif
 c
-      cw1 = cb1/vkar/vkar + (1. + cb2)/sig
-      if(ivisc.gt.4)turbinf = 1.341946
+      cw1 = cb1/vkar/vkar + (1.0d0 + cb2)/sig
+      if(ivisc.gt.4d0)turbinf = 1.341946d0
 c      if(ivisc.gt.4)turbinf = 0.5
-      if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1
+      if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1d0
 c
 c Note that for Spalarts model, I use turbinf as the freestream value of
 c the dependent variable just as in the Baldwin-Barth model.
 c The constant is set so that in the freestream, nu_t=0.009 (1.341946)
 c 
 c     print *, "I am in INIT"
-      res0 = 1.0
-      resc = 1.0
+      res0 = 1.0d0
+      resc = 1.0d0
 
-      gamma = 1.
-      gm1   = 1.
-      gp1   = 1.
-      gm1g  = 1.
-      gp1g  = 1.
-      ggm1  = 1.
+      gamma = 1.0d0
+      gm1   = 1.0d0
+      gp1   = 1.0d0
+      gm1g  = 1.0d0
+      gp1g  = 1.0d0
+      ggm1  = 1.0d0
  
-      pi = 4.*datan(1.0d0)
-      conv = 180./pi
-      p0    = 1.0
+      pi = 4.0d0*datan(1.0d0)
+      conv = 180.0d0/pi
+      p0    = 1.0d0
 #if defined(CFL3D_AXIS)
-      u0    = dcos(alpha/conv)
-      v0    = 0.0
-      w0    = dsin(alpha/conv)
+      u0    = cos( alpha/conv )
+      v0    = 0.0d0
+      w0    = sin( alpha/conv )
 #else
-      u0    = dcos(alpha/conv)
-      v0    = dsin(alpha/conv)
-      w0    = 0.0
+      u0    = cos( alpha/conv )
+      v0    = sin( alpha/conv )
+      w0    = 0.0d0
 #endif
       do n = 1,nnodes
          qnode(1,n) = p0
@@ -156,8 +155,8 @@ c     print *, "I am in INIT"
       enddo
       if (ivisc.eq.3) then
        do n = 1,nnodes
-         turbre(n)  = 0.0
-         amut(n)    = 0.0
+         turbre(n)  = 0.0d0
+         amut(n)    = 0.0d0
        enddo
       endif
 c
@@ -170,9 +169,9 @@ c
 c Compute the velocity normal to the surface
 c
         k       = ivnode(i)
-        qnode(2,k) = 0.0
-        qnode(3,k) = 0.0
-        qnode(4,k) = 0.0
+        qnode(2,k) = 0.0d0
+        qnode(3,k) = 0.0d0
+        qnode(4,k) = 0.0d0
  9010 continue
 c
 c If turbulent, initialize turbre
@@ -194,7 +193,7 @@ c
          if (irank .eq. 0) write(10,160)ct1,ct2,ct3,ct4
          do 1020 n = 1,nnodes
             turbre(n) = turbinf
-            rmu = 1.0
+            rmu = 1.0d0
             chi = turbre(n)/rmu
             fv1 = chi**3/(chi**3 + cv1**3)
             amut(n)   = fv1*turbinf
@@ -379,7 +378,6 @@ c=====================================================================72
      &        nnbound,nvbound,nfbound,
      &        nnfacet,nvfacet,nffacet,
      &        nsnode,nvnode,nfnode,ntte,
-     &        nsface,nvface,nfface,
      &        irank
       integer unit
       integer evec(nedge,2)
@@ -541,11 +539,17 @@ c============================================================================
 #undef __FUNC__
 #define __FUNC__ "PLLAN"
       subroutine PLLAN(nnodes,irank)
-
-      implicit real*8 (a-h,o-z)      
-      common/history/rms(3000),clw(3000),cdw(3000),cmw(3000),xres(3000)
-      common/info/title(20),beta,alpha,Re,dt,tot,res0,resc,
+      implicit none
+#include "include/finclude/petscdef.h"
+      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
+     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar rms(3000),clw(3000),cdw(3000),
+     &       cmw(3000),xres(3000)
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/history/rms,clw,cdw,cmw,xres
+      integer nnodes,irank,ncolumn,n
+      Scalar tpnpi
 c
 c Write out the residual history
 c
@@ -596,18 +600,24 @@ c=====================================================================72
      6                  f2ntn,f2ntv,f2ntf,isnode,ivnode,ifnode,
      7                  irank)
 c
-      implicit real*8 (a-h,o-z)      
-      common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-      common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-
+      implicit none      
+#include "include/finclude/petscdef.h"
+      Scalar x(1),y(1),z(1),q(4,nnodes)
+      Scalar pinf
+      integer nnodes,nnbound,nvbound,nfbound,
+     &        nnfacet,nvfacet,nffacet,
+     &        nsnode,nvnode,nfnode,irank
       integer nntet(1),nnpts(1)
       integer nvtet(1),nvpts(1)
       integer nftet(1),nfpts(1)
       integer f2ntn(nnfacet,4),f2ntv(nvfacet,4),f2ntf(nffacet,4)
       integer isnode(1),ivnode(1),ifnode(1)
-      integer i,j,n,i1,i2,i3,ic,isp,ist
+      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
+      common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      integer i,j,i1,i2,i3,ic,isp,ist
  
-      real x(1),y(1),z(1),q(4,nnodes)
  
       character c4*4,title*20
 
@@ -633,14 +643,14 @@ c
  
         write(13,1000) "nn." // c4(ic:4),nnpts(i),nntet(i)
  
-        write(13,1010) (x(isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (y(isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (z(isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (1.0                 ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (q(2,isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)           
-        write(13,1010) (q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  x(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  y(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  z(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  1.0                 ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  q(2,isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (  q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)           
+        write(13,1010) (  q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
  
         do 30 j=ist,ist+nntet(i)-1
           i1 = f2ntn(j,1) - isp + 1
@@ -668,14 +678,14 @@ c
  
         write(13,1000) "nv." // c4(ic:4),nvpts(i),nvtet(i)
  
-        write(13,1010) (x(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (y(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (z(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (1.0                 ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (q(2,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)           
-        write(13,1010) (q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  x(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  y(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  z(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  1.0                 ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  q(2,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (  q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)           
+        write(13,1010) (  q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
  
         do 90 j=ist,ist+nvtet(i)-1
            i1 = f2ntv(j,1) - isp + 1
@@ -703,14 +713,14 @@ c
   
          write(13,1000) "ff." // c4(ic:4),nfpts(i),nftet(i)
   
-         write(13,1010) (x(ifnode(j))        ,j=isp,isp+nfpts(i)-1)         
-         write(13,1010) (y(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (z(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (1.0                 ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (q(2,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (q(3,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (q(4,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (q(1,ifnode(j))/pinf ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  x(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)         
+         write(13,1010) (  y(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  z(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  1.0                 ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  q(2,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  q(3,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  q(4,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (  q(1,ifnode(j))/pinf ,j=isp,isp+nfpts(i)-1)
  
          do 60 j=ist,ist+nftet(i)-1
             i1 = f2ntf(j,1) - isp + 1
@@ -745,17 +755,22 @@ c=====================================================================72
 #define __FUNC__ "FASFLO"
       subroutine FASFLO(nnodes,nsnode,nnfacet,isnode,f2ntn,x,y,z,qvec)
 
-      implicit real*8 (a-h,o-z)      
-      common/info/title(20),beta,alpha,Re,dt,tot,res0,resc,
-     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      implicit none      
+#include "include/finclude/petsc.h"
+      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
+     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
 
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
+     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       integer isnode(1),f2ntn(nnfacet,1)
-
-      real qvec(4,nnodes)
-      real x(1),y(1),z(1)
+      integer nnodes,nsnode,nnfacet
+      Scalar qvec(4,nnodes)
+      Scalar x(1),y(1),z(1)
+      Scalar time
+      integer i,j,nfaces,nx
 
       nfaces=nnfacet
-      time=1.0
+      time=1.0d0
 
       write (14) nsnode,nfaces,0
       write (14) (x(isnode(i)),i=1,nsnode),
@@ -785,20 +800,27 @@ c=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "L2NORM"
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
-#include "include/finclude/petsc.h"
- 
-      common/info/title(20),beta,alpha,Re,dt,tot,res0,resc,
-     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/history/rms(3000),clw(3000),cdw(3000),cmw(3000),xres(3000)
+      implicit none
+#include "include/finclude/petsc.h"  
+      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
+     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar rms(3000),clw(3000),cdw(3000),
+     &       cmw(3000),xres(3000)
+      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+     &       nstage,ncyct,iramp,nitfo
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
+     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/history/rms,clw,cdw,cmw,xres
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
 
-      dimension res(4,nnodes),x(1),y(1),z(1)
+      Scalar res(4,nnodes),x(1),y(1),z(1)
 c     dimension dq(nnodes,4),vol(1)
-      dimension vol(1)
-
-      integer irank, icount
-      real sum, sumglo
+      Scalar vol(1)
+      integer nnodes,nnode_glo,irank,icount,irank
+      integer iflag,i,icount,ierr
+      Scalar sum,sumglo,t1,rmax,test,xloc,yloc,zloc,
+     &       ratio,compare
 
 c
 c Set the flag to monitor which type of residual you want
@@ -809,8 +831,8 @@ c
       iflag = 0
  
       t1 = float(nnode_glo)
-      sum = 0.0
-      rmax = 0.0
+      sum = 0.0d0
+      rmax = 0.0d0
 c
 c iflag=0
 c
@@ -960,32 +982,32 @@ c=====================================================================72
 #define eptr(i,j) evec(i,j)
 #endif
 c
-      pi = 4.*atan(1.)
-      conv = 180./pi
+      pi = 4.d0*atan(1.d0)
+      conv = 180.d0/pi
       csa=cos(alpha/conv)
       sna=sin(alpha/conv)
 c
 c  initialize forces to zero  
 c
-      clw(ntt) = 0.0
-      cdw(ntt) = 0.0
-      cmw(ntt) = 0.0
-      cl_ghost = 0.0
-      cd_ghost = 0.0
-      cm_ghost = 0.0
-      clloc = 0.0
-      cdloc = 0.0
-      cmloc = 0.0
-      clglo = 0.0
-      cdglo = 0.0
-      cmglo = 0.0
-      coef_glo(1) = 0.0
-      coef_glo(2) = 0.0
-      coef_glo(3) = 0.0
+      clw(ntt) = 0.0d0
+      cdw(ntt) = 0.0d0
+      cmw(ntt) = 0.0d0
+      cl_ghost = 0.0d0
+      cd_ghost = 0.0d0
+      cm_ghost = 0.0d0
+      clloc = 0.0d0
+      cdloc = 0.0d0
+      cmloc = 0.0d0
+      clglo = 0.0d0
+      cdglo = 0.0d0
+      cmglo = 0.0d0
+      coef_glo(1) = 0.0d0
+      coef_glo(2) = 0.0d0
+      coef_glo(3) = 0.0d0
  
-      xr = 0.25
-      yr = 0.0
-      zr = 0.0
+      xr = 0.25d0
+      yr = 0.0d0
+      zr = 0.0d0
        
       do 30 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
@@ -1015,9 +1037,9 @@ c
 c  norm points outward, away from grid interior.
 c  norm magnitude is area of surface triangle.
 c
-               xnorm =-0.5*(ay*bz - az*by)
-               ynorm = 0.5*(ax*bz - az*bx)
-               znorm =-0.5*(ax*by - ay*bx)
+               xnorm =-0.5d0*(ay*bz - az*by)
+               ynorm = 0.5d0*(ax*bz - az*bx)
+               znorm =-0.5d0*(ax*by - ay*bx)
  
                p1 = qnode(1,node1)
                u1 = qnode(2,node1)
@@ -1034,8 +1056,8 @@ c
                v3 = qnode(3,node3)
                w3 = qnode(4,node3)
  
-               press = (p1 + p2 + p3)/3.0
-               cp    = 2.*(press - 1.0)        
+               press = (p1 + p2 + p3)/3.0d0
+               cp    = 2.d0*(press - 1.0d0)        
 c
                dcx = cp*xnorm
                dcy = cp*ynorm
@@ -1093,9 +1115,9 @@ c
 c  norm points outward, away from grid interior.
 c  norm magnitude is area of surface triangle.
 c
-               xnorm =-0.5*(ay*bz - az*by)
-               ynorm = 0.5*(ax*bz - az*bx)
-               znorm =-0.5*(ax*by - ay*bx)
+               xnorm =-0.5d0*(ay*bz - az*by)
+               ynorm = 0.5d0*(ax*bz - az*bx)
+               znorm =-0.5d0*(ax*by - ay*bx)
  
                p1    = qnode(1,node1)
                u1    = qnode(2,node1)
@@ -1112,8 +1134,8 @@ c
                v3    = qnode(3,node3)
                w3    = qnode(4,node3)
  
-               press = (p1 + p2 + p3)/3.0
-               cp    = 2.*(press -1.0)
+               press = (p1 + p2 + p3)/3.0d0
+               cp    = 2.d0*(press -1.0d0)
  
                dcx = cp*xnorm
                dcy = cp*ynorm
@@ -1198,7 +1220,7 @@ c
       integer n,i,node1,node2,inode
       integer flops
       Scalar xnorm,ynorm,znorm,area,
-     &       p1,u1,v1,w1,p2,u2,v2,w2,p,u,v,c,w,
+     &       u1,v1,w1,u2,v2,w2,u,v,c,w,
      &       ubar,Vn,term
 #if defined(INTERLACING)
       Scalar qvec(4,nvertices)
@@ -1239,7 +1261,7 @@ c
       flops = 0
       if (dt.lt.0.0) then
          do 1000 i = 1,nvertices
-            cdt(i) = 0.0
+            cdt(i) = 0.0d0
  1000    continue
 c
          do 1020 n = 1, nedge
@@ -1271,13 +1293,13 @@ c '*/
 c
 c Get average values on face 
 c
-               u    = 0.5*(u1 + u2)
-               v    = 0.5*(v1 + v2)
-               w    = 0.5*(w1 + w2)
+               u    = 0.5d0*(u1 + u2)
+               v    = 0.5d0*(v1 + v2)
+               w    = 0.5d0*(w1 + w2)
                ubar = xn(n)*u + yn(n)*v + zn(n)*w
-               c    = dsqrt(ubar*ubar + beta)
+               c    = sqrt(ubar*ubar + beta)
  
-               term = dabs(u*xnorm + v*ynorm + w*znorm) + c*area
+               term = abs(u*xnorm + v*ynorm + w*znorm) + c*area
                cdt(node1) = cdt(node1) + term
                cdt(node2) = cdt(node2) + term
 c
@@ -1295,15 +1317,15 @@ c
             xnorm = sxn(i)
             ynorm = syn(i)
             znorm = szn(i)
-            area  = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+            area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
  
             u   = qnode(2,inode)
             v   = qnode(3,inode)
             w   = qnode(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
-            c   = dsqrt(ubar*ubar + beta)
+            c   = sqrt(ubar*ubar + beta)
 c
-            Vn = dabs(xnorm*u + ynorm*v + znorm*w) + c*area
+            Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
 c
  1030    continue
@@ -1322,11 +1344,11 @@ c
             xnorm = vxn(i)
             ynorm = vyn(i)
             znorm = vzn(i)
-            area  = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+            area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
 c
 c Because velocities are zero, c is just sqrt(beta)
 c
-            c  = dsqrt(beta)
+            c  = sqrt(beta)
             Vn = c*area 
 
             cdt(inode) = cdt(inode) + Vn
@@ -1345,15 +1367,15 @@ c
             xnorm = fxn(i)
             ynorm = fyn(i)
             znorm = fzn(i)
-            area  = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+            area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
  
             u   = qnode(2,inode)
             v   = qnode(3,inode)
             w   = qnode(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
-            c = dsqrt(ubar*ubar + beta)
+            c = sqrt(ubar*ubar + beta)
  
-            Vn = dabs(xnorm*u + ynorm*v + znorm*w) + c*area
+            Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
  1050    continue
 c        call PLogFlops(24*nfnode)
@@ -1369,7 +1391,7 @@ c
 c If not doing local time stepping just set cdt=1
 c
          do 1070 n = 1,nvertices
-            cdt(n) = 1.0
+            cdt(n) = 1.0d0
  1070    continue
       end if
       call PLogFlops(flops)
@@ -1418,7 +1440,6 @@ c=============================================================================
       integer f2ntn(nnfacet,4)
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
-      integer cell1,cell2
 c
       Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
      1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1503,7 +1524,7 @@ c
 c Loop over all the faces and calculate a flux 
 c
        flops = 0
-       second = 1.0
+       second = 1.0d0
 c      if(ntt.le.nitfo)second = 0.0
 c      print *, 'Second is' , second
        do 1010 n = 1, nedge
@@ -1513,9 +1534,9 @@ c      print *, 'Second is' , second
 c
 c Calculate unit normal to face and length of face
 c
-          xmean = .5*(x(node1) + x(node2))
-          ymean = .5*(y(node1) + y(node2))
-          zmean = .5*(z(node1) + z(node2))
+          xmean = .5d0*(x(node1) + x(node2))
+          ymean = .5d0*(y(node1) + y(node2))
+          zmean = .5d0*(z(node1) + z(node2))
           xnorm  = xn(n)
           ynorm  = yn(n)
           znorm  = zn(n)
@@ -1527,20 +1548,20 @@ c in the direction of the face normal. If the inner product of
 c {1,0,0} is close to unity, use {0,1,0}
 c
          dot = xnorm
-         if(dabs(dot).lt.0.95)then
+         if(abs(dot).lt.0.95d0)then
           X1 = 1. - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
          else
           dot = ynorm
           X1 =    - dot*xnorm
-          Y1 = 1. - dot*ynorm
+          Y1 = 1.0d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
 c
 c Normalize the first vector
 c
-         size = dsqrt(X1*X1 + Y1*Y1 + Z1*Z1)
+         size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
@@ -1594,10 +1615,10 @@ c        cR  = sqrt(c2R)
 c
 c Compute averages
 c
-          p = .5*(pL + pR)
-          u = .5*(uL + uR)
-          v = .5*(vL + vR)
-          w = .5*(wL + wR)
+          p = .5d0*(pL + pR)
+          u = .5d0*(uL + uR)
+          v = .5d0*(vL + vR)
+          w = .5d0*(wL + wR)
 
           ubar  = xnorm*u + ynorm*v + znorm*w
           phi1  = xnorm*beta + u*ubar
@@ -1610,14 +1631,14 @@ c
           phi8  = X1*phi3 - Z1*phi1
           phi9  = Y1*phi1 - X1*phi2
           c2    = ubar*ubar + beta
-          c     = dsqrt(c2)
+          c     = sqrt(c2)
 c
 c Now compute eigenvalues, eigenvectors, and strengths
 c
-          eig1 = dabs(ubar)
-          eig2 = dabs(ubar)
-          eig3 = dabs(ubar + c)
-          eig4 = dabs(ubar - c)
+          eig1 = abs(ubar)
+          eig2 = abs(ubar)
+          eig3 = abs(ubar + c)
+          eig4 = abs(ubar - c)
 c
           dp = pr - pl
           du = ur - ul
@@ -1628,22 +1649,22 @@ c Components of T(inverse) (I will divide by c2 later)
 c
           ti11 = -(u*phi4 + v*phi5 + w*phi6)/beta
           ti21 = -(u*phi7 + v*phi8 + w*phi9)/beta
-          ti31 =  .5*(c-ubar)/beta
-          ti41 = -.5*(c+ubar)/beta
-c jumps (T(inverse)*dq) 
+          ti31 =  .5d0*(c-ubar)/beta
+          ti41 = -.5d0*(c+ubar)/beta
+c jumps ( T(inverse)*dq ) 
           dv1 = (ti11*dp + phi4*du + phi5*dv + phi6*dw)/c2
           dv2 = (ti21*dp + phi7*du + phi8*dv + phi9*dw)/c2
-          dv3 = .5*(2.*ti31*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
-          dv4 = .5*(2.*ti41*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
+          dv3 = .5d0*(2.d0*ti31*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
+          dv4 = .5d0*(2.d0*ti41*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
 c
 c Now get elements of T (call it r for now)
 c
-          r11 = 0.0
+          r11 = 0.0d0
           r21 = X1
           r31 = Y1
           r41 = Z1
 
-          r12 = 0.0
+          r12 = 0.0d0
           r22 = X2
           r32 = Y2
           r42 = Z2
@@ -1692,10 +1713,10 @@ c
           fluxm3 = rlen*(vR*ubarR + ynorm*pR)
           fluxm4 = rlen*(wR*ubarR + znorm*pR)
 c
-          res1 = 0.5*(fluxp1 + fluxm1 - rlen*t1)
-          res2 = 0.5*(fluxp2 + fluxm2 - rlen*t2)
-          res3 = 0.5*(fluxp3 + fluxm3 - rlen*t3)
-          res4 = 0.5*(fluxp4 + fluxm4 - rlen*t4)
+          res1 = 0.5d0*(fluxp1 + fluxm1 - rlen*t1)
+          res2 = 0.5d0*(fluxp2 + fluxm2 - rlen*t2)
+          res3 = 0.5d0*(fluxp3 + fluxm3 - rlen*t3)
+          res4 = 0.5d0*(fluxp4 + fluxm4 - rlen*t4)
 c
 c         call PLogFlops(318)
 	  flops = flops + 318
@@ -1724,8 +1745,8 @@ c
   
 c     c68 = 6./8.
 c     c18 = 1./8.
-      c68 = 0.75
-      c18 = 0.125
+      c68 = 0.75d0
+      c18 = 0.125d0
 c
 c Close contour over the boundaries 
 c First do inviscid faces
@@ -1761,9 +1782,9 @@ c
 c Normal points away from grid interior.
 c Magnitude is 1/3 area of surface triangle.
 c
-               xnorm =-0.5*(ay*bz - az*by)/3.
-               ynorm = 0.5*(ax*bz - az*bx)/3.
-               znorm =-0.5*(ax*by - ay*bx)/3.
+               xnorm =-0.5d0*(ay*bz - az*by)/3.d0
+               ynorm = 0.5d0*(ax*bz - az*bx)/3.d0
+               znorm =-0.5d0*(ax*by - ay*bx)/3.d0
 
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
@@ -1830,9 +1851,9 @@ c
 c norm point away from grid interior.
 c norm magnitude is 1/3 area of surface triangle.
 c
-               xnorm =-0.5*(ay*bz - az*by)/3.
-               ynorm = 0.5*(ax*bz - az*bx)/3.
-               znorm =-0.5*(ax*by - ay*bx)/3.
+               xnorm =-0.5d0*(ay*bz - az*by)/3.d0
+               ynorm = 0.5d0*(ax*bz - az*bx)/3.d0
+               znorm =-0.5d0*(ax*by - ay*bx)/3.d0
 
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
@@ -1928,7 +1949,7 @@ c
          xnorm   = fxn(i)
          ynorm   = fyn(i)
          znorm   = fzn(i)
-         area    = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+         area    = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
          xnorm   = xnorm/area
          ynorm   = ynorm/area
          znorm   = znorm/area
@@ -1939,20 +1960,20 @@ c in the direction of the face normal. If the inner product of
 c {1,0,0} is close to unity, use {0,1,0}
 c
          dot = xnorm
-         if(dabs(dot).lt.0.95)then
-          X1 = 1. - dot*xnorm
+         if(abs(dot).lt.0.95d0)then
+          X1 = 1.d0 - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
          else
           dot = ynorm
           X1 =    - dot*xnorm
-          Y1 = 1. - dot*ynorm
+          Y1 = 1.d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
 c
 c Normalize the first vector (V1)
 c
-         size = dsqrt(X1*X1 + Y1*Y1 + Z1*Z1)
+         size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
@@ -1968,7 +1989,7 @@ c Calculate elements of T and T(inverse) evaluated at freestream
 c
          ubar0 = xnorm*u0 + ynorm*v0 + znorm*w0
          c20   = ubar0*ubar0 + beta
-         c0    = dsqrt(c20)
+         c0    = sqrt(c20)
          phi1  = xnorm*beta + u0*ubar0
          phi2  = ynorm*beta + v0*ubar0
          phi3  = znorm*beta + w0*ubar0
@@ -1979,12 +2000,12 @@ c
          phi8  = X1*phi3 - Z1*phi1
          phi9  = Y1*phi1 - X1*phi2
 
-         t11 = 0.0
+         t11 = 0.0d0
          t21 = X1
          t31 = Y1
          t41 = Z1
 
-         t12 = 0.0
+         t12 = 0.0d0
          t22 = X2
          t32 = Y2
          t42 = Z2
@@ -2001,8 +2022,8 @@ c
 
          ti11 = -(u0*phi4 + v0*phi5 + w0*phi6)/beta
          ti21 = -(u0*phi7 + v0*phi8 + w0*phi9)/beta
-         ti31 =  .5*(c0 - ubar0)/beta
-         ti41 = -.5*(c0 + ubar0)/beta
+         ti31 =  .5d0*(c0 - ubar0)/beta
+         ti41 = -.5d0*(c0 + ubar0)/beta
 c
 c Now, get the variables on the "inside"
 c
@@ -2015,7 +2036,7 @@ c
 c If ubar is negative, take the reference condition from outside
 c
 c
-         if(unorm.gt.0.0)then
+         if(unorm.gt.0.0d0)then
           pr = pi
           ur = ui
           vr = vi
@@ -2031,8 +2052,8 @@ c Set rhs
 c
          rhs1 = (ti11*pr + phi4*ur + phi5*vr + phi6*wr)/c20
          rhs2 = (ti21*pr + phi7*ur + phi8*vr + phi9*wr)/c20
-         rhs3 = .5*(2.*ti31*pi + xnorm*ui + ynorm*vi + znorm*wi)/c20
-         rhs4 = .5*(2.*ti41*p0 + xnorm*u0 + ynorm*v0 + znorm*w0)/c20
+         rhs3 = .5d0*(2.d0*ti31*pi + xnorm*ui + ynorm*vi + znorm*wi)/c20
+         rhs4 = .5d0*(2.d0*ti41*p0 + xnorm*u0 + ynorm*v0 + znorm*w0)/c20
 c
 c Now do matrix multiplication to get values on boundary
 c
@@ -2112,7 +2133,7 @@ c=====================================================================72
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      integer i,n,node1,node2,ierr
+      integer i,n,node1,node2
       Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,
      &       weight,w2,w11,w22,w33,
      &       r12r11,r13r11,r23r22,rmess
@@ -2129,7 +2150,7 @@ c        r23(i) = 0.0
 c        r33(i) = 0.0
 c        r44(i) = 0.0
 c1000 continue
-      call PetscMemzero(rxy,8*7*nnodes,ierr)
+      call PetscMemzero(rxy,8*7*nnodes)
       
 c
 c Now loop over the edges and accumulate the r's 
@@ -2149,9 +2170,9 @@ c
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
-          dist = dsqrt(dx*dx + dy*dy + dz*dz)
-          weight = 1.0/dist
-          weight = 1.0
+          dist = sqrt(dx*dx + dy*dy + dz*dz)
+c         weight = 1.0d0/dist
+          weight = 1.0d0
           w2 = weight*weight
 c
           if (node1 .le. nnodes) then
@@ -2171,7 +2192,7 @@ c Now calculate ||x|| = r11 by taking the square root
 c Also divide r12 and r13 by ||x||
 c */
       do 1030 i = 1,nnodes
-        r11(i) = dsqrt(r11(i))
+        r11(i) = sqrt(r11(i))
         r12(i) = r12(i)/r11(i)
         r13(i) = r13(i)/r11(i)
  1030 continue
@@ -2193,9 +2214,9 @@ c
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
-          dist = dsqrt(dx*dx + dy*dy + dz*dz)
-          weight = 1.0/dist
-          weight = 1.0
+          dist = sqrt(dx*dx + dy*dy + dz*dz)
+c         weight = 1.0/dist
+          weight = 1.0d0
           dx = weight*dx
           dy = weight*dy
           dz = weight*dz
@@ -2219,7 +2240,7 @@ c /*
 c Now finish getting r22 and r23
 c */
       do 1060 i = 1,nnodes
-        r22(i) = dsqrt(r22(i))
+        r22(i) = sqrt(r22(i))
         r23(i) = r23(i)/r22(i)
  1060 continue
 c /*
@@ -2240,9 +2261,9 @@ c
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
-          dist = dsqrt(dx*dx + dy*dy + dz*dz)
-          weight = 1.0/dist
-          weight = 1.0
+          dist = sqrt(dx*dx + dy*dy + dz*dz)
+c         weight = 1.0/dist
+          weight = 1.0d0
           dx = weight*dx
           dy = weight*dy
           dz = weight*dz
@@ -2269,7 +2290,7 @@ c /*
 c Now just get the magnitude of r33
 c */
       do 1090 i = 1,nnodes
-        r33(i) = dsqrt(r33(i))
+        r33(i) = sqrt(r33(i))
  1090 continue
 c
 c Added by Dinesh Kaushik (6/27/97)
@@ -2286,9 +2307,9 @@ c r23->r23r22
 c r44->rmess */
 
       do i = 1,nnodes
-           w11 = 1./(r11(i)*r11(i))
-           w22 = 1./(r22(i)*r22(i))
-           w33 = 1./(r33(i)*r33(i))
+           w11 = 1.d0/(r11(i)*r11(i))
+           w22 = 1.d0/(r22(i)*r22(i))
+           w33 = 1.d0/(r33(i)*r33(i))
            r12r11 = r12(i)/r11(i)
            r13r11 = r13(i)/r11(i)
            r23r22 = r23(i)/r22(i)
@@ -2378,21 +2399,21 @@ c
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
-      integer n,i,node1,node2,ierr
+      integer n,node1,node2
       integer flops
       Scalar dx1,dy1,dz1,dx2,dy2,dz2,
      &       dq1,dq2,dq3,dq4,
      &       weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,
      &       coef1,coef2,termx,termy,termz
 c     logging variables
-      integer grad_event, flag
-      integer node1_event, node2_event
-      character * 16 grad_label, node1_label, node2_label
-      data flag/-1/,grad_label/'GRAD            '/
-      data node1_label/'NODE1           '/
-      data node2_label/'NODE2           '/
-      save grad_event, grad_label, flag
-      save node1_event,node2_event,node1_label, node2_label
+c     integer flag
+c     integer grad_event,node1_event,node2_event
+c     character * 16 grad_label, node1_label, node2_label
+c     data flag/-1/,grad_label/'GRAD            '/
+c     data node1_label/'NODE1           '/
+c     data node2_label/'NODE2           '/
+c     save grad_event, grad_label, flag
+c     save node1_event,node2_event,node1_label, node2_label
 
 c     if (flag .eq. -1) then
 c        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
@@ -2438,7 +2459,7 @@ c       grady(4,i) = 0.0
 c       gradz(4,i) = 0.0
 c
 c1000  continue
-      call PetscMemzero(grad,12*8*nnodes,ierr)
+      call PetscMemzero(grad,12*8*nnodes)
 c
 c If second order, loop over all the faces accumulate sums
 c
@@ -2455,7 +2476,7 @@ c        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
 c
 c          dist = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1)
 c          weight = 1.0/dist
-           weight = 1.0
+           weight = 1.0d0
 c          w2 = weight*weight
 c
            dx1 = weight*dx1
@@ -2657,11 +2678,11 @@ c
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
 C     logging variables
-      integer flux_event, delta2_event, flag
-      character * 16 flux_label, delta2_label
-      data flag/-1/,flux_label/'FLUX            '/
-      data delta2_label/'DELTA2          '/
-      save flux_event,delta2_event,flag, flux_label,delta2_label
+c     integer flux_event, delta2_event, flag
+c     character * 16 flux_label, delta2_label
+c     data flag/-1/,flux_label/'FLUX            '/
+c     data delta2_label/'DELTA2          '/
+c     save flux_event,delta2_event,flag, flux_label,delta2_label
 #if defined(INTERLACING)
        Scalar resvec(4,nnodes)
 #define res(i,j) resvec(i,j)
@@ -2709,15 +2730,15 @@ c
 c zero out residuals (viscous residuals are zeroed in vfluxnew)
 c '*/
       do 1002 i = 1,nnodes
-          res(1,i)=0.0
-          res(2,i)=0.0
-          res(3,i)=0.0
-          res(4,i)=0.0
+          res(1,i)=0.0d0
+          res(2,i)=0.0d0
+          res(3,i)=0.0d0
+          res(4,i)=0.0d0
 
-          phi(i,1)=1.0
-          phi(i,2)=1.0
-          phi(i,3)=1.0
-          phi(i,4)=1.0
+          phi(i,1)=1.0d0
+          phi(i,2)=1.0d0
+          phi(i,3)=1.0d0
+          phi(i,4)=1.0d0
  1002   continue
 c
 c /*'
@@ -2797,7 +2818,7 @@ c  TAPE11 -- output: writes restart file
 c  TAPE12 -- output: writes residual and lift for plotting
 c  TAPE13 -- output: writes flowfield for contour plotting
 c
-      OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
+      OPEN(UNIT= 7,FILE='ginput.faces',
      +form='formatted',STATUS='OLD')
  
 c     OPEN(UNIT=9,FILE='framer.bin',
