@@ -331,7 +331,7 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 on 1 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; \
-	if [ "${MPIRUN}" != "${PETSC_DIR}/src/sys/src/mpiuni/mpirun" ]; then \
+	if [ "${MPIRUN}" != "${PETSC_DIR}/bin/mpirun.uni" ]; then \
            ${MPIRUN} -np 2 ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 2 processors"; \

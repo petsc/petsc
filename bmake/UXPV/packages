@@ -34,8 +34,8 @@ MPIRUN         = mpirun
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         = ${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
-#MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#MPI_INCLUDE     = -I${PETSC_DIR}/include/mpiuni
+#MPIRUN          = ${PETSC_DIR}/bin/mpirun.uni
 #
 # If you are using the DEC implementation of MPI you can use the following
 #

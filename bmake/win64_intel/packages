@@ -17,8 +17,8 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL64_ONLY
 # To use the single processor MPI interface provided in PETSc
 #
 
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni
+MPI_INCLUDE    = -I$(PETSC_DIR)/include/mpiuni
 MPI_LIB        = -lmpiuni
-MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
+MPIRUN         = $(PETSC_DIR)/bin/mpirun.uni
 
 # ----------------------------------------------------------------------------------------  

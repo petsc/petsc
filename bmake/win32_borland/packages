@@ -15,8 +15,8 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_LIB        = -lmpiuni
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+MPI_INCLUDE    = -I${PETSC_DIR}/include/mpiuni
+MPIRUN         = ${PETSC_DIR}/bin/mpirun.uni
 
 #
 # ----------------------------------------------------------------------------------------  

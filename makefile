@@ -212,7 +212,7 @@ chk_petsc_dir:
 
 install:
 	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
-	  echo "You did not set a directory to install to";\
+	  echo "Install directory is current directory; nothing needs to be done";\
         else \
 	  echo Installing PETSc at ${INSTALL_DIR};\
           if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
