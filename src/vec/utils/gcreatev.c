@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.26 1995/12/21 18:29:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.27 1996/01/12 22:04:46 bsmith Exp curfman $";
 #endif
 
 
@@ -47,4 +47,34 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
   }
   return VecCreateSeq(comm,n,V);
 }
+
+#include "vecimpl.h"
+/*@C
+   VecGetType - Gets the vector type and name (as a string) from the vector.
+
+   Input Parameter:
+.  mat - the vector
+
+   Output Parameter:
+.  type - the vector type (or use PETSC_NULL)
+.  name - name of vector type (or use PETSC_NULL)
+
+.keywords: vector, get, type, name
+@*/
+int VecGetType(Vec vec,VecType *type,char **name)
+{
+  int  itype = (int)vec->type;
+  char *vecname[10];
+
+  if (type) *type = (VecType) vec->type;
+  if (name) {
+    /* Note:  Be sure that this list corresponds to the enum in vec.h */
+    vecname[0] = "VECSEQ";
+    vecname[1] = "VECMPI";
+    if (itype < 0 || itype > 1) *name = "Unknown vector type";
+    else                        *name = vecname[itype];
+  }
+  return 0;
+}
+
  
