@@ -4,6 +4,18 @@
 
 #include "esi/petsc/preconditioner.h"
 
+esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm comm)
+{
+  int      ierr;
+
+  ierr = PCCreate(comm,&this->pc);if (ierr) return;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi");
+  ierr = PCSetFromOptions(this->pc);
+
+  this->pobject = (PetscObject)this->pc;
+  ierr = PetscObjectGetComm((PetscObject)this->pc,&this->comm);if (ierr) return;
+}
+
 esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 {
   int ierr;

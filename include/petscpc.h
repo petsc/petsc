@@ -102,6 +102,7 @@ EXTERN int PCRegister(char*,char*,char*,int(*)(PC));
 
 EXTERN int PCDestroy(PC);
 EXTERN int PCSetFromOptions(PC);
+EXTERN int PCESISetFromOptions(PC);
 EXTERN int PCGetType(PC,PCType*);
 
 EXTERN int PCGetFactoredMatrix(PC,Mat*);

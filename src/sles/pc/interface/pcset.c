@@ -240,5 +240,8 @@ int PCSetFromOptions(PC pc)
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
+  ierr = PCESISetFromOptions(pc);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }

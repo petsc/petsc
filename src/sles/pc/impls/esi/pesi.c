@@ -132,6 +132,25 @@ static int PCSetFromOptions_ESI(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCESISetFromOptions"
+int PCESISetFromOptions(PC V)
+{
+  char       string[1024];
+  PetscTruth flg;
+  int        ierr;
+ 
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)V,PCESI,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsGetString(V->prefix,"-pc_esi_type",string,1024,&flg);CHKERRQ(ierr);
+    if (flg) {
+      /*      ierr = PCESISetType(V,string);CHKERRQ(ierr); */
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ESI"

@@ -22,6 +22,9 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     // Default destructor.
     ~Preconditioner(void);
 
+    // Construct a preconditioner from a MPI_Comm
+    Preconditioner(MPI_Comm comm);
+
     // Construct a preconditioner from a PETSc PC
     Preconditioner(PC pc);
 
@@ -73,6 +76,9 @@ class Preconditioner<double,int> : public virtual esi::Preconditioner<double,int
 
     // Default destructor.
     ~Preconditioner(void);
+
+    // Construct a preconditioner from a MPI_Comm
+    Preconditioner(MPI_Comm comm);
 
     // Construct a preconditioner from a PETSc PC
     Preconditioner(PC pc);
