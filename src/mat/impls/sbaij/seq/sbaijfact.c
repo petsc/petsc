@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.21 2000/10/17 19:33:22 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.22 2000/10/18 16:59:21 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2102,93 +2102,144 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 }
 
 /*
-      Version for when blocks are 2 by 2
+    Numeric (-UT)*D*(-U) factorization for SBAIJ format. Modified from SNF of YSMP.
+    Version for blocks are 2 by 2.
 */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
 int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS                 isrow = b->row,isicol = b->icol;
-  int                *r,*ic,ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row;
-  int                *diag_offset=b->diag,idx,*ai=a->i,*aj=a->j,*pj;
-  MatScalar          *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
-  MatScalar          p1,p2,p3,p4;
-  MatScalar          *ba = b->a,*aa = a->a;
+  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  IS                 ip = b->row;
+  int                *rip,*riip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
+  int                *ai,*aj,*r,bs2 = a->bs2;
+  MatScalar          *rtmp;
+  MatScalar          *ba = b->a,*aa,*ak;
+  MatScalar          dk,uikdi;
+  int                k,jmin,jmax,*jl,*il,vj,nexti,juj,ili;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp  = (MatScalar*)PetscMalloc(4*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+  printf("called factornum_2, bs2: %d\n",bs2);
+  ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
+  riip = rip;
 
-  for (i=0; i<n; i++) {
-    nz    = bi[i+1] - bi[i];
-    ajtmp = bj + bi[i];
-    for  (j=0; j<nz; j++) {
-      x = rtmp+4*ajtmp[j]; x[0] = x[1] = x[2] = x[3] = 0.0;
+  if (!a->permute){
+    ai = a->i; aj = a->j; aa = a->a;
+  } else {
+    ai = a->inew; aj = a->jnew; 
+    aa = (MatScalar*)PetscMalloc(bs2*ai[mbs]*sizeof(MatScalar));CHKPTRQ(aa); 
+    ierr = PetscMemcpy(aa,a->a,bs2*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
+    r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r); 
+    ierr= PetscMemcpy(r,a->a2anew,(ai[mbs])*sizeof(int));CHKERRQ(ierr);
+
+    ak = (MatScalar*)PetscMalloc(bs2*sizeof(MatScalar));CHKPTRQ(ak);
+
+    jmin = ai[0]; jmax = ai[mbs];
+    for (j=jmin; j<jmax; j++){
+      while (r[j] != j){  
+        k = r[j]; r[j] = r[k]; r[k] = k;  
+        for (i=0; i<bs2; i++){
+          ak[i]       = aa[k*bs2+i]; 
+          aa[k*bs2+i] = aa[j*bs2+i]; 
+          aa[j*bs2+i] = ak[i];   
+        }      
+      }
     }
-    /* load in initial (unfactored row) */
-    idx      = r[i];
-    nz       = ai[idx+1] - ai[idx];
-    ajtmpold = aj + ai[idx];
-    v        = aa + 4*ai[idx];
-    for (j=0; j<nz; j++) {
-      x    = rtmp+4*ic[ajtmpold[j]];
-      x[0] = v[0]; x[1] = v[1]; x[2] = v[2]; x[3] = v[3];
-      v    += 4;
-    }
-    row = *ajtmp++;
-    while (row < i) {
-      pc = rtmp + 4*row;
-      p1 = pc[0]; p2 = pc[1]; p3 = pc[2]; p4 = pc[3];
-      if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0) { 
-        pv = ba + 4*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-        x1 = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
-        pc[0] = m1 = p1*x1 + p3*x2;
-        pc[1] = m2 = p2*x1 + p4*x2;
-        pc[2] = m3 = p1*x3 + p3*x4;
-        pc[3] = m4 = p2*x3 + p4*x4;
-        nz = bi[row+1] - diag_offset[row] - 1;
-        pv += 4;
-        for (j=0; j<nz; j++) {
-          x1   = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
-          x    = rtmp + 4*pj[j];
-          x[0] -= m1*x1 + m3*x2;
-          x[1] -= m2*x1 + m4*x2;
-          x[2] -= m1*x3 + m3*x4;
-          x[3] -= m2*x3 + m4*x4;
-          pv   += 4;
-        }
-        PLogFlops(16*nz+12);
-      } 
-      row = *ajtmp++;
-    }
-    /* finished row so stick it into b->a */
-    pv = ba + 4*bi[i];
-    pj = bj + bi[i];
-    nz = bi[i+1] - bi[i];
-    for (j=0; j<nz; j++) {
-      x     = rtmp+4*pj[j];
-      pv[0] = x[0]; pv[1] = x[1]; pv[2] = x[2]; pv[3] = x[3];
-      pv   += 4;
-    }
-    /* invert diagonal block */
-    w = ba + 4*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
-    /*Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);*/
+    ierr = PetscFree(r);CHKERRA(ierr); 
+    ierr = PetscFree(ak);CHKERRA(ierr);
   }
 
+  /* initialization */
+  /* il and jl record the first nonzero element in each row of the accessing 
+     window U(0:k, k:mbs-1).
+     jl:    list of rows to be added to uneliminated rows 
+            i>= k: jl(i) is the first row to be added to row i
+            i<  k: jl(i) is the row following row i in some list of rows
+            jl(i) = mbs indicates the end of a list                        
+     il(i): points to the first nonzero element in columns k,...,mbs-1 of 
+            row i of U */
+  rtmp  = (MatScalar*)PetscMalloc(mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
+  il = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il);
+  jl = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(jl);
+  for (i=0; i<mbs; i++) {
+    rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
+  }
+#ifdef CONT
+  /* for each row k */
+  for (k = 0; k<mbs; k++){
+
+    /*initialize k-th row with elements nonzero in row perm(k) of A */
+    jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
+    if (jmin < jmax) {
+      for (j = jmin; j < jmax; j++){
+        vj = riip[aj[j]];
+        if (k <= vj) rtmp[vj] = aa[j];
+      } 
+    } 
+
+    /* modify k-th row by adding in those rows i with U(i,k) != 0 */
+    dk = rtmp[k];
+    i = jl[k]; /* first row to be added to k_th row  */  
+    /* printf(" k=%d, pivot row = %d\n",k,i); */
+
+    while (i < mbs){
+      nexti = jl[i]; /* next row to be added to k_th row */
+
+      /* compute multiplier, update D(k) and U(i,k) */
+      ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+      uikdi = - ba[ili]*ba[i];  
+      dk += uikdi*ba[ili];
+      ba[ili] = uikdi; /* -U(i,k) */
+
+      /* add multiple of row i to k-th row ... */
+      jmin = ili + 1; jmax = bi[i+1];
+      if (jmin < jmax){
+        for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
+        /* ... add i to row list for next nonzero entry */
+        il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
+        j     = bj[jmin];
+        jl[i] = jl[j]; jl[j] = i; /* update jl */
+      }      
+      i = nexti; /* printf("                  pivot row i=%d\n",i);  */        
+    }
+
+    /* check for zero pivot and save diagoanl element */
+    if (dk == 0.0){
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
+    }else if (PetscRealPart(dk) < 0){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Negative pivot: d[%d] = %g\n",k,dk);
+    }                                               
+
+    /* save nonzero entries in k-th row of U ... */
+    ba[k] = 1.0/dk;
+    jmin = bi[k]; jmax = bi[k+1];
+    if (jmin < jmax) {
+      for (j=jmin; j<jmax; j++){
+         juj = bj[j]; ba[j] = rtmp[juj]; rtmp[juj] = 0.0;
+      }       
+      /* ... add k to row list for first nonzero entry in k-th row */
+      il[k] = jmin;
+      i     = bj[jmin];
+      jl[k] = jl[i]; jl[i] = k;
+    }        
+  } 
+#endif  
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor = FACTOR_LU;
+  ierr = PetscFree(il);CHKERRQ(ierr);
+  ierr = PetscFree(jl);CHKERRQ(ierr); 
+  if (a->permute){
+    ierr = PetscFree(aa);CHKERRQ(ierr);
+  }
+
+  ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
+  C->factor    = FACTOR_CHOLESKY;
+  /* C->factor    = FACTOR_LU; */
   C->assembled = PETSC_TRUE;
-  PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
+  PLogFlops(b->mbs);
   PetscFunctionReturn(0);
 }
+
 /*
       Version for when blocks are 2 by 2 Using natural ordering
 */
@@ -2275,6 +2326,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 
 /*
     Numeric (-UT)*D*(-U) factorization for SBAIJ format. Modified from SNF of YSMP.
+    Version for blocks are 1 by 1.
 */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
@@ -2313,7 +2365,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     ierr = PetscFree(r);CHKERRA(ierr); 
   }
   
-  /* INITIALIZATION */
+  /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
      jl:    list of rows to be added to uneliminated rows 
@@ -2328,11 +2380,11 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   for (i=0; i<mbs; i++) {
     rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
   }
-  
-  /* FOR EACH ROW K */
+
+  /* for each row k */
   for (k = 0; k<mbs; k++){
 
-    /* INITIALIZE K-TH ROW WITH ELEMENTS NONZERO IN ROW P(K) OF A */
+    /*initialize k-th row with elements nonzero in row perm(k) of A */
     jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
     if (jmin < jmax) {
       for (j = jmin; j < jmax; j++){
@@ -2341,50 +2393,47 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
       } 
     } 
 
-    /* MODIFY K-TH ROW BY ADDING IN THOSE ROWS I WITH U(I,K) NE 0
-       FOR EACH ROW I TO BE ADDED IN */
+    /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     dk = rtmp[k];
     i = jl[k]; /* first row to be added to k_th row  */  
     /* printf(" k=%d, pivot row = %d\n",k,i); */
 
     while (i < mbs){
       nexti = jl[i]; /* next row to be added to k_th row */
-      /* printf("      pivot row = %d\n", nexti); */
 
-      /* COMPUTE MULTIPLIER AND UPDATE DIAGONAL ELEMENT */
+      /* compute multiplier, update D(k) and U(i,k) */
       ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
       uikdi = - ba[ili]*ba[i];  
       dk += uikdi*ba[ili];
       ba[ili] = uikdi; /* -U(i,k) */
 
-      /* ADD MULTIPLE OF ROW I TO K-TH ROW ... */
+      /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
       if (jmin < jmax){
         for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
-        /* ... AND ADD I TO ROW LIST FOR NEXT NONZERO ENTRY */
-         il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
-         j     = bj[jmin];
-         jl[i] = jl[j]; jl[j] = i; /* update jl */
+        /* ... add i to row list for next nonzero entry */
+        il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
+        j     = bj[jmin];
+        jl[i] = jl[j]; jl[j] = i; /* update jl */
       }      
       i = nexti; /* printf("                  pivot row i=%d\n",i);  */        
     }
 
-    /* CHECK FOR ZERO PIVOT AND SAVE DIAGONAL ELEMENT */
+    /* check for zero pivot and save diagoanl element */
     if (dk == 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }else if (PetscRealPart(dk) < 0){
       ierr = PetscPrintf(PETSC_COMM_SELF,"Negative pivot: d[%d] = %g\n",k,dk);
     }                                               
 
-    /* SAVE NONZERO ENTRIES IN K-TH ROW OF U ... */
+    /* save nonzero entries in k-th row of U ... */
     ba[k] = 1.0/dk;
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++){
          juj = bj[j]; ba[j] = rtmp[juj]; rtmp[juj] = 0.0;
-      } 
-      
-      /* ... AND ADD K TO ROW LIST FOR FIRST NONZERO ENTRY IN K-TH ROW */
+      }       
+      /* ... add k to row list for first nonzero entry in k-th row */
       il[k] = jmin;
       i     = bj[jmin];
       jl[k] = jl[i]; jl[i] = k;
