@@ -46,6 +46,10 @@ to see if converged or diverged and why.
 
   We now provide a drop tolerance based ILU for SeqAIJ matrix format via Yousef Saad's SPARSEKIT2
   software.
+
+Use -pc_ilu_use_drop_tolerance <dt,dtcol,rowmax> or
+PCILUSetUseDropTolerance(pc,dt,dtcol,rowmax).
+
  
   AO
 
