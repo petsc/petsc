@@ -12,6 +12,82 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol,
+               start,end,*ai,*aj,bs,*nidx2;
+  PetscBT      table;
+  PetscBT      table0; 
+
+  PetscFunctionBegin;
+  mbs = a->mbs;
+  ai  = a->i;
+  aj  = a->j;
+  bs  = a->bs;
+
+  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+
+  ierr = PetscBTCreate(mbs,table);CHKERRQ(ierr);
+  ierr = PetscMalloc((mbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc((A->m+1)*sizeof(int),&nidx2);CHKERRQ(ierr);
+  ierr = PetscBTCreate(mbs,table0);CHKERRQ(ierr);
+
+  for (i=0; i<is_max; i++) { /* for each is */
+    isz  = 0;
+    ierr = PetscBTMemzero(mbs,table);CHKERRQ(ierr);
+   
+    /* Extract the indices, assume there can be duplicate entries */
+    ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
+
+    /* Enter these into the temp arrays i.e mark table[brow], enter brow into new index */
+    for (j=0; j<n ; ++j){
+      brow = idx[j]/bs; /* convert the indices into block indices */
+      if (brow >= mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if(!PetscBTLookupSet(table,brow)) { nidx[isz++] = brow;}
+    }
+    ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    
+    k = 0;
+    for (j=0; j<ov; j++){ /* for each overlap */
+      /* set table0 for lookup - only mark entries that are added onto nidx in (j-1)-th overlap */
+      ierr = PetscBTMemzero(mbs,table0);CHKERRQ(ierr);
+      for (l=k; l<isz; l++) PetscBTSet(table0,nidx[l]);
+
+      n = isz;  /* length of the updated is[i] */
+      for (brow=0; brow<mbs; brow++){ 
+        start = ai[brow]; end   = ai[brow+1];
+        if (PetscBTLookup(table0,brow)){ /* brow is on nidx - row search: collect all bcol in this brow */
+          for (l = start; l<end ; l++){
+            bcol = aj[l];
+            if (!PetscBTLookupSet(table,bcol)) {nidx[isz++] = bcol;}
+          }
+          k++;
+          if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */
+        } else { /* brow is not on nidx - col serach: add brow onto nidx if there is a bcol in nidx */
+          for (l = start; l<end ; l++){
+            bcol = aj[l];
+            if (PetscBTLookup(table0,bcol)){
+              if (!PetscBTLookupSet(table,brow)) {nidx[isz++] = brow;}
+              break; /* for l = start; l<end ; l++) */
+            }
+          } 
+        }
+      } 
+    } /* for each overlap */
+
+    /* expand the Index Set */
+    for (j=0; j<isz; j++) {
+      for (k=0; k<bs; k++)
+        nidx2[j*bs+k] = nidx[j]*bs+k;
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,is+i);CHKERRQ(ierr);
+  }
+  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscFree(nidx);CHKERRQ(ierr); 
+  ierr = PetscFree(nidx2);CHKERRQ(ierr); 
+  ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
+#ifdef VERSION_1
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol,
                start,end,*ai,*aj,bs,*nidx2,*colsearch;
   PetscBT      table;
 
@@ -97,6 +173,7 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   ierr = PetscFree(nidx2);CHKERRQ(ierr);
+#endif /* VERSION_1 */
   PetscFunctionReturn(0);
 }
 

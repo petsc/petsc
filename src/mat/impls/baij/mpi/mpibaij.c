@@ -1974,6 +1974,10 @@ int MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+extern int MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBAIJ"
 int MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
