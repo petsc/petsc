@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.45 1996/07/02 18:05:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.46 1996/07/02 20:13:32 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -62,7 +62,7 @@ extern char *OptionsGetProgramName();
 @*/
 int PetscAttachDebugger()
 {
-  int   child;
+  int   child,sleeptime,flg,ierr;
   char *program = OptionsGetProgramName();
 #if defined(PARCH_t3d)
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
@@ -231,6 +231,9 @@ int PetscAttachDebugger()
     }
   }
   else { /* I am the child, continue with user code */
+  sleeptime = 8; /* default to sleep for eight seconds waiting for debugger */
+  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);
+         CHKERRQ(ierr);
 #if defined(PARCH_hpux)
     { 
       double x = 1.0;
@@ -239,11 +242,11 @@ int PetscAttachDebugger()
     }
 #elif defined(PARCH_rs6000)
     {
-      int left = 20;
+      int left = sleeptime;
       while (left > 0) {left = sleep(left) - 1;}
     }
 #else
-    sleep(5);
+    sleep(sleeptime);
 #endif
     return 0;
   }
