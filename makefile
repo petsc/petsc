@@ -312,6 +312,19 @@ allwwwpages: deletewwwpages
 	-maint/examplesindex.tcl -www
 	-maint/htmlkeywords.tcl
 	-@chmod g+w docs/www/man*/*
+
+#This is similar to allwwwpages except -www -> -wwwhome
+#The wwwmanpages built thisway can pe placed at PETSc Home Page
+allwwwhomepages: deletewwwpages
+	-make ACTION=wwwpages_buildcite tree
+	-cd src/fortran/custom; make wwwpages_buildcite
+	-cd src/fortran/custom; make wwwpages
+	-make ACTION=wwwpages tree
+	-maint/wwwman
+	-maint/examplesindex.tcl -wwwhome
+	-maint/htmlkeywords.tcl
+	-@chmod g+w docs/www/man*/*
+
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
 	-cd src/fortran/custom; make latexpages
