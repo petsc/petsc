@@ -56,7 +56,7 @@
       PetscInt         M
       PetscTruth       debug
       PetscMPIInt      size,rank
-      double precision h,zero_d0,one_d0,two_d0,four_d0
+      PetscScalar      h,zero_d0,one_d0,two_d0,four_d0
       MPI_Comm         comm
 
       common /params/ h,zero_d0,one_d0,two_d0,four_d0

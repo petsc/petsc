@@ -14,7 +14,7 @@
       PetscInt i,one,twelve
       Vec     v
       Mat     m
-      double precision value
+      PetscScalar value
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 

@@ -272,7 +272,7 @@ runex11:
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex12f:
-	-@${MPIRUN} ex12f  -f ../../../mat/examples/matbinary.ex > ex12f_1.tmp 2>&1; \
+	-@${MPIRUN} ex12f  -f ../../../mat/examples/matbinary.ex -options_left no > ex12f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else echo "Possible problem with ex12f_1, diffs above"; fi; \
 	   ${RM} -f ex12f_1.tmp
@@ -282,7 +282,7 @@ runex13:
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
 runex16f:
-	-@${MPIRUN} ex16f  -f ../../../mat/examples/matbinary.ex > ex16f_1.tmp 2>&1; \
+	-@${MPIRUN} ex16f  -f ../../../mat/examples/matbinary.ex -options_left no> ex16f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex16f_1.out ex16f_1.tmp) then true; \
 	   else echo "Possible problem with ex16f_1, diffs above"; fi; \
 	   ${RM} -f ex16f_1.tmp
@@ -356,7 +356,7 @@ TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
 		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
-TESTEXAMPLES_3  = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc runex12f ex12f.rm  ex16f.PETSc runex16f ex16f.rm
+TESTEXAMPLES_3  = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_9  = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		  runex4 ex4.rm
@@ -365,7 +365,7 @@ TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm
 TESTEXAMPLES_BLOCKSOLVE  = ex6.PETSc runex6_6 ex6.rm
-TESTEXAMPLES_8  = ex16f.PETSc ex16f.rm
+TESTEXAMPLES_8  = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
 TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 
 include ${PETSC_DIR}/bmake/common/test

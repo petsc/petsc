@@ -904,7 +904,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex76.PETSc runex76 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
 		  ex78.PETSc ex78.rm ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 
 TESTEXAMPLES_3	 = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm \
-                   ex67f.PETSc ex67f.rm ex79f.PETSc runex79f ex79f.rm ex85f.PETSc runex85f ex85f.rm
+                   ex67f.PETSc ex67f.rm ex85f.PETSc runex85f ex85f.rm
 TESTEXAMPLES_9	 = ex36f.PETSc runex36f ex36f.rm
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
@@ -917,7 +917,7 @@ TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex
 	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
 	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm ex94.PETSc runex94 runex94_2 ex94.rm
 TESTEXAMPLES_BLOCKSOLVE	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
-TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm
+TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm 
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13  = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS  = ex73.PETSc ex73.rm

@@ -610,6 +610,7 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
+        rjobs.append('8')
       if self.update.hasdatafiles:
         rjobs.append('6')
       # add jobs for each external package (except X11, already done)

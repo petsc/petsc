@@ -13,7 +13,6 @@
 #   12 - basic f90 examples
 #   13 - Examples that should only be compiled.
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
-#   18 - requires C++, namespaces and dynamic libraries (for ESI)
 
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean
@@ -21,7 +20,6 @@ testexamples_3: ${TESTEXAMPLES_3} clean
 testexamples_4: ${TESTEXAMPLES_4} clean
 testexamples_5: ${TESTEXAMPLES_5} clean
 testexamples_6: ${TESTEXAMPLES_6} clean
-testexamples_BLOCKSOLVE: ${TESTEXAMPLES_BLOCKSOLVE} clean
 testexamples_8: ${TESTEXAMPLES_8} clean
 testexamples_9: ${TESTEXAMPLES_9} clean
 testexamples_10: ${TESTEXAMPLES_10} clean
@@ -30,11 +28,15 @@ testexamples_12: ${TESTEXAMPLES_12} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_18: ${TESTEXAMPLES_18} clean
-testexamples_AMS: ${TESTEXAMPLES_AMS} clean
 testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS} clean
 testexamples_SPAI: ${TESTEXAMPLES_SPAI} clean
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR} clean
 testexamples_ADIC: ${TESTEXAMPLES_ADIC} clean
+testexamples_MATLAB: ${TESTEXAMPLES_MATLAB} clean
+testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
+testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
+testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
+testexamples_BLOCKSOLVE: ${TESTEXAMPLES_BLOCKSOLVE} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:

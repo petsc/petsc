@@ -173,7 +173,7 @@
 !  Set solution vector and initial timestep
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      dt = h/two_d0
+      dt = dreal(h/two_d0)
       call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
       call TSSetSolution(ts,u,ierr)
 
@@ -243,7 +243,7 @@
       Vec     u
 
 !  Local variables:
-      double  precision localptr(1),x
+      PetscScalar  localptr(1),x
       PetscInt           i,mybase,myend
       PetscErrorCode ierr
       PetscOffset       idx
@@ -306,11 +306,12 @@
 #include "ex2f.h"
 
 !  Input/output parameters:
-      double precision  t,x
+      double precision  t
+      PetscScalar  x
       PetscErrorCode          ierr
 
 !  Local variables:
-      double precision  localptr(1)
+      PetscScalar  localptr(1)
       PetscInt           i,mybase,myend
       PetscOffset       idx
 
@@ -368,8 +369,8 @@
       PetscErrorCode          ierr
 
 !  Local variables:
-      double precision en2,en2s,enmax
-      double precision mone
+      PetscScalar en2,en2s,enmax
+      PetscScalar mone
       PetscDraw             draw
 
       mone = -1.0d0
@@ -450,7 +451,7 @@
       integer          dummy
 
 !  Local variables:
-      double precision localptr(1),copyptr(1),sc
+      PetscScalar localptr(1),copyptr(1),sc
       PetscErrorCode ierr
       PetscInt          i,il,localsize
       PetscOffset      idx_c,idx_l
@@ -565,7 +566,7 @@
       integer          dummy
 
 !  Local variables:
-      double precision localptr(1),sc,v(3)
+      PetscScalar localptr(1),sc,v(3)
       PetscInt         i,col(3),is,i1,i3
       PetscErrorCode ierr
       PetscInt          mstart,mend,mstarts,mends
