@@ -13,7 +13,7 @@ EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
 		runex6_2 runex6_3
 EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9
-RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex9
+RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex8_2 runex9 
 EXAMPLES_3    = ex12
 RUNEXAMPLES_3 = runex12
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
@@ -93,7 +93,7 @@ runex3:
 	   $(RM) -f ex3_1.tmp
 runex3_2:
 	-@$(MPIRUN) ex3 -nox -snes_smonitor -snes_type tr -snes_view > \
-                        ex3_2.tmp 2>&1; \
+			ex3_2.tmp 2>&1; \
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
@@ -154,6 +154,12 @@ runex8:
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   $(RM) -f ex8_1.tmp
+runex8_2:
+	-@$(MPIRUN) -np 3 ex8 -pc_type asm  -mat_mpiaij -mat_aij_oneindex \
+	   -snes_smonitor > ex8_2.tmp 2>&1; \
+	   if (diff output/ex8_2.out ex8_2.tmp) then true; \
+	   else echo "Possible problem with ex8_2, diffs above"; fi; \
+	   $(RM) -f ex8_2.tmp
 
 runex9:
 	-@$(MPIRUN) -np 2 ex9 -snes_smonitor  > ex9_1.tmp 2>&1;	  \
