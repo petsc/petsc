@@ -64,6 +64,8 @@ foreach j ($JOBS $EJOBS)
 end
 $RSH $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP ;echo 'X******************************************************X' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
+$RCP ${MACH}:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log petsc@shakey.mcs.anl.gov:/home/petsc/logs/nightly
+$RSH petsc@shakey.mcs.anl.gov -n chmod ugo+r /home/petsc/logs/nightly/*
 
 
 
