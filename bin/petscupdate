@@ -74,7 +74,6 @@ if [ $PATCH -ne $PATCH_LEVEL ]; then
   rm -f $file
 else
   echo "Your source code and docs of patch level $PATCH_LEVEL of PETSc version $VERSION are up to date"
-  exit
 fi
 #
 #  Get list of directories that may need recompiling
