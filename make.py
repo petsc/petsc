@@ -19,8 +19,8 @@ class PetscMake(bs.BS):
     bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory in which the Python headers were installed (like Python.h)')
     bs.argDB.setTester('PYTHON_INCLUDE',argtest.DirectoryTester())
 
-    bs.argDB.setHelp('BABEL_DIR', 'The directory in which the Babel runtime was installed')
-    bs.argDB.setTester('BABEL_DIR',argtest.DirectoryNotNoneTester())
+    bs.argDB.setHelp('SIDLRUNTIME_DIR', 'The directory in which the SIDL runtime was installed')
+    bs.argDB.setTester('SIDLRUNTIME_DIR',argtest.DirectoryNotNoneTester())
 
   def defineDirectories(self):
     self.directories['sidl'] = os.path.abspath('sidl')

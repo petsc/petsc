@@ -137,7 +137,7 @@ class UsingSIDL (SIDLConstants):
     return
 
   def getRootDir(self):
-    return os.path.abspath(bs.argDB['BABEL_DIR'])
+    return os.path.abspath(bs.argDB['SIDLRUNTIME_DIR'])
 
   def getServerRootDir(self, lang, package = None):
     path = self.serverBaseDir
