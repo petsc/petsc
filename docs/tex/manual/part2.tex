@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.178 1997/01/01 03:42:59 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.179 1997/01/06 20:45:04 bsmith Exp gropp $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -518,7 +518,7 @@ orderings by employing several {\tt AO} contexts.
 \sindex{orderings} \findex{ISLocalToGlobalMapping}
 
 In many applications one works with a global representation of a vector
-(usually on a vector obtained with {\tt VecCreateMPI()} \findex{VecCreateMPI()}
+(usually on a vector obtained with {\tt VecCreateMPI()}) \findex{VecCreateMPI()}
 and a local representation of the same vector that includes ghost points 
 required for local computation. \sindex{ghost points} \sindex{global representation}
 \sindex{local representation} \sindex{local to global mapping}
@@ -712,7 +712,7 @@ Most users should not need to use these contexts.
 
 \subsection{Grid Information}
 
-The indices of the lower left corner of the local portion of the array 
+The global indices of the lower left corner of the local portion of the array 
 as well as the local array size can be obtained with the commands
 \findex{DAGetCorners()} \findex{DAGetGhostCorners()}
 \begin{verbatim}
@@ -737,7 +737,7 @@ access to the elements by employing two- (or three-) dimensional indexing.
 The only difference between the 
 two cases is that when {\tt DA\_STENCIL\_STAR} is used, the extra 
 corner components are {\em not} scattered between the processors and thus
-contain garbage values that should {\em not} be used.
+contain undefined values that should {\em not} be used.
 
 To assemble global stiffness matrices, one needs to be 
 able to determine the global node number of each local node 
@@ -807,7 +807,7 @@ Section~\ref{sec:da}) automatically are {\tt DFVec}'s, as they
 are associated with a regular grid in one, two, or three dimensions.  Thus,
 any vector obtained from {\tt DAGetDistributedVector()} or
 {\tt DAGetLocalVector()} (or copied from such vectors via {\tt VecDuplicate()}
-or {\tt VecDuplicateVecs()} can immediately be used with the {\tt DFVec}
+or {\tt VecDuplicateVecs()}) can immediately be used with the {\tt DFVec}
 routines.
 
 In addition to all of the conventional vector operations, the support
@@ -1157,6 +1157,10 @@ For a square global matrix, we define each processor's diagonal portion
 to be its local rows and the corresponding columns (a square submatrix);  
 each processor's off-diagonal portion encompasses the remainder of the
 local matrix (a rectangular submatrix).  
+The rank in the MPI communicator determines the absolute ordering of the
+blocks.  That is, the process with rank 0 in the communicator given to {\tt
+  MatCreateMPIAIJ} contains the top rows of the matrix; the i$^{th}$ process
+in that communicator contains the i$^{th}$ block of the matrix.
 
 \subsubsection{Preallocation of Memory for Parallel AIJ Sparse Matrices}
 
@@ -1816,21 +1820,21 @@ the options database command {\tt ksp\_preres} or by calling the routine
 \begin{table}
 \begin{center}
 \begin{tabular}{llll}
-& & {\bf Options}	& {\bf Default}\\
-& & {\bf Database}	& {\bf Convergence}\\
-{\bf Method}	&{\bf KSPType}	& {\bf Name}	& {\bf Monitor $ \dagger $}\\
+& & {\bf Options}       & {\bf Default}\\
+& & {\bf Database}      & {\bf Convergence}\\
+{\bf Method}    &{\bf KSPType}  & {\bf Name}    & {\bf Monitor $ \dagger $}\\
 \hline
-Richardson			          & KSPRICHARDSON & richardson	& true\\
-Chebychev			          & KSPCHEBYCHEV  & chebychev	& true\\
-Conjugate Gradient \cite{hs:52}		  & KSPCG         & cg	        & true\\
+Richardson                                & KSPRICHARDSON & richardson  & true\\
+Chebychev                                 & KSPCHEBYCHEV  & chebychev   & true\\
+Conjugate Gradient \cite{hs:52}           & KSPCG         & cg          & true\\
 Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       & precond\\
 BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs        & precond \\
-Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs	        & precond \\
+Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs         & precond \\
 Transpose-Free Quasi-Minimal Residual (1) \cite{f:93} & KSPTFQMR & tfqmr & precond \\
 Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR & tcqmr & precond \\
 Conjugate Residual                        & KSPCR         & cr          & precond \\
 Least Squares Method                      & KSPLSQR       & lsqr        & precond \\
-Shell for no KSP method	                  & KSPPREONLY    & preonly     & precond \\
+Shell for no KSP method                   & KSPPREONLY    & preonly     & precond \\
 \hline
 \end{tabular}
 \medskip \medskip
@@ -2041,7 +2045,7 @@ consistent interface among direct and iterative linear solvers.
 \begin{table}
 \begin{center}
 \begin{tabular}{lll}
-{\bf Method}	&{\bf PCType}	& {\bf Options Database Name}\\
+{\bf Method}    &{\bf PCType}   & {\bf Options Database Name}\\
 \hline
 Jacobi                               & PCJACOBI      & jacobi\\
 Block Jacobi                         & PCBJACOBI     & bjacobi\\
@@ -2771,14 +2775,14 @@ few in the sections below.
 \begin{table}
 \begin{center}
 \begin{tabular}{llll}
-{\bf Method}	&{\bf SNES Type}& {\bf Options Name}	&{\bf Default Convergence Test}\\
+{\bf Method}    &{\bf SNES Type}& {\bf Options Name}    &{\bf Default Convergence Test}\\
 \hline
-Line search     & SNES\_EQ\_LS   & ls	& SNESConverged\_EQ\_LS()\\
-Trust region    & SNES\_EQ\_TR   & tr	& SNESConverged\_EQ\_TR()\\
-Test Jacobian	& SNES\_EQ\_TEST	& test	& \\
+Line search     & SNES\_EQ\_LS   & ls   & SNESConverged\_EQ\_LS()\\
+Trust region    & SNES\_EQ\_TR   & tr   & SNESConverged\_EQ\_TR()\\
+Test Jacobian   & SNES\_EQ\_TEST        & test  & \\
 \hline
-Line search     & SNES\_UM\_LS   & umls	& SNESConverged\_UM\_LS()\\
-Trust region    & SNES\_UM\_TR   & umtr	& SNESConverged\_UM\_TR()\\
+Line search     & SNES\_UM\_LS   & umls & SNESConverged\_UM\_LS()\\
+Trust region    & SNES\_UM\_TR   & umtr & SNESConverged\_UM\_TR()\\
 \hline
 \end{tabular}
 \end{center}
@@ -3003,7 +3007,6 @@ Appropriate control of the accuracy to which the subsidiary
 iterative method solves the Newton system
 at each global iteration is critical, since these 
 inner iterations determine the asymptotic convergence rate for 
-
 inexact Newton techniques.
 While the Newton systems must be solved well enough to retain
 fast local convergence of the Newton's iterates, use of excessive
@@ -3115,14 +3118,14 @@ possible, as demonstrated by the example,
 {\bf Matrix Use}      & {\bf Conventional Matrix Formats}          & {\bf Matrix-Free Versions}\\ 
 & & \\ \hline
 & & \\
-Jacobian	& Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
-(or Hessian)	& Assemble matrix with user-defined	& Use MatShellSetOperation() to set\\
-Matrix		& routine. $ ^\dagger $ 			& various matrix actions.\\
+Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
+(or Hessian)    & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
+Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
 & & \\ \hline
 & & \\
-Preconditioning	 & Create matrix with MatCreate(). $ ^* $ & Create PC with PCShellCreate().\\
-Matrix		 & Assemble matrix with user-defined & Use SNESGetSLES() and SLESGetPC()\\
-		& routine. $ ^\dagger $		& to set the preconditioner.\\ 
+Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Create PC with PCShellCreate().\\
+Matrix           & Assemble matrix with user-defined & Use SNESGetSLES() and SLESGetPC()\\
+                & routine. $ ^\dagger $         & to set the preconditioner.\\ 
 
 & & \\ \hline
 \end{tabular}
@@ -3244,7 +3247,7 @@ approximated by the formula
 \]
 where $ h $ is computed via 
 \begin{eqnarray*}
-        h = e_{rel}*u_{i}             &    \hbox{if}  u_{i} > u_{min} \\
+        h = e_{rel}*u_{i}             &    \hbox{if }  u_{i} > u_{min} \\
         h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.
 \end{eqnarray*}
 These parameters may be set from the options database with 
@@ -3804,8 +3807,8 @@ and {\tt VIEWER\_DRAWX\_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
 \medskip
-If the colormap on your machine is incorrect so colors in contour plots etc.
-are incorrect you can use the option {\tt -draw\_x\_private\_colormap} 
+If the colormap on your machine is incorrect so colors in contour plots
+etc.~are incorrect you can use the option {\tt -draw\_x\_private\_colormap}
 \findex{-draw_x_private_colormap} to have PETSc use a seperate colormap
 for its windows. This will correct the color problem, but you will get
 flashing of colors as you move the mouse between the PETSc windows and other 
@@ -3962,6 +3965,11 @@ The two functions used are {\tt KSPLGMonitor()} \findex{KSPLGMonitor()}
 and {\tt KSPLGMonitorCreate()}  \findex{KSPLGMonitorCreate()}. These 
 can easily be modified to serve specialized needs.
 
+\section{Other Graphical Output Types}
+PETSc contains some code to generate output in Postscript and VRML (Virtual
+Reality Modeling Language).  This code is currently undergoing revision, but
+is available for the adventurous.  Stay tuned for future developments.
+
 %------------------------------------------------------------------
 \chapter{PETSc Fortran Users}
 \label{ch:fortran}
@@ -4036,14 +4044,24 @@ makefile.)
 \noindent {\bf Alternative Approach:}
 If working with {\tt .f} files is absolutely essential (perhaps as
 part of a heritage code), the conventional Fortran style include
-statement can be employed.  The weakness of this approach is that the
+statement can be employed.  The weakness of this approach is that either the
 complete path of the include file must be hardwired with a statement such as
 \begin{verbatim}
    include '/home/username/petsc/include/finclude/includefile.h'
 \end{verbatim}
+or a link must be estabilished in the directory containing the Fortran source
+file to the file
+\begin{verbatim}
+   ln -s /home/username/petsc/include/finclude/includefile.h includefile.h
+\end{verbatim}
+Some Fortran compilers will accept a {\tt -I<directory>}, but depending on the
+Fortran compiler, they may use the {\tt -I} list only for the {\tt \#include}
+style of include.
 % This is due to a flaw in the design of the Fortran include statement.
 %% Note from Bill about above statement:  No.  Some compilers support -I.
 %% You can, of course use ln -s.  MPICH does.  It is much less portable.
+%% Bill responds: Hardly.  Using ln -s has worked on everything we've tried
+%% with MPICH.  I've rewritten the above to indicate the options.
 In addition, the user must declare all PETSc objects as {\tt integer} 
 rather than by their name. For example, declarations within Fortran
 {\tt .F} files have the form
@@ -4646,6 +4664,12 @@ Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
 MPE event logging only to certain code segments.
 
+You can also log the MPI events.  To do this, just view the PETSc application
+as any MPI application, and follow the instructions on logging MPI calls that
+are appropriate for your MPI implementation.  For the MPICH implementation,
+this simply involves adding {\tt -llmpi} to the library list {\em ahead of}
+{\tt -lmpi}.  
+
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Profiling Application Codes}
 \label{sec:profileuser}
@@ -4658,7 +4682,7 @@ user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{verbatim}
 
-    #include ``petsclog.h''
+    #include "petsclog.h"
     int USER_EVENT;
     PLogEventRegister(&USER_EVENT,"User event name","Color:");
     PLogEventBegin(USER_EVENT,0,0,0,0);
@@ -5306,8 +5330,8 @@ predefined viewers:
       object to be drawn in a default X window.
 \item {\tt VIEWER\_DRAWX\_SELF} \findex{VIEWER_DRAWX_SELF} causes the 
       object to be drawn in a default X window.
-\item Passing in a viewer, obtained by, 
-      {\tt ViewerDrawOpenX()}, causes the object to be displayed graphically.
+\item Passing in a viewer obtained by
+      {\tt ViewerDrawOpenX()} causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       {\tt ViewerFileOpenASCII(MPI\_Comm comm, char* file, Viewer *viewer)}.  
@@ -5738,8 +5762,42 @@ the variable {\tt PETSCFLAGS} within the base files of {\tt
 \subsection{Sample Makefiles}
 
 Maintaining portable PETSc makefiles is very simple. In Figures
-\ref{fig:make1} and \ref{fig:make2} we present two sample makefiles. 
-The first controls the generation of several example programs. 
+\ref{fig:make1}, \ref{fig:make2}, and \ref{fig:make3} we present three sample
+makefiles.  
+
+The first is a minimum Makefile for maintaining a single program that uses
+the PETSc libraires.
+\begin{figure}[H]
+{\small
+\begin{verbatim}
+ALL: ex2
+
+CFLAGS          = $(CPPFLAGS) 
+FFLAGS          = 
+SOURCEC         = 
+SOURCEF         =
+SOURCEH         =
+OBJSC           =
+OBJSF           = 
+LIBBASE         = libpetscsles
+DIRS            = 
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+ex2: ex2.o chkopts
+        $(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
+        $(RM) ex2.o
+\end{verbatim}
+}
+\caption{Sample PETSc Makefile for building a single program}
+\label{fig:make1}
+\end{figure}
+
+The most important line in this makefile is the line starting {\tt include}; 
+this line includes other makefiles that provide the needed definitions and
+rules.  
+
+The second controls the generation of several example programs. 
 
 \begin{figure}[H]
 {\small
@@ -5786,10 +5844,10 @@ The first controls the generation of several example programs.
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Example Programs}
-\label{fig:make1}
+\label{fig:make2}
 \end{figure}
 
-The two most important lines in the makefile of Figure \ref{fig:make1}
+The two most important lines in the makefile of Figure \ref{fig:make2}
 are the location of the {\tt PETSc} home directory, set with {\tt PETSC\_DIR}, 
 and the {\tt include} line that includes the files
 defining all of the macro variables. The variable {\tt PETSC\_DIR} is
@@ -5845,7 +5903,7 @@ categories, which currently include:
 \> {\tt EXAMPLES\_10} \> - Fortran .F examples that require complex numbers\\
 \end{tabbing}
 
-We next list in Figure \ref{fig:make2} a makefile that maintains a PETSc 
+We next list in Figure \ref{fig:make3} a makefile that maintains a PETSc 
 library.  Although most users do not need to understand or deal with such
 makefiles, they are also easily used.
 
@@ -5869,7 +5927,7 @@ makefiles, they are also easily used.
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
-\label{fig:make2}
+\label{fig:make3}
 \end{figure}
 
 The library's name is {\tt libpetscmat.a}, and the source files being added
@@ -6177,7 +6235,7 @@ Preconditioners                    &  8 \\
 Simplified Linear Equations Solvers     &  9 \\
 Grids                              & 10 \\
 Stencils                           & 11 \\
-Simplified Nonlinear Solvers 	   & 12 \\
+Simplified Nonlinear Solvers       & 12 \\
 Distributed Arrays                 & 13 \\
 Matrix Scattering                  & 14 \\
 \hline
@@ -6194,7 +6252,7 @@ For each group of objects, the PETScView requires the following
 definitions:
 \begin{verbatim}
    set GroupShape(OBJECT_COOKIE) SHAPE 
-   set GroupDesc(OBJECT_COOKIE) ``GROUP DESCRIPTION''
+   set GroupDesc(OBJECT_COOKIE) "GROUP DESCRIPTION"
 \end{verbatim}
 where {\tt OBJECT\_COOKIE} is the integer used to identify the group
 of objects and {\tt SHAPE} is one of the predefined shapes used by
@@ -6216,16 +6274,16 @@ PETScView.  These shapes include
 
 Within each group, the object is identified with the use of a second integer ({\tt OBJECT\_TYPE}).  This specifies the type of object within the object group.  PETScView requires both a name and an icon to be defined for every object.  These definitions have the following syntax:
 \begin{verbatim}
-   set Icon(OBJECT_COOKIE,OBJECT_TYPE) ``-text TEXT'' or 
-   set Icon(OBJECT_COOKIE,OBJECT_TYPE) ``-bitmap @BITMAP_LOC'' 
-   set Name(OBJECT_COOKIE,OBJECT_TYPE) ``OBJECT DESCRIPTION''
+   set Icon(OBJECT_COOKIE,OBJECT_TYPE) "-text TEXT" or 
+   set Icon(OBJECT_COOKIE,OBJECT_TYPE) "-bitmap @BITMAP_LOC"
+   set Name(OBJECT_COOKIE,OBJECT_TYPE) "OBJECT DESCRIPTION"
 \end{verbatim}
 where {\tt TEXT} is a short description of the object (used if a bitmap is inappropriate) and {\tt BITMAP\_LOC} is the location of the bitmap graphic.  The {\tt OBJECT DESCRIPTION} is a line of text used to describe the object.  As an example, we give the following definitions:
 \begin{verbatim}
-   set Icon(2,0) ``-bitmap @$env(PETSC_DIR)/bitmaps/vector.bit'' 
-   set Name(2,0) ``Sequential Vector'' 
-   set Icon(2,1) ``-bitmap @$env(PETSC_DIR)/bitmaps/vectorp.bit'' 
-   set Name(2,1) ``Parallel Vector''
+   set Icon(2,0) "-bitmap @$env(PETSC_DIR)/bitmaps/vector.bit" 
+   set Name(2,0) "Sequential Vector" 
+   set Icon(2,1) "-bitmap @$env(PETSC_DIR)/bitmaps/vectorp.bit" 
+   set Name(2,1) "Parallel Vector"
 \end{verbatim}
 Notice the syntax that Tcl requires for the location of the bitmap.
 The bitmap location must be preceded by a $@$ in order for PETScView
@@ -6246,7 +6304,7 @@ suppose that one creates a new bitmap to symbolize a parallel vector.
 Since the bitmap is located in the user's home directory, the
 following definition will {\em not} create an error:
 \begin{verbatim}
-   set Icon(2,1) ``-bitmap $env(HOME)/vectorp.bit''
+   set Icon(2,1) "-bitmap $env(HOME)/vectorp.bit"
 \end{verbatim}
 
 More examples on defining additional PETSc objects and informat
@@ -6263,7 +6321,7 @@ definitions contained in {\tt action()} string definitions.  These
 definitions are also located in the configuration file.  An action
 definition has the following syntax:
 \begin{verbatim}
-   set Action(ACTION_ID) ``ACTION''
+   set Action(ACTION_ID) "ACTION"
 \end{verbatim}
 where {\tt ACTION\_ID} is an integer that encodes the action and {\tt
 ACTION} is a descriptive string.  Currently, PETScView uses the action
