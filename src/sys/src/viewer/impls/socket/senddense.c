@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.24 1998/04/03 20:58:25 bsmith Exp balay $";
+static char vcid[] = "$Id: senddense.c,v 1.25 1998/04/03 21:47:43 balay Exp balay $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -106,7 +106,7 @@ $     VecView(Vec vector,Viewer viewer)
 */
 int ViewerMatlabPutInt_Private(Viewer viewer,int m,int *array)
 {
-  int ierr,t = viewer->port,type = DENSEINT,value;
+  int ierr,t = viewer->port,type = DENSEINT;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
