@@ -15,6 +15,7 @@ from string   import *
 import commands
 import re
 import sys
+import distutils.sysconfig
 
 #=========================Handles getting files =================================================
 def extension(filename):
@@ -264,42 +265,138 @@ def checkpython():
         print "Requires Python version 2.2 or higher"
         return 0
     return 1
-    
+
+def getpythoninclude():
+    return distutils.sysconfig.get_python_inc()
+
+
+def getpythonlib():
+    lib = distutils.sysconfig.get_config_var('LIBPL')+"/"+distutils.sysconfig.get_config_var('LDLIBRARY')
+    lib = split(lib,'.so')[0]+'.so'
+    return lib
+
+def getjavainclude():
+    return "[/home/petsc/software/j2sdk1.4.0-linux/include/linux/,/home/petsc/software/j2sdk1.4.0-linux/include/]"
+
+
+def getjavalib():
+    return "/home/petsc/software/j2sdk1.4.0-linux/jre/lib/i386/client/libjvm.so"
+
+#==================================================================================
 def main():
     if checkcxxcompiler() == 0: return
     if checkpython() == 0: return
     
-
+    logfile = open("logfile",'w')
+    
     srcdir = os.getcwd()
-    print "Directory to install all source code (hit return for current) "+srcdir
+    print "Directory to compile source code (hit return for current) "+srcdir
     c = stdin.readline()
     if not len(c) == 1:
-      srcdir = c[:-1]
-
+      if c[0] == '/':
+         srcdir = c[:-1]
+      else:
+         srcdir = srcdir+c[:-1]
+    print "Compiling in directory: "+srcdir
     try:
       os.makedirs(srcdir)
     except:
       pass
 
+    installdir = os.getcwd()
+    print "Directory to install (hit return for current) "+installdir
+    c = stdin.readline()
+    if not len(c) == 1:
+      if c[0] == '/':
+         installdir = c[:-1]
+      else:
+         installdir = installdir+c[:-1]
+    print "Intalling in directory: "+installdir
+    try:
+      os.makedirs(installdir)
+    except:
+      pass
+
+    PYTHON_INCLUDE = getpythoninclude()
+    PYTHON_LIB = getpythonlib()
+    JAVA_INCLUDE = getjavainclude()
+    JAVA_LIB = getjavalib()
+    
     if os.environ.has_key('TMPDIR'):
       tmpdir =  os.environ['TMPDIR']+"/"
+      try:
+          os.makedirs(tmpdir)
+      except:
+          pass
     else:
       tmpdir = "/tmp/"
 
+    print "Retreiving build system"
     x = urlget("ftp://info.mcs.anl.gov/pub/petsc/bs.tar.gz",tmpdir+"bs.tar.gz",tmpdir)
     (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"bs.tar.gz")
+    logfile.write(output)
     if not status == 0:
         print "Failed extracting bs"
         print output
         return
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py")
+    
+    print "Initializing the database in the build system"
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -PYTHON_INCLUDE="+PYTHON_INCLUDE+" -PYTHON_LIB="+PYTHON_LIB+" -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
+    logfile.write(output)
     if not status == 0:
-        print "Failed compiling bs"
+        print "Failed to initialize build system database"
         print output
         return
     
+    if os.environ.has_key('PYTHONPATH'):
+        os.environ['PYTHONPATH'] = srcdir+"/bs:"+installdir+"/lib:"+os.environ['PYTHONPATH']
+    else:
+        os.environ['PYTHONPATH'] = srcdir+"/bs:"+installdir+"/lib"
+        
+    print "Retreiving runtime system"
+    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/SIDLRuntimeANL.tar.gz",tmpdir+"SIDLRuntimeANL.tar.gz",tmpdir)
+    (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"SIDLRuntimeANL.tar.gz")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed extracting SIDLRuntimeANL"
+        print output
+        return
     
+    print "Compiling runtime system"
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/SIDLRuntimeANL;make.py compile")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed compiling SIDLRuntimeANL"
+        print output
+        return
+    
+    print "Compiling build system"
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py compile")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed compiling the build system"
+        print output
+        return
+    
+    print "Retreiving GUI system"
+    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/gui.tar.gz",tmpdir+"gui.tar.gz",tmpdir)
+    (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"gui.tar.gz")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed extracting GUI"
+        print output
+        return
+    
+    print "Compiling GUI system"
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/gui;make.py compile")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed compiling GUI"
+        print output
+        return
 
+    print "Set your PYTHONPATH to "+installdir+"/lib and try the examples in "+installdir+"/examples/[python,c++]"
+    logfile.close()
 # The classes in this file can also
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__': 
