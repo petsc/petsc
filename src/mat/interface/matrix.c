@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.263 1997/10/12 02:16:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.264 1997/10/19 03:24:58 bsmith Exp curfman $";
 #endif
 
 /*
@@ -2420,7 +2420,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 
    Output Parameters:
 .  m - the global index of the first local row
-.  n - one more then the global index of the last local row
+.  n - one more than the global index of the last local row
 
 .keywords: matrix, get, range, ownership
 @*/
