@@ -1,12 +1,24 @@
 /* $Id: petscvu.c,v 1.0 2001/04/10 19:34:05 knepley Exp $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include <stdarg.h>
 #include "petscfix.h"
+
+#define QUEUESTRINGSIZE 1024
+
+typedef struct _PrintfQueue *PrintfQueue;
+struct _PrintfQueue {
+  char        string[QUEUESTRINGSIZE];
+  PrintfQueue next;
+};
 
 typedef struct {
   FILE         *fd;
-  PetscFileMode mode;           /* The mode in which to open the file */
+  PetscFileMode mode;     /* The mode in which to open the file */
   char         *filename;
+  PetscTruth    vecSeen;  /* The flag indicating whether any vector has been viewed so far */
+  PrintfQueue   queue, queueBase;
+  int           queueLength;
 } PetscViewer_VU;
 
 #undef __FUNCT__  
@@ -17,6 +29,10 @@ int PetscViewerDestroy_VU(PetscViewer viewer)
   int             ierr;
 
   PetscFunctionBegin;
+  if (vu->vecSeen == PETSC_TRUE) {
+    ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");                                                  CHKERRQ(ierr);
+  }
+  ierr = PetscViewerVUFlushDeferred(viewer);                                                              CHKERRQ(ierr);
   ierr = PetscFClose(viewer->comm, vu->fd);                                                               CHKERRQ(ierr);
   ierr = PetscStrfree(vu->filename);                                                                      CHKERRQ(ierr);
   ierr = PetscFree(vu);                                                                                   CHKERRQ(ierr);
@@ -125,9 +141,13 @@ int PetscViewerCreate_VU(PetscViewer viewer)
   viewer->format                = PETSC_VIEWER_ASCII_DEFAULT;
   viewer->iformat               = 0;
 
-  vu->fd       = PETSC_NULL;
-  vu->mode     = FILE_MODE_WRITE;
-  vu->filename = PETSC_NULL;
+  vu->fd          = PETSC_NULL;
+  vu->mode        = FILE_MODE_WRITE;
+  vu->filename    = PETSC_NULL;
+  vu->vecSeen     = PETSC_FALSE;
+  vu->queue       = PETSC_NULL;
+  vu->queueBase   = PETSC_NULL;
+  vu->queueLength = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerSetFilename_C", "PetscViewerSetFilename_VU",
                                            PetscViewerSetFilename_VU);                                    CHKERRQ(ierr);
@@ -190,5 +210,142 @@ int PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 
   PetscFunctionBegin;
   vu->mode = mode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerVUSetVecSeen"
+/*@C
+  PetscViewerVUSetVecSeen - Sets the flag which indicates whether we have viewed
+  a vector. This is usually called internally rather than by a user.
+
+  Not Collective
+
+  Input Parameters:
++ viewer  - The PetscViewer
+- vecSeen - The flag which indicates whether we have viewed a vector
+
+  Level: advanced
+
+.keywords: Viewer, Vec
+.seealso: PetscViewerVUGetVecSeen()
+@*/
+int PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+
+  PetscFunctionBegin;
+  vu->vecSeen = vecSeen;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerVUGetVecSeen"
+/*@C
+  PetscViewerVUGetVecSeen - Gets the flag which indicates whether we have viewed
+  a vector. This is usually called internally rather than by a user.
+
+  Not Collective
+
+  Input Parameter:
+. viewer  - The PetscViewer
+
+  Output Parameter:
+. vecSeen - The flag which indicates whether we have viewed a vector
+
+  Level: advanced
+
+.keywords: Viewer, Vec
+.seealso: PetscViewerVUGetVecSeen()
+@*/
+int PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidPointer(vecSeen);
+  *vecSeen = vu->vecSeen;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerVUPrintDeferred"
+/*@C
+  PetscViewerVUPrintDeferred - Prints to the deferred write cache instead of the file.
+
+  Not Collective
+
+  Input Parameters:
++ viewer - The PetscViewer
+- format - The format string
+
+  Level: intermediate
+
+.keywords: Viewer, print, deferred
+.seealso: PetscViewerVUFlushDeferred()
+@*/
+int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  va_list         Argp;
+  PrintfQueue     next;
+  int             len;
+  int             ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _PrintfQueue, &next);                                                            CHKERRQ(ierr);
+  if (vu->queue != PETSC_NULL) {
+    vu->queue->next = next;
+    vu->queue       = next;
+    vu->queue->next = PETSC_NULL;
+  } else {
+    vu->queueBase   = vu->queue = next;
+  }
+  vu->queueLength++;
+
+  va_start(Argp, format);
+#if defined(HAVE_VPRINTF_CHAR)
+  vsprintf(next->string, format, (char *) Argp);
+#else
+  vsprintf(next->string, format, Argp);
+#endif
+  va_end(Argp);
+  ierr = PetscStrlen(next->string, &len);                                                                 CHKERRQ(ierr);
+  if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Formatted string longer than %d bytes", QUEUESTRINGSIZE);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerVUFlushDeferred"
+/*@C
+  PetscViewerVUFlushDeferred - Flushes the deferred write cache to the file.
+
+  Not Collective
+
+  Input Parameter:
++ viewer - The PetscViewer
+
+  Level: intermediate
+
+.keywords: Viewer, flush, deferred
+.seealso: PetscViewerVUPrintDeferred()
+@*/
+int PetscViewerVUFlushDeferred(PetscViewer viewer)
+{
+  PetscViewer_VU *vu   = (PetscViewer_VU *) viewer->data;
+  PrintfQueue     next = vu->queueBase;
+  PrintfQueue     previous;
+  int             i;
+  int             ierr;
+
+  PetscFunctionBegin;
+  for(i = 0; i < vu->queueLength; i++) {
+    PetscFPrintf(viewer->comm, vu->fd, "%s", next->string);
+    previous = next; 
+    next     = next->next;
+    ierr     = PetscFree(previous);                                                                       CHKERRQ(ierr);
+  }
+  vu->queue       = PETSC_NULL;
+  vu->queueLength = 0;
   PetscFunctionReturn(0);
 }
