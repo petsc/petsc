@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.84 1997/01/27 18:13:43 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.85 1997/01/27 21:42:54 balay Exp balay $";
 #endif
 
 /*
@@ -242,7 +242,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) >=  0.) continue;
-          DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
         }
       }
     } 
@@ -256,7 +256,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) != 0.) continue;
-          DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
         }
       }
     } 
@@ -271,7 +271,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) <= 0.) continue;
-          DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
         }
       }
     } 
@@ -302,7 +302,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
         for ( k=0; k<bs; k++ ) {
           for ( l=0; l<bs; l++ ) {
             if (PetscReal(*aa++) >=  0.) continue;
-            DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+            DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
           }
         }
       } 
@@ -316,7 +316,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
         for ( k=0; k<bs; k++ ) {
           for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) != 0.) continue;
-          DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
           }
         }
       } 
@@ -331,7 +331,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
         for ( k=0; k<bs; k++ ) {
           for ( l=0; l<bs; l++ ) {
             if (PetscReal(*aa++) <= 0.) continue;
-            DrawRectangle(draw,x_l+l,y_l+k,x_r+l,y_r+k,color,color,color,color);
+            DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
           }
         }
       } 
