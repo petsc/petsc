@@ -209,10 +209,13 @@ EXTERN int   PetscStrchr(const char[],char,char **);
 EXTERN int   PetscStrtolower(char[]);
 EXTERN int   PetscStrrchr(const char[],char,char **);
 EXTERN int   PetscStrstr(const char[],const char[],char **);
-EXTERN int   PetscStrtok(const char[],const char[],char **);
 EXTERN int   PetscStrallocpy(const char[],char **);
 EXTERN int   PetscStrreplace(MPI_Comm,const char[],char*,int);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
+typedef struct {char token;char *array;char *current;} PetscToken;
+EXTERN int   PetscTokenCreate(const char[],const char,PetscToken**);
+EXTERN int   PetscTokenFind(PetscToken*,char **);
+EXTERN int   PetscTokenDestroy(PetscToken*);
 
 /*
    These are  MPI operations for MPI_Allreduce() etc

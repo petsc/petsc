@@ -1,0 +1,57 @@
+grid spacing: h_eta = 0.166667, h_xi = 0.261799
+[0] changing submatrix 1 of 4 local submatrices: dimension 13 X 13
+[0] changing submatrix 2 of 4 local submatrices: dimension 12 X 12
+[0] changing submatrix 3 of 4 local submatrices: dimension 12 X 12
+[0] changing submatrix 4 of 4 local submatrices: dimension 12 X 12
+  0 KSP Residual norm 2.92864 
+  1 KSP Residual norm 2.70021 
+  2 KSP Residual norm 2.5544 
+  3 KSP Residual norm 2.44777 
+  4 KSP Residual norm 1.59605 
+  5 KSP Residual norm 1.56524 
+  6 KSP Residual norm 1.56481 
+  7 KSP Residual norm 1.01215 
+  8 KSP Residual norm 0.904992 
+  9 KSP Residual norm 0.900939 
+ 10 KSP Residual norm 0.684604 
+ 11 KSP Residual norm 0.177294 
+ 12 KSP Residual norm 0.0346873 
+ 13 KSP Residual norm 0.00335827 
+ 14 KSP Residual norm 0.000500936 
+ 15 KSP Residual norm 0.000391901 
+ 16 KSP Residual norm 4.18941e-05 
+ 17 KSP Residual norm 7.12812e-06 
+ 18 KSP Residual norm 1.67038e-06 
+ 19 KSP Residual norm 8.54177e-07 
+ 20 KSP Residual norm 8.85998e-08 
+ 21 KSP Residual norm 4.95576e-09 
+KSP Object:
+  type: gmres
+    GMRES: restart=30, using Modified Gram-Schmidt Orthogonalization
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000
+  left preconditioning
+PC Object:
+  type: bjacobi
+    Block Jacobi: number of blocks = 4
+    Local solve is same for all blocks, in the following KSP and PC objects:
+KSP Object:
+  type: preonly
+  maximum iterations=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  left preconditioning
+PC Object:
+  type: ilu
+    ILU: 0 levels of fill
+         out-of-place factorization
+         matrix ordering: natural
+  linear system matrix = precond matrix:
+Matrix Object:
+  type=seqaij, rows=13, cols=13
+  total: nonzeros=32, allocated nonzeros=34
+  linear system matrix = precond matrix:
+Matrix Object:
+  type=seqaij, rows=49, cols=49
+  total: nonzeros=172, allocated nonzeros=172
+Norm of RHS difference=2.37549e-06, Iterations=21

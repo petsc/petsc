@@ -1,0 +1,8 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+  0 SNES Function norm 5.41468 
+  1 SNES Function norm 0.295258 
+  2 SNES Function norm 0.000450229 
+  3 SNES Function norm 1.38967e-09 
+Number of Newton iterations = 3
+
+Norm of error 1.49751e-10, Iterations 3

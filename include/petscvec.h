@@ -250,6 +250,13 @@ EXTERN int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
 EXTERN int VecConjugate(Vec);
 
+EXTERN int VecConvertMPIToSeqAll(Vec vin,Vec *vout);
+EXTERN int VecConvertMPIToMPIZero(Vec vin,Vec *vout);
+
+
+EXTERN int VecESISetType(Vec,char*);
+EXTERN int VecESISetFromOptions(Vec);
+
 #endif
 
 

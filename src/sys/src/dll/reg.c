@@ -14,14 +14,15 @@ int PetscFListGetPathAndFunction(const char name[],char *path[],char *function[]
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
-  ierr = PetscStrrchr(work,':',&lfunction);CHKERRQ(ierr);
-  if (lfunction != work) {
-    lfunction[-1] = 0;
+  ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
+  if (lfunction != work && lfunction && lfunction[1] != ':') {
+    lfunction[0] = 0;
     ierr = PetscStrallocpy(work,path);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(lfunction+1,function);CHKERRQ(ierr);
   } else {
     *path = 0;
+    ierr = PetscStrallocpy(name,function);CHKERRQ(ierr);
   }
-  ierr = PetscStrallocpy(lfunction,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -104,17 +105,11 @@ int PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscmesh");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = PetscDLLibraryCCAAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
@@ -128,9 +123,14 @@ int PetscInitialize_DynamicLibraries(void)
 */ 
 int PetscFinalize_DynamicLibraries(void)
 {
-  int ierr;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dll_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
+  }
   ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -219,7 +219,7 @@ int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc
   if (!*fl) {
     ierr           = PetscNew(struct _PetscFList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
     entry->routine = fnc;
@@ -355,10 +355,6 @@ int PetscFListDestroyAll(void)
     Output Parameters:
 .   r - the routine
 
-    Notes:
-    The routine id or name MUST have been registered with the PetscFList via
-    PetscFListAddDynamic() before PetscFListFind() can be called.
-
     Level: developer
 
 .seealso: PetscFListAddDynamic(), PetscFList
@@ -399,15 +395,28 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
       ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
       flg =  (PetscTruth) (f1 || f2);
+    } else {
+      ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscFree(function);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrcmp(function,entry->rname,&flg);CHKERRQ(ierr);
+      }
     }
 
     if (flg) {
 
       if (entry->routine) {
-        *r = entry->routine; 
+        *r   = entry->routine; 
         ierr = PetscStrfree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
+      }
+ 
+      if ((path && entry->path && f3) || (!path && f1)) { /* convert name of function (alias) to actual function name */
+        ierr = PetscFree(function);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
       }
 
       /* it is not yet in memory so load from dynamic library */
@@ -421,6 +430,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
+        PetscErrorPrintf("Unable to find function. Search path:\n");
         ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
         SETERRQ1(1,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
       }
@@ -435,8 +445,6 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
   ierr = PetscStrfree(path);CHKERRQ(ierr);
   if (*r) {
     ierr = PetscFListAddDynamic(&fl,name,name,r);CHKERRQ(ierr);
-    ierr = PetscFree(function);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
   }
 #endif
 

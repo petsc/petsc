@@ -149,4 +149,26 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLs"
+int PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *flg)
+{
+  int   ierr,len;
+  char  *f,program[1024];
+  FILE  *fp;
+
+  PetscFunctionBegin;
+  ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
+  ierr   = PetscStrcat(program,libname);CHKERRQ(ierr); 
+  ierr   = PetscPOpen(comm,PETSC_NULL,program,"r",&fp);CHKERRQ(ierr);
+  f      = fgets(found,tlen,fp);
+  if (f) *flg = PETSC_TRUE; else *flg = PETSC_FALSE;
+  while (f) {
+    ierr  = PetscStrlen(found,&len);CHKERRQ(ierr);
+    f     = fgets(found+len,tlen-len,fp);
+  }
+  if (*flg) PetscLogInfo(0,"ls on %s gives \n%s\n",libname,found);
+  PetscFunctionReturn(0);
+}
+
 #endif

@@ -1,0 +1,9 @@
+  0 SNES Function norm 5.41468 
+iter=1, computing new preconditioning matrix
+  1 SNES Function norm 0.295258 
+iter=2, using old preconditioning matrix
+  2 SNES Function norm 0.000452855 
+iter=3, computing new preconditioning matrix
+  3 SNES Function norm 1.39154e-09 
+number of Newton iterations = 3
+

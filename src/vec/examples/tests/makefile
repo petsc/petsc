@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.108 2001/08/22 18:00:05 balay Exp $ 
+# $Id: makefile,v 1.109 2001/09/24 21:09:54 balay Exp $ 
 
 
 
@@ -150,6 +150,10 @@ ex31: ex31.o chkopts
 ex32f: ex32f.o chkopts
 	-${CLINKER} -o ex32f ex32f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
 	${RM} -f ex32f.o 
+
+ex33: ex33.o chkopts
+	-${CLINKER} -o ex33 ex33.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex33.o 
 
 #--------------------------------------------------------------------------
 runex1:
@@ -308,6 +312,12 @@ runex30f:
 	   else echo "Possible problem with ex30f_1, diffs above"; fi;\
 	   ${RM} -f ex30f_1.tmp
 
+runex33:
+	-@${MPIRUN} -np 4 ex33 > ex33_1.tmp 2>&1;\
+	   if (${DIFF} output/ex33_1.out ex33_1.tmp) then true; \
+	   else echo "Possible problem with ex33_1, diffs above"; fi;\
+	   ${RM} -f ex33_1.tmp
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc\
 		  ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm\
@@ -319,7 +329,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                   ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm                 
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
 		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \
-		  ex28.PETSc runex28 ex28.rm
+		  ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_3  = ex17f.PETSc runex17f ex17f.rm ex19.PETSc runex19 ex19.rm \
 	          ex20.PETSc ex20.rm ex30f.PETSc runex30f ex30f.rm
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 

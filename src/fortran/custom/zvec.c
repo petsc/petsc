@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.75 2001/09/10 14:46:55 bsmith Exp $*/
+/*$Id: zvec.c,v 1.76 2001/09/24 21:02:04 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -43,7 +43,9 @@
 #define vecsetrandom_             VECSETRANDOM
 #define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY
 #define veccreateghostblock_          VECCREATEGHOSTBLOCK
-#define vecloadintovector_            VECLOADINTOVECTOR   
+#define vecloadintovector_            VECLOADINTOVECTOR  
+#define vecconvertmpitoseqall_        VECCONVERTMPITOSEQALL
+#define vecconvertmpitompizero_       VECCONVERTMPITOMPIZERO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecloadintovector_            vecloadintovector
 #define veccreateghostblockwitharray_ veccreateghostblockwitharray
@@ -85,7 +87,9 @@
 #define vecgettype_               vecgettype
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecmax_                   vecmax
-#define vecsetrandom_              vecsetrandom
+#define vecsetrandom_             vecsetrandom
+#define vecconvertmpitoseqall_    vecconvertmpitoseqall
+#define vecconvertmpitompizero_   vecconvertmpitompizero
 #endif
 
 EXTERN_C_BEGIN
@@ -363,6 +367,16 @@ void PETSC_STDCALL vecmax_(Vec *x,int *p,PetscReal *val,int *ierr)
 {
   if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
   *ierr = VecMax(*x,p,val);
+}
+
+void PETSC_STDCALL vecconvertmpitoseqall_(Vec *v,Vec *newv,int *ierr)
+{
+  *ierr = VecConvertMPIToSeqAll(*v,newv);
+}
+
+void PETSC_STDCALL vecconvertmpitompizero_(Vec *v,Vec *newv,int *ierr)
+{
+  *ierr = VecConvertMPIToMPIZero(*v,newv);
 }
 
 EXTERN_C_END

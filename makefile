@@ -475,4 +475,4 @@ exercises:
 .PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
-        countcfunctions difffortranfunctions checkbadfortranstubs noise exercises
+

@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.54 2001/08/06 21:16:10 bsmith Exp $*/
+/*$Id: axpy.c,v 1.54 2001/08/06 21:16:10 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -27,7 +27,7 @@
  @*/
 int MatAXPY(PetscScalar *a,Mat X,Mat Y)
 {
-  int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
+  int         m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
   PetscScalar *val,*vals;
 
   PetscFunctionBegin;
@@ -177,7 +177,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 int MatAYPX(PetscScalar *a,Mat X,Mat Y)
 {
   PetscScalar one = 1.0;
-  int    mX,mY,nX,nY,ierr;
+  int         mX,mY,nX,nY,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_COOKIE);

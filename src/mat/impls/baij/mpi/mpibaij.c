@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.230 2001/08/10 03:31:17 bsmith Exp $*/
+/*$Id: mpibaij.c,v 1.234 2001/09/25 22:56:49 balay Exp $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -422,19 +422,19 @@ int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(baij->colmap,in[j]/bs + 1,&col);CHKERRQ(ierr);
-            col  = col - 1 + in[j]%bs;
+            col  = col - 1;
 #else
-            col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
+            col = baij->colmap[in[j]/bs] - 1;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
-              col =  in[j]; 
+              col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
               B = baij->B;
               b = (Mat_SeqBAIJ*)(B)->data; 
               bimax=b->imax;bi=b->i;bilen=b->ilen;bj=b->j; 
               ba=b->a;
-            }
+            } else col += in[j]%bs;
           } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
           MatSetValues_SeqBAIJ_B_Private(row,col,value,addv);

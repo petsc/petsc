@@ -1,0 +1,20 @@
+#! /bin/sh
+#
+# This script can be used to find suspicious files.  These include
+#   bad permissions (like owner-read only)
+#   large (possible .nfs or linker trash)
+#
+#
+# Look for bad paths
+echo "Looking for symbolic links ..."
+find . -type l -exec ls -l \{\} \; | cut -c46- | grep '\-> /'
+# and bad protections
+echo "Looking for files that are owner-read ONLY ... "
+find . \( -perm 0600 -o -perm 0700 \) -print
+# And rogue large files
+echo "Looking for large files ... "
+find . -name lib -prune -o -name aftp-logs -prune -o \
+	-name matrices -prune -o -name '*.ps' -prune -o \
+	-name surplus -prune -o -size +500 -print
+echo "Looking for files with explicit PARCH references ... "
+find . -name '*.[ch]' -exec grep -l PARCH_ \{\} \;

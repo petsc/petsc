@@ -1,0 +1,7 @@
+global size = 1024, lid velocity = 0, prandtl # = 1, grashof # = 1000
+  0 SNES Function norm 62.2222 
+  1 SNES Function norm 6.23783 
+  2 SNES Function norm 0.099428 
+  3 SNES Function norm 5.79704e-05 
+  4 SNES Function norm 1.07024e-09 
+Number of Newton iterations = 4

@@ -1,0 +1,162 @@
+
+
+
+
+
+
+ 
+ 
+                                Jan 17 1998
+                            < M A T L A B (R) >
+                            All Rights Reserved
+                            Version 5.2.0.3084
+                (c) Copyright 1984-98 The MathWorks, Inc.
+  For product information, type tour or visit www.mathworks.com.
+  To get started, type one of these: helpwin, helpdesk, or demo.
+PETSc_1| n_13 Class                                                             
+PETSc_1| n_13 Id                                                                
+PETSc_1| n_13 Name                                                              
+PETSc_1| n_13 ParentId                                                          
+PETSc_1| n_13 Type                                                              
+PETSc_1| n_13 values                                                            
+PETSc_1| n_22 Class                                                             
+PETSc_1| n_22 Id                                                                
+PETSc_1| n_22 Iteration                                                         
+PETSc_1| n_22 Name                                                              
+PETSc_1| n_22 ParentId                                                          
+PETSc_1| n_22 Residual                                                          
+PETSc_1| n_22 Type                                                              
+PETSc_1| n_23 Class                                                             
+PETSc_1| n_23 Id                                                                
+PETSc_1| n_23 Name                                                              
+PETSc_1| n_23 ParentId                                                          
+PETSc_1| n_23 Type                                                              
+PETSc_1| n_24 Class                                                             
+PETSc_1| n_24 Id                                                                
+PETSc_1| n_24 Name                                                              
+PETSc_1| n_24 ParentId                                                          
+PETSc_1| n_24 Type                                                              
+PETSc_1| n_5  Class                                                             
+PETSc_1| n_5  Id                                                                
+PETSc_1| n_5  Name                                                              
+PETSc_1| n_5  ParentId                                                          
+PETSc_1| n_5  Type                                                              
+PETSc_1| n_5  values                                                            
+PETSc_1| n_8  Class                                                             
+PETSc_1| n_8  Id                                                                
+PETSc_1| n_8  Name                                                              
+PETSc_1| n_8  ParentId                                                          
+PETSc_1| n_8  Type                                                              
+PETSc_1| n_8  values                                                            
+PETSc|00 Param        initial                                                   
+PETSc|00 Param        param                                                     
+PETSc|00 Param        sleep                                                     
+PETSc|00 n_0          Class                                                     
+PETSc|00 n_0          Id                                                        
+PETSc|00 n_0          Iteration                                                 
+PETSc|00 n_0          Name                                                      
+PETSc|00 n_0          ParentId                                                  
+PETSc|00 n_0          Residual                                                  
+PETSc|00 n_0          Type                                                      
+PETSc|00 n_1          Class                                                     
+PETSc|00 n_1          Id                                                        
+PETSc|00 n_1          Name                                                      
+PETSc|00 n_1          ParentId                                                  
+PETSc|00 n_1          Type                                                      
+PETSc|00 n_10         Class                                                     
+PETSc|00 n_10         Id                                                        
+PETSc|00 n_10         Name                                                      
+PETSc|00 n_10         ParentId                                                  
+PETSc|00 n_10         Type                                                      
+PETSc|00 n_10         values                                                    
+PETSc|00 n_11         Class                                                     
+PETSc|00 n_11         Id                                                        
+PETSc|00 n_11         Name                                                      
+PETSc|00 n_11         ParentId                                                  
+PETSc|00 n_11         Type                                                      
+PETSc|00 n_11         values                                                    
+PETSc|00 n_12         Class                                                     
+PETSc|00 n_12         Id                                                        
+PETSc|00 n_12         Name                                                      
+PETSc|00 n_12         ParentId                                                  
+PETSc|00 n_12         Type                                                      
+PETSc|00 n_12         values                                                    
+PETSc|00 n_15         Class                                                     
+PETSc|00 n_15         Id                                                        
+PETSc|00 n_15         Name                                                      
+PETSc|00 n_15         ParentId                                                  
+PETSc|00 n_15         Type                                                      
+PETSc|00 n_15         values                                                    
+PETSc|00 n_16         Class                                                     
+PETSc|00 n_16         Id                                                        
+PETSc|00 n_16         Name                                                      
+PETSc|00 n_16         ParentId                                                  
+PETSc|00 n_16         Type                                                      
+PETSc|00 n_16         values                                                    
+PETSc|00 n_17         Class                                                     
+PETSc|00 n_17         Id                                                        
+PETSc|00 n_17         Name                                                      
+PETSc|00 n_17         ParentId                                                  
+PETSc|00 n_17         Type                                                      
+PETSc|00 n_17         values                                                    
+PETSc|00 n_18         Class                                                     
+PETSc|00 n_18         Id                                                        
+PETSc|00 n_18         Name                                                      
+PETSc|00 n_18         ParentId                                                  
+PETSc|00 n_18         Type                                                      
+PETSc|00 n_18         values                                                    
+PETSc|00 n_19         Class                                                     
+PETSc|00 n_19         Id                                                        
+PETSc|00 n_19         Name                                                      
+PETSc|00 n_19         ParentId                                                  
+PETSc|00 n_19         Type                                                      
+PETSc|00 n_19         values                                                    
+PETSc|00 n_2          Class                                                     
+PETSc|00 n_2          Id                                                        
+PETSc|00 n_2          Name                                                      
+PETSc|00 n_2          ParentId                                                  
+PETSc|00 n_2          Type                                                      
+PETSc|00 n_20         Class                                                     
+PETSc|00 n_20         Id                                                        
+PETSc|00 n_20         Name                                                      
+PETSc|00 n_20         ParentId                                                  
+PETSc|00 n_20         Type                                                      
+PETSc|00 n_20         values                                                    
+PETSc|00 n_21         Class                                                     
+PETSc|00 n_21         Id                                                        
+PETSc|00 n_21         Name                                                      
+PETSc|00 n_21         ParentId                                                  
+PETSc|00 n_21         Type                                                      
+PETSc|00 n_21         values                                                    
+PETSc|00 n_3          Class                                                     
+PETSc|00 n_3          Id                                                        
+PETSc|00 n_3          Iteration                                                 
+PETSc|00 n_3          Name                                                      
+PETSc|00 n_3          ParentId                                                  
+PETSc|00 n_3          Residual                                                  
+PETSc|00 n_3          Type                                                      
+PETSc|00 n_4          Class                                                     
+PETSc|00 n_4          Id                                                        
+PETSc|00 n_4          Name                                                      
+PETSc|00 n_4          ParentId                                                  
+PETSc|00 n_4          Type                                                      
+PETSc|00 n_4          values                                                    
+PETSc|00 n_6          Class                                                     
+PETSc|00 n_6          Id                                                        
+PETSc|00 n_6          Name                                                      
+PETSc|00 n_6          ParentId                                                  
+PETSc|00 n_6          Type                                                      
+PETSc|00 n_7          Class                                                     
+PETSc|00 n_7          Id                                                        
+PETSc|00 n_7          Name                                                      
+PETSc|00 n_7          ParentId                                                  
+PETSc|00 n_7          Type                                                      
+PETSc|00 n_7          values                                                    
+PETSc|00 n_9          Class                                                     
+PETSc|00 n_9          Id                                                        
+PETSc|00 n_9          Name                                                      
+PETSc|00 n_9          ParentId                                                  
+PETSc|00 n_9          Type                                                      
+PETSc|00 n_9          values                                                    
+PETSc|00 stack_memory stack                                                     
+x =

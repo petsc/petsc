@@ -377,7 +377,7 @@ int PetscStrchr(const char a[],char b,char **c)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrrchr"
 /*@C
-   PetscStrrchr - Locates one location past the first occurance of a character in a string,
+   PetscStrrchr - Locates one location past the last occurance of a character in a string,
       if the character is not found then returns entire string
 
    Not Collective
@@ -424,15 +424,14 @@ int PetscStrtolower(char a[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscStrtok"
+#define __FUNCT__ "PetscTokenFind"
 /*@C
-   PetscStrtok - Locates next "token" in a string
+   PetscTokenFind - Locates next "token" in a string
 
    Not Collective
 
    Input Parameters:
-+  a - pointer to string
--  b - token
+.  a - pointer to token
 
    Output Parameter:
 .  result - location of occurance, a if not found
@@ -441,34 +440,91 @@ int PetscStrtolower(char a[])
 
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
-  A copy is made that is then passed into the system strtok() 
-  routine.
-
-    Limitation: 
-  String must be less than or equal 1024 bytes in length, otherwise
-  it will bleed memory.
 
    Level: intermediate
 
+.seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
-int PetscStrtok(const char a[],const char b[],char **result)
+int PetscTokenFind(PetscToken *a,char **result)
 {
-  static char init[1024];
-  char        *ptr=0;
-  int         ierr,len;
-         
+  char *ptr = a->current;
 
   PetscFunctionBegin;
-  if (a) {
-    ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
-    if (len > 1023) {
-      ierr = PetscMalloc((len+1)*sizeof(char),&ptr);CHKERRQ(ierr);
-    } else {
-      ptr = init;
+  *result = a->current;
+  if (ptr && *ptr == 0) *result = 0;
+  while (ptr) {
+    if (*ptr == a->token) {
+      *ptr++ = 0; 
+      while (*ptr == a->token) ptr++;
+      a->current = ptr;
+      break;
     }
-    ierr = PetscStrncpy(ptr,a,len+1);CHKERRQ(ierr);
+    if (*ptr == 0) {
+      a->current = 0;
+      break;
+    }
+    ptr++;
   }
-  *result = strtok(ptr,b);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTokenCreate"
+/*@C
+   PetscTokenCreate - Creates a PetscToken used to find tokens in a string
+
+   Not Collective
+
+   Input Parameters:
++  string - the string to look in
+-  token - the character to look for
+
+   Output Parameter:
+.  a - pointer to token
+
+   Notes:
+
+     This version is different from the system version in that
+  it allows you to pass a read-only string into the function.
+
+   Level: intermediate
+
+.seealso: PetscTokenFind(), PetscTokenDestroy()
+@*/
+int PetscTokenCreate(const char a[],const char b,PetscToken **t)
+{
+  int         ierr,len;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
+  ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
+  (*t)->current = (*t)->array;   
+  (*t)->token   = b;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTokenDestroy"
+/*@C
+   PetscTokenDestroy - Destroys a PetscToken
+
+   Not Collective
+
+   Input Parameters:
+.  a - pointer to token
+
+   Level: intermediate
+
+.seealso: PetscTokenCreate(), PetscTokenFind()
+@*/
+int PetscTokenDestroy(PetscToken *a)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(a->array);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

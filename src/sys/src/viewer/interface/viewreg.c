@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.36 2001/06/21 21:15:13 bsmith Exp $*/
+/*$Id: viewreg.c,v 1.36 2001/06/21 21:15:13 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -48,7 +48,7 @@ int PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
    Collective on PetscViewer
 
    Input Parameter:
-+  PetscViewer      - the PetscViewer context
++  viewer      - the PetscViewer context
 -  type        - for example, "ASCII"
 
    Options Database Command:

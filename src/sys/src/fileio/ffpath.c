@@ -70,7 +70,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mo
 
   PetscFunctionBegin;
   /* Setup default */
-  PetscGetFullPath(defname,fname,MAXPATHLEN);
+  ierr = PetscGetFullPath(defname,fname,MAXPATHLEN);CHKERRQ(ierr);
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */

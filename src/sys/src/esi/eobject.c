@@ -1,4 +1,5 @@
 
+
 /*
     Provides several of the esi::Object methods used by all 
   of the esi::petsc classes
@@ -65,3 +66,10 @@ esi::ErrorCode esi::petsc::Object::deleteReference()
   if (this->refcnt <= 0) delete this;
   return ierr;
 }
+
+#if defined(PETSC_HAVE_CCA)
+void esi::petsc::Object::setServices(gov::cca::Services *)
+{
+  ;
+}
+#endif

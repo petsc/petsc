@@ -62,7 +62,7 @@ int PetscLogInfo(void *vobj,const char message[],...)
   va_list     Argp;
   int         rank,urank,len,ierr;
   PetscObject obj = (PetscObject)vobj;
-  char        string[256];
+  char        string[8*1024];
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);

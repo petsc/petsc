@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.127 2001/08/21 21:03:20 bsmith Exp $*/
+/*$Id: mg.c,v 1.128 2001/10/03 22:12:40 balay Exp $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -17,7 +17,7 @@
 #define __FUNCT__ "MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
-  MG          mg = *mglevels,mgc = *(mglevels - 1);
+  MG          mg = *mglevels,mgc;
   int         cycles = mg->cycles,ierr,its;
   PetscScalar zero = 0.0;
 
@@ -45,6 +45,7 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
       }
     }
 
+    mgc = *(mglevels - 1);
     ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
     ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
     while (cycles--) {

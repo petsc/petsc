@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.88 2001/09/07 20:08:46 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.89 2001/09/19 16:07:46 bsmith Exp $ */
 
 /* 
    This private file should not be included in users' code.

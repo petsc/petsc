@@ -43,6 +43,7 @@ EXTERN int PetscGetWorkingDirectory(char[],int);
 EXTERN int PetscGetRealPath(char[],char[]);
 EXTERN int PetscGetHomeDirectory(char[],int);
 EXTERN int PetscTestFile(const char[],char,PetscTruth*);
+EXTERN int PetscTestDirectory(const char[],char,PetscTruth*);
 EXTERN int PetscBinaryRead(int,void*,int,PetscDataType);
 EXTERN int PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
 EXTERN int PetscBinaryWrite(int,void*,int,PetscDataType,int);
@@ -52,6 +53,8 @@ EXTERN int PetscSharedTmp(MPI_Comm,PetscTruth *);
 EXTERN int PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
 EXTERN int PetscGetTmp(MPI_Comm,char *,int);
 EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
+EXTERN int PetscLs(MPI_Comm,const char[],char*,int,PetscTruth*);
+EXTERN int PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 
 /*
    In binary files variables are stored using the following lengths,
@@ -82,6 +85,7 @@ EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
 EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
 
 EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
+#endif      
 
 /* ParameterDict objects encapsulate arguments to generic functions, like mechanisms over interfaces */
 EXTERN int ParameterDictCreate(MPI_Comm, ParameterDict *);

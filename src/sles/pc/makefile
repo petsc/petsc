@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.31 2001/08/22 18:01:15 balay Exp $ 
+# $Id: makefile,v 1.32 2001/09/14 17:52:26 bsmith Exp $ 
 
 ALL: lib
 
 SOURCEH  = pcimpl.h ../../../include/petscpc.h
-DIRS     = interface impls  examples
+DIRS     = interface impls examples esi
 LOCDIR   = src/sles/pc/
 MANSEC   = PC
 
