@@ -1,5 +1,5 @@
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
 #include <math.h>
 #include "bsinterf.h"
