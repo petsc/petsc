@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.8 2000/01/18 23:43:09 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.9 2000/01/21 23:55:02 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -2373,7 +2373,7 @@ PetscPrintf(MPI_COMM_WORLD, " nbface= %d\n", nbface);*/
 /*===========================================================================*/
 #undef __FUNC__
 #define __FUNC__ "write_fine_grid"
-void write_fine_grid(GRID *grid)                  
+int write_fine_grid(GRID *grid)                  
 {
    int i;
    FILE *output;
@@ -2381,9 +2381,8 @@ void write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-   if ((output = fopen("frame.out","a"))== (FILE *)NULL){
-      printf("can't open frame.out");
-      exit(2);
+   if (!(output = fopen("frame.out","a"))){
+      SETERRQ(1,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n"); 
    fprintf(output,"\n");
@@ -2436,6 +2435,7 @@ void write_fine_grid(GRID *grid)
  * close output file
  */
    fclose(output);
+   return(0);
 }
 
 
