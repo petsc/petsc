@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.60 2000/05/05 22:13:53 balay Exp bsmith $*/
+/*$Id: reg.c,v 1.61 2000/05/10 16:39:16 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -202,9 +202,9 @@ static FList   dlallhead = 0;
 #define __FUNC__ /*<a name="FListAdd"></a>*/"FListAdd"
 int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
-  FList   entry,ne;
-  int      ierr;
-  char     *fpath,*fname;
+  FList entry,ne;
+  int   ierr;
+  char  *fpath,*fname;
 
   PetscFunctionBegin;
 
@@ -253,7 +253,7 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
     entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
-    ne->next = entry;
+    ne->next       = entry;
   }
 
   PetscFunctionReturn(0);
@@ -269,37 +269,37 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 
 .seealso: FListAddDynamic()
 */
-int FListDestroy(FList fl)
+int FListDestroy(FList *fl)
 {
   FList   next,entry,tmp = dlallhead;
   int     ierr;
 
   PetscFunctionBegin;
-  if (!fl) PetscFunctionReturn(0);
+  if (!*fl) PetscFunctionReturn(0);
 
   if (!dlallhead) {
-    SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
+    PetscFunctionReturn(0);
   }
 
   /*
-       Remove this entry from the master DL list 
+       Remove this entry from the master DL list (if it is in it)
   */
-  if (dlallhead == fl) {
+  if (dlallhead == *fl) {
     if (dlallhead->next_list) {
       dlallhead = dlallhead->next_list;
     } else {
       dlallhead = 0;
     }
   } else {
-    while (tmp->next_list != fl) {
+    while (tmp->next_list != *fl) {
       tmp = tmp->next_list;
-      if (!tmp->next_list) SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
+      if (!tmp->next_list) break;
     }
-    tmp->next_list = tmp->next_list->next_list;
+    if (tmp->next_list) tmp->next_list = tmp->next_list->next_list;
   }
 
   /* free this list */
-  entry = fl;
+  entry = *fl;
   while (entry) {
     next = entry->next;
     ierr = PetscStrfree(entry->path);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ int FListDestroy(FList fl)
     ierr = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
- 
+  *fl = 0;
   PetscFunctionReturn(0);
 }
 
@@ -325,7 +325,7 @@ int FListDestroyAll(void)
   PetscFunctionBegin;
   while (tmp1) {
     tmp2 = tmp1->next_list;
-    ierr = FListDestroy(tmp1);CHKERRQ(ierr);
+    ierr = FListDestroy(&tmp1);CHKERRQ(ierr);
     tmp1 = tmp2;
   }
   dlallhead = 0;
