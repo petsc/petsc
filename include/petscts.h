@@ -34,9 +34,9 @@ E*/
 #define TS_CRANK_NICHOLSON "crank-nicholson"
 #define TS_PVODE           "pvode"
 #define TS_RUNGE_KUTTA     "runge-kutta"
-typedef char *TSType;
+#define TSType char*
 
-typedef char *TSSerializeType;
+#define TSSerializeType char*
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve

@@ -47,7 +47,7 @@ E*/
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
 #define KSPLGMRES     "lgmres"
-typedef char * KSPType;
+#define KSPType char*
 
 /* Logging support */
 extern int KSP_COOKIE;

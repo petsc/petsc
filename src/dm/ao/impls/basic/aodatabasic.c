@@ -421,7 +421,8 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
             For logical input the length is given by the user in bits; we need to 
             convert to bytes to send with MPI
       */
-      PetscBT fdata3,mvalues = (PetscBT) data;
+      PetscBT fdata3;
+      PetscBT mvalues = (PetscBT) data;
       char *values;
       ierr = PetscMalloc((n+1)*bs*sizeof(char),&values);CHKERRQ(ierr);
       for (i=0; i<n; i++) {

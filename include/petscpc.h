@@ -15,7 +15,7 @@ EXTERN int PCInitializePackage(const char[]);
    These are added with the PCRegisterDynamic() macro
 */
 extern PetscFList PCList;
-typedef char *PCType;
+#define PCType char*
 
 /*S
      PC - Abstract PETSc object that manages all preconditioners

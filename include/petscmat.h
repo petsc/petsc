@@ -67,11 +67,11 @@ E*/
 #define MATAIJMUMPS        "aijmumps"
 #define MATSBAIJMUMPS      "sbaijmumps"
 #define MATDSCPACK         "dscpack"
-typedef char* MatType;
+#define MatType char*
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
 #define MAT_SER_MPIAIJ_BINARY "mpiaij_binary"
-typedef char *MatSerializeType;
+#define MatSerializeType char*
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
@@ -763,7 +763,7 @@ EXTERN int MatDAADSetCtx(Mat,void*);
 
 .seealso: MatGetOrdering()
 E*/
-typedef char* MatOrderingType;
+#define MatOrderingType char*
 #define MATORDERING_NATURAL   "natural"
 #define MATORDERING_ND        "nd"
 #define MATORDERING_1WD       "1wd"
@@ -912,7 +912,7 @@ EXTERN int MatRelax(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
 .seealso: MatGetColoring()
 E*/
-typedef char* MatColoringType;
+#define MatColoringType char*
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
 #define MATCOLORING_LF      "lf"
@@ -1019,7 +1019,7 @@ typedef struct _p_MatPartitioning *MatPartitioning;
 
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
-typedef char* MatPartitioningType;
+#define MatPartitioningType char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
 

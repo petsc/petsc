@@ -40,7 +40,7 @@ PETSC_EXTERN_CXX_BEGIN
 .seealso:  PetscBTCreate(), PetscBTDestroy(), PetscBTMemzero(), PetscBTSet(), PetscBTClear(),
            PetscBTLookup(), PetscBTLookupSet(), PetscBTLength(), PetscBTView()
 S*/
-typedef char* PetscBT;
+#define PetscBT char*
 
 extern char _BT_mask,_BT_c;
 extern int  _BT_idx;
