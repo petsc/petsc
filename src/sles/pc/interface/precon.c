@@ -773,7 +773,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, Pet
 int PCSetUp(PC pc)
 {
   int ierr;
-  PetscTruth flg;
+  PetscTruth flg; 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -793,7 +793,7 @@ int PCSetUp(PC pc)
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
   
-  ierr = PetscTypeCompare((PetscObject)pc->mat,MATSEQSBAIJ,&flg);
+  ierr = PetscTypeCompare((PetscObject)pc->mat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
   if (flg){ /* mat is in sbaij format */
     ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
   }
