@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.140 1999/12/17 19:17:25 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.141 1999/12/18 00:36:07 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -78,6 +78,7 @@ int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
   PetscFunctionBegin;
   ilu = (PC_ILU *) pc->data;
   ilu->reusefill = flag;
+  if (flag) SETERRQ(1,1,"Not yet supported");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
