@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.34 1998/10/06 19:57:17 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.35 1998/10/06 19:57:25 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -327,6 +327,7 @@ int PLogMPEBegin(void)
     if (flg) {
        PLogInfo(0,"PLogMPEBegin: Not initializing MPE.\n");
     } else {
+       PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
       MPE_Init_log();
       PetscBeganMPE = 1;
     }
@@ -429,7 +430,10 @@ int PLogMPEDump(const char sname[])
   else PetscStrcpy(name,"mpe.log");
 
   if (PetscBeganMPE == 1) {
+    PLogInfo(0,"PLogMPEDump: Finalizing MPE.\n");
     MPE_Finish_log(name); 
+  } else {
+    PLogInfo(0,"PLogMPEDump: Not finalizing MPE.\n");
   }
   PetscFunctionReturn(0);
 }
