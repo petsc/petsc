@@ -29,9 +29,13 @@ EXTERN int SLESInitializePackage(char *);
    Notes:
       Overwrites any previous null space that may have been attached
 
+  Users manual sections:
+.   sec_singular
+
 .keywords: PC, destroy, null space
 
-.seealso: PCCreate(), PCSetUp()
+.seealso: PCCreate(), PCSetUp(), MatNullSpaceCreate(), MatNullSpace
+
 @*/
 int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
 {

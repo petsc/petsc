@@ -134,7 +134,7 @@ template<class Scalar,class Ordinal> class PreconditionerFactory
     virtual ~PreconditionerFactory(void){};
 
     // Construct a Preconditioner
-    virtual esi::ErrorCode getPreconditioner(MPI_Comm comm,esi::Preconditioner<Scalar,Ordinal>*&v) = 0; 
+    virtual esi::ErrorCode getPreconditioner(char *commname,void* comm,esi::Preconditioner<Scalar,Ordinal>*&v) = 0; 
 };
 
 }

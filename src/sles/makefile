@@ -3,7 +3,7 @@
 ALL: lib
 
 SOURCEH  = slesimpl.h ../../include/petscsles.h
-DIRS     = interface pc ksp examples utils
+DIRS     = interface pc ksp examples utils esi
 LOCDIR   = src/sles/
 MANSEC   = SLES
 

@@ -19,7 +19,8 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public esi::petsc::O
   public:
 
     // constructor.
-    IndexSpace(MPI_Comm icomm) {};	
+    IndexSpace(MPI_Comm icomm) {this->map = 0;};	
+    IndexSpace() {this->map = 0;};	
 
     // Construct an IndexSpace form an IndexSpace 
     IndexSpace(esi::IndexSpace<Ordinal>& sourceIndexSpace);
