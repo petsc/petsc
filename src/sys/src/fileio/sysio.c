@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.77 2001/01/15 21:43:46 bsmith Exp balay $*/
+/*$Id: sysio.c,v 1.78 2001/03/23 23:20:30 balay Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -183,7 +183,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     } else {
       /* read them in as shorts, later stretch into ints */
       m   *= sizeof(short);
-      ierr = PetscMalloc(m),&pp);CHKERRQ(ierr);
+      ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
       ptmp = (void*)pp;
     }
   }
