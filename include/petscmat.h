@@ -49,19 +49,56 @@ E*/
 #define MATMFFD     "mffd"
 typedef char* MatType;
 
+#define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
+#define MAT_SER_MPIAIJ_BINARY "mpiaij_binary"
+typedef char *MatSerializeType;
+
+#ifdef PETSC_USE_NEW_LOGGING
+/* Logging support */
+extern int MAT_COOKIE;
+extern int MAT_FDCOLORING_COOKIE;
+extern int MATPARTITIONING_COOKIE;
+enum {MAT_Mult, MAT_MultMultiple, MAT_MultConstrained, MAT_MultTrans, MAT_MultAdd, MAT_MultTransAdd, MAT_MultMatrixFree,
+      MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTrans, MAT_SolveTransAdd, MAT_Relax, MAT_ForwardSolve,
+      MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic, MAT_LUFactorNumeric, MAT_CholeskyFactor,
+      MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor, MAT_ILUFactorSymbolic,
+      MAT_IncompleteCholeskyFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin, MAT_AssemblyEnd,
+      MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_IncreaseOverlap,
+      MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_MAX_EVENTS};
+extern int MatEvents[MAT_MAX_EVENTS];
+#define MatLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(MatEvents[e],o1,o2,o3,o4)
+#define MatLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(MatEvents[e],o1,o2,o3,o4)
+
+#else
+
+enum {MAT_MultConstrained};
+#define MatLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(e,o1,o2,o3,o4)
+#define MatLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(e,o1,o2,o3,o4)
+#endif
+
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatSetType(Mat,MatType);
 EXTERN int MatSetFromOptions(Mat);
 EXTERN int MatSetUpPreallocation(Mat);
 EXTERN int MatRegisterAll(char*);
 EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
+EXTERN int MatSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Mat *, PetscViewer, PetscTruth));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
+#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,0)
 #else
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
+#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,d)
 #endif
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
+
+EXTERN PetscFList MatSerializeList;
+EXTERN int MatSerializeRegisterAll(const char []);
+EXTERN int MatSerializeRegisterDestroy();
+EXTERN int MatSerializeRegisterAllCalled;
+EXTERN int MatSerialize(MPI_Comm, Mat *, PetscViewer, PetscTruth);
+EXTERN int MatSetSerializeType(Mat, MatSerializeType);
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,PetscScalar*,Mat*);
@@ -171,6 +208,7 @@ EXTERN int MatMult(Mat,Vec,Vec);
 EXTERN int MatMultAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTranspose(Mat,Vec,Vec);
 EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
+EXTERN int MatMultConstrained(Mat,Vec,Vec);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -268,6 +306,7 @@ EXTERN int MatGetDiagonal(Mat,Vec);
 EXTERN int MatGetRowMax(Mat,Vec);
 EXTERN int MatTranspose(Mat,Mat*);
 EXTERN int MatPermute(Mat,IS,IS,Mat *);
+EXTERN int MatPermuteSparsify(Mat,int,double,double,IS,IS,Mat *);
 EXTERN int MatDiagonalScale(Mat,Vec,Vec);
 EXTERN int MatDiagonalSet(Mat,Vec,InsertMode);
 EXTERN int MatEqual(Mat,Mat,PetscTruth*);
@@ -408,6 +447,9 @@ typedef char* MatOrderingType;
 #define MATORDERING_DSC_ND    "dsc_nd"
 #define MATORDERING_DSC_MMD   "dsc_mmd"
 #define MATORDERING_DSC_MDF   "dsc_mdf"
+#define MATORDERING_CONSTRAINED "constrained"
+#define MATORDERING_IDENTITY  "identity"
+#define MATORDERING_REVERSE   "reverse"
 
 EXTERN int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
@@ -705,6 +747,27 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_UNFACTORED=59,
                MATOP_PERMUTE=60,
                MATOP_SET_VALUES_BLOCKED=61,
+               MATOP_GET_SUBMATRIX=62,
+               MATOP_GET_MAPS=65,
+               MATOP_USE_SCALED_FORM=66,
+               MATOP_SCALE_SYSTEM=67,
+               MATOP_UNSCALE_SYSTEM=68,
+               MATOP_SET_LOCAL_TO_GLOBAL_MAPPING=69,
+               MATOP_SET_VALUES_LOCAL=70,
+               MATOP_ZERO_ROWS_LOCAL=71,
+               MATOP_GET_ROW_MAX=72,
+               MATOP_CONVERT=73,
+               MATOP_SET_COLORING=74,
+               MATOP_SET_VALUES_ADIC=75,
+               MATOP_SET_VALUES_ADIFOR=76,
+               MATOP_FD_COLORING_APPLY=77,
+               MATOP_SET_FROM_OPTIONS=78,
+               MATOP_MULT_CONSTRAINED=79,
+               MATOP_ILU_FACTOR_SYMBOLIC_CONSTRAINED=80,
+               MATOP_SERIALIZE=81,
+               MATOP_PERMUTE_SPARSIFY=82,
+               MATOP_MULT_MULTIPLE=83,
+               MATOP_SOLVE_MULTIPLE=84,
                MATOP_DESTROY=250,
                MATOP_VIEW=251
              } MatOperation;

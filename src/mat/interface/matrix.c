@@ -1259,6 +1259,51 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "MatMultConstrained"
+/*@
+   MatMultConstrained - The inner multiplication routine for a
+   constrained matrix P^T A P.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  x   - the vector to be multilplied
+
+   Output Parameters:
+.  y - the result
+
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMult(A,y,y).
+
+   Level: beginner
+
+.keywords: matrix, multiply, matrix-vector product, constraint
+.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+@*/
+int MatMultConstrained(Mat mat,Vec x,Vec y)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+  if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N); 
+  if (mat->M != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->M,y->N); 
+  if (mat->m != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %d %d",mat->m,y->n); 
+
+  MatLogEventBegin(MAT_MultConstrained,mat,x,y,0);
+  ierr = (*mat->ops->multconstrained)(mat,x,y); CHKERRQ(ierr);
+  MatLogEventEnd(MAT_MultConstrained,mat,x,y,0);
+
+  PetscFunctionReturn(0);
+}   
 /* ------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo"
@@ -2587,6 +2632,109 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->permute) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
   ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatPermuteSparsify"
+/*@C
+  MatPermuteSparsify - Creates a new matrix with rows and columns permuted from the 
+  original and sparsified to the prescribed tolerance.
+
+  Collective on Mat
+
+  Input Parameters:
++ A    - The matrix to permute
+. band - The half-bandwidth of the sparsified matrix, or PETSC_DECIDE
+. frac - The half-bandwidth as a fraction of the total size, or 0.0
+. tol  - The drop tolerance
+. rowp - The row permutation
+- colp - The column permutation
+
+  Output Parameter:
+. B    - The permuted, sparsified matrix
+
+  Level: advanced
+
+  Note:
+  The default behavior (band = PETSC_DECIDE and frac = 0.0) is to
+  restrict the half-bandwidth of the resulting matrix to 5% of the
+  total matrix size.
+
+.keywords: matrix, permute, sparsify
+
+.seealso: MatGetOrdering(), MatPermute()
+@*/
+int MatPermuteSparsify(Mat A, int band, double frac, double tol, IS rowp, IS colp, Mat *B)
+{
+  IS           irowp, icolp;
+  int         *rows, *cols;
+  int          M, N, locRowStart, locRowEnd;
+  int          nz, newNz;
+  int         *cwork, *cnew;
+  PetscScalar *vwork, *vnew;
+  int          bw, size;
+  int          row, locRow, newRow, col, newCol;
+  int          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,    MAT_COOKIE);
+  PetscValidHeaderSpecific(rowp, IS_COOKIE);
+  PetscValidHeaderSpecific(colp, IS_COOKIE);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
+  if (A->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
+  if (!A->ops->permutesparsify) {
+    ierr = MatGetSize(A, &M, &N);                                                                         CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(A, &locRowStart, &locRowEnd);                                             CHKERRQ(ierr);
+    ierr = ISGetSize(rowp, &size);                                                                        CHKERRQ(ierr);
+    if (size != M) SETERRQ2(PETSC_ERR_ARG_WRONG, "Wrong size %d for row permutation, should be %d", size, M);
+    ierr = ISGetSize(colp, &size);                                                                        CHKERRQ(ierr);
+    if (size != N) SETERRQ2(PETSC_ERR_ARG_WRONG, "Wrong size %d for column permutation, should be %d", size, N);
+    ierr = ISInvertPermutation(rowp, 0, &irowp);                                                          CHKERRQ(ierr);
+    ierr = ISGetIndices(irowp, &rows);                                                                    CHKERRQ(ierr);
+    ierr = ISInvertPermutation(colp, 0, &icolp);                                                          CHKERRQ(ierr);
+    ierr = ISGetIndices(icolp, &cols);                                                                    CHKERRQ(ierr);
+    ierr = PetscMalloc(N * sizeof(int),         &cnew);                                                   CHKERRQ(ierr);
+    ierr = PetscMalloc(N * sizeof(PetscScalar), &vnew);                                                   CHKERRQ(ierr);
+
+    /* Setup bandwidth to include */
+    if (band == PETSC_DECIDE) {
+      if (frac <= 0.0)
+        bw = (int) (M * 0.05);
+      else
+        bw = (int) (M * frac);
+    } else {
+      if (band <= 0) SETERRQ(PETSC_ERR_ARG_WRONG, "Bandwidth must be a positive integer");
+      bw = band;
+    }
+
+    /* Put values into new matrix */
+    ierr = MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, B);                                                    CHKERRQ(ierr);
+    for(row = locRowStart, locRow = 0; row < locRowEnd; row++, locRow++) {
+      ierr = MatGetRow(A, row, &nz, &cwork, &vwork);                                                      CHKERRQ(ierr);
+      newRow   = rows[locRow]+locRowStart;
+      for(col = 0, newNz = 0; col < nz; col++) {
+        newCol = cols[cwork[col]];
+        if ((newCol >= newRow - bw) && (newCol < newRow + bw) && (fabs(vwork[col]) >= tol)) {
+          cnew[newNz] = newCol;
+          vnew[newNz] = vwork[col];
+          newNz++;
+        }
+      }
+      ierr = MatSetValues(*B, 1, &newRow, newNz, cnew, vnew, INSERT_VALUES);                              CHKERRQ(ierr);
+      ierr = MatRestoreRow(A, row, &nz, &cwork, &vwork);                                                  CHKERRQ(ierr);
+    }
+    ierr = PetscFree(cnew);                                                                               CHKERRQ(ierr);
+    ierr = PetscFree(vnew);                                                                               CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY);                                                      CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY);                                                        CHKERRQ(ierr);
+    ierr = ISRestoreIndices(irowp, &rows);                                                                CHKERRQ(ierr);
+    ierr = ISRestoreIndices(icolp, &cols);                                                                CHKERRQ(ierr);
+    ierr = ISDestroy(irowp);                                                                              CHKERRQ(ierr);
+    ierr = ISDestroy(icolp);                                                                              CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->permutesparsify)(A, band, frac, tol, rowp, colp, B);                                 CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
