@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.34 1998/12/23 22:34:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.35 1999/01/04 21:50:55 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -1078,7 +1078,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   MatScalar   *v = a->a;
   double      sum = 0.0;
-  int         i,j,k,bs = a->bs, nz=a->nz,bs2=a->bs2;
+  int         i,k,bs = a->bs, nz=a->nz,bs2=a->bs2;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
