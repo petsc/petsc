@@ -425,9 +425,11 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PassiveReal   de2,rhos2,nu,dde2;
   PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
+  PassiveReal   F_eq_x,By_eq;
+
+  PetscScalar   xx;
   PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
   PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
-  PetscScalar xx,F_eq_x,By_eq;
 
   PetscFunctionBegin;
   de2     = sqr(user->param->d_e);
@@ -452,7 +454,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 #ifdef EQ
-      xx = i * hx;
+      xx = i * hx; 
       F_eq_x = - (1. + de2) * sin(xx);
       By_eq = sin(xx);
 #else
