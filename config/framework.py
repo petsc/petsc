@@ -167,6 +167,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.makeMacroHeader:
       self.outputMakeMacroHeader(self.makeMacroHeader)
       self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+    if self.makeRuleHeader:
+      self.outputMakeRuleHeader(self.makeRuleHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
     if self.header:
       self.outputHeader(self.header)
       self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
@@ -406,6 +409,23 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     f.write(name+' = '+str(value)+'\n')
     return
 
+  def outputMakeRule(self, f, name, dependencies,rule):
+    if rule:
+      f.write(name+': '+dependencies+'\n\t-@'+rule+'\n\n')
+    else:
+      f.write(name+': '+dependencies+'\n\n')
+    return
+
+  def outputMakeRules(self, f, child, prefix = None):
+    '''If the child contains a dictionary named "makerules", the entries are output in the makefile config header.
+    - No prefix is used
+    '''
+    if not hasattr(child, 'makeRules') or not isinstance(child.makeRules, dict): return
+    for pair in child.makeRules.items():
+      if not pair[1]: continue
+      self.outputMakeRule(f, pair[0], pair[1][0],pair[1][1])
+    return
+
   def outputMakeMacros(self, f, child, prefix = None):
     '''If the child contains a dictionary named "makemacros", the entries are output in the makefile config header.
     - No prefix is used
@@ -474,6 +494,24 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
+    if not isinstance(name, file):
+      f.close()
+    return
+
+  def outputMakeRuleHeader(self, name):
+    '''Write the make configuration header (bmake file)'''
+    if isinstance(name, file):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      f = file(name, 'w')
+      filename = os.path.basename(name)
+    self.outputMakeRules(f, self)
+    for child in self.childGraph.vertices:
+      self.outputMakeRules(f, child)
     if not isinstance(name, file):
       f.close()
     return

@@ -57,7 +57,8 @@ class Configure(script.Script):
     script.Script.__init__(self, framework.clArgs, framework.argDB)
     self.framework       = framework
     self.defines         = {}
-    self.makeMacros      = {}    
+    self.makeRules       = {}
+    self.makeMacros      = {}        
     self.typedefs        = {}
     self.prototypes      = {}
     self.subst           = {}
@@ -85,6 +86,12 @@ class Configure(script.Script):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
     self.framework.log.write('Deleting '+name+' in '+str(self.__module__)+'\n')
     if name in self.defines: del self.defines[name]
+    return
+
+  def addMakeRule(self, name, dependencies, rule = ''):
+    '''Designate that "name" should be rule in the makefile header (bmake file)'''
+    self.framework.log.write('Defined make rule '+name+' with dependencies '+str(dependencies)+' and code '+rule+str(self.__module__)+'\n')
+    self.makeRules[name] = [dependencies,rule]
     return
 
   def addMakeMacro(self, name, value):
