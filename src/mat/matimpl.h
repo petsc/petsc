@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.121 2001/04/10 22:35:01 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.122 2001/06/21 21:16:13 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -92,7 +92,8 @@ struct _MatOps {
             (*setcoloring)(Mat,ISColoring),
             (*setvaluesadic)(Mat,void*),
             (*setvaluesadifor)(Mat,int,void*),
-            (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
+            (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*),
+            (*setfromoptions)(Mat);
 };
 
 /*
