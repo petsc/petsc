@@ -95,23 +95,23 @@ class Configure(config.base.Configure):
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
-    found      = 0
-    foundh     = 0
+    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    foundLibrary = 0
+    foundHeader  = 0
     for (configstr,lib) in self.generateLibGuesses():
-      self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
-      found = self.executeTest(self.checkLib,[lib,'dallocateA_dist'])  
-      if found:
+      self.framework.log.write('Checking for library '+configstr+': '+lib+'\n')
+      foundLibrary = self.executeTest(self.checkLib,[lib, 'dallocateA_dist'])  
+      if foundLibrary:
         self.lib = [lib]
         break
-    if found:
-      for (inclstr,incl) in self.generateIncludeGuesses():
-        self.framework.log.write('Checking for headers '+inclstr+': '+incl+'\n')
-        foundh = self.executeTest(self.checkInclude,[incl,'superlu_ddefs.h'])
-        if foundh:
-          self.include = [incl]
-          self.found   = 1
-          self.setFoundOutput()
-          break
+    for (inclstr,incl) in self.generateIncludeGuesses():
+      self.framework.log.write('Checking for headers '+inclstr+': '+incl+'\n')
+      foundHeader = self.executeTest(self.checkInclude,[incl,'superlu_ddefs.h'])
+      if foundHeader:
+        self.include = [incl]
+        break
+    if foundLibrary and foundHeader:
+      self.setFoundOutput()
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
       self.setEmptyOutput()
