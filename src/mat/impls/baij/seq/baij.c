@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.227 2001/06/21 21:16:41 bsmith Exp buschelm $*/
+/*$Id: baij.c,v 1.228 2001/06/21 22:55:30 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1199,7 +1199,17 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
     break; 
   case 4:
+#if defined(PETSC_HAVE_SSE)
+    PetscTruth sse_enabled;
+    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+    if (sse_enabled) {
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+    } else {
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+    }
+#else
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+#endif
     inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
