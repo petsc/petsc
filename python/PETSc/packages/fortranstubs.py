@@ -36,12 +36,10 @@ class Configure(config.base.Configure):
         else:
           self.framework.log.write('*******End of error messages from generating Fortran stubs****\n')
       else:
-        self.framework.log.write('           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
-        self.framework.log.write('           to obtain bfort to generate the Fortran stubs or make sure\n')
-        self.framework.log.write('           bfort is in your path\n')
-        self.framework.log.write('WARNING: Turning off Fortran interfaces for PETSc')
-        del self.framework.argDB['FC']
-        self.compilers.addSubstitution('FC', '')
+        message = 'See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\nto obtain bfort to generate the Fortran stubs or make sure\nbfort is in your path\n'
+        self.framework.log.write(message)
+        if 'FC' in self.framework.argDB and self.framework.argDB['FC']:
+          raise RuntimeError('You have a Fortran compiler but the PETSc Fortran stubs are not built and cannot be built.\n'+message+'or run with with --with-fc=0 to turn off the Fortran compiler')
     else:
       self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
     return

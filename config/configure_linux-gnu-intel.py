@@ -13,8 +13,7 @@ if __name__ == '__main__':
         '--with-mpirun=mpirun',
         '-PETSC_ARCH=linux-gnu-intel',
         '-PETSC_DIR=/sandbox/petsc/petsc-test',
-	'--with-blas=/home/petsc/soft/linux-rh73-intel/fblaslapack/libfblas.a',
-	'--with-lapack=/home/petsc/soft/linux-rh73-intel/fblaslapack/libflapack.a'
+	'--with-blas-lapck-dir=/home/petsc/soft/linux-rh73-intel/mkl-52'
         ]
 
     configure.petsc_configure(configure_options)
