@@ -51,6 +51,7 @@ class Logger(args.ArgumentProcessor):
 
     argDB = args.ArgumentProcessor.setupArguments(self, argDB)
     argDB.setType('log',           nargs.Arg(None, 'build.log', 'The filename for the log'))
+    argDB.setType('logAppend',     nargs.ArgBool(None, 0, 'The flag determining whether we backup or append to the current log', isTemporary = 1))
     argDB.setType('debugLevel',    nargs.ArgInt(None, 3, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
     argDB.setType('debugSections', nargs.Arg(None, [], 'Message types to print, e.g. [compile,link,bk,install]'))
     argDB.setType('debugIndent',   nargs.Arg(None, '  ', 'The string used for log indentation'))
@@ -90,19 +91,25 @@ class Logger(args.ArgumentProcessor):
 
   def createLog(self, logName, initLog = None):
     '''Create a default log stream, unless initLog is given'''
+    import nargs
+
     if not initLog is None:
       log = initLog
     else:
       if Logger.defaultLog is None:
+        appendArg = nargs.Arg.findArgument('logAppend', self.clArgs)
         if self.checkLog(logName):
-          try:
-            import os
-
-            os.rename(self.logName, self.logName+'.bkp')
-            Logger.defaultLog = file(self.logName, 'w')
-          except OSError:
-            print 'WARNING: Cannot backup log file, appending instead.'
+          if ('logAppend' in self.argDB and self.argDB['logAppend']) or (not appendArg is None and bool(appendArg)):
             Logger.defaultLog = file(self.logName, 'a')
+          else:
+            try:
+              import os
+
+              os.rename(self.logName, self.logName+'.bkp')
+              Logger.defaultLog = file(self.logName, 'w')
+            except OSError:
+              print 'WARNING: Cannot backup log file, appending instead.'
+              Logger.defaultLog = file(self.logName, 'a')
         else:
           Logger.defaultLog = file(self.logName, 'w')
       log = Logger.defaultLog
@@ -173,7 +180,7 @@ class Logger(args.ArgumentProcessor):
           f.write(msg[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
-          if not debugSection is None and len(msg):
+          if not debugSection is None and not debugSection == 'screen' and len(msg):
             f.write(str(debugSection))
             f.write(': ')
           f.write(msg)

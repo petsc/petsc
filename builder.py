@@ -33,6 +33,7 @@ class DependencyChecker(logging.Logger):
   def update(self, source):
     [self.sourceDB.updateSource(f) for f in source]
     self.sourceDB.save()
+    self.logPrint('Updated '+str(source)+' in source database')
     return
 
 class MD5DependencyChecker(DependencyChecker):
@@ -92,6 +93,7 @@ class TimeDependencyChecker(DependencyChecker):
     '''Do not calculate a checksum, as it may be too expensive'''
     [self.sourceDB.updateSource(f, noChecksum = 1) for f in source]
     self.sourceDB.save()
+    self.logPrint('Updated '+str(source)+' in source database')
     return
 
 class Builder(logging.Logger):
@@ -150,7 +152,7 @@ class Builder(logging.Logger):
     if configurationName is None:
       configurationName = self.configurationName[-1]
     elif not configurationName in self.configurations:
-      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries)
+      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries, versionControl = self.versionControl)
       self.configurations[configurationName].setup()
     return self.configurations[configurationName]
 

@@ -3,8 +3,12 @@ import build.transform
 
 def convertPath(file):
   '''Converts the cygwin path to a full Windows path'''
-  import cygwinpath
-  return cygwinpath.convertToFullWin32Path(file)
+  try:
+    import cygwinpath
+    return cygwinpath.convertToFullWin32Path(file)
+  except ImportError:
+    pass
+  return file
 
 class Tag (build.transform.Transform):
   '''Tags all relevant Bitkeeper filesets

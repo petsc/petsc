@@ -133,10 +133,29 @@ class Make(script.Script):
     '''Override this method to execute all build operations. This method does nothing.'''
     return
 
+  def outputBanner(self):
+    import time
+
+    self.log.write(('='*80)+'\n')
+    self.log.write(('='*80)+'\n')
+    self.log.write('Starting Build Run at '+time.ctime(time.time())+'\n')
+    self.log.write('Build Options: '+str(self.clArgs)+'\n')
+    self.log.write('Working directory: '+os.getcwd()+'\n')
+    self.log.write(('='*80)+'\n')
+    return
+
+  def executeSection(self, section, *args):
+    import time
+
+    self.log.write(('='*80)+'\n')
+    self.logPrint('SECTION: '+str(section.im_func.func_name)+' in '+self.getRoot()+' from '+str(section.im_class.__module__)+'('+str(section.im_func.func_code.co_filename)+':'+str(section.im_func.func_code.co_firstlineno)+') at '+time.ctime(time.time()), debugSection = 'screen', indent = 0)
+    if section.__doc__: self.logWrite('  '+section.__doc__+'\n')
+    return section(*args)
+
   def run(self):
     self.setup()
     self.logPrint('Starting Build', debugSection = 'build')
-    self.configure(self.builder)
+    self.executeSection(self.configure, self.builder)
     self.build(self.builder)
     self.updateDependencies(self.builder.sourceDB)
     self.logPrint('Ending Build', debugSection = 'build')
@@ -149,7 +168,7 @@ class SIDLMake(Make):
     import re
 
     Make.__init__(self, builder)
-    self.implRE       = re.compile(r'^(.*)_impl\.(c|h|py)$')
+    self.implRE       = re.compile(r'^((.*)_impl\.(c|h|py)|__init__\.py)$')
     self.dependencies = {}
     return
 
@@ -255,7 +274,7 @@ class SIDLMake(Make):
     compiler.clientDirs = dict([(lang, 'client-'+lang.lower()) for lang in self.clientLanguages])
     compiler.servers    = self.serverLanguages
     compiler.serverDirs = dict([(lang, 'server-'+lang.lower()+'-'+baseName) for lang in self.serverLanguages])
-    compiler.includes   = self.includes
+    compiler.includes   = self.includes+list(builder.sourceDB.getDependencies(sidlFile))
     builder.popLanguage()
     builder.popConfiguration()
     return
@@ -311,6 +330,8 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' IOR '+baseName)
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
+    for depFile in builder.sourceDB.getDependencies(sidlFile):
+      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
@@ -336,6 +357,8 @@ class SIDLMake(Make):
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.update(self.python.include)
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
+    for depFile in builder.sourceDB.getDependencies(sidlFile):
+      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
@@ -371,6 +394,8 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Skeleton '+baseName)
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
+    for depFile in builder.sourceDB.getDependencies(sidlFile):
+      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
@@ -530,18 +555,18 @@ class SIDLMake(Make):
 
   def build(self, builder):
     for f in self.sidl:
-      self.setupSIDL(builder, f)
+      self.executeSection(self.setupSIDL, builder, f)
       for language in self.serverLanguages:
-        getattr(self, 'setup'+language+'Server')(builder, f, language)
+        self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
       for language in self.clientLanguages:
-        getattr(self, 'setup'+language+'Client')(builder, f, language)
-      self.editServer(builder, f)
+        self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
+      #self.editServer(builder, f)
       # We here require certain keys to be present in generateSource, e.g. 'Server IOR Python'.
       # These keys can be checked for, and if absent the SIDL file would be compiled
-      generatedSource = self.buildSIDL(builder, f)
-      self.checkinServer(builder, f)
+      generatedSource = self.executeSection(self.buildSIDL, builder, f)
+      #self.checkinServer(builder, f)
       for language in self.serverLanguages:
-        getattr(self, 'build'+language+'Server')(builder, f, language, generatedSource)
+        self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
       for language in self.clientLanguages:
-        getattr(self, 'build'+language+'Client')(builder, f, language, generatedSource)
+        self.executeSection(getattr(self, 'build'+language+'Client'), builder, f, language, generatedSource)
     return

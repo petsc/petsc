@@ -252,13 +252,14 @@ class OutputFiles(dict):
     return dict.__delitem__(key, value)
 
 class LanguageProcessor(args.ArgumentProcessor):
-  def __init__(self, clArgs = None, argDB = None, compilers = None, libraries = None):
+  def __init__(self, clArgs = None, argDB = None, compilers = None, libraries = None, versionControl = None):
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
     self.compilers          = compilers
     self.libraries          = libraries
+    self.versionControl     = versionControl
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.outputFiles        = OutputFiles()
     self.modulePath         = 'config.compile'
@@ -329,24 +330,33 @@ class LanguageProcessor(args.ArgumentProcessor):
     language = self.normalizeLanguage(language)
     if not language in self.preprocessorObject:
       self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.argDB)
+      self.preprocessorObject[language].setup()
       if not self.compilers is None:
         self.preprocessorObject[language].configCompilers = self.compilers
+      if not self.versionControl is None:
+        self.preprocessorObject[language].versionControl  = self.versionControl
     return self.preprocessorObject[language]
 
   def getCompilerObject(self, language):
     language = self.normalizeLanguage(language)
     if not language in self.compilerObject:
       self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.argDB)
+      self.compilerObject[language].setup()
       if not self.compilers is None:
         self.compilerObject[language].configCompilers = self.compilers
+      if not self.versionControl is None:
+        self.compilerObject[language].versionControl  = self.versionControl
     return self.compilerObject[language]
 
   def getLinkerObject(self, language):
     language = self.normalizeLanguage(language)
     if not language in self.linkerObject:
       self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
+      self.linkerObject[language].setup()
       if not self.compilers is None:
         self.linkerObject[language].configCompilers = self.compilers
       if not self.libraries is None:
         self.linkerObject[language].configLibraries = self.libraries
+      if not self.versionControl is None:
+        self.linkerObject[language].versionControl  = self.versionControl
     return self.linkerObject[language]

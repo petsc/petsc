@@ -51,7 +51,7 @@ class Linker(config.compile.processor.Processor):
   def getFlags(self):
     '''Returns a string with the flags specified for running this processor.'''
     if not hasattr(self, '_flags'):
-      flagsName = self.flagsName
+      flagsName = self.flagsName[:]
       if self.name == self.compiler.name:
         flagsName.extend(self.compiler.flagsName)
       if hasattr(self, 'configCompilers'):

@@ -173,6 +173,13 @@ class SourceDB (dict, base.Base):
     self[source] = (checksum, SourceDB.getModificationTime(source), time.time(), dependencies)
     return
 
+  def getDependencies(self, source):
+    try:
+      (checksum, mtime, timestamp, dependencies) = self[source]
+    except KeyError:
+      dependencies = ()
+    return dependencies
+
   def addDependency(self, source, dependency):
     self.isDirty = 1
     dependencies = ()

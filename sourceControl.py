@@ -54,10 +54,15 @@ class BitKeeper(script.Script, VersionControl):
     try:
       import cygwinpath
 
-      self.convertPath = cygwinpath.convertToFullWin32Path
+      self.hasCygwinPath = 1
     except ImportError:
-      self.convertPath = (lambda f: f)
+      self.hasCygwinPath = 0
     return
+
+  def convertPath(self, f):
+    if self.hasCygwinPath:
+      return cygwinpath.convertToFullWin32Path(f)
+    return f
 
   def getNewFiles(self, files):
     '''Return all the files not currently under version control'''
