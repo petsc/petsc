@@ -94,7 +94,7 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
 int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
   int ierr;
   char funct[80];
-  int (*f)(Mat,Mat,Mat);
+  int (*f)(Mat,Mat,Mat*);
 
   PetscFunctionBegin;
 

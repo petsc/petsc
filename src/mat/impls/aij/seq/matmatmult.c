@@ -212,7 +212,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk,idx0,idx;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,k,anzi,brow,bnzj,cnzi,nlnk;
+  int            i,j,anzi,brow,bnzj,cnzi,nlnk;
   MatScalar      *ca;
 
   PetscFunctionBegin;
