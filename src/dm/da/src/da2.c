@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.59 1996/10/03 17:38:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.60 1996/11/19 16:33:13 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -43,7 +43,7 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
     char       node[10];
     PetscTruth isnull;
  
-    ViewerDrawGetDraw(viewer,&draw);
+    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
     DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
@@ -147,6 +147,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   IS            to,from;
   DF            df_local;
   *inra = 0;
+
+  if (w < 1) SETERRQ(1,"DACreate2d:Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(1,"DACreate2d:Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
