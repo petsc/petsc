@@ -52,6 +52,8 @@ typedef struct {
 } Fields;
 
 typedef struct {
+  /* The element-averaged solution U^{n+\phi} */
+  Vec         U_phi;
   PetscScalar phi;
 } UserContext;
 
@@ -80,6 +82,11 @@ int main(int argc,char **argv)
     ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
+  ierr = DAGetElements(da,&ne,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD, &user.U_phi);CHKERRQ(ierr);
+  ierr = VecSetSizes(user.U_phi, ne*4, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DARestoreElements(da,&ne,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = ComputeInitialGuess(DMMGGetDMMG(dmmg), DMMGGetr(dmmg));
   ierr = ComputePredictor(DMMGGetDMMG(dmmg), DMMGGetr(dmmg), DMMGGetx(dmmg));
 
@@ -89,6 +96,7 @@ int main(int argc,char **argv)
 
   ierr = ComputeCorrector(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
 
+  ierr = VecDestroy(user.U_phi);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
@@ -125,6 +133,7 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
   ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
+  ierr = VecSet(&zero, user->U_phi);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, (PetscScalar **) &pOld);CHKERRQ(ierr);
@@ -135,6 +144,11 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
     /* Rich now is using element averages for all explicit values fed back into the finite element integrals. I think
        we should maintain them as unassembled sums of element functions. */
     /* Determine time-weighted values of \rho^{n+\phi} and (\rho\vu)^{n+\phi} */
+    for(j = 0; j < 3; j++) {
+      Fx_x += psi_x[j]*Fx[e[3*i]+j].rho + psi_x[j]*Fx[e[3*i]+j].rho_u + psi_x[j]*Fx[e[3*i]+j].rho_v;
+      Fy_y += psi_y[j]*Fy[e[3*i]+j].rho + psi_y[j]*Fy[e[3*i]+j].rho_u + psi_y[j]*Fy[e[3*i]+j].rho_v;
+    }
+    u_phi[i] += user->phi*user->dt*(-Fx_x - Fy_y);
     /* this is nonsense, but copy each nodal value */
     p[e[3*i]]   = pOld[e[3*i]];
     p[e[3*i+1]] = pOld[e[3*i+1]];
