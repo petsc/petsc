@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.46 1998/04/13 17:49:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: axis.c,v 1.47 1998/04/27 14:47:53 curfman Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -24,8 +24,8 @@ struct _p_DrawAxis {
 
 #define MAXSEGS 20
 
-static int    PetscADefTicks(double,double,int,int*,double*,int);
-static char   *PetscADefLabel(double,double);
+extern int    PetscADefTicks(double,double,int,int*,double*,int);
+extern char   *PetscADefLabel(double,double);
 static double PetscAGetNice(double,double,int );
 static int    PetscAGetBase(double,double,int,double*,int*);
 
@@ -408,7 +408,7 @@ static int PetscStripZerosPlus(char *buf)
    label; this is useful in determining how many significant figures to   
    keep.
  */
-static char *PetscADefLabel(double val,double sep )
+char *PetscADefLabel(double val,double sep )
 {
   static char buf[40];
   char   fmat[10];
@@ -471,7 +471,7 @@ static char *PetscADefLabel(double val,double sep )
 #undef __FUNC__  
 #define __FUNC__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
-static int PetscADefTicks( double low, double high, int num, int *ntick,
+int PetscADefTicks( double low, double high, int num, int *ntick,
                            double * tickloc,int  maxtick )
 {
   int    i,power;

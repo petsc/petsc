@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.89 1998/09/28 18:11:11 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.90 1998/10/09 19:22:05 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: aijnode.c,v 1.89 1998/09/28 18:11:11 balay Exp bsmith
 #include "src/vec/vecimpl.h"
 
 extern int Mat_AIJ_CheckInode(Mat);
-static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
-static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
+extern int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
+extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
 #undef __FUNC__  
 #define __FUNC__ "Mat_AIJ_CreateColInode"
@@ -818,7 +818,7 @@ int Mat_AIJ_CheckInode(Mat A)
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "MatSolve_SeqAIJ_Inode"
-static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
+int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   IS          iscol = a->col, isrow = a->row;
@@ -1196,7 +1196,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Inode"
-static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
+int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
