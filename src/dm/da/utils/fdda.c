@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.52 2000/11/10 16:15:41 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.53 2000/11/10 16:18:04 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -88,7 +88,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz;
+  int                    lstart,lend,pstart,pend,*dnz,*onz,size;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -109,6 +109,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (coloring) {
@@ -165,7 +166,13 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
       }
     }
     /* set matrix type and preallocation information */
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+    }
+    ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
+    ierr = MatSeqBAIJSetPreallocation(*J,bs,0,dnz);CHKERRQ(ierr);  
     ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -218,7 +225,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,size;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -238,6 +245,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (coloring) {
@@ -299,7 +307,13 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
       }
     }
     /* set matrix type and preallocation */
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+    }
+    ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
+    ierr = MatSeqBAIJSetPreallocation(*J,bs,0,dnz);CHKERRQ(ierr);  
     ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -356,7 +370,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,nx,*colors,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
-  int                    istart,iend;
+  int                    istart,iend,size;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -380,7 +394,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (coloring) {
@@ -400,7 +414,13 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
     int bs = nc;
 
     ierr    = MatCreate(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);
-    ierr    = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+    }
+    ierr    = MatSeqAIJSetPreallocation(*J,col*nc,0);CHKERRQ(ierr);  
+    ierr    = MatSeqBAIJSetPreallocation(*J,bs,col,0);CHKERRQ(ierr);  
     ierr    = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
     ierr    = MatMPIBAIJSetPreallocation(*J,bs,col,0,0,0);CHKERRQ(ierr);
 
