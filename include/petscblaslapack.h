@@ -31,7 +31,7 @@
 
 #if defined(PETSC_USES_CPTOFCD)
 #include "petscblaslapack_cptofcd.h"
-#elif defined(PETSC_BLASLAPACK_STDCALL)
+#elif defined(PETSC_HAVE_FORTRAN_STDCALL)
 #include "petscblaslapack_stdcall.h"
 #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #include "petscblaslapack_uscore.h"

@@ -72,21 +72,38 @@ class Configure(config.base.Configure):
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'ddot'):
     '''This checks the given library for the routine, ddot by default'''
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
+    prototype = ''
+    call      = ''
+    if fortranMangle=='stdcall':
+      if routine=='ddot':
+        prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
+        call      = 'DDOT(0,0,0,0,0,0);'
+    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
   def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['dgetrs', 'dgeev']):
     oldLibs = self.framework.argDB['LIBS']
     found   = 0
-    for routine in routines:
-      found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
+    prototypes = ['','']
+    calls      = ['','']
+    if fortranMangle=='stdcall':
+      if routines == ['dgetrs','dgeev']:
+        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
+                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,PetscReal*,PetscReal*,double*,int*,double*,int*,double*,int*,int*);']
+        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
+                      'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
+    for routine, prototype, call in zip(routines, prototypes, calls):
+      found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
       if found: break
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
+
+    #check for BLASLAPACK_STDCALL calling convention!!!!
+    
     if blasLibrary is None:
       self.separateBlas = 0
       blasLibrary       = lapackLibrary
@@ -97,7 +114,8 @@ class Configure(config.base.Configure):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
-    mangleFunc  = 'FC' in self.framework.argDB
+    #mangleFunc  = 'FC' in self.framework.argDB
+    mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
@@ -165,6 +183,7 @@ class Configure(config.base.Configure):
         mkldir = os.path.join(dir, 'ia32', 'lib')
       yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')], 1)
       yield ('User specified MKL Windows lib dir', None, [os.path.join(dir, 'mkl_c_dll.lib')], 1)
+      yield ('User specified stdcall MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_s_dll.lib')], 1)
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'), 1)
@@ -203,6 +222,7 @@ class Configure(config.base.Configure):
       else:
         MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
       yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
+      yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(MKL_Dir,'mkl_s_dll.lib'), 1)
     # Try PETSc location
     if self.arch.dir and aelf.arch.arch:
       dir1 = os.path.abspath(os.path.join(self.arch.dir, '..', 'blaslapack', 'lib'))
