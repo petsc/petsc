@@ -25,17 +25,7 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    dirs    = []
-    libFlag = []
-    for lib in self.lapackLibrary+self.blasLibrary:
-      if lib is None: continue
-      dir = os.path.dirname(lib)
-      if not dir in dirs:
-        dirs.append(dir)
-      else:
-        lib = os.path.basename(lib)
-      libFlag.append(self.libraries.getLibArgument(lib))
-    return 'BLAS/LAPACK: '+' '.join(libFlag)+'\n'
+    return 'BLAS/LAPACK: '+self.libraries.toString(self.lib)+'\n'
 
   def setupHelp(self, help):
     import nargs
@@ -358,8 +348,7 @@ class Configure(config.base.Configure):
       self.lib = []
       if self.lapackLibrary[0]: self.lib.extend(self.lapackLibrary)
       if self.blasLibrary[0]:   self.lib.extend(self.blasLibrary)
-      if 'FC' in self.framework.argDB:
-        self.lib.append(self.compilers.flibs)
+      self.dlib = self.lib+self.compilers.flibs
       self.framework.packages.append(self)
       if self.f2c:
         self.addDefine('BLASLAPACK_F2C', 1)

@@ -103,7 +103,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_LINKER_SLFLAG',value)    
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+    self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.libraries.toString(self.compilers.flibs))
 
     if 'FC' in self.framework.argDB:
 
@@ -141,7 +141,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('SL_LINKER_SUFFIX','.so')
-    self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+    self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better

@@ -114,7 +114,7 @@ class Configure(config.base.Configure):
     g.write('BLACSdir = '+blacsDir+'\n')
     g.write('BLACSLIB = '+os.path.join(installDir,'libblacs.a')+'\n')
     g.write('MPIINCdir='+self.mpi.include[0]+'\n')
-    g.write('MPILIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n')
+    g.write('MPILIB='+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SYSINC = -I$(MPIINCdir)\n')
     g.write('BTLIBS = $(BLACSLIB)  $(MPILIB) \n')
     if self.compilers.fortranManglingDoubleUnderscore:
@@ -214,8 +214,8 @@ framework.log)[0]
     g.write('SENDIS = -DSndIsLocBlk\n')
     g.write('WHATMPI = -DUseF77Mpi\n')
     g.write('BLACSDBGLVL = -DBlacsDebugLvl=1\n')
-    g.write('BLACSLIB = '+' '.join(map(self.libraries.getLibArgument, self.blacslib))+'\n')
-    g.write('SMPLIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n')
+    g.write('BLACSLIB = '+self.libraries.toString(self.blacslib)+'\n')
+    g.write('SMPLIB='+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SCALAPACKLIB  = '+os.path.join('$(home)',self.framework.argDB['PETSC_ARCH'],'libscalapack.a')+' \n')
     g.write('CBLACSLIB     = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB     = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
@@ -341,15 +341,7 @@ framework.log)[0]
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.framework.argDB['LIBS']
-    otherLibs += self.blasLapack.lapackLibrary
-    if not None in self.blasLapack.blasLibrary:
-      otherLibs = otherLibs+self.blasLapack.blasLibrary
-    otherLibs = ' '.join([self.libraries.getLibArgument(lib1) for lib1 in otherLibs])
-    self.framework.log.write('Otherlibs '+otherLibs+'\n')
-    otherLibs += ' '+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))
-    if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
-    self.framework.log.write('Otherlibs '+otherLibs+'\n')
-    found = self.libraries.check(lib,func, otherLibs = otherLibs,fortranMangle=mangle)
+    found = self.libraries.check(lib,func, otherLibs = self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
     self.framework.argDB['LIBS']=oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')

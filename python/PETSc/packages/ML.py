@@ -82,12 +82,7 @@ class Configure(config.base.Configure):
   def checkLib(self,lib,func):
     '''We need the BLAS/Lapack libraries here plus (possibly) Fortran, and may need the MPI libraries'''
     oldLibs = self.framework.argDB['LIBS']
-    otherLibs = self.blasLapack.lapackLibrary
-    if not None in self.blasLapack.blasLibrary:
-      otherLibs = otherLibs+self.blasLapack.blasLibrary
-    otherLibs = ' '.join([self.libraries.getLibArgument(lib) for lib in otherLibs])
-    if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
-    found = self.libraries.check(lib,func, otherLibs = otherLibs)
+    found = self.libraries.check(lib,func, otherLibs = self.mpi.lib+self.blasLapack.lib+self.compilers.flibs)
     self.framework.argDB['LIBS']=oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')

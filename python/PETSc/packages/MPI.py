@@ -76,7 +76,7 @@ class Configure(config.base.Configure):
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
     self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
-    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] = self.libraries.toString(self.lib+self.compilers.flibs)+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -88,7 +88,7 @@ class Configure(config.base.Configure):
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
     self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
-    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] = self.libraries.toString(self.lib+self.compilers.flibs)+' '+self.framework.argDB['LIBS']
     output, status = self.outputRun(includes, body, cleanup, defaultOutputArg)
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
@@ -431,9 +431,9 @@ class Configure(config.base.Configure):
     # User chooses one or take first (sort by version)
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
+      self.dlib = self.lib + self.compilers.flibs 
+      self.framework.packages.append(self)
       self.framework.log.write('Choose MPI '+self.version+' in '+self.name+'\n')
-      if hasattr(self.framework, 'packages'):
-        self.framework.packages.append(self)
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
