@@ -1,3 +1,4 @@
+!  $Id: user.F,v 1.3 2000/01/16 15:40:08 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node6t.f in the original
 c code.
