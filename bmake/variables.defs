@@ -1,59 +1,33 @@
 
-   This file contains a complete list of the configure variables that 
-are used in the installation of PETSc. 
+   This file contains a complete list of the variables that are defined
+in bmake/${PETSC_ARCH}/base_variables
 
-HAVE_BROKEN_RECURSIVE_MACRO
-CPP processes recursive use of macros incorrectly
+AR - system utility to create a library
+RM - system utility to delete one or more files (the -f is to force it to delete)
+RANLIB - final stage in making a library on some machines 
+         other machines don't have ranlib so true is used instead
+SHELL - the system shell that runs the makefile commands; should be /bin/sh
 
-HAVE_BROKEN_REQUEST_FREE
-MPI_Request_free() either generates an error or messes up later MPI
-calls. Known to be a problem with IBM MPI and at least earlier MPICH
+C_CC - the C compiler (with possible options)
+C_FC - the Fortran compiler
+C_LINKER - the linker for programs with a main program in C
+F_LINKER - the linker for programs with a main program in Fortran
+C_CVV - the C compiler command to print the compiler version (if it exists)
+C_SYS_LIB - system libraries that PETSc must link with 
 
-HAVE_DOUBLE_ALIGN
-double variables ARE always double aligned on this system
+G_COPTFLAGS  - compiler options for compiling debugger C code
+G_FOPTFLAGS  - compiler options for compiling debugger Fortran code
+O_COPTFLAGS  - compiler options for compiling optimized C code
+O_FOPTFLAGS  - compiler options for compiling optimized Fortran code
 
-HAVE_DOUBLE_ALIGN_MALLOC
-malloc always returns memory that is double aligned
+G_PETSCFLAGS  - PETSc compile flags that determine what PETSc options get compiled
+                in for debugger code
+O_PETSCFLAGS  - same for optimized code
+  -DUSE_PETSC_DEBUG - extra run time error checking is done
+  -DUSE_PETSC_LOG - compile with in-line profiling (.e.g. -log_summary)
+  -DUSE_PETSC_STACK - compile extra code so that PETSc keeps track of its call stack,
+                      this helps in debugging crashes
+ 
+Similar variables with XX or COMP correspond to using the C++ compiler or 
+C++ compiler with complex numbers
 
-HAVE_FAST_MPI_WTIME
-the MPI_WTIME is accurate and fast on this machine, so we use this for
-all PETSc timings rather than a system timer
-
-HAVE_MEMALIGN
-the system routine memalign() exists and is used to ensure that all
-Scalars are allocated with the correct alignment
-
-HAVE_MISSING_DGESVD
-the Lapack routine DGESVD is missing from the vendor provided math
-libraries. This is true on the Cray T3D/T3E
-
-HAVE_SLOW_NRM2
-BLAS nrm2() routine is so slow it is better to replace with code.
-True if using the Netlib version of the BLAS.
-
-HAVE_VPRINTF_CHAR
-final argument to vprintf() is a char *, rather than the usual void *
-true under freebsd #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-
-SIZEOF_VOIDP
-used in handling passing pointers to PETSc objects between C and
-Fortran. When this is 8 (bytes) then we use integer*8 as
-PetscFortranAddr and PetscOffset.
-
-SIZEOF_INT
-used when reading/writing binary files. We always save using 32 bits
-for portability, so when this is on, the integers are first compressed
-to 32 bits before being written
-
-HAVE_RESTRICT
-indicates that the compiler supports the keyword _Restrict (currently
-only support be Solaris compilers). ADIC cannot handle the restrict
-keyword hence this is currently turned off.
-
-
-HAVE_CRAY90_POINTER
-indicates the Cray vector machine pointer arithmetic. This is needed cause
-one cannot do error checking like 
-  if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");   \
-  }                                                                 \
