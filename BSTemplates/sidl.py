@@ -219,7 +219,7 @@ class UsingCompiler:
     compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs['executable'])
-    return [compile.TagC(), compiler]
+    return [self.getTagger(None), compiler]
 
   def getExecutableLinkTarget(self, project):
     libraries = fileset.FileSet()
