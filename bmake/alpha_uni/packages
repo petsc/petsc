@@ -1,37 +1,24 @@
-# $Id: base.site,v 1.24 2001/03/27 22:17:30 balay Exp $ 
-
+# $Id: base.site,v 1.6 2001/03/27 22:17:30 balay Exp $ 
 #
-#  This file contains site-specific information.  The definitions below
-#  should be changed to match the locations of libraries at your site.
-#  The following naming convention is used:
-#     XXX_LIB - location of library XXX
-#     XXX_INCLUDE - directory for include files needed for library XXX
-#
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
-# If you are lucky, you may have the DEC Alpha math library installed on 
-# your machine. The library name is dxml as indicated below, it contains
-# both BLAS and Lapack.
 #
-BLASLAPACK_LIB        = -ldxml
+BLASLAPACK_LIB       = -L/home/petsc/software/fblaslapack/alpha -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
-#
-#MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
-#MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
+#
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-#
-# Location of X-windows software
+# X11
 #
 X11_INCLUDE    = 
 X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.21 2001/03/02 23:02:20 balay Exp $"
+"$Id: petscconf.h,v 1.26 2001/03/02 23:01:54 balay Exp $"
 "Defines the configuration for this machine"
 #endif
 
@@ -27,14 +27,6 @@
 #define PETSC_HAVE_SYS_PARAM_H
 #define PETSC_HAVE_SYS_STAT_H
 
-#define PETSC_SIZEOF_VOID_P 8
-#define PETSC_SIZEOF_INT 4
-#define PETSC_SIZEOF_DOUBLE 8
-#define PETSC_BITS_PER_BYTE 8
-#define PETSC_SIZEOF_FLOAT 4
-#define PETSC_SIZEOF_LONG 8
-#define PETSC_SIZEOF_LONG_LONG 8
-
 #define PETSC_HAVE_FORTRAN_UNDERSCORE
 
 #define PETSC_HAVE_READLINK
@@ -44,6 +36,14 @@
 #define PETSC_USE_DBX_DEBUGGER
 #define PETSC_HAVE_SYS_RESOURCE_H
 
+#define PETSC_SIZEOF_VOID_P 8
+#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_DOUBLE 8
+#define PETSC_BITS_PER_BYTE 8
+#define PETSC_SIZEOF_FLOAT 4
+#define PETSC_SIZEOF_LONG 8
+#define PETSC_SIZEOF_LONG_LONG 8
+
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_USE_NONEXECUTABLE_SO 1
 
@@ -52,5 +52,10 @@
 
 #define PETSC_NEED_KILL_FOR_DEBUGGER
 #define PETSC_USE_PID_FOR_DEBUGGER
+
+
+#define PETSC_HAVE_F90_H "f90impl/f90_alpha.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_alpha.c"
 #define PETSC_HAVE_CXX_NAMESPACE
+
 #endif
