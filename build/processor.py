@@ -297,7 +297,7 @@ class Linker(Processor):
             if userpath:
               flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
             else:
-              flags.add('-L'+dir)
+              flags.extend(['-L'+dir])
           flags.append('-l'+base[3:])
     return flags
 
