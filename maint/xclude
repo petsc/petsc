@@ -1,5 +1,6 @@
 petsc/mis
-petsc/bmake/rs6000_p4
+petsc/bmake/sun4_umpi
+petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif
 petsc/bin/configure
 petsc/bin/config.status
