@@ -98,9 +98,9 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscFunctionBegin;
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->m,a->nz);
   if (!a->singlemalloc) {
-    ierr = PetscFree(a->a);CHKERRQ(ierr);
-    ierr = PetscFree(a->i);CHKERRQ(ierr);
-    ierr = PetscFree(a->j);CHKERRQ(ierr);
+    if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
+    if (a->i) {ierr = PetscFree(a->i);CHKERRQ(ierr);}
+    if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
   } else {
     ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
   }
@@ -108,8 +108,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
-  if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
+  if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->solve_work)  {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
   if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
@@ -1161,7 +1160,7 @@ PetscErrorCode MatSetUpPreallocation_SeqSBAIJ(Mat A)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr =  MatSeqSBAIJSetPreallocation(A,1,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr =  MatSeqSBAIJSetPreallocation_SeqSBAIJ(A,1,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1407,8 +1406,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
 {
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i,len,mbs,bs2;
-  PetscTruth     flg;
+  PetscInt       i,mbs,bs2;
+  PetscTruth     skipallocation = PETSC_FALSE,flg;
   
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -1420,6 +1419,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
   }
   
+  if (nz == MAT_SKIP_ALLOCATION) {
+    skipallocation = PETSC_TRUE;
+    nz             = 0;
+  }
+
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 3;
   if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %D",nz);
   if (nnz) {
@@ -1487,36 +1491,35 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   
   b->mbs = mbs;
   b->nbs = mbs; 
-  ierr   = PetscMalloc((mbs+1)*sizeof(PetscInt),&b->imax);CHKERRQ(ierr);
-  if (!nnz) {
-    if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
-    else if (nz <= 0)        nz = 1;
-    for (i=0; i<mbs; i++) {
-      b->imax[i] = nz; 
+  if (!skipallocation) {
+    /* b->ilen will count nonzeros in each block row so far. */
+    ierr   = PetscMalloc2(mbs,PetscInt,&b->imax,mbs,PetscInt,&b->ilen);CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
+    if (!nnz) {
+      if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
+      else if (nz <= 0)        nz = 1;
+      for (i=0; i<mbs; i++) {
+        b->imax[i] = nz; 
+      }
+      nz = nz*mbs; /* total nz */
+    } else {
+      nz = 0;
+      for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
     }
-    nz = nz*mbs; /* total nz */
-  } else {
-    nz = 0;
-    for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
+    /* nz=(nz+mbs)/2; */ /* total diagonal and superdiagonal nonzero blocks */
+  
+    /* allocate the matrix space */
+    ierr = PetscMalloc3(bs2*nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->m+1,PetscInt,&b->i);CHKERRQ(ierr);
+    ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
+    b->singlemalloc = PETSC_TRUE;
+  
+    /* pointer to beginning of each row */
+    b->i[0] = 0;
+    for (i=1; i<mbs+1; i++) {
+      b->i[i] = b->i[i-1] + b->imax[i-1];
+    }
   }
-  /* nz=(nz+mbs)/2; */ /* total diagonal and superdiagonal nonzero blocks */
-  
-  /* allocate the matrix space */
-  ierr = PetscMalloc3(bs2*nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->m+1,PetscInt,&b->i);CHKERRQ(ierr);
-  ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
-  b->singlemalloc = PETSC_TRUE;
-  
-  /* pointer to beginning of each row */
-  b->i[0] = 0;
-  for (i=1; i<mbs+1; i++) {
-    b->i[i] = b->i[i-1] + b->imax[i-1];
-  }
-  
-  /* b->ilen will count nonzeros in each block row so far. */
-  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&b->ilen);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(B,len+2*(mbs+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
   
   B->bs               = bs;
   b->bs2              = bs2;
@@ -1723,7 +1726,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJ(MPI_Comm comm,PetscInt bs,Pe
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(*A,bs,nz,nnz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1882,7 +1885,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
   /* create our matrix */
   ierr = MatCreate(comm,M+extra_rows,N+extra_rows,M+extra_rows,N+extra_rows,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,s_browlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,s_browlengths);CHKERRQ(ierr);
   a = (Mat_SeqSBAIJ*)B->data;
 
   /* set matrix "i" values */

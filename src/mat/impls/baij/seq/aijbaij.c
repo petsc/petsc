@@ -84,7 +84,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType 
   }
   ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);

@@ -136,7 +136,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType
   }
   ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatTyp
 
   ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);

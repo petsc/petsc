@@ -142,7 +142,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt
   } else {  
     ierr = MatCreate(A->comm,nrows*bs,nrows*bs,PETSC_DETERMINE,PETSC_DETERMINE,&C);CHKERRQ(ierr);
     ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(C,bs,0,lens);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(C,bs,0,lens);CHKERRQ(ierr);
   }
   c = (Mat_SeqSBAIJ *)(C->data);
   for (i=0; i<nrows; i++) {

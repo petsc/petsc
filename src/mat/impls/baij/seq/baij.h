@@ -51,6 +51,7 @@ typedef struct {
   SEQBAIJHEADER
 } Mat_SeqBAIJ;
 
+EXTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat*);

@@ -1426,7 +1426,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   /* put together the new matrix */
   ierr = MatCreate(A->comm,bs*mbs,bs*mbs,bs*mbs,bs*mbs,B);CHKERRQ(ierr);
   ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
 
   /* ierr = PetscLogObjectParent(*B,iperm);CHKERRQ(ierr); */
   b    = (Mat_SeqSBAIJ*)(*B)->data;
@@ -1695,7 +1695,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   ierr = MatCreate(PETSC_COMM_SELF,am,am,am,am,fact);CHKERRQ(ierr);
   B = *fact;
   ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
 
   b = (Mat_SeqSBAIJ*)B->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
