@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.77 2001/03/13 04:46:11 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.78 2001/03/13 04:53:41 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -263,7 +263,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(ctx.da);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
@@ -278,8 +278,10 @@ int FormInitialGuess(Vec x)
 {
    int    ierr;
    Scalar pfive = .50;
+
+   PetscFunctionBegin;
    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
-   return 0;
+   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
@@ -395,6 +397,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   int            i,j[3],ierr,M,N,xs,xm;
   DA             da = user->da;
 
+  PetscFunctionBegin;
   /*
      Get pointer to vector data
   */
@@ -448,7 +451,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
@@ -474,10 +477,11 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   MonitorCtx *monP = (MonitorCtx*) ctx;
   Vec        x;
 
+  PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %d,SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
@@ -506,6 +510,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   double         rdiff;
   DA             da = user->da;
 
+  PetscFunctionBegin;
   *flg = PETSC_FALSE;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
@@ -540,7 +545,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   }
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
