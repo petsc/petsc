@@ -55,14 +55,27 @@ void cl::FoundD(LI &i) {
   compilearg.push_back(temp);  
 }
 
-void cl::FoundL(LI &i) {
-  char shortform[13];
-  int length=12*sizeof(char);
+void cl::FoundI(LI &i) {
   string temp = i->substr(2);
-  GetShortPathName(temp.c_str(),shortform,length);
-  temp = "-libpath:" + (string)shortform;
   ReplaceSlashWithBackslash(temp);
-  ProtectQuotes(temp);
+
+  char shortform[256];
+  int length=256*sizeof(char);
+  GetShortPathName(temp.c_str(),shortform,length);
+
+  temp = "-I" + (string)shortform;
+  compilearg.push_back(temp);
+}
+
+void cl::FoundL(LI &i) {
+  string temp = i->substr(2);
+  ReplaceSlashWithBackslash(temp);
+
+  char shortform[256];
+  int length=256*sizeof(char);
+  GetShortPathName(temp.c_str(),shortform,length);
+
+  temp = "-libpath:" + (string)shortform;
   linkarg.push_back(temp); 
 }
 

@@ -57,9 +57,9 @@ void bcc::Link(void) {
 
   /* Copy file.o's to /tmp/file.obj's */ 
   int i,max_buffsize;
-  char path[128];
+  char path[256];
   LI f;
-  max_buffsize = 128*sizeof(char);
+  max_buffsize = 256*sizeof(char);
   GetTempPath(max_buffsize,path);  /* Win32 Specific */
   vector<string> ext(file.size(),"");
   vector<string> temp(file.size(),"");
@@ -108,22 +108,26 @@ void bcc::FoundD(LI &i) {
 
 
 void bcc::FoundI(LI &i) {
-  string temp = *i;
-  if (temp[2]!='\"') {
-    temp = i->substr(2,string::npos);
-    temp = "-I\"" + temp + "\"";
-  }
+  string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
+
+  char shortform[256];
+  int length=256*sizeof(char);
+  GetShortPathName(temp.c_str(),shortform,length);
+
+  temp = "-I" + (string)shortform;
   compilearg.push_back(temp);
 }
 
 void bcc::FoundL(LI &i) {
-  string temp = *i;
-  if (temp[2]!='\"') {
-    temp = i->substr(2,string::npos);
-    temp = "-L\"" + temp + "\"";
-  }
+  string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
+
+  char shortform[256];
+  int length=256*sizeof(char);
+  GetShortPathName(temp.c_str(),shortform,length);
+
+  temp = "-L" + (string)shortform;
   linkarg.push_back(temp);
 }
 
