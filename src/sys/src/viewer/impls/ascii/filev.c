@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.94 1999/10/01 21:20:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.95 1999/10/04 18:48:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -67,7 +67,6 @@ int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
   PetscFunctionReturn(0);
 }
 
-
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
@@ -98,10 +97,13 @@ extern FILE *petsc_history;
 int ViewerASCIIPushTab(Viewer viewer)
 {
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  int          isascii;
 
   PetscFunctionBegin;
-  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) PetscFunctionReturn(0);
-  ascii->tab++;
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
+    ascii->tab++;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -129,11 +131,14 @@ int ViewerASCIIPushTab(Viewer viewer)
 int ViewerASCIIPopTab(Viewer viewer)
 {
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  int          isascii;
 
   PetscFunctionBegin;
-  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) PetscFunctionReturn(0);
-  if (ascii->tab <= 0) SETERRQ(1,1,"More tabs popped than pushed");
-  ascii->tab--;
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
+    if (ascii->tab <= 0) SETERRQ(1,1,"More tabs popped than pushed");
+    ascii->tab--;
+  }
   PetscFunctionReturn(0);
 }
 

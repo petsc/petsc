@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.126 1999/10/01 21:21:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.127 1999/10/04 18:51:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -596,15 +596,20 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 #define __FUNC__ "MatView_MPIDense"
 int MatView_MPIDense(Mat mat,Viewer viewer)
 {
-  int          ierr;
+  int ierr;
+  int isascii,isbinary;
  
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+
+  if (isascii) {
     ierr = MatView_MPIDense_ASCII(mat,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

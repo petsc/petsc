@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex50.c,v 1.12 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex50.c,v 1.13 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   if (!flg) SETERRA(1,0,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRA(ierr);
-  if ((file = fopen(finname,"r")) == 0) {
+  if (!(file = fopen(finname,"r"))) {
     SETERRA(1,0,"cannot open input file\n");
   }
   fscanf(file,"%d\n",&n);

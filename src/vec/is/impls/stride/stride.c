@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.84 1999/06/30 23:50:07 balay Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.85 1999/10/01 21:20:51 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -194,10 +194,12 @@ int ISView_Stride(IS is, Viewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
+  int         isascii;
   FILE        *fd;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
@@ -220,7 +222,7 @@ int ISView_Stride(IS is, Viewer viewer)
     }
     ierr = PetscSynchronizedFlush(is->comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

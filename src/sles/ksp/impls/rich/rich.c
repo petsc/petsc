@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.80 1999/09/20 19:16:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.81 1999/10/01 21:22:14 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -63,9 +63,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   }
 
   for ( i=0; i<maxit; i++ ) {
-     ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
      ksp->its++;
-     ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
      ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
@@ -76,9 +76,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
            ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
          }
        }
-       ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
        ksp->rnorm                              = rnorm;
-       ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
        KSPLogResidualHistory(ksp,rnorm);
        KSPMonitor(ksp,i,rnorm);
        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
@@ -98,9 +98,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->rnorm                              = rnorm;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
   }
@@ -116,12 +116,14 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson *) ksp->data;
   int            ierr;
+  int            isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

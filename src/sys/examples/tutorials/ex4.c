@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.5 1999/05/04 20:29:57 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.6 1999/05/18 14:37:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
@@ -48,7 +48,8 @@ int main(int argc,char **argv)
   string = "No dynamic libraries used";
   handle = (void *) string;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRA(ierr);
-  if (!PetscStrcmp(string,"Never will happen")) {
+  flag = !PetscStrcmp(string,"Never will happen");
+  if (flag) {
     ierr = PetscObjectDestroy((PetscObject)handle);CHKERRA(ierr);
   }
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.180 1999/10/01 21:21:48 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.181 1999/10/06 23:41:29 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -69,7 +69,7 @@ int PCDestroy(PC pc)
   if (--pc->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(pc);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->nullsp) {ierr = PCNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
@@ -790,6 +790,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   MatType type;
   int     ierr;
+  int     isbjacobi,isshell,ismg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -801,7 +802,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   */
   ierr = MatGetType(Amat,&type,PETSC_NULL);CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
-    if (PetscTypeCompare(pc,PCBJACOBI)) {
+    isbjacobi = PetscTypeCompare(pc,PCBJACOBI);
+    if (isbjacobi) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
@@ -810,7 +812,9 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       Shell matrix (probably) cannot support a preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL);CHKERRQ(ierr);
-  if (type == MATSHELL && !PetscTypeCompare(pc,PCSHELL) && !PetscTypeCompare(pc,PCMG)) {
+  isshell = PetscTypeCompare(pc,PCSHELL);
+  ismg    = PetscTypeCompare(pc,PCMG);
+  if (type == MATSHELL && !isshell && !ismg) {
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
@@ -1198,13 +1202,16 @@ int PCView(PC pc,Viewer viewer)
   PCType      cstr;
   int         fmt, ierr;
   PetscTruth  mat_exists;
+  int         isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (viewer) {PetscValidHeader(viewer);} 
-  else { viewer = VIEWER_STDOUT_SELF;}
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
@@ -1240,10 +1247,12 @@ int PCView(PC pc,Viewer viewer)
       }
       ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
+  } else {
+    SETERRQ1(1,1,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

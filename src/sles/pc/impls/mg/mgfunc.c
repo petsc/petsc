@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.30 1999/04/08 17:53:48 bsmith Exp balay $";
+static char vcid[] = "$Id: mgfunc.c,v 1.31 1999/05/04 20:34:08 balay Exp bsmith $";
 #endif
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -110,6 +110,13 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 
    Level: advanced
 
+   Notes:
+          Usually this is the same matrix used also to set the restriction
+    for the same level.
+
+          One can pass in the interpolation matrix or its transpose; PETSc figures
+    out from the matrix size which one it is.
+
 .keywords:  multigrid, set, interpolate, level
 
 .seealso: MGSetRestriction()
@@ -137,6 +144,13 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 -  l - the level to supply
 
    Level: advanced
+
+   Notes: 
+          Usually this is the same matrix used also to set the interpolation
+    for the same level.
+
+          One can pass in the interpolation matrix or its transpose; PETSc figures
+    out from the matrix size which one it is.
 
 .keywords: MG, set, multigrid, restriction, level
 

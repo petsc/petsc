@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.125 1999/10/01 21:21:01 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.126 1999/10/04 18:50:31 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -27,10 +27,10 @@ int VecDestroy_MPI(Vec v)
   PetscFunctionBegin;
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)v,"Length=%d",x->N);
+  PLogObjectState((PetscObject)v,"Length=%d",v->N);
 #endif  
   if (x->array_allocated) {ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);}
 
@@ -202,7 +202,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
 
   if (!rank) {
     ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,&x->N,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,&xin->N,1,PETSC_INT,0);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,x->array,xin->n,PETSC_SCALAR,0);CHKERRQ(ierr);
 
     values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) );CHKPTRQ(values);
@@ -229,7 +229,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
 int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,size, N = x->N,*lens,ierr;
+  int         i,rank,size, N = xin->N,*lens,ierr;
   Draw        draw;
   double      *xx,*yy;
   DrawLG      lg;
@@ -333,7 +333,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   if (!rank) {
     ierr = DrawClear(draw);CHKERRQ(ierr);
     ierr = DrawFlush(draw);CHKERRQ(ierr);
-    ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax);CHKERRQ(ierr);
+    ierr = DrawAxisSetLimits(axis,0.0,(double) xin->N,ymin,ymax);CHKERRQ(ierr);
     ierr = DrawAxisDraw(axis);CHKERRQ(ierr);
     ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
   }
@@ -373,7 +373,7 @@ EXTERN_C_END
 int VecView_MPI_Socket(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,size, N = x->N,*lens,ierr;
+  int         i,rank,size, N = xin->N,*lens,ierr;
   Scalar      *xx;
 
   PetscFunctionBegin;
@@ -419,13 +419,19 @@ int VecView_MPI(Vec xin,Viewer viewer)
   if (f) {
     ierr = (*f)(xin,viewer);CHKERRQ(ierr);
   } else {
-    if (PetscTypeCompare(viewer,ASCII_VIEWER)){
+    int isascii,issocket,isbinary,isdraw;
+
+    isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+    issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+    isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+    isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+    if (isascii){
       ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
+    } else if (issocket) {
       ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+    } else if (isbinary) {
       ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+    } else if (isdraw) {
       ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
       if (format == VIEWER_FORMAT_DRAW_LG) {
         ierr = VecView_MPI_Draw_LG(xin, viewer );CHKERRQ(ierr);
@@ -433,7 +439,7 @@ int VecView_MPI(Vec xin,Viewer viewer)
         SETERRQ(1,1,"Viewer Draw format not supported for this vector");
       }
     } else {
-      SETERRQ(1,1,"Viewer type not supported for this object");
+      SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
     }
   }
   if (native) {
@@ -446,10 +452,8 @@ int VecView_MPI(Vec xin,Viewer viewer)
 #define __FUNC__ "VecGetSize_MPI"
 int VecGetSize_MPI(Vec xin,int *N)
 {
-  Vec_MPI  *x = (Vec_MPI *)xin->data;
-
   PetscFunctionBegin;
-  *N = x->N;
+  *N = xin->N;
   PetscFunctionReturn(0);
 }
 
@@ -479,7 +483,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->N);
 #endif
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -491,7 +495,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->N);
 #endif        
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -529,7 +533,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar yin[],In
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
@@ -544,7 +548,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar yin[],In
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }

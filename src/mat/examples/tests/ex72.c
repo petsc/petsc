@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex72.c,v 1.4 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex72.c,v 1.5 1999/05/12 03:30:15 bsmith Exp bsmith $";
 #endif
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -33,7 +33,7 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,&flg);CHKERRA(ierr);
-  if ((file = PetscFOpen(PETSC_COMM_SELF,filein,"r")) == 0) {
+  if (!(file = PetscFOpen(PETSC_COMM_SELF,filein,"r"))) {
     SETERRA(1,0,"cannot open file\n");
   }
 

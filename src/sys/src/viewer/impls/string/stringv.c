@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.36 1999/10/01 21:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.37 1999/10/04 18:48:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -50,13 +50,14 @@ static int ViewerDestroy_String(Viewer viewer)
 int ViewerStringSPrintf(Viewer v,char *format,...)
 {
   va_list       Argp;
-  int           shift,ierr;
+  int           shift,ierr,isstring;
   char          tmp[512];
   Viewer_String *vstr = (Viewer_String *) v->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (!PetscTypeCompare(v,STRING_VIEWER)) PetscFunctionReturn(0);
+  isstring = PetscTypeCompare(v,STRING_VIEWER);
+  if (!isstring) PetscFunctionReturn(0);
   if (!vstr->string) SETERRQ(1,1,"Must call ViewerStringSetString() before using");
 
   va_start( Argp, format );
@@ -137,10 +138,11 @@ EXTERN_C_END
 int ViewerStringSetString(Viewer v,char string[],int len)
 {
   Viewer_String *vstr = (Viewer_String *) v->data;
-  int           ierr;
+  int           ierr,isstring;
 
   PetscFunctionBegin;
-  if (!PetscTypeCompare(v,STRING_VIEWER)) PetscFunctionReturn(0);
+  isstring = PetscTypeCompare(v,STRING_VIEWER);
+  if (!isstring)  PetscFunctionReturn(0);
   ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;
   vstr->head        = string;

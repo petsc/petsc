@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregispetsc.c,v 1.4 1999/09/20 18:36:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregispetsc.c,v 1.5 1999/10/04 18:48:49 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -43,13 +43,13 @@ static char *version = PETSC_VERSION_NUMBER;
 #define __FUNC__ "DLLibraryInfo_Petsc"
 int DLLibraryInfo_Petsc(char *path,char *type,char **mess) 
 {
-  int ierr,iscon,isaut,isver;
+  int iscon,isaut,isver;
 
   PetscFunctionBegin; 
 
-  iscon = !PetscStrcmp(type,"Contents");CHKERRQ(ierr);
-  isaut = !PetscStrcmp(type,"Authors");CHKERRQ(ierr);
-  isver = !PetscStrcmp(type,"Version");CHKERRQ(ierr);
+  iscon = !PetscStrcmp(type,"Contents");
+  isaut = !PetscStrcmp(type,"Authors");
+  isver = !PetscStrcmp(type,"Version");
   if (iscon)      *mess = contents;
   else if (isaut) *mess = authors;
   else if (isver) *mess = version;

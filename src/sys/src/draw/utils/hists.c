@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.13 1999/05/04 20:28:46 balay Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.14 1999/10/01 21:20:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -52,17 +52,19 @@ struct _p_DrawHist {
 @*/
 int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 {
-  int         ierr;
+  int         ierr,isnull;
   PetscObject obj = (PetscObject) win;
   DrawHist    h;
 
   PetscFunctionBegin;
-  if (obj->cookie == DRAW_COOKIE && PetscTypeCompare(obj,DRAW_NULL)) {
+  PetscValidHeaderSpecific(win,DRAW_COOKIE);
+  isnull = PetscTypeCompare(obj,DRAW_NULL);
+  if (isnull) {
     ierr = DrawOpenNull(obj->comm, (Draw *) hist);CHKERRQ(ierr);
     (*hist)->win = win;
    PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(h, _p_DrawHist, int,DRAW_COOKIE, 0, "DrawHist",obj->comm, DrawHistDestroy, 0);
+  PetscHeaderCreate(h,_p_DrawHist,int,DRAWHIST_COOKIE,0,"DrawHist",obj->comm,DrawHistDestroy,0);
   h->view      = 0;
   h->destroy   = 0;
   h->win       = win;
@@ -106,9 +108,9 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
   int ierr;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
 
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   if (hist->numBins == bins) PetscFunctionReturn(0);
 
   ierr          = PetscFree(hist->bins);CHKERRQ(ierr);
@@ -137,8 +139,8 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
 int DrawHistReset(DrawHist hist)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   hist->xmin      = PETSC_MAX;
   hist->xmax      = PETSC_MIN;
   hist->ymin      = 0;
@@ -170,13 +172,11 @@ int DrawHistDestroy(DrawHist hist)
   int ierr;
 
   PetscFunctionBegin;
-  if (!hist || !(hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL))) {
-    PetscValidHeaderSpecific(hist, DRAW_COOKIE);
-  }
+  PetscValidHeader(hist);
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) {
-    ierr = PetscObjectDestroy((PetscObject) hist);CHKERRQ(ierr);
+  if (hist->cookie == DRAW_COOKIE){
+    ierr = DrawDestroy((Draw) hist);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -210,9 +210,9 @@ int DrawHistDestroy(DrawHist hist)
 int DrawHistAddValue(DrawHist hist, double value)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
 
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
     double *tmp;
@@ -274,8 +274,8 @@ int DrawHistDraw(DrawHist hist)
   int      numBins,numValues,i, p,ierr,bcolor, color,rank;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
@@ -345,8 +345,8 @@ int DrawHistDraw(DrawHist hist)
 int DrawHistSetColor(DrawHist hist, int color)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   hist->color = color;
   PetscFunctionReturn(0);
 }
@@ -374,8 +374,8 @@ int DrawHistSetColor(DrawHist hist, int color)
 int DrawHistSetLimits(DrawHist hist, double x_min, double x_max, int y_min, int y_max) 
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   hist->xmin = x_min; 
   hist->xmax = x_max; 
   hist->ymin = y_min; 
@@ -409,11 +409,11 @@ int DrawHistSetLimits(DrawHist hist, double x_min, double x_max, int y_min, int 
 int DrawHistGetAxis(DrawHist hist, DrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist,DRAW_NULL)) {
+  if (hist && hist->cookie == DRAW_COOKIE) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
-  PetscValidHeaderSpecific(hist, DRAW_COOKIE);
+  PetscValidHeaderSpecific(hist, DRAWHIST_COOKIE);
   *axis = hist->axis;
   PetscFunctionReturn(0);
 }
@@ -441,9 +441,7 @@ int DrawHistGetAxis(DrawHist hist, DrawAxis *axis)
 int DrawHistGetDraw(DrawHist hist, Draw *win)
 {
   PetscFunctionBegin;
-  if (!hist || hist->cookie != DRAW_COOKIE || !PetscTypeCompare(hist,DRAW_NULL)) {
-    PetscValidHeaderSpecific(hist, DRAW_COOKIE);
-  }
+  PetscValidHeader(hist);
   *win = hist->win;
   PetscFunctionReturn(0);
 }

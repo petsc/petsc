@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.40 1999/09/20 18:32:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.41 1999/10/01 21:20:15 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -61,11 +61,12 @@ int ViewerFlush_Draw(Viewer v)
 int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 {
   Viewer_Draw *vdraw;
-  int         ierr;
+  int         ierr,isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
+  isdraw = PetscTypeCompare(v,DRAW_VIEWER);
+  if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -106,12 +107,13 @@ int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 @*/
 int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 {
-  int         ierr;
+  int         ierr,isdraw;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
+  isdraw = PetscTypeCompare(v,DRAW_VIEWER);
+  if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -154,12 +156,13 @@ int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 @*/
 int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 {
-  int         ierr;
+  int         ierr,isdraw;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
+  isdraw = PetscTypeCompare(v,DRAW_VIEWER);
+  if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -296,14 +299,16 @@ EXTERN_C_END
 @*/
 int ViewerDrawClear(Viewer viewer)
 {
-  int         ierr,i;
+  int         ierr,i,isdraw;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)) PetscFunctionReturn(0);
-  vdraw = (Viewer_Draw *) viewer->data;
-  for (i=0; i<VIEWER_DRAW_MAX; i++) {
-    if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]);CHKERRQ(ierr);}
+  isdraw = PetscTypeCompare(viewer,DRAW_VIEWER);
+  if (isdraw) {
+    vdraw = (Viewer_Draw *) viewer->data;
+    for (i=0; i<VIEWER_DRAW_MAX; i++) {
+      if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]);CHKERRQ(ierr);}
+    }
   }
   PetscFunctionReturn(0);
 }

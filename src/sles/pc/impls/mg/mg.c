@@ -1,10 +1,42 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.95 1999/06/30 23:52:57 balay Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.96 1999/10/01 21:21:56 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
 */
 #include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ "MGInterpolateAdd"
+int MGInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMultTransAdd(A,x,y,w);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultAdd(A,x,y,w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MGRestrict"
+int MGRestrict(Mat A,Vec x,Vec y)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTrans(A,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -29,10 +61,10 @@ int MGMCycle_Private(MG *mglevels)
     while (cycles--) {
       ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r );CHKERRQ(ierr);
-      ierr = MatMult(mg->restrct,  mg->r, mgc->b );CHKERRQ(ierr);
+      ierr = MGRestrict(mg->restrct,  mg->r, mgc->b );CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
       ierr = MGMCycle_Private(mglevels-1);CHKERRQ(ierr); 
-      ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
+      ierr = MGInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
       ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
   }
@@ -67,7 +99,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     mg[i]->cycles = 1;
     ierr = SLESCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
-    if (i == 0) {
+    if (i == 0 && levels > 1) {
       ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
     } else {
       ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
@@ -183,11 +215,19 @@ static int PCSetFromOptions_MG(PC pc)
   ierr = OptionsGetString(pc->prefix,"-pc_mg_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
     MGType mg = MGADDITIVE;
-    if      (!PetscStrcmp(buff,"additive"))       mg = MGADDITIVE;
-    else if (!PetscStrcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
-    else if (!PetscStrcmp(buff,"full"))           mg = MGFULL;
-    else if (!PetscStrcmp(buff,"kaskade"))        mg = MGKASKADE;
-    else if (!PetscStrcmp(buff,"cascade"))        mg = MGKASKADE;
+    int    isadd,ismult,isfull,iskask,iscasc;
+
+    isadd  = !PetscStrcmp(buff,"additive");
+    ismult = !PetscStrcmp(buff,"multiplicative");
+    isfull = !PetscStrcmp(buff,"full");
+    iskask = !PetscStrcmp(buff,"kaskade");
+    iscasc = !PetscStrcmp(buff,"cascade");
+
+    if      (isadd)  mg = MGADDITIVE;
+    else if (ismult) mg = MGMULTIPLICATIVE;
+    else if (isfull) mg = MGFULL;
+    else if (iskask) mg = MGKASKADE;
+    else if (iscasc) mg = MGKASKADE;
     else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",buff);
     ierr = MGSetType(pc,mg);CHKERRQ(ierr);
   }
@@ -219,9 +259,11 @@ static int PCView_MG(PC pc,Viewer viewer)
   int        itu, itd,ierr,levels = mg[0]->levels,i;
   double     dtol, atol, rtol;
   char       *cstring;
+  int        isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd);CHKERRQ(ierr);
     ierr = KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);CHKERRQ(ierr);
@@ -247,7 +289,7 @@ static int PCView_MG(PC pc,Viewer viewer)
       }
     }
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -306,7 +348,11 @@ static int PCSetUp_MG(PC pc)
 +  pc - the preconditioner context
 -  levels - the number of levels
 
-   Level: advanced
+   Level: intermediate
+
+   Notes:
+     If the number of levels is one then the multigrid uses the -mg_fine prefix
+  for setting the level options rather than the -mg_coarse prefix.
 
 .keywords: MG, set, levels, multigrid
 

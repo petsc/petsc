@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.65 1999/05/04 20:30:05 balay Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.66 1999/09/02 14:53:04 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -144,7 +144,7 @@ int ISDestroy(IS is)
   if (--is->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(is);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(is);CHKERRQ(ierr);
 
   ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);

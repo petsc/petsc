@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.72 1999/09/23 16:22:19 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.73 1999/10/04 18:50:28 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -747,7 +747,7 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
   vin->array_gotten = PETSC_TRUE;
 
   *a =  v->array;
-  ierr = PetscAMSTakeAccess(vin);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +766,7 @@ int VecRestoreArray_Seq(Vec vin,Scalar *a[])
   vin->array_gotten = PETSC_FALSE;
   if (a) *a                = 0; /* now user cannot accidently use it again */
 
-  ierr = PetscAMSGrantAccess(vin);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

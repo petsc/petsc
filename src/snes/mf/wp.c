@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.15 1999/09/20 19:11:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.16 1999/10/01 21:22:26 bsmith Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -90,16 +90,18 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
   FILE        *fd;
   MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
   int         ierr;
+  int         isascii;
 
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     if (hctx->computenorma){ierr = PetscFPrintf(ctx->comm,fd,"    Computes normA\n");CHKERRQ(ierr);}
     else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");CHKERRQ(ierr);}
     if (hctx->computenormU){ierr =  PetscFPrintf(ctx->comm,fd,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   }    
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.30 1999/06/30 23:50:14 balay Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.31 1999/07/28 15:44:23 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -41,7 +41,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
-    Collective on IS
+    Not collective
 
     Input Parameter:
 .   is - index set containing the global numbers for each local
@@ -78,7 +78,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
-    Collective on MPI_Comm
+    Not Collective 
 
     Input Parameters:
 +   comm - MPI communicator of size 1.
@@ -125,7 +125,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
    ordering and a global parallel ordering.
 
-   Collective on ISLocalToGlobalMapping
+   Note Collective
 
    Input Parameters:
 .  mapping - mapping data structure
@@ -301,6 +301,9 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 
     Notes:
     Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
+
+    This is not scalable in memory usage. Each processor requires O(Nglobal) size 
+    array to compute these.
 
     Level: advanced
 

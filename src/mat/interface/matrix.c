@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.347 1999/09/29 00:54:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.348 1999/10/01 21:21:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -188,17 +188,18 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 int MatView(Mat mat,Viewer viewer)
 {
   int          format, ierr, rows, cols;
+  int          isascii;
   char         *cstr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (viewer) PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF;
   }
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
@@ -217,6 +218,8 @@ int MatView(Mat mat,Viewer viewer)
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*mat->ops->view)(mat,viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else if (!isascii) {
+    SETERRQ1(1,1,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -366,7 +369,7 @@ int MatDestroy(Mat mat)
   if (--mat->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(mat);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(mat);CHKERRQ(ierr);
 
   ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2497,31 +2500,31 @@ int MatView_Private(Mat mat)
   int ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
     ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
     ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view_matlab",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
     ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
       ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
@@ -2531,7 +2534,7 @@ int MatView_Private(Mat mat)
       ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_socket",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(mat->prefix,"-mat_view_socket",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatView(mat,VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
@@ -3191,7 +3194,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Input Parameters:
 +  mat - the matrix
-.  n   - the number of submatrixes to be extracted
+.  n   - the number of submatrixes to be extracted (on this processor, may be zero)
 .  irow, icol - index sets of rows and columns to extract
 -  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.197 1999/10/01 21:22:24 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.198 1999/10/06 23:41:24 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -44,13 +44,16 @@ int SNESView(SNES snes,Viewer viewer)
   int                 ierr;
   SLES                sles;
   char                *type;
+  int                 isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (viewer) {PetscValidHeader(viewer);}
-  else { viewer = VIEWER_STDOUT_SELF; }
+  if (!viewer) viewer = VIEWER_STDOUT_SELF; 
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     if (type) {
@@ -79,7 +82,7 @@ int SNESView(SNES snes,Viewer viewer)
         ierr = ViewerASCIIPrintf(viewer,"    gamma=%g, alpha=%g, alpha2=%g\n",kctx->gamma,kctx->alpha,kctx->alpha2);CHKERRQ(ierr);
       }
     }
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = ViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
@@ -1474,7 +1477,7 @@ int SNESDestroy(SNES snes)
   if (--snes->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(snes);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
 
   if (snes->destroy) {ierr = (*(snes)->destroy)(snes);CHKERRQ(ierr);}
   if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
@@ -2022,7 +2025,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
   ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
-  ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_view", &flg);CHKERRQ(ierr);
   if (flg) { ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
@@ -2072,13 +2075,15 @@ int SNESSolve(SNES snes,Vec x,int *its)
 @*/
 int SNESSetType(SNES snes,SNESType type)
 {
-  int ierr;
-  int (*r)(SNES);
+  int ierr, (*r)(SNES);
+  int match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidCharPointer(type);
 
-  if (PetscTypeCompare(snes,type)) PetscFunctionReturn(0);
+  match = PetscTypeCompare(snes,type);
+  if (match) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {
     ierr       = (*(snes)->destroy)(snes);CHKERRQ(ierr);

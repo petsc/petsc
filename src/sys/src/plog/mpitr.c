@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.18 1999/05/12 03:27:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.19 1999/10/04 18:49:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,7 +38,7 @@ int PetscMPIDump(FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (fd == 0) fd = stderr;
+  if (!fd) fd = stderr;
    
   /* Did we wait on all the non-blocking sends and receives? */
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1 );CHKERRQ(ierr);

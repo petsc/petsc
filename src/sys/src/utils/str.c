@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.32 1999/10/01 21:20:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.33 1999/10/04 18:49:41 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -132,6 +132,27 @@ int PetscStrcmp(const char a[],const char b[])
   if (!a || !b) PetscFunctionReturn(1);
   c = strcmp(a,b);
   PetscFunctionReturn(c);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStrgrt"
+int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
+{
+  int c;
+
+  PetscFunctionBegin;
+  if (!a && !b) {
+    *t = PETSC_FALSE;
+  } else if (a && !b) {
+    *t = PETSC_TRUE; 
+  } else if (!a && b) {
+    *t = PETSC_FALSE; 
+  } else {
+    c = strcmp(a,b);
+    if (c > 0) *t = PETSC_TRUE;
+    else       *t = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

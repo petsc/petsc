@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex45.c,v 1.3 1999/01/31 16:07:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex45.c,v 1.4 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -44,7 +44,7 @@ void Store2DArray(int m, int n, double *a, char *filename,int *fdd)
   int     nz = -1, cookie = 1211216,ierr;
   double *vals;
 
-  if (fd == 0) {
+  if (!fd) {
     fd = creat(filename,0666); 
     if (fd == -1) {
       fprintf(stderr,"Unable to open binary file\n");

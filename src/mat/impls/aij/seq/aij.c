@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.327 1999/09/27 21:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.328 1999/10/01 21:21:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -595,18 +595,23 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
   int         ierr;
+  int         issocket,isascii,isbinary,isdraw;
 
   PetscFunctionBegin;  
-  if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
+  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  if (issocket) {
     ierr = ViewerSocketPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)){
+  } else if (isascii) {
     ierr = MatView_SeqAIJ_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = MatView_SeqAIJ_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  } else if (isdraw) {
     ierr = MatView_SeqAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -630,8 +635,9 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     fshift += imax[i-1] - ailen[i-1];
     rmax   = PetscMax(rmax,ailen[i]);
     if (fshift) {
-      ip = aj + ai[i] + shift; ap = aa + ai[i] + shift;
-      N = ailen[i];
+      ip = aj + ai[i] + shift; 
+      ap = aa + ai[i] + shift;
+      N  = ailen[i];
       for ( j=0; j<N; j++ ) {
         ip[j-fshift] = ip[j];
         ap[j-fshift] = ap[j]; 
@@ -641,7 +647,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
   if (m) {
     fshift += imax[m-1] - ailen[m-1];
-    ai[m] = ai[m-1] + ailen[m-1];
+    ai[m]  = ai[m-1] + ailen[m-1];
   }
   /* reset ilen and imax for each row */
   for ( i=0; i<m; i++ ) {
@@ -1576,9 +1582,12 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
     }
     /* Create and fill new matrix */
     if (scall == MAT_REUSE_MATRIX) {
+      PetscTruth equal;
+
       c = (Mat_SeqAIJ *)((*B)->data);
       if (c->m  != nrows || c->n != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
-      if (PetscMemcmp(c->ilen,lens, c->m *sizeof(int))) {
+      ierr = PetscMemcmp(c->ilen,lens, c->m*sizeof(int),&equal);CHKERRQ(ierr);
+      if (!equal) {
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
       }
       ierr = PetscMemzero(c->ilen,c->m*sizeof(int));CHKERRQ(ierr);
@@ -2441,6 +2450,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
 int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
+  int        ierr;
 
   PetscFunctionBegin;
   if (B->type !=MATSEQAIJ)SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
@@ -2452,20 +2462,16 @@ int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
   }
   
   /* if the a->i are the same */
-  if (PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int))) { 
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
-  }
+  ierr = PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int),flg);CHKERRQ(ierr);
+  if (*flg == PETSC_FALSE) PetscFunctionReturn(0);
   
   /* if a->j are the same */
-  if (PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
-  }
+  ierr = PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int),flg);CHKERRQ(ierr);
+  if (*flg == PETSC_FALSE) PetscFunctionReturn(0);
   
   /* if a->a are the same */
-  if (PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar))) {
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
-  }
-  *flg = PETSC_TRUE; 
+  ierr = PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar),flg);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
   
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.124 1999/09/27 21:30:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.125 1999/10/01 21:21:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -345,7 +345,7 @@ int SLESDestroy(SLES sles)
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (--sles->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscAMSDestroy((PetscObject)sles);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(sles);CHKERRQ(ierr);
   ierr = KSPDestroy(sles->ksp);CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc);CHKERRQ(ierr);
   if (sles->diagonal) {ierr = VecDestroy(sles->diagonal);CHKERRQ(ierr);}

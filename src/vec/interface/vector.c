@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.183 1999/09/23 16:23:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.184 1999/09/26 17:31:13 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1338,7 +1338,7 @@ int VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   PLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(vec->prefix,"-vec_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecView(vec,VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
@@ -1480,15 +1480,15 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY"
 /*@C
-   VecMAXPY - Computes x = x + sum alpha[j] y[j]
+   VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
    Collective on Vec
 
    Input Parameters:
 +  nv - number of scalars and x-vectors
 .  alpha - array of scalars
-.  x - one vector
--  y - array of vectors
+.  y - one vector
+-  x - array of vectors
 
    Output Parameter:
 .  y  - array of vectors
@@ -1499,24 +1499,24 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-int  VecMAXPY(int nv,const Scalar *alpha,Vec x,Vec *y)
+int  VecMAXPY(int nv,const Scalar *alpha,Vec y,Vec *x)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(*y,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
-  PetscValidType(x);
-  PetscValidType(*y);
-  PetscCheckSameType(x,*y);
-  PetscCheckSameComm(x,*y);
-  if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  PetscValidType(y);
+  PetscValidType(*x);
+  PetscCheckSameType(y,*x);
+  PetscCheckSameComm(y,*x);
+  if (y->N != (*x)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
+  if (y->n != (*x)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
 
-  PLogEventBegin(VEC_MAXPY,x,*y,0,0);
-  ierr = (*x->ops->maxpy)(nv,alpha,x,y);CHKERRQ(ierr);
-  PLogEventEnd(VEC_MAXPY,x,*y,0,0);
+  PLogEventBegin(VEC_MAXPY,*x,y,0,0);
+  ierr = (*y->ops->maxpy)(nv,alpha,y,x);CHKERRQ(ierr);
+  PLogEventEnd(VEC_MAXPY,*x,y,0,0);
   PetscFunctionReturn(0);
 } 
 

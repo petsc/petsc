@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.19 1999/06/30 23:50:14 balay Exp bsmith $";
+static char vcid[] = "$Id: iscomp.c,v 1.20 1999/09/02 14:53:07 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -53,8 +53,7 @@ int ISEqual(IS is1, IS is2, PetscTruth *flg)
 
   ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
   ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
-  if(!PetscMemcmp(a1, a2, sz)) {*flg = PETSC_TRUE;}
-  else {*flg = PETSC_FALSE;}
+  ierr = PetscMemcmp(a1, a2, sz, flg);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(is1, &ptr1);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is2, &ptr2);CHKERRQ(ierr);

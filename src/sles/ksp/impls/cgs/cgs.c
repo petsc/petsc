@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.51 1999/06/08 22:57:17 balay Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.52 1999/09/02 14:53:50 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -56,10 +56,10 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   if (!ksp->avoidnorms) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
@@ -87,10 +87,10 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);

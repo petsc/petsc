@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.101 1999/09/27 21:31:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.102 1999/10/01 21:22:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -81,10 +81,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm );CHKERRQ(ierr);             /* fnorm <- || F || */
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   snes->iter = 0;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
@@ -156,10 +156,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     }
     if (!breakout) {
       fnorm = gnorm;
-      ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+      ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+      ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
       TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
       VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
@@ -188,9 +188,9 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     reason = SNES_DIVERGED_MAX_IT;
   }
   *its = i+1;
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -275,13 +275,15 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 {
   SNES_TR    *tr = (SNES_TR *)snes->data;
   int        ierr;
+  int        isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.3 1999/05/04 20:33:40 balay Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.4 1999/09/20 19:23:21 bsmith Exp bsmith $";
 #endif
 
 #include "mat.h"
@@ -42,11 +42,17 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
-  PetscFunctionBegin;
-  if (!PetscStrcmp(type,"Contents"))     *mess = contents;
-  else if (!PetscStrcmp(type,"Authors")) *mess = authors;
-  else if (!PetscStrcmp(type,"Version")) *mess = version;
-  else *mess = 0;
+  int iscon,isaut,isver;
+
+  PetscFunctionBegin; 
+
+  iscon = !PetscStrcmp(type,"Contents");
+  isaut = !PetscStrcmp(type,"Authors");
+  isver = !PetscStrcmp(type,"Version");
+  if (iscon)      *mess = contents;
+  else if (isaut) *mess = authors;
+  else if (isver) *mess = version;
+  else            *mess = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

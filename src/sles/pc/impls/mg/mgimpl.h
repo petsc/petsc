@@ -1,4 +1,4 @@
-/* $Id: mgimpl.h,v 1.10 1997/07/10 03:44:04 bsmith Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.11 1999/01/31 16:08:17 bsmith Exp bsmith $ */
 
 /*
       Data structure used for Multigrid preconditioner.
@@ -34,8 +34,8 @@ struct _MG
     Mat      restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
     int      default_smoothu;              /* number of smooths per level if not over-ridden */
     int      default_smoothd;              /*  with calls to KSPSetTolerances() */
-
 };
+
 
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.133 1999/06/30 23:52:55 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.134 1999/10/01 21:21:55 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -226,9 +226,12 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
 {
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr, i;
+  int              isascii,isstring;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     if (jac->use_true_local) {
       ierr = ViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n", jac->n);CHKERRQ(ierr);
     }
@@ -258,11 +261,11 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       fflush(fd);
       ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

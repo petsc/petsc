@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.86 1999/09/27 21:31:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.87 1999/10/01 21:22:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -59,14 +59,14 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   delta	        = neP->delta;           /* trust region radius */
 
   ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);              /* xnorm = || X || */
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeMinimizationFunction(snes,X,&snes->fc);CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);  /* G(X) <- gradient */
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   ierr = VecNorm(G,NORM_2,&snes->norm);CHKERRQ(ierr);               /* &snes->norm = || G || */
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,snes->norm,0);
   SNESMonitor(snes,0,snes->norm);
 
@@ -77,9 +77,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
-    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
-    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     newton = 0;
     neP->success = 0;
     snes->nfailures = 0;
@@ -164,9 +164,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
-    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     ierr = VecNorm(G,NORM_2,&snes->norm);CHKERRQ(ierr);
-    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     snes->vec_func_always = G;
 
     SNESLogConvHistory(snes,snes->norm,qits);
@@ -183,9 +183,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = SNES_DIVERGED_MAX_IT;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   *outits = i;  /* not i+1, since update for i happens in loop above */
   PetscFunctionReturn(0);
 }
@@ -352,13 +352,15 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
   SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
   int        ierr;
+  int        isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for SNES UM TR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

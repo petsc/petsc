@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.55 1999/06/30 23:53:42 balay Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.56 1999/09/02 14:53:53 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -93,10 +93,10 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,rnorm);
   KSPMonitor(ksp,0,rnorm);
@@ -144,10 +144,10 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     rnorm = phibar;
 #endif
 
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rnorm;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i+1,rnorm);
     cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);

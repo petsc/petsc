@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.30 1999/09/27 21:32:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.31 1999/10/01 21:22:48 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -184,7 +184,9 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-test",&flg);CHKERRA(ierr);
   if (flg) {
-    if (PetscTypeCompare(ts,"euler")) {
+    int iseuler;
+    iseuler = PetscTypeCompare(ts,"euler");
+    if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
         fprintf(stderr,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
       }

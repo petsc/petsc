@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.41 1999/06/30 23:53:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.42 1999/10/01 21:22:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -48,14 +48,15 @@ int main(int argc,char **args)
   PC      subpc;        /* PC context for subdomain */
   KSP     subksp;       /* KSP context for subdomain */
   double  norm;         /* norm of solution error */
-  int       i, j, I, J, ierr, *blks, m = 8, n;
-  int       rank, size, its, nlocal, first, Istart, Iend, flg;
-  Scalar    v, one = 1.0, none = -1.0;
+  int     i, j, I, J, ierr, *blks, m = 8, n;
+  int     rank, size, its, nlocal, first, Istart, Iend, flg;
+  Scalar  v, one = 1.0, none = -1.0;
+  int     isbjacobi;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = m+2;
 
   /* -------------------------------------------------------------------
@@ -158,7 +159,8 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  if (PetscTypeCompare(pc,PCBJACOBI)) {
+  isbjacobi = PetscTypeCompare(pc,PCBJACOBI);
+  if (isbjacobi) {
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
        creation of an internal SLES context for each block).
@@ -179,7 +181,7 @@ int main(int argc,char **args)
     for (i=0; i<nlocal; i++) {
       ierr = SLESGetPC(subsles[i],&subpc);CHKERRA(ierr);
       ierr = SLESGetKSP(subsles[i],&subksp);CHKERRA(ierr);
-      if (rank == 0) {
+      if (!rank) {
         if (i%2) {
           ierr = PCSetType(subpc,PCILU);CHKERRA(ierr);
         } else {

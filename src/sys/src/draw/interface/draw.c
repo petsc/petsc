@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.59 1999/09/02 14:52:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.60 1999/10/01 21:20:18 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -185,7 +185,7 @@ int DrawDestroy(Draw draw)
   if (--draw->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(draw);CHKERRQ(ierr);
 
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);

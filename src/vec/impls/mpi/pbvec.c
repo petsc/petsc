@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.139 1999/10/04 18:50:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.140 1999/10/04 21:05:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -170,7 +170,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   ierr         = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data      = (void *) s;
   s->nghost    = nghost;
-  s->N         = v->N;
   v->mapping   = 0;
   v->bmapping  = 0;
   v->bs        = -1;
@@ -310,17 +309,21 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv
 @*/
 int VecGhostGetLocalForm(Vec g,Vec *l)
 {
+  int isseq,ismpi;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
-  if (PetscTypeCompare(g,VEC_MPI)) {
+  isseq = PetscTypeCompare(g,VEC_SEQ);
+  ismpi = PetscTypeCompare(g,VEC_MPI);
+  if (ismpi) {
     Vec_MPI *v  = (Vec_MPI *) g->data;
     if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
     *l = v->localrep;
-  } else if (PetscTypeCompare(g,VEC_SEQ)) {
+  } else if (isseq) {
     *l = g;
   } else {
-    SETERRQ(1,1,"Vector type does not have local representation");
+    SETERRQ1(1,1,"Vector type %s does not have local representation",g->type_name);
   }
   PetscObjectReference((PetscObject)*l);
   PetscFunctionReturn(0);

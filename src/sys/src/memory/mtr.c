@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.130 1999/09/27 21:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.131 1999/10/04 18:49:30 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -462,7 +462,7 @@ int PetscTrDump( FILE *fp )
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (fp == 0) fp = stderr;
+  if (!fp) fp = stderr;
   if (allocated > 0) {fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);}
   head = TRhead;
   while (head) {
@@ -543,7 +543,7 @@ int PetscTrLogDump(FILE *fp)
   }
 
 
-  if (fp == 0) fp = stderr;
+  if (!fp) fp = stderr;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
   fprintf(fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
 

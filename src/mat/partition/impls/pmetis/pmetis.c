@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.23 1999/08/30 15:40:34 balay Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.24 1999/10/01 21:21:34 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -71,12 +71,14 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
 int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  FILE                  *fd;
-  int                   ierr,rank;
+  FILE                     *fd;
+  int                      ierr,rank;
+  int                      isascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (parmetis->parallel == 2) {
       ierr = PetscFPrintf(part->comm,fd,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
@@ -87,7 +89,7 @@ int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
     ierr = PetscSynchronizedFPrintf(part->comm,fd,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(part->comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

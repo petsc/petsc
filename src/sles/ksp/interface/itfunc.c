@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.129 1999/09/02 14:53:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.130 1999/09/27 21:31:06 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -353,7 +353,7 @@ int KSPDestroy(KSP ksp)
   if (--ksp->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
 
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);

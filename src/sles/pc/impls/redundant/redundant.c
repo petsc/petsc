@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.9 1999/06/30 23:53:14 balay Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.10 1999/10/01 21:22:02 bsmith Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -22,18 +22,21 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 {
   PC_Redundant  *red = (PC_Redundant *) pc->data;
   int           ierr;
+  int           isascii,isstring;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.137 1999/09/27 21:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.138 1999/10/01 21:20:25 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -616,7 +616,7 @@ int DrawCreate_X(Draw draw)
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
-  if (rank == 0) {
+  if (!rank) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);

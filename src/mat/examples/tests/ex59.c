@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex59.c,v 1.7 1999/05/04 20:33:03 balay Exp curfman $";
+static char vcid[] = "$Id: ex59.c,v 1.8 1999/07/28 17:29:09 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
@@ -18,8 +18,8 @@ int main(int argc,char **args)
   MatType     type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.34 1999/10/01 21:21:34 bsmith Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.35 1999/10/06 23:41:31 balay Exp bsmith $";
 #endif
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
@@ -327,18 +327,20 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 {
   int                  ierr;
+  int                  isascii;
   MatPartitioningType  name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
-  if (viewer) {PetscValidHeader(viewer);} 
-  else { viewer = VIEWER_STDOUT_SELF;}
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
   }
 
   if (part->view) {
@@ -410,11 +412,14 @@ $      (for instance, parmetis)
 int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
   int ierr,(*r)(MatPartitioning);
+  int match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidCharPointer(type);
 
-  if (PetscTypeCompare(part,type)) PetscFunctionReturn(0);
+  match = PetscTypeCompare(part,type);
+  if (match) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
     ierr =  (*part->destroy)(part);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.28 1999/09/23 19:41:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.29 1999/10/01 21:20:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -60,7 +60,7 @@ int PetscObjectPublish(PetscObject obj)
   int ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
+  PetscValidHeader(obj);
   if (obj->bops->publish) {
     ierr = (*obj->bops->publish)(obj);CHKERRQ(ierr);
   }
@@ -137,10 +137,10 @@ int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscAMSTakeAccess(obj);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
   if (obj->type_name) {ierr = PetscFree(obj->type_name);CHKERRQ(ierr);}
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
-  ierr = PetscAMSGrantAccess(obj);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

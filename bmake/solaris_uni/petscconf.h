@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.14 1999/05/12 03:24:58 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.15 1999/09/16 18:46:22 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -23,6 +23,7 @@
 #define PETSC_HAVE_SYSINFO
 #define PETSC_HAVE_SUNMATH_H
 #define PETSC_HAVE_SUNMATHPRO
+#define PETSC_HAVE_STD_COMPLEX
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE
 

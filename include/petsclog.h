@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.131 1999/10/04 18:55:42 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.132 1999/10/05 19:12:41 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -415,16 +415,16 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define PLogObjectCreate(h)
 #define PLogObjectDestroy(h)
 #define PLogObjectMemory(p,m)
-#define PLogDestroy()
-#define PLogStagePush(a)
-#define PLogStagePop()
-#define PLogStageRegister(a,b)
+#define PLogDestroy()                   0
+#define PLogStagePush(a)                0
+#define PLogStagePop()                  0
+#define PLogStageRegister(a,b)          0
 #define PLogPrintSummary(comm,file)     0
-#define PLogBegin()
+#define PLogBegin()                     0
 #define PLogTraceBegin(file)            0
-#define PLogSet(lb,le)
-#define PLogAllBegin()
-#define PLogDump(c)              
+#define PLogSet(lb,le)                  0
+#define PLogAllBegin()                  0
+#define PLogDump(c)                     0
 #define PLogEventRegister(a,b,c)        0
 extern int PLogObjectState(PetscObject,const char[],...);
 

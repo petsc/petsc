@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.128 1999/06/30 23:53:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.129 1999/10/01 21:21:58 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -383,9 +383,12 @@ int PCILUSetAllowDiagonalFill(PC pc)
    Notes:
    PCILUSetUseInPlace() is intended for use with matrix-free variants of
    Krylov methods, or when a different matrices are employed for the linear
-   system and preconditioner.  Do NOT use this option if the linear system
+   system and preconditioner, or with ASM preconditioning.  Do NOT use 
+   this option if the linear system
    matrix also serves as the preconditioning matrix, since the factored
    matrix would then overwrite the original matrix. 
+
+   Only works well with ILU(0).
 
    Level: intermediate
 
@@ -479,9 +482,12 @@ static int PCView_ILU(PC pc,Viewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
- 
+  int        isstring,isascii;
+
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER )) {
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     if (ilu->levels == 1) {
       ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);CHKERRQ(ierr);
     } else {
@@ -492,10 +498,10 @@ static int PCView_ILU(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
     if (ilu->reusefill)     {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (ilu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.92 1999/06/04 00:12:24 balay Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.93 1999/06/08 22:54:23 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -114,6 +114,7 @@ int PetscAttachDebugger(void)
 
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
+    int   isdbx,isxldb,isxxgdb,isups,isxdb;
 
     /*
          We need to send a continue signal to the "child" process on the 
@@ -122,9 +123,14 @@ int PetscAttachDebugger(void)
 #if defined (PARCH_alpha)
     kill(child,SIGCONT);
 #endif
-
     sprintf(pid,"%d",child); 
-    if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
+
+    isxxgdb = !PetscStrcmp(Debugger,"xxgdb");
+    isups   = !PetscStrcmp(Debugger,"ups");
+    isxldb  = !PetscStrcmp(Debugger,"xldb");
+    isxdb   = !PetscStrcmp(Debugger,"xdb");
+    isdbx   = !PetscStrcmp(Debugger,"dbx");
+    if (isxxgdb || isups) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
@@ -132,9 +138,7 @@ int PetscAttachDebugger(void)
         perror("Unable to start debugger");
         exit(0);
       }
-    }
-#if defined(PARCH_rs6000)
-    else if (!PetscStrcmp(Debugger,"xldb")) {
+    } else if (isxldb) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
       args[0] = Debugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
@@ -142,20 +146,18 @@ int PetscAttachDebugger(void)
         perror("Unable to start debugger");
         exit(0);
       }
-    }
-#endif
-    else if (!Xterm) {
+    } else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
-      if (!PetscStrcmp(Debugger,"dbx")) {
+      if (isdbx) {
         args[1] = "-p";
         args[2] = pid;
         args[3] = program;
         args[4] = 0;
       }
 #elif defined(PARCH_hpux)
-      if (!PetscStrcmp(Debugger,"xdb")) {
+      if (isxdb) {
         args[1] = "-l";
         args[2] = "ALL";
         args[3] = "-P";
@@ -164,13 +166,13 @@ int PetscAttachDebugger(void)
         args[6] = 0;
       }
 #elif defined(PARCH_rs6000)
-      if (!PetscStrcmp(Debugger,"dbx")) {
+      if (isdbx) {
         args[1] = "-a";
         args[2] = pid;
         args[3] = 0;
       }
 #elif defined(PARCH_alpha)
-      if (!PetscStrcmp(Debugger,"dbx")) {
+      if (isdbx) {
         args[1] = "-pid";
         args[2] = pid;
         args[3] = program;
@@ -188,27 +190,27 @@ int PetscAttachDebugger(void)
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5) 
-        if (!PetscStrcmp(Debugger,"dbx")) {
+        if (isdbx) {
           args[3] = "-p";
           args[4] = pid;
           args[5] = program;
           args[6] = 0;
         }
 #elif defined(PARCH_hpux)
-        if (!PetscStrcmp(Debugger,"xdb")) {
+        if (isxdb) {
           args[5] = program;
           args[3] = "-P";
           args[4] = pid;
           args[6] = 0;
         }
 #elif defined(PARCH_rs6000)
-        if (!PetscStrcmp(Debugger,"dbx")) {
+        if (isdbx) {
           args[3] = "-a";
           args[4] = pid;
           args[5] = 0;
         }
 #elif defined(PARCH_alpha)
-      if (!PetscStrcmp(Debugger,"dbx")) {
+      if (isdbx) {
         args[3] = "-pid";
         args[4] = pid;
         args[5] = program;
@@ -222,27 +224,27 @@ int PetscAttachDebugger(void)
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
-        if (!PetscStrcmp(Debugger,"dbx")) {
+        if (isdbx) {
           args[5] = "-p";
           args[6] = pid;
           args[7] = program;
           args[8] = 0;
         }
 #elif defined(PARCH_hpux)
-        if (!PetscStrcmp(Debugger,"xdb")) {
+        if (isxdb) {
           args[7] = program;
           args[5] = "-P";
           args[6] = pid;
           args[8] = 0;
         }
 #elif defined(PARCH_rs6000)
-        if (!PetscStrcmp(Debugger,"dbx")) {
+        if (isdbx) {
           args[5] = "-a";
           args[6] = pid;
           args[7] = 0;
         }
 #elif defined(PARCH_alpha)
-      if (!PetscStrcmp(Debugger,"dbx")) {
+      if (isdbx) {
         args[5] = "-pid";
         args[6] = pid;
         args[7] = program;
@@ -372,6 +374,7 @@ int PetscStopForDebugger(void)
 {
   int   sleeptime=0,flg=0,ierr=0,ppid,rank;
   char  program[256],hostname[256];
+  int   isdbx,isxldb,isxxgdb,isups,isxdb;
 
   PetscFunctionBegin;
 
@@ -401,28 +404,35 @@ int PetscStopForDebugger(void)
   }
 
   ppid = getpid();
-  if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
+
+  isxxgdb = !PetscStrcmp(Debugger,"xxgdb");
+  isups   = !PetscStrcmp(Debugger,"ups");
+  isxldb  = !PetscStrcmp(Debugger,"xldb");
+  isxdb   = !PetscStrcmp(Debugger,"xdb");
+  isdbx   = !PetscStrcmp(Debugger,"dbx");
+
+  if (isxxgdb || isups) {
     fprintf(stdout,"[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #if defined(PARCH_rs6000)
-  else if (!PetscStrcmp(Debugger,"xldb")) {
+  else if (isxldb) {
     fprintf(stdout,"{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #endif
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
-  else if (!PetscStrcmp(Debugger,"dbx")) {
+  else if (isdbx) {
     fprintf(stdout,"[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #elif defined(PARCH_hpux)
-  else if (!PetscStrcmp(Debugger,"xdb")) {
+  else if (isxdb) {
     fprintf(stdout,"[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #elif defined(PARCH_rs6000)
-  else if (!PetscStrcmp(Debugger,"dbx")) {
+  else if (isdbx) {
     fprintf(stdout,"[%d]%s>>%s a %d\n",rank,hostname,Debugger,ppid);
   }
 #elif defined(PARCH_alpha)
-  else if (!PetscStrcmp(Debugger,"dbx")) {
+  else if (isdbx) {
     fprintf(stdout,"[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #else 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.50 1999/09/27 21:30:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.51 1999/10/01 21:21:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -98,16 +98,18 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 int MatFDColoringView(MatFDColoring c,Viewer viewer)
 {
   int        i,j,format,ierr;
+  int        isdraw,isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
-  if (viewer) {PetscValidHeader(viewer);} 
-  else {viewer = VIEWER_STDOUT_SELF;}
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
 
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)) { 
+  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  } else if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
@@ -128,7 +130,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
       }
     }
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.48 1999/01/31 16:08:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.49 1999/03/01 04:55:51 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: borthog.c,v 1.48 1999/01/31 16:08:49 bsmith Exp bsmit
 int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
-  int       j;
+  int       ierr,j;
   Scalar    *hh, *hes, tmp;
 
   PetscFunctionBegin;
@@ -28,10 +28,11 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   hes = HES(0,it);
   for (j=0; j<=it; j++) {
     /* ( vv(it+1), vv(j) ) */
-    VecDot( VEC_VV(it+1), VEC_VV(j), hh );
-    *hes++   = *hh;
+    ierr   = VecDot( VEC_VV(it+1), VEC_VV(j), hh );CHKERRQ(ierr);
+    *hes++ = *hh;
     /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
-    tmp = - (*hh++);  VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );
+    tmp    = - (*hh++);  
+    ierr   = VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );CHKERRQ(ierr);
   }
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
   PetscFunctionReturn(0);

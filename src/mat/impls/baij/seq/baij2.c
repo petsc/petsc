@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.48 1999/06/30 23:51:46 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.49 1999/09/20 19:42:46 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -85,6 +85,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   int          *aj = a->j, *ai = a->i;
   MatScalar    *mat_a;
   Mat          C;
+  PetscTruth   flag;
 
   PetscFunctionBegin;
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
@@ -116,7 +117,8 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     c = (Mat_SeqBAIJ *)((*B)->data);
 
     if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Submatrix wrong size");
-    if (PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int))) {
+    ierr = PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int),&flag);CHKERRQ(ierr);
+    if (flag == PETSC_FALSE) {
       SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(int));CHKERRQ(ierr);
@@ -1211,6 +1213,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
 int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
+  int         ierr;
 
   PetscFunctionBegin;
   if (B->type !=MATSEQBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
@@ -1221,20 +1224,18 @@ int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
   }
   
   /* if the a->i are the same */
-  if (PetscMemcmp(a->i,b->i, (a->mbs+1)*sizeof(int))) { 
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
+  ierr = PetscMemcmp(a->i,b->i, (a->mbs+1)*sizeof(int),flg);CHKERRQ(ierr);
+  if (*flg == PETSC_FALSE) {
+    PetscFunctionReturn(0);
   }
   
   /* if a->j are the same */
-  if (PetscMemcmp(a->j,b->j,(a->nz)*sizeof(int))) { 
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
-  }
-  
+  ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(int),flg);CHKERRQ(ierr);
+  if (*flg == PETSC_FALSE) {
+    PetscFunctionReturn(0);
+  }  
   /* if a->a are the same */
-  if (PetscMemcmp(a->a, b->a,(a->nz)*(a->bs)*(a->bs)*sizeof(Scalar))) {
-    *flg = PETSC_FALSE; PetscFunctionReturn(0);
-  }
-  *flg = PETSC_TRUE; 
+  ierr = PetscMemcmp(a->a, b->a,(a->nz)*(a->bs)*(a->bs)*sizeof(Scalar),flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }

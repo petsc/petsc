@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.50 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.51 1999/05/12 03:27:21 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -157,22 +157,22 @@ int PetscMemzero(void *a,int n)
          (both str1 and str2 are assumed to be of length 'len')
 
    Output Parameters:
-.  returns integer less than, equal to, or 
-   greater than 0, according to whether str11 is 
-   less than, equal to, or greater than str2.
+.   e - PETSC_TRUE if equal else PETSC_FALSE.
 
    Level: intermediate
 
    Note: 
    This routine is anologous to memcmp()
 @*/
-int PetscMemcmp(const void *str1,const void *str2, int len)
+int PetscMemcmp(const void *str1,const void *str2, int len,PetscTruth *e)
 {
   int r;
 
   PetscFunctionBegin;
   r = memcmp((char *)str1, (char *)str2, len);
-  PetscFunctionReturn(r);
+  if (!r) *e = PETSC_TRUE;
+  else    *e = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.91 1999/08/04 16:57:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.92 1999/10/01 21:21:48 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -59,10 +59,14 @@ FList PCList = 0;
 int PCSetType(PC pc,PCType type)
 {
   int ierr,(*r)(PC);
+  int match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (PetscTypeCompare(pc,type)) PetscFunctionReturn(0);
+  PetscValidCharPointer(type);
+
+  match = PetscTypeCompare(pc,type);
+  if (match) PetscFunctionReturn(0);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   pc->data        = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.63 1999/09/02 14:53:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.64 1999/09/20 19:15:31 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -98,10 +98,10 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its    = 0;
   ksp->rnorm  = bsnrm;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,bsnrm);
   KSPMonitor(ksp,0,bsnrm);
   cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
@@ -118,9 +118,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
 
   for (i=0; i<=maxit; i++) {
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
@@ -222,9 +222,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = VecAXPY(&nstep,ASP,R);CHKERRQ(ierr); /* r <- -step*asp + r */
          ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-         ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+         ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
          ksp->rnorm                                    = rnrm;
-         ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+         ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
          KSPLogResidualHistory(ksp,rnrm);
          KSPMonitor(ksp,i+1,rnrm);
          cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);

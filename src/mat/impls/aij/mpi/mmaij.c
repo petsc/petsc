@@ -1,7 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.47 1999/06/08 22:55:49 balay Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.48 1999/06/30 23:51:10 balay Exp bsmith $";
 #endif
-
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -13,58 +12,58 @@ static char vcid[] = "$Id: mmaij.c,v 1.47 1999/06/08 22:55:49 balay Exp balay $"
 #define __FUNC__ "MatSetUpMultiply_MPIAIJ"
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ *B = (Mat_SeqAIJ *) (aij->B->data);  
-  int        N = aij->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int        shift = B->indexshift;
-  IS         from,to;
-  Vec        gvec;
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ *) mat->data;
+  Mat_SeqAIJ         *B = (Mat_SeqAIJ *) (aij->B->data);  
+  int                N = aij->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                shift = B->indexshift;
+  IS                 from,to;
+  Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
-  Table      gid1_lid1;
-  CTablePos  tpos;
-  int        gid, lid; 
+  PetscTable         gid1_lid1;
+  PetscTablePosition tpos;
+  int                gid, lid; 
 #endif
 
   PetscFunctionBegin;
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams (this has not been tested with "shift") */
-  TableCreate(B->m,&gid1_lid1); 
+  PetscTableCreate(B->m,&gid1_lid1); 
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
-      ierr = TableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
-        ierr = TableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
       }
     }
   }
   /* form array of columns we need */
   garray = (int *)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
-  ierr = TableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
+  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
-    ierr = TableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
+    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
     gid--; lid--;
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
   /* qsort( garray, ec, sizeof(int), intcomparc ); */
-  TableRemoveAll(gid1_lid1);
+  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for ( i=0; i<ec; i++ ) {
-    ierr = TableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
+    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int gid1 = aj[B->i[i] + shift + j] + 1 + shift;
-      ierr = TableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
       aj[B->i[i] + shift + j]  = lid - shift;
     }
   }
   B->n = aij->B->n = aij->B->N = ec;
-  TableDelete(gid1_lid1);
+  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
   /* For the first stab we make an array as long as the number of columns */
@@ -154,7 +153,8 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    TableDelete(aij->colmap); aij->colmap = 0;
+    ierr = PetscTableDelete(aij->colmap); CHKERRQ(ierr);
+    aij->colmap = 0;
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
     aij->colmap = 0;
@@ -175,8 +175,8 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {
-      col = garray[Baij->j[ct]+shift];
-      v = Baij->a[ct++];
+      col  = garray[Baij->j[ct]+shift];
+      v    = Baij->a[ct++];
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,B->insertmode);CHKERRQ(ierr);
     }
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.19 1999/09/27 21:31:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.20 1999/10/01 21:22:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -52,12 +52,14 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   MFCtx_Private *ctx;
   MPI_Comm      comm;
   FILE          *fd;
+  int           isascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
      ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      if (ctx->jorge) {
        ierr = PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);
@@ -68,7 +70,7 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
        ierr = PetscFPrintf(comm,fd,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

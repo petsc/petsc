@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.54 1999/09/14 19:22:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.55 1999/09/14 19:23:01 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -550,8 +550,9 @@ int VecAbs(Vec v)
 @*/
 int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
-  Scalar *v1,*v2;
-  int    n1,n2,ierr,flg1;
+  Scalar *   v1,*v2;
+  int        n1,n2,ierr;
+  PetscTruth flg1;
 
   PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
@@ -561,9 +562,7 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   } else {
     ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
     ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
-
-    if (PetscMemcmp(v1,v2,n1*sizeof(Scalar))) flg1 = PETSC_FALSE;
-    else  flg1 = PETSC_TRUE;
+    ierr = PetscMemcmp(v1,v2,n1*sizeof(Scalar),&flg1);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
   }

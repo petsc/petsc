@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.44 1999/09/27 21:32:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.45 1999/10/01 21:22:46 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -301,9 +301,13 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (PetscStrcmp(method,"bdf") == 0) {
+    int isbdf,isadams;
+
+    isbdf   = !PetscStrcmp(method,"bdf");
+    isadams = !PetscStrcmp(method,"adams");
+    if (isbdf) {
       ierr = TSPVodeSetType(ts, PVODE_BDF);CHKERRQ(ierr);
-    } else if (PetscStrcmp(method,"adams") == 0) {
+    } else if (isadams) {
       ierr = TSPVodeSetType(ts, PVODE_ADAMS);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
@@ -311,9 +315,13 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   }
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_gramschmidt_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (PetscStrcmp(method,"modified") == 0) {
+    int ismodified, isunmodified;
+
+    ismodified   = !PetscStrcmp(method,"modified");
+    isunmodified = !PetscStrcmp(method,"unmodified");
+    if (ismodified) {
       ierr = TSPVodeSetGramSchmidtType(ts, PVODE_MODIFIED_GS);CHKERRQ(ierr);
-    } else if (PetscStrcmp(method,"unmodified") == 0) {
+    } else if (isunmodified) {
       ierr = TSPVodeSetGramSchmidtType(ts, PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
@@ -379,12 +387,15 @@ int TSView_PVode(TS ts,Viewer viewer)
   TS_PVode   *cvode = (TS_PVode*) ts->data;
   int        ierr;
   char       *type;
+  int        isascii,isstring;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
   else                                  {type = "BDF: backward differentiation formula";}
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
@@ -395,10 +406,10 @@ int TSView_PVode(TS ts,Viewer viewer)
     } else {
       ierr = ViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);

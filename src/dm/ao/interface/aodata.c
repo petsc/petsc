@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.36 1999/09/27 21:32:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.37 1999/10/01 21:22:53 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -65,11 +65,14 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 */
 int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key)
 {
+  int match;
+
   PetscFunctionBegin;
   *key   = aodata->keys;
   *flag  = 0;
   while (*key) {
-    if (!PetscStrcmp((*key)->name,keyname)) {
+    match = !PetscStrcmp((*key)->name,keyname);
+    if (match) {
        /* found the key */
        *flag  = 1;
        PetscFunctionReturn(0);
@@ -137,13 +140,15 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
                               AODataSegment **seg)
 {
   int  ierr,keyflag;
+  int  match;
 
   PetscFunctionBegin;
   ierr = AODataKeyFind_Private(aodata,keyname,&keyflag,key);CHKERRQ(ierr);
   if (keyflag) { /* found key now look for flag */
     *seg = (*key)->segments;
     while(*seg) {
-      if (!PetscStrcmp((*seg)->name,segname)) {
+      match = !PetscStrcmp((*seg)->name,segname);
+      if (match) {
         /* found the segment */
         *flag  = 1;
         PetscFunctionReturn(0);
@@ -1068,6 +1073,8 @@ int AODataView(AOData aodata, Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = (*aodata->ops->view)(aodata,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.94 1999/10/04 23:23:03 balay Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.95 1999/10/06 23:41:22 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -34,12 +34,17 @@ int MatSNESMFSetType(Mat mat,char *ftype)
 {
   int          ierr, (*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx;
+  int          match;
   
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidCharPointer(ftype);
+
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   /* already set, so just return */
-  if (PetscTypeCompare(ctx,ftype)) PetscFunctionReturn(0);
+  match = PetscTypeCompare(ctx,ftype);
+  if (match) PetscFunctionReturn(0);
 
   /* destroy the old one if it exists */
   if (ctx->ops->destroy) {
@@ -168,12 +173,14 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
   MatSNESMFCtx ctx;
   MPI_Comm     comm;
   FILE         *fd;
+  int          isascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
      ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
      ierr = PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
@@ -181,7 +188,7 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

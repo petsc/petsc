@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.13 1999/06/08 22:58:32 balay Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.14 1999/09/20 19:02:01 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -104,7 +104,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   /*
       Determine the min and max x coordinate in plot 
   */
-  if (rank == 0) {
+  if (!rank) {
     xmin = PetscReal(xg[0]);
   } 
   if (rank == size-1) {

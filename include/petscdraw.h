@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.64 1999/03/07 17:17:40 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.65 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -176,6 +176,7 @@ extern int DrawSPSetLimits(DrawSP,double,double,double,double);
     Routines to draw histograms
 */
 typedef struct _p_DrawHist*   DrawHist;
+#define DRAWHIST_COOKIE PETSC_COOKIE+15
 extern int DrawHistCreate(Draw, int, DrawHist *);
 extern int DrawHistDestroy(DrawHist);
 extern int DrawHistAddValue(DrawHist, double);

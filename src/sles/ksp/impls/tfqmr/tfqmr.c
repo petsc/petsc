@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.47 1999/06/08 22:57:25 balay Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.48 1999/09/02 14:53:54 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -57,10 +57,10 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm  = dp;
   ksp->its    = 0;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
 
@@ -80,9 +80,9 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ierr = VecSet(&zero,D);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
     a = rhoold / s;                                 /* a <- rho / s         */
     tmp = -a; VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);  /* q <- u - a v         */
@@ -109,9 +109,9 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       ierr = VecAXPY(&eta,D,X);CHKERRQ(ierr);
 
       dpest = sqrt(m + 1.0) * tau;
-      ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                                    = dpest;
-      ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dpest);
       KSPMonitor(ksp,i+1,dpest);
       if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.34 1999/06/30 23:53:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.35 1999/10/01 21:22:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -191,8 +191,9 @@ int main(int argc,char **args)
     int  nlocal, first;  /* number of local subblocks, first local subblock */
     KSP  subksp;         /* KSP context for subblock */
     PC   subpc;          /* PC context for subblock */
+    int  isasm;
 
-    PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");CHKERRA(ierr);
 
     /* 
        Set runtime options
@@ -202,7 +203,8 @@ int main(int argc,char **args)
     /* 
        Flag an error if PCTYPE is changed from the runtime options
      */
-    if (PetscTypeCompare(pc,PCASM)) {
+    isasm = PetscTypeCompare(pc,PCASM);
+    if (isasm) {
       SETERRA(1,0,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 

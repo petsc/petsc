@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.173 1999/09/02 14:53:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.174 1999/10/01 21:21:11 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -776,16 +776,21 @@ int MatView_SeqDense(Mat A,Viewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
   int          ierr;
+  int          issocket,isascii,isbinary;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
+  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+
+  if (issocket) {
     ierr = ViewerSocketPutScalar_Private(viewer,a->m,a->n,a->v);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  } else if (isascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by dense matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.15 1999/05/04 20:31:12 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.16 1999/06/30 23:50:45 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 
   */
 
-  if (rank == 0) {
+  if (!rank) {
     ifrom[0] = 11; ifrom[1] = 6; 
   } else {
     ifrom[0] = 0;  ifrom[1] = 5; 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.41 1999/09/27 21:32:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.42 1999/10/01 21:22:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -30,7 +30,7 @@ int AODataDestroy_Basic(AOData ao)
 
   PetscFunctionBegin;
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(ao);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
 
   while (key) {
     ierr = PetscFree(key->name);CHKERRQ(ierr);
@@ -228,21 +228,20 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
 int AODataView_Basic(AOData ao,Viewer viewer)
 {
   int             rank,ierr;
+  int             isascii,isbinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
-  if (!viewer) {
-    viewer = VIEWER_STDOUT_SELF; 
-  }
-
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  if (isascii) { 
     ierr = AODataView_Basic_ASCII(ao,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = AODataView_Basic_Binary(ao,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -602,6 +601,7 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
   char          *data,*tmpdata;
   AODataKey     *key;
   AODataSegment *seg;
+  int           match;
 
   PetscFunctionBegin;
 
@@ -610,7 +610,8 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
   while (key) {
     seg = key->segments;
     while (seg) {
-      if (PetscStrcmp(seg->name,keyname)) {
+      match = !PetscStrcmp(seg->name,keyname);
+      if (!match) {
         seg = seg->next;
         continue;
       }

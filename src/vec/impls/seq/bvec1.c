@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.30 1999/10/04 18:50:28 bsmith Exp bsmith $"
+static char vcid[] = "$Id: bvec1.c,v 1.31 1999/10/11 17:59:51 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -86,7 +86,9 @@ int VecCopy_Seq(Vec xin, Vec yin )
   int     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(y->array,x->array,xin->n*sizeof(Scalar));CHKERRQ(ierr);
+  if (x->array != y->array) {
+    ierr = PetscMemcpy(y->array,x->array,xin->n*sizeof(Scalar));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.220 1999/10/06 19:18:45 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.221 1999/10/08 19:12:32 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -438,7 +438,8 @@ int OptionsSetValue(const char iname[],const char value[])
     }
   }
 
-  N = options->N; n = N;
+  N     = options->N;
+  n     = N;
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
@@ -730,10 +731,11 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = 0; *ivalue = PETSC_TRUE;}
-    else        {
-      if (flg) *flg = 1;
-
+    if (flg) *flg = 1;
+    if (!value) {
+      *ivalue = PETSC_TRUE;
+    }
+    else {
       *ivalue = PETSC_TRUE;
       istrue = !PetscStrcmp(value,"TRUE");
       if (istrue) PetscFunctionReturn(0);
@@ -1097,9 +1099,6 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
    Output Parameter:
 .   N - count of options not used
 
-   Options Database Key:
-.  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
-
    Level: advanced
 
 .keywords: options, database, missed, unused, all, used
@@ -1124,6 +1123,9 @@ int OptionsAllUsed(int *N)
     OptionsLeft - Prints to screen any options that were set and never used.
 
   Not collective
+
+   Options Database Key:
+.  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
 
   Level: advanced
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.127 1999/10/01 21:23:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.128 1999/10/04 18:54:57 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -21,26 +21,22 @@ int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 int DAView_2d(DA da,Viewer viewer)
 {
   int         rank, ierr;
+  int         isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
-  if (!viewer) { 
-    viewer = VIEWER_STDOUT_SELF;
-  }
-
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  if (isascii) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin(da->comm,1);CHKERRQ(ierr);
-    fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
-                 da->N,da->m,da->n,da->w,da->s);
-    fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
-    fflush(fd);
-    ierr = PetscSequentialPhaseEnd(da->comm,1);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+    ierr = PetscSynchronizedFPrintf(da->comm,fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
+                             da->N,da->m,da->n,da->w,da->s);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFPrintf(da->comm,fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(da->comm);CHKERRQ(ierr);
+  } else if (isdraw) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
     double     xmin = -1*da->s-1, xmax = da->M+da->s;
@@ -103,10 +99,10 @@ int DAView_2d(DA da,Viewer viewer)
     }        
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -119,21 +115,23 @@ int DAView_2d(DA da,Viewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "AMSSetFieldBlock_DA"
-int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
+int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
 {
   int     ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
   DA      da = 0;
-
+  int     isseq,ismpi;
 
   PetscFunctionBegin;
-  if (((PetscObject)v)->amem < 0) PetscFunctionReturn(0); /* return if not published */
+  if (((PetscObject)vec)->amem < 0) PetscFunctionReturn(0); /* return if not published */
 
-  ierr = PetscObjectQuery((PetscObject)v,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) PetscFunctionReturn(0);
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
-  if (PetscTypeCompare(v,VEC_SEQ)) {
+  isseq = PetscTypeCompare(vec,VEC_SEQ);
+  ismpi = PetscTypeCompare(vec,VEC_MPI);
+  if (isseq) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
     ends[shift+1] += starts[shift+1]-1;
@@ -144,7 +142,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
       AMS_Explain_error(ierr,&message);
       SETERRQ(ierr,1,message);
     }
-  } else if (PetscTypeCompare(v,VEC_MPI)) {
+  } else if (ismpi) {
     ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
                            ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
@@ -157,7 +155,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
       SETERRQ(ierr,1,message);
     }
   } else {
-    SETERRQ(1,1,"Wrong vector type for this call");
+    SETERRQ1(1,1,"Wrong vector type %s for this call",((PetscObject)vec)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -172,7 +170,6 @@ int DAPublish_Petsc(PetscObject obj)
 #if defined(PETSC_HAVE_AMS)
   DA          v = (DA) obj;
   int         ierr;
-  
 #endif
 
   PetscFunctionBegin;

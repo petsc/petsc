@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.27 1999/03/18 01:01:27 balay Exp balay $ */
+/* $Id: pvecimpl.h,v 1.28 1999/03/18 01:44:13 balay Exp bsmith $ */
 /* 
  */
 
@@ -10,7 +10,6 @@
 
 typedef struct {
   VECHEADER
-  int         N;                        /* length of total vector */
   int         size,rank;
   InsertMode  insertmode;
   int         donotstash;               /* Flag indicates stash values should be ignored */

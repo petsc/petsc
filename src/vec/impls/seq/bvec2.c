@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.167 1999/10/04 14:40:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.168 1999/10/04 18:50:28 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -226,18 +226,23 @@ int VecView_Seq(Vec xin,Viewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   int         ierr;
+  int         isdraw,isascii,issocket,isbinary;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)){ 
+  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER); 
+  if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)){
+  } else if (isascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
+  } else if (issocket) {
     ierr = ViewerSocketPutScalar_Private(viewer,xin->n,1,x->array);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -322,7 +327,7 @@ int VecDestroy_Seq(Vec v)
   PetscFunctionBegin;
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",v->n);

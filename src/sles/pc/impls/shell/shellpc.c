@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.59 1999/06/30 23:52:53 balay Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.60 1999/10/01 21:21:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -93,13 +93,15 @@ static int PCView_Shell(PC pc,Viewer viewer)
 {
   PC_Shell   *jac = (PC_Shell *) pc->data;
   int        ierr;
+  int        isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {  
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     if (jac->name) {ierr = ViewerASCIIPrintf(viewer,"  Shell: %s\n", jac->name);CHKERRQ(ierr);}
     else           {ierr = ViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PCShell",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

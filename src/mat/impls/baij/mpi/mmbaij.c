@@ -1,7 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.25 1999/06/08 22:56:19 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.26 1999/06/30 23:51:57 balay Exp bsmith $";
 #endif
-
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -13,60 +12,60 @@ static char vcid[] = "$Id: mmbaij.c,v 1.25 1999/06/08 22:56:19 balay Exp balay $
 #define __FUNC__ "MatSetUpMultiply_MPIBAIJ"
 int MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  Mat_SeqBAIJ *B = (Mat_SeqBAIJ *) (baij->B->data);  
-  int        Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int        col,bs = baij->bs,*tmp,*stmp;
-  IS         from,to;
-  Vec        gvec;
+  Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat_SeqBAIJ        *B = (Mat_SeqBAIJ *) (baij->B->data);  
+  int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                col,bs = baij->bs,*tmp,*stmp;
+  IS                 from,to;
+  Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
-  Table      gid1_lid1;
-  CTablePos  tpos;
-  int        gid, lid; 
+  PetscTable         gid1_lid1;
+  PetscTablePosition tpos;
+  int                gid, lid; 
 #endif  
 
   PetscFunctionBegin;
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  TableCreate(B->mbs,&gid1_lid1); 
+  PetscTableCreate(B->mbs,&gid1_lid1); 
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int data,gid1 = aj[B->i[i]+j] + 1;
-      ierr = TableFind(gid1_lid1,gid1,&data) ;CHKERRQ(ierr);
+      ierr = PetscTableFind(gid1_lid1,gid1,&data) ;CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
-        ierr = TableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
       }
     }
   } 
   /* form array of columns we need */
   garray = (int *)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
   tmp    = (int *)PetscMalloc((ec*bs+1)*sizeof(int));CHKPTRQ(tmp);
-  ierr   = TableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
+  ierr   = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
-    ierr = TableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
+    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
     gid--; lid--;
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
   /* qsort( garray, ec, sizeof(int), intcomparcarc ); */
-  TableRemoveAll(gid1_lid1);
+  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for ( i=0; i<ec; i++ ) {
-    ierr = TableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
+    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int gid1 = aj[B->i[i] + j] + 1;
-      ierr = TableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
       aj[B->i[i]+j] = lid;
     }
   }
   B->nbs = ec;
   B->n   = ec*B->bs;
-  TableDelete(gid1_lid1);
+  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
   /* For the first stab we make an array as long as the number of columns */
@@ -186,7 +185,7 @@ int DisAssemble_MPIBAIJ(Mat A)
   ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    TableDelete(baij->colmap); baij->colmap = 0;
+    ierr = PetscTableDelete(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
     baij->colmap = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.101 1999/06/23 15:17:06 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.102 1999/06/30 23:51:02 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -579,7 +579,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
-  if (!a->inode.size)SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -767,6 +767,7 @@ int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, flg, i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
+  PetscTruth flag;
 
   PetscFunctionBegin;  
   /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
@@ -790,12 +791,13 @@ int Mat_AIJ_CheckInode(Mat A)
     for (j=i+1, idy=idx, blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
       nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
       if (nzy != nzx) break;
-      idy    += nzx;             /* Same nonzero pattern */
-      if (PetscMemcmp(idx, idy, nzx*sizeof(int))) break;
+      idy  += nzx;             /* Same nonzero pattern */
+      ierr = PetscMemcmp(idx, idy, nzx*sizeof(int),&flag);CHKERRQ(ierr);
+      if (flag == PETSC_FALSE) break;
     }
     ns[node_count++] = blk_size;
     /* printf("%3d \t %d\n", i, blk_size); */
-    idx +=blk_size*nzx;
+    idx += blk_size*nzx;
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
@@ -833,7 +835,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 
   PetscFunctionBegin;  
   if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unfactored matrix");
-  if (!a->inode.size)SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 

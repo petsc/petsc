@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.120 1999/10/01 21:20:56 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.121 1999/10/04 18:50:19 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -18,10 +18,16 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   VecScatter_MPI_General *to=(VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General *) ctx->fromdata;
   int                    i,rank,ierr,format;
+  int                    isascii;
   FILE                   *fd;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -64,7 +70,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 
       fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
       for ( i=0; i<from->n; i++ ){
-        fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
+        fprintf(fd,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
       }
 
       fprintf(fd,"Now the indices\n");
@@ -76,7 +82,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       ierr = PetscSequentialPhaseEnd(ctx->comm,1);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }  
@@ -2347,6 +2353,8 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   ctx->copy       = 0;
   ctx->view       = VecScatterView_MPI;
 
+  to->bs   = 1;
+  from->bs = 1;
   PetscFunctionReturn(0);
 }
 

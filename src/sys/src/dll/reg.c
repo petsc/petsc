@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.44 1999/10/05 19:45:48 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.45 1999/10/06 23:41:18 balay Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -449,11 +449,13 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 int FListView(FList list,Viewer viewer)
 {
   int        ierr;
+  int        isascii;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
 
-  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) SETERRQ(1,1,"Only ASCII viewer supported");
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (!isascii) SETERRQ(1,1,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

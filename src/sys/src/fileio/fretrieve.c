@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.16 1999/10/01 21:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.17 1999/10/04 18:49:26 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -227,12 +227,12 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 #if defined (PARCH_win32)
   SETERRQ(1,1,"Cannot use PetscFileRetrieve on NT");
 #else 
-    if ((fp = popen(par,"r")) == 0) {
+    if (!(fp = popen(par,"r"))) {
       SETERRQ(1,1,"Cannot Execute python1.5 on ${PETSC_DIR}/bin/urlget.py\n\
         Check if python1.5 is in your path");
     }
 #endif
-    if (fgets(buf,1024,fp) == 0) {
+    if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
     /* Check for \n and make it 0 */

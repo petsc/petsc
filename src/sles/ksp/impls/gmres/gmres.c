@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.126 1999/09/02 14:53:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.127 1999/10/01 21:22:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -232,9 +232,9 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   if (!restart) {
     ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
   }
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
   while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
            && it < max_k && ksp->its < max_it) {
@@ -268,10 +268,10 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     ierr = GMRESUpdateHessenberg( ksp, it, &res );CHKERRQ(ierr);
     it++;
     gmres->it  = (it-1);  /* For converged */
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   }
   KSPLogResidualHistory(ksp,res);
 
@@ -318,9 +318,9 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   restart  = 0;
   itcount  = 0;
@@ -560,9 +560,11 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
   char        *cstr;
   int         ierr;
+  int         isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
     } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
@@ -577,7 +579,7 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

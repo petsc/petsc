@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.31 1999/03/31 04:09:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.32 1999/09/02 14:52:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -29,7 +29,7 @@ int ViewerDestroy(Viewer v)
   if (--v->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
   if (v->ops->destroy) {
     ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);

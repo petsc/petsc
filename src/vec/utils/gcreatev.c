@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.64 1999/10/01 21:20:56 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.65 1999/10/06 23:41:13 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -159,9 +159,14 @@ int VecRegister_Private(const char sname[],const char path[],const char name[],
 int VecSetType(Vec vec,VecType type_name)
 {
   int  ierr,(*r)(Vec);
+  int  match;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(vec,type_name)) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscValidCharPointer(type_name);
+
+  match = PetscTypeCompare(vec,type_name);
+  if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}

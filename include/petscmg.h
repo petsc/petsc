@@ -1,4 +1,4 @@
-/* $Id: mg.h,v 1.12 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: mg.h,v 1.13 1998/10/16 03:17:06 bsmith Exp bsmith $ */
 /*
       Structure used for Multigrid preconditioners 
 */
@@ -36,6 +36,9 @@ extern int MGSetRestriction(PC,int,Mat);
 extern int MGSetInterpolate(PC,int,Mat);
 extern int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
 extern int MGDefaultResidual(Mat,Vec,Vec,Vec);
+
+extern int MGInterpolateAdd(Mat,Vec,Vec,Vec);
+extern int MGRestrict(Mat,Vec,Vec);
 
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex48.c,v 1.7 1999/06/30 23:52:15 balay Exp bsmith $";
+static char vcid[] = "$Id: ex48.c,v 1.8 1999/10/05 14:15:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -100,6 +100,7 @@ int main(int argc,char **args)
     if (!flag) {
       PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues\n");
     }
+  }
   
   /* Test MatMult(), MatMultAdd() */
   for ( i=0; i<40; i++) {
@@ -114,6 +115,7 @@ int main(int argc,char **args)
       PetscPrintf(PETSC_COMM_SELF,"MatMult notequalto MatMultAdd Norm1=%e Norm2=%e \n",s1norm,s2norm);
     }
   }
+
   /* Test MatMult() */
   for ( i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);

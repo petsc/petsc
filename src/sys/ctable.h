@@ -1,28 +1,27 @@
-/* $Id: ctable.h,v 1.4 1999/02/17 21:38:10 balay Exp balay $ */
+/* $Id: ctable.h,v 1.5 1999/09/16 18:47:18 balay Exp bsmith $ */
 /* Contributed by - Mark Adams */
 
 #if !defined(__CTABLE_H)
 #define __CTABLE_H
 
-typedef int* CTablePos;  
-typedef struct TABLE_TAG 
-{
+typedef int* PetscTablePosition;  
+typedef struct _p_PetscTable {
   int *keytable;
   int *table;
-  int count     ;
-  int tablesize ;
+  int count;
+  int tablesize;
   int head;
-}*Table,Table_struct;
+} *PetscTable;
 
-extern int TableCreate(const int size,Table *ta);
-extern int TableCreateCopy(const Table intable,Table *rta);
-extern int TableDelete(Table ta);
-extern int TableGetCount(const Table ta,int *count);
-extern int TableIsEmpty(const Table ta, int* flag);
-extern int TableAdd(Table ta, const int key, const int data);
-extern int TableFind(Table ta, const int key,int *data);
-extern int TableGetHeadPosition(Table ta, CTablePos *);
-extern int TableGetNext(Table ta, CTablePos *rPosition, int *pkey, int *data);
-extern int TableRemoveAll(Table ta);
+extern int PetscTableCreate(const int size,PetscTable *ta);
+extern int PetscTableCreateCopy(const PetscTable intable,PetscTable *rta);
+extern int PetscTableDelete(PetscTable ta);
+extern int PetscTableGetCount(const PetscTable ta,int *count);
+extern int PetscTableIsEmpty(const PetscTable ta, int* flag);
+extern int PetscTableAdd(PetscTable ta, const int key, const int data);
+extern int PetscTableFind(PetscTable ta, const int key,int *data);
+extern int PetscTableGetHeadPosition(PetscTable ta, PetscTablePosition *);
+extern int PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, int *pkey, int *data);
+extern int PetscTableRemoveAll(PetscTable ta);
 
 #endif

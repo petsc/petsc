@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.58 1999/06/30 23:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.59 1999/09/07 20:23:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -222,10 +222,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     pp += err;
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
-  else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
-  else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
 #if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
@@ -296,7 +296,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 @*/
 int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
-  int  err, maxblock, wsize,m = n;
+  int  err, maxblock, wsize,m = n,ierr;
   char *pp = (char *) p;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
   void *ptmp = p; 
@@ -308,10 +308,10 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   maxblock = 65536;
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
-  else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
-  else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
 #if (PETSC_SIZEOF_INT == 8)
@@ -352,9 +352,9 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
-    if      (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-    else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
-    else if (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
+    if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
   }
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.36 1999/09/27 21:30:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.37 1999/10/04 18:51:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -495,8 +495,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
                to each index set;
       data   - pointer to the solutions
 */
-static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BT *table,int *isz,
-                                           int **data)
+static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BT *table,int *isz,int **data)
 {
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
   Mat         A = c->A, B = c->B;
@@ -749,6 +748,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   MPI_Comm    comm;
   Scalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
   Scalar      *a_a=a->a,*b_a=b->a;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
   comm   = C->comm;
@@ -1199,7 +1199,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
       }
-      if (PetscMemcmp(mat->ilen,lens[i], mat->mbs *sizeof(int))) {
+      ierr = PetscMemcmp(mat->ilen,lens[i], mat->mbs *sizeof(int),&flag);CHKERRQ(ierr);
+      if (flag == PETSC_FALSE) {
         SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */

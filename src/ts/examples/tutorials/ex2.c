@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.23 1999/05/04 20:36:56 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1999/07/08 14:37:25 balay Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -474,9 +474,9 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
      In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1 
              and  u(t,1) = 2t+ 1, so that u_{t}(t,1) = 2
   */
-  MPI_Comm_rank(appctx->comm,&rank);
-  MPI_Comm_size(appctx->comm,&size);
-  if (rank == 0)      copyptr[0]           = 1.0;
+  ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
+  if (!rank)          copyptr[0]           = 1.0;
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 
   /*

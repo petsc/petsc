@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.101 1999/10/01 21:21:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.102 1999/10/04 18:52:48 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -38,9 +38,12 @@ static int PCView_ASM(PC pc,Viewer viewer)
   PC_ASM       *jac = (PC_ASM *) pc->data;
   int          rank, ierr, i;
   char         *cstring = 0;
+  int          isascii,isstring;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
@@ -71,11 +74,11 @@ static int PCView_ASM(PC pc,Viewer viewer)
       fflush(fd);
       ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -376,10 +379,17 @@ static int PCSetFromOptions_ASM(PC pc)
   ierr = OptionsGetString(pc->prefix,"-pc_asm_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
     PCASMType type = PC_ASM_RESTRICT;
-    if (!PetscStrcmp(buff,"basic"))            type = PC_ASM_BASIC;
-    else if (!PetscStrcmp(buff,"restrict"))    type = PC_ASM_RESTRICT;
-    else if (!PetscStrcmp(buff,"interpolate")) type = PC_ASM_INTERPOLATE;
-    else if (!PetscStrcmp(buff,"none"))        type = PC_ASM_NONE;
+    int       isbasic,isrestrict,isinterpolate,isnone;
+
+    isbasic       = !PetscStrcmp(buff,"basic");
+    isrestrict    = !PetscStrcmp(buff,"restrict");
+    isinterpolate = !PetscStrcmp(buff,"interpolate");
+    isnone        = !PetscStrcmp(buff,"none");
+
+    if (isbasic)            type = PC_ASM_BASIC;
+    else if (isrestrict)    type = PC_ASM_RESTRICT;
+    else if (isinterpolate) type = PC_ASM_INTERPOLATE;
+    else if (isnone)        type = PC_ASM_NONE;
     else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
     ierr = PCASMSetType(pc,type);CHKERRQ(ierr);
   }

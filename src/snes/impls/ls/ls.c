@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.142 1999/09/27 21:31:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.143 1999/10/01 21:22:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -84,10 +84,10 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = fnorm;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
@@ -118,10 +118,10 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
 
-    ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,fnorm,lits);
     SNESMonitor(snes,i+1,fnorm);
 
@@ -144,9 +144,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
-  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   *outits = i+1;
   PetscFunctionReturn(0);
 }
@@ -856,9 +856,11 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
   SNES_LS    *ls = (SNES_LS *)snes->data;
   char       *cstr;
   int        ierr;
+  int        isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     if (ls->LineSearch == SNESNoLineSearch)             cstr = "SNESNoLineSearch";
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
     else if (ls->LineSearch == SNESCubicLineSearch)     cstr = "SNESCubicLineSearch";
@@ -866,7 +868,7 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -903,13 +905,20 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   }
   ierr = OptionsGetString(snes->prefix,"-snes_eq_ls",ver,16, &flg);CHKERRQ(ierr);
   if (flg) {
-    if (!PetscStrcmp(ver,"basic")) {
+    int isbasic,isnonorms,isquad,iscubic;
+
+    isbasic   = !PetscStrcmp(ver,"basic");
+    isnonorms = !PetscStrcmp(ver,"basicnonorms");
+    isquad    = !PetscStrcmp(ver,"quadratic");
+    iscubic   = !PetscStrcmp(ver,"cubic");
+
+    if (isbasic) {
       ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
-    } else if (!PetscStrcmp(ver,"basicnonorms")) {
+    } else if (isnonorms) {
       ierr = SNESSetLineSearch(snes,SNESNoLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
-    } else if (!PetscStrcmp(ver,"quadratic")) {
+    } else if (isquad) {
       ierr = SNESSetLineSearch(snes,SNESQuadraticLineSearch,PETSC_NULL);CHKERRQ(ierr);
-    } else if (!PetscStrcmp(ver,"cubic")) {
+    } else if (iscubic) {
       ierr = SNESSetLineSearch(snes,SNESCubicLineSearch,PETSC_NULL);CHKERRQ(ierr);
     }
     else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}

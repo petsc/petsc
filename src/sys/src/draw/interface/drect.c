@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drect.c,v 1.18 1999/03/17 23:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drect.c,v 1.19 1999/10/01 21:20:18 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -25,10 +25,11 @@ static char vcid[] = "$Id: drect.c,v 1.18 1999/03/17 23:21:11 bsmith Exp bsmith 
 int DrawRectangle(Draw draw,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
-  int ierr;
+  int ierr,isnull;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (PetscTypeCompare(draw,DRAW_NULL)) PetscFunctionReturn(0);
+  isnull = PetscTypeCompare(draw,DRAW_NULL);
+  if (isnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

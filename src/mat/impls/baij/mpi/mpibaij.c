@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.178 1999/09/21 14:41:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.179 1999/10/01 21:21:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -62,9 +62,9 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = TableCreate(baij->nbs/5,&baij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(baij->nbs/5,&baij->colmap);CHKERRQ(ierr); 
   for ( i=0; i<nbs; i++ ){
-    ierr = TableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
+    ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
   }
 #else
   baij->colmap = (int *) PetscMalloc((baij->Nbs+1)*sizeof(int));CHKPTRQ(baij->colmap);
@@ -283,7 +283,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
-            ierr = TableFind(baij->colmap, in[j]/bs + 1,&col);CHKERRQ(ierr);
+            ierr = PetscTableFind(baij->colmap, in[j]/bs + 1,&col);CHKERRQ(ierr);
             col  = col - 1 + in[j]%bs;
 #else
             col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
@@ -381,16 +381,15 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 #if defined(PETSC_USE_BOPT_g)
 #if defined (PETSC_USE_CTABLE)
             { int data;
-            ierr = TableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
-            if((data - 1) % bs)
-	      {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
+              ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
+              if ((data - 1) % bs) SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");
             }
 #else
-            if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
+            if ((baij->colmap[in[j]] - 1) % bs) SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");
 #endif
 #endif
 #if defined (PETSC_USE_CTABLE)
-	    ierr = TableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+	    ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
             col  = (col - 1)/bs;
 #else
             col = (baij->colmap[in[j]] - 1)/bs;
@@ -636,7 +635,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
 #if defined (PETSC_USE_CTABLE)
-          ierr = TableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
+          ierr = PetscTableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
           data --;
 #else
           data = baij->colmap[idxn[j]/bs]-1;
@@ -947,9 +946,12 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) mat->data;
   int          ierr, format,bs = baij->bs, size = baij->size, rank = baij->rank;
   FILE         *fd;
+  int          isascii,isdraw;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  if (isascii) { 
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -974,7 +976,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     }
   }
 
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  if (isdraw) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -1050,17 +1052,17 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 int MatView_MPIBAIJ(Mat mat,Viewer viewer)
 {
   int         ierr;
- 
+  int         isascii,isdraw,issocket,isbinary;
+
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER) || PetscTypeCompare(viewer,DRAW_VIEWER) || 
-      PetscTypeCompare(viewer,SOCKET_VIEWER)|| PetscTypeCompare(viewer,BINARY_VIEWER)) { 
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  if (isascii || isdraw || issocket || isbinary) { 
     ierr = MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
-    /*
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
-    ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
-    */
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by MPIBAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1097,7 +1099,7 @@ int MatDestroy_MPIBAIJ(Mat mat)
   ierr = MatDestroy(baij->A);CHKERRQ(ierr);
   ierr = MatDestroy(baij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-  if (baij->colmap) {ierr = TableDelete(baij->colmap);CHKERRQ(ierr);}
+  if (baij->colmap) {ierr = PetscTableDelete(baij->colmap);CHKERRQ(ierr);}
 #else
   if (baij->colmap) {ierr = PetscFree(baij->colmap);CHKERRQ(ierr);}
 #endif
@@ -1531,7 +1533,7 @@ CHKERRQ(ierr);
     ierr = MatDestroy(baij->A);CHKERRQ(ierr);
     ierr = MatDestroy(baij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-    if (baij->colmap) {ierr = TableDelete(baij->colmap);CHKERRQ(ierr);}
+    if (baij->colmap) {ierr = PetscTableDelete(baij->colmap);CHKERRQ(ierr);}
 #else
     if (baij->colmap) {ierr = PetscFree(baij->colmap);CHKERRQ(ierr);}
 #endif
@@ -2229,7 +2231,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr = MatStashCreate_Private(matin->comm,oldmat->bs,&mat->bstash);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)
-  ierr = TableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr); 
 #else
     a->colmap = (int *) PetscMalloc((a->Nbs)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->Nbs)*sizeof(int));
@@ -2517,7 +2519,7 @@ int MatMPIBAIJSetHashTableFactor(Mat mat,double fact)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->type != MATMPIBAIJ) {
-      SETERRQ(PETSC_ERR_ARG_WRONG,1,"Incorrect matrix type. Use MPIBAIJ only.");
+    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Incorrect matrix type. Use MPIBAIJ only.");
   }
   baij = (Mat_MPIBAIJ*) mat->data;
   baij->ht_fact = fact;

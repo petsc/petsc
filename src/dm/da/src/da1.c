@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.101 1999/10/01 21:23:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.102 1999/10/04 18:54:57 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -20,26 +20,22 @@ EXTERN_C_END
 int DAView_1d(DA da,Viewer viewer)
 {
   int         rank, ierr;
+  int         isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
-  if (!viewer) { 
-    viewer = VIEWER_STDOUT_SELF; 
-  }
-
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  if (isascii) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin(da->comm,1);CHKERRQ(ierr);
-    fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
-                 da->m,da->w,da->s);
-    fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
-    fflush(fd);
-    ierr = PetscSequentialPhaseEnd(da->comm,1);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+    ierr = PetscSynchronizedFPrintf(da->comm,fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
+                 da->m,da->w,da->s);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFPrintf(da->comm,fd,"X range: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(da->comm);CHKERRQ(ierr);
+  } else if (isdraw) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
@@ -84,10 +80,10 @@ int DAView_1d(DA da,Viewer viewer)
 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

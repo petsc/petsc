@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.5 1999/05/04 20:30:57 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.6 1999/10/01 21:21:04 bsmith Exp bsmith $";
 #endif
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
     iy0[i] *= bs; iy1[i] *= bs; 
   }
 
-  if (rank == 0) {
+  if (!rank) {
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx);CHKERRA(ierr);
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy);CHKERRA(ierr);
   } else {

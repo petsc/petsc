@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.302 1999/10/01 21:21:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.303 1999/10/04 18:51:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -13,10 +13,12 @@ extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatPrintHelp_SeqAIJ(Mat);
 
-/* local utility routine that creates a mapping from the global column 
+/* 
+  Local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
-storage of the matrix.  This is done in a non scable way since the 
-length of colmap equals the global matrix length. 
+storage of the matrix.  When PETSC_USE_CTABLE is used this is scalable at 
+a slightly higher hash table cost; without it it is not scalable (each processor
+has an order N integer array but is fast to acess.
 */
 #undef __FUNC__  
 #define __FUNC__ "CreateColmap_MPIAIJ_Private"
@@ -28,9 +30,9 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = TableCreate(aij->n/5,&aij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(aij->n/5,&aij->colmap);CHKERRQ(ierr); 
   for ( i=0; i<n; i++ ){
-    ierr = TableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
+    ierr = PetscTableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
   }
 #else
   aij->colmap = (int *) PetscMalloc((aij->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
@@ -240,7 +242,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
-            ierr = TableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+            ierr = PetscTableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
 	    col--;
 #else
             col = aij->colmap[in[j]] - 1;
@@ -298,7 +300,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
 #if defined (PETSC_USE_CTABLE)
-          ierr = TableFind(aij->colmap,idxn[j]+1,&col);CHKERRQ(ierr);
+          ierr = PetscTableFind(aij->colmap,idxn[j]+1,&col);CHKERRQ(ierr);
           col --;
 #else
           col = aij->colmap[idxn[j]] - 1;
@@ -704,7 +706,7 @@ int MatDestroy_MPIAIJ(Mat mat)
   ierr = MatDestroy(aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-  if (aij->colmap) TableDelete(aij->colmap);
+  if (aij->colmap) {ierr = PetscTableDelete(aij->colmap);CHKERRQ(ierr);}
 #else
   if (aij->colmap) {ierr = PetscFree(aij->colmap);CHKERRQ(ierr);}
 #endif
@@ -741,10 +743,13 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
   int         ierr, format,shift = C->indexshift,rank = aij->rank ;
   int         size = aij->size;
+  int         isdraw,isascii;
   FILE        *fd;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
+  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) { 
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -769,7 +774,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {
       PetscFunctionReturn(0);
     }
-  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  } else if (isdraw) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -821,7 +826,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
-    if (!rank || PetscTypeCompare(viewer,DRAW_VIEWER)) {
+    if (!rank || isdraw) {
       ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer);CHKERRQ(ierr);
     }
     ierr = MatDestroy(A);CHKERRQ(ierr);
@@ -834,17 +839,17 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 int MatView_MPIAIJ(Mat mat,Viewer viewer)
 {
   int         ierr;
+  int         isascii,isdraw,issocket,isbinary;
  
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER) || PetscTypeCompare(viewer,DRAW_VIEWER) || 
-      PetscTypeCompare(viewer,SOCKET_VIEWER) || PetscTypeCompare(viewer,BINARY_VIEWER)) { 
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  if (isascii || isdraw || isbinary || issocket) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
-    /*
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
-    ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
-    */
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1346,7 +1351,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     ierr = MatDestroy(a->A);CHKERRQ(ierr);
     ierr = MatDestroy(a->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-    if (a->colmap) TableDelete(a->colmap);
+    if (a->colmap) {ierr = PetscTableDelete(a->colmap);CHKERRQ(ierr);}
 #else
     if (a->colmap) {ierr = PetscFree(a->colmap);CHKERRQ(ierr);}
 #endif
@@ -1916,7 +1921,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   ierr       = MatStashCreate_Private(matin->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    ierr = TableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
+    ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
     a->colmap = (int *) PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->N)*sizeof(int));

@@ -314,14 +314,18 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 @*/
 int TSView(TS ts,Viewer viewer)
 {
-  int                 ierr;
-  char                *type;
+  int      ierr;
+  char     *type;
+  int      isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
     if (type) {
@@ -340,7 +344,7 @@ int TSView(TS ts,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
     ierr = ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+  } else if (isstring) {
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
@@ -692,7 +696,7 @@ int TSDestroy(TS ts)
   if (--ts->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(ts);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
@@ -946,7 +950,7 @@ int TSStep(TS ts,int *steps,double *time)
   PLogEventBegin(TS_Step,ts,0,0,0);
   ierr = (*(ts)->step)(ts,steps,time);CHKERRQ(ierr);
   PLogEventEnd(TS_Step,ts,0,0,0);
-  ierr = OptionsHasName(PETSC_NULL,"-ts_view",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSView(ts,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

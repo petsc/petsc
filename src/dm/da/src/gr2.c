@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.27 1999/09/27 21:32:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.28 1999/10/01 21:23:00 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -241,11 +241,13 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
   DA             da;
   int            ierr,dim;
   Vec            natural;
+  int            isdraw;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  isdraw = PetscTypeCompare(viewer,DRAW_VIEWER);
+  if (isdraw) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.25 1999/06/30 23:53:13 balay Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.26 1999/10/01 21:22:01 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -128,8 +128,13 @@ static int PCSetFromOptions_Composite(PC pc)
   PetscFunctionBegin;
   ierr = OptionsGetString(pc->prefix,"-pc_composite_type",stype,16,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (!PetscStrcmp(stype,"multiplicative")) type = PC_COMPOSITE_MULTIPLICATIVE;
-    else if (!PetscStrcmp(stype,"additive"))  type = PC_COMPOSITE_ADDITIVE;
+    int ismult,isadd;
+
+    ismult = !PetscStrcmp(stype,"multiplicative");
+    isadd  = !PetscStrcmp(stype,"additive");
+
+    if (ismult)      type = PC_COMPOSITE_MULTIPLICATIVE;
+    else if (isadd)  type = PC_COMPOSITE_ADDITIVE;
     else SETERRQ(1,1,"Unknown composite type given");
 
     ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
@@ -185,13 +190,15 @@ static int PCView_Composite(PC pc,Viewer viewer)
   PC_Composite     *jac = (PC_Composite *) pc->data;
   int              ierr;
   PC_CompositeLink next = jac->head;
+  int              isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   while (next) {
@@ -199,10 +206,8 @@ static int PCView_Composite(PC pc,Viewer viewer)
     next = next->next;
   }
   ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

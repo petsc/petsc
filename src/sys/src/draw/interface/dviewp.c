@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.26 1999/05/04 20:28:14 balay Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.27 1999/10/01 21:20:18 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -57,12 +57,13 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
 @*/
 int DrawSplitViewPort(Draw draw)
 {
-  int    rank,size,n,ierr;
+  int    rank,size,n,ierr,isnull;
   double xl,xr,yl,yr,h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (PetscTypeCompare(draw,DRAW_NULL)) PetscFunctionReturn(0);
+  isnull = PetscTypeCompare(draw,DRAW_NULL);
+  if (isnull) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);

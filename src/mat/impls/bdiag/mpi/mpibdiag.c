@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.173 1999/09/20 19:37:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.174 1999/10/01 21:21:24 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -491,10 +491,13 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, format, i, size = mbd->size, rank = mbd->rank;
   FILE         *fd;
+  int          isascii,isdraw;
 
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  if (isascii) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
@@ -523,7 +526,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     }
   }
 
-  if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  if (isdraw) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -571,14 +574,18 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 int MatView_MPIBDiag(Mat mat,Viewer viewer)
 {
   int          ierr;
+  int          isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER) || PetscTypeCompare(viewer,DRAW_VIEWER)) {
+  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
+  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  if (isascii || isdraw) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
+  } else if (isbinary) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by MPIBdiag matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

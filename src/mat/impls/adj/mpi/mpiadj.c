@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.27 1999/09/20 19:25:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.28 1999/10/01 21:21:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -42,12 +42,14 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 int MatView_MPIAdj(Mat A,Viewer viewer)
 {
   int         ierr;
+  int         isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)){
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+    SETERRQ1(1,1,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -209,29 +211,24 @@ int MatGetBlockSize_MPIAdj(Mat A, int *bs)
 int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
- int         flag = 1,ierr;
+  int         ierr;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
   if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros */
   if ((a->m != b->m ) ||( a->nz != b->nz)) {
-    flag = 0;
+    flag = PETSC_FALSE;
   }
   
   /* if the a->i are the same */
-  if (PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int))) { 
-    flag = 0;
-  }
+  ierr = PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int),&flag);CHKERRQ(ierr);
   
   /* if a->j are the same */
-  if (PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
-    flag = 0;
-  }
+  ierr = PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int),&flag);CHKERRQ(ierr);
 
   ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);
-  
-
   PetscFunctionReturn(0);
 }
 

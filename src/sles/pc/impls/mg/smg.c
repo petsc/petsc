@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: smg.c,v 1.14 1998/03/06 00:13:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.15 1999/01/31 16:08:17 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -25,7 +25,7 @@ int MGACycle_Private(MG *mg)
   PetscFunctionBegin;
   /* compute RHS on each level */
   for ( i=l-1; i>0; i-- ) {
-    ierr = MatMult(mg[i]->restrct,  mg[i]->b, mg[i-1]->b);CHKERRQ(ierr);
+    ierr = MGRestrict(mg[i]->restrct,  mg[i]->b, mg[i-1]->b);CHKERRQ(ierr);
   }
   /* solve seperately on each level */
   for ( i=0; i<l; i++ ) {
@@ -33,7 +33,7 @@ int MGACycle_Private(MG *mg)
     ierr = SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its);CHKERRQ(ierr); 
   }
   for ( i=1; i<l; i++ ) {  
-    ierr = MatMultTransAdd(mg[i]->interpolate,mg[i-1]->x,mg[i]->x,mg[i]->x);CHKERRQ(ierr);
+    ierr = MGInterpolateAdd(mg[i]->interpolate,mg[i-1]->x,mg[i]->x,mg[i]->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

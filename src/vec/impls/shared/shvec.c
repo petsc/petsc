@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.29 1999/09/02 14:53:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.30 1999/10/01 21:21:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,9 +26,9 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  array = (Scalar *) PetscSharedMalloc(w->n*sizeof(Scalar),w->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
+  array = (Scalar *) PetscSharedMalloc(win->n*sizeof(Scalar),win->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
 
-  ierr = VecCreate(win->comm,w->n,w->N,v);CHKERRQ(ierr);
+  ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 

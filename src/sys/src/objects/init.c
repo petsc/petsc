@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.47 1999/10/01 21:20:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.48 1999/10/04 18:49:33 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -257,8 +257,8 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
-  if (!PetscStrcmp(pname,basename)) work = 1;
-  else                              work = 0;
+  work = !PetscStrcmp(pname,basename);
+
   gflag = (int *) malloc( size*sizeof(int) );CHKPTRQ(gflag);
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
   mysize = 0;

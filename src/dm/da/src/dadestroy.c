@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.29 1999/06/30 23:55:09 balay Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.30 1999/09/02 14:54:21 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -39,7 +39,7 @@ int DADestroy(DA da)
   if (da->refct < 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscAMSDestroy(da);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
   PLogObjectDestroy(da);
   ierr = PetscFree(da->idx);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.36 1999/07/15 17:43:50 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.37 1999/09/27 21:33:07 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -255,17 +255,17 @@ extern int PetscStackDepublish(void);
 */
 
 #if defined(PETSC_HAVE_AMS)
-#define PetscAMSTakeAccess(obj)   \
+#define PetscObjectTakeAccess(obj)   \
     ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
-#define PetscAMSGrantAccess(obj)  \
+#define PetscObjectGrantAccess(obj)  \
     ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
-#define PetscAMSDestroy(obj)  \
+#define PetscObjectDepublish(obj)  \
     ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem)); \
     ((PetscObject)(obj))->amem = -1;
 #else
-#define PetscAMSTakeAccess(obj)   0
-#define PetscAMSGrantAccess(obj)  0
-#define PetscAMSDestroy(obj)      0
+#define PetscObjectTakeAccess(obj)   0
+#define PetscObjectGrantAccess(obj)  0
+#define PetscObjectDepublish(obj)      0
 #endif
 
 #endif

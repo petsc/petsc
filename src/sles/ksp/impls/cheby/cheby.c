@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.76 1999/09/02 14:53:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.77 1999/10/01 21:22:13 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -115,9 +115,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
@@ -129,9 +129,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     if (ksp->calc_res) {
       if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
-      ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                              = rnorm;
-      ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       KSPMonitor(ksp,i,rnorm);
@@ -158,9 +158,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
       ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
     }
-    ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->rnorm                              = rnorm;
-    ierr = PetscAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ksp->vec_sol = p[k]; 
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
@@ -182,12 +182,14 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;
   int           ierr;
+  int           isascii;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ1(1,1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
