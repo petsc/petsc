@@ -689,9 +689,6 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_MUMPS) 
-  PetscTruth  flag;
-#endif
 
   PetscFunctionBegin;
 
@@ -783,10 +780,6 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
     baij->rowvalues = 0;
   }
 
-#if defined(PETSC_HAVE_MUMPS) 
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseMUMPS_MPIAIJ(mat);CHKERRQ(ierr); }
-#endif 
   PetscFunctionReturn(0);
 }
 
@@ -2045,9 +2038,6 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
-#if defined(PETSC_HAVE_MUMPS) 
-  PetscTruth   flag;
-#endif
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2263,12 +2253,6 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) {
-      ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); 
-  }
-#endif
   *newmat = A;
   PetscFunctionReturn(0);
 }

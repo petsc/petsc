@@ -753,9 +753,6 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   int        m = A->m,*ip,N,*ailen = a->ilen;
   int        mbs = a->mbs,bs2 = a->bs2,rmax = 0,ierr;
   MatScalar  *aa = a->a,*ap;
-#if defined(PETSC_HAVE_MUMPS)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -797,11 +794,6 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
   
-#if defined(PETSC_HAVE_MUMPS) 
-  ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); }
-#endif 
-
   PetscFunctionReturn(0);
 }
 
@@ -1819,9 +1811,6 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *masked,nmask,tmp,bs2,ishift;
   PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
-#if defined(PETSC_HAVE_MUMPS)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -1954,10 +1943,6 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseMUMPS_MPIAIJ(B);CHKERRQ(ierr); }
-#endif
   ierr = MatView_Private(B);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);

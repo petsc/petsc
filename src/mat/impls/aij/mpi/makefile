@@ -2,15 +2,15 @@
 
 ALL: lib
 
-CFLAGS   = ${MUMPS_INCLUDE}
+CFLAGS   =
 FFLAGS   =
-SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c mumps.c
+SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c
 SOURCEF	 =
 SOURCEH	 = mpiaij.h
-OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o mumps.o
+OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
-DIRS	 = spooles superlu_dist
+DIRS	 = spooles superlu_dist mumps 
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/
 

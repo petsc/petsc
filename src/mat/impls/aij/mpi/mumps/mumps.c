@@ -8,7 +8,6 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE) 
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "zmumps_c.h"
@@ -34,7 +33,11 @@ typedef struct {
   int            myid,size,*irn,*jcn,sym;
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
-} Mat_MPIAIJ_MUMPS;
+  PetscTruth     isAIJ,CleanUpMUMPS;
+  int (*MatDestroy)(Mat);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatView)(Mat,PetscViewer);
+} Mat_AIJ_MUMPS;
 
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
@@ -49,16 +52,16 @@ typedef struct {
  */
 int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int **c, PetscScalar **v)
 {
-  int          *ai, *aj, *bi, *bj, rstart,
-               nz, *garray;
-  int          ierr,i,j,jj,jB,irow,m=A->m,*ajj,*bjj,countA,countB,colA_start,jcol;
-  int          *row,*col,*diagA;
-  PetscScalar  *av, *bv,*val;
-  PetscTruth   isMPIAIJ;
+  int              *ai, *aj, *bi, *bj, rstart,nz, *garray;
+  int              ierr,i,j,jj,jB,irow,m=A->m,*ajj,*bjj,countA,countB,colA_start,jcol;
+  int              *row,*col,*diagA;
+  PetscScalar      *av, *bv,*val;
+  Mat_AIJ_MUMPS *mumps = (Mat_AIJ_MUMPS *)A->spptr;
+  PetscTruth       isAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
-  if (isMPIAIJ){
+  
+  if (mumps->isAIJ){
     Mat_MPIAIJ    *mat =  (Mat_MPIAIJ*)A->data; 
     Mat_SeqAIJ    *aa=(Mat_SeqAIJ*)(mat->A)->data;
     Mat_SeqAIJ    *bb=(Mat_SeqAIJ*)(mat->B)->data;
@@ -132,44 +135,73 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
   PetscFunctionReturn(0);
 }
 
-extern int MatDestroy_MPIAIJ(Mat);
-extern int MatDestroy_SeqAIJ(Mat);
-
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MPIAIJ_MUMPS"
-int MatDestroy_MPIAIJ_MUMPS(Mat A)
+#define __FUNCT__ "MatDestroy_AIJ_MUMPS"
+int MatDestroy_AIJ_MUMPS(Mat A)
 {
-  Mat_MPIAIJ_MUMPS *lu = (Mat_MPIAIJ_MUMPS*)A->spptr; 
-  int              ierr,size=lu->size;
+  Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)A->spptr; 
+  int              ierr,size=lu->size,(*destroy)(Mat)=lu->MatDestroy;
 
   PetscFunctionBegin; 
-  /* Terminate instance, deallocate memories */
-  lu->id.job=JOB_END; 
+
+  if (lu->CleanUpMUMPS) {
+    /* Terminate instance, deallocate memories */
+    lu->id.job=JOB_END; 
 #if defined(PETSC_USE_COMPLEX)
-  zmumps_c(&lu->id); 
+    zmumps_c(&lu->id); 
 #else
-  dmumps_c(&lu->id); 
+    dmumps_c(&lu->id); 
 #endif
-  if (lu->irn) { ierr = PetscFree(lu->irn);CHKERRQ(ierr);}
-  if (lu->jcn) { ierr = PetscFree(lu->jcn);CHKERRQ(ierr);}
-  if (size>1 && lu->val) { ierr = PetscFree(lu->val);CHKERRQ(ierr);} 
+    if (lu->irn) { ierr = PetscFree(lu->irn);CHKERRQ(ierr);}
+    if (lu->jcn) { ierr = PetscFree(lu->jcn);CHKERRQ(ierr);}
+    if (size>1 && lu->val) { ierr = PetscFree(lu->val);CHKERRQ(ierr);} 
   
-  ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
+  }
+  
   ierr = PetscFree(lu);CHKERRQ(ierr); 
-  if (size == 1){
-    ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-  } 
-  
+  ierr = (*destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_AIJ_MUMPS"
+int MatAssemblyEnd_AIJ_MUMPS(Mat A,MatAssemblyType mode) {
+  int           ierr;
+  Mat_AIJ_MUMPS *mumps;
+
+  PetscFunctionBegin;
+  ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatView_AIJ_MUMPS"
+int MatView_AIJ_MUMPS(Mat A,PetscViewer viewer) {
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
+  Mat_AIJ_MUMPS     *mumps=(Mat_AIJ_MUMPS*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*mumps->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_MPIAIJ_MUMPS"
-int MatSolve_MPIAIJ_MUMPS(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_AIJ_MUMPS"
+int MatSolve_AIJ_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MPIAIJ_MUMPS *lu = (Mat_MPIAIJ_MUMPS*)A->spptr; 
+  Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)A->spptr; 
   PetscScalar      *rhs,*array;
   Vec              x_seq;
   IS               iden;
@@ -232,16 +264,15 @@ int MatSolve_MPIAIJ_MUMPS(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPIAIJ_MUMPS"
-int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
+int MatFactorNumeric_AIJ_MUMPS(Mat A,Mat *F)
 {
-  Mat_MPIAIJ_MUMPS *lu = (Mat_MPIAIJ_MUMPS*)(*F)->spptr; 
+  Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)(*F)->spptr; 
   int              rnz,nnz,ierr,nz,i,M=A->M,*ai,*aj,icntl;
-  PetscTruth       valOnly,flg,isAIJ;
+  PetscTruth       valOnly,flg;
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
-    (*F)->ops->solve    = MatSolve_MPIAIJ_MUMPS;
-    (*F)->ops->destroy  = MatDestroy_MPIAIJ_MUMPS; 
+    (*F)->ops->solve    = MatSolve_AIJ_MUMPS;
 
     /* Initialize a MUMPS instance */
     ierr = MPI_Comm_rank(A->comm, &lu->myid);
@@ -319,8 +350,7 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input (size=1) */
     if (!lu->myid) {
-      ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
-      if (isAIJ){
+      if (lu->isAIJ){
         Mat_SeqAIJ   *aa = (Mat_SeqAIJ*)A->data;
         nz               = aa->nz;
         ai = aa->i; aj = aa->j; lu->val = aa->a;
@@ -429,72 +459,76 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_MUMPS"
-int MatLUFactorSymbolic_MPIAIJ_MUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_AIJ_MUMPS"
+int MatLUFactorSymbolic_AIJ_MUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_MPIAIJ              *fac;
-  Mat_MPIAIJ_MUMPS        *lu;   
-  int                     ierr;
+  Mat              B;
+  Mat_AIJ_MUMPS *lu;   
+  int              ierr;
 
-  PetscFunctionBegin; 	
-  ierr = PetscNew(Mat_MPIAIJ_MUMPS,&lu);CHKERRQ(ierr); 
+  PetscFunctionBegin;
 
-  /* Create the factorization matrix F */ 
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  /* Create the factorization matrix */
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATAIJMUMPS);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  (*F)->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_MUMPS;
-  (*F)->factor                = FACTOR_LU;  
-  (*F)->spptr                  = (void*)lu;
-  fac                         = (Mat_MPIAIJ*)(*F)->data; 
-  lu->sym                     = 0;
-  lu->matstruc = DIFFERENT_NONZERO_PATTERN; 
+  B->ops->lufactornumeric = MatFactorNumeric_AIJ_MUMPS;
+  B->factor               = FACTOR_LU;  
+  lu                      = B->spptr;
+  lu->sym                 = 0;
+  lu->matstruc            = DIFFERENT_NONZERO_PATTERN;
+
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_MPIAIJ_MUMPS"
-int MatCholeskyFactorSymbolic_MPIAIJ_MUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F)
-{ 
-  Mat_MPIAIJ              *fac;
-  Mat_MPIAIJ_MUMPS        *lu;   
-  int                     ierr;
+#define __FUNCT__ "MatCholeskyFactorSymbolic_AIJ_MUMPS"
+int MatCholeskyFactorSymbolic_AIJ_MUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F)
+{
+  Mat              B;
+  Mat_AIJ_MUMPS *lu;   
+  int              ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_MPIAIJ_MUMPS,&lu);CHKERRQ(ierr); 
 
-  /* Create the factorization matrix F */ 
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
-  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_MPIAIJ_MUMPS;
-  (*F)->factor                = FACTOR_CHOLESKY;
-  (*F)->spptr                 = (void*)lu;
-  fac                         = (Mat_MPIAIJ*)(*F)->data; 
-  lu->sym                     = 2;
-  lu->matstruc = DIFFERENT_NONZERO_PATTERN;   
+  /* Create the factorization matrix */ 
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATAIJMUMPS);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+
+  B->ops->choleskyfactornumeric = MatFactorNumeric_AIJ_MUMPS;
+  B->factor                     = FACTOR_CHOLESKY;
+  lu                            = (Mat_AIJ_MUMPS *)B->spptr;
+  lu->sym                       = 2;
+  lu->matstruc                  = DIFFERENT_NONZERO_PATTERN;
+
+  *F = B;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatUseMUMPS_MPIAIJ"
-int MatUseMUMPS_MPIAIJ(Mat A)
+#define __FUNCT__ "MatUseMUMPS_AIJ"
+int MatUseMUMPS_AIJ(Mat A)
 {
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_MUMPS;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIAIJ_MUMPS;
-  A->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_MUMPS; 
+  A->ops->lufactorsymbolic       = MatLUFactorSymbolic_AIJ_MUMPS;
+  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJ_MUMPS;
+  A->ops->lufactornumeric        = MatFactorNumeric_AIJ_MUMPS; 
 
   PetscFunctionReturn(0);
 }
 
 int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
 {
-  Mat_MPIAIJ_MUMPS *lu= (Mat_MPIAIJ_MUMPS*)A->spptr;
+  Mat_AIJ_MUMPS *lu= (Mat_AIJ_MUMPS*)A->spptr;
   int              ierr;
 
   PetscFunctionBegin;
-  /* check if matrix is mumps type */
-  if (A->ops->solve != MatSolve_MPIAIJ_MUMPS) PetscFunctionReturn(0); 
-
   ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",lu->id.sym);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",lu->id.par);CHKERRQ(ierr);
@@ -526,16 +560,103 @@ int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseMUMPS_MPIAIJ"
-int MatUseMUMPS_MPIAIJ(Mat A)
-{
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_AIJ_MUMPS"
+int MatCreate_AIJ_MUMPS(Mat A) {
+  int           ierr,size;
+  MPI_Comm      comm;
+  Mat_AIJ_MUMPS *mumps;
+  
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatUseMUMPS_AIJ(A);
+
+  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
+  mumps->MatDestroy     = A->ops->destroy;
+  mumps->MatAssemblyEnd = A->ops->assemblyend;
+  mumps->MatView        = A->ops->view;
+  mumps->CleanUpMUMPS   = PETSC_FALSE;
+  A->spptr              = (void *)mumps;
+  A->ops->destroy       = MatDestroy_AIJ_MUMPS;
+  A->ops->assemblyend   = MatAssemblyEnd_AIJ_MUMPS;
+  A->ops->view          = MatView_AIJ_MUMPS;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
-#endif
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SBAIJ_MUMPS"
+int MatCreate_SBAIJ_MUMPS(Mat A) {
+  int           ierr,size;
+  MPI_Comm      comm;
+  Mat_AIJ_MUMPS *mumps;
 
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+  }
+  ierr=MatUseMUMPS_AIJ(A);
+  
+  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
+  mumps->MatDestroy     = A->ops->destroy;
+  mumps->MatAssemblyEnd = A->ops->assemblyend;
+  mumps->CleanUpMUMPS   = PETSC_FALSE;
+  A->spptr              = (void *)mumps;
+  A->ops->destroy       = MatDestroy_AIJ_MUMPS;
+  A->ops->assemblyend   = MatAssemblyEnd_AIJ_MUMPS;
+                                          
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_AIJ_MUMPS"
+int MatLoad_AIJ_MUMPS(PetscViewer viewer,MatType type,Mat *A) {
+  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  }
+  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_SBAIJ_MUMPS"
+int MatLoad_SBAIJ_MUMPS(PetscViewer viewer,MatType type,Mat *A) {
+  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscFListFind(comm,MatLoadList,MATSEQSBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFListFind(comm,MatLoadList,MATMPISBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  }
+  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

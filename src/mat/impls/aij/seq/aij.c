@@ -288,7 +288,6 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 }
 
 extern int MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
-extern int MatFactorInfo_MUMPS(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqAIJ_ASCII"
@@ -336,9 +335,6 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
      ierr = MatSeqAIJFactorInfo_Matlab(A,viewer);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-     ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
 #endif
      PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
@@ -600,9 +596,6 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
   int          m = A->m,*ip,N,*ailen = a->ilen,rmax = 0;
   PetscScalar  *aa = a->a,*ap;
-#if defined(PETSC_HAVE_MUMPS)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -648,11 +641,6 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_MUMPS) 
-  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); }
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -2826,9 +2814,6 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N;
   MPI_Comm     comm;
-#if defined(PETSC_HAVE_MUMPS)
-  PetscTruth   flag;
-#endif
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -2869,10 +2854,6 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_mumps",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseMUMPS_MPIAIJ(B);CHKERRQ(ierr); }
-#endif 
   *A = B;
   PetscFunctionReturn(0);
 }
