@@ -1,10 +1,26 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.39 1997/06/05 12:55:39 bsmith Exp balay $";
+static char vcid[] = "$Id: draw.c,v 1.40 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ "DrawResizeWindow"
+/*@
+   DrawResizeWindow - Allows one to resize a window from a program.
+
+  Input Parameter:
+.  draw - the window
+.  w,h - the new width and height of the window
+
+@*/
+int DrawResizeWindow(Draw draw,int w,int h)
+{
+  if (draw->ops.resizewindow) return (*draw->ops.resizewindow)(draw,w,h);
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DrawCheckResizedWindow" /* ADIC Ignore */

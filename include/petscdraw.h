@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.44 1997/05/23 16:30:51 balay Exp balay $ */
+/* $Id: draw.h,v 1.45 1997/05/23 16:41:17 balay Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -41,6 +41,7 @@ extern int DrawIsNull(Draw,PetscTruth*);
 
 extern int DrawCreatePopUp(Draw,Draw*);
 extern int DrawCheckResizedWindow(Draw);
+extern int DrawResizeWindow(Draw,int,int);
 
 extern int DrawScalePopup(Draw,double min,double max); 
 

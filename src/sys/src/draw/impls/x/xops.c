@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.86 1997/07/07 15:44:11 bsmith Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.87 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -359,7 +359,19 @@ static int DrawSetTitle_X(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCheckResizedWindow_X" /* ADIC Ignore */
+#define __FUNC__ "DrawResizeWindow_X"
+static int DrawResizeWindow_X(Draw draw,int w,int h)
+{
+  Draw_X *win = (Draw_X *) draw->data;
+  int    ierr;
+
+  XResizeWindow(win->disp,win->win,w,h);
+  ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawCheckResizedWindow_X" 
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X *) draw->data;
@@ -383,7 +395,7 @@ static int DrawCheckResizedWindow_X(Draw draw)
   /* reset the clipping */
   xl = draw->port_xl; yl = draw->port_yl;
   xr = draw->port_xr; yr = draw->port_yr;
-  box.x = (int) (xl*win->w);   box.y = (int) ((1.0-yr)*win->h);
+  box.x     = (int) (xl*win->w);     box.y      = (int) ((1.0-yr)*win->h);
   box.width = (int) ((xr-xl)*win->w);box.height = (int) ((yr-yl)*win->h);
   XSetClipRectangles(win->disp,win->gc.set,0,0,&box,1,Unsorted);
 
@@ -407,7 +419,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
 				 0, 0,
                                  DrawCreatePopUp_X,
                                  DrawSetTitle_X,
-                                 DrawCheckResizedWindow_X };
+                                 DrawCheckResizedWindow_X,
+                                 DrawResizeWindow_X };
 
 #undef __FUNC__  
 #define __FUNC__ "DrawDestroy_X" /* ADIC Ignore */
