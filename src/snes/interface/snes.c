@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.111 1997/01/21 19:13:51 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.112 1997/01/21 21:39:07 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -280,8 +280,6 @@ int SNESPrintHelp(SNES snes)
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in function evaluation for matrix-free Jacobian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_umin: minimum iterate parameter for matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
     PetscPrintf(snes->comm,
      "     %ssnes_ksp_ew_version <version> (1 or 2, default is %d)\n",p,kctx->version);
@@ -304,8 +302,6 @@ int SNESPrintHelp(SNES snes)
     PetscPrintf(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in gradient evaluation for matrix-free Hessian\n",p);
-     PetscPrintf(snes->comm,"   %ssnes_mf_umin: minimum iterate parameter for matrix-free Hessian\n",p);
   }
   PetscPrintf(snes->comm," Run program with -help %ssnes_type <method> for help on ",p);
   PetscPrintf(snes->comm,"a particular method\n");

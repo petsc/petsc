@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.42 1997/01/06 20:29:45 balay Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.43 1997/01/21 20:12:37 curfman Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -155,6 +155,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
   int           n, nloc, ierr, flg;
+  char          p[64];
 
   mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
@@ -165,9 +166,11 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  PetscStrcpy(p,"-");
+  if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
-    PetscPrintf(snes->comm,"-snes_mf_err <err> set sqrt rel tol in function. Default 1.e-8\n");
-    PetscPrintf(snes->comm,"-snes_mf_umin <umin> see users manual. Default 1.e-8\n");
+    PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
+    PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin> see users manual (default %g)\n",p,mfctx->umin);
   }
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
