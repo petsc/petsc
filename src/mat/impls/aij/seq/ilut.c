@@ -1,4 +1,4 @@
-/*$Id: ilut.c,v 1.2 1999/12/17 19:16:43 bsmith Exp bsmith $*/
+/*$Id: ilut.c,v 1.3 1999/12/17 19:23:08 bsmith Exp bsmith $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 
@@ -107,7 +107,7 @@ int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,
     double xmax0;
     static int i, j, k;
     Scalar s, t;
-    static int j1, j2;
+    static int j_1, j2;
     double tnorm,t1;
     static int ii, jj;
     static int ju0, len;
@@ -266,18 +266,18 @@ int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,
  */
     i__1 = *n;
     for (ii = 1; ii <= i__1; ++ii) {
-	j1 = ia[ii];
+	j_1 = ia[ii];
 	j2 = ia[ii + 1] - 1;
 	tnorm = 0.;
 	i__2 = j2;
-	for (k = j1; k <= i__2; ++k) {
+	for (k = j_1; k <= i__2; ++k) {
 	    tnorm += (d__1 = a[k], PetscAbsScalar(d__1));
 /* L501: */
 	}
 	if (tnorm == 0.) {
 	    goto L999;
 	}
-	tnorm /= j2 - j1 + 1;
+	tnorm /= j2 - j_1 + 1;
 
 /*     unpack L-part and U-part of row of A in arrays  w  -- */
 
@@ -288,7 +288,7 @@ int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,
 	jw[*n + ii] = ii;
 
 	i__2 = j2;
-	for (j = j1; j <= i__2; ++j) {
+	for (j = j_1; j <= i__2; ++j) {
 	    k = iperm[*n + ja[j]];
 	    t = a[j];
 	    if (k < ii) {
