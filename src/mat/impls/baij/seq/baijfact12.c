@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.14 2001/06/20 22:38:47 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.15 2001/06/22 19:54:37 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -168,11 +168,14 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
-    /* zero out the accumulators */
+    /* zero out the 4x4 block accumulators */
+    /* zero out one register */ 
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
       x = rtmp+16*ajtmp[j];
       SSE_INLINE_BEGIN_1(x)
+        /* Copy zero register into memory locations */
+        /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_STOREL_PS(SSE_ARG_1,FLOAT_0,XMM7)
         SSE_STOREH_PS(SSE_ARG_1,FLOAT_2,XMM7)
         SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM7)
@@ -191,6 +194,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
       x = rtmp+16*ajtmpold[j];
       /* Copy v block into x block */ 
       SSE_INLINE_BEGIN_2(v,x)
+        /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
         SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM0)
 
@@ -223,6 +227,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
         /* Load block from lower triangle */ 
+        /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM0)
 
@@ -248,23 +253,29 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
         SSE_CMPNEQ_PS(XMM7,XMM3)
 
-        /* If block is nonzero ... */
-
+        /* Reduce the comparisons to one SSE register */
         SSE_OR_PS(XMM6,XMM7)
         SSE_OR_PS(XMM5,XMM4)
         SSE_OR_PS(XMM5,XMM6)
       SSE_INLINE_END_1;
 
+      /* Reduce the one SSE register to an integer register for branching */
+      /* Note: Since nonzero is an int, there is no INLINE block version of this call */
       MOVEMASK(nonzero,XMM5);
 
+      /* If block is nonzero ... */
       if (nonzero) {
         pv = ba + 16*diag_offset[row];
         PREFETCH_L1(&pv[16]);
         pj = bj + diag_offset[row] + 1;
 
-        /* Form Multiplier, one column at a time */
+        /* Form Multiplier, one column at a time (Matrix-Matrix Product) */
+        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */ 
+        /* but the diagonal was inverted already */
+        /* and, L_ij^(k) is already loaded into registers XMM0-XMM3 columnwise */
+
         SSE_INLINE_BEGIN_2(pv,pc)
-          /* First Column */ 
+          /* Column 0, product is accumulated in XMM4 */ 
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_0,XMM4)
           SSE_SHUFFLE(XMM4,XMM4,0x00)
           SSE_MULT_PS(XMM4,XMM0)
@@ -287,7 +298,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
           SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM4)
           SSE_STOREH_PS(SSE_ARG_2,FLOAT_2,XMM4)
 
-          /* Second column */
+          /* Column 1, product is accumulated in XMM5 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_4,XMM5)
           SSE_SHUFFLE(XMM5,XMM5,0x00)
           SSE_MULT_PS(XMM5,XMM0)
@@ -312,7 +323,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
           SSE_PREFETCH_L1(SSE_ARG_1,FLOAT_24)
 
-          /* Third Column */
+          /* Column 2, product is accumulated in XMM6 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_8,XMM6)
           SSE_SHUFFLE(XMM6,XMM6,0x00)
           SSE_MULT_PS(XMM6,XMM0)
@@ -335,7 +346,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
           SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM6)
           SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
 
-          /* Note: For the last column, we no longer need to preserve XMM0->XMM4 */
+          /* Note: For the last column, we no longer need to preserve XMM0->XMM3 */
+          /* Column 3, product is accumulated in XMM0 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_12,XMM7)
           SSE_SHUFFLE(XMM7,XMM7,0x00)
           SSE_MULT_PS(XMM0,XMM7)
@@ -360,13 +372,13 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
           /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
           /* This is code to be maintained and read by humans afterall. */
-          /* Multiplier Col 3 -> XMM3 */
+          /* Copy Multiplier Col 3 into XMM3 */
           SSE_COPY_PS(XMM3,XMM0) 
-          /* Multiplier Col 2 -> XMM2 */
+          /* Copy Multiplier Col 2 into XMM2 */
           SSE_COPY_PS(XMM2,XMM6)
-          /* Multiplier Col 1 -> XMM1 */
+          /* Copy Multiplier Col 1 into XMM1 */
           SSE_COPY_PS(XMM1,XMM5)
-          /* Multiplier Col 0 -> XMM0 */
+          /* Copy Multiplier Col 0 into XMM0 */
           SSE_COPY_PS(XMM0,XMM4)
         SSE_INLINE_END_2;
 
@@ -376,13 +388,15 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
         for (j=0; j<nz; j++) {
           PREFETCH_L1(&pv[16]);
           x = rtmp + 16*pj[j];
-          /* x:=x-m*pv, One column at a time */
 
+          /* X:=X-M*PV, One column at a time */
+          /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
           SSE_INLINE_BEGIN_2(x,pv)
-            /* First Column */ 
+            /* Load First Column of X*/ 
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM4)
 
+            /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_0,XMM5)
             SSE_SHUFFLE(XMM5,XMM5,0x00)
             SSE_MULT_PS(XMM5,XMM0)
@@ -410,6 +424,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM5)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)          
 
+            /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_4,XMM6)
             SSE_SHUFFLE(XMM6,XMM6,0x00)
             SSE_MULT_PS(XMM6,XMM0)
@@ -439,6 +454,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM6)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_10,XMM6)
 
+            /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_8,XMM7)
             SSE_SHUFFLE(XMM7,XMM7,0x00)
             SSE_MULT_PS(XMM7,XMM0)
@@ -466,6 +482,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM4)
 
+            /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_12,XMM5)
             SSE_SHUFFLE(XMM5,XMM5,0x00)
             SSE_MULT_PS(XMM5,XMM0)
@@ -505,6 +522,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
       x  = rtmp+16*pj[j];
 
       SSE_INLINE_BEGIN_2(x,pv)
+        /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM1)
         SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM1)
 
@@ -534,7 +552,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr);
-    /* Note: Using Kramer's rule, flop count below might be high (or low?) */ 
+    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
