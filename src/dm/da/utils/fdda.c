@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.27 1998/04/20 18:11:49 curfman Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.28 1998/04/20 18:14:14 curfman Exp balay $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -512,7 +512,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr, xs,nx,*colors,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
-  int                    istart,iend,i1;
+  int                    istart,iend;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
