@@ -57,10 +57,13 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   char            fname[256];
+  int             rank;
   int             ierr;
 
   PetscFunctionBegin;
   if (name == PETSC_NULL) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(viewer->comm, &rank);                                                              CHKERRQ(ierr);
+  if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);                                                            CHKERRQ(ierr);
   ierr = PetscFixFilename(name, fname);                                                                   CHKERRQ(ierr);
   switch(vu->mode) {

@@ -284,6 +284,7 @@ EXTERN int VecRestoreArrays(const Vec[],int,PetscScalar**[]);
 
 EXTERN int VecValid(Vec,PetscTruth*);
 EXTERN int VecView(Vec,PetscViewer);
+EXTERN int VecViewFromOptions(Vec);
 EXTERN int VecEqual(Vec,Vec,PetscTruth*);
 EXTERN int VecLoad(PetscViewer,Vec*);
 EXTERN int VecLoadIntoVector(PetscViewer,Vec);
