@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.68 2000/05/16 17:50:59 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.69 2000/05/18 20:36:53 balay Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -288,7 +288,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 .  coloring - the coloring context
 
    Options Database Keys:
-+  -mat_fd_coloring_error <err> - Sets <err> (square root
++  -mat_fd_coloring_err <err> - Sets <err> (square root
            of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
