@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.334 2001/02/09 19:27:25 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.335 2001/02/26 04:46:36 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -14,7 +14,7 @@ include ${PETSC_DIR}/bmake/common_test
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
-all       : info info_h chklib_dir deletelibs build_c build_fortran shared
+all       : info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -66,6 +66,8 @@ info_h:
 	-@echo  "static char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
+	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
+	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
@@ -81,9 +83,6 @@ info_h:
 	-@echo  "Using configuration flags:" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using include paths: ${PETSC_INCLUDE}" >> MINFO
-	-@echo  "-----------------------------------------" >> MINFO
-	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
-	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "------------------------------------------" >> MINFO
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
@@ -94,9 +93,9 @@ info_h:
 #
 # Builds the PETSc libraries
 # This target also builds fortran77 and f90 interface
-# files. (except compiling *.F files)
+# files and compiles .F files
 #
-build_c:
+build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree 
@@ -104,25 +103,9 @@ build_c:
 	-@chmod g+w  ${LDIR}/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
-
 #
-# Builds PETSc Fortran source
-# Note:	 libfast cannot run on .F files on certain machines, so we
-# use libf to compile the fortran source files.
 #
-build_fortran:
-	-@echo "BEGINNING TO COMPILE FORTRAN SOURCE"
-	-@echo "========================================="
-	-@cd src/fortran/custom; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf clean 
-	-@cd src/fortran/kernels; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf  clean
-	${RANLIB} ${LDIR}/libpetscfortran.a
-	${RANLIB} ${LDIR}/libpetsc.a
-	-@chmod g+w  ${LDIR}/*.a
-	-@echo "Completed compiling Fortran source"
-	-@echo "========================================="
-
+#
 petscblas: info chklib_dir
 	-${RM} -f ${LDIR}/libpetscblas.*
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
