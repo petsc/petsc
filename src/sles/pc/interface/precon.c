@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.149 1998/05/21 19:10:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.150 1998/05/29 20:36:28 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -480,7 +480,7 @@ int PCSetUp(PC pc)
   } else if (pc->flag == SAME_NONZERO_PATTERN) {
     PLogInfo(pc,"PCSetUp:Setting up PC with same nonzero pattern\n");
   } else {
-    PLogInfo(pc,"SPCSetUp:etting up PC with different nonzero pattern\n");
+    PLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
   }
   if (pc->setupcalled > 1) PetscFunctionReturn(0);
   PLogEventBegin(PC_SetUp,pc,0,0,0);
