@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.106 1996/10/30 18:55:44 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.107 1996/10/30 19:21:44 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -686,6 +686,7 @@ int OptionsCheckInitial_Private()
 #endif
     PetscPrintf(comm," -log_info: print informative messages about the calculations\n");
     PetscPrintf(comm," -v: prints PETSc version number and release date\n");
+    PetscPrintf(comm," -options_file <file>: reads options from file\n");
     PetscPrintf(comm,"-----------------------------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-compare",&flg1); CHKERRQ(ierr);
@@ -704,6 +705,43 @@ char *OptionsGetProgramName()
   return options->programname;
 }
 
+/*
+    Reads options from a file and adds to options database
+*/
+static int OptionsInsertFile_Private(char *file)
+{
+  char string[128],*first,*second,*third,*final;
+  int   len,ierr;
+  FILE *fd = fopen(file,"r"); 
+
+  if (fd) {
+    while (fgets(string,128,fd)) {
+      /* Comments are indicated by #, ! or % in the first column */
+      if (string[0] == '#') continue;
+      if (string[0] == '!') continue;
+      if (string[0] == '%') continue;
+      first = PetscStrtok(string," ");
+      second = PetscStrtok(0," ");
+      if (first && first[0] == '-') {
+        if (second) {final = second;} else {final = first;}
+        len = PetscStrlen(final);
+        while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
+          len--; final[len] = 0;
+        }
+        OptionsSetValue(first,second);
+      }
+      else if (first && !PetscStrcmp(first,"alias")) {
+        third = PetscStrtok(0," ");
+        if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file:alias");
+        len = PetscStrlen(third); 
+        if (third[len-1] == '\n') third[len-1] = 0;
+        ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
+      }
+    }
+    fclose(fd);
+  }
+  return 0;
+}
 /*
    OptionsCreate_Private - Creates a database of options.
 
@@ -733,43 +771,13 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
     file = pfile;
   }
 
-  options->N = 0;
+  options->N        = 0;
   options->Naliases = 0;
-  options->argc = (argc) ? *argc : 0;
-  options->args = (args) ? *args : 0;
+  options->argc     = (argc) ? *argc : 0;
+  options->args     = (args) ? *args : 0;
 
-  /* insert file options */
-  {
-    char string[128],*first,*second,*third,*final;
-    int   len;
-    FILE *fd = fopen(file,"r"); 
-    if (fd) {
-      while (fgets(string,128,fd)) {
-        /* Comments are indicated by #, ! or % in the first column */
-        if (string[0] == '#') continue;
-        if (string[0] == '!') continue;
-        if (string[0] == '%') continue;
-        first = PetscStrtok(string," ");
-        second = PetscStrtok(0," ");
-        if (first && first[0] == '-') {
-          if (second) {final = second;} else {final = first;}
-          len = PetscStrlen(final);
-          while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
-            len--; final[len] = 0;
-          }
-          OptionsSetValue(first,second);
-        }
-        else if (first && !PetscStrcmp(first,"alias")) {
-          third = PetscStrtok(0," ");
-          if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file:alias");
-          len = PetscStrlen(third); 
-          if (third[len-1] == '\n') third[len-1] = 0;
-          ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
-        }
-      }
-      fclose(fd);
-    }
-  }
+  ierr = OptionsInsertFile_Private(file); CHKERRQ(ierr);
+
   /* insert environmental options */
   {
     char *eoptions = 0, *second, *first;
@@ -811,13 +819,14 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
     while (left) {
       if (eargs[0][0] != '-') {
         eargs++; left--;
-      }
-      else if ((left < 2) || ((eargs[1][0] == '-') && 
+      } else if (!PetscStrcmp(eargs[0],"-options_file")) {
+        ierr = OptionsInsertFile_Private(eargs[1]); CHKERRQ(ierr);
+        eargs += 2; left -= 2;
+      } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
         OptionsSetValue(eargs[0],(char *)0);
         eargs++; left--;
-      }
-      else {
+      } else {
         OptionsSetValue(eargs[0],eargs[1]);
         eargs += 2; left -= 2;
       }
