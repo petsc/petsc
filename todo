@@ -27,5 +27,10 @@ Error handling
 PC/Mat
   Convert the Tufo-Fischer parallel direct solver to its own PC.
 
+  Manual pages for partitioners
+
+General
+
+  Manual Pages for PETSC_TRUE DEFAULT DECIDE etc
 
 
