@@ -1,16 +1,16 @@
-/*$Id: mpimesg.c,v 1.7 2001/03/05 16:13:43 bsmith Exp bsmith $*/
+/*$Id: mpimesg.c,v 1.8 2001/03/05 16:14:08 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 
 /*@C
-  PetscGatherNoOfMessages -  Computes the number of messages a node expects to receive
+  PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
   Collective on MPI_Comm
 
   Input Parameters:
 + comm     - Communicator
-. nsends   - no of messages that are to be sent. Optionally PETSC_DETERMINE
+. nsends   - number of messages that are to be sent. Optionally PETSC_DETERMINE
 . iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a 
              message from current node to ith node. Optionally PETSC_NULL
 - ilengths - Non zero ilengths[i] represent a message to i of length ilengths[i].
@@ -35,8 +35,8 @@
 .seealso: PetscGatherMessageLengths()
 @*/
 #undef __FUNC__  
-#define __FUNC__ "PetscGatherNoOfMessages"
-int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,int *nrecvs)
+#define __FUNC__ "PetscGatherNumberOfMessages"
+int PetscGatherNumberOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,int *nrecvs)
 {
   int *recv_buf,size,rank,i,ierr,nsends_local,*iflags_local;
 
@@ -87,7 +87,7 @@ int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,i
 
   Input Parameters:
 + comm      - Communicator
-. nsends    - no of messages that are to be sent.
+. nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
 - ilengths  - an array of integers of length sizeof(comm)
               a non zero ilengths[i] represent a message to i of length ilengths[i] 
@@ -107,9 +107,9 @@ int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,i
 
   The calling function deallocates the memory in onodes and olengths
 
-  To determine nrecevs, one can use PetscGatherNoOfMessages()
+  To determine nrecevs, one can use PetscGatherNumberOfMessages()
 
-.seealso: PetscGatherNoOfMessages()
+.seealso: PetscGatherNumberOfMessages()
 @*/
 #undef __FUNC__  
 #define __FUNC__ "PetscGatherMessageLengths"
