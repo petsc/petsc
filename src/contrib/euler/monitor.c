@@ -91,6 +91,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
       }
     }
+    app->sles_tot += app->lin_its[its];
   } else {
     /* For the first iteration and onward we do the following */
 
@@ -111,6 +112,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         fflush(app->fp);
       }
     }
+    app->sles_tot += app->lin_its[its];
 
     /* Compute new CFL number if desired */
     /* Note: BCs change at iter 10, so we defer CFL increase until after this point */
