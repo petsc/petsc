@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.1 1995/10/19 22:14:28 curfman Exp curfman $ */
+/* $Id: mpidense.h,v 1.2 1995/10/22 18:42:58 bsmith Exp curfman $ */
 
 #include "dense.h"
 
@@ -7,7 +7,6 @@ typedef struct {
   int           m, n;                   /* local rows and columns */
   int           M, N;                   /* global rows and columns */
   int           rstart, rend;           /* starting and ending owned rows */
-  int           cstart, cend;           /* starting and ending owned columns */
   Mat           A;                      /* local submatrix */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 

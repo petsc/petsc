@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.46 1995/10/20 03:00:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.47 1995/10/22 22:23:29 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -139,11 +139,11 @@ extern int MatSetUpMultiply_MPIBDiag(Mat);
 
 static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
-  int          ierr;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *mlocal;
   MPI_Status   *send_status, recv_status;
   int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
+  int          *tmp, *tmp2, ierr, len = mbd->m * mbd->n, ict;
   Scalar       *values, val;
   InsertMode   addv = mbd->insertmode;
 
@@ -159,7 +159,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       col = (int) PETSCREAL(values[3*i+1]);
       val = values[3*i+2];
       if (col >= 0 && col < mbd->N) {
-        MatSetValues(mbd->A,1,&row,1,&col,&val,addv);
+        ierr = MatSetValues(mbd->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       } 
       else {SETERRQ(1,"MatAssemblyEnd_MPIBDiag:Invalid column");}
     }
@@ -180,12 +180,26 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
 
-  /* Fix main diagonal location */
+  /* Fix main diagonal location and determine global number of diagonals */
+  tmp = (int *) PETSCMALLOC( 2*len*sizeof(int) ); CHKPTRQ(tmp);
+  tmp2 = tmp + len;
+  PetscZero(tmp,2*len*sizeof(int));
   mlocal = (Mat_SeqBDiag *) mbd->A->data;
   mlocal->mainbd = -1; 
   for (i=0; i<mlocal->nd; i++) {
     if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
+    tmp[mlocal->diag[i]+mbd->m] = i+1;
   }
+  PETSCFREE(tmp);
+  MPI_Allreduce((void*)tmp,(void*)tmp2,len,MPI_INT,MPI_SUM,mat->comm);
+  ict = 0;
+  for (i=0; i<len; i++) {
+    if (tmp2[i]) {
+      mbd->gdiag[ict] = i - mbd->m;
+      ict++;
+    }
+  }
+  mbd->gnd = ict;
 
   if (!mbd->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
@@ -434,11 +448,23 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
- 
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
-    if (format == FILE_FORMAT_INFO) {
-      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+    if (format == FILE_FORMAT_INFO_DETAILED) {
+      int nz, nzalloc, mem, rank;
+      MPI_Comm_rank(mat->comm,&rank);
+      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      MPIU_Seq_begin(mat->comm,1);
+        fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",
+            rank,mbd->m,nz,nzalloc,mem);       
+      fflush(fd);
+      MPIU_Seq_end(mat->comm,1);
+      ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
+      MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
+                   dmat->nb,mbd->gnd);
+    else if (format == FILE_FORMAT_INFO) {
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
       return 0;
@@ -446,7 +472,6 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   }
 
   if (vobj->type == ASCII_FILE_VIEWER) {
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mbd->rank,mbd->m,mbd->rstart,mbd->rend,mbd->n);
@@ -586,6 +611,44 @@ static int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
   return MatRestoreRow(mat->A,lrow,nz,idx,v);
 }
 
+
+static int MatNorm_MPIBDiag(Mat A,MatNormType type,double *norm)
+{
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) mbd->A->data;
+  double       sum = 0.0, *tmp;
+  int          ierr, d, i, j, nd = a->nd, nb = a->nb, diag, len;
+  Scalar       *dv;
+
+  if (!a->assembled) SETERRQ(1,"MatNorm_MPIBDiag:Must assemble mat");
+
+  if (type == NORM_FROBENIUS) {
+    for (d=0; d<nd; d++) {
+      dv   = a->diagv[d];
+      len  = a->bdlen[d]*nb*nb;
+      for (i=0; i<len; i++) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(dv[i])*dv[i]);
+#else
+        sum += dv[i]*dv[i];
+#endif
+      }
+    }
+    MPI_Allreduce((void*)&sum,(void*)norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
+    *norm = sqrt(*norm);
+    PLogFlops(2*mbd->n*mbd->m);
+  }
+  else if (type == NORM_1) { /* max column norm */
+    *norm = 0.0;
+  }
+  else if (type == NORM_INFINITY) { /* max row norm */
+    double normtemp;
+    ierr = MatNorm(mbd->A,type,&normtemp); CHKERRQ(ierr);
+    MPI_Allreduce((void*)&normtemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
+  }
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 
 static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
@@ -597,7 +660,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,
        0,
        MatGetInfo_MPIBDiag,0,
-       MatGetDiagonal_MPIBDiag,0,0,
+       MatGetDiagonal_MPIBDiag,0,MatNorm_MPIBDiag,
        MatAssemblyBegin_MPIBDiag,MatAssemblyEnd_MPIBDiag,
        0,
        MatSetOption_MPIBDiag,MatZeroEntries_MPIBDiag,MatZeroRows_MPIBDiag,0,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.67 1995/10/19 22:21:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.68 1995/10/22 04:19:49 bsmith Exp curfman $";
 #endif
 
 #include "dense.h"
@@ -468,7 +468,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
 
   v = mat->v; m = mat->m; n = mat->n;
   if (!matout) { /* in place transpose */
-    if (m != n) SETERRQ(1,"MatTranspose_SeqDense:Not for rectangular matrix in place");
+    if (m != n) SETERRQ(1,"MatTranspose_SeqDense:Supports square matrix only in-place");
     for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {
         tmp = v[j + k*n]; 
