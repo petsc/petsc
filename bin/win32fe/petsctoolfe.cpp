@@ -7,11 +7,11 @@ using namespace PETScFE;
 tool::tool(void) {
   tool::OptionTags= "uvhpV";
   tool::Options['u'] = &tool::FoundUse;
-  tool::Options['v'] = &tool::FoundVerbose;
+  tool::Options['v'] = &tool::FoundV;
   tool::Options['h'] = &tool::FoundHelp;
   tool::Options['p'] = &tool::FoundPath;
   tool::Options['w'] = &tool::FoundWoff;
-  tool::Options['V'] = &tool::FoundVersion;
+  tool::Options['V'] = &tool::FoundV;
   tool::Options[UNKNOWN] = &tool::FoundUnknown;
   version   = "PETSc's Win32 Front End, version 1.1";
   woff      = false;
@@ -24,7 +24,7 @@ tool::tool(void) {
 void tool::GetArgs(int argc,char *argv[]) {
   for (int i=2;i<argc;i++) arg.push_back(argv[i]);
   if (argc == 2) {
-    if (!((arg.front()=="--Version") || (arg.front()=="--help"))) {
+    if (!((arg.front()=="--version") || (arg.front()=="--help"))) {
       arg.push_back("--help");
     }
   }
@@ -137,13 +137,13 @@ void tool::Help(void) {
   cout << "  bcc32: Borland C++ for Win32" << endl;
   cout << "  lib:   Microsoft Library Manager" << endl;
   cout << "  tlib:  Borland Library Manager" << endl << endl;
-  cout << "<win32fe options>: {help,path,use,verbose,Version,woff}" << endl;
+  cout << "<win32fe options>: {help,path,use,verbose,version,woff}" << endl;
   cout << "  --help:       Output this help message and help for <tool>" << endl << endl;
   cout << "  --path <arg>: <arg> specifies an addition to the PATH that is required" << endl;
   cout << "                (ex. the location of a required .dll)" << endl;
   cout << "  --use <arg>:  <arg> specifies the variant of <tool> to use" << endl;
   cout << "  --verbose:    Echo to stdout the translated commandline" << endl;
-  cout << "  --Version:    Output Version info for win32fe and <tool>" << endl;
+  cout << "  --version:    Output Version info for win32fe and <tool>" << endl;
   cout << "  --woff:       Suppress win32fe specific warning messages" << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
@@ -199,18 +199,13 @@ void tool::FoundWoff(LI &i) {
   }
 }
 
-void tool::FoundVerbose(LI &i) {
-  if (*i == "--verbose") {
+void tool::FoundV(LI &i) {
+  string temp = *i;
+  if (temp == "--verbose") {
     verbose = true;
     i = arg.erase(i);
     cout << endl;
-  } else {
-    i++;
-  }
-}
-
-void tool::FoundVersion(LI &i) {
-  if (*i == "--Version") {
+  } else if (temp == "--version") {
     versionfound=true;
     i = arg.erase(i);
   } else {

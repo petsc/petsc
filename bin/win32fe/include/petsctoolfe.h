@@ -23,8 +23,7 @@ namespace PETScFE {
     void FoundHelp(LI &);
     void FoundPath(LI &);
     void FoundUse(LI &);
-    void FoundVerbose(LI &);
-    void FoundVersion(LI &);
+    void FoundV(LI &);
     void FoundWoff(LI &);
     void FoundUnknown(LI &);
 
