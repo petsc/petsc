@@ -81,6 +81,11 @@ PETScView info:
 
 
 ------------Accounts (around the world and around the block) -----
+HPUX-11 - hpux64
+        machine: hp.giref.ulaval.ca
+        userid: petsc
+        passwd: petsc-passwd
+
 
 Power3:
         Machine: temp4.msi.umn.edu
