@@ -537,7 +537,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
     }
-    Kernel_w_gets_Ar_times_v(bbs,ncols,work,v,z);
+    Kernel_w_gets_Ar_times_v(bs,ncols,work,v,z);
     /* LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One); */
     v += n*bs2;
     z += bs;
