@@ -3,6 +3,7 @@
 # $Id: update-docs.py,v 1.7 2001/08/30 17:51:36 bsmith Exp $ 
 #
 # update-docs.py LOC
+# update-docs.py LOC clean
 #
 
 import os
@@ -56,14 +57,23 @@ def chkdir(dirname):
         print 'Creating dir', dirname
         os.mkdir(dirname)
 
+def rmfile(filename):
+    if  os.path.isfile(filename):
+        os.remove(filename)
+
 def main():
     arg_len = len(argv)
 
     if arg_len < 2:
         print 'Error Insufficient arguments.'
         print 'Usage:', argv[0], 'LOC'
-
     LOC = argv[1]
+
+    cleanfiles = 0
+    if arg_len == 3:
+        if argv[2] == 'clean' :
+          cleanfiles = 1
+    
     baseurl = 'http://www-unix.mcs.anl.gov/petsc/petsc-2/documentation'
     baseurl = LOC + '/docs/website/documentation/'
     htmlfiles = [
@@ -90,6 +100,14 @@ def main():
         'changes/2918-21.html',
         'changes/index.html',
         'installation.html']
+
+    # if clean option is providedm then delete the files and exit
+    if cleanfiles == 1 :
+        for basename in htmlfiles:
+            urlname  = baseurl + basename
+            filename = LOC + '/docs/' + basename
+            rmfile(filename)
+        exit()
 
     for basename in htmlfiles:
         urlname  = baseurl + basename
