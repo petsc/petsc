@@ -51,7 +51,8 @@ include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(PETSC_VERSION)
 # Next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
 
-# Checks that PETSC_DIR variable is set
+# Checks that PETSC_DIR variable is set and creates library directory
+# if it does not exist
 chkpetsc_dir:
 	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
           echo "You must set the variable PETSC_DIR to the petsc directory.1";\
@@ -61,7 +62,7 @@ chkpetsc_dir:
           false ;\
           fi
 	-@if [ ! -d $(PDIR) ]; then \
-          echo $(PDIR) ; mkdir -p $(PDIR) ; fi
+          echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
 # Checks that BOPT is set
 chkbopt:
@@ -85,7 +86,7 @@ runexamples:
           $(OMAKE) -f makefile $$ex; \
           done;) fi
 
-# Does nothing, obviously
+# Does nothing, obviously, need for some rules that require actions.
 foo:
 
 # Builds library
