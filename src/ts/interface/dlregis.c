@@ -32,10 +32,10 @@ int TSInitializePackage(char *path) {
   /* Register Constructors and Serializers */
   ierr = TSRegisterAll(path);                                                                             CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&TS_Step,                  "TSStep",           PETSC_NULL, TS_COOKIE);     CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_PseudoComputeTimeStep, "TSPseudoCmptTStp", PETSC_NULL, TS_COOKIE);     CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_FunctionEval,          "TSFunctionEval",   PETSC_NULL, TS_COOKIE);     CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_JacobianEval,          "TSJacobianEval",   PETSC_NULL, TS_COOKIE);     CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TS_Step,                  "TSStep",           TS_COOKIE);                 CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TS_PseudoComputeTimeStep, "TSPseudoCmptTStp", TS_COOKIE);                 CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TS_FunctionEval,          "TSFunctionEval",   TS_COOKIE);                 CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TS_JacobianEval,          "TSJacobianEval",   TS_COOKIE);                 CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

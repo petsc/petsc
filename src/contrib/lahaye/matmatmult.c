@@ -44,7 +44,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
   
   if (!logkey_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_symbolic,"MatMatMult_Symbolic",PETSC_NULL,MAT_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&logkey_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
   /* Set up */
@@ -168,7 +168,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   if (bn!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",bn,cn);
 
   if (!logkey_numeric) {
-    ierr = PetscLogEventRegister(&logkey_numeric,"MatMatMult_Numeric",PETSC_NULL,MAT_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&logkey_numeric,"MatMatMult_Numeric",MAT_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
   flops = 0;

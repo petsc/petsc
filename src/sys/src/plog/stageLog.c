@@ -90,7 +90,6 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage)
   /* Setup stage */
   ierr = PetscStrallocpy(sname, &str);                                                                    CHKERRQ(ierr);
   stageLog->stageInfo[s].name          = str;
-  stageLog->stageInfo[s].color         = PETSC_NULL;
   stageLog->stageInfo[s].cookie        = -1;
   stageLog->stageInfo[s].active        = PETSC_FALSE;
   stageLog->stageInfo[s].visible       = PETSC_TRUE;
