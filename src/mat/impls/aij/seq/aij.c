@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.140 1996/01/26 04:33:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.141 1996/01/26 19:33:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -119,6 +119,7 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
         rmax = imax[row] = imax[row] + CHUNKSIZE;
         PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + sizeof(Scalar)));
         a->maxnz += CHUNKSIZE;
+        a->reallocs++;
       }
       N = nrow++ - 1; a->nz++;
       /* shift up all the later entries in this row */
@@ -433,6 +434,10 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
+  PLogInfo((PetscObject)A,"MatAssemblyEnd_SeqAIJ:Unneeded storage space %d used %d rows %d\n",
+           fshift,a->nz,m);
+  PLogInfo((PetscObject)A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues %d\n",
+           a->reallocs);
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
   return 0;
@@ -1296,6 +1301,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->row              = 0;
   b->col              = 0;
   b->indexshift       = 0;
+  b->reallocs         = 0;
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_oneindex", &flg); CHKERRQ(ierr);
   if (flg) b->indexshift = -1;
   
