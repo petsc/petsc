@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.10 2001/01/15 21:47:30 bsmith Exp balay $*/
+/*$Id: symmlq.c,v 1.11 2001/01/16 18:19:48 balay Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -16,15 +16,12 @@ int KSPSetUp_SYMMLQ(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,"No right preconditioning for KSPSYMMLQ");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(2,"No symmetric preconditioning for KSPSYMMLQ");
   }
-
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -33,18 +30,20 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1;
-  Scalar       ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
-  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms;
-  Scalar       rho0,rho1,rho2,rho3;
+  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
+  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
   Scalar       mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np,s_prod;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat          Amat,Pmat;
   MatStructure pflag;
   KSP_SYMMLQ   *symmlq = (KSP_SYMMLQ*)ksp->data;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
   maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -75,7 +74,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   if (PetscAbsScalar(dp) < symmlq->haptol) {
-    PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+    PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",PetscAbsScalar(dp),symmlq->haptol);
     dp = 0.0;
   }
 
@@ -140,7 +139,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
     betaold = beta;                                /* beta_k                  */
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
     if (PetscAbsScalar(dp) < symmlq->haptol) {
-      PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+      PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",PetscAbsScalar(dp),symmlq->haptol);
       dp = 0.0;
     }
 

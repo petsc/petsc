@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.3 2001/01/15 21:47:02 bsmith Exp balay $*/
+/*$Id: is.c,v 1.4 2001/01/16 18:19:15 balay Exp bsmith $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -425,10 +425,10 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
       average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {
         ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
-                                             PetscGlobalRank,average);CHKERRQ(ierr);
+                                             PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is fixed.    Average = % 1.14e\n",
-                                             PetscGlobalRank,average);CHKERRQ(ierr);
+                                             PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       }
       PetscViewerFlush(PETSC_VIEWER_STDOUT_(pc->comm));
     }
