@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ts.c tsreg.c tsregall.c tsfd.c dlregis.c
+SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c tsfd.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = ts.o tsreg.o tsregall.o tsfd.o dlregis.o
+OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS

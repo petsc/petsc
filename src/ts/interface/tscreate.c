@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gridcreate.c,v 1.7 2000/01/10 03:54:25 knepley Exp $";
+static char vcid[] = "$Id: tscreate.c,v 1.7 2000/01/10 03:54:25 knepley Exp $";
 #endif
 
-#include "src/grid/gridimpl.h"      /*I "grid.h"  I*/
+#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
@@ -60,9 +60,9 @@ int TSCreate(MPI_Comm comm, TS *ts) {
   ierr = TSInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(t, _TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);
+  PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);
   PetscLogObjectCreate(t);
-  PetscLogObjectMemory(t, sizeof(struct _TS));
+  PetscLogObjectMemory(t, sizeof(struct _p_TS));
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));                                                     CHKERRQ(ierr);
   t->bops->publish    = TSPublish_Petsc;
   t->type_name        = PETSC_NULL;
