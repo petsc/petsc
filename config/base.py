@@ -612,6 +612,7 @@ class Configure:
     valid    = 1
     self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
     (output, status)               = self.outputLink('', '')
+    print output
     if status:
       valid = 0
       self.framework.log.write('Rejecting linker flag '+flag+' due to nonzero status from link\n')
