@@ -78,7 +78,7 @@ info_h:
 	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
 	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
 	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
-	-@echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; true
+	-@echo  "Fortran Compiler version:" >> MINFO ; ${FCV} >> MINFO 2>&1 ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerflagsinfo = \"  " >> MINFO
 	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
@@ -147,7 +147,7 @@ testfortran: info
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
-	-@if [ "${C_FC}" != "" ]; then \
+	-@if [ "${FC}" != "" ]; then \
             ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3 tree; \
             echo "Completed compiling and running Fortran test examples"; \
           else \
@@ -167,7 +167,7 @@ testfortran_uni: info
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@if [ "${C_FC}" != "" ]; then \
+	-@if [ "${FC}" != "" ]; then \
             ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree; \
             echo "Completed compiling and running uniprocessor fortran test examples"; \
           else \

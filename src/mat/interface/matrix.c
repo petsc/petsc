@@ -2670,7 +2670,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
   PetscErrorCode ierr;
   PetscTruth     sametype,issame,flg;
   char           convname[256],mtype[256];
-  ISLocalToGlobalMapping ltog,ltogb;
+  ISLocalToGlobalMapping ltog=0,ltogb;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

@@ -191,7 +191,7 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5f:
-	-@${MPIRUN} ex5f -ksp_smonitor > ex5f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex5f -ksp_smonitor > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
