@@ -131,7 +131,6 @@ int PetscSSEEnabledTest_FALSE(PetscTruth *flag) {
 
      Options Database Keys:
 .    -disable_sse - Disable use of hand tuned Intel SSE implementations
-.    -enable_sse  - Enable use of hand tuned Intel SSE implementations
 
      Level: developer
 @*/
@@ -141,28 +140,21 @@ static PetscTruth petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscTruth petsc_sse_enabled_global     = PETSC_FALSE;
 int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
-  PetscTruth disabled_option,enabled_option;
+  PetscTruth disabled_option;
 
   PetscFunctionBegin;
 
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
-    enabled_option  = PETSC_FALSE;
 
     ierr = PetscOptionsName("-disable_sse",
-                            "Disable use of hand tuned Intel SSE implementations.","PetscSSEIsEnabled",&disabled_option);CHKERRQ(ierr);
+                            "Disable use of hand tuned Intel SSE implementations <true,false>.",
+                            "PetscSSEIsEnabled",&disabled_option);CHKERRQ(ierr);
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
+      petsc_sse_enabled_local      = PETSC_FALSE;
       petsc_sse_global_is_untested = PETSC_FALSE;
-    }
-
-    ierr = PetscOptionsName("-enable_sse",
-                            "Enable use of hand tuned Intel SSE implementations.","PetscSSEIsEnabled",&enabled_option);CHKERRQ(ierr);
-    if (enabled_option) {
-      petsc_sse_local_is_untested  = PETSC_FALSE;
-      petsc_sse_enabled_local      = PETSC_TRUE;
-      petsc_sse_global_is_untested = PETSC_FALSE;
-      petsc_sse_enabled_global     = PETSC_TRUE;
+      petsc_sse_enabled_global     = PETSC_FALSE;
     }
 
     if (petsc_sse_local_is_untested) {
