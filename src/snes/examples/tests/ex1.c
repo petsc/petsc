@@ -1,6 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.38 1996/03/26 00:10:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.39 1996/07/08 22:23:15 bsmith Exp curfman $";
 #endif
+
+/* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
