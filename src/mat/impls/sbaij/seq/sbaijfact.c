@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.9 2000/07/31 15:42:11 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.10 2000/07/31 16:47:25 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -12,36 +12,25 @@ See page 85, "Iterative Methods ..." by Saad. */
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
-int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
+int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
-  IS          isicol,isrow;
+  IS          iperm;
   int         *rip,*riip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
   int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  /* PetscReal   f = 1.0; */
 
   PetscFunctionBegin;
-  isrow = iscol;   /* remove isrow later! */
-  /* PetscValidHeaderSpecific(isrow,IS_COOKIE); */
-  PetscValidHeaderSpecific(iscol,IS_COOKIE); 
-  /* if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");*/
-  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&rip);CHKERRQ(ierr); 
-  ierr = ISGetIndices(isicol,&riip);CHKERRQ(ierr);
-  /*
-  for (k=0; k<mbs; k++) {
-    if ( rip[k] - riip[k] != 0 ) {
-      printf("Non-symm. permutation, use symm. permutation or general matrix format\n");
-      break;
-    }
-  }
-  */
+  PetscValidHeaderSpecific(perm,IS_COOKIE); 
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+  ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
+  ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr); 
+  ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
+  
   /* initialization */
   /* Don't know how many column pointers are needed so estimate. 
      Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
-  /* if (info) f = info->fill; */
   iu   = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(iu);
   umax = (int)(f*ai[mbs] + 1); umax += mbs + 1; 
   ju   = (int*)PetscMalloc(umax*sizeof(int));CHKPTRQ(ju);
@@ -128,10 +117,8 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
     for (j=jumin; j<juptr+1; j++){
       i=q[i];
       ju[j]=i;
-      /* printf(" k=%d, ju[%d]=%d\n",k,j,ju[j]);*/
-    } 
-    /* printf("\n");  */     
-  } /* for (k=0; k<mbs; k++) */
+    }     
+  } 
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
@@ -143,15 +130,15 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
      PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
   }
 
-  ierr = ISRestoreIndices(iscol,&rip);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&riip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
 
   ierr = PetscFree(q);CHKERRQ(ierr);
   ierr = PetscFree(jl);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqSBAIJ(A->comm,bs,bs*mbs,bs*mbs,0,PETSC_NULL,B);CHKERRQ(ierr);
-  PLogObjectParent(*B,isicol); 
+  PLogObjectParent(*B,iperm); 
   b = (Mat_SeqSBAIJ*)(*B)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
   b->singlemalloc = PETSC_FALSE;
@@ -164,11 +151,11 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
   b->diag       = 0;
   b->ilen       = 0;
   b->imax       = 0;
-  b->row        = iscol;
-  b->col        = iscol;
-  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-  b->icol       = isicol;
+  b->row        = perm;
+  b->col        = perm;
+  ierr          = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  ierr          = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  b->icol       = iperm;
   b->solve_work = (Scalar*)PetscMalloc((bs*mbs+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
