@@ -14,12 +14,14 @@
 #   PETSC_DIR = /tmp/petsc
 # Argonne network
     PETSC_DIR = /home/curfman/petsc
+# Argonne SPx
+#   PETSC_DIR = /sphome/curfman/petsc
 # Power Challenge - NCSA
-#    PETSC_DIR = /u/ac/barrys/petsc
+#   PETSC_DIR = /u/ac/barrys/petsc
 # Cray T3E - NERSC
-#    PETSC_DIR = /u3/bsmith/petsc
+#   PETSC_DIR = /u3/bsmith/petsc
 # Cray T3D - NERSC
-#    PETSC_DIR = /u/ddscf/bsmith/petsc
+#   PETSC_DIR = /u/ddscf/bsmith/petsc
 # SP2 - NASA
 #   PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
 

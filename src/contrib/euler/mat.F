@@ -852,8 +852,8 @@ c  so no message-pasing is performed during these phases.
 
 c ----------------------------------------------------------------------
 c
-      integer function rbuild_direct( Fvec, f, sctype, dt, dr, dru, 
-     &                drv, drw, de, ltog, nloc,
+      integer function rbuild_direct( f, sctype, dt, dr, dru, 
+     &                drv, drw, de, 
      &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
      &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
      &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
@@ -865,12 +865,10 @@ c  rbuild - Assembles residual vector directly (without using
 c           VecSetValues().
 c
 c  Input Parameters:
-c    Fvec   - PETSc vector data structure
+c    f      - local array for PETSc vector storage
 c    sctype - type of scaling
 c    dt     - pseudo-transient continuation parameter
 c    dr, dru, drv, drw, de - residual components
-c    ltog     - local-to-global mapping for distributed arrays
-c    nloc     - number of elements in ltog mapping
 c
 c  Output Parameter:
 c    Fvec      - fully assembled residual vector
@@ -896,10 +894,9 @@ c     uniprocessor grid!
 
       Double  f(0:*)
       integer nc,i,j,k,jk,sctype,ijkx,ik
-      integer nloc,ltog(0:nloc-1)
-      Vec     Fvec
 
       rbuild_direct = 0
+      nc = 5
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
         if (rank .eq. 0) 
      &    write(6,*) 'rbuild_direct: invalid value of bctype flag!'
@@ -912,8 +909,6 @@ c     uniprocessor grid!
         rbuild_direct = -1
         return
       endif
-
-      nc = 5
 
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=1, j=1, k=1

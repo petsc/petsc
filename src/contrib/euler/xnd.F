@@ -83,10 +83,10 @@ c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      Double  cfl_init,rtol,beta1,eps,epsi,time_init
+      Double  cfl_init,rtol,beta1,eps,time_init
       integer jsolve,app,nb,nt,ierr,ifreq1
 #if defined(ACTIVATE_JULIANNE)
-      integer m,converge
+      integer m,converge,epsi
 #endif
       julianne    = 0
 #if !defined(ACTIVATE_JULIANNE)

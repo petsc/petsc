@@ -151,6 +151,7 @@ typedef struct {
     int      *lin_its, last_its;
     FILE     *fp;                           /* file for stashing convergence info at each iteration */
     int      check_solution;
+    int      cfl_snes_its;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
