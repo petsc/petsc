@@ -425,17 +425,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal      zeropivot,rs,d,shift_nz;
-  PetscReal      row_shift,shift_top=0.;
-  PetscTruth     shift_pd;
+  PetscReal      rs,d;
+  PetscReal      row_shift;
   LUShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
-  shift_nz  = info->shiftnz;
-  shift_pd  = info->shiftpd;
-  zeropivot = info->zeropivot;
-
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
@@ -445,11 +440,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
-  /* if both shift schemes are chosen by user, only use shift_pd */
-  if (shift_pd && shift_nz) shift_nz = 0.0; 
-  if (shift_pd) { /* set shift_top=max{row_shift} */
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
+  if (info->shiftpd) { /* set sctx.shift_top=max{row_shift} */
     PetscInt *aai = a->i,*ddiag = a->diag;
-    shift_top = 0;
+    sctx.shift_top = 0;
     for (i=0; i<n; i++) {
       d = PetscRealPart((a->a)[ddiag[i]]); 
       /* calculate amt of shift needed for this row */
@@ -462,10 +457,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       nz = aai[i+1] - aai[i];
       for (j=0; j<nz; j++) 
 	row_shift += PetscAbsScalar(v[j]);
-      if (row_shift>shift_top) shift_top = row_shift;
+      if (row_shift>sctx.shift_top) sctx.shift_top = row_shift;
     }
-    if (shift_top == 0.0) shift_top += 1.e-12;
-    sctx.shift_top    = shift_top;
+    if (sctx.shift_top == 0.0) sctx.shift_top += 1.e-12;
+    sctx.shift_top    *= 1.1;
     sctx.nshift_max   = 5;
     sctx.shift_lo     = 0.;
     sctx.shift_hi     = 1.;
@@ -525,7 +520,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       }
     } 
 
-    if (shift_pd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shiftpd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -551,11 +546,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shift_nz) {
+    if (info->shiftnz) {
       PetscLogInfo(0,"MatLUFactorNumeric_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
-    } else if (shift_pd) {
+    } else if (info->shiftpd) {
       b->lu_shift_fraction = info->shift_fraction;
-      PetscLogInfo(0,"MatLUFactorNumeric_SeqAIJ: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,shift_top);
+      PetscLogInfo(0,"MatLUFactorNumeric_SeqAIJ: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);
     }
   }
   PetscFunctionReturn(0);
