@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.1 2000/07/21 14:08:10 balay Exp balay $"
+"$Id: petscconf.h,v 1.2 2000/07/21 18:10:34 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -17,7 +17,6 @@
 #define PETSC_HAVE_GETCWD 1
 #define PETSC_HAVE_GETHOSTNAME 1
 #define PETSC_HAVE_GETTIMEOFDAY 1
-#define PETSC_HAVE_GETWD 1
 #define PETSC_HAVE_MEMMOVE 1
 #define PETSC_HAVE_RAND 1
 #define PETSC_HAVE_READLINK 1
@@ -27,7 +26,6 @@
 #define PETSC_HAVE_SIGSET 1
 #define PETSC_HAVE_SOCKET 1
 #define PETSC_HAVE_STRSTR 1
-#define PETSC_HAVE_SYSINFO 1
 #define PETSC_HAVE_UNAME 1
 #define PETSC_HAVE_FCNTL_H 1
 #define PETSC_HAVE_LIMITS_H 1

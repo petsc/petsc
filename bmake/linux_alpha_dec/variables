@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.13 2000/07/18 20:07:49 balay Exp $ 
+# $Id: base_variables,v 1.1 2000/07/21 14:08:10 balay Exp balay $ 
 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
@@ -13,7 +13,7 @@ SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc
-C_FC		   = fort -w
+C_FC		   = fort -assume no2underscores -w
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = cc
@@ -30,7 +30,7 @@ O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = cxx -x cxx
-CXX_FC		   = fort -w
+CXX_FC		   = fort -assume no2underscores -w
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = cxx
