@@ -24,6 +24,8 @@ PETSc (version 2.0.17) include:
  - XXX
  - XXX
 
+[Mention new tutorial stuff? Searchable web index?]
+
 The new release is available for UNIX machines via:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz
 Users of Windows NT/95 (only!) should instead retrieve the zip file:
