@@ -5,7 +5,7 @@
 #include "samgfunc.h"
 #include "petscfunc.h"
 
-/*M
+/*MC
      PCSAMG -   SAMG + PETSc interface                                                
                                                          
     This interface allows e.g. to call samg as a shell preconditioner.    

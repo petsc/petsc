@@ -146,7 +146,7 @@ static int PCDestroy_NN(PC pc)
 }
 
 /* -------------------------------------------------------------------------- */
-/*M
+/*MC
    PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
    Options Database Keys:
