@@ -658,7 +658,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   }
 
   /* Add time step contribution */
-  if (tsCtx->ires)
+  if (tsCtx->ires) {
     if ((param->second_order) && (tsCtx->itstep > 0))
     {
       ierr = AddTSTermLocal2(info,x,f,user);
@@ -669,6 +669,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       ierr = AddTSTermLocal(info,x,f,user);
       CHKERRQ(ierr);
     }
+  }
 
   /*
      Flop count (multiply-adds are counted as 2 operations)
