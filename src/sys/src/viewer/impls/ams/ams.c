@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.15 1999/03/17 23:21:05 bsmith Exp balay $";
+static char vcid[] = "$Id: ams.c,v 1.16 1999/03/30 19:57:35 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -84,7 +84,8 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
 
 .keywords: Viewer, open, AMS memory snooper
 
-.seealso: ViewerDestroy(), ViewerAMSOpen()
+.seealso: ViewerDestroy(), ViewerAMSOpen(), VIEWER_AMS_, VIEWER_AMS_WORLD, VIEWER_AMS_SELF
+
 @*/
 int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
 {
@@ -138,7 +139,7 @@ static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
      an error code.  The window viewer is usually used in the form
 $       XXXView(XXX object,VIEWER_AMS_(comm));
 
-.seealso: VIEWER_AMS_WORLD, VIEWER_AMS_SELF, ViewerAMSOpenX(), 
+.seealso: VIEWER_AMS_WORLD, VIEWER_AMS_SELF, ViewerAMSOpen(), 
 @*/
 Viewer VIEWER_AMS_(MPI_Comm comm)
 {

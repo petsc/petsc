@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.61 1999/03/07 17:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.62 1999/03/17 23:21:01 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -30,6 +30,10 @@ typedef struct  {
 
     Level: advanced
 
+    Notes:
+      For writable binary viewers, the descriptor will only be valid for the 
+    first processor in the communicator that shares the viewer.
+ 
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -59,6 +63,10 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 
     Level: advanced
 
+    Notes:
+      For writable binary viewers, the descriptor will only be valid for the 
+    first processor in the communicator that shares the viewer.
+ 
     Fortran Note:
     This routine is not supported in Fortran.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.6 1999/03/31 03:53:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.7 1999/03/31 03:54:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -72,7 +72,8 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDOUT_(comm));
 
-.seealso: VIEWER_DRAW_(), ViewerASCIIOpen()
+.seealso: VIEWER_DRAW_(), ViewerASCIIOpen(), VIEWER_STDERR_, VIEWER_STDOUT_WORLD,
+          VIEWER_STDOUT_SELF
 
 @*/
 Viewer VIEWER_STDOUT_(MPI_Comm comm)
@@ -141,7 +142,8 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDERR_(comm));
 
-.seealso: VIEWER_DRAW_, ViewerASCIIOpen(), VIEWER_STDOUT_
+.seealso: VIEWER_DRAW_, ViewerASCIIOpen(), VIEWER_STDOUT_, VIEWER_STDOUT_WORLD,
+          VIEWER_STDOUT_SELF, VIEWER_STDERR_WORLD, VIEWER_STDERR_SELF
 @*/
 Viewer VIEWER_STDERR_(MPI_Comm comm)
 {
@@ -220,7 +222,8 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
 .keywords: Viewer, file, open
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerBinaryOpen(),
-          ViewerASCIIGetPointer(), ViewerSetFormat()
+          ViewerASCIIGetPointer(), ViewerSetFormat(), VIEWER_STDOUT_, VIEWER_STDERR_,
+          VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF, 
 @*/
 int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.5 1999/02/01 23:19:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.6 1999/03/17 23:21:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -23,7 +23,8 @@ FList ViewerList              = 0;
 
 .keywords: Viewer, create, context
 
-.seealso: ViewerDestroy()
+.seealso: ViewerDestroy(), ViewerSetType()
+
 @*/
 int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.33 1999/01/31 16:04:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.34 1999/03/17 23:21:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -56,7 +56,7 @@ int ViewerFlush_Draw(Viewer v)
 
 .keywords: viewer, draw, get
 
-.seealso: ViewerDrawGetLG(), ViewerDrawGetAxis()
+.seealso: ViewerDrawGetLG(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
 int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 {
@@ -102,7 +102,7 @@ int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 
 .keywords: viewer, draw, get, line graph
 
-.seealso: ViewerDrawGetDraw(), ViewerDrawGetAxis()
+.seealso: ViewerDrawGetDraw(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
 int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 {
@@ -150,7 +150,7 @@ int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 
 .keywords: viewer, draw, get, line graph
 
-.seealso: ViewerDrawGetDraw(), ViewerDrawGetLG()
+.seealso: ViewerDrawGetDraw(), ViewerDrawGetLG(), ViewerDrawOpen()
 @*/
 int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 {
@@ -243,7 +243,8 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
 
 .keywords: draw, open, x, viewer
 
-.seealso: DrawOpen()
+.seealso: DrawOpen(), ViewerDestroy(), ViewerDrawGetDraw(), ViewerCreate(), VIEWER_DRAW_,
+          VIEWER_DRAW_WORLD, VIEWER_DRAW_SELF
 @*/
 int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,
                     int w,int h,Viewer *viewer)
@@ -298,6 +299,7 @@ EXTERN_C_END
 
     Level: intermediate
 
+.seealso: ViewerDrawOpen(), ViewerDrawGetDraw(), 
 
 @*/
 int ViewerDrawClear(Viewer viewer)
