@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.46 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.47 1996/02/13 23:28:48 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -102,6 +102,14 @@ static int     TRdebugLevel = 0;
 static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
 
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+  extern int malloc_verify();
+}
+#elif defined(PARCH_sun4)
+  extern int malloc_verify();
+#endif
+
 /*
    TrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
@@ -158,6 +166,10 @@ int TrValid(int line,char *file )
     }
     head = head->next;
   }
+#if defined(PARCH_sun4)
+  malloc_verify();
+#endif
+
   return errs;
 }
 
