@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.22 1997/07/09 20:55:52 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.23 1997/11/24 01:50:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -12,6 +12,7 @@ static char vcid[] = "$Id: zvec.c,v 1.22 1997/07/09 20:55:52 balay Exp bsmith $"
 #define veccreate_             VECCREATE
 #define vecduplicate_          VECDUPLICATE
 #define veccreatempi_          VECCREATEMPI
+#define veccreateshared_       VECCREATESHARED
 #define vecscattercreate_      VECSCATTERCREATE
 #define vecscattercopy_        VECSCATTERCOPY
 #define vecdestroy_            VECDESTROY
@@ -32,6 +33,7 @@ static char vcid[] = "$Id: zvec.c,v 1.22 1997/07/09 20:55:52 balay Exp bsmith $"
 #define veccreate_             veccreate
 #define vecduplicate_          vecduplicate
 #define veccreatempi_          veccreatempi
+#define veccreateshared_       veccreateshared
 #define vecscattercreate_      vecscattercreate
 #define vecscattercopy_        vecscattercopy
 #define vecdestroy_            vecdestroy
@@ -136,6 +138,13 @@ void veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
+  *(int*)vv = PetscFromPointer(lV);
+}
+
+void veccreateshared_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
+{
+  Vec lV;
+  *__ierr = VecCreateShared((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
   *(int*)vv = PetscFromPointer(lV);
 }
 
