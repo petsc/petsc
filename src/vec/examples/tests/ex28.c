@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.1 1999/02/17 00:10:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.2 1999/02/18 21:28:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
 {
   int           ierr, n = 25,i,row0 = 0;
   Scalar        one = 1.0, two = 2.0,result1,result2,results[40],value,ten = 10.0;
-  double        result3,result4;
+  double        result3,result4,result[2];
   Vec           x,y,vecs[40];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -78,6 +78,22 @@ int main(int argc,char **argv)
   }
   if (result3 != 10.0 || result4 != 34.0) {
     PetscPrintf(PETSC_COMM_WORLD,"Error max 1 norms: result3 %g result4 %g\n",result3,result4);
+  }
+
+  /*
+       tests 1_and_2 norm 
+  */
+  ierr = VecNormBegin(x,NORM_MAX,&result1);CHKERRA(ierr);
+  ierr = VecNormBegin(x,NORM_1_AND_2,result);CHKERRA(ierr);
+  ierr = VecNormBegin(y,NORM_MAX,&result2);CHKERRA(ierr);
+  ierr = VecNormEnd(x,NORM_MAX,&result1);CHKERRA(ierr);
+  ierr = VecNormEnd(x,NORM_1_AND_2,result);CHKERRA(ierr);
+  ierr = VecNormEnd(y,NORM_MAX,&result2);CHKERRA(ierr);
+  if (result1 != 10.0 || result2 != 2.0) {
+    PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",PetscReal(result1),PetscReal(result2));
+  }
+  if (result[0] != 34.0 || result[1] != sqrt(124.0)) {
+    PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);
   }
 
   ierr = VecDestroy(x); CHKERRA(ierr);

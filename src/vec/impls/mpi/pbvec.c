@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.115 1999/01/27 21:20:07 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.116 1999/02/04 22:47:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -145,7 +145,10 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecDestroy_MPI,
             VecView_MPI,
             VecPlaceArray_Seq,
-            VecGetMap_Seq};
+            VecGetMap_Seq,
+            VecDot_Seq,
+            VecTDot_Seq,
+            VecNorm_Seq};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreate_MPI_Private"

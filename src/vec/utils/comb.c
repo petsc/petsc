@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.56 1999/01/27 21:20:24 balay Exp curfman $";
+static char vcid[] = "$Id: comb.c,v 1.6 1999/02/19 19:08:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,9 +23,7 @@ static char vcid[] = "$Id: gcreatev.c,v 1.56 1999/01/27 21:20:24 balay Exp curfm
            insure that the user calls the routines in the correct order
 */
 
-#include "vec.h"                              /*I   "vec.h"   I*/
-extern int VecDot_Seq(Vec,Vec,Scalar*);
-extern int VecNorm_Seq(Vec,NormType,double*);
+#include "src/vec/vecimpl.h"                              /*I   "vec.h"   I*/
 
 #define STATE_BEGIN 0
 #define STATE_END   1
@@ -311,8 +309,9 @@ int VecDotBegin(Vec x, Vec y,Scalar *result)
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = x;
+  if (!x->ops->dot_local) SETERRQ(1,1,"Vector does not suppport local dots");
   PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
-  ierr = VecDot_Seq(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
+  ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
   PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
   PetscFunctionReturn(0);
 }
@@ -366,14 +365,14 @@ int VecDotEnd(Vec x, Vec y,Scalar *result)
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------------------------------*/
+/* -------------------------------------------------------------------------*/
 
 /*@
      VecNormBegin - Starts a split phase norm
 
   Input Parameters:
 +   x - the first vector
-.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX
+.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
 -   result - where the result will go (can be PETSC_NULL)
 
    Level: advanced
@@ -385,25 +384,31 @@ int VecNormBegin(Vec x, NormType ntype, double *result)
 {
   int               ierr;
   VecSplitReduction *sr;
-  double            lresult;
+  double            lresult[2];
 
   PetscFunctionBegin;
   ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
     SETERRQ(1,1,"Called before all VecxxxEnd() called");
   }
-  if (sr->numopsbegin >= sr->maxops) {
+  if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
     ierr = VecSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   
   sr->invecs[sr->numopsbegin]     = x;
+  if (!x->ops->norm_local) SETERRQ(1,1,"Vector does not support local norms");
   PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
-  ierr = VecNorm_Seq(x,ntype,&lresult);CHKERRQ(ierr);
+  ierr = (*x->ops->norm_local)(x,ntype,lresult);CHKERRQ(ierr);
   PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
-  if (ntype == NORM_2)   lresult                         = lresult*lresult;
+  if (ntype == NORM_2)         lresult[0]                = lresult[0]*lresult[0];
+  if (ntype == NORM_1_AND_2)   lresult[1]                = lresult[1]*lresult[1];
   if (ntype == NORM_MAX) sr->reducetype[sr->numopsbegin] = REDUCE_MAX;
   else                   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
-  sr->lvalues[sr->numopsbegin++] = lresult;
+  sr->lvalues[sr->numopsbegin++] = lresult[0];
+  if (ntype == NORM_1_AND_2) {
+    sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
+    sr->lvalues[sr->numopsbegin++]  = lresult[1]; 
+  }   
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +417,7 @@ int VecNormBegin(Vec x, NormType ntype, double *result)
 
   Input Parameters:
 +   x - the first vector (can be PETSC_NULL)
-.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX
+.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
 -   result - where the result will go
 
    Level: advanced
@@ -442,9 +447,12 @@ int VecNormEnd(Vec x, NormType ntype,double *result)
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) {
     SETERRQ(1,1,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   }
-  *result = PetscReal(sr->lvalues[sr->numopsend++]);
+  result[0] = PetscReal(sr->lvalues[sr->numopsend++]);
   if (ntype == NORM_2) {
-    *result = sqrt(*result);
+    result[0] = sqrt(result[0]);
+  } else if (ntype == NORM_1_AND_2) {
+    result[1] = PetscReal(sr->lvalues[sr->numopsend++]);
+    result[1] = sqrt(result[1]);
   }
 
   if (sr->numopsend == sr->numopsbegin) {
