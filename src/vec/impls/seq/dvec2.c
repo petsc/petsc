@@ -93,13 +93,13 @@ PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar *z)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_Seq"
-PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
+PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar * PETSC_RESTRICT z)
 {
   Vec_Seq        *xv = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   PetscInt       n = xin->n,i,j,nv_rem,j_rem;
-  PetscScalar    sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
-  PetscScalar    * restrict yy0,* restrict yy1,* restrict yy2,*restrict yy3; 
+  PetscScalar    sum0,sum1,sum2,sum3,x0,x1,x2,x3,* PETSC_RESTRICT x;
+  PetscScalar    * PETSC_RESTRICT yy0,* PETSC_RESTRICT yy1,* PETSC_RESTRICT yy2,*PETSC_RESTRICT yy3; 
   Vec            *yy;
 
   PetscFunctionBegin;
@@ -818,9 +818,9 @@ PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
     for (i=0; i<n; i++) ww[i] *= xx[i];
   } else {
     /*  This was suppose to help on SGI but didn't really seem to
-          PetscReal * __restrict www = ww;
-          PetscReal * __restrict yyy = yy;
-          PetscReal * __restrict xxx = xx;
+          PetscReal * PETSC_RESTRICT www = ww;
+          PetscReal * PETSC_RESTRICT yyy = yy;
+          PetscReal * PETSC_RESTRICT xxx = xx;
           for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
     */
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
