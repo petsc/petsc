@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: gcookie.c,v 1.2 1996/02/08 18:26:06 bsmith Exp $";
+static char vcid[] = "$Id: cookie.c,v 1.2 1996/02/09 03:44:54 bsmith Exp bsmith $";
 #endif
 
-int LARGEST_PETSC_COOKIE = 30;
+#include "petsc.h"
+int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_STATIC;
 
 /*@
      PetscRegisterCookie - Registers a new cookie for use 
