@@ -625,13 +625,19 @@ if __name__ ==  '__main__':
         print 'Entries in server dictionary'
         rdict = RDict(parentDirectory = parent)
         for key in rdict.types():
-          if not key.startswith('cacheKey'):
+          if not key.startswith('cacheKey') and not key.startswith('stamp-'):
             print str(key)+' '+str(rdict.getType(key))
       elif action == 'cacheClient':
         print 'Cache entries in server dictionary'
         rdict = RDict(parentDirectory = parent)
         for key in rdict.types():
           if key.startswith('cacheKey'):
+            print str(key)+' '+str(rdict.getType(key))
+      elif action == 'stampClient':
+        print 'Stamp entries in server dictionary'
+        rdict = RDict(parentDirectory = parent)
+        for key in rdict.types():
+          if key.startswith('stamp-'):
             print str(key)+' '+str(rdict.getType(key))
       elif action == 'clear':
         print 'Clearing all dictionaries'
