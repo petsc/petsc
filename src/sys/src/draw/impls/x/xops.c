@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.115 1998/07/23 14:04:25 curfman Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.116 1998/08/26 22:03:18 balay Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -379,7 +379,7 @@ static int DrawGetPopup_X(Draw draw,Draw *popup)
   Draw_X* win = (Draw_X*) draw->data;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+25,150,220,popup);CHKERRQ(ierr);
+  ierr = DrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+35,150,220,popup);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
