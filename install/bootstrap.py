@@ -46,10 +46,9 @@ class BootstrapInstall (object):
       return 0
     # Otherwise try to locate "bk"
     output = BootstrapInstall.getExecutable('bk')
-    if output:
+    if not output:
       # TODO: Log output
-      # return 0
-      pass
+      return 0
     self.bkPath = os.path.dirname(output)
     return 1
 
