@@ -22,8 +22,17 @@ class Configure(configure.Configure):
     self.headers   = self.framework.require('config.headers',   self)
     self.functions = self.framework.require('config.functions', self)
     self.libraries = self.framework.require('config.libraries', self)
+    self.blas      = self.framework.require('PETSc.BLAS',       self)
     self.lapack    = self.framework.require('PETSc.LAPACK',     self)
     self.mpi       = self.framework.require('PETSc.MPI',        self)
+    self.framework.require('PETSc.ADIC',        self)
+    self.framework.require('PETSc.Matlab',      self)
+    self.framework.require('PETSc.Mathematica', self)
+    self.framework.require('PETSc.Triangle',    self)
+    self.framework.require('PETSc.ParMetis',    self)
+    self.framework.require('PETSc.PLAPACK',     self)
+    self.framework.require('PETSc.PVODE',       self)
+    self.framework.require('PETSc.BlockSolve',  self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -32,6 +41,11 @@ class Configure(configure.Configure):
   def defineAutoconfMacros(self):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     self.xMacro    = 'dnl Version: 2.13\ndnl Variable: X_CFLAGS\ndnl Variable: X_LIBS\ndnl Variable: X_EXTRA_LIBS\ndnl Variable: X_PRE_LIBS\nAC_PATH_XTRA'
+    return
+
+  def checkRequirements(self):
+    if not self.blas.found: raise RuntimeError('Petsc require BLAS!')
+    if not self.lapack.found: raise RuntimeError('Petsc require LAPACK!')
     return
 
   def configureDirectories(self):
@@ -295,7 +309,7 @@ class Configure(configure.Configure):
     self.addDefine('PETSC_MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
     return
 
-  def mpiuniWarning(self):
+  def configureMPIUNI(self):
     if self.mpi.foundInclude and self.mpi.foundLib: return
     raise RuntimeError('Could not find MPI!')
 ##    if self.mpiuni:
@@ -312,6 +326,7 @@ class Configure(configure.Configure):
     return
 
   def configure(self):
+    self.checkRequirements()
     self.configureDirectories()
     self.configureArchitecture()
     self.framework.header = 'bmake/'+self.arch+'-test/petscconf.h'
@@ -334,5 +349,5 @@ class Configure(configure.Configure):
     self.configureLinux()
     self.configureMachineInfo()
     self.configureMisc()
-    self.mpiuniWarning()
+    self.configureMPIUNI()
     return

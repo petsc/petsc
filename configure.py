@@ -617,7 +617,7 @@ class Framework(Configure):
     return
 
   def configureHelp(self, help):
-    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+    help.addOption(self.__module__, 'configModules', 'A list of Python modules with a Configure class')
     return
 
   def configure(self):
