@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.12 2001/07/20 18:35:12 buschelm Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.13 2001/07/20 19:57:05 buschelm Exp buschelm $ */
 #include "petscsys.h" /*I "petscsys.h" I*/
 
 #ifdef PETSC_HAVE_SSE
@@ -100,20 +100,20 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEIsEnabled"
 /*@C
-     PetscSSEIsEnabled
-     Collective on comm
+     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions to the x86 instruction 
+     set can be used.  Some operating systems do not allow the use of these instructions despite
+     hardware availability.
+
+     Collective on MPI_Comm
 
      Input Parameter:
-.    comm - MPI Communicator
+.    comm - the MPI Communicator
 
      Output Parameters:
-.    lflag - Local Flag: PETSC_TRUE if enabled in this process
+.    lflag - Local Flag:  PETSC_TRUE if enabled in this process
 .    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
 
      Level: developer
-
-     Concepts: architecture
-
 @*/
 int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
