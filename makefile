@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.190 1997/09/30 03:27:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.191 1997/09/30 15:45:28 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -49,7 +49,7 @@ info:
 	-@echo "Using C linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "Using Fortran linker: $(FLINKER)"
-	-@echo "Using Fortran libraries: $(PETSC_FORTRAN_LIB) 
+	-@echo "Using Fortran libraries: $(PETSC_FORTRAN_LIB)"
 	-@echo "=========================================="
 
 # Builds PETSc libraries for a given BOPT and architecture

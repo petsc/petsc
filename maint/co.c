@@ -1,4 +1,4 @@
-/* $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ */
+/* $Id: co.c,v 1.5 1997/09/10 19:41:03 balay Exp balay $ */
 
 #include <sys/param.h>
 #include <string.h>
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
   strcpy(command,"cd ");
   strcat(command, path );
-  strcat(command,"; /usr/local/bin/co ");
+  strcat(command,"; /soft/apps/bin/co ");
 
   for (i=1; i< argc-1; i++) {
     strcat(command, argv[i]);

@@ -1,4 +1,4 @@
-/* $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ */
+/* $Id: ci.c,v 1.7 1997/09/10 19:40:48 balay Exp balay $ */
 
 #include <sys/param.h>
 #include <string.h>
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
   strcpy(command,"cd ");
   strcat(command, path );
-  strcat(command,"; /usr/local/bin/ci ");
+  strcat(command,"; /soft/apps/bin/ci ");
 
   for (i=1; i< argc-1; i++) {
     /* if -m option is entered, take it away, and also the string
