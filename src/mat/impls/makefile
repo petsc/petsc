@@ -12,7 +12,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = dense aij shell
+DIRS     = dense aij shell row
 
 runexamples:
 
