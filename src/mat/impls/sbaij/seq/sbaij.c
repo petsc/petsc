@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.37 2000/10/19 18:54:23 hzhang Exp bsmith $*/
+/*$Id: sbaij.c,v 1.38 2000/10/24 20:26:00 bsmith Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -167,8 +167,6 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 #define __FUNC__ "MatGetOwnershipRange_SeqSBAIJ"
 int MatGetOwnershipRange_SeqSBAIJ(Mat A,int *m,int *n)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-
   PetscFunctionBegin;
   *m = 0; 
   *n = A->m;
@@ -485,7 +483,6 @@ static int MatView_SeqSBAIJ_Draw_Zoom(Draw draw,void *Aa)
 #define __FUNC__ "MatView_SeqSBAIJ_Draw"
 static int MatView_SeqSBAIJ_Draw(Mat A,Viewer viewer)
 {
-  Mat_SeqSBAIJ  *a=(Mat_SeqSBAIJ*)A->data;
   int          ierr;
   PetscReal    xl,yl,xr,yr,w,h;
   Draw         draw;
@@ -1257,9 +1254,7 @@ EXTERN_C_BEGIN
 int MatCreate_SeqSBAIJ(Mat B)
 {
   Mat_SeqSBAIJ *b;
-  int          i,ierr,size;
-  PetscTruth   flg;
-  int          s_nz; 
+  int          ierr,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -1351,7 +1346,7 @@ EXTERN_C_END
 int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 {
   Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
-  int          i,len,ierr,mbs,bs2,size;
+  int          i,len,ierr,mbs,bs2;
   PetscTruth   flg;
   int          s_nz; 
 
