@@ -60,6 +60,8 @@ PCILUSetUseDropTolerance(pc,dt,dtcol,rowmax).
     
   Draw
 
+  DrawHistxxx  changed to DrawHGxxx
+
    
   General
 
