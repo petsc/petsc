@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.1 1995/10/03 13:20:36 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -77,10 +77,11 @@ C  /* Set options */
 C  /* Check the error */
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,norm,ierr)
-      if (norm .gt. 1.e-12) 
-     &   print*,'Norm of error ',norm,' iterations ',its
+      if (norm .gt. 1.e-12) then
+         print*,'Norm of error ',norm,' iterations ',its
       else 
-     &   print*,'Norm of error < 1.e-12, iterations ',its
+         print*,'Norm of error < 1.e-12, iterations ',its
+      endif
 
 C  /* Destroy work space */
       call SLESDestroy(sles,ierr)
