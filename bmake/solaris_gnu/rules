@@ -1,4 +1,4 @@
-# $Id: base,v 1.26 1998/12/06 17:36:13 balay Exp bsmith $ 
+# $Id: base,v 1.27 1999/01/25 21:49:38 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -9,14 +9,12 @@ RANLIB           = true
 SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = /home/alice/software/egcs/solaris/bin/gcc -fPIC
-C_FC             = /home/alice/software/egcs/solaris/bin/g77
-C_CLINKER        = /home/alice/software/egcs/solaris/bin/gcc ${COPTFLAGS} \
-		   -Wl,-R,${LDIR}:${DYLIBPATH}
-C_FLINKER        = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} \
-		   -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CC             = gcc -fPIC
+C_FC             = g77
+C_CLINKER        = gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+C_FLINKER        = g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
 C_CCV            = ${C_CC} --version
-C_SYS_LIB        =  -lnsl -lsocket -lc -lg2c
+C_SYS_LIB        = -lnsl -lsocket -lc -lg2c
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g  -Wshadow  -fomit-frame-pointer
 G_FOPTFLAGS      = -g
@@ -25,12 +23,10 @@ O_COPTFLAGS      = -O -Wshadow  -fomit-frame-pointer
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = /home/alice/software/egcs/solaris/bin/g++ -fPIC
-CXX_FC           = /home/alice/software/egcs/solaris/bin/g77
-CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
-		   -Wl,-R,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
-		   -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_CC           = g++ -fPIC
+CXX_FC           = g77
+CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -lnsl -lsocket -lc -lg2c
 # ------------------------- BOPT=g_c++ options ------------------------------
@@ -83,7 +79,7 @@ shared: chkopts_basic
 	for LIBNAME in ${SHLIBS} ; \
 	do \
           if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-  	    flag=""; \
+	    flag=""; \
 	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
               flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	    else \
