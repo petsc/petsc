@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.25 1995/06/21 01:18:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.26 1995/06/21 05:28:57 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -234,10 +234,9 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                         double shift,int its,Vec xx)
 {
   Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
-  Scalar     *x, *b, *xb, *dvmain, *dv, dval;
+  Scalar     *x, *b, *xb, *dvmain, *dv, dval, sum;
   int        m = mat->m, i, j, k, d, kbase, nb = mat->nb, loc, kloc;
   int        mainbd = mat->mainbd, diag, mblock = mat->mblock, bloc;
-  register Scalar sum;
 
   /* Currently this code doesn't use wavefront orderings, although
      we should eventually incorporate that option */
