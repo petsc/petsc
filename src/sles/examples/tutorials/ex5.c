@@ -80,7 +80,7 @@ int main(int argc,char **args)
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
   if (OptionsHasName(0,0,"-rowbs_mat")) {
-    PC pc; KSP ksp; PCMETHOD pcmethod;1
+    PC pc; KSP ksp; PCMETHOD pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERR(ierr);
     ierr = PCGetMethodFromContext(pc,&pcmethod);
