@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.48 2001/08/07 14:54:31 bsmith Exp bsmith $ */
+/* $Id: petscblaslapack.h,v 1.49 2001/08/07 14:56:33 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -76,6 +76,45 @@ Cray T3D/T3E.
 #define DTRSL    STRSL
 #endif
 
+#if defined(PETSC_USE_SINGLE)
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
+#define LAgeqrf_ sgeqrf_
+#define LAgetrf_ sgetrf_
+#define LAgetf2_ sgetf2_
+#define BLdot_   sdot_
+#define BLnrm2_  snrm2_
+#define BLscal_  sscal_
+#define BLcopy_  scopy_
+#define BLswap_  sswap_
+#define BLaxpy_  saxpy_
+#define BLasum_  sasum_
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
+#define LAgeqrf_ SGEQRF
+#define LAgetrf_ SGETRF
+#define LAgetf2_ SGETF2
+#define BLdot_   SDOT
+#define BLnrm2_  SNRM2
+#define BLscal_  SSCAL
+#define BLcopy_  SCOPY
+#define BLswap_  SSWAP
+#define BLaxpy_  SAXPY
+#define BLasum_  SASUM
+#else
+#define LAgeqrf_ sgeqrf
+#define LAgetrf_ sgetrf
+#define LAgetf2_ sgetf2
+#define BLdot_   sdot
+#define BLnrm2_  snrm2
+#define BLscal_  sscal
+#define BLcopy_  scopy
+#define BLswap_  sswap
+#define BLaxpy_  saxpy
+#define BLasum_  sasum
+#endif
+
+#else
+
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
@@ -109,6 +148,8 @@ Cray T3D/T3E.
 #define BLswap_  dswap
 #define BLaxpy_  daxpy
 #define BLasum_  dasum
+#endif
+
 #endif
 
 /*
