@@ -229,6 +229,11 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_CHECK_PROGS(MATLAB,matlab)
 AC_CHECK_PROGS(FC,f77)
+if test -z "$CCC" ; then
+      AC_PROG_CXX
+      CCC=$"CXX"
+fi
+AC_SUBST(CCC)
 
 dnl Use --with-matlab-mex=path to select matlab support
 dnl if test -z "$MATLABINCPATH" ; then
