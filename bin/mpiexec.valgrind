@@ -1,0 +1,27 @@
+#!/bin/sh
+#set -x
+
+#
+# This program is a wrapper which enables using mpich2 mpiexec with
+# valgrind
+#
+
+if [ $1 !=  "-np" ]; then
+echo "Error in  mpirun command"
+exit 1
+fi
+shift
+np=$1
+shift
+progname=$1
+shift
+options=$*
+#
+# Please modify the following path to point to the correct location of mpich2 mpiexec
+#
+mpiexec=/home/petsc/soft/linux-rh73-mpich2/mpich2-snap-20040517/bin/mpiexec
+#
+# Now execute the mpirun comman
+#
+$mpiexec -np $np valgrind -q --tool=memcheck $progname $options
+
