@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.264 1997/10/19 03:24:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.265 1997/10/21 00:22:40 curfman Exp bsmith $";
 #endif
 
 /*
@@ -2603,11 +2603,11 @@ int MatRestoreArray(Mat mat,Scalar **v)
    Output Parameter:
 .  submat - the array of submatrices
 
-   Limitations:
-   Currently, MatGetSubMatrices() can extract only sequential submatrices
-   (from both sequential and parallel matrices).
-
    Notes:
+   MatGetSubMatrices() can extract only sequential submatrices
+   (from both sequential and parallel matrices). Use MatGetSubMatrix()
+   to extract a parallel submatrix.
+
    When extracting submatrices from a parallel matrix, each processor can
    form a different submatrix by setting the rows and columns of its
    individual index sets according to the local submatrix desired.
@@ -2617,7 +2617,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
 .keywords: matrix, get, submatrix, submatrices
 
-.seealso: MatDestroyMatrices()
+.seealso: MatDestroyMatrices(), MatGetSubMatrix()
 @*/
 int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
                       Mat **submat)
@@ -3082,6 +3082,47 @@ $      call MatRestoreArrayF90(x,xx_v,ierr)
 M*/
 
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetSubMatrix"
+/*@
+     MatGetSubmatrix - Gets a single submatrix on the same number of processors
+                       as the original matrix.
+
+   Input Parameters:
+.   mat - the original matrix
+.   isrow - rows this processor should obtain
+.   iscol - columns for all processors you wish kept
+.    call - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameters:
+.   newmat - the new submatrix, of the same type as the old
+
+.seealso: MatGetSubMatrices()
+
+ */
+int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
+{
+  int     ierr, size;
+  Mat     *local;
+
+  PetscFunctionBegin;
+  MPI_Comm_size(mat->comm,&size);
+
+  /* if original matrix is on just one processor then use submatrix generated */
+  if (size == 1 && call == MAT_REUSE_MATRIX) {
+    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else if (size == 1) {
+    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    *newmat = *local;
+    PetscFree(local);
+    PetscFunctionReturn(0);
+  }
+
+  if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,0,"Not currently implemented");
+  ierr = (*mat->ops.getsubmatrix)(mat,isrow,iscol,call,newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

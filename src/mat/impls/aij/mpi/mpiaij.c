@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.219 1997/10/22 14:12:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.220 1997/10/22 14:40:36 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1920,11 +1920,12 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetSubMatrix_MPIAIJ"
 /*
-   Not yet optimized. Could do
-
-     1) preallocate memory
-     2) not use MatGetRow() but rather access rows directly 
+    Not great since it makes two copies of the submatrix, first an SeqAIJ 
+  in local and then by concatenating the local matrices the end result.
+  Writing it directly would be much like MatGetSubMatrices_MPIAIJ()
 */
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
 {
