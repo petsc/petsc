@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.102 1996/04/07 22:44:50 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.103 1996/04/09 02:23:22 curfman Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -54,7 +54,8 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info) SETERRQ(1,"MatLUFactor_SeqDense:Bad LU factorization");
+  if (info<0) SETERRQ(1,"MatLUFactor_SeqDense:Bad argument to LU factorization");
+  if (info>0) SETERRQ(1,"MatLUFactor_SeqDense:Bad LU factorization");
   A->factor = FACTOR_LU;
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
   return 0;
