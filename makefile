@@ -99,7 +99,8 @@ etags:
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
 	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/interface/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/interface/*.c
+	etags -a -f src/*/src/*.c  src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common

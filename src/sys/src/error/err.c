@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.24 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.25 1995/08/27 13:59:20 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -60,7 +60,7 @@ int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
 {
   abort(); return 0;
 }
-/*@
+/*@C
    PetscDefaultErrorHandler - Default error handler routine that generates
    a traceback on error detection.
 
@@ -113,8 +113,13 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
   }
   else {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);
-    if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
-    else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
+    if (!dir) {
+      if (!message) fprintf(stderr,"%s %d %d\n",file,line,number);
+      else fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
+    }
+    else   {
+      if (!message) fprintf(stderr,"%s%s %d %d\n",dir,file,line,number);
+      else fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
   }
   return number;
 }
