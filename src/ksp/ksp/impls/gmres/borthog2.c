@@ -55,9 +55,10 @@ int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
          [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
   */
   ierr = VecMAXPY(it+1,lhh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
+  /* note lhh[j] is -<v,vnew> , hence the subtraction */
   for (j=0; j<=it; j++) {
     hh[j]  -= lhh[j];     /* hh += <v,vnew> */
-    hes[j] += lhh[j];     /* hes += - <v,vnew> */
+    hes[j] -= lhh[j];     /* hes += <v,vnew> */
   }
 
   /*
@@ -81,9 +82,10 @@ int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
     ierr = VecMDot(it+1,VEC_VV(it+1),&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
     for (j=0; j<=it; j++) lhh[j] = - lhh[j];
     ierr = VecMAXPY(it+1,lhh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
+    /* note lhh[j] is -<v,vnew> , hence the subtraction */
     for (j=0; j<=it; j++) {
       hh[j]  -= lhh[j];     /* hh += <v,vnew> */
-      hes[j] += lhh[j];     /* hes += - <v,vnew> */
+      hes[j] -= lhh[j];     /* hes += <v,vnew> */
     }
   }
 
