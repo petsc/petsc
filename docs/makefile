@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.43 2001/01/20 03:37:48 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.44 2001/01/29 04:03:52 bsmith Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -24,7 +24,7 @@ bibtex2html:
 	/home/petsc/software/bibtex2html-1.44-linux/bibtex2html -nokeys -rawurl tex/petscapps.bib
 
 bib2html:
-	${RM} /mcs/www-unix/petsc/docs/petscapps-bib.html /mcs/www-unix/petsc/docs/petscapps-bib.html
+	${RM} /mcs/www-unix/petsc/docs/petscapps.html /mcs/www-unix/petsc/docs/petscapps-bib.html
 	/home/gropp/public_html/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/docs/petscapps.html -listconfig tex/doctext/petscapps.cfg tex/petscapps.bib > /mcs/www-unix/petsc/docs/petscapps-bib.html
-	chmod g+w /mcs/www-unix/petsc/docs/petscapps-bib.html /mcs/www-unix/petsc/docs/petscapps-bib.html
+	chmod g+w /mcs/www-unix/petsc/docs/petscapps.html /mcs/www-unix/petsc/docs/petscapps-bib.html
 
