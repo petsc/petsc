@@ -54,7 +54,7 @@
 }
  
 @Misc{ infospheres-web-page,
-  author =       "",
+  author =       "K.~M. {Chandy et al.}",
   title =        "{Infospheres} {W}eb page",
   note =         "\url{http://www.infospheres.caltech.edu}",
   key =        "{Infospheres} {Web} page",
@@ -173,6 +173,14 @@
                 Inter-operable Scientific and Engineering Computing",
  year      = 1999,
  pages     = "30-39"
+}
+
+@INPROCEEDINGS{ kohn01,
+ AUTHOR=    "Scott Kohn and Gary Kumfert and Jeff Painter and Cal Ribbens",
+ TITLE=     "Divorcing Language Dependencies from a Scientific Software Library",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the Tenth SIAM Conference on Parallel Processing",
+ year      = 2001,
 }
 
 
@@ -1618,7 +1626,7 @@ Booktitle = "Supercomputing '95 Proceedings",
 
 @misc {
    atlas-web-page,
-   author = "R. Clint Whaley et al.",
+   author = "R. Clint {Whaley et al.}",
    title  = "{ATLAS Web Page}",
    note   = "\url{http://math-atlas.sourceforge.net}"
 }
@@ -1652,7 +1660,8 @@ Booktitle = "Supercomputing '95 Proceedings",
    booktitle = "Proceedings of the SIAM Workshop on Object-Oriented Methods
                 for Inter-Operable Scientific and Engineering Computing",
    pages     = "235-244",
-   year      = 1999
+   year      = 1999,
+   note      = "See \url{http://www.llnl.gov/CASC/samrai}"
 }
 
 @Unpublished{samrai-web-page,
@@ -1677,6 +1686,7 @@ Booktitle = "Supercomputing '95 Proceedings",
                 Inter-operable Scientific and Engineering Computing",
  year      = 1999,
  pages     = "215-224",
+ note      = "See \url{http://www.llnl.gov/CASC/Overture}"
 }
 
 @inProceedings{diffpack,
@@ -1851,15 +1861,15 @@ Booktitle = "Supercomputing '95 Proceedings",
   ADDRESS = "Pisa, Italy",
 }
 
-@unpublished{LeykekhmanTaniaKnepley03,
+@misc{LeykekhmanTaniaKnepley03,
   title       = "The {P}oisson Problem",
   note        =	"\url{http://www.mcs.anl.gov/petsc/petsc-3/poisson.html}",
   author      = "Dmitry Leykekhman and Nessy Tania and Matthew G. Knepley",
   institution = "Cornell University and Argonne National Laboratory"
 }
 
-@unpublished{sundials-web-page,
-  title       = "{SUNDIALS} {W}eb {P}age",
+@misc{sundials-web-page,
+  title       = "{SUNDIALS} {W}eb Page",
   note        =	"\url{http://www.llnl.gov/CASC/sundials}",
   author      = "Allan Hindmarsh and Radu Serban and Carol Woodward",
   institution = "Lawrence Livermore National Laboratory"
@@ -1924,14 +1934,14 @@ mesh refinement",
 
 @unpublished{jtb-web-page,
   title       = "The Java Tree Builder",
-  note        =	"\url{http://www.cs.purdue.edu/jtb}",
+  note        =	"See \url{http://www.cs.purdue.edu/jtb}",
   author      = "Jens Palsberg",
   institution = "Purdue University"
 }
 
 @unpublished{Palsberg98,
   title       = "Why Visitors?",
-  note        =	"\url{http://www.cs.purdue.edu/jtb/whyvisitors}",
+  note        =	"See \url{http://www.cs.purdue.edu/jtb/whyvisitors}",
   author      = "Jens Palsberg",
   institution = "Purdue University",
   year        = "1998"
@@ -1944,8 +1954,8 @@ mesh refinement",
   institution = "University of Chicago"
 }
 
-@unpublished{adic-web-page,
-  title       = "{ADIC}",
+@misc{adic-web-page,
+  title       = "{ADIC Web page}",
   note        =	"\url{http://www.mcs.anl.gov/autodiff}",
   author      = "Paul Hovland and Uwe Naumann and Boyana Norris",
   institution = "Argonne National Laboratory"
@@ -1954,9 +1964,9 @@ mesh refinement",
 @article{Naumann02,
   author  = "Uwe Naumann",
   title   = "Optimal accumulation of {J}acobian matrices by elimination methods on the dual computational graph",
-  journal = "to appear in Mathematical Programming",
+  journal = "Mathematical Programming (to appear)",
   note    = "Preprint ANL/MCS-P944-0402, Argonne National Laboratory, April 2002",
-  year    = "2002"
+  year    = "2003"
 }
 
 @Misc{ matlab-web-page,
@@ -1966,11 +1976,28 @@ mesh refinement",
   key   =        "{Matlab} {Web} page"
 }
 
-@Unpublished{ veltisto-web-page,
+@misc{ veltisto-web-page,
   author =       "George Biros",
   title =        "{Veltisto Web page}",
   note =         "\url{http://www.cs.nyu.edu/~biros/veltisto}",
-  key =        "{Veltisto} {Web} page",
+}
+
+@misc{ parmetis-web-page,
+  author =       "George {Karypis et al.}",
+  title =        "{ParMETIS Web page}",
+  note =         "\url{http://www.cs.umn.edu/~karypis/metis/parmetis}",
+}
+
+@misc{ sparskit-web-page,
+  author =       "Yousef {Saad et al.}",
+  title =        "{SPARSKIT Web page}",
+  note =         "\url{http://www.cs.umn.edu/~saad/software/SPARSKIT/sparskit.html}",
+}
+
+@misc{ dscpack-web-page,
+  author =       "Padma {Raghavan et al.}",
+  title =        "{SPARSKIT Web page}",
+  note =         "\url{http://www.cse.psu.edu/~raghavan/Dscpack}"
 }
 
 @Misc{ gaussian-web-page,
@@ -1996,62 +2023,62 @@ mesh refinement",
   year		= 2002,
   organization	= {Pacific Northwest National Laboratory},
   address	= {Richland, Washington 99325-0999 USA},
-  note          = {\url{http://www.emsl.pnl.gov/pub/docs/nwchem/}},
+  note          = {See \url{http://www.emsl.pnl.gov/pub/docs/nwchem/}},
 }
 
 @Misc{ scidac-web-page,
   author =       "",
   title =        "{{SciDAC Initiative Web page}}",
   note =         "\url{http://www.osti.gov/scidac}",
-  key =        "{SciDAC} {Web} page",
+  key =        "{SciDAC Initiative Web page}"
 }
 
 @Misc{cmrs:homepage,
-  author =	 {Amitava Bhattacharjee (PI)},
+  author =	 {Amitava {Bhattacharjee (PI)}},
   title =	 {{Center for Magnetic Reconnection Studies}},
   howpublished = {\url{http://www.physics.uiowa.edu/cmrs}}
 }
 
 @Misc{tops:homepage,
-  author =	 {David Keyes (PI)},
+  author =	 {David {Keyes (PI)}},
   title =	 {{Terascale Optimal PDE Simulations (TOPS) Center}},
   howpublished = {\url{http://tops-scidac.org}}
 }
 
 @Misc{petsc:applications,
-  author =	 {B. Smith et al.},
-  title =	 {Scientific Applications Using {PETSc}},
+  author =	 {B. {Smith et al.}},
+  title =	 {{Scientific Applications Using {PETSc}}},
   howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-2/publications}}
 }
 
 @Misc{cemm:homepage,
-  author =	 {Steve Jardin (PI)},
+  author =	 {Steve {Jardin (PI)}},
   title =	 {{Center for Extended MHD Modeling}},
   howpublished = {\url{http://w3.pppl.gov/CEMM}}
 }
 
 @Misc{m3d:homepage,
-  author =	 {Steve Jardin et al.},
+  author =	 {Steve {Jardin et al.}},
   title =	 {{M3D Web page}},
   howpublished = {\url{http://w3.pppl.gov/~jchen}}
 }
 
 @Misc{nimrod:homepage,
-  author =	 {Carl R. Sovinec et al.},
+  author =	 {Carl R. {Sovinec et al.}},
   title =	 {{NIMROD Web page}},
   howpublished = {\url{http://nimrodteam.org}}
 }
 
 @misc{grace-web-page,
-   author = "Manish Parashar et al.",
+   author = "Manish {Parashar et al.}",
    title = "{GrACE Web Page}",
    howpublished  = "\url{http://www.caip.rutgers.edu/~parashar/TASSL/Projects/GrACE}",
 }
 
 @unpublished{KatzSpiegelman03,
   author  = "Richard F. Katz and Marc Spiegelman",
-  title   = "A semi-lagrangian crank-nicholson algorithm for the numerical solution of advection-diffusion problems",
-  note    = "In preparation"
+  title   = "A semi-{L}agrangian {C}rank-{N}icholson algorithm for the numerical solution of advection-diffusion problems",
+  note    = "Columbia University, in preparation",
 }
 
 @misc{acts:homepage,
@@ -2068,39 +2095,39 @@ mesh refinement",
 }
 
 @misc{hypre:homepage,
-   author = "R. Falgout et al.",
+   author = "R. {Falgout et al.}",
    title = "{hypre Web page}",
    howpublished  = "\url{http://www.llnl.gov/CASC/hypre}"
 }
 
 @misc{trilinos:homepage,
-   author = "M. Heroux et al.",
+   author = "M. {Heroux et al.}",
    title = "{Trilinos Web page}",
    howpublished  = "\url{http://software.sandia.gov/Trilinos}"
 }
 
 @misc{ase:homepage,
-   author = "M. Knepley et al.",
+   author = "M. {Knepley et al.}",
    title = "{Argonne SIDL Environment Web page}",
    howpublished  = "\url{http://www.mcs.anl.gov/ase}"
 }
 
 @misc{mesh:homepage,
-   author = "M. Knepley et al.",
+   author = "M. {Knepley et al.}",
    title = "{TOPS Mesh Interface Web page}",
    howpublished  = "\url{http://www.mcs.anl.gov/petsc/sidl/TOPS.html#TOPS.Mesh}"
 }
 
 
 @misc{expression:homepage,
-   author = "M. Knepley et al.",
+   author = "M. {Knepley et al.}",
    title = "{TOPS Expression Graph Interface Web page}",
    howpublished  = "\url{http://www.mcs.anl.gov/petsc/sidl/TOPS.html#TOPS.Expression}"
 }
 
 @article{MaltsevSelkov00,
   author  = "R. Overbeek and N. Larsen and G. Pusch and M. D'Souza and E. Selkov Jr. and N. Kyrpides and M. Fonstein and N. Maltsev and E. Selkov",
-  title   = "WIT: integrated system for high-throughput genome sequence analysis and metabolic reconstruction",
+  title   = "{WIT}: integrated system for high-throughput genome sequence analysis and metabolic reconstruction",
   journal = "Nucleic Acids Res.",
   year    = "2000",
   month   = "January",
