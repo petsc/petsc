@@ -1,0 +1,11 @@
+# $Id: rules,v 1.2 2001/08/22 17:57:34 balay Exp $ 
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+#############
+# with 5.0.1 Build 010730D0 version of intel compilers, shared libraries created
+# are broken with BOPT=O && using -KPIC flag
+
+shared_arch: shared_linux_intel

@@ -11,6 +11,8 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.argDB        = framework.argDB
     self.found        = 0
+    # Assume that these libraries are Fortran if we have a Fortran compiler
+    self.mangleFunc   = 'FC' in framework.argDB
     self.compilers    = self.framework.require('config.compilers',     self)
     self.libraries    = self.framework.require('config.libraries',     self)
     return
@@ -43,13 +45,13 @@ class Configure(config.base.Configure):
     otherLibs   = self.compilers.flibs
     # Check for BLAS
     oldLibs   = self.framework.argDB['LIBS']
-    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = 1)
+    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = self.mangleFunc)
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
     if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
-    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = 1)
+    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = self.mangleFunc)
     self.framework.argDB['LIBS'] = oldLibs
     return (foundBlas, foundLapack)
 

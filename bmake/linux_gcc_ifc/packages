@@ -1,0 +1,23 @@
+# $Id: packages,v 1.6 2001/10/10 18:49:15 balay Exp $ 
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+BLASLAPACK_LIB = -L/home/petsc/soft/linux-rh73-intel/fblaslapack -lflapack -lfblas
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
