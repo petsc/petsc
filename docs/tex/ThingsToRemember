@@ -212,7 +212,8 @@ Location of email sent to petsc-maint:
   make sure that /usr/local/req/petsc-maint/bin/ is in your path.
 
 FTP log files:
-  login to charlotte.mcs.anl.gov; see files /usr/adm/xferlog.XXXXXXXXX
+  /Net/charlotte/logs/ftp/xferlog.XXXX
+
 
 To determine who is on the PETSc users mailing list send
    to majordom@mcs.anl.gov "who petsc-users"
