@@ -15,6 +15,9 @@ class Configure(config.base.Configure):
     self.foundBS95    = 0
     self.lib          = ''
     self.include      = ''
+    self.name         = 'BlockSolve'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -118,6 +121,7 @@ class Configure(config.base.Configure):
     self.addSubstitution('BLOCKSOLVE_INCLUDE','-I'+self.include)
     self.addSubstitution('BLOCKSOLVE_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_BLOCKSOLVE',1)
+    self.framework.packages.append(self)
     
   def setEmptyOutput(self):
     #self.addDefine('HAVE_BLOCKSOLVE', 0)

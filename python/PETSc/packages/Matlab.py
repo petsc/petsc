@@ -11,6 +11,9 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.foundMatlab  = 0
     self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.name         = 'Matlab'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -81,6 +84,7 @@ class Configure(config.base.Configure):
             else:
               matlab_sys = ''
             self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            self.framework.packages.append(self)
             return
       except RuntimeError:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')

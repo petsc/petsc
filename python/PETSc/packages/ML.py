@@ -19,6 +19,8 @@ class Configure(config.base.Configure):
     self.lib          = []
     self.include      = []
     self.name         = 'ML'
+    self.PACKAGE = self.name.upper()
+    self.package = self.name.lower()
     return
 
   def __str__(self):
@@ -31,28 +33,24 @@ class Configure(config.base.Configure):
   
   def setupHelp(self,help):
     import nargs
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    help.addArgument(PACKAGE,'-with-'+package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     return
 
   def generateIncludeGuesses(self):
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    if 'with-'+package in self.framework.argDB:
-      if 'with-'+package+'-include' in self.framework.argDB:
-        incl = self.framework.argDB['with-'+package+'-include']
-        yield('User specified '+PACKAGE+' header location',incl)
-      elif 'with-'+package+'-lib' in self.framework.argDB:
+    if 'with-'+self.package in self.framework.argDB:
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        incl = self.framework.argDB['with-'+self.package+'-include']
+        yield('User specified '+self.PACKAGE+' header location',incl)
+      elif 'with-'+self.package+'-lib' in self.framework.argDB:
         incl     = self.lib[0]            #standalone/lib/libml.a
         (incl,dummy) = os.path.split(incl)
         (incl,dummy) = os.path.split(incl)
         yield('based on found library location',os.path.join(incl,'include'))
-      elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
+      elif 'with-'+self.package+'-dir' in self.framework.argDB:
+        dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
         yield('based on found root directory',os.path.join(dir,'include'))
     return
 
@@ -70,20 +68,18 @@ class Configure(config.base.Configure):
     return found
 
   def generateLibGuesses(self):
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    if 'with-'+package in self.framework.argDB:
-      if 'with-'+package+'-lib' in self.framework.argDB:       #~ml/standalone/lib/libml.a
-        yield ('User specified '+PACKAGE+' library', self.framework.argDB['with-'+package+'-lib'])
-      elif 'with-'+package+'-include' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-include'] #~ml/standalone/include
+    if 'with-'+self.package in self.framework.argDB:
+      if 'with-'+self.package+'-lib' in self.framework.argDB:       #~ml/standalone/lib/libml.a
+        yield ('User specified '+self.PACKAGE+' library', self.framework.argDB['with-'+self.package+'-lib'])
+      elif 'with-'+self.package+'-include' in self.framework.argDB:
+        dir = self.framework.argDB['with-'+self.package+'-include'] #~ml/standalone/include
         (dir,dummy) = os.path.split(dir)
-        yield('User specified '+PACKAGE+'/Include', os.path.join(dir,'lib/libml.a'))
-      elif 'with-'+package+'-dir' in self.framework.argDB:     #~ml/standalone
-        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
-        yield('User specified '+PACKAGE+' root directory', os.path.join(dir,'lib/libml.a'))
+        yield('User specified '+self.PACKAGE+'/Include', os.path.join(dir,'lib/libml.a'))
+      elif 'with-'+self.package+'-dir' in self.framework.argDB:     #~ml/standalone
+        dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
+        yield('User specified '+self.PACKAGE+' root directory', os.path.join(dir,'lib/libml.a'))
       else:
-        self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')
+        self.framework.log.write('Must specify either a library or installation root directory for '+self.PACKAGE+'\n')
     return
         
   def checkLib(self,lib,func):
@@ -129,20 +125,18 @@ class Configure(config.base.Configure):
     return
 
   def setFoundOutput(self):
-    PACKAGE = self.name.upper()
-    self.addSubstitution(PACKAGE+'_INCLUDE','-I'+self.include[0])
-    self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_'+PACKAGE,1)
+    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I'+self.include[0])
+    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
+    self.addDefine('HAVE_'+self.PACKAGE,1)
+    self.framework.packages.append(self)
     
   def setEmptyOutput(self):
-    PACKAGE = self.name.upper()
-    self.addSubstitution(PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(PACKAGE+'_LIB', '')
+    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
+    self.addSubstitution(self.PACKAGE+'_LIB', '')
     return
 
   def configure(self):
-    package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
+    if not 'with-'+self.package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

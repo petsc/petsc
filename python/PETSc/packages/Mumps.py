@@ -18,6 +18,8 @@ class Configure(config.base.Configure):
     self.lib          = []
     self.include      = []
     self.name         = 'Mumps'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -199,7 +201,8 @@ class Configure(config.base.Configure):
     self.addSubstitution(PACKAGE+'_INCLUDE','-I' +incl_str)
     self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+PACKAGE,1)
-    
+    self.framework.packages.append(self)
+            
   def setEmptyOutput(self):
     PACKAGE = self.name.upper()
     self.addSubstitution(PACKAGE+'_INCLUDE', '')

@@ -17,6 +17,8 @@ class Configure(config.base.Configure):
     self.lib          = []
     self.include      = []
     self.name         = 'Umfpack'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -29,24 +31,20 @@ class Configure(config.base.Configure):
   
   def setupHelp(self,help):
     import nargs
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    help.addArgument(PACKAGE,'-with-'+package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
-    help.addArgument(PACKAGE,'-with-'+package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     return
 
   def generateIncludeGuesses(self):
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    if 'with-'+package in self.framework.argDB:
-      if 'with-'+package+'-include' in self.framework.argDB:
-        incl = self.framework.argDB['with-'+package+'-include']
+    if 'with-'+self.package in self.framework.argDB:
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        incl = self.framework.argDB['with-'+self.package+'-include']
         (incl_amd,dummy) = os.path.split(incl)
         (incl_amd,dummy) = os.path.split(incl_amd)
-        yield('User specified '+PACKAGE+' header location',incl,os.path.join(incl_amd,'AMD/Include'))
-      elif 'with-'+package+'-lib' in self.framework.argDB:
+        yield('User specified '+self.PACKAGE+' header location',incl,os.path.join(incl_amd,'AMD/Include'))
+      elif 'with-'+self.package+'-lib' in self.framework.argDB:
         incl     = self.lib[0]
         incl_amd = self.lib[1]
         # We have ~UMFPACK/Lib/libumfpack.a so remove the last 2 elements from the path
@@ -54,8 +52,8 @@ class Configure(config.base.Configure):
           (incl,dummy) = os.path.split(incl)
           (incl_amd,dummy) = os.path.split(incl_amd)
         yield('based on found library location',os.path.join(incl,'Include'),os.path.join(incl_amd,'Include'))
-      elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
+      elif 'with-'+self.package+'-dir' in self.framework.argDB:
+        dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
         (dir_amd,dummy) = os.path.split(dir)
         yield('based on found root directory',os.path.join(dir,'Include'),os.path.join(dir_amd,'AMD/Include'))
 
@@ -71,32 +69,30 @@ class Configure(config.base.Configure):
     return found
 
   def generateLibGuesses(self):
-    PACKAGE = self.name.upper()
-    package = self.name.lower()
-    if 'with-'+package in self.framework.argDB:
-      if 'with-'+package+'-lib' in self.framework.argDB:
+    if 'with-'+self.package in self.framework.argDB:
+      if 'with-'+self.package+'-lib' in self.framework.argDB:
         # guess the default AMD lib
-        lib_amd = self.framework.argDB['with-'+package+'-lib']
+        lib_amd = self.framework.argDB['with-'+self.package+'-lib']
         for i in 1,2,3:
           (lib_amd,dummy) = os.path.split(lib_amd)
         lib_amd = os.path.join(lib_amd,'AMD/Lib/libamd.a') 
-        yield ('User specified '+PACKAGE+' library',self.framework.argDB['with-'+package+'-lib'],lib_amd)
-      elif 'with-'+package+'-include' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-include']
+        yield ('User specified '+self.PACKAGE+' library',self.framework.argDB['with-'+self.package+'-lib'],lib_amd)
+      elif 'with-'+self.package+'-include' in self.framework.argDB:
+        dir = self.framework.argDB['with-'+self.package+'-include']
          # We have ~UMFPACK/Include and ~UMFPACK/Lib, so remove 'Include', then add 'Lib'
         (dir,dummy) = os.path.split(dir)
         (dir_amd,dummy) = os.path.split(dir)
         dir_amd = os.path.join(dir_amd,'AMD/Lib')
         dir = os.path.join(dir,'Lib')
-        yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
-      elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
+        yield('User specified '+self.PACKAGE+'/Include',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
+      elif 'with-'+self.package+'-dir' in self.framework.argDB:
+        dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
         (dir_amd,dummy) = os.path.split(dir)
         dir_amd = os.path.join(dir_amd,'AMD/Lib')
         dir = os.path.join(dir,'Lib')
-        yield('User specified '+PACKAGE+' root directory',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
+        yield('User specified '+self.PACKAGE+' root directory',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
       else:
-        self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')
+        self.framework.log.write('Must specify either a library or installation root directory for '+self.PACKAGE+'\n')
         
   def checkLib(self,lib,libfile):
     if not isinstance(lib,list): lib = [lib]
@@ -137,23 +133,21 @@ class Configure(config.base.Configure):
     return
 
   def setFoundOutput(self):
-    PACKAGE = self.name.upper()
     incl_str = ''
     for i in range(len(self.include)):
       incl_str += self.include[i]+ ' '
-    self.addSubstitution(PACKAGE+'_INCLUDE','-I' +incl_str)
-    self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_'+PACKAGE,1)
+    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I' +incl_str)
+    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
+    self.addDefine('HAVE_'+self.PACKAGE,1)
+    self.framework.packages.append(self)
     
   def setEmptyOutput(self):
-    PACKAGE = self.name.upper()
-    self.addSubstitution(PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(PACKAGE+'_LIB', '')
+    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
+    self.addSubstitution(self.PACKAGE+'_LIB', '')
     return
 
   def configure(self):
-    package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB  or self.framework.argDB['with-64-bit-ints']:
+    if not 'with-'+self.package in self.framework.argDB  or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

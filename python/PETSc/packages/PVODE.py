@@ -6,6 +6,9 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers', self)
+    self.name         = 'Pvode'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def configureLibrary(self):
@@ -16,6 +19,7 @@ class Configure(config.base.Configure):
     #self.addDefine('HAVE_PVODE', 0)
     self.addSubstitution('PVODE_INCLUDE', '')
     self.addSubstitution('PVODE_LIB', '')
+#    self.framework.packages.append(self)
     return
 
   def configure(self):

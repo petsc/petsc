@@ -283,10 +283,9 @@ class Configure(config.base.Configure):
     self.addSubstitution(self.PACKAGE+'_LIB', '')
     return
 
-  def download(self):
-    configure = 'configure --with-babel=0 --with-mli=0 --with-FEI=0 --with-mpi-include=/usr/local/mpich-1.2.5.2-gnu/include/ --with-mpi-lib-dirs=/usr/local/mpich-1.2.5.2-gnu/lib/ --with-mpi-libs="mpich pmpich" --with-CC=gcc --with-CXX=g++ --with-F77=g77 --with-blas=0'
-    
   def configure(self):
+    if 'download-'+self.package in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 1
     if not 'with-'+self.package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
