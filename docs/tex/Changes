@@ -14,6 +14,9 @@ add to it).
 
   KSP
 
+  KSP now contains a Minres solver.
+    Contibuted by: Robert Scheichl: maprs@maths.bath.ac.uk
+
 
   SLES
  
