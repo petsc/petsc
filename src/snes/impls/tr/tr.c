@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.67 1997/01/06 20:29:57 balay Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.68 1997/01/14 22:58:25 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -144,11 +144,6 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       neP->itflag = 0;
       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
         /* We're not progressing, so return with the current iterate */
-        if (X != snes->vec_sol) {
-          ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
-          snes->vec_sol_always = snes->vec_sol;
-          snes->vec_func_always = snes->vec_func; 
-        }
       }
       snes->nfailures++;
     }
@@ -163,14 +158,14 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     /* Test for convergence */
     neP->itflag = 1;
     if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
-      /* Verify solution is in corect location */
-      if (X != snes->vec_sol) {
-        ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
-        snes->vec_sol_always = snes->vec_sol;
-        snes->vec_func_always = snes->vec_func; 
-      }
       break;
     } 
+  }
+  if (X != snes->vec_sol) {
+    /* Verify solution is in corect location */
+    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+    snes->vec_sol_always  = snes->vec_sol;
+    snes->vec_func_always = snes->vec_func; 
   }
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
