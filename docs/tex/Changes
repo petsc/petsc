@@ -26,6 +26,9 @@ add to it).
 
     MatGetSubMatrixCall replaced with MatReuse   
 
+    Changed the calling sequence of MatILUFactor() and MatILUFactorSymbolic() to increase
+    flexibility of adding new ILU options
+
   KSP
 
     
