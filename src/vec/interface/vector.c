@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.209 2000/06/23 18:12:07 buschelm Exp buschelm $*/
+/*$Id: vector.c,v 1.210 2000/06/23 18:21:47 buschelm Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -481,7 +481,8 @@ int VecSet(const Scalar *alpha,Vec x)
    Collective on Vec
 
    Input Parameters:
-+  rctx - the random number context, formed by PetscRandomCreate()
++  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
+          it will create one internally.
 -  x  - the vector
 
    Output Parameter:
@@ -502,16 +503,28 @@ int VecSet(const Scalar *alpha,Vec x)
 @*/
 int VecSetRandom(PetscRandom rctx,Vec x) 
 {
-  int ierr;
+  int         ierr;
+  PetscRandom rand = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(rctx,PETSCRANDOM_COOKIE);
+  if (rctx) PetscValidHeaderSpecific(rctx,PETSCRANDOM_COOKIE);
   PetscValidType(x);
+
+  if (!rctx) {
+    MPI_Comm    comm;
+    ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(comm,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+    rctx = rand;
+  }
 
   PLogEventBegin(VEC_SetRandom,x,rctx,0,0);
   ierr = (*x->ops->setrandom)(rctx,x);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetRandom,x,rctx,0,0);
+  
+  if (rand) {
+    ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 } 
 
