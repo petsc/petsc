@@ -1,4 +1,4 @@
-C    "$Id: ex6.F,v 1.3 1996/04/15 20:51:24 balay Exp balay $";
+C    "$Id: ex6.F,v 1.4 1996/04/15 22:58:53 balay Exp curfman $";
 C
 C  Progran to test random number generation routines from fortran.
 C
@@ -8,7 +8,7 @@ C
       PetscRandom     r
       Scalar          rand
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then 
          print*, 'Unable to begin PETSc program'
       endif

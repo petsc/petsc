@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.14 1996/03/19 21:27:18 bsmith Exp bsmith $";
+C      "$Id: ex36.F,v 1.15 1996/07/08 22:20:09 bsmith Exp curfman $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -8,7 +8,7 @@ C
 
       integer err
 
-      call PetscInitialize(PETSC_NULL_CHAR,err)
+      call PetscInitialize(PETSC_NULL_CHARACTER,err)
 
 C  Demo of PETSc-allocated dense matrix storage
       call Demo1()

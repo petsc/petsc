@@ -1,9 +1,9 @@
 
-C "$Id: ex14.F,v 1.3 1996/08/27 01:32:36 curfman Exp $";
+C "$Id: ex1f.F,v 1.1 1996/08/27 16:31:18 curfman Exp curfman $";
 C
 C  Description: Uses Newton's method to solve a two-variable system.
 C
-C  Concepts: SNES; solving nonlinear equations;
+C  Concepts: SNES (solving nonlinear equations)
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); 
 C  Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
 C  Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
@@ -131,8 +131,8 @@ C  directly call any SLES, KSP, and PC routines to set various options.
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
-      call KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,
-     &                      PETSC_DEFAULT,20,ierr)
+      call KSPSetTolerances(ksp,1.d-4,PETSC_DEFAULT_DOUBLE_PRECISION,
+     &                      PETSC_DEFAULT_DOUBLE_PRECISION,20,ierr)
 
 C  Set SNES/SLES/KSP/PC runtime options, e.g.,
 C      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -273,10 +273,10 @@ C     in Fortran as well as in C (as set here in the array idx).
 
       idx(1) = 0
       idx(2) = 1
-      A(0) = 2.0*lx_a(1) + lx_a(2)
-      A(1) = lx_a(1)
-      A(2) = lx_a(2)
-      A(3) = lx_a(1) + 2.0*lx_a(2)
+      A(1) = 2.0*lx_a(1) + lx_a(2)
+      A(2) = lx_a(1)
+      A(3) = lx_a(2)
+      A(4) = lx_a(1) + 2.0*lx_a(2)
       call MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES,ierr)
       flag = SAME_NONZERO_PATTERN
 

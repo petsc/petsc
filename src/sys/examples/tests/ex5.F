@@ -1,4 +1,4 @@
-C    "$Id: ex5.F,v 1.6 1996/03/19 21:24:49 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.7 1996/03/20 03:28:28 bsmith Exp curfman $";
 C
 C  Simple PETSc Program written in Fortran 77.
 C
@@ -6,7 +6,7 @@ C
        integer        ierr, rank
        character*(80) arch
 
-       call PetscInitialize(PETSC_NULL_CHAR,ierr)
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
        if (ierr .ne. 0) then 
          print*, 'Unable to begin PETSc program'

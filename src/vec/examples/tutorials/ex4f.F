@@ -1,5 +1,5 @@
 
-C      "$Id: ex21.F,v 1.11 1996/03/19 21:23:15 bsmith Exp bsmith $";
+C      "$Id: ex21.F,v 1.12 1996/07/08 22:16:40 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -12,7 +12,7 @@ C  multiple values at once.  This also demonstrates VecGetArray().
        integer          i, n, ierr, loc(6), ixx, iyy
        Vec              x, y
 
-       call PetscInitialize(PETSC_NULL_CHAR,ierr)
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 #define xx(ib)  vxx(ixx + (ib))
 #define yy(ib)  vyy(iyy + (ib))

@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.23 1996/07/21 22:18:56 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.24 1996/07/21 22:20:55 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -17,8 +17,8 @@ C
        two   = 2.0
        three = 3.0
 
-       call PetscInitialize(PETSC_NULL_CHAR,ierr)                  
-       call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
+       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 C Create a vector, then duplicate it
        call VecCreate(MPI_COMM_WORLD,n,x,ierr)

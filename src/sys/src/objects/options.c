@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.92 1996/08/06 04:01:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.93 1996/08/15 12:46:11 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -137,10 +137,10 @@ $       call PetscInitialize(file,ierr)
 
 .   ierr - error return code
 .   file - [optional] PETSc database file name, defaults to 
-           ~username/.petscrc (use PETSC_NULL_CHAR for default)
+           ~username/.petscrc (use PETSC_NULL_CHARACTER for default)
            
    Important Fortran Note:
-   In Fortran, you MUST use PETSC_NULL_CHAR to indicate a
+   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use PETSC_NULL as 
    in the C version.  See the users manual for details.
 
