@@ -1,65 +1,20 @@
-/* $Id: drawimpl.h,v 1.26 1998/04/03 23:16:19 bsmith Exp $ */
+/* $Id: vdraw.h,v 1.1 1998/11/30 16:59:52 bsmith Exp bsmith $ */
 /*
-       Abstract data structure and functions for graphics.
+     Data structure for the Draw version of the viewer
 */
 
-#if !defined(_DRAWIMPL_H)
-#define _DRAWIMPL_H
+#if !defined(__VDRAW_H)
+#define __VDRAWL_H
 
-#include "petsc.h"
+#define VIEWER_DRAW_MAX 5
 
-struct _DrawOps {
-  int (*setdoublebuffer)(Draw);
-  int (*flush)(Draw);
-  int (*line)(Draw,double,double,double,double,int);
-  int (*linesetwidth)(Draw,double);
-  int (*linegetwidth)(Draw,double*);
-  int (*point)(Draw,double,double,int);
-  int (*pointsetsize)(Draw,double);
-  int (*text)(Draw,double,double,int,char*);
-  int (*textvertical)(Draw,double,double,int,char*);
-  int (*textsetsize)(Draw,double,double);
-  int (*textgetsize)(Draw,double*,double*);
-  int (*setviewport)(Draw,double,double,double,double);
-  int (*clear)(Draw);
-  int (*syncflush)(Draw);
-  int (*rectangle)(Draw,double,double,double,double,int,int,int,int);
-  int (*triangle)(Draw,double,double,double,double,double,double,int,int,int);
-  int (*getmousebutton)(Draw,DrawButton*,double *,double *,double*,double*);
-  int (*pause)(Draw);
-  int (*syncclear)(Draw);
-  int (*beginpage)(Draw);
-  int (*endpage)(Draw);
-  int (*getpopup)(Draw,Draw*);
-  int (*settitle)(Draw,char *);
-  int (*checkresizedwindow)(Draw);
-  int (*resizewindow)(Draw,int,int);
-  int (*destroy)(Draw);
-  int (*view)(Draw,Viewer);
-};
-
-struct _p_Draw {
-  PETSCHEADER(struct _DrawOps)
-  int             pause;       /* sleep time after a sync flush */
-  double          port_xl,port_yl,port_xr,port_yr;
-  double          coor_xl,coor_yl,coor_xr,coor_yr;
-  char            *title;
-  Draw            popup;
-  void            *data;
-};
-
-/*
-     This is for the Draw version of the viewer
-*/
-#include "pinclude/pviewer.h"
-struct _p_Viewer {
-  VIEWERHEADER
-  Draw         draw;
-  DrawLG       drawlg;
-  DrawAxis     drawaxis;
-};
-
-extern int ViewerDestroy_Draw(Viewer);
-extern int ViewerFlush_Draw(Viewer);
+#include "src/sys/src/viewer/viewerimpl.h"
+typedef struct {
+  Draw         draw[VIEWER_DRAW_MAX];
+  DrawLG       drawlg[VIEWER_DRAW_MAX];
+  DrawAxis     drawaxis[VIEWER_DRAW_MAX];
+  int          w,h;                          /* These are saved in case additional windows are opened */
+  char         *display;
+} Viewer_Draw;
 
 #endif

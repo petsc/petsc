@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.15 1998/12/03 03:53:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.16 1999/01/12 23:12:34 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: zviewer.c,v 1.15 1998/12/03 03:53:28 bsmith Exp bsmit
 #define viewersocketopen_     VIEWERSOCKETOPEN
 #define viewerstringopen_     VIEWERSTRINGOPEN
 #define viewerdrawopen_       VIEWERDRAWOPEN
+#define viewerbinarysettype_  VIEWERBINARYSETTYPE
+#define viewersetfilename_    VIEWERSETFILENAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define viewerdestroy_        viewerdestroy
 #define viewerasciiopen_      viewerasciiopen
@@ -25,9 +27,28 @@ static char vcid[] = "$Id: zviewer.c,v 1.15 1998/12/03 03:53:28 bsmith Exp bsmit
 #define viewersocketopen_     viewersocketopen
 #define viewerstringopen_     viewerstringopen
 #define viewerdrawopen_       viewerdrawopen
+#define viewerbinarysettype_  viewerbinarysettype
+#define viewersetfilename_    viewersetfilename
 #endif
 
 EXTERN_C_BEGIN
+
+#undef __FUNC__ 
+#define __FUNC__ ""
+void viewersetfilename_(Viewer *viewer, char name[], int *__ierr,int len1)
+{
+  char   *c1;
+  FIXCHAR(name,len1,c1);
+  *__ierr = ViewerSetFilename(*viewer,c1);
+  FREECHAR(name,c1);
+}
+
+#undef __FUNC__ 
+#define __FUNC__ ""
+void  viewerbinarysettype_(Viewer *viewer,ViewerBinaryType *type, int *__ierr)
+{
+  *__ierr = ViewerBinarySetType(*viewer,*type);
+}
 
 void viewersocketopen_(MPI_Comm *comm,CHAR name,int *port,Viewer *lab, 
                        int *__ierr,int len1 )
@@ -44,13 +65,11 @@ void viewerbinaryopen_(MPI_Comm *comm,CHAR name,ViewerBinaryType *type,
 {
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerBinaryOpen(
-                 (MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
+  *__ierr = ViewerBinaryOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
   FREECHAR(name,c1);
 }
 
-void viewerasciiopen_(MPI_Comm *comm,CHAR name,Viewer *lab, int *__ierr,
-                          int len1 )
+void viewerasciiopen_(MPI_Comm *comm,CHAR name,Viewer *lab, int *__ierr,int len1)
 {
   char   *c1;
   FIXCHAR(name,len1,c1);

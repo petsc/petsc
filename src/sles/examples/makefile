@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.9 1998/06/13 05:05:34 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/06/15 16:18:23 balay Exp bsmith $ 
 
 ALL:
 
-CFLAGS	 = 
-FFLAGS	 = 
-SOURCEC	 = 
-SOURCEF	 = 
-SOURCEH	 = 
-OBJSC	 = 
-OBJSF	 = 
-LIBBASE	 = libpetscsles
 LOCDIR	 = src/sles/examples/
 DIRS	 = tests tutorials
 

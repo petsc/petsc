@@ -1,14 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1999/01/27 19:49:10 bsmith Exp $";
+static char vcid[] = "$Id: dlregispetsc.c,v 1.1 1999/02/01 22:50:10 bsmith Exp bsmith $";
 #endif
 
-#include "sles.h"
+#include "petsc.h"
 
-EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryRegister"
+#define __FUNC__ "DLLibraryRegister_Petsc"
 /*
-  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
+  DLLibraryRegister_Petsc - This function is called when the dynamic library it is in is opened.
 
   This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
   library.
@@ -16,7 +15,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-int DLLibraryRegister(char *path)
+int DLLibraryRegister_Petsc(char *path)
 {
   int ierr;
 
@@ -29,7 +28,6 @@ int DLLibraryRegister(char *path)
   ierr = ViewerRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
-EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
 static char *contents = "PETSc Graphics and Viewer libraries. \n\
@@ -39,10 +37,9 @@ static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryInfo"
-int DLLibraryInfo(char *path,char *type,char **mess) 
+#define __FUNC__ "DLLibraryInfo_Petsc"
+int DLLibraryInfo_Petsc(char *path,char *type,char **mess) 
 { 
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
   else if (!PetscStrcmp(type,"Authors")) *mess = authors;
@@ -51,4 +48,13 @@ int DLLibraryInfo(char *path,char *type,char **mess)
 
   return 0;
 }
-EXTERN_C_END
+
+
+
+
+
+
+
+
+
+

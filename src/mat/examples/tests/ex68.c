@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex68.c,v 1.1 1998/11/03 23:10:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex68.c,v 1.2 1998/11/04 16:17:52 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
@@ -76,6 +76,37 @@ int main(int argc,char **argv)
   printf("Original matrix permuted by ND + NonzeroDiagonal()\n"); 
   ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
+  printf("ND + NonzeroDiagonal() row permutation\n"); 
+  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("ND + NonzeroDiagonal() column permutation\n"); 
+  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+
+  ierr = ISDestroy(isrow); CHKERRA(ierr);
+  ierr = ISDestroy(iscol); CHKERRA(ierr);
+
+  ierr = MatGetReordering(mat,ORDER_RCM,&isrow,&iscol);CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by RCM\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
+  printf("RCM row permutation\n"); 
+  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("RCM column permutation\n"); 
+  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+
+  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by RCM + NonzeroDiagonal()\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
+  printf("RCM + NonzeroDiagonal() row permutation\n"); 
+  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("RCM + NonzeroDiagonal() column permutation\n"); 
+  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+
+   ierr = MatLUFactor(mat,isrow,iscol,0.0);CHKERRA(ierr); 
+  printf("Factored matrix permuted by RCM + NonzeroDiagonal()\n"); 
+  ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* Free data structures */  
   ierr = ISDestroy(isrow); CHKERRA(ierr);

@@ -5,7 +5,6 @@
    fulfill most needs. 
  */
 
-#include <math.h>
 #include "BSprivate.h"  /* BlockSolve include file */
 
 /* set up max stencil sizes, etc */

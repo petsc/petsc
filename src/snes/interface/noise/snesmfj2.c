@@ -1,10 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.9 1998/05/29 22:51:12 balay Exp curfman $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.10 1998/09/14 17:26:28 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
-#include "pinclude/pviewer.h"
-#include <math.h>
 
 extern int DiffParameterCreate_More(SNES,Vec,void**);
 extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,double*,double*);
@@ -61,14 +59,18 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
      PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
-     if (ctx->jorge)
+     if (ctx->jorge) {
        PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");
+     }
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
-     if (ctx->compute_err)
+     if (ctx->compute_err) {
        PetscFPrintf(comm,fd,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);
+     }
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }
@@ -244,7 +246,7 @@ $   Alternatively, the differencing parameter, h, can be set using
 $   Jorge's nifty new strategy if one specifies the option 
 $          -snes_mf_jorge
 
-   The user can set these parameters via SNESSetMatrixFreeParameters().
+   The user can set these parameters via MatSNESFDMFSetFunctionError().
    See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -259,9 +261,9 @@ $  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), SNESSetMatrixFreeParameters()
+.seealso: MatDestroy(), MatSNESFDMFSetFunctionError()
 @*/
-int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
+int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x, Mat *J)
 {
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
@@ -323,9 +325,9 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetMatrixFreeParameters2"
+#define __FUNC__ "SNESDefaultMatrixFreeSetParameters2"
 /*@
-   SNESSetMatrixFreeParameters2 - Sets the parameters for the approximation of
+   SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
 
 $       J(u)*a = [J(u+h*a) - J(u)]/h where
@@ -337,11 +339,11 @@ $          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 $
 
    Input Parameters:
-.  snes - the SNES context
++  mat - the matrix
 .  error_rel - relative error (should be set to the square root of
      the relative error in the function evaluations)
 .  umin - minimum allowable u-value
-.  h - differencing parameter
+-  h - differencing parameter
 
    Notes:
    If the user sets the parameter h directly, then this value will be used
@@ -349,16 +351,14 @@ $
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: SNESDefaultMatrixFreeMatCreate()
+.seealso: MatCreateSNESFDMF()
 @*/
-int SNESSetMatrixFreeParameters2(SNES snes,double error,double umin,double h)
+int SNESDefaultMatrixFreeSetParameters2(Mat mat,double error,double umin,double h)
 {
   MFCtx_Private *ctx;
   int           ierr;
-  Mat           mat;
 
   PetscFunctionBegin;
-  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;

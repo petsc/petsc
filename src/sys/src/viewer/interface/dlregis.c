@@ -1,8 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.1 1999/01/22 22:03:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.2 1999/01/27 19:49:10 bsmith Exp bsmith $";
 #endif
 
-#include "sles.h"
+#include "petsc.h"
+
+extern int DLLibraryRegister_Petsc(char *);
+extern int DLLibraryInfo_Petsc(char *,char *,char **);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -18,25 +21,10 @@ EXTERN_C_BEGIN
  */
 int DLLibraryRegister(char *path)
 {
-  int ierr;
-
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
-  /*
-      If we got here then PETSc was properly loaded
-  */
-  ierr = DrawRegisterAll(path); CHKERRQ(ierr);
-  ierr = ViewerRegisterAll(path); CHKERRQ(ierr);
-  return 0;
+  return DLLibraryRegister_Petsc(path);
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Graphics and Viewer libraries. \n\
-     ASCII, Binary, Sockets, X-windows, ...\n";
-
-static char *authors = PETSC_AUTHOR_INFO;
-static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
@@ -44,11 +32,6 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
-  if (!PetscStrcmp(type,"Contents"))     *mess = contents;
-  else if (!PetscStrcmp(type,"Authors")) *mess = authors;
-  else if (!PetscStrcmp(type,"Version")) *mess = version;
-  else *mess = 0;
-
-  return 0;
+  return DLLibraryInfo_Petsc(path,type,mess);
 }
 EXTERN_C_END

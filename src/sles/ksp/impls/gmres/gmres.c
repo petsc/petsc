@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.115 1998/12/23 22:50:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.116 1999/01/31 16:08:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,14 +19,6 @@ static char vcid[] = "$Id: gmres.c,v 1.115 1998/12/23 22:50:32 bsmith Exp bsmith
     are:
 	 ksp   - Iterative context.  See the generic iterative method
 	         information
-
-    Special routines needed only for gmres:
-
-    void   orthog(  ksp, it )
-        perform the orthogonalization of the vectors VV to VV+it.  A 
-        basic version of this, defined in terms of vdot and maxpy, is
-        available (in borthog.c) called void GMRESBasicOrthog;
-	The user may use this routine to try alternate approaches.
 
     The calling sequence is the same as for all of the iterative methods.
     The special values (specific to GMRES) are:

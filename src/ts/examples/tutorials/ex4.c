@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.5 1998/06/21 01:05:48 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.6 1998/12/01 21:03:23 curfman Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -66,7 +66,6 @@ Input parameters include:\n\
 
 #include "da.h"
 #include "ts.h"
-#include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 
@@ -152,11 +151,11 @@ int main(int argc,char **argv)
      Set up displays to show graphs of the solution and error 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,&draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,&draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

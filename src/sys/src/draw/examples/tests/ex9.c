@@ -1,46 +1,48 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.27 1997/07/09 20:58:09 balay Exp $";
+static char vcid[] = "$Id: ex9.c,v 1.1 1997/10/03 15:29:28 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Plots a simple line graph\n";
+static char help[] = "Makes a simple histogram\n";
 
 #include "petsc.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
   Draw     draw;
-  DrawLG   lg;
+  DrawHist hist;
   DrawAxis axis;
-  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,flg;
+  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,flg,bins = 8;
   char     *xlabel, *ylabel, *toplabel;
-  double   xd, yd;
+  double   xd;
+  int      color = DRAW_GREEN;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
-  OptionsGetInt(0,"-height",&height,&flg);
+  OptionsGetInt(PETSC_NULL,"-height",&height,&flg);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  OptionsGetInt(PETSC_NULL,"-bins",&bins,&flg); 
+  OptionsGetInt(PETSC_NULL,"-color",&color,&flg); 
   OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
-  ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
-  ierr = DrawLGGetAxis(lg,&axis); CHKERRA(ierr);
+  ierr = DrawHistCreate(draw,bins,&hist); CHKERRA(ierr);
+  ierr = DrawHistGetAxis(hist,&axis); CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);
   ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel); CHKERRA(ierr);
 
   for ( i=0; i<n ; i++ ) {
-    xd = (double)( i - 5 ); yd = xd*xd;
-    ierr = DrawLGAddPoint(lg,&xd,&yd); CHKERRA(ierr);
+    xd = (double)( i - 5 );
+    ierr = DrawHistAddValue(hist,xd*xd); CHKERRA(ierr);
   }
-  ierr = DrawLGIndicateDataPoints(lg); CHKERRA(ierr);
-  ierr = DrawLGDraw(lg); CHKERRA(ierr);
-  ierr = DrawFlush(draw); CHKERRA(ierr); PetscSleep(2);
+  ierr = DrawHistSetColor(hist,color);CHKERRA(ierr);
+  ierr = DrawHistDraw(hist); CHKERRA(ierr);
+  ierr = DrawFlush(draw); CHKERRA(ierr);
 
-  ierr = DrawLGDestroy(lg); CHKERRA(ierr);
+  ierr = DrawHistDestroy(hist); CHKERRA(ierr);
   ierr = DrawDestroy(draw); CHKERRA(ierr);
   PetscFinalize();
   return 0;

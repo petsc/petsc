@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.13 1998/06/12 21:41:34 balay Exp balay $ 
+# $Id: makefile,v 1.14 1998/06/15 15:58:47 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscmat
 DIRS     = mpi
 LOCDIR   = src/mat/impls/rowbs/
 

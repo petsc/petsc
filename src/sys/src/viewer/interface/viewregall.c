@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewregall.c,v 1.4 1999/01/19 16:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewregall.c,v 1.5 1999/01/31 16:04:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -13,13 +13,6 @@ extern int ViewerCreate_Draw(Viewer);
 extern int ViewerCreate_AMS(Viewer);
 EXTERN_C_END
   
-/*
-    This is used by ViewerSetType() to make sure that at least one 
-    ViewerRegisterAll() is called. In general, if there is more than one
-    DLL, then ViewerRegisterAll() may be called several times.
-*/
-extern int ViewerRegisterAllCalled;
-
 #undef __FUNC__  
 #define __FUNC__ "ViewerRegisterAll"
 /*@C
@@ -36,7 +29,6 @@ int ViewerRegisterAll(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  ViewerRegisterAllCalled = 1;
   
   ierr = ViewerRegister(ASCII_VIEWER,    path,"ViewerCreate_ASCII",      ViewerCreate_ASCII);CHKERRQ(ierr);
   ierr = ViewerRegister(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);

@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.16 1998/06/12 21:23:25 balay Exp balay $ 
+# $Id: makefile,v 1.17 1998/06/15 15:57:05 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscmat
 DIRS     = seq mpi
 LOCDIR   = src/mat/impls/bdiag/
 

@@ -1,16 +1,7 @@
-# $Id: makefile,v 1.14 1998/06/15 16:07:56 balay Exp curfman $ 
+# $Id: makefile,v 1.15 1998/07/27 03:52:28 curfman Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = 
-SOURCEF  =
-SOURCEH  = 
-OBJSC    = 
-OBJSF    =
-LIBBASE  = libpetscts
-MANSEC   = t
 LOCDIR   = src/ts/impls/implicit/
 DIRS     = beuler cn pvode
 

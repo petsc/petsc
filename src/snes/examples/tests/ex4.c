@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.41 1996/09/18 12:09:09 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex4.c,v 1.42 1997/03/21 16:15:22 bsmith Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -37,9 +37,7 @@ is solved.  The command line options are:\n\
     nonlinear equations. 
 */
 
-#include "draw.h"
 #include "snes.h"
-#include <math.h>
 
 typedef struct {
       double      param;        /* test problem parameter */
@@ -66,7 +64,7 @@ int main( int argc, char **argv )
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
@@ -82,12 +80,12 @@ int main( int argc, char **argv )
   N = user.mx*user.my;
   
   /* Set up data structures */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines and compute initial guess for nonlinear solver */
@@ -108,10 +106,10 @@ int main( int argc, char **argv )
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
-  PetscPrintf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
+  PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
   DrawTensorContour(draw,user.mx,user.my,0,0,x);
-  DrawSyncFlush(draw);
+  DrawSynchronizedFlush(draw);
   DrawPause(draw);
 
   /* Free data structures */

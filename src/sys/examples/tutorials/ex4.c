@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.7 1998/04/16 02:56:54 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.1 1999/01/22 22:23:37 bsmith Exp bsmith $";
 #endif
 
-/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
-
-static char help[] = "This is an introductory PETSc example that illustrates printing.\n\n";
+static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
 /*T
-   Concepts: Introduction to PETSc;
+   Concepts: Dynamic libraries;
    Routines: PetscInitialize(); PetscPrintf(); PetscFinalize();
    Processors: n
 T*/
@@ -15,7 +13,9 @@ T*/
 #include "petsc.h"
 int main(int argc,char **argv)
 {
-  int ierr, rank, size;
+  int  ierr,flag;
+  char *string,filename[256];
+  void *handle;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -28,42 +28,20 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help); CHKERRA(ierr);
 
-  /* 
-     The following MPI calls return the number of processes
-     being used and the rank of this process in the group.
-   */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flag);CHKERRA(ierr);
+  if (!flag) {
+    SETERRA(1,1,"Must indicate library name with -library");
+  }
 
-  /* 
-     Here we would like to print only one message that represents
-     all the processes in the group.  We use PetscPrintf() with the 
-     communicator PETSC_COMM_WORLD.  Thus, only one message is
-     printed representng PETSC_COMM_WORLD, i.e., all the processors.
-  */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRA(ierr);
+  ierr = DLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRA(ierr);
 
-  /*
-    Here a barrier is used to separate the two program states.
-  */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD); CHKERRA(ierr);
+  ierr = DLLibraryGetInfo(handle,"Contents",&string);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Contents:%s\n",string);CHKERRA(ierr);
+  ierr = DLLibraryGetInfo(handle,"Authors",&string);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Authors:%s\n",string);CHKERRA(ierr);
+  ierr = DLLibraryGetInfo(handle,"Version",&string);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRA(ierr);
 
-  /*
-    Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
-    where each process is considered separately and prints independently
-    to the screen.  Thus, the output from different processes does not
-    appear in any particular order.
-  */
-
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank); CHKERRA(ierr);
-
-  /*
-     Always call PetscFinalize() before exiting a program.  This routine
-       - finalizes the PETSc libraries as well as MPI
-       - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).  See PetscFinalize()
-     manpage for more information.
-  */
   ierr = PetscFinalize(); CHKERRA(ierr);
   return 0;
 }

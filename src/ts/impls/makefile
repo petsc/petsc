@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.11 1998/06/15 15:54:43 balay Exp bsmith $
+# $Id: makefile,v 1.12 1999/01/27 19:48:36 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =  
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =  
-OBJSF    =
-LIBBASE  = libpetscts
 DIRS     = explicit implicit pseudo
 LOCDIR   = src/ts/impls/
 
