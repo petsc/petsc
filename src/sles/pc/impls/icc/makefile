@@ -1,0 +1,24 @@
+ITOOLSDIR = ../../../../
+
+ALL: lib
+
+# This matrix dependency should be fixed!
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude \
+           $(BS_INCLUDE) -I../../../../src/mat \
+           -I../../../../src/mat/impls/row/seq \
+           $(CONF) -D__DIR__='"pc/impls/icc/"'
+SOURCEC  = icc.c iccbs.c
+SOURCEF  =
+WSOURCEC = 
+SOURCEH  = 
+OBJSC    = icc.o iccbs.o
+WOBJS    = 
+OBJSF    =
+LIBBASE  = libpetscsles
+LINCLUDE = $(SOURCEH)
+DIRS     = 
+MANSEC   = 4
+
+runexamples:
+
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
