@@ -8,7 +8,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',               self)
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.headers      = self.framework.require('config.headers', self)
+    self.libraries    = self.framework.require('config.libraries', self)
     self.shared       = self.framework.require('PETSc.utilities.sharedLibraries', self)
     self.useDynamic   = 0
     return
