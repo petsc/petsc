@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.8 2000/12/18 17:31:24 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.9 2000/12/18 17:43:01 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   DMMG    *dmmg;
   VecPack packer;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
@@ -67,7 +67,8 @@ int main(int argc,char **argv)
   ierr = OptionsSetValue("-mg_levels_ksp_type","cr");CHKERRQ(ierr);
   ierr = OptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
   ierr = OptionsSetValue("-mg_levels_ksp_max_it","6");CHKERRQ(ierr);
-
+  ierr = OptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
+  
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
@@ -139,18 +140,18 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   = 2.*h*u(0)   + 2.*d*lambda(0)   + d*lambda(1);
-    else if (i == 1)   fu(1)   = 2.*h*u(1)   - 2.*d*lambda(1)   + d*lambda(2);
-    else if (i == N-1) fu(N-1) = 2.*h*u(N-1) + 2.*d*lambda(N-1) + d*lambda(N-2);
-    else if (i == N-2) fu(N-2) = 2.*h*u(N-2) - 2.*d*lambda(N-2) + d*lambda(N-3);
-    else               fu(i)   = (2.*h*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1)));
+    if      (i == 0)   fu(0)   = (2.*h*u(0)   + 2.*d*lambda(0)   + d*lambda(1));
+    else if (i == 1)   fu(1)   = -(2.*h*u(1)   - 2.*d*lambda(1)   + d*lambda(2));
+    else if (i == N-1) fu(N-1) = (2.*h*u(N-1) + 2.*d*lambda(N-1) + d*lambda(N-2));
+    else if (i == N-2) fu(N-2) = -(2.*h*u(N-2) - 2.*d*lambda(N-2) + d*lambda(N-3));
+    else               fu(i)   = -((2.*h*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1))));
   } 
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda(0)   = 2.0*d*(u(0) - w[0]);
     else if (i == N-1) flambda(N-1) = 2.0*d*u(N-1);
-    else               flambda(i)   = (d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0*h);
+    else               flambda(i)   = -(d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0*h);
   } 
 
   ierr = DAVecRestoreArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
