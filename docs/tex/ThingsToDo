@@ -133,6 +133,10 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Provide index of all example programs in by extracting the help char string 
+     from the top of each file.  Similar to the index provided by the
+     UNM PETSc tutorial -- fully automate this process though.
+
    - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX everywhere.
 
    - Add matrix viewers to show element magnitude by coloring (requested by Andreas).
@@ -149,8 +153,6 @@ Additional Capabilities that PETSc Needs:
 
    - Maybe add a routine VecCreateVecs()?  Seems useful to me instead of having
      to create a base vector, then duplicate it.
-
-   - Add capability to support double precision vectors in complex version of code.
 
    - Add copyright info to header of each file?  See, e.g., MPICH.
 
