@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.75 1998/11/10 15:48:07 balay Exp balay $ 
+# $Id: makefile,v 1.76 1998/11/13 18:53:43 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         dpointsf.c drawf.c drectf.c dscatterf.c dsclearf.c dsetpausef.c \
         dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eigef.c \
         eisenf.c fdmatrixf.c flushf.c fpf.c gcookief.c getcolvf.c gmpref.c \
-        gmres2f.c \
+        gmres2f.c drawvf.c \
         histsf.c iluf.c indexf.c inheritf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
         luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c mpibaijf.c \
@@ -32,7 +32,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         dpointsf.o drawf.o drectf.o dscatterf.o dsclearf.o dsetpausef.o \
         dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eigef.o \
         eisenf.o fdmatrixf.o flushf.o fpf.o gcookief.o getcolvf.o gmpref.o \
-        gmres2f.o \
+        gmres2f.o drawvf.o \
         histsf.o iluf.o indexf.o inheritf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
         luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o mpibaijf.o \
