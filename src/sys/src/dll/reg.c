@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.31 1999/02/03 04:29:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.32 1999/02/03 15:34:00 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -163,15 +161,14 @@ struct _FList {
   char   *path;              /* path of link library containing routine */
   char   *name;              /* string to identify routine */
   char   *rname;             /* routine name in dynamic library */
-  FList next;               /* next pointer */
-  FList next_list;          /* used to maintain list of all lists for freeing */
+  FList  next;               /* next pointer */
+  FList  next_list;          /* used to maintain list of all lists for freeing */
 };
 
 /*
      Keep a linked list of FLists so that we can destroy all the left-over ones.
 */
 static FList   dlallhead = 0;
-
 
 /*
    FListAdd - Given a routine and a string id, saves that routine in the

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.167 1999/02/17 16:49:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.168 1999/03/31 18:42:13 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1225,6 +1225,8 @@ $     PCSetType(pc,"my_solver")
 $     -pc_type my_solver
 
    Level: advanced
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: PC, register
 

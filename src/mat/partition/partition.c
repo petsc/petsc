@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.22 1999/04/01 21:35:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.23 1999/04/01 23:26:11 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -56,14 +56,28 @@ FList MatPartitioningList = 0;
    Not Collective
 
    Input Parameters:
-.  name - name of partitioning (for example MATPARTITIONING_CURRENT) or MATPARTITIONING_NEW
-.  sname -  corresponding string for name
-.  order - routine that does partitioning
-
-   Output Parameters:
-.  oname - number associated with the partitioning (for example MATPARTITIONING_CURRENT)
++  sname - name of partitioning (for example MATPARTITIONING_CURRENT) or parmetis
+.  path - location of library where creation routine is 
+.  name - name of function that creates the partitioning type, a string
+-  function - function pointer that creates the partitioning type
 
    Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatPartitioningRegister("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyPartCreate",MyPartCreate);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatPartitioningSetType(part,"my_part")
+   or at runtime via the option
+$     -mat_partitioning_type my_part
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: matrix, partitioning, register
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.156 1999/03/16 16:16:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.157 1999/04/01 20:55:01 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -654,6 +654,8 @@ $     KSPSetType(ksp,"my_solver")
 $     -ksp_type my_solver
 
    Level: advanced
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: KSP, register
 
