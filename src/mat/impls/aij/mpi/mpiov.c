@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.22 1996/02/14 21:10:05 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.23 1996/02/15 16:53:52 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -550,15 +550,13 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
   int         nrqs, msz, **ptr, index, *req_size, *ctr, *pa, tag, *tmp,tcol,bsz, nrqr;
   int         **rbuf3,*req_source,**sbuf_aj, rstart,cstart, ashift, bshift,*ai, *aj;
   int         *bi, *bj,*garray,**rbuf2, max1,max2, **rmap, **cmap, **srmap, **scmap;
-  int         **lens, is_no, ncols, *cols, mat_i, *mat_j;
+  int         **lens, is_no, ncols, *cols, mat_i, *mat_j, tmp2;
   MPI_Request *send_waits, *recv_waits, *send_waits2, *recv_waits2, *recv_waits3 ;
   MPI_Request *recv_waits4,*send_waits3,*send_waits4;
   MPI_Status  *recv_status ,*recv_status2,*send_status,*send_status3 ,*send_status2;
   MPI_Status  *recv_status3,*recv_status4,*send_status4;
   MPI_Comm    comm;
   Scalar      **rbuf4, *aa, *ba, **sbuf_aa, *vals, *mat_a;
-  double      space, fr, maxs;
-
 
   comm   = C->comm;
   tag    = C->tag;
@@ -576,9 +574,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
   bj     = b->j;
   ba     = b->a;
   garray = c->garray;
-
-  TrSpace( &space, &fr, &maxs );
-  /*  MPIU_printf(MPI_COMM_SELF,"[%d] allocated space = %f fragments = %f max ever allocated = %f\n", rank, space, fr, maxs); */
   
   irow   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(irow);
   icol   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(icol);
@@ -640,7 +635,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     w1[j] += w2[j] + 2* w3[j];   
     msz   += w1[j];  
   }
-  
   
   /* Do a global reduction to determine how many messages to expect*/
   {
@@ -770,12 +764,8 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     /* form the header */
     sbuf2[index][0]   = req_size[index];
     for (j=1; j<start; j++){ sbuf2[index][j] = rbuf1[index][j]; }
-    /* printf("[%d] Send to %d: size %d, index = %d start = %d end = %d \n", rank, 
-           req_source[index] , *(req_size+index), index, start, end); */
     MPI_Isend((void *)(sbuf2[index]),end,MPI_INT,req_source[index],tag+1, comm, send_waits2+i); 
-    
   }
-  
 
   /*  recv buffer sizes */
  /* Receive messages*/
@@ -795,13 +785,10 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     CHKPTRQ(rbuf3[index]);
     rbuf4[index] = (Scalar *)PetscMalloc(rbuf2[index][0]*sizeof(Scalar));
     CHKPTRQ(rbuf4[index]);
-    /* printf("[%d] Posting Irecv for aj, aa from %d, size of buf = %d \n",rank,
-            recv_status2[i].MPI_SOURCE,rbuf2[index][0]);  */
     MPI_Irecv((void *)(rbuf3[index]),rbuf2[index][0], MPI_INT, 
               recv_status2[i].MPI_SOURCE, tag+2, comm, recv_waits3+index); 
     MPI_Irecv((void *)(rbuf4[index]),rbuf2[index][0], MPIU_SCALAR, 
               recv_status2[i].MPI_SOURCE, tag+3, comm, recv_waits4+index); 
-              
   } 
   
   /* Wait on sends1 and sends2 */
@@ -827,29 +814,14 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     ct2 = 0;
     for (j=1, max1 = rbuf1[i][0]; j<= max1; j++){
       for( k=0; k< rbuf1[i][2*j]; k++, ct1++) {
-        /* row   = rbuf1[i][ct1] - rstart;
-        start = ai[row];
-        end   = ai[row+1];
-        for (l = start; l< end; l++) {
-          sbuf_aj[i][ct2++] = aj[l] + cstart;
-        }
-        start = bi[row];
-        end   = bi[row+1];
-        for (l = start; l< end; l++) {
-          sbuf_aj[i][ct2++] = garray[bj[l]];
-        }*/
         row = rbuf1[i][ct1];
         ierr = MatGetRow(C, row, &ncols, &cols, 0); CHKERRQ(ierr);
-        /* MPIU_printf(MPI_COMM_SELF,"[%d]",rank);
-        for (l =0; l<ncols ; l++ ) MPIU_printf(MPI_COMM_SELF,"%d ",cols[l]);
-        MPIU_printf (MPI_COMM_SELF,"\n"); */
         PetscMemcpy(sbuf_aj[i]+ct2, cols, ncols*sizeof(int));
         ct2 += ncols;
         ierr = MatRestoreRow(C,row, &ncols, &cols,0); CHKERRQ(ierr);
       }
     }
     /* no header for this message  */
-    /* printf("[%d] Send AJ to %d: size %d, ct2 = %d \n", rank, req_source[i] , req_size[i], ct2); */
     MPI_Isend((void *)(sbuf_aj[i]),req_size[i],MPI_INT,req_source[i],tag+2, comm, send_waits3+i);
   } 
   recv_status3 = (MPI_Status *) PetscMalloc( (nrqs+1)*sizeof(MPI_Status) );
@@ -870,17 +842,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     ct2 = 0;
     for (j=1, max1 = rbuf1[i][0]; j<= max1; j++){
       for( k=0; k< rbuf1[i][2*j]; k++, ct1++) {
-        /* row   = rbuf1[i][ct1] - rstart;
-        start = ai[row];
-        end   = ai[row+1];
-        for (l = start; l< end; l++) {
-          sbuf_aa[i][ct2++] = aa[l];
-        }
-        start = bi[row];
-        end   = bi[row+1];
-        for (l = start; l< end; l++) {
-          sbuf_aa[i][ct2++] = ba[l];
-        } */
         row = rbuf1[i][ct1];
         ierr = MatGetRow(C, row, &ncols, 0, &vals); CHKERRQ(ierr);
         PetscMemcpy(sbuf_aa[i]+ct2, vals, ncols*sizeof(Scalar));
@@ -889,7 +850,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       }
     }
     /* no header for this message  */
-    /* printf("[%d] Send AA to %d: size %d, ct2 = %d \n", rank, req_source[i] , req_size[i], ct2); */
     MPI_Isend((void *)(sbuf_aa[i]),req_size[i],MPIU_SCALAR,req_source[i],tag+3, comm, send_waits4+i);
   } 
   recv_status4 = (MPI_Status *) PetscMalloc( (nrqs+1)*sizeof(MPI_Status) );
@@ -925,17 +885,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       row  = irow[i][j] ;
       proc = rtable[row];
       if (proc == rank) {
-        /* row  -= rstart;
-        start = ai[row];
-        end   = ai[row +1];
-        for (k =start; k < end; k++) {
-          if ( scmap[aj[k]+cstart]) { lens[i][j]++ ;}
-        }
-        start = bi[row];
-        end   = bi[row +1];
-        for (k =start; k < end; k++) {
-          if ( scmap[garray[bj[k]]]) { lens[i][j]++ ;}
-        } */
         ierr = MatGetRow(C,row,&ncols,&cols,0); CHKERRQ(ierr);
         for (k =0; k< ncols; k++) {
           if ( scmap[i][cols[k]]) { lens[i][j]++ ;}
@@ -957,21 +906,10 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       srmap[i][irow[i][j]] = j; 
     }
   }
-  /*
-  for (i=0; i< nrqs; ++i){
-      MPI_Waitany(nrqs, recv_waits3, &index, recv_status3+i);
-  }
-
-  for (i=0; i< nrqr; ++i){
-      MPI_Waitany(nrqr, send_waits3, &index, send_status3+i);
-  }
-*/
-  MPI_Waitall(nrqs,recv_waits3,recv_status3);
-  MPI_Waitall(nrqr,send_waits3,send_status3); 
-
  
   /* Update lens from offproc data */
-  for ( i =0; i<nrqs; i++) {
+  for ( tmp2 =0; tmp2 < nrqs; tmp2++) {
+    MPI_Waitany(nrqs, recv_waits3, &i, recv_status3+tmp2);
     index = pa[i];
     ct1 = 2*sbuf1[index][0]+1; /* sbuf1, rbuf2*/
     ct2 = 0;               /* rbuf3, rbuf4 */
@@ -990,7 +928,8 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       }
     }
   }    
-  
+  MPI_Waitall(nrqr,send_waits3,send_status3); 
+ 
   /* Create the submatrices */
   if( scall == MAT_REUSE_MATRIX) {
     int n_cols, n_rows;
@@ -1033,24 +972,9 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     }
   }
 
-  
-  /* for (i=0; i< nrqs; ++i){
-      MPI_Waitany(nrqs, recv_waits4, &index, recv_status4+i);
-  }
-
-  for (i=0; i< nrqr; ++i){
-      MPI_Waitany(nrqr, send_waits4, &index, send_status4+i);
-  }*/
-
-  MPI_Waitall(nrqs,recv_waits4,recv_status4);
-  MPI_Waitall(nrqr,send_waits4,send_status4); 
-
-
-  /* Now u have all the data required, so form the matrix */
-  /* rbuf3->aj, rbuf4 -> aa */
-
   /*   Now assemble the off proc rows*/
-  for ( i =0; i<nrqs; i++) {
+  for(tmp2 =0; tmp2 <nrqs; tmp2++) {
+    MPI_Waitany(nrqs, recv_waits4, &i, recv_status4+tmp2);
     index = pa[i];
     ct1 = 2*sbuf1[index][0]+1; /* sbuf1, rbuf2*/
     ct2 = 0;               /* rbuf3, rbuf4 */
@@ -1075,6 +999,8 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       }
     }
   }    
+  MPI_Waitall(nrqr,send_waits4,send_status4); 
+
   /* Packup*/
   for( i=0; i< ismax; i++) {
     ierr = MatAssemblyBegin((*submat)[i], FINAL_ASSEMBLY); CHKERRQ(ierr);
