@@ -90,6 +90,10 @@ class UsingCompiler:
     compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs['executable'])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compiler.includeDirs.append(includeDir)
     return [self.getTagger(None), compiler]
 
   def getExecutableLinkTarget(self, project):
@@ -97,6 +101,10 @@ class UsingCompiler:
     libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries['executable'])
     libraries.extend(self.usingSIDL.extraLibraries['executable'])
+    for dir in self.usingSIDL.repositoryDirs:
+      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+        if os.path.isfile(lib):
+          libraries.append(lib)
     return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
 
 class UsingC (UsingCompiler):
