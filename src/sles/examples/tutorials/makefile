@@ -19,12 +19,13 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm clean
 TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm clean
-TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
+TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
+                   ex6f.PETSc ex6f.rm ex15f.PETSc runex15f ex15f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
 		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
-TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
+TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
 		   runex12_2 runex12_3 ex12.rm clean
 TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
 		   runex12_3 ex12.rm clean
@@ -259,6 +260,12 @@ runex9:
 	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   $(RM) -f ex9_1.tmp
+
+runex10:
+	-@$(MPIRUN) -np 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex > ex10_1.tmp 2>&1; \
+	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
+	   else echo "Possible problem with ex10_1, diffs above"; fi; \
+	   $(RM) -f ex10_1.tmp
 
 runex11:
 	-@$(MPIRUN) -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
