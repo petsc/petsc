@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.103 1998/11/20 15:31:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.104 1998/11/21 01:05:55 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -259,6 +259,15 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
 
+  if (m != PETSC_DECIDE) {
+    if (m < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction");}
+    else if (m > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in X direction");}
+  }
+  if (n != PETSC_DECIDE) {
+    if (n < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Y direction");}
+    else if (n > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Y direction");}
+  }
+
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
     /* This should use MPI_Dims_create instead */
@@ -408,19 +417,16 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
 
   /* 
-     compose the DA into the MPI vector so it has access to the 
-     distribution information. This introduced a circular reference between
-     the DA and the vectors; we decrease the DA reference count to break it.
+     compose the DA into the vectors so they have access to the 
+     distribution information. 
   */
-
   ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
