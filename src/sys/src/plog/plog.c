@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.148 1997/02/22 02:29:54 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.149 1997/03/06 21:34:37 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1252,7 +1252,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   double pstime,psflops1,psflops,flopr;
   int    size,rank,i,j;
   char   arch[10],hostname[64],username[16];
-  FILE   *fd;
+  FILE   *fd = stdout;
 
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
@@ -1262,11 +1262,9 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Comm_rank(comm,&rank);
 
   /* Open the summary file */
-  if (filename) {
+  if (filename && !rank) {
     fd = fopen(filename,"w"); 
     if (!fd) SETERRQ(1,0,"cannot open file");
-  } else {
-    fd = stdout;
   }
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
@@ -1475,7 +1473,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   }
   PetscFPrintf(comm,fd,"\n");
-  if (filename) fclose(fd);
+  if (filename && !rank) fclose(fd);
   return 0;
 }
 
