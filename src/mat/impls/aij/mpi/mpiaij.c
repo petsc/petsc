@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.264 1998/10/19 22:17:56 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.265 1998/11/20 22:21:12 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
