@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.49 1996/04/04 22:02:42 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.50 1996/04/12 00:06:22 curfman Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -31,15 +31,17 @@ static int VecDestroy_MPI(PetscObject obj )
 
 static int VecView_MPI_File(Vec xin, Viewer ptr )
 {
-  Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,ierr;
-  FILE        *fd;
+  Vec_MPI *x = (Vec_MPI *) xin->data;
+  int     i, rank, ierr, format;
+  FILE    *fd;
 
   ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
 
   MPI_Comm_rank(xin->comm,&rank); 
   PetscSequentialPhaseBegin(xin->comm,1);
-  fprintf(fd,"Processor [%d] \n",rank);
+
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  if (format != ASCII_FORMAT_COMMON) fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
     if (imag(x->array[i]) != 0.0) {
@@ -74,7 +76,7 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
 
   if (!rank) {
     values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
-    ierr = ViewerGetFormat(viewer,&format);
+    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format == ASCII_FORMAT_MATLAB) {
       ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
