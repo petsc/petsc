@@ -40,3 +40,10 @@ PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 MUMPS_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/MUMPS_4.2_beta/include
 MUMPS_LIB        = -L/home/petsc/soft/linux-rh73-intel/MUMPS_4.2_beta/lib -ldmumps -lpord -L/home/petsc/soft/linux-rh73-intel/SCALAPACK -lscalapack  -L/home/petsc/soft/linux-rh73-intel/BLACS/LIB -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0 -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0
 PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS 
+#
+# SuperLU_DIST
+#
+SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/SRC
+SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/superlu_linux-intel.a
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+#
