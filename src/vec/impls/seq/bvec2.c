@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.187 2000/09/28 21:10:22 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.188 2000/10/24 20:25:14 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -14,7 +14,7 @@ EXTERN int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #define __FUNC__ /*<a name="VecNorm_Seq"></a>*/"VecNorm_Seq"
 int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
-  Vec_Seq * x = (Vec_Seq*)xin->data;
+  Vec_Seq *x = (Vec_Seq*)xin->data;
   int     ierr,one = 1;
 
   PetscFunctionBegin;
