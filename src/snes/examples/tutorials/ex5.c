@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.134 2001/05/04 19:54:30 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.135 2001/05/10 03:23:33 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -118,7 +118,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DASetLocalFunction(user.da,FormFunctionLocal,FormJacobianLocal,ad_FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DASetLocalFunction(user.da,(DALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DASetLocalJacobian(user.da,(DALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
+  ierr = DASetLocalad_Function(user.da,ad_FormFunctionLocal);CHKERRQ(ierr);
 
   /* Decide which FormFunction to use */
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
