@@ -490,7 +490,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int        ierr,sleeptimt=0;
+  int        ierr,sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int        ppid,rank;
   char       program[256],hostname[256];
