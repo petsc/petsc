@@ -1,5 +1,4 @@
 petsc/surplus
-petsc/src/mat/impls/bdiag/mpi
 petsc/TAGS
 petsc/maint
 petsc/docs/petsc.html
