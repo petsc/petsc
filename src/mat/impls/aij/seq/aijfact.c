@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.106 1998/07/23 21:54:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.107 1998/07/23 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -487,7 +487,7 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
 int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  IS         iscol = a->col, isrow = a->row, invisrow,inviscol;
+  IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
   int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
@@ -497,15 +497,11 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-  /* invert the permutations */
-  ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
-  ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
-
-  ierr = ISGetIndices(invisrow,&rout); CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(inviscol,&cout); CHKERRQ(ierr); c = cout;
+  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
-  for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
+  for ( i=0; i<n; i++ ) tmp[i] = b[c[i]]; 
 
   /* forward solve the U^T */
   for ( i=0; i<n; i++ ) {
@@ -531,10 +527,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] = tmp[i];
 
-  ierr = ISRestoreIndices(invisrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(inviscol,&cout); CHKERRQ(ierr);
-  ierr = ISDestroy(invisrow); CHKERRQ(ierr);
-  ierr = ISDestroy(inviscol); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
 
   PLogFlops(2*a->nz-a->n);
   PetscFunctionReturn(0);
@@ -545,7 +539,7 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
 int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  IS         iscol = a->col, isrow = a->row, invisrow,inviscol;
+  IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
   int        nz,shift = a->indexshift, *rout, *cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
@@ -557,14 +551,11 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp = a->solve_work;
 
-  /* invert the permutations */
-  ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
-  ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
-  ierr = ISGetIndices(invisrow,&rout); CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(inviscol,&cout); CHKERRQ(ierr); c = cout;
+  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
-  for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
+  for ( i=0; i<n; i++ ) tmp[i] = b[c[i]]; 
 
   /* forward solve the U^T */
   for ( i=0; i<n; i++ ) {
@@ -588,12 +579,10 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   }
 
   /* copy tmp into x according to permutation */
-  for ( i=0; i<n; i++ ) x[r[i]] += tmp[i];
+  for ( i=0; i<n; i++ ) x[r[i]] += tmp[i]; 
 
-  ierr = ISRestoreIndices(invisrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(inviscol,&cout); CHKERRQ(ierr);
-  ierr = ISDestroy(invisrow); CHKERRQ(ierr);
-  ierr = ISDestroy(inviscol); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
 
   PLogFlops(2*a->nz);
   PetscFunctionReturn(0);
