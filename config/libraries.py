@@ -168,7 +168,14 @@ class Configure(config.base.Configure):
        - finiFunction() is called to finalize the data, and may be omitted
        - checkLink may be given as ana alternative to the one in base.Configure'''
     isShared = 0
-    if checkLink is None: checkLink = self.checkLink
+    if checkLink is None:
+      checkLink = self.checkLink
+      configObj = self
+    else:
+      if hasattr(checkLink, 'im_self'):
+        configObj = checkLink.im_self
+      else:
+        configObj = self
 
     # Fix these flags
     oldFlags = self.framework.argDB['LIBS']
@@ -194,11 +201,11 @@ int init(int argc,  char *argv[]) {
 ''' % (boolType, initFunction, initArgs, checkCode)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
-      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
       self.framework.argDB['LIBS'] = oldFlags
       raise RuntimeError('Could not complete shared library check')
-    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    os.rename(self.linkerObj, 'lib1.so')
+    if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
+    os.rename(configObj.linkerObj, 'lib1.so')
 
     # Make a library which calls checkFunction()
     codeBegin = '''
@@ -215,12 +222,12 @@ int checkInit(void) {
 ''' % (boolType, checkCode)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
-      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
       self.framework.argDB['LIBS'] = oldFlags
       self.framework.logPrint('Could not complete shared library check')
       return 0
-    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    os.rename(self.linkerObj, 'lib2.so')
+    if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
+    os.rename(configObj.linkerObj, 'lib2.so')
 
     self.framework.argDB['LIBS'] = oldFlags
 
