@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.40 1998/10/11 02:22:07 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.41 1998/10/12 02:54:48 bsmith Exp curfman $ 
 
 ALL: ex1
 
@@ -28,7 +28,8 @@ BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc 
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
+                   common8and9.c common10and11.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h  ex5fs.F
 DIRS		 = 
 
@@ -97,6 +98,14 @@ ex8: ex8.o common8and9.o chkopts
 ex9: ex9.o common8and9.o chkopts
 	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_LIB}
 	${RM} ex9.o common8and9.o
+
+ex10: ex10.o common10and11.o chkopts
+	-${CLINKER} -o ex10 ex10.o common10and11.o ${PETSC_LIB}
+	${RM} ex10.o common10and11.o
+
+ex11: ex11.o common10and11.o chkopts
+	-${CLINKER} -o ex11 ex11.o common10and11.o ${PETSC_LIB}
+	${RM} ex11.o common10and11.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
