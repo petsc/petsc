@@ -2650,7 +2650,6 @@ int MatCreate_SeqAIJ(Mat B)
 {
   Mat_SeqAIJ *b;
   int        ierr,size;
-  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
