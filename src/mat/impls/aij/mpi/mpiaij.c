@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.333 2001/03/23 23:21:56 balay Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.334 2001/04/10 19:35:25 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1505,7 +1505,18 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetSubMatrix_MPIAIJ,
        MatDestroy_MPIAIJ,
        MatView_MPIAIJ,
-       MatGetMaps_Petsc};
+       MatGetMaps_Petsc,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatSetColoring_MPIAIJ,
+       MatSetValuesAD_MPIAIJ
+};
 
 /* ----------------------------------------------------------------------------------------*/
 
@@ -2345,3 +2356,78 @@ int MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
   *colmap = a->garray;
   PetscFunctionReturn(0);
 }  
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetColoring_MPIAIJ"
+int MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
+{
+  int        ierr;
+  Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;  
+
+  PetscFunctionBegin;
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    int        *allcolors,*colors,i;
+    ISColoring ocoloring;
+
+    /* set coloring for diagonal portion */
+    ierr = MatSetColoring_SeqAIJ(a->A,coloring);CHKERRQ(ierr);
+
+    /* set coloring for off-diagonal portion */
+    ierr = ISAllGatherIndices(A->comm,coloring->n,coloring->colors,PETSC_NULL,&allcolors);CHKERRQ(ierr);
+    ierr = PetscMalloc((a->B->n+1)*sizeof(int),&colors);CHKERRQ(ierr);
+    for (i=0; i<a->B->n; i++) {
+      colors[i] = allcolors[a->garray[i]];
+    }
+    ierr = PetscFree(allcolors);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,a->B->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
+  } else if (coloring->ctype == IS_COLORING_GHOSTED) {
+    int        *colors,i,*larray;
+    ISColoring ocoloring;
+
+    /* set coloring for diagonal portion */
+    ierr = PetscMalloc((a->A->n+1)*sizeof(int),&larray);CHKERRQ(ierr);
+    for (i=0; i<a->A->n; i++) {
+      larray[i] = i + a->cstart;
+    }
+    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,a->A->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = PetscMalloc((a->A->n+1)*sizeof(int),&colors);CHKERRQ(ierr);
+    for (i=0; i<a->A->n; i++) {
+      colors[i] = coloring->colors[larray[i]];
+    }
+    ierr = PetscFree(larray);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,a->A->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = MatSetColoring_SeqAIJ(a->A,ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
+
+    /* set coloring for off-diagonal portion */
+    ierr = PetscMalloc((a->B->n+1)*sizeof(int),&larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,a->B->n,a->garray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = PetscMalloc((a->B->n+1)*sizeof(int),&colors);CHKERRQ(ierr);
+    for (i=0; i<a->B->n; i++) {
+      colors[i] = coloring->colors[larray[i]];
+    }
+    ierr = PetscFree(larray);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,a->B->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,"No support ISColoringType %d",coloring->ctype);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAD_MPIAIJ"
+int MatSetValuesAD_MPIAIJ(Mat A,void *advalues)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;  
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetValuesAD_SeqAIJ(a->A,advalues);CHKERRQ(ierr);
+  ierr = MatSetValuesAD_SeqAIJ(a->B,advalues);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

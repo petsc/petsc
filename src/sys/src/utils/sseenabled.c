@@ -1,24 +1,24 @@
-/* $Id: sseenabled.c,v 1.4 2001/04/13 19:10:40 buschelm Exp bsmith $ */
-#define "petsc.h"
+/* $Id: sseenabled.c,v 1.5 2001/04/16 02:59:26 bsmith Exp bsmith $ */
+#include "petsc.h"
 
 #ifdef PETSC_HAVE_ICL
 
 /* Processor specific version for PentiumIII and Pentium4 */
 __declspec(cpu_specific(pentium_iii))
 int PetscSSEIsEnabled(PetscTruth *flag) {
-  flag = PETSC_TRUE;
+  *flag = PETSC_TRUE;
   return(0);
 }
 
 __declspec(cpu_specific(pentium_iii_no_xmm_regs))
 int PetscSSEIsEnabled(PetscTruth *flag) {
-  flag = PETSC_FALSE;
+  *flag = PETSC_FALSE;
   return(0);
 }
 /* Generic Intel processor version (i.e., not PIII,P4) */
 __declspec(cpu_specific(generic))
 int PetscSSEIsEnabled(PetscTruth *flag) {
-  flag = PETSC_FALSE;
+  *flag = PETSC_FALSE;
   return(0);
 }
 
@@ -30,7 +30,7 @@ int PetscSSEIsEnabled(void) {}
 
 /* Version to use if not compiling with ICL */
 int PetscSSEIsEnabled(PetscTruth *flag) {
-  flag = PETSC_FALSE;
+  *flag = PETSC_FALSE;
   return(0);
 }
 
