@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.42 2001/01/15 21:43:52 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.43 2001/03/09 19:59:55 balay Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -420,7 +420,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 @*/
 int PetscFinalize(void)
 {
-  int        ierr,rank = 0,nopt;
+  int        ierr,rank,nopt;
   PetscLogDouble rss;
   PetscTruth flg1,flg2,flg3;
   
