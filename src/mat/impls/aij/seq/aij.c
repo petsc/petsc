@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.122 1995/11/25 23:49:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.123 1995/11/30 22:33:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1351,7 +1351,7 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
     }
   }
   else c->diag        = 0;
-  if( a->inode.size){
+  if (a->inode.size){
     c->inode.size       = (int *) PetscMalloc( m *sizeof(int) ); CHKPTRQ(c->inode.size);
     c->inode.node_count = a->inode.node_count;
     PetscMemcpy( c->inode.size, a->inode.size, m*sizeof(int));
