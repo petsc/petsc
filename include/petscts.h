@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.28 1998/04/22 14:24:10 curfman Exp bsmith $ */
+/* $Id: ts.h,v 1.29 1998/06/11 19:59:10 bsmith Exp curfman $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -17,7 +17,7 @@ typedef struct _p_TS* TS;
 
 typedef char *TSType;
 
-typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
+typedef enum {TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
 extern int TSSetType(TS,TSType);
