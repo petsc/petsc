@@ -1,10 +1,13 @@
-/* $Id: mpi.h,v 1.47 1997/06/05 12:58:18 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.48 1997/06/17 17:58:14 bsmith Exp bsmith $ */
 
 /*
- * This is a special set of bindings for uni-processor use of MPI
- * Does not implement send to self.
- * Does not implement attributes correctly.
- */
+   This is a special set of bindings for uni-processor use of MPI by the PETSc library.
+ 
+   NOT ALL THE MPI CALLS ARE IMPLEMENTED CORRECTLY! Only those needed in PETSc.
+
+     Does not implement send to self.
+     Does not implement attributes correctly.
+*/
 
 #ifndef __MPI_BINDINGS
 #define __MPI_BINDINGS
