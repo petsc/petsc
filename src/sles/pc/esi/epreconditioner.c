@@ -4,7 +4,7 @@
 
 #include "esi/petsc/preconditioner.h"
 
-PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::Preconditioner(PC pc)
+PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 {
   int ierr;
   this->pc      = ipc;
@@ -112,13 +112,13 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setup()
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(esi::PreconditionerSide side)
+PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(esi::PreconditionerSide iside)
 {
   this->side = iside;
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(esi::PreconditionerSide & side)
+PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(esi::PreconditionerSide & iside)
 {
   iside = this->side;
   return 0;

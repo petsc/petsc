@@ -28,7 +28,7 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrm
 }
 
 
-PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat mat)
+PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 {
   int m,n,M,N,ierr;
 

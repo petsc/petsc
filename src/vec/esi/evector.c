@@ -197,7 +197,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  ::esi::Ve
   return VecAXPY(&scalar,y->vec,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double y1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
 {
   int ierr;
 
