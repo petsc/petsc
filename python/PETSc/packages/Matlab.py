@@ -64,28 +64,31 @@ class Configure(config.base.Configure):
             matlab = None
           else:
             # hope there is always only one arch installation in the location
-            self.foundMatlab = 1
             self.matlab      = matlab
-            matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
+            ls = os.listdir(os.path.join(matlab,'extern','lib'))
+            if ls: 
+              matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
-            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
-            self.addDefine('HAVE_MATLAB', 1)
-            self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
-            self.addSubstitution('MATLAB_CC', '${C_CC}')
-            self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
-            self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
-            if matlab_arch == 'mac':
-              matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
-            else:
-              matlab_dl = ''
-            # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
-            if matlab_arch == 'glnx86':
-              matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
-            else:
-              matlab_sys = ''
-            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'bin',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
-            self.framework.packages.append(self)
-            return
+              self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
+              self.addDefine('HAVE_MATLAB', 1)
+              self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
+              self.addSubstitution('MATLAB_CC', '${C_CC}')
+              self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
+              self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
+              if matlab_arch == 'mac':
+                matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
+              else:
+                matlab_dl = ''
+              # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
+              if matlab_arch == 'glnx86':
+                matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
+              else:
+                matlab_sys = ''
+              self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'bin',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+              self.framework.packages.append(self)
+              self.foundMatlab = 1
+              return
+            self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab engine at '+os.path.join(matlab,'extern','lib')+'\n')
       except RuntimeError:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         self.framework.log.write(output)
