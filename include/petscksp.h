@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.101 2001/06/21 21:18:08 bsmith Exp buschelm $ */
+/* $Id: petscksp.h,v 1.102 2001/07/09 22:36:57 buschelm Exp buschelm $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -116,6 +116,7 @@ EXTERN int KSPFGMRESModifyPCSLES(KSP,int,int,double,void*);
 EXTERN int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,double,void*),void*,int(*)(void*));
 
 EXTERN int KSPQCGSetTrustRegionRadius(KSP,double);
+EXTERN int KSPQCGGetTrustRegionRadius(KSP,double*);
 
 EXTERN int KSPSetFromOptions(KSP);
 EXTERN int KSPSetTypeFromOptions(KSP);
