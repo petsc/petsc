@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.215 1998/05/06 20:31:03 balay Exp balay $ */
+/* $Id: petsc.h,v 1.216 1998/05/13 18:49:57 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -148,6 +148,11 @@ extern int LARGEST_PETSC_COOKIE;
 extern int PetscGetTime(PLogDouble*);
 extern int PetscGetCPUTime(PLogDouble*);
 extern int PetscSleep(int);
+
+extern int  AliceInitialize(int*,char***,char*,char*);
+extern int  AliceInitializeNoArguments(void);
+extern int  AliceFinalize(void);
+extern void AliceInitializeFortran(void);
 
 extern int  PetscInitialize(int*,char***,char*,char*);
 extern int  PetscInitializeNoArguments(void);
