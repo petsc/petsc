@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 1998/12/04 23:28:21 balay Exp balay $ 
+# $Id: base.site,v 1.25 1998/12/11 19:40:03 balay Exp balay $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -85,7 +85,7 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
-# If you are using shared libraries you must make this
+# If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
 #DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas

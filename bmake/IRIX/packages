@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1998/12/04 23:15:21 balay Exp balay $ 
+# $Id: base.site,v 1.10 1998/12/11 19:39:56 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -89,7 +89,7 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
-# If you are using shared libraries you must make this
+# If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
 #DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas
