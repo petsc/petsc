@@ -81,7 +81,7 @@ int VecCreate(MPI_Comm comm, Vec *vec)
 int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
 {
   int      (*serialize)(MPI_Comm, Vec *, PetscViewer, PetscTruth);
-  int        fd, cookie, len;
+  int        fd, len;
   char      *name;
   PetscTruth match;
   int        ierr;
@@ -101,7 +101,9 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
 
   if (store) {
     PetscValidHeaderSpecific(*v, VEC_COOKIE);
-    ierr = PetscBinaryWrite(fd, &(*v)->cookie,         1,   PETSC_INT,  0);                               CHKERRQ(ierr);
+    ierr = PetscStrlen((*v)->class_name, &len);                                                           CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                               CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  (*v)->class_name,     len, PETSC_CHAR, 0);                               CHKERRQ(ierr);
     ierr = PetscStrlen((*v)->serialize_name, &len);                                                       CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                               CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd,  (*v)->serialize_name, len, PETSC_CHAR, 0);                               CHKERRQ(ierr);
@@ -109,8 +111,13 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
     if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
     ierr = (*serialize)(comm, v, viewer, store);                                                          CHKERRQ(ierr);
   } else {
-    ierr = PetscBinaryRead(fd, &cookie, 1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    if (cookie != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-vector object");
+    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
+    name[len] = 0;
+    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "Vec", &match);                                                              CHKERRQ(ierr);
+    ierr = PetscFree(name);                                                                               CHKERRQ(ierr);
+    if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-vector object");
     /* Dispatch to the correct routine */
     ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
     ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);

@@ -76,7 +76,7 @@ int PetscMapCreate(MPI_Comm comm, PetscMap *map)
 int PetscMapSerialize(MPI_Comm comm, PetscMap *map, PetscViewer viewer, PetscTruth store)
 {
   int      (*serialize)(MPI_Comm, PetscMap *, PetscViewer, PetscTruth);
-  int        fd, cookie, len;
+  int        fd, len;
   char      *name;
   PetscTruth match;
   int        ierr;
@@ -96,7 +96,9 @@ int PetscMapSerialize(MPI_Comm comm, PetscMap *map, PetscViewer viewer, PetscTru
 
   if (store) {
     PetscValidHeaderSpecific(*map, MAP_COOKIE);
-    ierr = PetscBinaryWrite(fd, &(*map)->cookie,         1,   PETSC_INT,  0);                             CHKERRQ(ierr);
+    ierr = PetscStrlen((*map)->class_name, &len);                                                         CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                    1,   PETSC_INT,  0);                             CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  (*map)->class_name,     len, PETSC_CHAR, 0);                             CHKERRQ(ierr);
     ierr = PetscStrlen((*map)->serialize_name, &len);                                                     CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd, &len,                    1,   PETSC_INT,  0);                             CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd,  (*map)->serialize_name, len, PETSC_CHAR, 0);                             CHKERRQ(ierr);
@@ -104,8 +106,13 @@ int PetscMapSerialize(MPI_Comm comm, PetscMap *map, PetscViewer viewer, PetscTru
     if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
     ierr = (*serialize)(comm, map, viewer, store);                                                        CHKERRQ(ierr);
   } else {
-    ierr = PetscBinaryRead(fd, &cookie, 1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    if (cookie != MAP_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-map object");
+    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
+    name[len] = 0;
+    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "PetscMap", &match);                                                         CHKERRQ(ierr);
+    ierr = PetscFree(name);                                                                               CHKERRQ(ierr);
+    if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-map object");
     /* Dispatch to the correct routine */
     ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
     ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);

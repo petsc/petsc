@@ -131,7 +131,7 @@ int TSCreate(MPI_Comm comm, TS *ts) {
 int TSSerialize(MPI_Comm comm, TS *ts, PetscViewer viewer, PetscTruth store)
 {
   int      (*serialize)(MPI_Comm, TS *, PetscViewer, PetscTruth);
-  int        fd, cookie, len;
+  int        fd, len;
   char      *name;
   PetscTruth match;
   int        ierr;
@@ -151,16 +151,23 @@ int TSSerialize(MPI_Comm comm, TS *ts, PetscViewer viewer, PetscTruth store)
 
   if (store) {
     PetscValidHeaderSpecific(*ts, TS_COOKIE);
-    ierr = PetscBinaryWrite(fd, &(*ts)->cookie,         1,   PETSC_INT,  0);                              CHKERRQ(ierr);
+    ierr = PetscStrlen((*ts)->class_name, &len);                                                          CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                   1,   PETSC_INT,  0);                              CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  (*ts)->class_name,     len, PETSC_CHAR, 0);                              CHKERRQ(ierr);
     ierr = PetscStrlen((*ts)->serialize_name, &len);                                                      CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &len,                     1,   PETSC_INT,  0);                            CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                   1,   PETSC_INT,  0);                              CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd,  (*ts)->serialize_name, len, PETSC_CHAR, 0);                              CHKERRQ(ierr);
     ierr = PetscFListFind(comm, TSSerializeList, (*ts)->serialize_name, (void (**)(void)) &serialize);    CHKERRQ(ierr);
     if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
     ierr = (*serialize)(comm, ts, viewer, store);                                                         CHKERRQ(ierr);
   } else {
-    ierr = PetscBinaryRead(fd, &cookie, 1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    if (cookie != TS_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-ts object");
+    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
+    name[len] = 0;
+    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "TS", &match);                                                               CHKERRQ(ierr);
+    ierr = PetscFree(name);                                                                               CHKERRQ(ierr);
+    if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-ts object");
     /* Dispatch to the correct routine */
     ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
     ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
