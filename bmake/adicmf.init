@@ -55,6 +55,7 @@
 	VertVelocity 
 	Pressure  
 	CalcJunk
+	PetscMin
 
 [INACTIVE_VARIABLES]
 
