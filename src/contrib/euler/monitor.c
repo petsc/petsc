@@ -327,6 +327,37 @@ int MonitorDumpGeneralJulianne(Euler *app)
 }
 /* --------------------------------------------------------------------------- */
 
+/*
+    ComputeMach - Computes the mach contour on the wing surface.
+ */
+int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
+{
+  int    ierr, i, j, k, ijkx, ijkxi;
+  int    ni1 = app->ni1, nj1 = app->nj1, nk1 = app->nk1;
+  int    kstart = 0, kend = app->ktip+1, istart = app->itl, iend = app->itu+1;
+  Scalar sfluid, ssound, r, ru, rw, gm1, gamma;
+
+  if (app->reorder) SETERRQ(1,0,"Reordering not currently supported");
+  if (app->bctype == EXPLICIT) SETERRQ(1,0,"Explicit BC not currently supported");
+
+  gamma = 1.4;
+  gm1   = gamma - 1.0;
+  j     = 0;  /* wing surface is j=0 */
+  for (k=kstart; k<kend; k++) {
+    for (i=istart; i<iend; i++) {
+      ijkx  = k*nj1*ni1 + j*ni1 + i;
+      ijkxi = ijkx * 5;
+      r  = app->xx[ijkxi];
+      ru = app->xx[ijkxi+1];
+      rw = app->xx[ijkxi+3];
+      sfluid = sqrt(ru*ru + rw*rw) / r;
+      ssound = sqrt(pow(r,gm1));
+      smach[ijkx] = sfluid/ssound;
+    }
+  }
+  return 0;
+}
+
 extern int DFVecFormUniVec_MPIRegular_Private(DFVec,Vec*);
 #undef __FUNC__
 #define __FUNC__ "MonitorDumpVRML"
@@ -367,10 +398,13 @@ int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
 
     /* Since we call MonitorDumpVRML() from the routine ComputeFunction(), we've already
        computed the pressure ... so there's no need for the following 2 statements.
-    ierr = PackWork(app,X,app->localX,
-                    app->r,app->ru,app->rv,app->rw,app->e); CHKERRQ(ierr);
-    ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr);
+    ierr = PackWork(app,app->X,app->localX,
+                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+    ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
     */
+
+    /* For now, use the pressure vector space for storing the mach contours */
+    ierr = ComputeMach(app,app->xx,app->p) ; CHKERRQ(ierr);
 
     /* If using multiple processors, then assemble the pressure vector on only 1 processor
        (in the appropriate ordering) and then view it.  Eventually, we will optimize such
