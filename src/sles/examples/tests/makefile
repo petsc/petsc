@@ -266,10 +266,12 @@ runex8_2:
 # Note: We test these BlockSolve95 examples differently from the usual
 # because the coloring heuristic is machine-dependent.
 runex8_3:
-	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001
+	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
+	echo "This is program tested the ICC preconditioner in BlockSolve95."
 runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \
-	   -ksp_rtol .000001
+	   -ksp_rtol .000001;\
+	echo "This is program tested the ILU preconditioner in BlockSolve95."
 runex10:
 	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
@@ -280,13 +282,11 @@ runex11:
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   $(RM) -f ex11_1.tmp
-
 runex13:
 	-@$(MPIRUN) -np 2  ex13 -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   $(RM) -f ex13_1.tmp
-
 runex16:
 	-@$(MPIRUN) ex16 -f $(PETSC_DIR)/src/mat/examples/matbinary.ex \
 	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_type ilu \
