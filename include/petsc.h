@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.236 1999/01/12 23:18:23 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.237 1999/01/27 19:50:01 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -252,6 +252,11 @@ typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
 extern int PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
 extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
+
+/*
+     Useful utility routines
+*/
+extern int PetscSplitOwnership(MPI_Comm,int*,int*);
 
 /*
     Defines basic graphics available from PETSc.
