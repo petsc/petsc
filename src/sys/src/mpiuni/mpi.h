@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.37 1997/01/01 13:53:26 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.38 1997/01/06 20:30:52 balay Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -345,10 +345,22 @@ typedef char*   MPI_Errhandler;
 #define MPI_Gather( sendbuf, sendcount,  sendtype, \
                    recvbuf, recvcount,  recvtype, \
                    root, comm) \
-                   MPI_Abort(MPI_COMM_WORLD,0)
+                     (MPIUNI_TMP = (void *) (recvcount), \
+                     (MPIUNI_TMP = (void *) (root), \
+                     MPIUNI_TMP = (void *) (recvtype), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+                     MPI_SUCCESS)
 #define MPI_Gatherv( sendbuf, sendcount,  sendtype, \
 		 recvbuf, recvcounts, displs, \
-		 recvtype, root, comm) MPI_Abort(MPI_COMM_WORLD,0)
+		 recvtype, root, comm) \
+                     (MPIUNI_TMP = (void *) (recvcounts), \
+                     MPIUNI_TMP = (void *) (displs), \
+                     MPIUNI_TMP = (void *) (recvtype), \
+                     MPIUNI_TMP = (void *) (root), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+                     MPI_SUCCESS)
 #define MPI_Scatter( sendbuf, sendcount,  sendtype, \
 		 recvbuf, recvcount,  recvtype, \
 		root, comm) MPI_Abort(MPI_COMM_WORLD,0)
