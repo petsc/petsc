@@ -8,19 +8,29 @@ T*/
 #include "petsc.h"
 #include "petscbag.h"
 
+/*
+  Enum variables can be stored in a bag but require a string array
+  to name their fields.  The fourth entry in this example is the name 
+  of the enum, the fifth is the prefix (none in this case), and the last 
+  entry is the null string.
+*/
 typedef enum {
   THIS = 0, THAT = 1, THE_OTHER = 2
 } YourChoice;
+const char *EnumeratedChoices[] = {"THIS","THAT","THE_OTHER","EnumeratedChoices","",0};
 
+/*
+  Data structures can be used in a bag as long as they 
+  are declared in the bag with a variable, not with a pointer.
+*/
 typedef struct {
   PetscReal   x1,x2;
 } TwoVec;
 
 /*
    Define a C struct that will contain my program's parameters.
-   It MUST begin with the PetscBag struct.
+   It MUST begin with the PetscBag struct. 
 */
-
 typedef struct {
   PetscBag      bag;
   char          filename[PETSC_MAX_PATH_LEN];
@@ -59,15 +69,16 @@ int main(int argc,char **argv)
   params = (Parameter*)bag;
 
   /* register variables, defaults, names, help strings */
-  ierr  = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"myfile","filename","Name of secret file");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
+  ierr = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
+  ierr = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"myfile","filename","Name of secret file");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
+  ierr = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
+  ierr = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
+  ierr = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
+  ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
+  ierr = PetscBagRegisterEnum  (bag,&params->which, EnumeratedChoices, THAT, "choose","Express yourself by choosing among enumerated things");CHKERRQ(ierr);
 
   /* write bag to stdio & file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
