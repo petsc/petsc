@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.14 1998/12/04 23:25:06 bsmith Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.15 1998/12/06 16:35:38 balay Exp balay $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -135,6 +135,14 @@ int PetscStackDestroy(void)
 }
 
 #else
+int PetscStackPublish(void)
+{
+  return 0;
+}
+int PetscStackDepublish(void)
+{
+  return 0;
+}
 
 int PetscStackCreate(int stacksize)
 {
