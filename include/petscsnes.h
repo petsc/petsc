@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.68 1998/04/21 23:48:34 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.69 1998/04/22 00:11:06 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -40,7 +40,6 @@ extern int SNESRegister_Private(char*,char*,char*,int(*)(SNES));
 #else
 #define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,d)
 #endif
-
 
 extern int SNESGetSLES(SNES,SLES*);
 extern int SNESGetSolution(SNES,Vec*);

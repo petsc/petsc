@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.25 1998/04/20 19:48:53 curfman Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.26 1998/04/21 19:37:00 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -8,57 +8,6 @@ extern int SNESCreate_EQ_TR(SNES);
 extern int SNESCreate_UM_TR(SNES);
 extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
-
-/*M
-   SNESRegister - Adds a method to the nonlinear solver package.
-
-   Synopsis:
-   SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
-
-   Input Parameters:
-.  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
-.  routine_create - routine to create method context
-
-   Notes:
-   SNESRegister() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-   SNESRegister("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
-
-   Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes,"my_solver")
-   or at runtime via the option
-$     -snes_type my_solver
-
-.keywords: SNES, nonlinear, register
-
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
-M*/
-
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,0)
-#else
-#define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,d)
-#endif
-
-#undef __FUNC__  
-#define __FUNC__ "SNESRegister_Private"
-static int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES))
-{
-  char fullname[256];
-  int  ierr;
-
-  PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
-  ierr = DLRegister(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
   
 /*
       This is used by SNESSetType() to make sure that at least one 

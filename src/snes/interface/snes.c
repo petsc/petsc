@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.146 1998/04/21 23:48:23 curfman Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.147 1998/04/22 13:49:10 balay Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: snes.c,v 1.146 1998/04/21 23:48:23 curfman Exp balay 
 
 int SNESRegisterAllCalled = 0;
 DLList SNESList = 0;
-
 
 #undef __FUNC__  
 #define __FUNC__ "SNESView"
