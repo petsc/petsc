@@ -116,8 +116,12 @@ class Compile (action.Action):
         flags += ' -D'+define
     return flags
 
+  def getLibraryName(self, source = None):
+    return self.library[0]
+
   def compile(self, source):
-    self.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
+    library = self.getLibraryName(source)
+    self.debugPrint('Compiling '+source+' into '+library, 3, 'compile')
     # Compile file
     command  = self.compiler
     flags    = self.constructFlags(source, self.flags)+self.getDefines()+self.getIncludeFlags()
@@ -133,14 +137,15 @@ class Compile (action.Action):
       self.deferredUpdates.append(source)
     # Archive file
     if self.archiver:
-      command = self.archiver+' '+self.archiverFlags+' '+self.library[0]+' '+object
+      command = self.archiver+' '+self.archiverFlags+' '+library+' '+object
       output  = self.executeShellCommand(command, self.errorHandler)
       os.remove(object)
     return object
 
   def compileSet(self, set):
     if len(set) == 0: return set
-    self.debugPrint('Compiling '+self.debugFileSetStr(set)+' into '+self.library[0], 3, 'compile')
+    library = self.getLibraryName()
+    self.debugPrint('Compiling '+self.debugFileSetStr(set)+' into '+library, 3, 'compile')
     # Compile files
     command  = self.compiler
     flags    = self.constructFlags(set, self.flags)+self.getDefines()+self.getIncludeFlags()
@@ -159,7 +164,7 @@ class Compile (action.Action):
       objects = []
       for source in set:
         objects.append(self.getIntermediateFileName(source))
-      command = self.archiver+' '+self.archiverFlags+' '+self.library[0]
+      command = self.archiver+' '+self.archiverFlags+' '+library
       if self.archiverRoot:
         dirs = string.split(self.archiverRoot, os.sep)
         for object in objects:
@@ -195,14 +200,16 @@ class Compile (action.Action):
       self.products.append(set)
 
   def execute(self):
-    library = self.library[0]
-    if not os.path.exists(library):
-      self.rebuildAll = 1
-      if bs.sourceDB.has_key(library): del bs.sourceDB[library]
-      (dir, file) = os.path.split(library)
-      if not os.path.exists(dir): os.makedirs(dir)
-    elif not bs.sourceDB.has_key(library):
-      self.rebuildAll = 1
+    library = self.getLibraryName()
+    if library:
+      if not os.path.exists(library):
+        self.rebuildAll = 1
+        if bs.sourceDB.has_key(library): del bs.sourceDB[library]
+        (dir, file) = os.path.split(library)
+        if not os.path.exists(dir):
+          os.makedirs(dir)
+      elif not bs.sourceDB.has_key(library):
+        self.rebuildAll = 1
     return action.Action.execute(self)
 
 class TagC (transform.GenericTag):
@@ -220,6 +227,20 @@ class CompileC (Compile):
       raise RuntimeError('Could not execute \''+command+'\': '+output)
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
+
+class CompilePythonC (CompileC):
+  def __init__(self, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+    CompileC.__init__(self, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+    self.products = []
+
+  def getLibraryName(self, source = None):
+    if not source: return None
+    (dir, file) = os.path.split(source)
+    (base, ext) = os.path.splitext(file)
+    if not base[-7:] == '_Module' or not ext == '.c':
+      raise RuntimeError('Invalid Python extension module: '+source)
+    package     = base[:-7]
+    return os.path.join(dir, package+'module.a')
 
 class TagCxx (transform.GenericTag):
   def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
@@ -295,7 +316,7 @@ class CompileJava (Compile):
   def execute(self):
     retval = Compile.execute(self)
     # Need to update JAR files since they do not get linked
-    library = self.library[0]
+    library = self.getLibraryName()
     bs.sourceDB.updateSource(library)
     return retval
 
@@ -308,7 +329,7 @@ class CompileEtags (Compile):
     Compile.__init__(self, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
 
   def constructFlags(self, source, baseFlags):
-    return baseFlags+' -f '+self.library[0]
+    return baseFlags+' -f '+self.getLibraryName()
 
   def getIntermediateFileName(self, source):
     return None
