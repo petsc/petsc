@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.8 1998/01/15 03:31:53 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.9 1998/01/15 21:55:00 balay Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: dl.c,v 1.8 1998/01/15 03:31:53 bsmith Exp balay $";
 
 /* ------------------------------------------------------------------------------*/
 /*
-      Code to maintain a list of opened dynamic libraries
+      Code to maintain a list of opened dynamic libraries and load symbols
 */
 #if defined(USE_DYNAMIC_LIBRARIES)
 #include <dlfcn.h>
@@ -20,6 +20,7 @@ static char vcid[] = "$Id: dl.c,v 1.8 1998/01/15 03:31:53 bsmith Exp balay $";
 struct _DLLibraryList {
   DLLibraryList next;
   void          *handle;
+  char          libname[1024];
 };
 
 #undef __FUNC__  
@@ -37,7 +38,6 @@ struct _DLLibraryList {
 */
 int DLObtainLibrary(char *libname,char *llibname)
 {
-#if defined(USE_PYTHON_FOR_REMOTE_DLLS)
   char *par4,buf[1024];
   FILE *fp;
   int  i;
@@ -73,59 +73,6 @@ int DLObtainLibrary(char *libname,char *llibname)
   if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9) ) { SETERRQ(1,1,buf); }
   PetscStrcpy(llibname,buf);
   PetscFree(par4);
- 
-#elif defined(USE_EXPECT_FOR_REMOTE_DLLS)
-  char *par4;
-  int  ierr;
-
-  PetscFunctionBegin;
-
-  if (PetscStrncmp(par2,"ftp://",6)) {
-    SETERRQ(1,1,"Only support for ftp DLL retrieval with \n\
-      USE_EXPECT_FOR_REMOTE_DLLS installation option");
-  }
-
-  /* create name for copy of library in /tmp */
-  PetscStrcpy(llibname,"/tmp/PETScLibXXXXXX");
-  mktemp(llibname);
-    
-  /* get library file from ftp to /tmp */
-  par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
-  PetscStrcpy(par4,PETSC_DIR);
-  PetscStrcat(par4,"/bin/ftpget ");
-  PetscStrcat(par4,libname);
-  PetscStrcat(par4," ");
-  PetscStrcat(par4,llibname);
-  PetscStrcat(par4," ");
-  if (PLogPrintInfo) PetscStrcat(par4,"1");
-  else               PetscStrcat(par4,"0");
-
-  PLogInfo(0,"About to run: %s\n",par4);
-  ierr = system(par4);
-  if (ierr) { /* could not get file; try again with .so.1.0 suffix */
-    PetscStrcpy(par4,PETSC_DIR);
-    PetscStrcat(par4,"/bin/ftpget ");
-    PetscStrcat(par4,libname);
-    PetscStrcat(par4,".so.1.0 ");
-    PetscStrcat(par4,llibname);
-    PetscStrcat(par4," ");
-    if (PLogPrintInfo) PetscStrcat(par4,"1");
-    else               PetscStrcat(par4,"0");
-
-    PLogInfo(0,"About to run: %s\n",par4);
-    ierr = system(par4);
-    if (ierr) {
-      PetscErrorPrintf("Attempting %s\n",par4);
-      SETERRQ(1,1,"Unable to retreive FTP library");
-    }
-  }
-  PetscFree(par4);
-#else
-  PetscFunctionBegin;
-  SETERRQ(1,1,"Not compiled to obtain remote DLLs\n\
-    Compile with  USE_EXPECT_FOR_REMOTE_DLLS or USE_PYTHON_FOR_REMOTE_DLLS\n\
-    installation option");
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -291,7 +238,7 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
       PetscErrorPrintf("Library path and function name %s\n",insymbol);
       SETERRQ(1,1,"Unable to locate function in dynamic library");
     }
-    PLogInfo(0,"DLSym:Loading function %s from dynamic library\n",par1);
+    PLogInfo(0,"DLSym:Loading function %s from dynamic library %s\n",par1,symbol);
   /* 
      look for symbol in predefined path of libraries 
   */
@@ -299,7 +246,7 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
     while (list) {
       *value =  dlsym(list->handle,symbol);
       if (*value) {
-        PLogInfo(0,"DLSym:Loading function %s from dynamic library\n",symbol);
+        PLogInfo(0,"DLSym:Loading function %s from dynamic library %s\n",symbol,list->libname);
         break;
       }
       list = list->next;
@@ -320,33 +267,33 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
 #define __FUNC__ "DLAppend"
 int DLAppend(DLLibraryList *outlist,char *libname)
 {
-  DLLibraryList list,next;
+  DLLibraryList list,prev;
   void*         handle;
   int           ierr;
 
   PetscFunctionBegin;
+
+  /* see if library was already open then we are done */
+  list = *outlist;
+  while (list) {
+    if (!PetscStrcmp(list->libname,libname)) {
+      PetscFunctionReturn(0);
+    }
+    prev = list;
+    list = list->next;
+  }
+
   ierr = DLOpen(libname,&handle);CHKERRQ(ierr);
 
   list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->next   = 0;
   list->handle = handle;
+  PetscStrcpy(list->libname,libname);
 
   if (!*outlist) {
     *outlist = list;
   } else {
-    next = *outlist;
-    if (next->handle == handle) {
-      PetscFree(list);
-      PetscFunctionReturn(0); /* it is already listed */
-    }
-    while (next->next) {
-      next = next->next;
-      if (next->handle == handle) {
-        PetscFree(list);
-        PetscFunctionReturn(0); /* it is already listed */
-      }
-    }
-    next->next = list;
+    prev->next = list;
   }
   PLogInfo(0,"DLAppend:Appending %s to dynamic library search path\n",libname);
   PetscFunctionReturn(0);
@@ -363,33 +310,37 @@ int DLAppend(DLLibraryList *outlist,char *libname)
 #define __FUNC__ "DLPrepend"
 int DLPrepend(DLLibraryList *outlist,char *libname)
 {
-  DLLibraryList list,next,prev;
+  DLLibraryList list,prev;
   void*         handle;
   int           ierr;
 
   PetscFunctionBegin;
+ 
+  /* see if library was already open and move it to the front */
+  list = *outlist;
+  prev = 0;
+  while (list) {
+    if (!PetscStrcmp(list->libname,libname)) {
+      if (prev) prev->next = list->next;
+      list->next = *outlist;
+      *outlist   = list;
+      PetscFunctionReturn(0);
+    }
+    prev = list;
+    list = list->next;
+  }
+
+  /* open the library and add to front of list */
   ierr = DLOpen(libname,&handle);CHKERRQ(ierr);
 
   PLogInfo(0,"DLPrepend:Prepending %s to dynamic library search path\n",libname);
 
-  list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  list         = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->handle = handle;
+  list->next   = *outlist;
+  PetscStrcpy(list->libname,libname);
+  *outlist     = list;
 
-  list->next        = *outlist;
-  *outlist          = list;
-
-  /* check if library was previously open, if so remove duplicate reference */
-  next = list->next;
-  prev = list;
-  while (next) {
-    if (next->handle == handle) {
-      prev->next = next->next;
-      PetscFree(next);
-      PetscFunctionReturn(0);
-    }
-    prev = next;
-    next = next->next;
-  }
   PetscFunctionReturn(0);
 }
 
