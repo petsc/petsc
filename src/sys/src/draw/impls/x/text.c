@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.17 1996/03/10 17:29:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.18 1996/08/08 14:45:12 bsmith Exp balay $";
 #endif
 
 #if defined(HAVE_X11)
@@ -21,6 +21,8 @@ int XiLoadFont(Draw_X*,XiFont*);
    ok because there will never be many windows and the graphics
    are not intended to be high performance.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiFontFixed"
 int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 {
   static XiFont *curfont = 0,*font;
@@ -45,6 +47,8 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiLoadFont"
 int XiLoadFont( Draw_X *XBWin, XiFont *font )
 {
   char        font_name[100];
@@ -69,6 +73,8 @@ int XiLoadFont( Draw_X *XBWin, XiFont *font )
 }
 
 /* Code to find fonts and their characteristics */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiInitFonts"
 int XiInitFonts( Draw_X *XBWin )
 {
   char         **names;
@@ -114,6 +120,8 @@ int XiInitFonts( Draw_X *XBWin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiMatchFontSize"
 int XiMatchFontSize( XiFont *font, int w, int h )
 {
   int i,max,imax,tmp;
