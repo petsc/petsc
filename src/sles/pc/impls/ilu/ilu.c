@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.8 1995/04/16 03:43:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.9 1995/04/17 02:26:50 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -22,7 +22,7 @@ typedef struct {
 .  levels - number of levels of fill
 
    Options Database Key:
-$  -ilu_levels  levels
+$  -pc_ilu_levels  levels
 
 .keywords: levels, fill, factorization, incomplete, ILU
 
@@ -52,7 +52,7 @@ $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
 
   Options Database Key:
-$ -ilu_ordering <name>, where <name> is one of the following:
+$ -pc_ilu_ordering <name>, where <name> is one of the following:
 $     natural, nd, 1wd, rcm, qmd
 
 .keywords: ordering, reordering, factorization, incomplete, ILU, fill

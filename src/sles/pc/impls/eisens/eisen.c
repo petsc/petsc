@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.13 1995/04/17 02:16:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.14 1995/04/17 02:26:00 bsmith Exp curfman $";
 #endif
 
 /*
@@ -144,7 +144,7 @@ int PCCreate_Eisenstat(PC pc)
 .  omega - relaxation coefficient (0 < omega < 2)
 
    Options Database Key:
-$  -sor_omega  omega
+$  -pc_sor_omega  omega
 
    Notes: 
    The Eisenstat trick implementation of SSOR requires about 50% of the
@@ -154,7 +154,7 @@ $  -sor_omega  omega
 
    To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner, 
    which can be chosen with the database options
-$    -pc_method  sor  -sor_symmetric
+$    -pc_method  sor  -pc_sor_symmetric
 
 .keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
 

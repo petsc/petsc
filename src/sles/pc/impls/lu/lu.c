@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.15 1995/04/16 03:43:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: direct.c,v 1.16 1995/04/17 02:25:27 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -28,7 +28,7 @@ $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
 
    Options Database Key:
-$  -ilu_ordering <name>, where <name> is one of the following:
+$  -pc_direct_ordering <name>, where <name> is one of the following:
 $      natural, nd, 1wd, rcm, qmd
 
 .keywords: PC, set, ordering, factorization, direct, LU, Cholesky, fill
