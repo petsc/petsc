@@ -114,6 +114,10 @@ class Configure(config.base.Configure):
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a')
+    # Portland group compiler blas and lapack
+    if 'PGI' in os.environ:
+      dir = os.path.join(os.environ['PGI'],'linux86','lib')
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')    
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'])
