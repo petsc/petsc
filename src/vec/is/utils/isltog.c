@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.42 2000/06/24 04:00:10 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.43 2000/06/25 03:44:29 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -415,7 +415,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 {
   int         i,n = mapping->n,ierr,Ng,ng = PETSC_DECIDE,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
-  int         tag,cnt,*len,*source,imdex,scale;
+  int         tag,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart;
   MPI_Request *recv_waits,*send_waits;
   MPI_Status  recv_status,*send_status;
   MPI_Comm    comm = mapping->comm;
@@ -426,11 +426,12 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   for (i=0; i<n; i++) {
     if (lindices[i] > max) max = lindices[i];
   }
-  ierr = MPI_Allreduce(&max,&Ng,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ng    = Ng/size + ((Ng % size) > rank);
-  scale = Ng/size;
+  ierr   = MPI_Allreduce(&max,&Ng,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ng     = Ng/size + (rank == size-1)*(Ng % size);
+  scale  = Ng/size;
+  rstart = scale*rank;
 
   /* determine ownership ranges of global indices */
   nprocs    = (int*)PetscMalloc((2*size+1)*sizeof(int));CHKPTRQ(nprocs);
@@ -487,11 +488,15 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   source = (int*)PetscMalloc((2*nrecvs+1)*sizeof(int));CHKPTRQ(source);
   len    = source + nrecvs;
   cnt    = nrecvs; 
+  nownedsenders = (int*)PetscMalloc((ng+1)*sizeof(int));CHKPTRQ(nownedsenders);
+  ierr          = PetscMemzero(nownedsenders,ng*sizeof(int));CHKERRQ(ierr);
   while (cnt) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
     ierr           = MPI_Get_count(&recv_status,MPI_INT,&len[imdex]);CHKERRQ(ierr);
     source[imdex]  = recv_status.MPI_SOURCE;
+    /* count how many local owners for each of my global owned indices */
+    for (i=0; i<len[imdex]; i++) nownedsenders[recvs[imdex*nmax+i]-rstart]++;
     cnt--;
   }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
