@@ -249,10 +249,10 @@ runex6_5:
 runex6_6:
 	-@$(MPIRUN) -np 3 ex6  -ksp_gmres_restart 100 \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1_ns \
-	   -mat_mpirowbs -ksp_max_it 150 > ex6_6.tmp 2>&1; \
+	   -mat_mpirowbs -pc_type ilu > ex6_6.tmp 2>&1; \
 	   if (diff output/ex6_6.out ex6_6.tmp) then true; \
 	   else echo "Possible problem with ex6_6, diffs above"; fi; \
-	   $(RM) -f ex6_6.tmp
+#	   $(RM) -f ex6_6.tmp
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
