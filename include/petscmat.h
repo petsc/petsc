@@ -411,7 +411,7 @@ EXTERN PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 EXTERN PetscErrorCode MatGetLocalMat(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
-EXTERN PetscErrorCode MatGetBrowsOfAoCols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
+EXTERN PetscErrorCode MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscScalar**,Mat*);
 
 EXTERN PetscErrorCode MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
 

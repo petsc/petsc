@@ -44,13 +44,15 @@ typedef struct {
 } Mat_MPIAIJ;
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  IS       isrowa,isrowb,iscolb;
-  Mat      *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
-  Mat      A_loc,B_seq;
-  Mat      B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
-  PetscInt *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
+  PetscInt    *startsj;
+  PetscScalar *bufa;
+  IS          isrowa,isrowb,iscolb; 
+  Mat         *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  Mat         A_loc,B_seq;
+  Mat         B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+  PetscInt    *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscInt    abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */

@@ -15,24 +15,23 @@ EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode       ierr;
-  Mat_MatMatMultMPI    *ptap; 
+  Mat_MatMatMultMPI    *mult; 
   PetscObjectContainer container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr); 
-    ierr = MatDestroy(ptap->B_loc);CHKERRQ(ierr);
-    ierr = MatDestroy(ptap->B_oth);CHKERRQ(ierr);
-    ierr = ISDestroy(ptap->isrowb);CHKERRQ(ierr);
-    ierr = ISDestroy(ptap->iscolb);CHKERRQ(ierr);
-    if (ptap->abi) ierr = PetscFree(ptap->abi);CHKERRQ(ierr);
-    if (ptap->abj) ierr = PetscFree(ptap->abj);CHKERRQ(ierr);
-    
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
+    ierr = MatDestroy(mult->B_loc);CHKERRQ(ierr);
+    ierr = MatDestroy(mult->B_oth);CHKERRQ(ierr);
+    if (mult->abi) ierr = PetscFree(mult->abi);CHKERRQ(ierr);
+    if (mult->abj) ierr = PetscFree(mult->abj);CHKERRQ(ierr);
+    if (mult->startsj) ierr = PetscFree(mult->startsj);CHKERRQ(ierr);
+    if (mult->bufa) ierr = PetscFree(mult->bufa);CHKERRQ(ierr);
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatPtAPMPI",0);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ptap);CHKERRQ(ierr);
+  ierr = PetscFree(mult);CHKERRQ(ierr);
 
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -43,26 +42,27 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode       ierr;
-  Mat_MatMatMultMPI    *ptap;
+  Mat_MatMatMultMPI    *mult;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){ 
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-    ierr = PetscNew(Mat_MatMatMultMPI,&ptap);CHKERRQ(ierr);
-    ptap->abi=PETSC_NULL; ptap->abj=PETSC_NULL; 
-    ptap->abnz_max = 0; /* symbolic A*P is not done yet */
+    ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
+    mult->B_loc=PETSC_NULL; mult->B_oth=PETSC_NULL;
+    mult->abi=PETSC_NULL; mult->abj=PETSC_NULL; 
+    mult->abnz_max = 0; /* symbolic A*P is not done yet */
 
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-    ierr = MatGetBrowsOfAoCols(A,P,scall,&ptap->isrowb,&ptap->iscolb,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,scall,&mult->startsj,&mult->bufa,&mult->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
-    ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
+    ierr = MatGetLocalMat(P,scall,&mult->B_loc);CHKERRQ(ierr);
 
     /* attach the supporting struct to P for reuse */
     P->ops->destroy  = MatDestroy_MPIAIJ_PtAP;
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscObjectContainerSetPointer(container,ptap);CHKERRQ(ierr);
+    ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)P,"MatPtAPMPI",(PetscObject)container);CHKERRQ(ierr);
   
     /* now, compute symbolic local P^T*A*P */
@@ -71,16 +71,16 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   } else if (scall == MAT_REUSE_MATRIX){
     ierr = PetscObjectQuery((PetscObject)P,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
     if (container) { 
-      ierr  = PetscObjectContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr); 
+      ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
     } else {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
     } 
     
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-    ierr = MatGetBrowsOfAoCols(A,P,scall,&ptap->isrowb,&ptap->iscolb,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,scall,&mult->startsj,&mult->bufa,&mult->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
-    ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
+    ierr = MatGetLocalMat(P,scall,&mult->B_loc);CHKERRQ(ierr);
 
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
@@ -108,10 +108,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pdti,*pdtj,*poti,*potj,*ptJ,*pjj;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz; 
   PetscInt             nlnk,*lnk,*cdi,*cdj,*owners_co,*coi,*coj,*cji; 
-  PetscInt             am=A->m,pN=P->N,pm=P->m,pn=P->n;  
+  PetscInt             am=A->m,pN=P->N,pn=P->n;  
   PetscInt             i,j,k,pnz,row,cnz;
   PetscBT              lnkbt;
-  PetscInt             prstart,prend;
   MPI_Comm             comm=A->comm;
   PetscMPIInt          size,rank,tagi,tagj,*len_si,*len_s,*len_ri; 
   PetscInt             **buf_rj,**buf_ri,**buf_ri_k;
@@ -134,10 +133,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* get data from P_loc and P_oth */
-  P_loc=ap->B_loc; P_oth=ap->B_oth; prstart=ap->brstart;
+  P_loc=ap->B_loc; P_oth=ap->B_oth; 
   p_loc=(Mat_SeqAIJ*)P_loc->data; p_oth=(Mat_SeqAIJ*)P_oth->data;
   pi_loc=p_loc->i; pj_loc=p_loc->j; pi_oth=p_oth->i; pj_oth=p_oth->j;
-  prend = prstart + pm;
 
   /* first, compute symbolic AP = A_loc*P */
   /*--------------------------------------*/
