@@ -1,5 +1,5 @@
 C
-C "$Id: ex5f.F,v 1.33 1997/08/22 15:18:29 bsmith Exp balay $";
+C "$Id: ex5f.F,v 1.34 1997/08/22 15:28:48 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -84,8 +84,8 @@ C  Initialize program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C  Initialize problem parameters
 
@@ -107,7 +107,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+     &                snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
@@ -127,7 +128,7 @@ C  Create distributed array (DA) to manage parallel grid and vectors
       endif
 C This really needs only the star-type stencil, but we use the box
 C stencil temporarily.
-      call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,
      &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
 
 C
@@ -194,10 +195,10 @@ C     for preallocating matrix memory.
      &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
-          call MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
+          call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
      &                         3,PETSC_NULL,J,ierr)
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
@@ -390,7 +391,7 @@ C  vector data as a multidimensional array over the local mesh.
 C  This routine merely handles ghost point scatters and accesses
 C  the local vector data via VecGetArray() and VecRestoreArray().
 C
-      subroutine FormFunction(snes,X,F,dummy)
+      subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
 #include "ex5f.h"
@@ -399,8 +400,6 @@ C  Input/output variables:
       SNES     snes
       Vec      X, F
       integer  dummy
-
-C  Local variables:
       integer  ierr
 
 C  Declarations for use with local arrays:
@@ -552,7 +551,7 @@ C          MatSetValues()
 C  Option (A) seems cleaner/easier in many cases, and is the procedure
 C  used in this example.
 C
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy)
+      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
       implicit none
 
 #include "ex5f.h"
@@ -563,8 +562,6 @@ C  Input/output variables:
       Mat          jac, jac_prec
       MatStructure flag
       integer      dummy
-
-C  Local variables:
       integer      ierr
 
 C  Declarations for use with local arrays:

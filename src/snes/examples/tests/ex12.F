@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.42 1997/09/12 19:13:06 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.43 1997/09/15 18:37:42 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -28,7 +28,7 @@ C
       integer          ctx(8),ierr,N,start,end,nn,i,ii,its,flg
       SNES             snes
       Mat              J
-      Vec              x,r,u,F
+      Vec              x,r,u
       Scalar           xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian, FormFunction
@@ -39,11 +39,11 @@ C
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
-      call MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,ctx(4),ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,ctx(5),ierr)
 
 C Set up data structures
-      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
      &                ctx(1),ierr)
 
       call DAGetDistributedVector(ctx(1),x,ierr)
@@ -51,12 +51,11 @@ C Set up data structures
 
       call PetscObjectSetName(x,'Approximate Solution',ierr)
       call VecDuplicate(x,r,ierr)
-      call VecDuplicate(x,F,ierr)
-      ctx(2) = F
+      call VecDuplicate(x,ctx(2),ierr)
       call VecDuplicate(x,U,ierr)
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
-      call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
+      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
      *                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
 
       call MatGetType(J,PETSC_NULL,matrixname,ierr)
@@ -69,18 +68,19 @@ C Store right-hand-side of PDE and exact solution
       do 10, i=0,nn-1
         FF = 6.0*xp + (xp+1.e-12)**6.e0
         UU = xp*xp*xp
-        call VecSetValues(F,1,ii,FF,INSERT_VALUES,ierr)
+        call VecSetValues(ctx(2),1,ii,FF,INSERT_VALUES,ierr)
         call VecSetValues(U,1,ii,UU,INSERT_VALUES,ierr)
         xp = xp + h
         ii = ii + 1
  10   continue
-      call VecAssemblyBegin(F,ierr)
-      call VecAssemblyEnd(F,ierr)
+      call VecAssemblyBegin(ctx(2),ierr)
+      call VecAssemblyEnd(ctx(2),ierr)
       call VecAssemblyBegin(U,ierr)
       call VecAssemblyEnd(U,ierr)
 
 C Create nonlinear solver
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+     &                snes,ierr)
 
 C Set various routines and options
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
@@ -103,7 +103,7 @@ C  are no longer needed.
       call VecDestroy(ctx(3),ierr)
       call VecDestroy(r,ierr)
       call VecDestroy(U,ierr)
-      call VecDestroy(F,ierr)
+      call VecDestroy(ctx(2),ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
       call DADestroy(ctx(1),ierr)
@@ -114,7 +114,10 @@ C  are no longer needed.
 C --------------------  Evaluate Function F(x) --------------------- 
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
-      integer          snes, x, f, ctx(*),ierr
+      implicit none
+      SNES             snes
+      Vec              x,f
+      integer          ctx(*)
       integer          rank, size, i, s, n, ierr, ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
       common           vf2, vxx, vff
@@ -134,7 +137,7 @@ C --------------------  Evaluate Function F(x) ---------------------
       call VecGetLocalSize(ctx(3),n,ierr)
       if (n .gt. 1000) then 
         print*, 'Local work array not big enough'
-        call MPI_Abort(MPI_COMM_WORLD,0,ierr)
+        call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
       endif
 
 C
@@ -197,6 +200,7 @@ C
 C --------------------  Form initial approximation ----------------- 
 
       subroutine FormInitialGuess(snes,x,ierr)
+      implicit none
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/snes.h"
@@ -213,6 +217,7 @@ C --------------------  Form initial approximation -----------------
 C --------------------  Evaluate Jacobian -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
+      implicit none
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
