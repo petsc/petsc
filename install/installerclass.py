@@ -68,8 +68,14 @@ class Installer(install.urlMapping.UrlMapping):
     root = self.retriever.retrieve(url, self.getInstallRoot(url, isBackup = 1), force = self.force);
     # Must save checkpoint in the project root
     self.argDB.saveFilename = os.path.join(root, 'RDict.db')
-    self.builder.build(root, ['activate', 'sidlCheckpoint', 'deactivate'], ignoreDependencies = 1)
+    self.builder.build(root, ['sidlCheckpoint', 'deactivate'], ignoreDependencies = 1)
     self.argDB.save(force = 1)
+    # Remove frozen makefile
+    makefile = os.path.join(root, 'make.pyc')
+    if os.path.isfile(makefile):
+      print 'Removing old makefile '+makefile
+      os.remove(makefile)
+    # Tar up project
     tarball = self.getRepositoryName(self.getMappedUrl(url))+'.tgz'
     output  = self.executeShellCommand('tar -czf '+tarball+' -C '+os.path.dirname(root)+' '+os.path.basename(root))
     # Reset this since we are removing the directory
