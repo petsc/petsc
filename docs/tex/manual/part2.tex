@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.263 1998/04/15 02:49:15 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.264 1998/04/15 17:58:37 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1797,15 +1797,36 @@ sum of all the {\tt mlocal}. The arguments {\tt ia} and {\tt ja} are the row poi
 and column pointers for the given rows, these are the usual format for parallel 
 compressed sparse row storage, using indices starting at 0, {\bf not} 1.
 
+\begin{figure}[tb]
+\centerline{\psfig{file=usg.ps,angle=0}}
+\caption{Numbering on Simple Unstructured Grid}
+\label{fig:usg}
+\end{figure}
+
 This, of course, assumes that one has already distributed the grid (graph) information
 among the processors. The details of this initial distribution is not important; it 
 could be simply determined by assigning to the first processor the first $n_0$ nodes
 from a file, the second processor the next $ n_1$ nodes, etc.
 
 For example, we demonstrate the form of the {\tt ia} and {\tt ja} for a triangular
-grid where we (1) partition by element (triangle) and (2) partition by vertex.
+grid where we 
 
-GIVE A SIMPLE FIGURE AND EXAMPLE OF IA AND JA HERE.
+(1) partition by element (triangle) 
+\begin{itemize}
+  \item Processor 0, $ mlocal = 2, n = 4, ja = \{2, 3,| 3\}, ia = \{0, 2, 3\} $
+  \item Processor 1, $ mlocal = 2, n = 4, ja = \{0, | 0, 1\}, ia = \{0, 1, 3\} $
+\end{itemize}
+Note that elements are not connected to themselves and we only indicate edge connections
+(in some contexts single vertex connections between elements may also be included). We use a
+$ | $ above to denote the transition between rows in the matrix.
+
+and (2) partition by vertex.
+\begin{itemize}
+  \item Processor 0, $ mlocal = 3, n = 6, ja = \{3, 4, | 4, 5, | 3, 4, 5\}, ia = \{0, 2, 4, 7\} $
+  \item Processor 1, $ mlocal = 3, n = 6, ja = \{0, 2, 4, |  0, 1, 2, 3, 5,|  1, 2, 4}, ia = \{0, 3, 8, 11\}. $
+\end{itemize}
+
+
 
 Once the connectivity matrix has been created the following code will generate the 
 renumbering required for the new partition
