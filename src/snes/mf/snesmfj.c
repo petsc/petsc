@@ -542,7 +542,7 @@ PetscErrorCode MatSNESMFSetFromOptions(Mat mat)
 
   Level: advanced
 
-.seealso: MatCreateMF, MatCreateSNESMF
+.seealso: MatCreateMF(), MatCreateSNESMF()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  

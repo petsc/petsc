@@ -499,6 +499,11 @@ noshared:
 #   1.) manualpages_buildcite: builds the file manualpages.cit for hyperlinks
 #   2.) manualpages: builds the html pages, complete with hyperlinks
 
+chk_mansec:
+	@if [ "${MANSEC}" == "" ] ; then \
+          echo "   makefile is missing MANSEC";\
+        fi
+
 chk_manualpage_dir:
 	@if [ ! -d "${LOC}/docs/manualpages/${MANSEC}" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/${MANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/${MANSEC}; fi

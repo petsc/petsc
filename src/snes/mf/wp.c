@@ -1,7 +1,7 @@
-/*
-  Implements an alternative approach for computing the differencing parameter
-  h used with the finite difference based matrix-free Jacobian.  This code
-  implements the strategy of M. Pernice and H. Walker:
+/*MC
+     MATSNESMF_WP - Implements an alternative approach for computing the differencing parameter
+        h used with the finite difference based matrix-free Jacobian.  This code
+        implements the strategy of M. Pernice and H. Walker:
 
       h = error_rel * sqrt(1 + ||U||) / ||a||
 
@@ -14,6 +14,27 @@
       Reference:  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative 
       Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998, 
       vol 19, pp. 302--318.
+
+   Options Database Keys:
++   -snes_mf_compute_norma - compute the norm of a everytime see MatSNESMFWPSetComputeNormA()
+-   -snes_mf_compute_normu -Compute the norm of u everytime see MatSNESMFWPSetComputeNormU()
+
+
+   Level: intermediate
+
+   Notes: Requires no global collectives when used with GMRES
+
+   Formula used:
+     F'(u)*a = [F(u+h*a) - F(u)]/h where
+     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
+ where
+     error_rel = square root of relative error in function evaluation
+     umin = minimum iterate parameter
+
+.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_DEFAULT
+
+M*/
 
    See snesmfjdef.c for  a full set of comments on the routines below.
 */

@@ -56,6 +56,7 @@ typedef struct {
 .  U - the location at which you want the Jacobian
 -  a - the direction you want the derivative
 
+  
    Output Parameter:
 .  h - the scale computed
 
@@ -232,17 +233,34 @@ PetscErrorCode MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     MATSNESMF_DEFAULT - the default code for compute the "h" used in the finite difference
+            matrix-free matrix vector product
+
+   Options Database Keys:
+.  -snes_mf_umin <umin> see MatSNESMFDefaultSetUmin()
+
+
+   Level: intermediate
+
+   Notes: Requires 2 norms and 1 inner product, but they are computed together
+       so only one parallel collective operation is needed. See MATSNESMF_WP for a method
+       (with GMRES) that requires NO collective operations.
+
+   Formula used:
+     F'(u)*a = [F(u+h*a) - F(u)]/h where
+     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
+ where
+     error_rel = square root of relative error in function evaluation
+     umin = minimum iterate parameter
+
+.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_WP, MatSNESMFDefaultSetUmin()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFCreate_Default"
-/*
-   MatSNESMFCreate_Default - Standard PETSc code for 
-   computing h with matrix-free finite differences.
-
-   Input Parameter:
-.  ctx - the matrix free context created by MatSNESMFCreate()
-
-*/
 PetscErrorCode MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 {
   MatSNESMFDefault *hctx;
