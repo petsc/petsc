@@ -1609,6 +1609,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 extern int MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,Mat*);
+extern int MatConvert_SeqBAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -1807,6 +1808,9 @@ int MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_seqaij_C",
                                      "MatConvert_SeqBAIJ_SeqAIJ",
                                       MatConvert_SeqBAIJ_SeqAIJ);CHKERRQ(ierr);
+ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_seqsbaij_C",
+                                     "MatConvert_SeqBAIJ_SeqSBAIJ",
+                                      MatConvert_SeqBAIJ_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetPreallocation_C",
                                      "MatSeqBAIJSetPreallocation_SeqBAIJ",
                                       MatSeqBAIJSetPreallocation_SeqBAIJ);CHKERRQ(ierr);

@@ -9,12 +9,12 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 int main(int argc,char **args)
 {
   Mat         C,A,B,D; 
-  int         ierr,i,j,k,ntypes = 2,size;
-  MatType     type[9] = {MATSEQAIJ,MATSEQSBAIJ,MATSEQBAIJ,MATMPIROWBS};
+  int         ierr,i,j,k,ntypes = 3,size;
+  MatType     type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ,MATMPIROWBS};
   char        file[128];
   PetscViewer fd;
   PetscTruth  equal,flg_loadmat;
-  int         bs,mbs,m,n,block,d_nz=3, o_nz=3,col[3],row,msglvl=1;
+  int         bs,mbs,m,n,block,d_nz=3, o_nz=3,col[3],row,msglvl=0;
   PetscScalar one=1.0, neg_one=-1.0, value[3], four=4.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -76,7 +76,7 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_SELF," test conversion between %s and %s\n",type[i],type[j]);
 
       ierr = MatConvert(A,type[j],&B);CHKERRQ(ierr);
-      ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr);
+      ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr); 
 
       if (bs == 1){
         ierr = MatEqual(A,D,&equal);CHKERRQ(ierr);
@@ -105,7 +105,8 @@ int main(int argc,char **args)
         for (k=0; k<10; k++) {
           ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
           ierr = MatMult(A,x,s1);CHKERRQ(ierr);
-          ierr = MatMult(D,x,s2);CHKERRQ(ierr);
+          ierr = MatMult(B,x,s2);CHKERRQ(ierr);
+          /* ierr = MatMult(D,x,s2);CHKERRQ(ierr); */
           ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
           ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
           r1 -= r2;
@@ -119,7 +120,7 @@ int main(int argc,char **args)
         ierr = VecDestroy(s2);CHKERRQ(ierr);
       }
       ierr = MatDestroy(B);CHKERRQ(ierr);
-      ierr = MatDestroy(D);CHKERRQ(ierr);
+      ierr = MatDestroy(D);CHKERRQ(ierr); 
     }
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
