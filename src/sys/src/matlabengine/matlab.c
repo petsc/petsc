@@ -28,7 +28,7 @@ struct  _p_PetscMatlabEngine {
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
 @*/
 int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engine)
 {
@@ -70,7 +70,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
 
 .seealso: PetscMatlabEnginCreate(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
 @*/
 int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
@@ -99,7 +99,7 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineCreate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
 @*/
 int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
 {
@@ -169,7 +169,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineCreate(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
 @*/
 int PetscMatlabEngineGetOutput(PetscMatlabEngine engine,char **string)
 {
@@ -192,7 +192,7 @@ int PetscMatlabEngineGetOutput(PetscMatlabEngine engine,char **string)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEngineCreate(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar()
 @*/
 int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 {
@@ -221,7 +221,7 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), , PetscMatlabEnginePutArray(), MatlabEngineGetArray()
+          PETSC_MATLAB_ENGINE_(), , PetscMatlabEnginePutArray(), MatlabEngineGetArray()
 @*/
 int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
 {
@@ -253,7 +253,7 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray()
 @*/
 int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
 {
@@ -280,9 +280,9 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
 static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "MATLAB_ENGINE_"  
+#define __FUNCT__ "PETSC_MATLAB_ENGINE_"  
 /*@C
-   MATLAB_ENGINE_ - Creates a matlab engine shared by all processors 
+   PETSC_MATLAB_ENGINE_ - Creates a matlab engine shared by all processors 
                     in a communicator.
 
    Not Collective
@@ -302,7 +302,7 @@ $      PetscMatlabEngineYYY(XXX object,MATLAB_ENGINE_(comm));
           PetscMatlabEngineCreate(), PetscMatlabEnginePutScalar()
 
 @*/
-PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
+PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 {
   int               ierr;
   PetscTruth        flg;
@@ -311,22 +311,22 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
-    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+  if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
-    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&engine);
-    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)engine);
-    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Matlab_Engine_keyval,engine);
-    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
   } 
   PetscFunctionReturn(engine);
 }
@@ -349,7 +349,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray()
 @*/
 int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,PetscScalar *array,char *name)
 {
@@ -388,7 +388,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,PetscScalar *
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet()
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet()
 @*/
 int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,PetscScalar *array,char *name)
 {

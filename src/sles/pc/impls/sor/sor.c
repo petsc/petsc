@@ -41,11 +41,11 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
-  int    ierr,lits=0;
+  int    ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %d iterations\n",its);
-  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,lits,y);CHKERRQ(ierr);
+  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -297,7 +297,7 @@ int PCCreate_SOR(PC pc)
   jac->sym           = SOR_FORWARD_SWEEP;
   jac->omega         = 1.0;
   jac->its           = 1;
-  jac->lits          =1;
+  jac->lits          = 1;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
                     PCSORSetSymmetric_SOR);CHKERRQ(ierr);

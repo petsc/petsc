@@ -118,9 +118,9 @@ Within the PETSc distribution, the directory
 \trl{${PETSC_DIR}/docs} contains all documentation.
 Manual pages for all PETSc functions can be
 accessed on line at
-\begin{verbatim}
+\begin{verse}
   http://www.mcs.anl.gov/petsc/docs/
-\end{verbatim}
+\end{verse}
 The manual pages
 provide hyperlinked indices (organized by
 both concepts and routine names) to the tutorial examples and enable
@@ -162,17 +162,17 @@ routines that support direct use of Fortran90 pointers.
 Before using PETSc, the user must first set the environmental variable
 \trl{PETSC_DIR}, \findex{PETSC_DIR} indicating the full path of the PETSc home
 directory.  For example, under the UNIX C shell a command of the form
-\begin{verbatim}
-   setenv PETSC_DIR $HOME/petsc
-\end{verbatim}
+\begin{verse}
+   setenv PETSC\_DIR \$HOME/petsc
+\end{verse}
  can be placed in the user's \trl{
 .cshrc} file.  In addition, the user must set the environmental
 variable \trl{PETSC_ARCH} to specify the architecture (e.g., rs6000,
 solaris, IRIX, etc.)  on which PETSc is being used.  The utility
  \trl{${PETSC_DIR}/bin/petscarch} can be used for this purpose.  For example,
-\begin{verbatim}
-   setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`
-\end{verbatim}
+\begin{verse}
+   setenv PETSC\_ARCH `\$PETSC\_DIR/bin/petscarch`
+\end{verse}
 can be placed in a \trl{.cshrc} file.  Thus, even if several machines of different
 types share the same filesystem, \trl{PETSC_ARCH} will be set correctly
 when logging into any of them. 
@@ -184,14 +184,14 @@ on their selected computer system(s).  For instance, when using the
 MPICH implementation of MPI \cite{mpich-web-page} and many others, the following
 command initiates a program that uses eight processors:
 \findex{mpirun} \sindex{running PETSc programs} 
-\begin{verbatim}
-   mpirun -np 8 petsc_program_name petsc_options
-\end{verbatim}
+\begin{verse}
+   mpirun -np 8 petsc\_program\_name petsc\_options
+\end{verse}
 
 PETSc also comes with a script 
-\begin{verbatim}
-   ${PETSC_DIR}bin/petscmpirun -np 8 petsc_program_name petsc_options
-\end{verbatim}
+\begin{verse}
+   \${PETSC\_DIR}bin/petscmpirun -np 8 petsc\_program\_name petsc\_options
+\end{verse}
 that uses the information set in \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} to 
 automatically use the correct trl{mpirun} for your configuration.
 
@@ -223,9 +223,9 @@ See Section \ref{sec:debugging} for more information on debugging PETSc programs
 \label{sec:writing}
 
 Most PETSc programs begin with a call to \findex{PetscInitialize()}
-\begin{verbatim}
+\begin{verse}
   PetscInitialize(int *argc,char ***argv,char *file,char *help);
-\end{verbatim} 
+\end{verse} 
 which initializes PETSc and MPI.  The arguments \trl{argc} and 
 \trl{argv} are the command line arguments delivered in all C and C++
 programs. \sindex{command line arguments} The argument \trl{file}
@@ -236,9 +236,9 @@ this file and the PETSc options database, which can be used for runtime
 customization. The final argument, \trl{help}, is an optional
 character string that will be printed if the program is run with the
 \trl{-help} option.  In Fortran the initialization command has the form
-\begin{verbatim}
+\begin{verse}
    call PetscInitialize(character file,integer ierr)
-\end{verbatim} 
+\end{verse} 
 \trl{PetscInitialize()} automatically calls \trl{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
 circumstances in which MPI needs to be initialized directly (or is
@@ -270,9 +270,9 @@ of processors within a larger parallel job, or who wish to use a
 processes, should specify an alternative communicator for \trl{
 PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
 \sindex{communicator}
-\begin{verbatim}
-  PetscSetCommWorld(MPI_Comm comm);
-\end{verbatim}
+\begin{verse}
+  PetscSetCommWorld(MPI\_Comm comm);
+\end{verse}
 {\em before} calling \trl{PetscInitialize()}, but, obviously, after
 calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
 at most once per process. Most users will never need to use the routine
@@ -289,10 +289,10 @@ section.
 All PETSc programs should call \trl{PetscFinalize()} \findex{PetscFinalize()}
 as their final (or nearly final) statement, as given below in the C/C++
 and Fortran formats, respectively:
-\begin{verbatim}
-  PetscFinalize();
+\begin{verse}
+  PetscFinalize();\\
   call PetscFinalize(ierr)
-\end{verbatim}
+\end{verse}
 This routine handles options to be called at the conclusion of
 the program, and calls \trl{MPI_Finalize()} \findex{MPI_Finalize()}
 if \trl{PetscInitialize()}
@@ -325,9 +325,9 @@ parts of this example.
 \subsection*{Include Files}
 
 The C/C++ include files for PETSc should be used via statements such as
-\begin{verbatim}
-   #include "petscsles.h"
-\end{verbatim}
+\begin{verse}
+   \#include "petscsles.h"
+\end{verse}
 where \trl{petscsles.h} is the include file for the SLES component.
 Each PETSc program must specify an
 include file that corresponds to the highest level PETSc objects
@@ -355,22 +355,22 @@ options database may be found in Section \ref{sec:options}.
 One creates a new parallel or 
 sequential vector, \trl{x}, of global dimension \trl{M} with the 
 command \findex{VecCreate()} \sindex{vectors}
-\begin{verbatim}
-  VecCreate(MPI_Comm comm,int m,int M,Vec *x);
-\end{verbatim}
+\begin{verse}
+  VecCreate(MPI\_Comm comm,int m,int M,Vec *x);
+\end{verse}
 where \trl{comm} denotes the MPI communicator. The type of storage
 for the vector may be set with either calls to 
 \trl{VecSetType()} or \trl{VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions}
 Additional vectors of the same type can be formed with
 \findex{VecDuplicate()}
-\begin{verbatim}
+\begin{verse}
   VecDuplicate(Vec old,Vec *new);
-\end{verbatim}
+\end{verse}
 The commands \findex{VecSet()} \findex{VecSetValues()}
-\begin{verbatim}
-  VecSet(PetscScalar *value,Vec x);
-  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
-\end{verbatim}
+\begin{verse}
+  VecSet(PetscScalar *value,Vec x);\\
+  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
+\end{verse}
 respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More
 detailed information about PETSc vectors, including their basic
@@ -394,24 +394,23 @@ Usage of PETSc matrices and vectors is similar. \sindex{matrices}
 The user can create a new parallel or sequential matrix, \trl{A}, which
 has \trl{M} global rows and \trl{N} global columns, with the routine
 \findex{MatCreate()}
-\begin{verbatim}
-  MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A);
-\end{verbatim}
+\begin{verse}
+  MatCreate(MPI\_Comm comm,int m,int n,int M,int N,Mat *A);
+\end{verse}
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
 Values can then be set with the command
-\begin{verbatim}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,
-                       INSERT_VALUES);
-\end{verbatim}
+\begin{verse}
+  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT\_VALUES);
+\end{verse}
 After \findex{MatSetValues()} all elements have been inserted into the
 matrix, it must be processed with the pair of commands
 \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
-\begin{verbatim}
-  MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
-\end{verbatim}
+\begin{verse}
+  MatAssemblyBegin(Mat A,MAT\_FINAL\_ASSEMBLY);\\
+  MatAssemblyEnd(Mat A,MAT\_FINAL\_ASSEMBLY);
+\end{verse}
 Chapter~\ref{chapter:matrices} discusses various matrix formats as
 well as the details of some basic matrix manipulation routines.
 
@@ -422,13 +421,13 @@ After creating the matrix and vectors that define a linear system,
 with the following sequence of commands: 
 \findex{SLESCreate()} \findex{SLESSetOperators()}
 \findex{SLESSetFromOptions()} \findex{SLESSolve()} \findex{SLESDestroy()}
-\begin{verbatim}
-  SLESCreate(MPI_Comm comm,SLES *sles); 
-  SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);
-  SLESSetFromOptions(SLES sles);
-  SLESSolve(SLES sles,Vec b,Vec x,int *its);
+\begin{verse}
+  SLESCreate(MPI\_Comm comm,SLES *sles); \\
+  SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);\\
+  SLESSetFromOptions(SLES sles);\\
+  SLESSolve(SLES sles,Vec b,Vec x,int *its);\\
   SLESDestroy(SLES sles);
-\end{verbatim}
+\end{verse}
 The user first creates the SLES context and sets the operators
 associated with the system (linear system matrix and optionally different
 preconditioning matrix).  The user then sets various options for
@@ -467,19 +466,19 @@ details regarding error checking when using the PETSc Fortran interface.
 
 \begin{figure}[H]
 {\small
-\begin{verbatim}
-   eagle>mpirun -np 1 ex3 -m 10000
-   [0]PETSC ERROR: MatCreateSeqAIJ() line 1673 in src/mat/impls/aij/seq/aij.c
-   [0]PETSC ERROR:   Out of memory. This could be due to allocating
-   [0]PETSC ERROR:   too large an object or bleeding by not properly
-   [0]PETSC ERROR:   destroying unneeded objects.
-   [0]PETSC ERROR:   Try running with -trdump for more information. 
-   [0]PETSC ERROR: MatCreate() line 99 in src/mat/utils/gcreate.c  
-   [0]PETSC ERROR: main() line 71 in src/sles/examples/tutorials/ex3.c  
-   [0] MPI Abort by user Aborting program !
-   [0] Aborting program!
-   p0_28969:  p4_error: : 1
-\end{verbatim}
+\begin{verse}
+   eagle:mpirun -np 1 ex3 -m 10000\\
+   PETSC ERROR: MatCreateSeqAIJ() line 1673 in src/mat/impls/aij/seq/aij.c\\
+   PETSC ERROR:   Out of memory. This could be due to allocating\\
+   PETSC ERROR:   too large an object or bleeding by not properly\\
+   PETSC ERROR:   destroying unneeded objects.\\
+   PETSC ERROR:   Try running with -trdump for more information.\\ 
+   PETSC ERROR: MatCreate() line 99 in src/mat/utils/gcreate.c  \\
+   PETSC ERROR: main() line 71 in src/sles/examples/tutorials/ex3.c\\  
+    MPI Abort by user Aborting program !\\
+    Aborting program!\\
+   p0\_28969:  p4\_error: : 1
+\end{verse}
 }
 \nobreak
 \caption{Example of Error Traceback}
@@ -511,11 +510,11 @@ PETSc object (such as a vector, matrix, or solver) to indicate the
 processors over which the object is to be distributed.  For example,
 as mentioned above, some commands for matrix, vector, and linear solver
 creation are:
-\begin{verbatim}
-  MatCreate(MPI_Comm comm,int M,int N,Mat *A);
-  VecCreate(MPI_Comm comm,int m,int M,Vec *x);
-  SLESCreate(MPI_Comm comm,SLES *sles); 
-\end{verbatim}
+\begin{verse}
+  MatCreate(MPI\_Comm comm,int M,int N,Mat *A);\\
+  VecCreate(MPI\_Comm comm,int m,int M,Vec *x);\\
+  SLESCreate(MPI\_Comm comm,SLES *sles); 
+\end{verse}
 The creation routines are collective over all processors in the
 communicator; thus, all processors in the communicator {\em must}
 call the creation routine.  In addition, if a sequence of
@@ -557,27 +556,27 @@ given in the file \trllink{troubleshooting.html}{${PETSC_DIR}/docs/troubleshooti
 
 \begin{figure}[H]
 {\small
-\begin{verbatim}
-   eagle> make BOPT=g ex2
-   gcc -DPETSC_ARCH_sun4 -pipe -c  -I../../../  -I../../..//include   
-       -I/usr/local/mpi/include  -I../../..//src -g 
-       -DPETSC_USE_DEBUG -DPETSC_MALLOC -DPETSC_USE_LOG ex1.c
-   gcc -g -DPETSC_USE_DEBUG -DPETSC_MALLOC -DPETSC_USE_LOG -o ex1 ex1.o 
-      /home/bsmith/petsc/lib/libg/sun4/libpetscsles.a 
-      -L/home/bsmith/petsc/lib/libg/sun4 -lpetscstencil -lpetscgrid  -lpetscsles 
-      -lpetscmat  -lpetscvec -lpetscsys -lpetscdraw  
-      /usr/local/lapack/lib/lapack.a /usr/local/lapack/lib/blas.a 
-      /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lX11 
-      /usr/local/mpi/lib/sun4/ch_p4/libmpi.a
-      /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  
-      /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm
-   rm -f ex1.o
-   eagle> mpirun -np 1 ex2
-   Norm of error 3.6618e-05 iterations 7
-   eagle>
-   eagle> mpirun -np 2 ex2
+\begin{verse}
+   eagle: make BOPT=g ex2\\
+   gcc  -pipe -c  -I../../../  -I../../..//include   \\
+       -I/usr/local/mpi/include  -I../../..//src -g \\
+       -DPETSC\_USE\_DEBUG -DPETSC\_MALLOC -DPETSC\_USE\_LOG ex1.c\\
+   gcc -g -DPETSC\_USE\_DEBUG -DPETSC\_MALLOC -DPETSC\_USE\_LOG -o ex1 ex1.o \\
+      /home/bsmith/petsc/lib/libg/sun4/libpetscsles.a \\
+      -L/home/bsmith/petsc/lib/libg/sun4 -lpetscstencil -lpetscgrid  -lpetscsles \\
+      -lpetscmat  -lpetscvec -lpetscsys -lpetscdraw  \\
+      /usr/local/lapack/lib/lapack.a /usr/local/lapack/lib/blas.a \\
+      /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lX11 \\
+      /usr/local/mpi/lib/sun4/ch\_p4/libmpi.a\\
+      /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  \\
+      /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm\\
+   rm -f ex1.o\\
+   eagle: mpirun -np 1 ex2\\
+   Norm of error 3.6618e-05 iterations 7\\
+   eagle:\\
+   eagle: mpirun -np 2 ex2\\
    Norm of error 5.34462e-05 iterations 9
-\end{verbatim}
+\end{verse}
 }
 \nobreak
 \caption{Running a PETSc Program}
@@ -598,7 +597,7 @@ demonstrate the ease of extracting performance information.
 \begin{figure}[H]
 {\footnotesize
 \begin{verbatim}
-eagle> mpirun -np 1 ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_summary
+eagle> mpirun -np 1 ex1 -n 1000 -pc\_type ilu -ksp\_type gmres -ksp\_rtol 1.e-7 -log\_summary
 -------------------------------- PETSc Performance Summary: --------------------------------------
 
 ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug  7 17:24:27 1996
@@ -661,17 +660,17 @@ The examples throughout the library demonstrate the software usage
 and can serve as templates for developing
 custom applications.  We suggest that new PETSc
 users examine programs in the directories 
-\begin{verbatim}
-  ${PETSC_DIR}/src/<component>/examples/tutorials,
-\end{verbatim}
+\begin{verse}
+  \${PETSC\_DIR}/src/<component>/examples/tutorials,
+\end{verse}
 where \trl{<component>}
 denotes any of the PETSc components (listed in the following
 section), such as \trl{snes} or \trl{sles}.  
 The manual pages located at
-\begin{verbatim}
-   ${PETSC_DIR}/docs/index.html or 
+\begin{verse}
+   \${PETSC\_DIR}/docs/index.html or \\
    http://www.mcs.anl.gov/petsc/docs/
-\end{verbatim}
+\end{verse}
 provide indices (organized by both routine names and concepts) to the tutorial examples.
 
 To write a new application program using PETSc, we suggest the
@@ -691,33 +690,33 @@ following procedure:
 \section{Referencing PETSc}
 
 When referencing PETSc in a publication please cite the following:
-\begin{verbatim}
-@Unpublished{petsc-home-page,
-   Author = "Satish Balay and William D. Gropp and Lois C. McInnes and
-             Barry F. Smith",
-   Title  = "{PETSc} home page",
-   Note   = "http://www.mcs.anl.gov/petsc",
-   Year   = "1998"}
+\begin{verse}
+@Unpublished{petsc-home-page,\\
+   Author = "Satish Balay and William D. Gropp and Lois C. McInnes and\\
+             Barry F. Smith",\\
+   Title  = "{PETSc} home page",\\
+   Note   = "http://www.mcs.anl.gov/petsc",\\
+   Year   = "2001"}\\
 
-@TechReport{petsc-manual,
-   Author      = "Satish Balay and William D. Gropp and Lois C. McInnes
-                  and Barry F. Smith",
-   Title       = "{PETSc} Users Manual",
-   Number      = "ANL-95/11 - Revision 2.1.0",
-   Institution = "Argonne National Laboratory",
-   Year        = "2000"}
+@TechReport{petsc-manual,\\
+   Author      = "Satish Balay and William D. Gropp and Lois C. McInnes\\
+                  and Barry F. Smith",\\
+   Title       = "{PETSc} Users Manual",\\
+   Number      = "ANL-95/11 - Revision 2.1.0",\\
+   Institution = "Argonne National Laboratory",\\
+   Year        = "2000"}\\
 
-@InProceedings{petsc-efficient,
-   Author    = "Satish Balay and William D. Gropp and Lois C. McInnes
-                and Barry F. Smith",
-   Title     = "Efficienct Management of Parallelism in Object Oriented
-                Numerical Software Libraries",
-   Booktitle = "Modern Software Tools in Scientific Computing",
-   Editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
-   Pages     = "163--202",
-   Publisher = "Birkhauser Press",
+@InProceedings{petsc-efficient,\\
+   Author    = "Satish Balay and William D. Gropp and Lois C. McInnes\\
+                and Barry F. Smith",\\
+   Title     = "Efficienct Management of Parallelism in Object Oriented\\
+                Numerical Software Libraries",\\
+   Booktitle = "Modern Software Tools in Scientific Computing",\\
+   Editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",\\
+   Pages     = "163--202",\\
+   Publisher = "Birkhauser Press",\\
    Year      = "1997"}
-\end{verbatim}
+\end{verse}
 
 
 %---------------------------------------------------------------------
