@@ -5829,9 +5829,7 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 @*/
 PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
-  PetscErrorCode ierr, (*fA)(Mat,Mat,MatReuse,PetscReal,Mat *), (*fP)(Mat,Mat,MatReuse,PetscReal,Mat *);
-  Mat            Ptmp;
-  PetscTruth     flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5848,30 +5846,10 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
-  /* This is a crappy hack */
-  ierr = PetscTypeCompare((PetscObject)P,MATSEQMAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatConvert(P,MATSEQAIJ,&Ptmp);CHKERRQ(ierr);
-    P    = Ptmp;
-  }
-
-  /* For now, we do not dispatch based on the type of A and P */
-  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
-  fA = A->ops->ptap;
-  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",A->type_name);
-  fP = P->ops->ptap;
-  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for P of type %s",P->type_name);
-  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
-
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
-  ierr = (*fA)(A,P,scall,fill,C);CHKERRQ(ierr);
+  ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
 
-  if (flg) {
-    ierr = MatDestroy(P);CHKERRQ(ierr);
-  }
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*C,A->bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5925,16 +5903,8 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C)
   if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
   if (P->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->N);
 
-  /* For now, we do not dispatch based on the type of A and P */
-  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
-  fA = A->ops->ptapnumeric;
-  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for A of type %s",A->type_name);
-  fP = P->ops->ptapnumeric;
-  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for P of type %s",P->type_name);
-  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPNumeric requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
-
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
-  ierr = (*fA)(A,P,C);CHKERRQ(ierr);
+  ierr = (*A->ops->ptapnumeric)(A,P,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -5966,7 +5936,7 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C)
 #define __FUNCT__ "MatPtAPSymbolic"
 PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) 
 {
-  PetscErrorCode ierr, (*fA)(Mat,Mat,PetscReal,Mat*), (*fP)(Mat,Mat,PetscReal,Mat*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5984,17 +5954,12 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
   if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
 
-  /* For now, we do not dispatch based on the type of A and P */
-  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
-  fA = A->ops->ptapsymbolic;
-  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for A of type %s",A->type_name);
-  fP = P->ops->ptapsymbolic;
-  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for P of type %s",P->type_name);
-  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPSymbolic requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
-
   ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
-  ierr = (*fA)(A,P,fill,C);CHKERRQ(ierr);
+  ierr = (*A->ops->ptapsymbolic)(A,P,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+
+  ierr = MatSetBlockSize(*C,A->bs);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

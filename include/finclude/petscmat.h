@@ -345,6 +345,14 @@
       PetscEnum MATOP_PTAP
       PetscEnum MATOP_PTAP_SYMBOLIC
       PetscEnum MATOP_PTAP_NUMERIC
+      PetscEnum MATOP_MAT_MULT_TRANSPOSE
+      PetscEnum MATOP_MAT_MULT_TRANSPOSE_SYM
+      PetscEnum MATOP_MAT_MULT_TRANSPOSE_NUM
+      PetscEnum MATOP_PTAP_SYMBOLIC_SEQAIJ
+      PetscEnum MATOP_PTAP_NUMERIC_SEQAIJ
+      PetscEnum MATOP_PTAP_SYMBOLIC_MPIAIJ
+      PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
+  
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -442,6 +450,13 @@
       parameter(MATOP_PTAP=93)
       parameter(MATOP_PTAP_SYMBOLIC=94)
       parameter(MATOP_PTAP_NUMERIC=95)
+      parameter(MATOP_MAT_MULT_TRANSPOSE=96)
+      parameter(MATOP_MAT_MULT_TRANSPOSE_SYM=97)
+      parameter(MATOP_MAT_MULT_TRANSPOSE_NUM=98)
+      parameter(MATOP_PTAP_SYMBOLIC_SEQAIJ=99)
+      parameter(MATOP_PTAP_NUMERIC_SEQAIJ=100)
+      parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=101)
+      parameter(MATOP_PTAP_NUMERIC_MPIAIJ=102)
 !
 !  
 !
