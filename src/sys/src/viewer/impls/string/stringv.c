@@ -4,19 +4,19 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 typedef struct  {
   char         *string;   /* string where info is stored */
   char         *head;     /* pointer to begining of unused portion */
   int          curlen,maxlen;
-} Viewer_String;
+} PetscViewer_String;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_String"
-static int ViewerDestroy_String(Viewer viewer)
+#define __FUNC__ "PetscViewerDestroy_String" 
+static int PetscViewerDestroy_String(PetscViewer viewer)
 {
-  Viewer_String *vstr = (Viewer_String *)viewer->data;
+  PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   int           ierr;
 
   PetscFunctionBegin;
@@ -25,14 +25,14 @@ static int ViewerDestroy_String(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerStringSPrintf"
+#define __FUNC__ "PetscViewerStringSPrintf" 
 /*@C
-    ViewerStringSPrintf - Prints information to a viewer string.
+    PetscViewerStringSPrintf - Prints information to a PetscViewer string.
 
-    Collective on Viewer (Hmmm, each processor maintains a seperate string)
+    Collective on PetscViewer (Hmmm, each processor maintains a seperate string)
 
     Input Parameters:
-+   v - a string viewer, formed by ViewerStringOpen()
++   v - a string PetscViewer, formed by PetscViewerStringOpen()
 -   format - the format of the input
 
     Level: developer
@@ -40,35 +40,35 @@ static int ViewerDestroy_String(Viewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, string, printf
+   Concepts: printing^to string
 
-.seealso: ViewerStringOpen()
+.seealso: PetscViewerStringOpen()
 @*/
-int ViewerStringSPrintf(Viewer viewer,char *format,...)
+int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
 {
   va_list       Argp;
   int           shift,ierr;
   PetscTruth    isstring;
   char          tmp[512];
-  Viewer_String *vstr = (Viewer_String *) viewer->data;
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidCharPointer(format);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
-  if (!vstr->string) SETERRQ(1,1,"Must call ViewerStringSetString() before using");
+  if (!vstr->string) SETERRQ(1,"Must call PetscViewerStringSetString() before using");
 
-  va_start( Argp, format );
+  va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(tmp,format,(char *)Argp);
 #else
   vsprintf(tmp,format,Argp);
 #endif
-  va_end( Argp );
+  va_end(Argp);
 
   ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
-  if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"String too long");
+  if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"String too long");
   
   if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
   ierr = PetscStrncpy(vstr->head,tmp,shift);CHKERRQ(ierr);
@@ -79,10 +79,10 @@ int ViewerStringSPrintf(Viewer viewer,char *format,...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerStringOpen"
+#define __FUNC__ "PetscViewerStringOpen" 
 /*@C
-    ViewerStringOpen - Opens a string as a viewer. This is a very 
-    simple viewer; information on the object is simply stored into 
+    PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very 
+    simple PetscViewer; information on the object is simply stored into 
     the string in a fairly nice way.
 
     Collective on MPI_Comm
@@ -92,85 +92,91 @@ int ViewerStringSPrintf(Viewer viewer,char *format,...)
 -   string - the string to use
 
     Output Parameter:
-.   lab - the viewer
+.   lab - the PetscViewer
 
     Level: advanced
 
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, string, open
+  Concepts: PetscViewerString^creating
 
-.seealso: ViewerDestroy(), ViewerStringSPrintf()
+.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
 @*/
-int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
+int PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
 {
   int ierr;
   
   PetscFunctionBegin;
-  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = ViewerSetType(*lab,STRING_VIEWER);CHKERRQ(ierr);
-  ierr = ViewerStringSetString(*lab,string,len);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_STRING);CHKERRQ(ierr);
+  ierr = PetscViewerStringSetString(*lab,string,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetSingleton_String"
-int ViewerGetSingleton_String(Viewer viewer,Viewer *sviewer)
+#define __FUNC__ "PetscViewerGetSingleton_String" 
+int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
-  Viewer_String *vstr = (Viewer_String *) viewer->data;
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   int           ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerRestoreSingleton_String"
-int ViewerRestoreSingleton_String(Viewer viewer,Viewer *sviewer)
+#define __FUNC__ "PetscViewerRestoreSingleton_String" 
+int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   int           ierr;
+  PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-  ierr = ViewerDestroy(*sviewer);CHKERRQ(ierr);
+
+  vstr->head    = iviewer->head;  
+  vstr->curlen += iviewer->curlen;  
+  ierr = PetscViewerDestroy(*sviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerCreate_String"
-int ViewerCreate_String(Viewer v)
+#define __FUNC__ "PetscViewerCreate_String" 
+int PetscViewerCreate_String(PetscViewer v)
 {
-  Viewer_String *vstr;
+  PetscViewer_String *vstr;
+  int                ierr;
 
   PetscFunctionBegin;
-  v->ops->destroy          = ViewerDestroy_String;
+  v->ops->destroy          = PetscViewerDestroy_String;
   v->ops->view             = 0;
   v->ops->flush            = 0;
-  v->ops->getsingleton     = ViewerGetSingleton_String;
-  v->ops->restoresingleton = ViewerGetSingleton_String;
-  vstr                     = PetscNew(Viewer_String);CHKPTRQ(vstr);
-  v->data                  = (void *) vstr;
+  v->ops->getsingleton     = PetscViewerGetSingleton_String;
+  v->ops->restoresingleton = PetscViewerRestoreSingleton_String;
+  ierr                     = PetscNew(PetscViewer_String,&vstr);CHKERRQ(ierr);
+  v->data                  = (void*)vstr;
   vstr->string             = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerStringSetString"
-int ViewerStringSetString(Viewer viewer,char string[],int len)
+#define __FUNC__ "PetscViewerStringSetString" 
+int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
 {
-  Viewer_String *vstr = (Viewer_String *) viewer->data;
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   int           ierr;
   PetscTruth    isstring;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidCharPointer(string);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);
   if (!isstring)  PetscFunctionReturn(0);
-  if (len <= 2) SETERRQ(1,1,"String must have length at least 2");
+  if (len <= 2) SETERRQ(1,"String must have length at least 2");
 
   ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;

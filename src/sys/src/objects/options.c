@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.242 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: options.c,v 1.243 2001/01/17 19:44:24 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -223,7 +223,7 @@ int PetscOptionsInsertFile(const char file[])
 
 #undef __FUNC__  
 #define __FUNC__ "PetscOptionsInsert"
-/*
+/*@C
    PetscOptionsInsert - Inserts into the options database from the command line,
                    the environmental variable and a file.
 
@@ -237,10 +237,12 @@ int PetscOptionsInsertFile(const char file[])
    the user does not typically need to call this routine. PetscOptionsInsert()
    can be called several times, adding additional entries into the database.
 
+   Level: advanced
+
    Concepts: options database^adding
 
 .seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint()
-*/
+@*/
 int PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   int  ierr,rank;
@@ -422,15 +424,17 @@ int PetscOptionsGetAll(char *copts[])
 
 #undef __FUNC__  
 #define __FUNC__ "PetscOptionsDestroy"
-/*
+/*@C
     PetscOptionsDestroy - Destroys the option database. 
 
     Note:
     Since PetscOptionsDestroy() is called by PetscFinalize(), the user 
     typically does not need to call this routine.
 
+   Level: developer
+
 .seealso: PetscOptionsInsert()
-*/
+@*/
 int PetscOptionsDestroy(void)
 {
   int i;
@@ -594,6 +598,23 @@ int PetscOptionsClearValue(const char iname[])
 
 #undef __FUNC__  
 #define __FUNC__ "PetscOptionsSetAlias"
+/*@C
+   PetscOptionsReject - Generates an error if a certain option is given.
+
+   Not Collective, but setting values on certain processors could cause problems
+   for parallel objects looking for options.
+
+   Input Parameters:
++  name - the option one is seeking 
+-  mess - error message (may be PETSC_NULL)
+
+   Level: advanced
+
+   Concepts: options database^rejecting option
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),OptionsHasName(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray()
+@*/
 int PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
   int  ierr,len,n = options->Naliases;
@@ -746,8 +767,8 @@ int PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
--  pre - the string to prepend to the name or PETSC_NULL
++  pre - the string to prepend to the name or PETSC_NULL
+-  name - the option one is seeking
 
    Output Parameter:
 +  ivalue - the integer value to return
@@ -789,8 +810,8 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
--  pre - the string to prepend to the name or PETSC_NULL
++  pre - the string to prepend to the name or PETSC_NULL
+-  name - the option one is seeking
 
    Output Parameter:
 +  ivalue - the logical value to return
@@ -863,8 +884,8 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
--  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or PETSC_NULL
+-  name - the option one is seeking
 
    Output Parameter:
 +  dvalue - the double value to return
@@ -903,8 +924,8 @@ int PetscOptionsGetDouble(const char pre[],const char name[],double *dvalue,Pets
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
--  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or PETSC_NULL
+-  name - the option one is seeking
 
    Output Parameter:
 +  dvalue - the double value to return
@@ -968,8 +989,8 @@ int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,Pets
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
-.  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or PETSC_NULL
+.  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
 
    Output Parameters:
@@ -1022,8 +1043,8 @@ int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
-.  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or PETSC_NULL
+.  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
 
    Output Parameter:
@@ -1076,9 +1097,9 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
-.  len - maximum string length
--  pre - string to prepend to name or PETSC_NULL
++  pre - string to prepend to name or PETSC_NULL
+.  name - the option one is seeking
+-  len - maximum string length
 
    Output Parameters:
 +  string - location to copy string
@@ -1131,8 +1152,8 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
    Not Collective
 
    Input Parameters:
-+  name - the option one is seeking
-.  pre - string to prepend to name or PETSC_NULL
++  pre - string to prepend to name or PETSC_NULL
+.  name - the option one is seeking
 -  nmax - maximum number of strings
 
    Output Parameter:
@@ -1230,7 +1251,7 @@ int PetscOptionsAllUsed(int *N)
 @*/
 int PetscOptionsLeft(void)
 {
-  int i,ierr;
+  int        i,ierr;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {

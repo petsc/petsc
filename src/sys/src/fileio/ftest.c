@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.33 2001/03/09 16:03:55 bsmith Exp bsmith $*/
+/*$Id: ftest.c,v 1.34 2001/03/09 16:24:58 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -31,6 +31,16 @@
 #include "petscfix.h"
 
 #if defined (PETSC_HAVE_U_ACCESS) || defined(PETSC_HAVE_ACCESS)
+#if !defined(R_OK)
+#define R_OK 04
+#endif
+#if !defined(W_OK)
+#define W_OK 02
+#endif
+#if !defined(X_OK)
+#define X_OK 01
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ "PetscTestFile"
 /*+
@@ -57,6 +67,7 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   else if (mode == 'x') m = X_OK;
   else SETERRQ(1,"Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_U_ACCESS)
+  if (m == X_OK) SETERRQ1("Unable to check execute permission for file %s",fname)l
   if(!_access(fname,m)) *flg = PETSC_TRUE;
 #else
   if(!access(fname,m))  *flg = PETSC_TRUE;
