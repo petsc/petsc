@@ -1,7 +1,7 @@
 ALL: lib 
 ITOOLSDIR = ../../../
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR) $(CONF) -I$(ITOOLSDIR)/include \
+CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
            -I$(ITOOLSDIR)/pinclude -I../..
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c

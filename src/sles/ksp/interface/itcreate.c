@@ -1,12 +1,10 @@
-#ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.2 1994/10/31 16:14:27 bsmith Exp bsmith $";
-#endif
 
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/
 #include <stdio.h>
 #include "sys/nreg.h"
 #include "sys.h"
+#include "options.h"
 
 static NRList *__ITList = 0;
 /*@
@@ -81,8 +79,8 @@ int KSPCreate(KSP *ksp)
   ctx->cnvP          = 0;
 
   ctx->setupcalled   = 0;
-
-  return 0;
+  /* this violates our rule about seperating abstract from implementations*/
+  return KSPSetMethod(*ksp,KSPGMRES);
 }
 
 /*@
@@ -143,12 +141,10 @@ int KSPRegisterDestroy()
 }
 
 /*@C
-  KSPGetMethodFromCommandLine - Sets the selected method,
-                         given the argument list.
+  KSPGetMethodFromOptions - Sets the selected method from the options
+                            database.
 
   Input parameters:
-. Argc - pointer to arg count
-. argv - argument vector
 . flag - 1 if argument should be removed from list if found 
 . sname - name used to indicate solver.  If null, -itmethod is used
 
@@ -156,12 +152,12 @@ int KSPRegisterDestroy()
 . kspmethod -  Iterative method type
 . returns 1 if method found else 0.
 @*/
-int KSPGetMethodFromCommandLine( int *Argc, char **argv, int flag, char *sname, 
+int KSPGetMethodFromOptions( int flag, char *sname, 
                                  KSPMETHOD *itmethod )
 {
   char sbuf[50];
   if (!sname) sname = "-kspmethod";
-  if (SYArgGetString( Argc, argv, flag, sname, sbuf, 50 )) {
+  if (OptionsGetString( flag, sname, sbuf, 50 )) {
     if (!__ITList) KSPRegisterAll();
     *itmethod = (KSPMETHOD)NRFindID( __ITList, sbuf );
     return 1;

@@ -5,45 +5,44 @@
 #include "petsc.h"
 #include "kspimpl.h"
 #include "sys.h"
+#include "options.h"
 /*@
-    KSPSetFromCommandLine - sets KSP options from the command line.
+    KSPSetFromOptions - sets KSP options from the options database.
                             This must be called before KSPSetUp()
                             if the user is to be allowed to set the 
                             Krylov method. 
   Input Parameters:
-.  argv,argc - the command line arguments
-.  options - the options context
+.  ctx - the Krylov space context
    
-   See also: KSPPrintHelpFromCommandLine()
+   See also: KSPPrintHelp()
 @*/
-int KSPSetFromCommandLine(KSP ctx,int* argc,char **argv)
+int KSPSetFromOptions(KSP ctx)
 {
   char      string[50];
   KSPMETHOD method;
   VALIDHEADER(ctx,KSP_COOKIE);
 
-  if (KSPGetMethodFromCommandLine(argc,argv,0,ctx->namemethod,&method)) {
+  if (KSPGetMethodFromOptions(0,ctx->namemethod,&method)) {
     KSPSetMethod(ctx,method);
   }
-  SYArgGetInt(argc,argv,0,ctx->namemax_it,&ctx->max_it);
-  SYArgGetDouble(argc,argv,0,ctx->namertol,&ctx->rtol);  
-  SYArgGetDouble(argc,argv,0,ctx->nameatol,&ctx->atol);
-  SYArgGetDouble(argc,argv,0,ctx->namedivtol,&ctx->divtol);
+  OptionsGetInt(0,ctx->namemax_it,&ctx->max_it);
+  OptionsGetDouble(0,ctx->namertol,&ctx->rtol);  
+  OptionsGetDouble(0,ctx->nameatol,&ctx->atol);
+  OptionsGetDouble(0,ctx->namedivtol,&ctx->divtol);
   return 0;
 }
   
 /*@ 
-    KSPPrintHelpFromCommandLine - prints all the command line options
+    KSPPrintHelp - prints all the command line options
                               for the KSP component.
 
   Input Parameters:
-.  argc, argv - the command line arguments
+.  ctx - the KSP context
 
 @*/
-int KSPPrintHelpFromCommandLine(KSP ctx,int *argc,char **argv)
+int KSPPrintHelp(KSP ctx)
 {
   VALIDHEADER(ctx,KSP_COOKIE);
-  if (!SYArgHasName(argc,argv,0,"-help")) return 0;
   KSPPrintMethods(ctx->namemethod);
   fprintf(stderr," %s (relative tolerance: defaults to %g)\n",
                  ctx->namertol,ctx->rtol);

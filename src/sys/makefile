@@ -1,19 +1,19 @@
 ITOOLSDIR = ..
 
 ALL: lib workers
-CFLAGS    = $(OPT) -I$(ITOOLSDIR)/include -I$(ITOOLSDIR) $(CONF)
-SOURCEC   = tr.c arch.c txt.c file.c error.c  getopts.c nreg.c
+CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF)
+SOURCEC   = tr.c arch.c txt.c file.c  getopts.c nreg.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = tr.o arch.o txt.o file.o error.o  getopts.o nreg.o
+OBJSC     = tr.o arch.o txt.o file.o  getopts.o nreg.o
 OBJSF     =
-WSOURCEC  = archf.c errorf.c  
-WOBJS     = archf.o errorf.o 
+WSOURCEC  = archf.c   
+WOBJS     = archf.o  
 MANSEC    = 7
 
 LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
-DIRS      = time
+DIRS      = error
 
 # This is because I got sick of different examples and 
 # changing makefiles for parallel and sequential code

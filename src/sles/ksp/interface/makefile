@@ -2,7 +2,7 @@ ITOOLSDIR = ../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I.. -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include \
+CFLAGS   = $(OPT) -I.. $(INCLUDEDIRS) \
            -I$(ITOOLSDIR)/pinclude $(CONF)
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c 
 SOURCEF  =

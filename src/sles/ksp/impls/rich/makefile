@@ -1,7 +1,7 @@
 ALL: lib 
 ITOOLSDIR = ../../..
 
-CFLAGS   = $(OPT) $(CONF) -I$(ITOOLSDIR) -I../.. -I$(ITOOLSDIR)/include \
+CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) -I../..  \
            -I$(ITOOLSDIR)/pinclude
 SOURCEC  = rich.c
 WSOURCEC = richf.c

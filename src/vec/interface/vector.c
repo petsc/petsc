@@ -148,7 +148,8 @@ int VecSet(Scalar *alpha,Vec x)
 @*/
 int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
+  VALIDHEADER(x,VEC_COOKIE); 
+  VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
   return (*x->ops->axpy)(alpha,x,y);
 } 

@@ -7,6 +7,7 @@
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
+#include "options.h"
 #include "sysio.h"
 #include <math.h>
 
@@ -18,11 +19,13 @@ int worker(int argc,char **argv)
   Vec      x,y,w,*z;
   FILE     *fd = stdout;
  
+
   MPI_Init(&argc,&argv);
-  SYArgGetInt(&argc,argv,0,"-n",&n);
+  OptionsCreate(argc,argv,(char*)0,(char*)0);
+  OptionsGetInt(0,"-n",&n);
 
   /* create a vector */
-  ierr = VecCreateInitialVector(n,argc,argv,&x); CHKERR(ierr);
+  ierr = VecCreateInitialVector(n,&x); CHKERR(ierr);
   ierr = VecCreate(x,&y); CHKERR(ierr);
   ierr = VecCreate(x,&w); CHKERR(ierr);
   ierr = VecGetVecs(x,3,&z); CHKERR(ierr); 

@@ -5,7 +5,6 @@
 #include <math.h>
 #include "pvecimpl.h" 
 
-#if !defined(PETSC_COMPLEX)
 #include "../bvec1.c"
 #include "../dvec2.c"
 #include "pdvec.c"
@@ -23,14 +22,14 @@
 static int VeiDVPBdot( Vec xin, Vec yin, Scalar *z )
 {
   DvPVector *x = (DvPVector *)xin->data, *y = (DvPVector *)yin->data;
-  double    sum, work;
+  Scalar    sum, work;
   VeiDVBdot(  xin, yin, &work );
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,x->comm );
+  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,x->comm );
   *z = sum;
   return 0;
 }
 
-static int VeiDVPBasum(  Vec xin, Scalar *z )
+static int VeiDVPBasum(  Vec xin, double *z )
 {
   DvPVector *x = (DvPVector *) xin->data;
   double work;
@@ -39,13 +38,14 @@ static int VeiDVPBasum(  Vec xin, Scalar *z )
   return 0;
 }
 
-static int VeiDVPBCreateVector();
+static int VeiDVPBCreateVector( Vec,Vec *);
 
 static struct _VeOps DvOps = { VeiDVPBCreateVector, 
             Veiobtain_vectors, Veirelease_vectors, VeiDVPBdot, VeiDVPmdot,
             VeiDVPnorm, VeiDVPmax, VeiDVPBasum, VeiDVPBdot, VeiDVPmdot,
             VeiDVBscal, VeiDVBcopy,
-            VeiDVset, VeiDVswap, VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx, VeiDVwaxpy,
+            VeiDVset, VeiDVswap, VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx,
+            VeiDVwaxpy,
             VeiDVpmult,
             VeiDVpdiv, 0,0,0,0,
             0,0,0,0,
@@ -67,7 +67,7 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N, Vec *vv)
     MPI_Comm_rank(comm,&mytid); 
     n = N/numtids + ((N % numtids) > mytid);
   }
-  size           = sizeof(DvPVector)+n*sizeof(double);
+  size           = sizeof(DvPVector)+n*sizeof(Scalar);
   CREATEHEADER(v,_Vec);
   s              = (DvPVector *) MALLOC(size); CHKPTR(s);
   v->cookie      = VEC_COOKIE;
@@ -78,7 +78,7 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N, Vec *vv)
   s->n           = n;
   s->N           = N;
   s->comm        = comm;
-  s->array       = (double *)(s + 1);
+  s->array       = (Scalar *)(s + 1);
   *vv = v;
   return 0;
 }
@@ -89,5 +89,3 @@ static int VeiDVPBCreateVector( Vec win,Vec *v)
   return VecCreateMPIBLAS(w->comm,w->n,w->N,v);
 }
 
-
-#endif

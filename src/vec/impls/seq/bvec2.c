@@ -2,8 +2,6 @@
    Defines the sequential BLAS based vectors
 */
 
-#if !defined(PETSC_COMPLEX)
-
 #include "sys/flog.h"
 #include "inline/dot.h"
 #include "inline/vmult.h"
@@ -52,4 +50,3 @@ static int VeiDVBCreateVector(Vec win,Vec *V)
   return VecCreateSequentialBLAS(w->n,V);
 }
 
-#endif

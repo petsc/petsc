@@ -2,7 +2,7 @@ ITOOLSDIR = ../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) \
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
           -I$(ITOOLSDIR)/pinclude $(CONF)
 SOURCEC  = vector.c 
 SOURCEF  =
