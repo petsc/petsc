@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.8 1999/05/04 20:35:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.9 1999/05/12 03:32:11 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
@@ -23,7 +23,8 @@ T*/
    Demonstrates registering a new preconditioner (PC) type.
 
    To register a PC type whose code is linked into the executable,
-   put the line below in your code BEFORE any PETSc include files. 
+   put the TWO lines below in your code BEFORE any PETSc include files. 
+   #include "petsc.h"
    #undef PETSC_USE_DYNAMIC_LIBRARIES
 
    Also provide the prototype for your PCCreate_XXX() function. In 
@@ -35,6 +36,7 @@ T*/
 
    See the manual page PCRegister() for details on how to register a method.
 */
+#include "petsc.h"
 #undef PETSC_USE_DYNAMIC_LIBRARIES
 
 /* 
