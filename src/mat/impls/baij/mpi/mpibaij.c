@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.168 1999/05/04 20:32:41 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.169 1999/05/05 15:57:39 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1955,6 +1955,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   int          flag1 = 0,flag2 = 0;
 
   PetscFunctionBegin;
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

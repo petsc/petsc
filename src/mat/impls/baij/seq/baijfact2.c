@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.25 1999/03/17 23:23:13 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.26 1999/05/04 20:32:27 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -37,7 +37,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     vi  = aj + ai[i];
     nz  = a->diag[i] - ai[i];
     sum = tmp + bs*i;
-    PetscMemcpy(sum,b+bs*(*r++),bs*sizeof(Scalar));
+    ierr = PetscMemcpy(sum,b+bs*(*r++),bs*sizeof(Scalar));CHKERRQ(ierr);
     while (nz--) {
       Kernel_v_gets_v_minus_A_times_w(bs,sum,v,tmp+bs*(*vi++));
       v += bs2;
