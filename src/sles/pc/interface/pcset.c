@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.53 1997/02/04 21:24:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.54 1997/02/22 02:23:59 bsmith Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -65,10 +65,24 @@ int PCSetType(PC ctx,PCType type)
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
   if (!r) {SETERRQ(1,0,"Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
-  ctx->setfrom     = ( int (*)(PC) ) 0;
-  ctx->printhelp   = ( int (*)(PC,char*) ) 0;
-  ctx->setup       = ( int (*)(PC) ) 0;
-  ctx->destroy     = ( int (*)(PetscObject) ) 0;
+  /* BUG-FIX [PETSC #974] */
+  ctx->destroy      = ( int (*)(PetscObject) ) 0;
+  ctx->view         = ( int (*)(PetscObject,Viewer) ) 0;
+  ctx->apply        = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->setup        = ( int (*)(PC) ) 0;
+  ctx->applyrich    = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
+  ctx->applyBA      = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->setfrom      = ( int (*)(PC) ) 0;
+  ctx->printhelp    = ( int (*)(PC,char*) ) 0;
+  ctx->applytrans   = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->applyBAtrans = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->presolve     = ( int (*)(PC,KSP) ) 0;
+  ctx->postsolve    = ( int (*)(PC,KSP) ) 0;
+  ctx->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
+  ctx->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->setuponblocks       = ( int (*)(PC) ) 0;
+  ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
   return (*r)(ctx);
 }
 
