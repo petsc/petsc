@@ -24,6 +24,7 @@
 #define matcreatempibaij_                MATCREATEMPIBAIJ
 #define matcreateseqbaij_                MATCREATESEQBAIJ
 #define matcreate_                       MATCREATE
+#define matcreatenormal_                 MATCREATENORMAL
 #define matcreateshell_                  MATCREATESHELL
 #define matorderingregisterdestroy_      MATORDERINGREGISTERDESTROY
 #define matcreatempirowbs_               MATCREATEMPIROWBS
@@ -58,6 +59,7 @@
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #define matsetvaluesstencil_             MATSETVALUESSTENCIL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matcreatenormal_                 matcreatenormal
 #define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
@@ -428,6 +430,11 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),int *ierr 
 void PETSC_STDCALL matcreate_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Mat *V,int *ierr)
 {
   *ierr = MatCreate((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,V);
+}
+
+void PETSC_STDCALL matcreatenormal_(Mat *A,Mat *N,int *ierr)
+{
+  *ierr = MatCreateNormal(*A,N);
 }
 
 void PETSC_STDCALL matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
