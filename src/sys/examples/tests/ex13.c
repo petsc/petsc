@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.1 1998/05/19 15:41:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.2 1998/05/23 15:05:09 bsmith Exp balay $";
 #endif
 
 /*
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  printf("rank %d\n",rank);
+  printf("rank = %3d\n",rank);
 
   PetscFinalize();
 
