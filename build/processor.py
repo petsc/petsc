@@ -393,15 +393,23 @@ class Archiver(Linker):
     return self.output
 
 class SharedLinker(Linker):
-  '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries.'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'so'):
+  '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries
+     - This linker now works correctly with Cygwin'''
+  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
     if not isinstance(inputTag, list): inputTag = [inputTag]
+    if libExt is None:
+      if 'HAVE_CYGWIN' in self.argDB:
+        libExt = 'dll'
+      else:
+        libExt = 'so'
     if outputTag is None:
       outputTag = inputTag[0]+' shared library'
     Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def __str__(self):
+    if 'HAVE_CYGWIN' in self.argDB:
+      return 'Cygwin Shared linker('+self.processor+') for '+str(self.inputTag)
     return 'Shared linker('+self.processor+') for '+str(self.inputTag)
 
   def checkSharedLibrary(self, source):
@@ -427,19 +435,12 @@ class SharedLinker(Linker):
     flags.extend(Linker.getLinkerFlags(self, source))
     return flags
 
-class CygwinSharedLinker (SharedLinker):
-  '''A SharedLinker for use with Cygwin tools under Windows.'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'dll'):
-    SharedLinker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
-    return
-
-  def __str__(self):
-    return 'Cygwin Shared linker('+self.processor+') for '+str(self.inputTag)
-
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
-    output_library_name=self.getLibrary(source)
-    return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
+    if 'HAVE_CYGWIN' in self.argDB:
+      output_library_name = self.getLibrary(source)
+      return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
+    return super(SharedLinker, self).getOutputFlags(source)
 
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
