@@ -44,7 +44,7 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[2][128];     /* input file name */
-  PetscTruth     table,flg,trans,partition = PETSC_FALSE;
+  PetscTruth     table,flg,trans=PETSC_FALSE,partition=PETSC_FALSE;
   int            ierr,its,ierrp;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
@@ -303,16 +303,29 @@ int main(int argc,char **args)
        Solve linear system; we also explicitly time this stage.
     */
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
-    if (trans) {
-      ierr = SLESSolveTranspose(sles,b,x);CHKERRQ(ierr);
-    } else {
-      int  num_rhs=1;
-      ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
-      while ( num_rhs-- ) {
+    int  num_rhs=1;
+    PetscTruth ckerror;
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-ckerror", &ckerror);CHKERRQ(ierr);
+    while ( num_rhs-- ) {
+      if (trans) {
+        ierr = SLESSolveTranspose(sles,b,x);CHKERRQ(ierr);
+      } else {
         ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
       }
-    }
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+      if (ckerror){   /* Check error for each rhs */
+        if (trans) {
+          ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
+        } else {
+          ierr = MatMult(A,x,u);CHKERRQ(ierr);
+        }
+        ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+        ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3d\n",its);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
+      }
+    } /* while ( num_rhs-- ) */
     ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
 
@@ -379,9 +392,9 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
+    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
     ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
