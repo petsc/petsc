@@ -279,6 +279,31 @@ int PCSORSetIterations(PC pc,int its,int lits)
   PetscFunctionReturn(0);
 }
 
+/*S
+     PCSOR - (S)SOR (successive over relaxation, Gauss-Seidel) preconditioning
+
+   Options Database Keys:
++  -pc_sor_symmetric - Activates symmetric version
+.  -pc_sor_backward - Activates backward version
+.  -pc_sor_local_forward - Activates local forward version
+.  -pc_sor_local_symmetric - Activates local symmetric version
+.  -pc_sor_local_backward - Activates local backward version
+.  -pc_sor_omega <omega> - Sets omega
+.  -pc_sor_its <its> - Sets number of iterations
+-  -pc_sor_lits <lits> - Sets number of local iterations
+
+   Level: beginner
+
+  Concepts: SOR, preconditioners, Gauss-Seidel
+
+   Notes: Only implemented for the AIJ matrix format.
+          Not a true parallel SOR, in parallel this implementation corresponds to block
+          Jacobi with SOR on each block.
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SOR"
@@ -313,5 +338,8 @@ int PCCreate_SOR(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
+
 
 

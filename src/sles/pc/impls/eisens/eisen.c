@@ -291,6 +291,26 @@ int PCEisenstatNoDiagonalScaling(PC pc)
 
 /* --------------------------------------------------------------------*/
 
+/*S
+     PCEISENSTAT - An implementation of SSOR (symmetric successive over relaxation, symmetric Gauss-Seidel)
+           preconditioning that incorporates Eisenstat's trick to reduce the amount of computation needed.
+
+   Options Database Keys:
++  -pc_eisenstat_omega <omega> - Sets omega
+-  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatNoDiagonalScaling()
+
+   Level: beginner
+
+  Concepts: SOR, preconditioners, Gauss-Seidel, Eisenstat's trick
+
+   Notes: Only implemented for the SeqAIJ matrix format.
+          Not a true parallel SOR, in parallel this implementation corresponds to block
+          Jacobi with SOR on each block.
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCEisenstatNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Eisenstat"

@@ -726,7 +726,7 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
    Output Parameter:
 .  newctx - location to store the new scatter context
 
-   Options Database:
+   Options Database Keys:
 +  -vecscatter_merge     - Merges scatter send and receive (may offer better performance with some MPIs)
 .  -vecscatter_ssend     - Uses MPI_Ssend_init() instead of MPI_Send_init() (may offer better performance with some MPIs)
 .  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with some MPIs)

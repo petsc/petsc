@@ -483,22 +483,28 @@ int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,Pet
   PetscFunctionReturn(0);
 }
 
-/*
-   PCCreate_Shell - creates a new preconditioner class for use with your 
-          own private data storage format. This is intended to 
-          provide a simple class to use with KSP. You should 
-          not use this if you plan to make a complete class.
+/*S
+   PCSHELL - Creates a new preconditioner class for use with your 
+              own private data storage format.
 
+   Level: advanced
+
+   Concepts: providing your own preconditioner
 
   Usage:
 $             int (*mult)(void *,Vec,Vec);
 $             int (*setup)(void *);
 $             PCCreate(comm,&pc);
-$             PCSetType(pc,PC_Shell);
+$             PCSetType(pc,PCSHELL);
 $             PCShellSetApply(pc,mult,ctx);
 $             PCShellSetSetUp(pc,setup);       (optional)
 
-*/
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           KSPSHELL(), MATSHELL(), PCShellSetUp(), PCShellSetApply(), PCShellSetView(), 
+           PCShellSetApplyTranpose(), PCShellSetName(), PCShellSetApplyRichardson(), 
+           PCShellGetName()
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Shell"

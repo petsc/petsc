@@ -196,7 +196,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 -  cperm - column permutation indices
 
 
-   Options Database:
+   Options Database Key:
 . -mat_view_ordering_draw - plots matrix nonzero structure in new ordering
 
    Level: intermediate

@@ -1,8 +1,6 @@
 /*$Id: pcsles.c,v 1.39 2001/04/10 19:36:17 bsmith Exp $*/
-/*
-      Defines a preconditioner that can consist of any SLES solver.
-    This allows embedding a Krylov method inside a preconditioner.
-*/
+
+
 #include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
 #include "petscsles.h"            /*I "petscsles.h" I*/
 
@@ -217,6 +215,28 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 }
 
 /* ----------------------------------------------------------------------------------*/
+
+/*S
+     PCSLES -    Defines a preconditioner that can consist of any SLES solver.
+                 This allows, for example, embedding a Krylov method inside a preconditioner.
+
+   Options Database Key:
+.     -pc_sles_true - use the matrix that defines the linear system as the matrix for the
+                    inner solver, otherwise by default it uses the matrix used to construct
+                    the preconditioner (see PCSetOperators())
+
+   Level: intermediate
+
+   Concepts: inner iteration
+
+   Notes: Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
+          the incorrect answer) unless you use KSPFGMRES as the other Krylov method
+
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCSHELL, PCCOMPOSITE, PCSLESUseTrue(), PCSLESGetSLES()
+
+S*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

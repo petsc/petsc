@@ -21,7 +21,7 @@ typedef char *PCType;
 
   Concepts: preconditioners
 
-.seealso:  PCCreate(), PCSetType(), PCType
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 S*/
 typedef struct _p_PC* PC;
 
@@ -32,7 +32,9 @@ typedef struct _p_PC* PC;
 
    Level: beginner
 
-.seealso: PCSetType(), PC
+   Notes: Click on the links below to see details on a particular solver
+
+.seealso: PCSetType(), PC, PCCreate()
 E*/
 #define PCNONE      "none"
 #define PCJACOBI    "jacobi"
@@ -266,6 +268,7 @@ EXTERN int PCSPAISetCacheSize(PC,int);
 EXTERN int PCSPAISetVerbose(PC,int);
 EXTERN int PCSPAISetSp(PC,int);
 
+EXTERN int PCHYPRESetType(PC,char*);
 
 
 
