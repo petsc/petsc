@@ -1,24 +1,24 @@
 AOData Key: key1 Length 5 Ownership: 0 3 5 
-  AOData Segment: seg1 Blocksize 2 datatype int
+  AOData Segment: seg1 Blocksize 2 datatype INT
  0:    0    -10000 
  1:    -1    -10001 
  2:    -2    -10002 
  3:    -3    -10003 
  4:    -4    -10004 
-  AOData Segment: seg2 Blocksize 3 datatype double
+  AOData Segment: seg2 Blocksize 3 datatype DOUBLE
  0:    0.0000000000000000e+00    -1.0000000000000000e+04    -1.0000000000000000e+05 
  1:    -1.0000000000000000e+00    -1.0001000000000000e+04    -1.0000100000000000e+05 
  2:    -2.0000000000000000e+00    -1.0002000000000000e+04    -1.0000200000000000e+05 
  3:    -3.0000000000000000e+00    -1.0003000000000000e+04    -1.0000300000000000e+05 
  4:    -4.0000000000000000e+00    -1.0004000000000000e+04    -1.0000400000000000e+05 
-  AOData Segment: seg3 Blocksize 1 datatype logical
+  AOData Segment: seg3 Blocksize 1 datatype LOGICAL
  0:    0 
  1:    1 
  2:    0 
  3:    1 
  4:    0 
 AOData Key: key2 Length 5 Ownership: 0 3 5 
-  AOData Segment: seg1 Blocksize 3 datatype double
+  AOData Segment: seg1 Blocksize 3 datatype DOUBLE
  0:    0.0000000000000000e+00    -1.0000000000000000e+04    -1.0000000000000000e+05 
  1:    -1.0000000000000000e+00    -1.0001000000000000e+04    -1.0000100000000000e+05 
  2:    -2.0000000000000000e+00    -1.0002000000000000e+04    -1.0000200000000000e+05 

@@ -59,8 +59,11 @@
       PetscInt                its,i1,i4
       PetscErrorCode ierr
       double precision       lambda_max,lambda_min
+      PetscTruth             flg
+#if defined(PETSC_HAVE_ADIFOR)
       ISColoring             coloring
-      PetscTruth             adifor_jacobian,adiformf_jacobian,flg
+      PetscTruth             adifor_jacobian,adiformf_jacobian
+#endif
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.

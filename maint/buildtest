@@ -76,6 +76,8 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
+  #remove old logs
+  /bin/rm -f configure.log*
   ./config/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
   echo '****************************************************' >>& $nPETSC_DIR/build.log
   set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
