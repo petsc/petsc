@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.149 2000/09/13 03:13:00 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.150 2000/09/28 21:15:20 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -136,7 +136,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
     if (ierr) {
       char *message;
       AMS_Explain_error(ierr,&message);
-      SETERRQ(ierr,1,message);
+      SETERRQ(ierr,message);
     }
   } else if (ismpi) {
     ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
