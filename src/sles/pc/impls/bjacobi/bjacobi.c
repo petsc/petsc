@@ -615,7 +615,7 @@ int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
 
 /* -----------------------------------------------------------------------------------*/
 
-/*S
+/*MC
    PCBJACOBI - Use block Jacobi preconditioning, each block is (approximately) solved with 
            its own SLES object.
 
@@ -639,7 +639,7 @@ int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCBJacobiSetUseTrueLocal(), PCBJacobiGetSubSLES(), PCBJacobiSetTotalBlocks(),
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

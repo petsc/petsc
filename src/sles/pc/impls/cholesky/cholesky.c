@@ -537,7 +537,7 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-/*S
+/*MC
    PCCholesky - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
    Options Database Keys:
@@ -562,7 +562,7 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
            PCILU, PCLU, PCICC, PCCholeskySetReuseOrdering(), PCCholeskySetReuseFill(), PCGetFactoredMatrix(),
            PCCholeskySetFill(), PCCholeskySetDamping(), PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

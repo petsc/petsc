@@ -322,7 +322,7 @@ static int PCSetFromOptions_Jacobi(PC pc)
    Application Interface Routine: PCCreate()
 */
 
-/*S
+/*MC
      PCJacobi - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
@@ -340,7 +340,7 @@ static int PCSetFromOptions_Jacobi(PC pc)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCJacobiSetUseRowMax(), 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

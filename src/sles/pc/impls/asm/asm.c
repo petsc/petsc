@@ -793,7 +793,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 }
 
 /* -------------------------------------------------------------------------------------*/
-/*S
+/*MC
    PCASM - Use the additive Schwarz method, each block is (approximately) solved with 
            its own SLES object.
 
@@ -822,7 +822,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
            PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubSLES(), PCASMSetLocalSubdomains(),
            PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(),
            PCASMSetUseInPlace()
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
