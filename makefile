@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.202 1997/11/17 00:44:05 balay Exp balay $ 
+# $Id: makefile,v 1.203 1997/12/08 17:00:41 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -212,11 +212,13 @@ deletewwwpages:
 deletelatexpages:
 	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
 
-# To access the tags in emacs, type M-x visit-tags-table and specify
-# the file petsc/TAGS.	Then, to move to where a PETSc function is
-# defined, enter M-. and the function name.  To search for a string
-# and move to the first occurrence, use M-x tags-search and the string.
-# To locate later occurrences, use M-,
+# To access the tags in EMACS, type M-x visit-tags-table and specify
+# the file petsc/TAGS.	
+# 1) To move to where a PETSc function is defined, enter M-. and the
+#     function name.
+# 2) To search for a string and move to the first occurrence,
+#     use M-x tags-search and the string.
+#     To locate later occurrences, use M-,
 
 TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/FINCLUDE/*.h 
 TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
@@ -296,9 +298,8 @@ etags_examples:
 	chmod g+w TAGS_EXAMPLES
 
 #
-# ctags builds the tags file required for VI.
-# To use the tags file do the following:
-# 1. within vi invole the command - :set tags=/home/bsmith/petsc/tags
+# To use the tags file from VI do the following:
+# 1. within vi invoke the command - :set tags=/home/bsmith/petsc/tags
 #    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/tags
 # 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
 # 
