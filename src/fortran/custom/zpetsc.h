@@ -107,6 +107,7 @@ extern int   MPIR_FromPointer(void*);
   if (b == PETSC_NULL_CHARACTER_Fortran) { \
       b = 0; \
   } else {  \
+    while((n > 0) && (b[n-1] == ' ')) n--; \
     b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
     PetscStrncpy(b,_fcdtocp(a),n); \
     b[n] = 0; \
@@ -119,17 +120,20 @@ extern int   MPIR_FromPointer(void*);
 #define CHAR char*
 #define FIXCHAR(a,n,b) \
 {\
-  if (a == ((char*) PETSC_NULL_Fortran)) {  \
+  ifa (a == ((char*) PETSC_NULL_Fortran)) {  \
     fprintf(stderr,"PETSC ERROR: Must use PETSC_NULL_CHARACTER!"); \
     *__ierr = 1; return; \
   }  \
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
     b = a = 0; \
-  } else if (a[n] != 0) { \
-    b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
-    PetscStrncpy(b,a,n); \
-    b[n] = 0; \
-  } else b = a;\
+  } else { \
+    while((n > 0) && (a[n-1] == ' ')) n--; \
+    if (a[n] != 0) {
+      b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
+      PetscStrncpy(b,a,n); \
+      b[n] = 0; \
+    } else b = a;\
+  }
 }
 #define FREECHAR(a,b) if (a != b) PetscFree(b);
 
