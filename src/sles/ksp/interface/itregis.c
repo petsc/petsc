@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.23 1997/08/22 15:11:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.24 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -45,17 +46,17 @@ int KSPRegisterAll()
 {
   PetscFunctionBegin;
   KSPRegisterAllCalled = 1;
-  KSPRegister(KSPCG         , 0,"cg",         KSPCreate_CG);
-  KSPRegister(KSPRICHARDSON , 0,"richardson", KSPCreate_Richardson);
-  KSPRegister(KSPCHEBYCHEV  , 0,"chebychev",  KSPCreate_Chebychev);
-  KSPRegister(KSPGMRES      , 0,"gmres",      KSPCreate_GMRES);
-  KSPRegister(KSPTCQMR      , 0,"tcqmr",      KSPCreate_TCQMR);
-  KSPRegister(KSPBCGS       , 0,"bcgs",       KSPCreate_BCGS);
-  KSPRegister(KSPCGS        , 0,"cgs",        KSPCreate_CGS);
-  KSPRegister(KSPTFQMR      , 0,"tfqmr",      KSPCreate_TFQMR);
-  KSPRegister(KSPCR         , 0,"cr",         KSPCreate_CR); 
-  KSPRegister(KSPLSQR       , 0,"lsqr",       KSPCreate_LSQR);
-  KSPRegister(KSPPREONLY    , 0,"preonly",    KSPCreate_PREONLY);
-  KSPRegister(KSPQCG        , 0,"qcg",        KSPCreate_QCG);
+  KSPRegister(KSPCG         , "cg",         "KSPCreate_CG",KSPCreate_CG,0);
+  KSPRegister(KSPRICHARDSON , "richardson", "KSPCreate_Richardson",KSPCreate_Richardson,0);
+  KSPRegister(KSPCHEBYCHEV  , "chebychev",  "KSPCreate_Chebychev",KSPCreate_Chebychev,0);
+  KSPRegister(KSPGMRES      , "gmres",      "KSPCreate_GMRES",KSPCreate_GMRES,0);
+  KSPRegister(KSPTCQMR      , "tcqmr",      "KSPCreate_TCQMR",KSPCreate_TCQMR,0);
+  KSPRegister(KSPBCGS       , "bcgs",       "KSPCreate_BCGS",KSPCreate_BCGS,0);
+  KSPRegister(KSPCGS        , "cgs",        "KSPCreate_CGS",KSPCreate_CGS,0);
+  KSPRegister(KSPTFQMR      , "tfqmr",      "KSPCreate_TFQMR",KSPCreate_TFQMR,0);
+  KSPRegister(KSPCR         , "cr",         "KSPCreate_CR",KSPCreate_CR,0); 
+  KSPRegister(KSPLSQR       , "lsqr",       "KSPCreate_LSQR",KSPCreate_LSQR,0);
+  KSPRegister(KSPPREONLY    , "preonly",    "KSPCreate_PREONLY",KSPCreate_PREONLY,0);
+  KSPRegister(KSPQCG        , "qcg",        "KSPCreate_QCG",KSPCreate_QCG,0);
   PetscFunctionReturn(0);
 }

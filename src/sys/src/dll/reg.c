@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.1 1997/12/12 04:18:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.2 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -16,21 +16,13 @@ struct FuncList_struct {
 };
 typedef struct FuncList_struct FuncList;
 
+
 struct _DLList {
     FuncList *head, *tail;
     int      nextid;          /* next id available */
     int      nextidflag;      /* value passed to DLListRegister() to request id */
+    char     *regname;        /* registration type name, for example, KSPRegister */
 };
-
-extern int    DLCreate(int,DLList *);
-extern int    DLRegister(DLList,int,char*,char*,int*);
-extern int    DLDestroy(DLList);
-extern int    DLFindRoutine(DLList,int,char*,int (**)(void*));
-extern int    DLFindID(DLList,char*,int *);
-extern int    DLFindName(DLList,int,char**);
-extern int    DLDestroyAll();
-extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
-extern int    DLGetTypeFromOptions(char *,char *,DLList,int *,int *);
 
 
 static int    NumberRegisters = 0;
@@ -80,9 +72,7 @@ int DLDestroyAll()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DLRegister"
-/*
+/*M
    DLRegister - Given a routine and two ids (an int and a string), 
                 save that routine in the specified registry
  
@@ -91,12 +81,16 @@ int DLDestroyAll()
 .      id       - integer (or enum) for routine
 .      name     - string for routine
 .      rname    - routine name in dynamic library
+.      fnc      - function pointer (optional if using dynamic libraries)
 
    Output Parameters:
 .      idout    - id assigned to function, same as id for predefined functions
 
 */
-int DLRegister( DLList fl, int id, char *name, char *rname,int *idout)
+
+#undef __FUNC__  
+#define __FUNC__ "DLRegister_Private"
+int DLRegister_Private( DLList fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
 {
   FuncList *entry;
 
@@ -106,7 +100,7 @@ int DLRegister( DLList fl, int id, char *name, char *rname,int *idout)
   PetscStrcpy( entry->name, name );
   entry->rname   = (char *)PetscMalloc( PetscStrlen(rname) + 1 ); CHKPTRQ(entry->rname);
   PetscStrcpy( entry->rname, rname );
-  entry->routine = 0;
+  entry->routine = fnc;
 
   entry->next = 0;
   if (fl->tail) fl->tail->next = entry;
@@ -147,6 +141,78 @@ int DLDestroy(DLList fl )
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------*/
+/*
+      Code to maintain a list of opened dynamic libraries
+*/
+#if defined(USE_DYNAMIC_LIBRARIES)
+#include <dlfcn.h>
+
+typedef struct _DLLibraryList *DLLibraryList;
+struct _DLLibraryList {
+  DLLibraryList next;
+  void          *handle;
+};
+
+static DLLibraryList DLLibrariesLoaded = 0;
+
+/*
+     DLSym - Search through all the dynamic libraries looking for 
+             a symbol.
+
+     Provide support for symbol of the form /libpath/libname:function() with optional ()
+*/
+#undef __FUNC__  
+#define __FUNC__ "DLSym"
+int DLSym(char *symbol, void **value)
+{
+  DLLibraryList list;
+
+  PetscFunctionBegin;
+  *value = 0;
+  list   = DLLibrariesLoaded;
+  while (list) {
+    *value =  dlsym(list->handle,symbol);
+    if (*value) PetscFunctionReturn(0);
+    list = list->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+     DLOpen - Add another dynamic library to search for symbols
+*/
+#undef __FUNC__  
+#define __FUNC__ "DLOpen"
+int DLOpen(char *path)
+{
+  DLLibraryList list,next;
+  void*         handle;
+
+  PetscFunctionBegin;
+  handle = dlopen(path,1);
+  if (!handle) {
+    PetscErrorPrintf("Library name %s\n",path);
+    SETERRQ(1,1,"Unable to locate dynamic library");
+  }
+
+  list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  list->next   = 0;
+  list->handle = handle;
+
+  if (!DLLibrariesLoaded) {
+    DLLibrariesLoaded = list;
+  } else {
+    next = DLLibrariesLoaded;
+    while (next->next) {
+      next = next->next;
+    }
+    next->next = list;
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ "DLFindRoutine"
 /*
@@ -157,21 +223,37 @@ int DLDestroy(DLList fl )
 .   id   - id (-1 for ignore)
 .   name - name string.  (Null for ignore)
 
-
+    The id or name must have been registered with the DLList before calling this 
+    routine.
 */
 int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
 {
   FuncList *entry = fl->head;
+  int      ierr;
   
   PetscFunctionBegin;
   while (entry) {
     if ((id >= 0 && entry->id == id) || (name && !PetscStrcmp(name,entry->name))) {
+      /* found it */
       if (entry->routine) {*r =entry->routine;  PetscFunctionReturn(0);}
-      ;
+      /* it is not yet in memory so load from dynamic library */
+#if defined(USE_DYNAMIC_LIBRARIES)
+      ierr = DLOpen("/tmp/petsc/lib/libg/sun4/libpetscsles.so.1.0");CHKERRQ(ierr);
+      ierr = DLSym(entry->rname,(void **)r);CHKERRQ(ierr);
+      if (*r) {
+        entry->routine = *r;
+        PetscFunctionReturn(0);
+      }
+#endif
     }
     entry = entry->next;
   }
+
+  if (name) PetscErrorPrintf(0,"Function name: %s\n",name);
+  SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
+#if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNC__  
@@ -192,11 +274,12 @@ int DLFindID( DLList fl, char *name, int *id )
   FuncList *entry = fl->head;
 
   PetscFunctionBegin;
+  *id = -1;
   while (entry) {
-    if (!PetscStrcmp(name,entry->name)) PetscFunctionReturn(entry->id);
+    if (!PetscStrcmp(name,entry->name)) {*id = entry->id; PetscFunctionReturn(0);}
     entry = entry->next;
   }
-  PetscFunctionReturn(-1);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -269,13 +352,15 @@ int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 
    Output Parameter:
 .  type -  method
-.  flag - if type found
+.  flag - 1 if type found
+.  oname - if not PETSC_NULL, copies option name
+.  len  - if oname is given, this is its length
 
 .keywords: 
 
 .seealso: 
 */
-int DLGetTypeFromOptions(char *prefix,char *name,DLList list,int *type,int *flag)
+int DLGetTypeFromOptions(char *prefix,char *name,DLList list,int *type,char *oname,int len,int *flag)
 {
   char sbuf[50];
   int  ierr,itype;
@@ -284,7 +369,9 @@ int DLGetTypeFromOptions(char *prefix,char *name,DLList list,int *type,int *flag
   ierr = OptionsGetString(prefix,name, sbuf, 50,flag); CHKERRQ(ierr);
   if (*flag) {
     ierr = DLFindID( list, sbuf,&itype ); CHKERRQ(ierr);
-    if (itype == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid type name given");
+    if (name) {
+      PetscStrncpy(oname,sbuf,len);
+    }
     *(int *)type = itype;
   }
   PetscFunctionReturn(0);

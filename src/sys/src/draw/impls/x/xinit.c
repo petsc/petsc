@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.38 1997/12/03 04:52:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.39 1997/12/12 19:38:39 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -176,8 +176,8 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
             CWWinGravity | CWBackingStore |CWBackingPixel|CWOverrideRedirect |
             CWSaveUnder  | CWEventMask    | CWDontPropagate |
             CWCursor     | CWColormap ;
-  /* depth should really be the depth of the visual in use */
-  depth       = DefaultDepth( XiWin->disp, XiWin->screen );
+  depth       = XiWin->depth;
+  /* DefaultDepth( XiWin->disp, XiWin->screen ); */
   XiWin->win  = XCreateWindow( XiWin->disp, 
 			     RootWindow(XiWin->disp,XiWin->screen),
                              x, y, w, h, border_width,

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.123 1997/12/01 01:52:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.124 1997/12/12 19:36:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -126,7 +126,8 @@ int VecDot(Vec x, Vec y, Scalar *val)
 
 .keywords: vector, norm
 
-.seealso: 
+.seealso: VecDot(), VecTDot()
+
 @*/
 int VecNorm(Vec x,NormType type,double *val)  
 {

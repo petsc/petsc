@@ -1,14 +1,14 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.106 1997/11/03 04:43:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.107 1997/12/01 01:53:00 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
 */
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"      /*I "ksp.h" I*/
-#include "src/sys/nreg.h"     /*I "src/sys/nreg.h" I*/
 #include "sys.h"
-#include "viewer.h"       /*I "viewer.h" I*/
+#include "viewer.h"               /*I "viewer.h" I*/
 #include "pinclude/pviewer.h"
 
 int KSPRegisterAllCalled = 0;
@@ -72,7 +72,11 @@ int KSPView(KSP ksp,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-static NRList *__KSPList = 0;
+/*
+   Contains the list of registered KSP routines
+*/
+static DLList __KSPList = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate"
 /*@C
@@ -189,16 +193,20 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   }
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
+
+  ierr =  DLFindRoutine( __KSPList, (int)itmethod, (char *)0,(int (**)(void *)) &r );CHKERRQ(ierr);
+
   if (ksp->data) PetscFree(ksp->data);
   ksp->data = 0;
   ierr = (*r)(ksp); CHKERRQ(ierr);
+
+  /* override the type that the create routine put in */
+  ksp->type = itmethod;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegister"
+#define __FUNC__ "KSPRegister_Private"
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
    an iterative name (KSPType) and a function pointer.
@@ -222,17 +230,13 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 @*/
-int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
+int  KSPRegister_Private(KSPType name, char *sname, char *fname,int  (*create)(KSP),KSPType *oname)
 {
   int ierr;
-  static int numberregistered = 0;
 
   PetscFunctionBegin;
-  if (name == KSPNEW) name = (KSPType) ((int) KSPNEW + numberregistered++);
-
-  if (oname) *oname = name;
-  if (!__KSPList) {ierr = NRCreate(&__KSPList); CHKERRQ(ierr);}
-  ierr = NRRegister( __KSPList, (int) name, sname, (int (*)(void*))create );CHKERRQ(ierr);
+  if (!__KSPList) {ierr = DLCreate((int)KSPNEW,&__KSPList); CHKERRQ(ierr);}
+  ierr = DLRegister(__KSPList,(int)name,sname,fname,(int (*)(void*))create,(int*)oname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,9 +252,11 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
 @*/
 int KSPRegisterDestroy()
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (__KSPList) {
-    NRDestroy( __KSPList );
+    ierr = DLDestroy( __KSPList );CHKERRQ(ierr);
     __KSPList = 0;
   }
   KSPRegisterAllCalled = 0;
@@ -275,40 +281,11 @@ int KSPRegisterDestroy()
 int KSPGetType(KSP ksp,KSPType *type,char **name)
 {
   int ierr;
+
   PetscFunctionBegin;
   if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
   if (type) *type = (KSPType) ksp->type;
-  if (name)  *name = NRFindName( __KSPList, (int) ksp->type);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPPrintTypes_Private"
-/*
-   KSPPrintTypes_Private - Prints the KSP methods available from the options 
-   database.
-
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  prefix - prefix (usually "-")
-.  name   - the options database name (by default "ksp_type") 
-*/
-int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
-{
-  FuncList *entry;
-  int      count = 0;
-
-  PetscFunctionBegin;
-  if (!__KSPList) {KSPRegisterAll();}
-  entry = __KSPList->head;
-  PetscPrintf(comm," %s%s (one of)",prefix,name);
-  while (entry) {
-    PetscPrintf(comm," %s",entry->name);
-    entry = entry->next;
-    count++;
-    if (count == 8) PetscPrintf(comm,"\n    ");
-  }
-  PetscPrintf(comm,"\n");
+  if (name)  {ierr = DLFindName( __KSPList, (int) ksp->type,name);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -338,7 +315,7 @@ int KSPPrintHelp(KSP ksp)
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
   PetscPrintf(ksp->comm,"KSP options -------------------------------------------------\n");
-  ierr = NRPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",__KSPList);CHKERRQ(ierr);
+  ierr = DLPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",__KSPList);CHKERRQ(ierr);
   PetscPrintf(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
                    p,ksp->rtol);
   PetscPrintf(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
@@ -378,7 +355,7 @@ int KSPPrintHelp(KSP ksp)
   PetscPrintf(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
   PetscPrintf(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
 #endif
-  PetscFunctionReturn(1);
+  PetscFunctionReturn(0);
 }
 
 extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
@@ -409,6 +386,7 @@ int KSPSetFromOptions(KSP ksp)
   KSPType   method;
   int       restart, flg, ierr,loc[4], nmax = 4,i;
   double    tmp;
+  char      fname[256];
 
   PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
@@ -418,8 +396,14 @@ int KSPSetFromOptions(KSP ksp)
   if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
 
   if (!__KSPList) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
-  ierr = NRGetTypeFromOptions(ksp->prefix,"-ksp_type",__KSPList,&method,&flg);CHKERRQ(ierr);
+  ierr = DLGetTypeFromOptions(ksp->prefix,"-ksp_type",__KSPList,(int *)&method,fname,256,&flg);CHKERRQ(ierr);
   if (flg) {
+#if defined(USE_DYNAMIC_LIBRARIES)
+    if (method == (KSPType) -1) { /* indicates method not yet registered */
+      ierr = KSPRegister(KSPNEW,fname,fname,0,&method); CHKERRQ(ierr);
+    }
+#endif
+
     ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);

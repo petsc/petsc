@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.192 1997/12/12 04:57:40 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.193 1997/12/12 04:58:48 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -263,6 +263,20 @@ extern int  PetscSynchronizedFlush(MPI_Comm);
   link libraries that will be loaded as needed.
 */
 typedef struct _DLList *DLList;
+extern int    DLRegister_Private(DLList,int,char*,char*,int (*)(void *),int*);
+extern int    DLCreate(int,DLList *);
+extern int    DLDestroy(DLList);
+extern int    DLFindRoutine(DLList,int,char*,int (**)(void*));
+extern int    DLFindID(DLList,char*,int *);
+extern int    DLFindName(DLList,int,char**);
+extern int    DLDestroyAll();
+extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
+extern int    DLGetTypeFromOptions(char *,char *,DLList,int *,char*,int,int *);
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define       DLRegister(a,b,c,d,e,f) DLRegister_Private(a,b,c,d,0,f)
+#else
+#define       DLRegister(a,b,c,d,e,f) DLRegister_Private(a,b,c,d,e,f)
+#endif
 
 /*
     C code optimization is often enhanced by telling the compiler 
