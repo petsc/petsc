@@ -4,7 +4,6 @@ import user
 import config.base
 import os
 import PETSc.package
-import md5
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
@@ -18,29 +17,9 @@ class Configure(PETSc.package.Package):
     self.includedir   = 'SRC'
     return
 
-  def getChecksum(self,source, chunkSize = 1024*1024):  
-    '''Return the md5 checksum for a given file, which may also be specified by its filename
-       - The chunkSize argument specifies the size of blocks read from the file'''
-    if isinstance(source, file):
-      f = source
-    else:
-      f = file(source)
-    m = md5.new()
-    size = chunkSize
-    buf  = f.read(size)
-    while buf:
-      m.update(buf)
-      buf = f.read(size)
-    f.close()
-    return m.hexdigest()
-
   def generateLibList(self,dir):
-    '''Normally the one in package.py is used'''
     alllibs = []
-    alllibs.append(os.path.join(dir,'superlu.a'))
-    import config.setCompilers 
-    self.framework.pushLanguage('C')
-    self.framework.popLanguage()    
+    alllibs.append(os.path.join(dir,'superlu.a'))   
     return alllibs
   
   def Install(self):
@@ -62,7 +41,7 @@ class Configure(PETSc.package.Package):
     self.setcompilers.pushLanguage('C')
     g.write('CC           = '+self.setcompilers.getCompiler()+'\n')
     g.write('CFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
-    g.write('LOADER       = '+self.setcompilers.getCompiler()+'\n') 
+    g.write('LOADER       = '+self.setcompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n') 
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('FC')

@@ -8,9 +8,9 @@
       implicit none
       PetscScalar  sum1,sum2,sum3,sum4
       PetscScalar  x(*),y1(*),y2(*),y3(*),y4(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
@@ -25,9 +25,9 @@
       subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
       implicit none
       PetscScalar  sum1,sum2,sum3,x(*),y1(*),y2(*),y3(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
@@ -41,9 +41,9 @@
       subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
       implicit none
       PetscScalar  sum1,sum2,x(*),y1(*),y2(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
@@ -57,9 +57,9 @@
       subroutine FortranMDot1(x,y1,n,sum1)
       implicit none
       PetscScalar  sum1,x(*),y1(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))

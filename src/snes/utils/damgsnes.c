@@ -45,7 +45,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = MGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
+    ierr = PCMGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(lksp,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     if (dmmg[0]->galerkin) {
@@ -54,7 +54,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
         ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);
         ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
         if (JeqB) dmmg[i]->J = dmmg[i]->B;
-	ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
+	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,*flag);CHKERRQ(ierr);
       }   
     } else {
@@ -78,7 +78,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 	  ierr = PetscLogInfo((0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1));CHKERRQ(ierr);
 	  flg = SAME_PRECONDITIONER;
 	}
-	ierr = MGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
+	ierr = PCMGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(lksp,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
       }
     }
@@ -653,7 +653,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       PetscTruth flg1,flg2,flg3;
 
       ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
-      ierr = MGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);
+      ierr = PCMGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);
       ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);

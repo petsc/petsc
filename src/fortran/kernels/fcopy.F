@@ -7,9 +7,9 @@
       subroutine FortranCopy(n,x,y)
       implicit none
       PetscScalar  x(*),y(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         y(i) = x(i)
@@ -22,9 +22,9 @@
       subroutine FortranZero(n,x)
       implicit none
       PetscScalar  x(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         x(i) = 0.0

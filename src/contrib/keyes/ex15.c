@@ -152,25 +152,25 @@ int main( int argc, char **argv )
   ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCMG); CHKERRA(ierr);
-  ierr = MGSetLevels(pc,user.nlevels); CHKERRA(ierr);
-  ierr = MGSetType(pc,MGADDITIVE); CHKERRA(ierr);
+  ierr = PCMGSetLevels(pc,user.nlevels); CHKERRA(ierr);
+  ierr = PCMGSetType(pc,MGADDITIVE); CHKERRA(ierr);
 
   /* set the work vectors and SLES options for all the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = MGGetSmoother(pc,i,&user.grid[i].sles); CHKERRA(ierr);
+    ierr = PCMGGetSmoother(pc,i,&user.grid[i].sles); CHKERRA(ierr);
     ierr = SLESSetFromOptions(user.grid[i].sles); CHKERRA(ierr);
     ierr = SLESSetOperators(user.grid[i].sles,user.grid[i].J,user.grid[i].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = MGSetX(pc,i,user.grid[i].x);CHKERRA(ierr); 
-    ierr = MGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr); 
-    ierr = MGSetR(pc,i,user.grid[i].r);CHKERRA(ierr); 
-    ierr = MGSetResidual(pc,i,MGDefaultResidual,user.grid[i].J); CHKERRA(ierr);
+    ierr = PCMGSetX(pc,i,user.grid[i].x);CHKERRA(ierr); 
+    ierr = PCMGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr); 
+    ierr = PCMGSetR(pc,i,user.grid[i].r);CHKERRA(ierr); 
+    ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,user.grid[i].J); CHKERRA(ierr);
   }
 
   /* Create interpolation between the levels */
   for (i=1; i<user.nlevels; i++) {
     ierr = FormInterpolation(&user,&user.grid[i],&user.grid[i-1]);CHKERRA(ierr);
-    ierr = MGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
-    ierr = MGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = PCMGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = PCMGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
   }
 
   /* Solve 1 Newton iteration of nonlinear system (to load all arrays) */

@@ -17,7 +17,6 @@ int main(int argc,char **argv)
   PetscInt       M = 14,time_steps = 20,w=1,s=1,localsize,j,i,mybase,myend;
   PetscErrorCode ierr;
   DA             da;
-  PetscViewer    viewer;
   Vec            local,global,copy;
   PetscScalar    *localptr,*copyptr;
   PetscReal      h,k;
@@ -38,8 +37,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(local,&copy);CHKERRQ(ierr);
   ierr = VecGetArray (copy,&copyptr);CHKERRQ(ierr);
 
-  /* Set Up Display to Show Heat Graph */
-  viewer = PETSC_VIEWER_SOCKET_WORLD; 
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
@@ -87,8 +84,10 @@ int main(int argc,char **argv)
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
   
     /* View Wave */ 
-    ierr = VecView(global,viewer);CHKERRQ(ierr);
-
+  /* Set Up Display to Show Heat Graph */
+#if defined(PETSC_HAVE_SOCKET)
+    ierr = VecView(global,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
+#endif
   }
 
   ierr = VecDestroy(copy);CHKERRQ(ierr);

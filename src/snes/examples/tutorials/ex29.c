@@ -215,13 +215,15 @@ int main(int argc,char **argv)
     ierr = PetscOptionsHasName(PETSC_NULL, "-ts_monitor", &tsCtx.ts_monitor);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL, "-dump", &tsCtx.dump_time,PETSC_NULL);CHKERRQ(ierr);
 
+
     tsCtx.socketviewer = 0;
+#if defined(PETSC_HAVE_SOCKET)
     ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
     if (flg && !PreLoading) {
       tsCtx.ts_monitor = PETSC_TRUE;
       ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
     }
- 
+ #endif
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.
@@ -708,7 +710,9 @@ PetscErrorCode Update(DMMG *dmmg)
       {
         Vec v;
         ierr = SNESGetSolution(snes, &v);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
         ierr = VecView(v, tsCtx->socketviewer);CHKERRQ(ierr);
+#endif
       }
     }
 

@@ -8,9 +8,9 @@
       implicit none
       PetscScalar  a
       PetscScalar  x(*),y(*)
-      integer n
+      PetscInt n
 
-      integer i
+      PetscInt i
 
       do 10,i=1,n
         y(i) = x(i) + a*y(i)

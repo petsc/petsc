@@ -1588,8 +1588,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n", (y-x)/10.0);CHKERRQ(ierr);
   /* MPI information */
   if (size > 1) {
-    MPI_Status status;
-    int        tag;
+    MPI_Status  status;
+    PetscMPIInt tag;
+    MPI_Comm    newcomm;
 
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     PetscTime(x);
@@ -1600,18 +1601,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     PetscTime(y);
     ierr = PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y-x)/5.0);CHKERRQ(ierr);
-    ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
+    ierr = PetscCommDuplicate(comm,&newcomm, &tag);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     if (rank) {
-      ierr = MPI_Recv(0, 0, MPI_INT, rank-1,            tag, comm, &status);CHKERRQ(ierr);
-      ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%size, tag, comm);CHKERRQ(ierr);
+      ierr = MPI_Recv(0, 0, MPI_INT, rank-1,            tag, newcomm, &status);CHKERRQ(ierr);
+      ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%size, tag, newcomm);CHKERRQ(ierr);
     } else {
       PetscTime(x);
-      ierr = MPI_Send(0, 0, MPI_INT, 1,          tag, comm);CHKERRQ(ierr);
-      ierr = MPI_Recv(0, 0, MPI_INT, size-1, tag, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Send(0, 0, MPI_INT, 1,          tag, newcomm);CHKERRQ(ierr);
+      ierr = MPI_Recv(0, 0, MPI_INT, size-1, tag, newcomm, &status);CHKERRQ(ierr);
       PetscTime(y);
       ierr = PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/size);CHKERRQ(ierr);
     }
+    ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
   }
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)

@@ -157,8 +157,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
   
   Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
   if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
-  ierr = MGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to MGSetLevels() */
+  ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   pc_ml->ml_object  = ml_object;
   pc_ml->agg_object = agg_object;
 
@@ -198,32 +198,32 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
     ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
-    ierr = MGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
+    ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
     
     ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
     ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
-    ierr = MGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
+    ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     
     level1 = level + 1;
     ierr = VecCreate(gridctx[level1].A->comm,&gridctx[level1].r);CHKERRQ(ierr); 
     ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr);    
-    ierr = MGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr); 
+    ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr); 
 
-    ierr = MGSetInterpolate(pc,level1,gridctx[level].P);CHKERRQ(ierr);
-    ierr = MGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr); 
+    ierr = PCMGSetInterpolate(pc,level1,gridctx[level].P);CHKERRQ(ierr);
+    ierr = PCMGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr); 
 
     if (level == 0){
-      ierr = MGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr); 
+      ierr = PCMGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr); 
     } else {
-      ierr = MGGetSmoother(pc,level,&gridctx[level].ksp);CHKERRQ(ierr);
-      ierr = MGSetResidual(pc,level,MGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
+      ierr = PCMGGetSmoother(pc,level,&gridctx[level].ksp);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,level,PCMGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);    
   }  
-  ierr = MGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
-  ierr = MGSetResidual(pc,fine_level,MGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
+  ierr = PCMGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
+  ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(gridctx[fine_level].ksp,"mg_fine_");CHKERRQ(ierr);
   
@@ -399,10 +399,10 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   Concepts: multigrid
  
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, 
-           MGSetLevels(), MGGetLevels(), MGSetType(), MPSetCycles(), MGSetNumberSmoothDown(),
-           MGSetNumberSmoothUp(), MGGetCoarseSolve(), MGSetResidual(), MGSetInterpolation(),
-           MGSetRestriction(), MGGetSmoother(), MGGetSmootherUp(), MGGetSmootherDown(),
-           MGSetCyclesOnLevel(), MGSetRhs(), MGSetX(), MGSetR()      
+           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetNumberSmoothDown(),
+           PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
+           PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
+           PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()      
 M*/
 
 EXTERN_C_BEGIN

@@ -107,32 +107,32 @@ int main(int argc,char **argv)
   /* set two level additive Schwarz preconditioner */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
 
   ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
+  ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
-  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
+  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
+  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
+  ierr = PCMGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
-  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
+  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
+  ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 

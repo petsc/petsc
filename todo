@@ -16,10 +16,6 @@ it use C++ to link fortran, when C when Fortran???
 in PETSc can be used and turn them off if they cannot.
 Better to add a new flag like PETSC_USE_MPI_MACROS
 
-
-  If initial guess is given for KSP and KSPDiagonalScale has been used then scale
-initial guess by diagonal.
-
   If shared libraries is turned on, need configure test that each external package
   can go into shared library. Trouble on Mac
 
@@ -27,8 +23,10 @@ initial guess by diagonal.
   Optimizations
    ------------
 
-  (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
+  (Priority 1) Change DACreate2/3d to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
+  Did DACreate2d() for ltog; still need to do gtol; also check that uses a blocked version of vecscatter
+  do 3d for ltog first plus test
 
     (Priority 1) Use blocksize in MPIAIJ to pass in getsubmatrices for faster in ASM.
 
@@ -60,7 +58,6 @@ initial guess by diagonal.
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
-   Make Fortran kernels support PetscInt 
 
   ------------
   Cleaner code
@@ -68,7 +65,7 @@ initial guess by diagonal.
 
   (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
 
-  (Priority 0) change Victor's Compose state macros to use () style with no chkerrq stuff
+  (Priority 0) Fix bad macros with inline
 
   (Priority 0) for configure optional external packages, write a package independent rule to check if the
   user wants the package installed and if all stuff it needs is available. See hypre.py
@@ -79,8 +76,6 @@ initial guess by diagonal.
   ---------------------
   Better user interface 
   ---------------------
-
-  Fix MGXXX functions to be PCMGXXXX functions
 
   (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
 
@@ -93,8 +88,6 @@ initial guess by diagonal.
 
   Do more error checking on user input arguments for nice error messages like if they
   pass a directory for -with-blas-lapack-dir or the other way around
-
-   (Priority 1) Add option to KSP to compute and print true residual norm after solve is complete.
 
      (Piority 1) Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason

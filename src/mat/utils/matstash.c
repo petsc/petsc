@@ -517,11 +517,20 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   }
   startv[0] = 0;
   for (i=1; i<size; i++) { startv[i] = startv[i-1] + nlengths[i-1];} 
+
   for (i=0,count=0; i<size; i++) {
     if (nprocs[i]) {
       ierr = MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
       ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_MATSCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
+#if defined(PETSC_USE_DEBUG)
+    ierr = PetscLogInfo((0,"MatStashScatterBegin_Private: No of messages: %d \n",nsends));CHKERRQ(ierr);
+    for (i=0; i<size; i++) {
+      if (nprocs[i]) {
+        ierr = PetscLogInfo((0,"MatStashScatterBegin_Private: Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+      }
+    }
+#endif
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(startv);CHKERRQ(ierr);

@@ -7,9 +7,9 @@
       subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
       implicit none
       PetscScalar      x(0:*),a(0:*),y(0:*),alpha
-      integer          n,ii(*),jj(0:*)
+      PetscInt          n,ii(*),jj(0:*)
 
-      integer      i,j,jstart,jend
+      PetscInt      i,j,jstart,jend
 
       jend  = ii(1)
       do 10,i=1,n
@@ -27,9 +27,9 @@
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
       implicit none
       PetscScalar      x(0:*),a(0:*),y(*)
-      integer          n,ii(*),jj(0:*)
+      PetscInt          n,ii(*),jj(0:*)
 
-      integer i,j,jstart,jend
+      PetscInt i,j,jstart,jend
       PetscScalar  sum
 
       jend  = ii(1)

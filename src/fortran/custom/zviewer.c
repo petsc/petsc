@@ -38,6 +38,7 @@
 
 EXTERN_C_BEGIN
 
+#if defined(PETSC_HAVE_SOCKET)
 void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,PetscInt *m,PetscInt *n,PetscScalar *s,PetscErrorCode *ierr)
 {
   PetscViewer v;
@@ -58,6 +59,7 @@ void PETSC_STDCALL petscviewersocketputint(PetscViewer *viewer,PetscInt *m,Petsc
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutInt(v,*m,s);
 }
+#endif
 
 void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
                                       PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -77,6 +79,7 @@ void PETSC_STDCALL  petscviewersetfiletype_(PetscViewer *viewer,PetscViewerFileT
   *ierr = PetscViewerSetFileType(v,*type);
 }
 
+#if defined(PETSC_HAVE_SOCKET)
 void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
@@ -84,6 +87,7 @@ void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   *ierr = PetscViewerSocketOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*port,lab);
   FREECHAR(name,c1);
 }
+#endif
 
 void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
                            PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
