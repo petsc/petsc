@@ -14,6 +14,14 @@ MatGetRow() (this will always return the blocks in column orientation (since
 that is the way they are installed internally.)
 
 
+we need to compute the solution of
+>  
+>  (1/dt)*( u(n+1) - u(n) ) =  Au(n+1) + f( u(n) )
+>  
+>  where A is a matrix, time independent, and f is a non-linear function, and n is the time step.
+> We would like to use the TS routines and we wonder if it is possible as we have a linear
+> implicit part and a non-linear explicit part on RHS. 
+
 * Also, I need a DA mesh or grid type definition (i.e. #define DAGridType
 > integer with options of DA_GRID_CELL_CENTER, DA_GRID_GRID_CENTER [yes, those
 > stink, I am sure you have better ideas.]), just like the DAPeriodicTypes in
