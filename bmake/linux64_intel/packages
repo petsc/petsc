@@ -1,0 +1,31 @@
+# $Id: base.site,v 1.2 2001/06/20 15:21:47 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux64_intel -lflapack -lfblas
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_HOME       = /usr/local/vmi/mpich
+MPI_LIB        = -L${MPI_HOME}/lib/ecc -lfmpich -lmpich -lpmpich -lvmi -lpthread -ldl
+MPI_INCLUDE    = -I${MPI_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
+MPIRUN         =  /home/balay/bin/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
