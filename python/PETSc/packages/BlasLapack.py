@@ -52,10 +52,13 @@ class Configure(config.base.Configure):
       separateBlas = 1
     if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
     if not isinstance(blasLibrary,   list): blasLibrary   = [blasLibrary]
-    mangleFunc  = 'FC' in self.framework.argDB
     foundBlas   = 0
     foundLapack = 0
-    otherLibs   = self.compilers.flibs
+    mangleFunc  = 'FC' in self.framework.argDB
+    if mangleFunc:
+      otherLibs = self.compilers.flibs
+    else:
+      otherLibs = ''
     # Check for BLAS
     oldLibs   = self.framework.argDB['LIBS']
     foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc)
