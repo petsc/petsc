@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.136 1999/11/24 21:54:47 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.137 1999/11/29 20:54:41 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -211,6 +211,9 @@ int KSPSolve(KSP ksp, int *its)
 
   ksp->transpose_solve = PETSC_FALSE;
   ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
+  if (!ksp->reason) {
+    SETERRQ(1,1,"Internal error, solver returned without setting converged reason");
+  }
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
@@ -588,7 +591,7 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->use_pres   = 1;
+  ksp->use_pres   = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -617,7 +620,7 @@ SLESSolve() (or KSPSolve()).
 int KSPSetInitialGuessNonzero(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->guess_zero   = 0;
+  ksp->guess_zero   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -644,8 +647,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  if (ksp->guess_zero   == 0) *flag = PETSC_TRUE;
-  else                        *flag = PETSC_FALSE;
+  *flag = ksp->guess_zero;
   PetscFunctionReturn(0);
 }
 
@@ -681,7 +683,7 @@ int KSPSetComputeSingularValues(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_sings  = 1;
+  ksp->calc_sings  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -710,7 +712,7 @@ int KSPSetComputeEigenvalues(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_sings  = 1;
+  ksp->calc_sings  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
