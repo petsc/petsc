@@ -43,6 +43,7 @@ class CompilerDependencyChecker(logging.Logger):
         if self([dep], None):
           self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
           return True
+    self.logPrint('Source '+str(source)+' will not be rebuilt into target '+str(target))
     return False
 
   def update(self, source):
@@ -210,7 +211,7 @@ class Builder(logging.Logger):
     return command
 
   def link(self, source, target = None, shared = 0):
-    def report(command, status, output, error):
+    def check(command, status, output, error):
       if error or status:
         self.logWrite('Possible ERROR while running linker: '+output)
         if status: self.logWrite('ret = '+str(status)+'\n')
@@ -220,7 +221,7 @@ class Builder(logging.Logger):
           raise LinkError(output+error)
       return
 
-    (out, err, ret) = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = report, log = self.log)
+    (out, err, ret) = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
     return (out+err, ret)
 
   def run(self, includes, body, cleanup = 1, defaultOutputArg = ''):

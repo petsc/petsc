@@ -172,7 +172,7 @@ class SourceDB (dict, base.Base):
       (checksum, mtime, timestamp, dependencies) = self[source]
     except KeyError:
       checksum = ''
-      mtime    = os.path.getmtime(source)
+      mtime    = 0
     if not dependency in dependencies:
       self.debugPrint('Adding dependency '+dependency+' to source '+source+' in source database', 3, 'sourceDB')
       dependencies = dependencies+(dependency,)
