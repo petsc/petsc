@@ -3422,8 +3422,14 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
 #if defined(PETSC_USE_MAT_SINGLE)
         if (sse_enabled_local) { /* Natural + Single + SSE */ 
 #  if defined(PETSC_HAVE_SSE)
-          A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
-          PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, natural ordering solve BS=4\n");
+          int n=a->mbs;
+          if (n==(unsigned short)n) {
+            A->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, ushort j index, natural ordering solve BS=4\n");
+          } else {
+            A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, natural ordering solve BS=4\n");
+          }
 #  else
           /* This should never be reached, unless there is a bug in PetscSSEIsEnabled(). */
           SETERRQ(PETSC_ERR_SUP,"SSE implementations are unavailable.");
