@@ -83,6 +83,8 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 
   int               prstart,prend,m=P->m;
   int               rank,prid=10;
+  IS  isrow,iscol;
+  Mat P_subseq,*psubseq;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
@@ -110,8 +112,6 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   */
 
     /* get seq matrix P_subseq by taking local rows of P */
-  IS  isrow,iscol;
-  Mat P_subseq,*psubseq;
   ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,P_seq->n,0,1,&iscol);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(P_seq,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psubseq);CHKERRQ(ierr); 
@@ -751,12 +751,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fil
   int            an=A->N,am=A->M,pn=P->N,pm=P->M;
   int            i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
   MatScalar      *ca;
-
-  PetscFunctionBegin;
-  /* Get ij structure of P[rstart:rend,:]^T */
   Mat *psub,P_sub;
   IS  isrow,iscol;
   int m = prend - prstart;
+
+  PetscFunctionBegin;
+  /* Get ij structure of P[rstart:rend,:]^T */
   ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,P->n,0,1,&iscol);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(P,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psub);CHKERRQ(ierr); 
