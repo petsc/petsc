@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1997/09/11 20:07:15 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.26 1997/09/11 21:07:41 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,7 +13,7 @@
 # be searched before the Fortran 77 version.
 #
 FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/libm.a
-#FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
+#FC_LIB        = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -75,5 +75,6 @@ PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/sun4/libpvode.a
 # comment out the locations indicated for that package above.
 #
 PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(MPE_LIB) $(ADIC_LIB)
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE -DHAVE_ADIC
+EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 
