@@ -19,8 +19,7 @@ SOURCEC	 = indexf.c stridef.c blockf.c iscoloringf.c isltogf.c \
 	tsf.c tsregf.c posindepf.c dfvecf.c viewf.c flushf.c snesf.c \
 	snesmfjf.c snesutf.c trf.c umtrf.c umlsf.c da2f.c daghostf.c \
 	dacornf.c dagtolf.c daltolf.c daltogf.c plogf.c plogmpef.c \
-	aof.c gvecf.c gridf.c griddataf.c gveckspf.c gvecsnesf.c \
-	rect1df.c rect2df.c
+	aof.c gvecf.c gridf.c griddataf.c gveckspf.c gvecsnesf.c
 
 SOURCEF	 = 
 SOURCEH	 = 
@@ -39,7 +38,7 @@ OBJSC	 = indexf.o stridef.o blockf.o iscoloringf.o isltogf.o vinvf.o \
 	viewf.o flushf.o snesf.o snesmfjf.o snesutf.o trf.o umtrf.o \
 	umlsf.o da2f.o daghostf.o dacornf.o dagtolf.o daltolf.o daltogf.o \
 	plogf.o plogmpef.o aof.o gvecf.o gridf.o griddataf.o gveckspf.o \
-	gvecsnesf.o rect1df.o rect2df.o
+	gvecsnesf.o 
 
 OBJSF	 =
 LIBBASE	 = libpetscfortran
