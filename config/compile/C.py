@@ -125,12 +125,11 @@ class SharedLinker(config.compile.processor.Processor):
 
   def getTarget(self, source, shared):
     base, ext = os.path.splitext(source)
-    if not (len(base)>3 and base[0:3]=='lib'):
-      base = 'lib'+base
-    name = base
     if hasattr(self, 'configCompilers'):
-      name += '.'+self.configCompilers.setCompilers.sharedLibraryExt
-    return name
+      base += '.'+self.configCompilers.setCompilers.sharedLibraryExt
+    else:
+      base += '.'+self.argDB['LD_SHARED_SUFFIX']
+    return base
 
 class StaticLinker(SharedLinker):
   '''The C static linker, which is not really a linker, but we are hacking it in here'''
@@ -153,12 +152,9 @@ class StaticLinker(SharedLinker):
     return archiveCmd+ranlibCmd
 
   def getTarget(self, source, shared):
-    arext = 'a'
+    base, ext = os.path.splitext(source)
     if hasattr(self,'configCompilers'):
-      arext = self.configCompilers.AR_LIB_SUFFIX
+      base += '.'+self.configCompilers.AR_LIB_SUFFIX
     else:
-      arext = self.argDB['AR_LIB_SUFFIX']
-    base = os.path.splitext(source)[0]
-    if not (len(base)>3 and base[0:3]=='lib'):
-      base = 'lib'+base
-    return base+'.'+arext
+      base += '.'+self.argDB['AR_LIB_SUFFIX']
+    return base

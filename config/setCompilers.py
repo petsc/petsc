@@ -630,6 +630,7 @@ class Configure(config.base.Configure):
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
         self.framework.argDB['LD_SHARED'] = self.LD_SHARED
+        self.framework.argDB['LD_SHARED_SUFFIX'] = ext
         flagsArg = self.getLinkerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
         goodFlags = filter(self.checkLinkerFlag, flags)
