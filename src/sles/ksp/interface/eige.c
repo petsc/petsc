@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.11 1999/01/04 21:47:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: eige.c,v 1.12 1999/01/13 22:38:01 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -17,8 +17,6 @@ static char vcid[] = "$Id: eige.c,v 1.11 1999/01/04 21:47:56 bsmith Exp curfman 
     Output Parameter:
 .   mat - the explict preconditioned operator
 
-    Level: advanced
-
     Notes:
     This computation is done by applying the operators to columns of the 
     identity matrix.
@@ -30,6 +28,8 @@ static char vcid[] = "$Id: eige.c,v 1.11 1999/01/04 21:47:56 bsmith Exp curfman 
 .keywords: KSP, compute, explicit, operator
 
 .seealso: KSPComputeEigenvaluesExplicitly()
+
+    Level: advanced
 @*/
 int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 {
@@ -104,8 +104,6 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 +  r - real part of computed eigenvalues
 -  c - complex part of computed eigenvalues
 
-   Level: advanced
-
    Notes:
    This approach is very slow but will generally provide accurate eigenvalue
    estimates.  This routine explicitly forms a dense matrix representing 
@@ -119,6 +117,8 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 .keywords: KSP, compute, eigenvalues, explicitly
 
 .seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
+
+   Level: advanced
 @*/
 int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c) 
 {
