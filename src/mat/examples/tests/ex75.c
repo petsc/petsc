@@ -1,13 +1,8 @@
-/*$Id: ex75.c,v 1.1 2000/07/07 21:03:02 balay Exp hzhang $*/
+/*$Id: ex75.c,v 1.2 2000/07/10 16:39:40 hzhang Exp hzhang $*/
 
-/* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
+/* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
-static char help[] = "Solves a linear system in parallel with SLES.\n\
-Input parameters include:\n\
-  -random_exact_sol : use a random exact solution vector\n\
-  -view_exact_sol   : write exact solution vector to stdout\n\
-  -m <mesh_x>       : number of mesh points in x-direction\n\
-  -n <mesh_n>       : number of mesh points in y-direction\n\n";
+static char help[] = "Tests the vatious parallel routines in MatMPISBAIJ format.\n";
 
 #include "petscsles.h"
 /* #include "mpisbaij.h" */
@@ -18,11 +13,9 @@ int main(int argc,char **args)
 {
   Vec         x,b,u;    /* approx solution, RHS, exact solution */
   Mat         A,sA;     /* linear system matrix */
-  SLES        sles;     /* linear solver context */
-  PC          pc;       /* preconditioner context */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i,j,I,J,Istart,Iend,ierr,its;
+  int         i,j,I,J,Istart,Iend,ierr,its,m;
   PetscTruth  flg;
   Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
   KSP         ksp;
@@ -222,7 +215,8 @@ int main(int argc,char **args)
   /* vectors */
   /*--------------------*/
   /* ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&u);CHKERRA(ierr);*/
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,sA->m,n,&u); CHKERRA(ierr);
+  ierr = MatGetLocalSize(sA,&m,&n);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,n,&u); CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x);CHKERRA(ierr);
@@ -275,7 +269,7 @@ int main(int argc,char **args)
 
   ierr = OptionsHasName(PETSC_NULL,"-view_b",&flg);CHKERRA(ierr);
   if (flg) {ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
-#ifndef CONT
+#ifdef CONT
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
