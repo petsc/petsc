@@ -1,13 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.15 1996/03/08 05:46:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.16 1996/03/10 17:27:10 bsmith Exp curfman $";
 #endif
 /*
-       Routines used for the orthogonalization of the Hessianburg matrix.
+       Routines used for the orthogonalization of the Hessenberg matrix.
 */
 #include "gmresp.h"
 
 /*
-  This is the basic version using modified Gram-Schmidt.
+    This is the basic orthogonalization routine using modified Gram-Schmidt.
+
+    Note that for the complex numbers version, the VecDot() arguments
+    within the code MUST remain in the order given for correct computation
+    of inner products.
  */
 int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
 {
@@ -16,12 +20,12 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   Scalar    *hh, *hes, tmp;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
-  /* update hessenberg matrix and do Gram-Schmidt */
+  /* update Hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
   for (j=0; j<=it; j++) {
-    /* vv(j) . vv(it+1) */
-    VecDot( VEC_VV(j), VEC_VV(it+1), hh );
+    /* ( vv(it+1), vv(j) ) */
+    VecDot( VEC_VV(it+1), VEC_VV(j), hh );
     *hes++   = *hh;
     /* vv(j) <- vv(j) - hh[j][it] vv(it) */
     tmp = - (*hh++);  VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );
@@ -56,8 +60,8 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
   VecMDot( it+1, VEC_VV(it+1), &(VEC_VV(0)), hes );
 
   /*
-    This is really a matrix vector product: 
-              [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it].
+    This is really a matrix-vector product: 
+        [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it].
   */
   for (j=0; j<=it; j++) hh[j] = -hes[j];
   VecMAXPY(it+1, hh, VEC_VV(it+1),&VEC_VV(0) );
@@ -85,10 +89,10 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   /* Don't allocate small arrays */
   if (it < 20) lhh = shh;
   else {
-    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));
+    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar)); CHKPTRQ(lhh);
   }
   
-  /* update hessenberg matrix and do unmodified Gram-Schmidt */
+  /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
 
