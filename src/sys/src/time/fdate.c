@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fdate.c,v 1.7 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/files.h"
@@ -16,7 +16,13 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 #define __FUNC__ "PetscGetDate" /* ADIC Ignore */
 char *PetscGetDate()
 {
+#if defined (PARCH_nt)
+  time_t aclock;
+  time( &aclock);
+  return asctime(localtime(&aclock));
+#else
   struct timeval tp;
   gettimeofday( &tp, (struct timezone *)0 );
   return asctime(localtime((time_t *) &tp.tv_sec));
+#endif
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fwd.c,v 1.7 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: fwd.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -21,6 +21,8 @@ int PetscGetWorkingDirectory( char *path,int len )
 {
 #if defined(PARCH_sun4)
   getwd( path );
+#elif defined(PARCH_nt)
+  _getcwd( path, len );
 #else
   getcwd( path, len );
 #endif

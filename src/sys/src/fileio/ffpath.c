@@ -1,12 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ffpath.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.8 1997/02/23 16:45:03 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"
 
+#if !defined(PARCH_nt)
 extern int PetscTestFile(char *,char,uid_t,gid_t);
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFileFromPath" /* ADIC Ignore */
@@ -36,6 +38,7 @@ extern int PetscTestFile(char *,char,uid_t,gid_t);
 @*/
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {
+#if !defined(PARCH_nt)
   char   *p, *cdir, trial[MAXPATHLEN],*senv, *env;
   int    ln;
   uid_t  uid;
@@ -87,5 +90,6 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
   }
 
   if (PetscTestFile( fname, mode, uid, gid )) return 1;
-  else return 0;
+#endif
+  return 0;
 }

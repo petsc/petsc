@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ftest.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -19,14 +19,26 @@ static char vcid[] = "$Id: ftest.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $"
   Returns:
   1 if file exists with given mode, 0 otherwise.
 +*/
+#if defined (PARCH_nt)
+int PetscTestFile( char *fname, char mode)
+{
+  int m;
+  if (!fname) return 0;
+  
+  if (mode == 'r') m = 4;
+  if (mode == 'w') m = 2;
+  if(!_access(fname,4)) return 1;
+  return 0;
+}
+#else 
 int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
 {
   int         err;
   struct stat statbuf;
   int         stmode, rbit, wbit, ebit;
-
+  
   if (!fname) return 0;
-
+  
   /* Check to see if the environment variable is a valid regular FILE */
   err = stat( fname, &statbuf );
   if (err != 0) return 0;
@@ -69,3 +81,4 @@ int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
   return 0;
 }
 
+#endif

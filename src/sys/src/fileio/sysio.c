@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.18 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.19 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 
 /* 
@@ -12,7 +12,9 @@ static char vcid[] = "$Id: sysio.c,v 1.18 1997/01/06 20:22:55 balay Exp bsmith $
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-
+#if defined (PARCH_nt)
+#include <io.h>
+#endif
 #if defined(HAVE_SWAPPED_BYTES)
 #undef __FUNC__  
 #define __FUNC__ "PetscByteSwapInt" /* ADIC Ignore */
