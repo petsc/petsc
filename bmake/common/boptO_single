@@ -1,4 +1,4 @@
-# $Id: common_O,v 1.9 1999/11/05 14:42:55 bsmith Exp $ 
+# $Id: common_O_single,v 1.1 2001/08/10 19:28:03 balay Exp balay $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -9,7 +9,7 @@ FLINKER	       = ${C_FLINKER} ${FOPTFLAGS} ${F_SH_LIB_PATH}
 
 SYS_LIB	       = ${C_SYS_LIB}
 
-PETSCFLAGS     = ${O_PETSCFLAGS}
+PETSCFLAGS     = ${O_PETSCFLAGS} -DPETSC_USE_SINGLE
 COPTFLAGS      = ${O_COPTFLAGS}
 FOPTFLAGS      = ${O_FOPTFLAGS}
 
