@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.26 1996/02/20 18:54:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.27 1996/02/20 19:31:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -167,12 +167,11 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
-  int        i, j, ierr, ndim, xs, xe, ys, ye, xm, ym;
-  int        rstart, rend, ldim, iglob;
-  Scalar     *y, zero = 0.0, one = 1.0;
-  double     gamma1;
-  SNESType   method;
+  AppCtx   *user = (AppCtx *) ptr;
+  int      i, j, ierr, ndim, xs, xe, ys, ye, xm, ym, rstart, rend, ldim, iglob;
+  Scalar   *y, zero = 0.0, one = 1.0;
+  double   gamma1;
+  SNESType method;
 
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
@@ -211,10 +210,9 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
   if (method == SNES_UM_NLS) {
     SNESGetLineSearchDampingParameter(snes,&gamma1);
-    MPIU_printf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);
-    for (i=0; i<ndim; i++) {
-      iglob = i+rstart;
-      ierr = MatSetValues(*H,1,&iglob,1,&iglob,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
+    MPIU_printf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
