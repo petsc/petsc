@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.124 1999/03/17 23:22:33 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.125 1999/03/18 01:01:23 balay Exp balay $";
 #endif
 
 /*
@@ -181,6 +181,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   v->bs          = 1;
   s->size        = size;
   s->rank        = rank;
+  s->browners    = 0;
   v->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
   PetscStrcpy(v->type_name,VEC_MPI);
   if (array) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.111 1999/03/17 23:40:42 balay Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.112 1999/03/18 01:01:10 balay Exp balay $ 
 #endif
 
 /*
@@ -39,6 +39,7 @@ int VecDestroy_MPI(Vec v)
   /* Destroy the stashes */
   ierr = VecStashDestroy_Private(&v->stash); CHKERRQ(ierr);
   ierr = VecStashDestroy_Private(&v->bstash); CHKERRQ(ierr);
+  if (x->browners) { PetscFree(x->browners);}
   PetscFree(x);
   PetscFunctionReturn(0);
 }
@@ -570,11 +571,15 @@ int VecAssemblyBegin_MPI(Vec xin)
   
   bs = xin->bs;
   ierr = MPI_Comm_size(xin->comm,&size); CHKERRQ(ierr);
-  bowners = (int*) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(bowners);
-  for ( i=0; i<size+1; i++ ){ bowners[i] = owners[i]/bs;}
+  if (!x->browners) {
+    bowners = (int*) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(bowners);
+    for ( i=0; i<size+1; i++ ){ bowners[i] = owners[i]/bs;}
+    x->browners = bowners;
+  } else { 
+    bowners = x->browners; 
+  }
   ierr = VecStashScatterBegin_Private(&xin->stash,owners); CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners); CHKERRQ(ierr);
-  PetscFree(bowners);
   ierr  = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);

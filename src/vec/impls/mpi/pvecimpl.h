@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.26 1999/03/17 19:14:57 balay Exp balay $ */
+/* $Id: pvecimpl.h,v 1.27 1999/03/18 01:01:27 balay Exp balay $ */
 /* 
  */
 
@@ -14,6 +14,7 @@ typedef struct {
   int         size,rank;
   InsertMode  insertmode;
   int         donotstash;               /* Flag indicates stash values should be ignored */
+  int         *browners;                /* block-row-ownership,used for assembly */
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   int         nsends,nrecvs;
   Scalar      *svalues,*rvalues;
