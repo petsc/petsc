@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.27 1998/03/19 02:05:39 balay Exp balay $ 
+# $Id: makefile,v 1.28 1998/04/23 23:34:52 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = 
 SOURCEC  = tfqmr.c
 SOURCEF  =
 OBJSC    = tfqmr.o

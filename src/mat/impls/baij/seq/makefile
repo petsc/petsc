@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.17 1998/03/19 02:08:13 balay Exp balay $ 
+# $Id: makefile,v 1.18 1998/04/23 23:42:09 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' \
-	   ${SUPERLU_INCLUDE}
+CFLAGS   = 
+CPPFLAGS = ${SUPERLU_INCLUDE}
 SOURCEC  = baij.c baij2.c baijfact.c baijfact2.c dgefa.c dgedi.c dgefa3.c \
 	   dgefa4.c dgefa5.c
 SOURCEF  =

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.12 1998/03/19 02:04:52 balay Exp balay $
+# $Id: makefile,v 1.13 1998/04/23 23:30:41 balay Exp balay $
 
 ALL: lib
 
-CFLAGS	 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
+CFLAGS	 = 
 SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c
 SOURCEF	 =
 SOURCEH	 =

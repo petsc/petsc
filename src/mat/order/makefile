@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 1998/03/19 02:08:06 balay Exp balay $ 
+# $Id: makefile,v 1.28 1998/04/23 23:35:05 balay Exp balay $ 
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -6,7 +6,7 @@
 #
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
+CFLAGS   = 
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
            genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c

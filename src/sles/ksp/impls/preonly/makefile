@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.26 1998/03/19 02:05:36 balay Exp balay $ 
+# $Id: makefile,v 1.27 1998/04/23 23:34:26 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = 
 SOURCEC  = preonly.c
 SOURCEF  =
 OBJSC    = preonly.o
