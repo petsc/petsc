@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.13 1997/02/22 02:30:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: aodebug.c,v 1.14 1997/03/13 16:36:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -94,8 +94,9 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
-.  isapp - index set that defines part of the ordering.
-.  ispetsc - 
+.  napp - size of integer arrays
+.  myapp - integer array that defines an ordering
+.  mypetsc - integer array that defines another ordering
 
    Output Parameter:
 .  aoout - the new application ordering
@@ -177,8 +178,8 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
-.  isapp - index set that defines part of the ordering.
-.  ispetsc - 
+.  isapp - index set that defines an ordering
+.  ispetsc - index set that defines another ordering
 
    Output Parameter:
 .  aoout - the new application ordering
