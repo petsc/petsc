@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.12 1998/04/27 16:09:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: ec.c,v 1.13 1998/04/27 16:56:26 curfman Exp bsmith $";
 #endif
 
 /*
@@ -30,7 +30,6 @@ int ECDestroy(EC ec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
   if (ec->ops->destroy) {ierr =  (*ec->ops->destroy)(ec);CHKERRQ(ierr);}
-  else {if (ec->data) PetscFree(ec->data);}
   PLogObjectDestroy(ec);
   PetscHeaderDestroy(ec);
   PetscFunctionReturn(0);
@@ -289,22 +288,21 @@ int ECSetFromOptions(EC ec)
   ierr = OptionsGetString(ec->prefix,"-ec_spectrum_portion",spectrum,128,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!PetscStrcmp(spectrum,"largest_real_part")) {
-      PLogInfo(ec,"Computing largest real part of spectrum");
+      PLogInfo(ec,"Computing largest real part of spectrum\n");
       ec->spectrumportion = EC_LARGEST_REAL_PART;
     } else if (!PetscStrcmp(spectrum,"largest_magnitude")) {
-      PLogInfo(ec,"Computing largest magnitude of spectrum");
+      PLogInfo(ec,"Computing largest magnitude of spectrum\n");
       ec->spectrumportion = EC_LARGEST_MAGNITUDE;
     } else if (!PetscStrcmp(spectrum,"smallest_real_part")) {
-      PLogInfo(ec,"Computing smallest real part of spectrum");
+      PLogInfo(ec,"Computing smallest real part of spectrum\n");
       ec->spectrumportion = EC_SMALLEST_REAL_PART;
     } else if (!PetscStrcmp(spectrum,"smallest_magnitude")) {
-      PLogInfo(ec,"Computing smallest magnitude of spectrum");
+      PLogInfo(ec,"Computing smallest magnitude of spectrum\n");
       ec->spectrumportion = EC_SMALLEST_MAGNITUDE;
     } else if (!PetscStrcmp(spectrum,"interior")) {
-      PLogInfo(ec,"Computing interior spectrum");
+      PLogInfo(ec,"Computing interior spectrum\n");
       ec->spectrumportion = EC_INTERIOR;
-      ierr = OptionsGetScalar(ec->prefix,"-ec_spectrum_location",&ec->location,&flag);
-             CHKERRQ(ierr);
+      ierr = OptionsGetScalar(ec->prefix,"-ec_spectrum_location",&ec->location,&flag);CHKERRQ(ierr);
       if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set interior spectrum location");   
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown spectrum request");
