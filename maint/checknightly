@@ -5,62 +5,117 @@
 # recreates the etags
 #
 
-cd /home/bsmith/petsc/maint/nightlylogs
-set tmpfileid [ open tmpfile w ]
-set files [ glob examples_*]
-set machines {snake cyan elvis maverick quad caffeine }
-foreach machine $machines {
-    if { [ string first $machine $files ] < 0 } { #file dos'nt exist
-        set mesg "No build on: $machine"
-        puts $tmpfileid $mesg
+proc CheckNightlyBuilds { } {
+    global  tmpfileid
+
+    cd /home/bsmith/petsc/maint/nightlylogs
+    set files [ glob examples_*]
+    set machines {snake cyan elvis maverick quad caffeine }
+    foreach machine $machines {
+        if { [ string first $machine $files ] < 0 } { #file dos'nt exist
+            set mesg "No build on: $machine"
+            puts $tmpfileid $mesg
+        }
     }
-}
-# Either doc or clyde should exist
-if { [ string first doc $files ] < 0  && [ string first clyde $files ] < 0  } {
-    set mesg "doc/clyde: File does not exist"
-    puts $tmpfileid  $mesg
-}
-
-
-# check the logfiles of remote builds:
-
-set day(Sun) Sat
-set day(Mon) Sun
-set day(Tue) Mon
-set day(Wed) Tue
-set day(Thu) Wed
-set day(Fri) Thu
-set day(Sat) Fri
-set today [exec date +%a ]
-
-set files {build_linux.log build_t3d.log}
-foreach file $files {
-    if { [file exists $file ] == 0 } {
-        set mesg "$file: File does not exist"
+    # Either doc or clyde should exist
+    if { [ string first doc $files ] < 0  && [ string first clyde $files ] < 0  } {
+        set mesg "doc/clyde: File does not exist"
         puts $tmpfileid  $mesg
-        continue
     }
-    set fileid [ open $file r ]
-    if { [gets $fileid line ]< 0 } {
+    
+    
+    # check the logfiles of remote builds:
+    
+    set day(Sun) Sat
+    set day(Mon) Sun
+    set day(Tue) Mon
+    set day(Wed) Tue
+    set day(Thu) Wed
+    set day(Fri) Thu
+    set day(Sat) Fri
+    set today [exec date +%a ]
+    
+    set files {build_linux.log build_t3d.log}
+    foreach file $files {
+        if { [file exists $file ] == 0 } {
+            set mesg "$file: File does not exist"
+            puts $tmpfileid  $mesg
+            continue
+        }
+        set fileid [ open $file r ]
+        if { [gets $fileid line ]< 0 } {
         set mesg "$file: File does not exist"
-        puts $tmpfileid $mesg
+            puts $tmpfileid $mesg
+            close $fileid
+            continue
+        }
         close $fileid
-        continue
-    }
-    close $fileid
-    if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
-        set mesg "**out of date logfile: $file **"
+        if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
+            set mesg "**out of date logfile: $file **"
         puts $tmpfileid $mesg
-        puts $tmpfileid $line
+            puts $tmpfileid $line
+        }
     }
 }
-close $tmpfileid
-if { [ file size tmpfile] > 0} {
-    exec /usr/local/elm/bin/elm -s "NIGHTLY BUILD PROBLEM" bsmith curfman balay < tmpfile
+
+proc CheckFortranAutoMakefile { } {
+    global  tmpfileid
+    
+    set files [ glob /home/bsmith/petsc/src/fortran/auto/*.c ]
+    
+    set cfiles ""
+    set ofiles ""
+    foreach file $files {
+        set filename [ file tail $file ]
+        lappend cfiles $filename
+        lappend ofiles  [file rootname $filename].o
+        
+    }
+    
+    # Check if the above files are mentioned in the makefile
+    set makefileid [ open  /home/bsmith/petsc/src/fortran/auto/makefile r ]
+    set makefilebuff [ read $makefileid ]
+    close $makefileid
+    
+    
+    foreach cfile $cfiles {
+        if { [string match $cfile $makefilebuff ] == 0 } {
+            puts $tmpfileid "******** could'nt find $cfile"
+        }
+    }
+    foreach ofile $ofiles {
+        if { [string match $ofile $makefilebuff ] == 0 } {
+            puts $tmpfileid "******** could'nt find $ofile"
+        }
+    }
+    return 0
 }
-exec /bin/rm -f tmpfile
 
 
-# Build the TAGS files 
-cd /home/bsmith/petsc
-exec /bin/make alletags >>& /dev/null
+
+proc main { } {
+    global  tmpfileid
+
+    set tmpfile /tmp/junk
+    set tmpfileid [ open $tmpfile w ]
+
+    # Check if the fortran/auto/makefile is consistant
+    CheckFortranAutoMakefile
+
+    #Check if all the nightlybuilds are done
+    CheckNightlyBuilds
+
+    # if errors send out a report to the petsc team
+    close $tmpfileid
+    if { [ file size $tmpfile] > 0} {
+        exec /usr/local/elm/bin/elm -s "NIGHTLY BUILD PROBLEM"  balay < $tmpfile
+    }
+#    exec /bin/rm -f $tmpfile
+
+    # Build the TAGS files 
+    cd /home/bsmith/petsc
+    exec /bin/make alletags >>& /dev/null
+    return 0
+}
+##########################################
+main
