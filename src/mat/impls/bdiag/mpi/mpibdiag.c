@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.21 1995/08/15 20:28:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.22 1995/08/17 01:31:22 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -392,11 +392,13 @@ static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 
 static int MatDestroy_MPIBDiag(PetscObject obj)
 {
-  Mat        mat = (Mat) obj;
+  Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int        ierr;
+  Mat_BDiag    *ms = (Mat_BDiag *) mbd->A->data;
+  int          ierr;
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d",mbd->M,mbd->N);
+  PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
+                  mbd->M,mbd->N,ms->nb,ms->nd);
 #endif
   PETSCFREE(mbd->rowners); 
   PETSCFREE(mbd->gdiag);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.37 1995/08/04 15:37:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.38 1995/08/15 20:26:35 bsmith Exp curfman $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -134,7 +134,7 @@ static int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v = (Vec ) obj;
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d",((Vec_Seq *)v->data)->n);
+  PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   PETSCFREE(v->data);
   PLogObjectDestroy(v);

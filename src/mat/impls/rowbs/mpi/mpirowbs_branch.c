@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.47 1995/08/15 20:28:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.48 1995/08/17 01:30:51 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -927,7 +927,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     return 0;
   }
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d",mrow->M,mrow->N);
+  PLogObjectState(obj,"Rows=%d, Cols=%d",mrow->M,mrow->N);
 #endif
   PETSCFREE(mrow->rowners); 
 

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.17 1995/07/17 03:53:35 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.18 1995/08/15 20:26:37 bsmith Exp curfman $ */
 
 #include "pviewer.h"
 
@@ -15,7 +15,7 @@ static int VecDestroy_MPI(PetscObject obj )
   Vec       v = (Vec ) obj;
   Vec_MPI *x = (Vec_MPI *) v->data;
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d",x->N);
+  PLogObjectState(obj,"Length=%d",x->N);
 #endif  
   if (x->stash.array) PETSCFREE(x->stash.array);
   PETSCFREE(x->array);

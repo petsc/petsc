@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.36 1995/08/17 01:20:45 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.37 1995/08/17 14:13:24 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -745,7 +745,8 @@ static int MatDestroy_BDiag(PetscObject obj)
   Mat_BDiag *mat = (Mat_BDiag *) bmat->data;
 
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d NZ %d",mat->m,mat->n,mat->nz);
+  PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",
+                       mat->m,mat->n,mat->nz,mat->nb,mat->nd);
 #endif
   if (!mat->user_alloc) { /* Free the actual diagonals */
     PETSCFREE( mat->diagv[0] );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.63 1995/08/15 20:28:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.64 1995/08/17 01:31:17 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -497,7 +497,7 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d",aij->M,aij->N);
+  PLogObjectState(obj,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
   PETSCFREE(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERRQ(ierr);
