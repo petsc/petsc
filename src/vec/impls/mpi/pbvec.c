@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.65 1996/11/07 15:07:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.66 1996/11/19 16:29:42 bsmith Exp balay $";
 #endif
 
 /*
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: pbvec.c,v 1.65 1996/11/07 15:07:51 bsmith Exp bsmith 
 #include "pdvec.c"
 #include "pvec2.c"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecDot_MPI"
 static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
@@ -32,6 +34,8 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecSetOption_MPI"
 static int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI *) v->data;
@@ -61,6 +65,8 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
             VecSetRandom_Seq,
             VecSetOption_MPI};
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecCreateMPIBase"
 static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *owners,Vec *vv)
 {
   Vec     v;
@@ -109,6 +115,8 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *own
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecCreateMPI"
 /*@C
    VecCreateMPI - Creates a parallel vector.
 
@@ -145,6 +153,8 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   return VecCreateMPIBase(comm,n,N,size,rank,0,vv);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecDuplicate_MPI"
 static int VecDuplicate_MPI( Vec win, Vec *v)
 {
   int     ierr;

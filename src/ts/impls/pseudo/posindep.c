@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.5 1996/10/01 15:48:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.6 1996/11/07 15:10:47 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -27,6 +27,8 @@ typedef struct {
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoDefaultTimeStep"
 /*@C
    TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
    Use with TSPseudoSetTimeStep().
@@ -59,6 +61,8 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoSetTimeStep"
 /*@
    TSPseudoSetTimeStep - Sets the user-defined routine to be
    called at each pseudo-timestep to update the timestep.
@@ -96,6 +100,8 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoComputeTimeStep"
 /*@
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
     pseudo-timestepping process.
@@ -128,6 +134,8 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
 
 /* ------------------------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoDefaultVerifyTimeStep"
 /*@C
    TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
 
@@ -193,6 +201,8 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoVerifyTimeStep"
 /*@
     TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
 
@@ -226,6 +236,8 @@ int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
 
 /* --------------------------------------------------------------------------------*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSStep_Pseudo"
 static int TSStep_Pseudo(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
@@ -258,6 +270,8 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
 }
 
 /*------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSDestroy_Pseudo"
 static int TSDestroy_Pseudo(PetscObject obj )
 {
   TS        ts = (TS) obj;
@@ -278,6 +292,8 @@ static int TSDestroy_Pseudo(PetscObject obj )
     This matrix shell multiply where user provided Shell matrix
 */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoMatMult"
 int TSPseudoMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
@@ -299,6 +315,8 @@ int TSPseudoMatMult(Mat mat,Vec x,Vec y)
 
               (U^{n+1} - U^{n})/dt - F(U^{n+1})
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoFunction"
 int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
@@ -327,6 +345,8 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 
              J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoJacobian"
 int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS      ts = (TS) ctx;
@@ -355,6 +375,8 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSSetUp_Pseudo"
 static int TSSetUp_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
@@ -374,6 +396,8 @@ static int TSSetUp_Pseudo(TS ts)
 }
 /*------------------------------------------------------------*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoDefaultMonitor"
 int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
@@ -382,6 +406,8 @@ int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSSetFromOptions_Pseudo"
 static int TSSetFromOptions_Pseudo(TS ts)
 {
   int    ierr,flg;
@@ -400,17 +426,23 @@ static int TSSetFromOptions_Pseudo(TS ts)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPrintHelp_Pseudo"
 static int TSPrintHelp_Pseudo(TS ts)
 {
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSView_Pseudo"
 static int TSView_Pseudo(PetscObject obj,Viewer viewer)
 {
   return 0;
 }
 
 /* ------------------------------------------------------------ */
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSCreate_Pseudo"
 int TSCreate_Pseudo(TS ts )
 {
   TS_Pseudo *pseudo;
@@ -449,6 +481,8 @@ int TSCreate_Pseudo(TS ts )
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "TSPseudoSetTimeStepIncrement"
 /*@
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
     dt when using the TSPseudoDefaultTimeStep() routine.

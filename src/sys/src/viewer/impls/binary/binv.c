@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.23 1996/07/10 01:51:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.24 1996/08/08 14:46:27 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -16,6 +16,8 @@ struct _Viewer {
   FILE         *fdes_info;   /* optional file containing info on binary file*/
 };
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerBinaryGetDescriptor"
 /*@C
     ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
 
@@ -35,6 +37,8 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerBinaryGetInfoPointer"
 /*@C
     ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
@@ -55,6 +59,8 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroy_BinaryFile"
 static int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   int    rank;
@@ -67,6 +73,8 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerFileOpenBinary"
 /*@C
    ViewerFileOpenBinary - Opens a file for binary input/output.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.47 1996/09/14 13:40:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.48 1996/11/07 15:11:10 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -15,6 +15,8 @@ struct _Viewer {
 
 Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerInitialize_Private"
 int ViewerInitialize_Private()
 {
   ViewerFileOpenASCII(MPI_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
@@ -23,6 +25,8 @@ int ViewerInitialize_Private()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroy_File"
 static int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
@@ -34,6 +38,8 @@ static int ViewerDestroy_File(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroy_Private"
 int ViewerDestroy_Private()
 {
   ViewerDestroy_File((PetscObject)VIEWER_STDERR_SELF);
@@ -42,6 +48,8 @@ int ViewerDestroy_Private()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerFlush_File"
 int ViewerFlush_File(Viewer v)
 {
   int rank;
@@ -51,6 +59,8 @@ int ViewerFlush_File(Viewer v)
   return 0;  
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerASCIIGetPointer"
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
@@ -70,18 +80,24 @@ int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerFileGetOutputname_Private"
 int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 {
   *name = viewer->outputname;
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerGetFormat"
 int ViewerGetFormat(Viewer viewer,int *format)
 {
   *format =  viewer->format;
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerFileOpenASCII"
 /*@C
    ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
@@ -141,6 +157,8 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerSetFormat"
 /*@C
    ViewerSetFormat - Sets the format for file viewers.
 
@@ -184,6 +202,8 @@ int ViewerSetFormat(Viewer v,int format,char *name)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerPushFormat"
 /*@C
    ViewerPushFormat - Sets the format for file viewers.
 
@@ -232,6 +252,8 @@ int ViewerPushFormat(Viewer v,int format,char *name)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerPopFormat"
 /*@C
    ViewerPopFormat - Resets the format for file viewers.
 

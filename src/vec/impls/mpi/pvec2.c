@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.15 1996/04/26 00:24:33 balay Exp bsmith $ */
+/* $Id: pvec2.c,v 1.16 1996/05/07 19:10:59 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -8,6 +8,8 @@
 #include "pvecimpl.h" 
 #include "src/inline/dot.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecMDot_MPI"
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
   static Scalar awork[128];
@@ -29,6 +31,8 @@ static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecNorm_MPI"
 static int VecNorm_MPI(  Vec xin,NormType type, double *z )
 {
   Vec_MPI      *x = (Vec_MPI *) xin->data;
@@ -68,6 +72,8 @@ static int VecNorm_MPI(  Vec xin,NormType type, double *z )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecMax_MPI"
 static int VecMax_MPI( Vec xin, int *idx, double *z )
 {
   double work;
@@ -86,6 +92,8 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecMin_MPI"
 static int VecMin_MPI( Vec xin, int *idx, double *z )
 {
   double work;

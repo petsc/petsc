@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: senddense.c,v 1.15 1996/03/19 21:28:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.16 1996/08/08 14:46:23 bsmith Exp balay $";
 #endif
 /*
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 #include "src/viewer/impls/matlab/matlab.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerMatlabPutArray_Private"
 /*
    ViewerMatlabPutArray_Private - Passes an array to a Matlab viewer.
 

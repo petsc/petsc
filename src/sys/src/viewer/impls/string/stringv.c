@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.7 1996/09/17 14:51:28 balay Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.8 1996/11/07 15:11:13 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -25,6 +25,8 @@ static int ViewerDestroy_String(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerStringSPrintf"
 /*@C
     ViewerStringSPrintf - Prints information to a viewer string.
 
@@ -67,6 +69,8 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerStringOpen"
 /*@C
     ViewerStringOpen - Opens a string as a viewer. This is a very 
     simple viewer; information on the object is simply stored into 
