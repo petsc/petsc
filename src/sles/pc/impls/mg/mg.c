@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.123 2001/06/21 21:17:52 bsmith Exp balay $*/
+/*$Id: mg.c,v 1.124 2001/08/07 03:03:36 balay Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -25,8 +25,8 @@ int MGMCycle_Private(MG *mglevels)
   if (!mg->level) {  /* coarse grid */
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
   } else {
+    ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
       ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
       ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
