@@ -643,7 +643,12 @@ class Configure(config.base.Configure):
 
     # Change to string
     self.flibs = ''
-    for lib in flibs: self.flibs += ' '+lib
+    for lib in flibs:
+      if lib.startswith('-L'):
+        if self.isGNU(self.framework.argDB['CC']):
+          self.flibs += ' ${CLINKER_SLFLAG}'+lib[2:0]
+      self.flibs += ' '+lib
+      
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
     
