@@ -67,7 +67,7 @@ class Configure(config.base.Configure):
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
     # Try MacOSX location
-    yield ('MacOSX BLAS/LAPACK library', None, os.path.join('System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
+    yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
@@ -124,9 +124,13 @@ class Configure(config.base.Configure):
        - LAPACK_DIR is the location of the LAPACK library
        - LAPACK_LIB is the LAPACK linker flags'''
     if self.foundBlas:
-      dir = self.unique(map(os.path.dirname, self.blasLibrary))
+      if None in self.blasLibrary:
+        lib = self.lapackLibrary
+      else:
+        lib = self.blasLibrary
+      dir = self.unique(map(os.path.dirname, lib))
       self.addSubstitution('BLAS_DIR', dir)
-      libFlag = map(self.libraries.getLibArgument, self.blasLibrary)
+      libFlag = map(self.libraries.getLibArgument, lib)
       self.addSubstitution('BLAS_LIB', ' '.join(libFlag))
     if self.foundLapack:
       dir = self.unique(map(os.path.dirname, self.lapackLibrary))
@@ -137,6 +141,7 @@ class Configure(config.base.Configure):
       dirs    = []
       libFlag = []
       for lib in self.blasLibrary+self.lapackLibrary:
+        if lib is None: continue
         dir = os.path.dirname(lib)
         if not dir in dirs:
           dirs.append(dir)
