@@ -148,7 +148,7 @@ class Options(config.base.Configure):
       # Compaq Visual FORTRAN
       elif compiler in ['win32fe f90', 'win32fe df']:
         if bopt == '':
-          flags.extend(['-threads', '-iface:nomixed_str_len_arg,cref'])
+          flags.append('-threads')
         elif bopt == 'g':
           flags.extend(['-dbglibs', '-debug:full'])
         elif bopt == 'O':
@@ -218,7 +218,7 @@ class Options(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' '+flags, log = self.framework.log)
       if not status:
         if compiler.split(' ')[0]=='win32fe':
-          version = '\n'.join(output.split('\n')[0:2])
+          version = '\\n'.join(output.split('\n')[0:2])
         else:
           version = output.split('\n')[0]
     except RuntimeError, e:

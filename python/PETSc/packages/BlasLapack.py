@@ -137,6 +137,13 @@ class Configure(config.base.Configure):
     # Sun locations
     yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
     yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
+    # Try Microsoft Windows location
+    MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL')
+    if self.framework.argDB['with-64-bit']:
+      MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
+    else:
+      MKL_Dir = os.path.join(MKL_DIR, 'ia32', 'lib')
+    yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'))
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
