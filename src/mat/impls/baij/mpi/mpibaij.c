@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.134 1998/07/23 22:48:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.135 1998/08/25 19:52:14 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1970,7 +1970,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   Mat          B;
   Mat_MPIBAIJ  *b;
   int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size,flg;
-  int          flag1,flag2;
+  int          flag1 = 0,flag2 = 0;
 
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
