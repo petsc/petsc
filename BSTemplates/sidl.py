@@ -22,7 +22,21 @@ class BabelLanguageList (UserList.UserList):
       raise ValueError('Invalid Babel langague: '+value)
     self.data[key] = value
 
+class BabelPackageList (list):
+  def __init__(self, defaults):
+    list.__init__(self)
+    self.defaults = defaults
+
+  def __setitem__(self, key, value):
+    self.checkPackage(value)
+    self.data[key] = value
+
+  def checkPackage(self, package):
+    if not package in self.defaults.getPackages():
+      raise KeyError('Invalid Babel package: '+package)
+
 class BabelPackageDict (UserDict.UserDict):
+  '''We now allow packages or languages as keys'''
   def __init__(self, defaults):
     UserDict.UserDict.__init__(self)
     self.defaults = defaults
@@ -30,6 +44,10 @@ class BabelPackageDict (UserDict.UserDict):
   def checkPackage(self, package):
     if not package in self.defaults.getPackages():
       if package == 'executable': return
+      if package == 'C': return
+      if package == 'C++': return
+      if package == 'Python': return
+      if package == 'F77': return
       raise KeyError('Invalid Babel package: '+package)
 
   def __getitem__(self, key):
@@ -46,7 +64,7 @@ class Defaults:
   implRE   = re.compile(r'^(.*)_Impl$')
   clientRE = re.compile(r'^(.*)lib(.*)client.so$')
 
-  def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None):
+  def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
     if repositoryDir:
       self.repositoryDir = repositoryDir
@@ -56,9 +74,12 @@ class Defaults:
       self.serverBaseDir = serverBaseDir
     else:
       self.serverBaseDir = os.path.abspath('server')
+    self.compilerFlags   = compilerFlags
     self.repositoryDirs  = []
     self.clientLanguages = BabelLanguageList()
     self.serverLanguages = BabelLanguageList()
+    self.internalClientLanguages = BabelPackageDict(self)
+    self.bootstrapPackages       = BabelPackageList(self)
 
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
@@ -97,66 +118,89 @@ class Defaults:
     return os.path.abspath(string.lower(lang))
 
   def getRepositoryTargets(self):
-    action = babel.CompileSIDLRepository()
+    action = babel.CompileSIDLRepository(compilerFlags = self.compilerFlags)
     action.outputDir = self.repositoryDir
     action.repositoryDirs.extend(self.repositoryDirs)
     return [target.Target(None, [babel.TagAllSIDL(), action])]
 
-  def getServerSIDLTargets(self):
-    targets           = []
+  def getSIDLServerCompiler(self, lang, rootDir, generatedRoots):
+    action = babel.CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, ['.h', '.c', '.hh', '.cc']), compilerFlags = self.compilerFlags)
+    action.language  = lang
+    action.outputDir = rootDir
+    action.repositoryDirs.append(self.repositoryDir)
+    action.repositoryDirs.extend(self.repositoryDirs)
+    return action
+
+  def getSIDLServerTargets(self):
+    targets = []
     for lang in self.serverLanguages:
       serverSourceRoots = fileset.FileSet(map(lambda package, lang=lang, self=self: self.getServerRootDir(lang, package), self.getPackages()))
       for rootDir in serverSourceRoots:
         if not os.path.isdir(rootDir):
           os.makedirs(rootDir)
 
-      action = babel.CompileSIDLServer(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
-      action.language  = lang
-      action.outputDir = self.getServerRootDir(lang, '')
-      action.repositoryDirs.append(self.repositoryDir)
-      action.repositoryDirs.extend(self.repositoryDirs)
-
       genActions = [bk.TagBKOpen(roots = serverSourceRoots),
                     bk.BKOpen(),
-                    action,
+                    # CompileSIDLServer() will add the package automatically to the output directory
+                    self.getSIDLServerCompiler(lang, self.getServerRootDir(lang, ''), serverSourceRoots),
                     bk.TagBKClose(roots = serverSourceRoots),
                     transform.FileFilter(self.isImpl, tags = 'bkadd'),
                     bk.BKClose()]
+
       defActions = transform.Transform(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
 
       targets.append(target.Target(None, [babel.TagSIDL(), target.If(self.isNewSidl, genActions, defActions)]))
     return targets
 
-  def getClientSIDLTargets(self):
+  def getSIDLClientCompiler(self, lang, rootDir):
+    compiler           = babel.CompileSIDLClient(fileset.ExtensionFileSet(rootDir, ['.h', '.c', '.cc', '.hh']), compilerFlags = self.compilerFlags)
+    compiler.language  = lang
+    compiler.outputDir = rootDir
+    compiler.repositoryDirs.append(self.repositoryDir)
+    compiler.repositoryDirs.extend(self.repositoryDirs)
+    return compiler
+
+  def getSIDLClientTargets(self):
     targets = []
     for lang in self.clientLanguages:
-      rootDir = self.getClientRootDir(lang)
-      action  = babel.CompileSIDLClient(fileset.ExtensionFileSet(rootDir, ['.h', '.c', '.cc', '.hh']))
-      action.language  = lang
-      action.outputDir = rootDir
-      action.repositoryDirs.append(self.repositoryDir)
-      action.repositoryDirs.extend(self.repositoryDirs)
-      targets.append(target.Target(None, [babel.TagAllSIDL(), action]))
+      targets.append(target.Target(None, [babel.TagAllSIDL(), self.getSIDLClientCompiler(lang, self.getClientRootDir(lang))]))
+    # Some clients have to be linked with the corresponding server (like the Bable bootstrap)
+    for package in self.getPackages():
+      for lang in self.internalClientLanguages[package]:
+        targets.append(target.Target(None, [babel.TagAllSIDL(), self.getSIDLClientCompiler(lang, self.getServerRootDir(lang, package))]))
     return targets
 
   def getSIDLTarget(self):
-    return target.Target(self.sources, [tuple(self.getRepositoryTargets()+self.getServerSIDLTargets()+self.getClientSIDLTargets()),
+    return target.Target(self.sources, [tuple(self.getRepositoryTargets()+self.getSIDLServerTargets()+self.getSIDLClientTargets()),
                                         transform.Update(),
                                         transform.SetFilter('old sidl')])
 
 class CompileDefaults (Defaults):
-  def __init__(self, project, sidlSources):
-    Defaults.__init__(self, sidlSources)
+  def __init__(self, project, sidlSources, compilerFlags = ''):
+    Defaults.__init__(self, sidlSources, compilerFlags = compilerFlags)
     self.project               = project
     self.libDir                = os.path.abspath('lib')
     self.babelDir              = os.path.abspath(bs.argDB['BABEL_DIR'])
-    self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
+    #self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
+    self.babelIncludeDir       = os.path.join(self.babelDir, 'server-sidl')
     self.babelLibDir           = os.path.join(self.babelDir, 'lib')
-    self.babelLib              = fileset.FileSet([os.path.join(self.babelLibDir, 'libsidl.so')])
+    #self.babelLib              = fileset.FileSet([os.path.join(self.babelLibDir, 'libsidl.so')])
+    self.babelLib              = fileset.FileSet([os.path.join(self.babelLibDir, 'libsidlruntime-c-sidl-server.so')])
     self.babelPythonIncludeDir = os.path.join(self.babelDir, 'python')
     self.includeDirs           = BabelPackageDict(self)
     self.extraLibraries        = BabelPackageDict(self)
     self.etagsFile             = None
+
+  def addBabelInclude(self, compiler, lang = None):
+    compiler.includeDirs.append(self.babelIncludeDir)
+    if lang == 'Python':
+      compiler.includeDirs.append(self.babelPythonIncludeDir)
+    return compiler
+
+  def addBabelLib(self, libraries, package = ''):
+    if self.project == 'sidlruntime' and package in self.bootstrapPackages: return libraries
+    libraries.extend(self.babelLib)
+    return libraries
 
   def getClientLibrary(self, lang):
     'Client libraries following the naming scheme: lib<project>-<lang>-client.a'
@@ -166,30 +210,63 @@ class CompileDefaults (Defaults):
     'Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'
     return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-'+package+'-server.a')])
 
-  def getServerCompileTargets(self):
-    targets = []
+  def getServerCompileTargets(self, segregateBootstrapTargets):
+    targets          = []
+    bootstrapTargets = []
+
     for lang in self.serverLanguages:
-      stubDir = self.getClientRootDir(lang)
       for package in self.getPackages():
+        actions   = []
         rootDir   = self.getServerRootDir(lang, package)
         library   = self.getServerLibrary(lang, package)
-        libraries = fileset.FileSet(children = [self.getClientLibrary(lang), self.babelLib])
+        libraries = fileset.FileSet()
+
+        if lang in self.internalClientLanguages[package]:
+          stubDir = rootDir
+        elif lang in self.clientLanguages:
+          stubDir = self.getClientRootDir(lang)
+        else:
+          raise RuntimeError('Package '+package+' needs stubs for '+lang+' which have not been configured')
+
+        if lang in ['Python', 'F77', 'C']:
+          tagger = compile.TagC(root = rootDir)
+        elif lang == 'C++':
+          tagger = [compile.TagC(root = rootDir), compile.TagCxx(root = rootDir)]
+        else:
+          raise RuntimeError('Unknown client language: '+lang)
 
         # For IOR source
-        cAction = compile.CompileC(library)
-        cAction.defines.append('PIC')
-        cAction.includeDirs.append(rootDir)
-        cAction.includeDirs.append(self.babelIncludeDir)
+        iorAction = compile.CompileC(library)
+        iorAction.defines.append('PIC')
+        iorAction.includeDirs.append(rootDir)
+        self.addBabelInclude(iorAction)
+        actions.append(iorAction)
 
         # For skeleton and implementation source
-        cxxAction = compile.CompileCxx(library)
-        cxxAction.defines.append('PIC')
-        cxxAction.includeDirs.append(rootDir)
-        cxxAction.includeDirs.append(stubDir)
-        cxxAction.includeDirs.append(self.babelIncludeDir)
+        if lang == 'C':
+          iorAction.includeDirs.append(stubDir)
+          self.addBabelInclude(iorAction)
+          if self.includeDirs.has_key(package):
+            iorAction.includeDirs.extend(self.includeDirs[package])
+        else:
+          if lang == 'C++':
+            implAction = compile.CompileCxx(library)
+          elif lang == 'F77':
+            implAction = compile.CompileF77(library)
+          else:
+            raise RuntimeError('Language '+lang+' not supported as a server')
+          implAction.defines.append('PIC')
+          implAction.includeDirs.append(rootDir)
+          if stubDir:
+            implAction.includeDirs.append(stubDir)
+          self.addBabelInclude(implAction)
+          if self.includeDirs.has_key(package):
+            implAction.includeDirs.extend(self.includeDirs[package])
+          actions.append(implAction)
 
-        if self.includeDirs.has_key(package):
-          cxxAction.includeDirs.extend(self.includeDirs[package])
+        if lang in self.clientLanguages:
+          libraries.append(self.getClientLibrary(lang))
+        self.addBabelLib(libraries, package)
         if self.extraLibraries.has_key(package):
           libraries.extend(self.extraLibraries[package])
 
@@ -198,21 +275,28 @@ class CompileDefaults (Defaults):
         if self.project == 'bs':
           linker.doLibraryCheck = 0
 
-        targets.append(target.Target(None,
-                                     [compile.TagC(root = rootDir),
-                                      compile.TagCxx(root = rootDir),
-                                      cAction,
-                                      cxxAction,
-                                      link.TagLibrary(),
-                                      linker,
-                                      transform.Update()]))
-    return targets
+        t = target.Target(None,
+                          [tagger,
+                           actions,
+                           link.TagLibrary(),
+                           linker,
+                           transform.Update()])
+        if segregateBootstrapTargets and package in self.bootstrapPackages:
+          bootstrapTargets.append(t)
+        else:
+          targets.append(t)
+
+    if segregateBootstrapTargets:
+      return [bootstrapTargets, targets]
+    else:
+      return targets
 
   def getClientCompileTargets(self):
     targets = []
     for lang in self.clientLanguages:
       sourceDir = self.getClientRootDir(lang)
       library   = self.getClientLibrary(lang)
+      libraries = fileset.FileSet()
 
       if lang in ['Python', 'F77', 'C']:
         tagger = compile.TagC(root = sourceDir)
@@ -225,15 +309,20 @@ class CompileDefaults (Defaults):
 
       action.defines.append('PIC')
       action.includeDirs.append(sourceDir)
-      action.includeDirs.append(self.babelIncludeDir)
+      self.addBabelInclude(action, lang)
+      if self.includeDirs.has_key(lang):
+        action.includeDirs.extend(self.includeDirs[lang])
+
+      self.addBabelLib(libraries)
+      if self.extraLibraries.has_key(lang):
+        libraries.extend(self.extraLibraries[lang])
 
       if lang == 'Python':
-        action.includeDirs.append(self.babelPythonIncludeDir)
         action.includeDirs.append(bs.argDB['PYTHON_INCLUDE'])
         action = (babel.PythonModuleFixup(library, sourceDir), action)
 
       # Allow bootstrap
-      linker = link.LinkSharedLibrary(extraLibraries = self.babelLib)
+      linker = link.LinkSharedLibrary(extraLibraries = libraries)
       if self.project == 'bs':
         linker.doLibraryCheck = 0
 
@@ -249,20 +338,22 @@ class CompileDefaults (Defaults):
     return [transform.FileFilter(self.isImpl), compile.TagEtags(), compile.CompileEtags(self.etagsFile)]
 
   def getCompileTarget(self):
+    serverTargets  = self.getServerCompileTargets(1)
+    compileTargets = serverTargets[0]+self.getClientCompileTargets()+serverTargets[1]
+
     if self.etagsFile:
       return target.Target(None, [self.getSIDLTarget(),
-                                  (self.getClientCompileTargets()+self.getServerCompileTargets(), self.getEmacsTagsTargets()),
+                                  (compileTargets, self.getEmacsTagsTargets()),
                                   transform.Update()])
     else:
-      return target.Target(None, [self.getSIDLTarget()]+self.getClientCompileTargets()+self.getServerCompileTargets())
+      return target.Target(None, [self.getSIDLTarget()]+compileTargets)
 
   def getExecutableCompileTargets(self, executable):
     baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
-    libraries = fileset.FileSet(children = [self.babelLib])
 
     action = compile.CompileCxx(library)
-    action.includeDirs.append(self.babelIncludeDir)
+    self.addBabelInclude(action)
     action.includeDirs.append(self.getClientRootDir('C++'))
     if self.includeDirs.has_key('executable'):
       action.includeDirs.extend(self.includeDirs['executable'])
@@ -271,7 +362,7 @@ class CompileDefaults (Defaults):
                          [compile.TagCxx(),
                           action,
                           link.TagLibrary(),
-                          link.LinkSharedLibrary(extraLibraries = libraries)])]
+                          link.LinkSharedLibrary(extraLibraries = self.addBabelLib(fileset.FileSet()))])]
 
   def getExecutableTarget(self, sources, executable):
     libraries = fileset.FileSet([])
