@@ -153,7 +153,7 @@ ex28: ex28.o  chkopts
 	${RM} ex28.o
 
 ex31: ex31.o  chkopts
-	-${CLINKER} -o $@ $<  ${PETSC_SLES_LIB} -L$(HOME)/lib/Linux-i386 -lmfhdf -ldf -ljpeg -lz -lcyclic_mt
+	-${CLINKER} -o $@ $<  ${PETSC_SLES_LIB}
 	${RM} $<
 
 #----------------------------------------------------------------------------
