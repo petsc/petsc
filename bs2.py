@@ -311,11 +311,13 @@ class BKCloseFiles (Action):
     oldFlags   = self.flags
     oldSources = self.sources
     root       = self.sources.root
-    # Add files which were just generated
+    # Add files which were just generated and check them out
     self.debugPrint('Putting new files under version control', 2)
     sources    = FileGroup(string.split(self.executeShellCommand('bk sfiles -ax '+root)))
     self.sources = sources
     self.flags = 'add '+oldFlags
+    Action.execute(self)
+    self.flags = 'co -q '+oldFlags
     Action.execute(self)
     # Remove files with no changes
     self.debugPrint('Reverting unchanged files', 2)
