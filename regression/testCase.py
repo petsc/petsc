@@ -13,7 +13,7 @@ class MPITest (unittest.TestCase):
       import atexit
       import sys
 
-      ASE.Args.set(sys.argv)
+      ASE.Args.Args.set(sys.argv)
       MPITest.mpi = MPIB.Base.Base(ASE.Loader.Loader.createClass(baseClass))
       MPITest.mpi.Initialize()
       atexit.register(MPITest.mpi.Finalize)

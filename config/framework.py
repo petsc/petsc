@@ -8,7 +8,7 @@ in the run.
   The setup() method preforms generic Script setup and then is called recursively
 on all the child modules. The cleanup() method performs the final output and
 logging actions
-    - Produce rrport from child __str__ methods
+    - Produce report from child __str__ methods
     - Subtitute files
     - Output configure header
     - Log filesystem actions
