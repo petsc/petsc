@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.73 1996/11/26 20:18:04 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.74 1996/11/29 22:20:23 curfman Exp curfman $";
 #endif
 
 /*
@@ -1725,7 +1725,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
-   matrices and the file $(PETSC_DIR)/Performance.
+   matrices.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/

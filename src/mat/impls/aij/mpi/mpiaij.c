@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.176 1996/11/20 19:59:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.177 1996/11/27 22:53:12 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -891,6 +891,7 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
 
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+      op == MAT_COLUMNS_UNSORTED ||
       op == MAT_COLUMNS_SORTED) {
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);
@@ -899,6 +900,7 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
     MatSetOption(a->A,op);
     MatSetOption(a->B,op);
   } else if (op == MAT_ROWS_SORTED || 
+             op == MAT_ROWS_UNSORTED ||
              op == MAT_SYMMETRIC ||
              op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS)
@@ -1326,7 +1328,7 @@ $
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz. For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices and the file $(PETSC_DIR)/Performance.
+   matrices.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
