@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.1 1998/04/30 23:15:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.2 1998/05/03 17:47:47 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -69,7 +69,6 @@ int          PetscBeganMPI = 0;
 extern int OptionsCheckInitial_Private();
 extern int OptionsCreate_Private(int*,char***,char*);
 extern int OptionsSetAlias_Private(char *,char *);
-extern int OptionsDestroy_Private();
 extern int PLogEventRegisterDestroy_Private();
 
 #if defined(USE_PETSC_COMPLEX)
@@ -95,7 +94,7 @@ FILE *petsc_history = 0;
 int PLogOpenHistoryFile(char *filename,FILE **fd)
 {
   int  ierr,rank,size;
-  char pfile[256];
+  char pfile[256],pname[256];
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
@@ -112,8 +111,8 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
     *fd = fopen(filename,"a"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"");
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
-    fprintf(*fd,"%s on a %s, %d proc. with options:\n",
-            options->programname,arch,size);
+    ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
+    fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
     OptionsPrint(*fd);
     fprintf(*fd,"---------------------------------------------------------\n");
     fflush(*fd);
@@ -258,16 +257,17 @@ int PetscCompareScalar(Scalar d)
 int PetscCompareInitialize(double tol)
 {
   int       ierr,i, len,rank,work,*gflag,size,mysize;
-  char      *programname = options->programname, basename[256];
+  char      pname[256], basename[256];
   MPI_Group group_all,group_sub;
 
   PetscFunctionBegin;
+  ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
   PetscCompareTolerance = tol;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   if (!rank) {
-    PetscStrcpy(basename,programname);
+    PetscStrcpy(basename,pname);
     len = PetscStrlen(basename);
   }
 
@@ -276,8 +276,8 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
-  if (!PetscStrcmp(programname,basename)) work = 1;
-  else                                    work = 0;
+  if (!PetscStrcmp(pname,basename)) work = 1;
+  else                              work = 0;
   gflag = (int *) malloc( size*sizeof(int) ); CHKPTRQ(gflag);
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD); CHKERRQ(ierr);
   mysize = 0;
@@ -392,7 +392,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   PetscFunctionBegin;
   if (PetscInitializedCalled) PetscFunctionReturn(0);
 
-  ierr = PetscInitializeOptions(); CHKERRQ(ierr);
+  ierr = OptionsCreate(); CHKERRQ(ierr);
 
   /*
      We initialize the program name here because MPICH has a bug in 
@@ -400,7 +400,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
      on the first processor.
   */
   if (argc && *argc) {
-    OptionsSetProgramName(**args);
+    PetscSetProgramName(**args);
   }
 
   MPI_Initialized(&flag);
@@ -602,16 +602,7 @@ int PetscFinalize(void)
 #else 
   if (flg1) {
 #endif
-    for ( i=0; i<options->N; i++ ) {
-      if (!options->used[i]) {
-        if (options->values[i]) {
-          PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],
-                                                           options->values[i]);
-        } else {
-          PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);
-        }
-      }
-    } 
+    ierr = OptionsLeft();
   }
   ierr = OptionsHasName(PETSC_NULL,"-log_history",&flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -663,7 +654,7 @@ int PetscFinalize(void)
     ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
   }
   /* Can be destroyed only after all the options are used */
-  OptionsDestroy_Private();
+  OptionsDestroy();
 
 
   if (PetscBeganMPI) {
@@ -876,7 +867,7 @@ int OptionsCheckInitial_Private(void)
       ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
       if (flg1) {
         if (PetscStrstr(mname,"null")) {
-          PLogInfoDeactivateClass(PETSC_NULL;
+          PLogInfoDeactivateClass(PETSC_NULL);
         }
         if (PetscStrstr(mname,"vec")) {
           PLogInfoDeactivateClass(VEC_COOKIE);
@@ -889,9 +880,6 @@ int OptionsCheckInitial_Private(void)
         }
         if (PetscStrstr(mname,"snes")) {
           PLogInfoDeactivateClass(SNES_COOKIE);
-        }
-        if (PetscStrstr(mname,"ts")) {
-          PLogInfoDeactivateClass(TS_COOKIE);
         }
       }
     }
@@ -1010,31 +998,5 @@ int OptionsCheckInitial_Private(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetProgramName"
-/*@C
-    PetscGetProgramName - Gets the name of the running program. 
-
-    Not Collective
-
-    Input Parameter:
-.   len - length of the string name
-
-    Output Parameter:
-.   name - the name of the running program
-
-    Notes:
-    The name of the program is copied into the user-provided character
-    array of length len.  On some machines the program name includes 
-    its entire path, so one should generally set len >= 256.
-@*/
-int PetscGetProgramName(char *name,int len)
-{
-  PetscFunctionBegin;
-  if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call PetscInitialize() first");
-  if (!options->namegiven) SETERRQ(PETSC_ERR_PLIB,1,"Unable to determine program name");
-  PetscStrncpy(name,options->programname,len);
-  PetscFunctionReturn(0);
-}
 
 
