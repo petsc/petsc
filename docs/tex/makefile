@@ -1,3 +1,4 @@
+# $Id: vec.h,v 1.65 1997/06/18 12:53:47 bsmith Exp $ 
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -13,8 +14,10 @@ onepager.html: onepager.tex
 	-@chmod g+w onepager.html
 
 clean:
-	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
-                          *.ilg *.idx *.ind sindex.tex findex.tex
+	rm -f manual/routines.ps */*.dvi */*.aux */*.toc */*.log */*.bbl */*.blg \
+              */*.hux */*.err */*.ilg */*.idx */*.ind manual/sindex.tex manual/findex.tex \
+              */*/*.dvi */*/*.aux */*/*.toc */*/*.log */*/*.bbl */*/*.blg \
+              */*/*.hux */*/*.err */*/*.ilg */*/*.idx */*/*.ind
 
 
 #
