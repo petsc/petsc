@@ -388,7 +388,7 @@ class Configure(config.base.Configure):
   def fixSolaris(self):
     '''I hate this. MPI should report this somehow.'''
     self.extraLib = []
-    if self.arch.archBase.startswith('solaris'):
+    if self.arch.hostOsBase.startswith('solaris'):
       if self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit']):
         self.extraLib.extend([self.libraries.toString(l) for l in ['rt', 'nsl', 'aio']])
     return
