@@ -1,73 +1,78 @@
 
-#include "PETSc_Map.h"
+#include "petsc/map.h"
 
-int innerMap(ESI_Map *map)
+int innerMap(esi::Map<int> *map)
 {
-  MPI_Comm comm;
+  MPI_Comm *comm;
   int      ierr;
+  esi_msg  msg;
 
   int end;
-  map->getCommunicator(&comm);
+  map->getRunTimeModel("MPI",static_cast<void*>(comm),msg);
   int rank;
-  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_rank(*comm,&rank);
 
   int localsize,offset;
-  ESI_MapAlgebraic *lmap;
-  ierr = map->queryInterface("ESI_MapAlgebraic",(void **)&lmap);
+  esi::MapPartition<int> *lmap;
+  ierr = map->getInterface("esi::MapPartition",static_cast<void*>(lmap),msg);
 
-  lmap->getLocalInfo(localsize,offset);
-  PetscSynchronizedPrintf(comm,"[%d]My size %d\n",rank,localsize);
-  PetscSynchronizedFlush(comm);
+  lmap->getLocalSize(localsize,msg);
+  lmap->getLocalPartitionOffset(offset,msg);
+  PetscSynchronizedPrintf(*comm,"[%d]My size %d\n",rank,localsize);
+  PetscSynchronizedFlush(*comm);
   return 0;
 }
 
-extern int ESI_MapAlgebraic_test(ESI_MapAlgebraic*);
+extern int ESI_MapPartition_test(esi::MapPartition<int>*);
 
 int main(int argc,char **args)
 {
   int ierr;
+  esi_msg msg;
 
   PetscInitialize(&argc,&args,0,0);
-  PETSc_Map *map = new PETSc_Map(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  PETSc_Map<int> *map = new PETSc_Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
-  ierr = ESI_MapAlgebraic_test(map); if (ierr) return 1;
+  ierr = ESI_MapPartition_test(map); if (ierr) return 1;
 
-  MPI_Comm comm;
-  map->getCommunicator(&comm);
+  MPI_Comm *comm;
+  map->getRunTimeModel("MPI",static_cast<void*>(comm),msg);
   int rank;
-  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_rank(*comm,&rank);
 
 
   int localsize,offset;
 
-  map->getLocalInfo(localsize,offset);
+  map->getLocalSize(localsize,msg);
+  map->getLocalPartitionOffset(offset,msg);
  
-  PetscSynchronizedPrintf(comm,"[%d]My start %d end %d\n",rank,offset,offset+localsize);
-  PetscSynchronizedFlush(comm);
+  PetscSynchronizedPrintf(*comm,"[%d]My start %d end %d\n",rank,offset,offset+localsize);
+  PetscSynchronizedFlush(*comm);
 
-  ESI_Map *emap = (ESI_Map *)map;
+  esi::Map<int> *emap = (esi::Map<int> *)map;
 
-  innerMap((ESI_Map *)map);
+  innerMap((esi::Map<int> *)map);
 
 
   int globalsize,*globaloffsets;
-  map->getGlobalInfo(globalsize,globaloffsets);
-  int size; MPI_Comm_size(comm,&size);
+  map->getGlobalSize(globalsize,msg);
+  map->getGlobalPartitionOffsets(globaloffsets,msg);
+  int size; MPI_Comm_size(*comm,&size);
   for (int i=0; i<size+1; i++ ) {
-    PetscSynchronizedPrintf(comm,"[%d]Global size %d offset %d\n",rank,globalsize,globaloffsets[i]);
+    PetscSynchronizedPrintf(*comm,"[%d]Global size %d offset %d\n",rank,globalsize,globaloffsets[i]);
   }
-  PetscSynchronizedFlush(comm);
+  PetscSynchronizedFlush(*comm);
 
 
   delete emap;
 
-  Map pmap;
+  PetscMap pmap;
 
-  ierr = MapCreateMPI(MPI_COMM_WORLD,5,PETSC_DECIDE,&pmap);
+  ierr = PetscMapCreateMPI(MPI_COMM_WORLD,5,PETSC_DECIDE,&pmap);
 
-  PETSc_Map *Pmap = new PETSc_Map(pmap);
+  PETSc_Map<int> *Pmap = new PETSc_Map<int>(pmap);
 
-  MapDestroy(pmap);
+  PetscMapDestroy(pmap);
 
   delete Pmap;
 

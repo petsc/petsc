@@ -4,16 +4,17 @@
 */
 #include "ESI.h"
 
-extern int ESI_Map_test(ESI_Map *);
+extern int ESI_Map_test(esi::Map<int> *);
 
-int ESI_Vector_test(ESI_Vector *vector)
+int ESI_Vector_test(esi::Vector<double,int> *vector)
 {
   int            ierr;
-  ESI_Map        *map;
-  ESI_Vector     *newvector;
+  esi::MapPartition<int>        *map;
+  esi::Vector<double,int>     *newvector;
   double         mdot[1],dot,norm1,norm2,norm2squared,norminfinity;
+  esi_msg msg;
 
-  ierr = vector->getMap((const ESI_Map *)map);
+  ierr = vector->getMap((const esi::MapPartition<int> *)map,msg);
   if (ierr) {printf("error calling vector->getMap()\n");return ierr;}
   ierr = ESI_Map_test(map); 
   if (ierr) {printf("error calling ESI_Map_test\n");return ierr;}
@@ -60,7 +61,7 @@ int ESI_Vector_test(ESI_Vector *vector)
   if (ierr) {printf("error calling vector->normInfinity() \n");return ierr;}
   printf("ESI_Vector_test: normInfinity %g\n",norminfinity);
 
-  ierr = vector->mdot(1,(const ESI_Vector **) &newvector,mdot);
+  ierr = vector->mdot(1,(const esi::Vector **) &newvector,mdot);
   if (ierr) {printf("error calling vector->mdot() \n");return ierr;}
   printf("ESI_Vector_test: normmdot %g\n",mdot[0]);
 
