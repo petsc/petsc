@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.25 2000/01/11 20:59:07 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.26 2000/02/27 02:08:53 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -253,6 +253,11 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 
    Input Parameter:
 .     draw - the graphics context
+
+   Options Database:
++   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
+-   -nox_warning - when X windows support is not installed this prevents the warning message
+                   from being printed
 
    Level: intermediate
 
