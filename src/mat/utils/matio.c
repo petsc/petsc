@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.25 1996/04/09 14:15:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.26 1996/05/03 19:27:18 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -33,6 +33,10 @@ extern int MatLoadGetInfo_Private(Viewer);
 
    Output Parameters:
 .  newmat - new matrix
+
+   Options Database Key:
+   Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, etc.)
+$    -matload_block_size <bs>
 
    Notes:
    In parallel, each processor can load a subset of rows (or the
