@@ -32,12 +32,12 @@ int main(int argc,char **args)
   ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
   /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
-  ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(sA);CHKERRQ(ierr); 
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&I,&J);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ int main(int argc,char **args)
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
-  ierr = MatMultEqual(A,sA,10,&equal);CHKERRQ(ierr);
+  ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
