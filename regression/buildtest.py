@@ -11,15 +11,17 @@ class RemoteBuild (base.Base):
     self.rsh  = 'ssh -1'
     self.rcp  = 'scp -q -B -oProtocol=1'
     self.user = 'petsc'
-    self.host = 'harley.mcs.anl.gov'
+    self.host = 'smash.mcs.anl.gov'
     return
 
   def setupArgDB(self, argDB, clArgs):
     '''Setup argument types, using the database created by base.Base'''
     import nargs
 
+    argDB.setType('mode',   nargs.Arg(None, 0, 'Action, e.g. build, log, ...', isTemporary = 1), forceLocal = 1)
     argDB.setType('dryRun', nargs.ArgBool(None, 0, 'Display but do not execute commands', isTemporary = 1), forceLocal = 1)
 
+    self.argDB['mode']          = 'build'
     self.argDB['debugLevel']    = 3
     self.argDB['debugSections'] = []
 
@@ -43,7 +45,7 @@ class RemoteBuild (base.Base):
 
   def getBootstrap(self):
     '''Right now, we get bootstrap.py from our PETSc 2 repository, but later we should get it from the webpage'''
-    command = [self.rsh, self.user+'@'+self.host, '-n', 'cp', os.path.join('/sandbox', 'petsc', 'petsc-test', 'python', 'BuildSystem', 'install', 'bootstrap.py'), self.dir]
+    command = [self.rcp, os.path.join('/sandbox', 'petsc', 'petsc-test', 'python', 'BuildSystem', 'install', 'bootstrap.py'),  self.user+'@'+self.host+':'+self.dir]
     output  = self.executeShellCommand(' '.join(command))
     return
 
@@ -61,7 +63,7 @@ class RemoteBuild (base.Base):
     output  = self.executeShellCommand(' '.join(command))
     return
 
-  def run(self):
+  def build(self):
     self.clean()
     self.bootstrap()
     self.install('bk://mpib.bkbits.net/mpib-dev', ['--with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4'])
@@ -76,6 +78,16 @@ class RemoteBuild (base.Base):
     command = [self.rcp, self.user+'@'+self.host+':'+os.path.join(self.dir, 'make.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
     output  = self.executeShellCommand(' '.join(command))
     return not status
+
+  def run(self):
+    if self.argDB['mode'] == 'build':
+      self.build()
+    elif self.argDB['mode'] == 'log':
+      self.copyLog()
+    else:
+      import sys
+      sys.exit('Invalid mode: '+self.argDB['mode'])
+    return
 
 if __name__ == '__main__':
   import sys
