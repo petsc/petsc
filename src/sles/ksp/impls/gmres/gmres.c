@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.172 2001/04/10 19:36:32 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.173 2001/06/21 21:18:19 bsmith Exp curfman $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -24,9 +24,9 @@
        r  = B^-1(f - Ax)
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
-    Note that we can elliminate an extra application of B^-1 between
+    Note that we can eliminate an extra application of B^-1 between
     restarts as long as we don't require that the solution at the end
-    of a unsuccessful gmres iteration always be the solution x.
+    of an unsuccessful gmres iteration always be the solution x.
  */
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
