@@ -1,6 +1,6 @@
-/*$Id: qcg.c,v 1.80 2001/07/10 02:41:25 buschelm Exp buschelm $*/
+/*$Id: qcg.c,v 1.81 2001/07/10 07:10:40 buschelm Exp buschelm $*/
 /*
-         Code to run conjugate gradient method subject to a constraint
+   Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
 */
 
@@ -12,14 +12,13 @@ static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 #undef __FUNCT__  
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius" 
 /*@
-    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.  This must be
-    set by the user as the parameter is very application specific.
+    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.
 
     Collective on KSP
 
     Input Parameters:
 +   ksp   - the iterative context
--   delta - the trust region radius (0 is the default, which gives an error)
+-   delta - the trust region radius (Infinity is the default)
 
     Options Database Key:
 .   -ksp_qcg_trustregionradius <delta>
@@ -501,7 +500,7 @@ int KSPCreate_QCG(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
                                     "KSPQCGSetTrustRegionRadius_QCG",
                                      KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
-  cgP->delta = 0.0;
+  cgP->delta = 1.0/0.0; /* default trust region radius is infinite */ 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
