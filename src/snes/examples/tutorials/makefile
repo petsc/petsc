@@ -315,7 +315,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex21:
-	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_monitor -nox > ex21_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   ${RM} -f ex21_1.tmp
