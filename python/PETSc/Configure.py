@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types','WindowsX'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
+                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_WINDOWS_H',1)
       self.addDefine('HAVE_GETCOMPUTERNAME',1)
       kernel32=1
-    if kernel32:  
+    if kernel32:
       if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
         self.addDefine('HAVE_GETPROCADDRESS',1)
       if self.checkLink('#include <Windows.h>','LoadLibrary(0)'):
