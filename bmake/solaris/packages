@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.76 2000/02/02 20:07:23 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.77 2000/02/16 03:58:07 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -103,8 +103,9 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # Location of JAVA
 # 
-JAVAC       = /usr/java1.2/bin/javac
-JAVA        = /usr/java1.2/bin/java
+JAVAC           = /usr/java1.2/bin/javac
+JAVA            = /usr/java1.2/bin/java
+PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this
