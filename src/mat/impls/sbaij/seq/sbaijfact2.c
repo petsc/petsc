@@ -1329,6 +1329,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   umax  = (int)(f*ai[mbs] + 1); 
   ierr  = PetscMalloc(umax*sizeof(int),&lev);CHKERRQ(ierr);
   umax += mbs + 1; 
+  shift = mbs + 1;
   ierr  = PetscMalloc((mbs+1)*sizeof(int),&iu);CHKERRQ(ierr);
   ierr  = PetscMalloc(umax*sizeof(int),&ju);CHKERRQ(ierr);
   iu[0] = mbs+1; 
