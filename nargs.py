@@ -170,6 +170,22 @@ class ArgFuzzyBool(Arg):
     Arg.__init__(self, key, value, help, isTemporary)
     return
 
+  def valueName(self, value):
+    if value == 0:
+      return 'no'
+    elif value == 1:
+      return 'yes'
+    elif value == 2:
+      return 'ifneeded'
+    return str(value)
+
+  def __str__(self):
+    if not self.isValueSet():
+      return 'Empty '+str(self.__class__)
+    elif isinstance(self.value, list):
+      return str(map(self.valueName, self.value))
+    return self.valueName(self.value)
+
   def getEntryPrompt(self):
     return 'Please enter fuzzy boolean value for '+str(self.key)+': '
 
@@ -180,8 +196,8 @@ class ArgFuzzyBool(Arg):
       elif value == '1':        value = 1
       elif value == 'no':       value = 0
       elif value == 'yes':      value = 1
-      elif value == 'true':     value = 1
       elif value == 'false':    value = 0
+      elif value == 'true':     value = 1
       elif value == 'maybe':    value = 2
       elif value == 'ifneeded': value = 2
       elif value == 'client':   value = 2

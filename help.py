@@ -120,7 +120,7 @@ class Help(Info):
         argName = self.getArgName(name)
         type    = self.argDB.getType(argName)
         if argName in self.argDB:
-          f.write(formatDef % (name, type.help, str(self.argDB[argName])))
+          f.write(formatDef % (name, type.help, str(self.argDB.getType(argName))))
         else:
           f.write(format % (name, type.help))
     return
