@@ -410,7 +410,7 @@ class Configure(config.base.Configure):
         pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand('PETSC_ARCH=linux; export PETSC_ARCH; make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand('make PETSC_ARCH=solaris BOPT=g PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):
