@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.19 1998/12/11 23:28:03 balay Exp balay $ 
+# $Id: urlget.py,v 1.20 1999/01/14 23:38:48 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -147,7 +147,15 @@ class http_object(url_object):
         urltimestamp = self.headers.dict['last-modified']
         month_d             = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
                                'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
-        day,month,year,time = split(urltimestamp)[1:-1] 
+
+        if len(split(urltimestamp)) == 6 :      #Sun, 06 Nov 1994 08:49:37 GMT
+            day,month,year,time = split(urltimestamp)[1:-1] 
+        elif len(split(urltimestamp)) == 4 :    #Sunday, 06-Nov-94 08:49:37 GMT
+            time           = split(urltimestamp)[2] 
+            day,month,year = split(split(urltimestamp)[1],'-')
+        else :                                  #Sun Nov  6 08:49:37 1994
+            month,day,time,year = split(urltimestamp)[1:]
+
         hour,min,sec        = split(time,':')
         newtime             = (atoi(year),month_d[month],atoi(day),atoi(hour),
                                atoi(min),atoi(sec),-1,-1,0)
