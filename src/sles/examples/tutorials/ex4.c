@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.18 1996/03/19 21:27:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.19 1996/04/05 02:01:15 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
-linear system matrix in the SLES solvers\n\n";
+linear system matrix in the SLES solvers.  Note that different storage formats\n\
+can be used for the different matrices.\n\n";
 
 #include "mat.h"
 #include "sles.h"
@@ -23,41 +24,40 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create the linear system matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
+         0,1,PETSC_NULL,PETSC_NULL,&C); CHKERRA(ierr);
 
   /* Create a different preconditioner matrix.  This is usually done
      to form a cheaper (or sparser) preconditioner matrix compared
      to the linear system matrix. */
+  /* ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_NULL,PETSC_NULL,
+         m*n,m*n,5,0,5,0,&B); CHKERRA(ierr); */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&B); CHKERRA(ierr);
-  /*  ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-         m*n,m*n,PETSC_NULL,&B); CHKERRA(ierr); */
 
   /* Assemble the two matrices */
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
     if ( i>0 ) {
-      J = I - n; 
+      J=I-n; 
       ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( i<m-1 ) {
-      J = I + n; 
+      J=I+n; 
       ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( j>0 ) {
-      J = I - 1; 
+      J=I-1; 
       ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( j<n-1 ) {
-      J = I + 1; 
+      J=I+1; 
       ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     v = 5.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
-    v = 4.0; ierr = MatSetValues(B,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
+    v = 3.0; ierr = MatSetValues(B,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
@@ -66,7 +66,7 @@ int main(int argc,char **args)
       J=I-(n+1); ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( i<m-2 ) {
-      J = I+n+1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      J=I+n+1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: dense.h,v 1.1 1995/10/19 17:25:38 curfman Exp curfman $ */
+/* $Id: dense.h,v 1.2 1995/11/21 22:23:55 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -18,5 +18,10 @@ typedef struct {
   int    *pivots;           /* pivots in LU factorization */
   int    user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
+
+extern int MatMult_SeqDense(Mat A,Vec,Vec);
+extern int MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
+extern int MatMultTrans_SeqDense(Mat A,Vec,Vec);
+extern int MatMultTransAdd_SeqDense(Mat A,Vec,Vec,Vec);
 
 #endif

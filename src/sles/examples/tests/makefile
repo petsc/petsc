@@ -16,7 +16,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
 		runex8 runex8_2 runex19
 EXAMPLES_2    = ex10 ex11 ex6 ex8 ex13 ex14 ex15 ex18
-RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 \
+RUNEXAMPLES_2 = runex6 runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 \
 		runex13 runex8_3 runex8_4
 EXAMPLES_3    = ex7 ex12 ex16
 RUNEXAMPLES_3 = runex7 runex16

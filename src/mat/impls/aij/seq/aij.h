@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.26 1996/02/23 21:00:41 curfman Exp curfman $ */
+/* $Id: aij.h,v 1.27 1996/02/23 21:01:10 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -51,5 +51,10 @@ extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
 extern int MatConvertSameType_SeqAIJ(Mat, Mat*,int);
 extern int MatMarkDiag_SeqAIJ(Mat);
 
+extern int MatMult_SeqAIJ(Mat A,Vec,Vec);
+extern int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+extern int MatMultTrans_SeqAIJ(Mat A,Vec,Vec);
+extern int MatMultTransAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+extern int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
 
 #endif

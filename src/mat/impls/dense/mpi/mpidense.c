@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.38 1996/04/07 23:09:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.39 1996/04/09 02:23:26 curfman Exp curfman $";
 #endif
 
 /*
@@ -370,10 +370,6 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-extern int MatMult_SeqDense(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqDense(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqDense(Mat A,Vec,Vec,Vec);
 static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;

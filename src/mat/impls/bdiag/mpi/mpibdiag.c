@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.82 1996/04/09 04:06:41 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.83 1996/04/09 04:20:47 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -385,10 +385,6 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-extern int MatMult_SeqBDiag(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqBDiag(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
 static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;

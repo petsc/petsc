@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.81 1996/03/23 20:41:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.82 1996/04/01 21:09:31 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -613,13 +613,15 @@ int PCView(PC pc,Viewer viewer)
         PetscFPrintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
       } else {
-        PetscFPrintf(pc->comm,fd,"  linear system matrix:\n");
-        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
         if (mat_exists) {
-          PetscFPrintf(pc->comm,fd,"  preconditioner matrix:\n");
-          ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+          PetscFPrintf(pc->comm,fd,"  linear system matrix followed by preconditioner matrix:\n");
         }
+        else {
+          PetscFPrintf(pc->comm,fd,"  linear system matrix:\n");
+        }
+        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+        if (mat_exists) {ierr = MatView(pc->pmat,viewer); CHKERRQ(ierr);}
       }
       ViewerSetFormat(viewer,viewer_format,0);
     }
