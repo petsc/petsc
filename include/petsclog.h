@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.20 1995/10/11 15:20:50 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.21 1995/10/12 04:21:53 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -114,7 +114,7 @@ extern double _TotalFlops;
    information.
 
     Example of Usage:
-$     #define USER_EVENT 75
+$     #define USER_EVENT 85
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $     [code segment to monitor]
@@ -143,7 +143,7 @@ extern int PLogEventRegister(int,char*);
    PLogEventBegin - Logs the beginning of a user event. 
 
    Input Parameters:
-.  e - integer associated with the event (69 < e < 89) 
+.  e - integer associated with the event (80 < e < 99) 
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -181,7 +181,7 @@ M*/
    PLogEventEnd - Log the end of a user event.
 
    Input Parameters:
-.  e - integer associated with the event (69 < e < 89) 
+.  e - integer associated with the event (80 < e < 99) 
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -199,7 +199,7 @@ M*/
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT 75
+$     #define USER_EVENT 85
 $     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
