@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.3 1995/09/30 19:28:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.4 1995/10/01 21:52:32 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -38,8 +38,8 @@ static int MatGetReordering_SeqAIJ_Essl(Mat mat,MatOrdering type,
 
 static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
-  Mat               A = (Mat) obj;
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*) A->data;
+  Mat             A = (Mat) obj;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
 
   /* free the Essl datastructures */
@@ -49,10 +49,10 @@ static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 
 static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
-  Scalar             *xx;
-  int                ierr,m, zero = 0;
+  Scalar          *xx;
+  int             ierr,m, zero = 0;
 
   ierr = VecGetSize(b,&m); CHKERRQ(ierr);
   ierr = VecCopy(b,x); CHKERRQ(ierr);
@@ -66,9 +66,9 @@ static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 
 static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 {
-  Mat                B;
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data, *b;
-  int                ierr, *ridx, *cidx,i, len;
+  Mat             B;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data, *b;
+  int             ierr, *ridx, *cidx,i, len;
   Mat_SeqAIJ_Essl *essl;
 
   if (a->m != a->n) 
@@ -81,7 +81,6 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   b             = (Mat_SeqAIJ*) B->data;
   essl          = PETSCNEW(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
   b->spptr      = (void*) essl;
-
 
   /* allocate the work arrays required by ESSL */
   essl->nz   = a->nz;
@@ -102,10 +101,10 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 
 static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*) (*F)->data;
-  Mat_SeqAIJ        *aa = (Mat_SeqAIJ*) (A)->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*) (*F)->data;
+  Mat_SeqAIJ      *aa = (Mat_SeqAIJ*) (A)->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl *) a->spptr;
-  int               i,ierr, one = 1;
+  int             i,ierr, one = 1;
 
   /* copy matrix data into silly ESSL data structure */
   if (!a->indexshift) {
@@ -150,6 +149,5 @@ int MatUseEssl_SeqAIJ(Mat A)
 {
   return 0;
 }
-
 
 #endif

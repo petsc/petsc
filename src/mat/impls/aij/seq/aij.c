@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.100 1995/10/16 21:37:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.101 1995/10/17 21:41:57 bsmith Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -113,12 +113,11 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
 
 static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 {
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         i,fd,*col_lens,ierr;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        i, fd, *col_lens, ierr;
 
   ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
-
-  col_lens    = (int *) PETSCMALLOC( (4+a->m )*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens = (int *) PETSCMALLOC( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = a->m;
   col_lens[2] = a->n;
@@ -947,9 +946,8 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
 static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
-  int        ierr,i,j,*idx,shift = a->indexshift,ii,*diag;
+  int        ierr, i, *idx, shift = a->indexshift, ii, *diag;
   Mat        outA;
-
 
   if (fill != 0) SETERRQ(1,"MatILUFactor_SeqAIJ:Only fill=0 supported");
 
@@ -970,7 +968,6 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
     if (idx[-1] != ii) SETERRQ(1,"MatILUFactor_SeqAIJ: Missing diagonal entry");
     ii++;
   }
-
 
   ierr = MatLUFactorNumeric_SeqAIJ(inA,&outA); CHKERRQ(ierr);
   return 0;
@@ -1095,6 +1092,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->diag        = 0;
   b->assembled   = 0;
   b->solve_work  = 0;
+  b->spptr       = 0;
 
   *A = B;
   if (OptionsHasName(0,"-mat_aij_superlu")) {
