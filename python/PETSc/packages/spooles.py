@@ -30,7 +30,7 @@ class Configure(PETSc.package.Package):
     g = open(os.path.join(spoolesDir,'Make.inc'),'w')
     self.setcompilers.pushLanguage('C')
     g.write('CC          = '+self.setcompilers.getCompiler()+'\n') 
-    g.write('CFLAGS      = -O\n') #self.setcompilers.getCompilerFlags() could take endless time to compile
+    g.write('CFLAGS      = ' + self.setcompilers.getCompilerFlags() +'\n')
     self.setcompilers.popLanguage()
     g.write('AR          = '+self.setcompilers.AR+'\n')
     g.write('ARFLAGS     = '+self.setcompilers.AR_FLAGS+'\n')
