@@ -161,6 +161,11 @@ int main(int argc,char **args)
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
+
+  /* initialize factinfo */
+  factinfo.shiftnz   = 0.0;
+  factinfo.shiftpd   = PETSC_FALSE;
+  factinfo.zeropivot = 1.e-12;
   
   /* Test MatCholeskyFactor(), MatICCFactor() */
   /*------------------------------------------*/
