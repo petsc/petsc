@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.51 1999/03/04 14:47:06 bsmith Exp curfman $ 
+# $Id: makefile,v 1.52 1999/03/18 00:24:06 curfman Exp balay $ 
 
 ALL: ex1
 
@@ -102,10 +102,6 @@ ex8: ex8.o common8and9.o chkopts
 ex9: ex9.o common8and9.o chkopts
 	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o common8and9.o
-
-ex10: ex10.o common10and11.o chkopts
-	-${CLINKER} -o ex10 ex10.o common10and11.o ${PETSC_SNES_LIB}
-	${RM} ex10.o common10and11.o
 
 ex11: ex11.o common10and11.o chkopts
 	-${CLINKER} -o ex11 ex11.o common10and11.o ${PETSC_SNES_LIB}
