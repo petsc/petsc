@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.30 2000/08/09 18:47:15 balay Exp buschelm $ 
+# $Id: solid.make,v 1.31 2000/08/17 23:59:35 buschelm Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.28"
@@ -99,6 +99,11 @@ rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_c++"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
+
+# rs600
+arch=rs6000
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+rsh -n  tri34 "cd $hme/$src_dir; $make BOPT=g"
 
 # IRIX
 #arch=IRIX
