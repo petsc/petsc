@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.148 1998/05/08 16:13:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.149 1998/05/29 20:36:59 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -329,7 +329,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
         int    _i;
         Scalar sum = b[i];
         for ( _i=0; _i<m; _i++ ) {
-          sum -= conj(v[i+_i*m])*x[_i];
+          sum -= PetscConj(v[i+_i*m])*x[_i];
         }
         xt = sum;
 #else
@@ -346,7 +346,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
         int    _i;
         Scalar sum = b[i];
         for ( _i=0; _i<m; _i++ ) {
-          sum -= conj(v[i+_i*m])*x[_i];
+          sum -= PetscConj(v[i+_i*m])*x[_i];
         }
         xt = sum;
 #else
@@ -657,8 +657,8 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=0; j<a->n; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (real(*v) != 0.0 && imag(*v) != 0.0) fprintf(fd," %d %g + %g i",j,real(*v),imag(*v));
-        else if (real(*v)) fprintf(fd," %d %g ",j,real(*v));
+        if (PetscReal(*v) != 0.0 && PetscImag(*v) != 0.0) fprintf(fd," %d %g + %g i",j,PetscReal(*v),PetscImag(*v));
+        else if (PetscReal(*v)) fprintf(fd," %d %g ",j,PetscReal(*v));
 #else
         if (*v) fprintf(fd," %d %g ",j,*v); 
 #endif
@@ -672,7 +672,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
     /* determine if matrix has all real values */
     v = a->v;
     for ( i=0; i<a->m*a->n; i++ ) {
-      if (imag(v[i])) { allreal = 0; break ;}
+      if (PetscImag(v[i])) { allreal = 0; break ;}
     }
 #endif
     for ( i=0; i<a->m; i++ ) {
@@ -680,9 +680,9 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       for ( j=0; j<a->n; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
         if (allreal) {
-          fprintf(fd,"%6.4e ",real(*v)); v += a->m;
+          fprintf(fd,"%6.4e ",PetscReal(*v)); v += a->m;
         } else {
-          fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += a->m;
+          fprintf(fd,"%6.4e + %6.4e i ",PetscReal(*v),PetscImag(*v)); v += a->m;
         }
 #else
         fprintf(fd,"%6.4e ",*v); v += a->m;
@@ -954,7 +954,7 @@ int MatNorm_SeqDense(Mat A,NormType type,double *norm)
   if (type == NORM_FROBENIUS) {
     for (i=0; i<mat->n*mat->m; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      sum += real(conj(*v)*(*v)); v++;
+      sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;
 #endif

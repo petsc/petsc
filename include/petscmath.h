@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.3 1997/09/10 16:22:41 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.4 1998/04/18 13:52:21 bsmith Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -21,7 +21,14 @@
 
 */
 #if defined(USE_PETSC_COMPLEX)
-#if defined(HAVE_NONSTANDARD_COMPLEX_H)
+#if defined (PARCH_nt)
+#include <complex>
+#define PetscReal(a)      a.real()
+#define PetscImaginary(a) a.imag()
+#define PetscAbsScalar(a) std::abs(a)
+#define PetscConj(a)      std::conj(a)
+
+#elif defined(HAVE_NONSTANDARD_COMPLEX_H)
 #include HAVE_NONSTANDARD_COMPLEX_H
 #else
 #include <complex.h>
