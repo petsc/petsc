@@ -30,18 +30,18 @@ class Configure(config.base.Configure):
     rjobs = []    # Jobs can only be run with real numbers; i.e. NOT  complex
     ejobs = []    # Jobs that require an external package install (also cannot work with complex)
     if self.mpi.usingMPIUni:
-      jobs.append('4')
+      jobs.append('C_X11_MPIUNI')
       if 'FC' in self.framework.argDB:
-        jobs.append('9')
+        jobs.append('FORTRAN_MPIUNI')
     else:
-      jobs.append('1')
+      jobs.append('C')
       if self.x11.foundX11:
-        jobs.append('2')
+        jobs.append('C_X11')
       if 'FC' in self.framework.argDB:
-        jobs.append('3')
-        rjobs.append('8')
+        jobs.append('FORTRAN')
+        rjobs.append('FORTRAN_NOCOMPLEX')
       if self.datafilespath.datafilespath:
-        rjobs.append('6')
+        rjobs.append('C_NO_COMPLEX')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       for i in self.framework.packages:
         ejobs.append(i.name.upper())

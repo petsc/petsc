@@ -11,7 +11,8 @@ testexamples_C_X11: ${TESTEXAMPLES_C_X11} clean
 testexamples_Fortran: ${TESTEXAMPLES_FORTRAN} clean
 testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUNI} clean
 testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX} clean
-testexamples_6: ${TESTEXAMPLES_6} clean
+testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX} clean
+
 testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX} clean
 testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI} clean
 testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX} clean
@@ -33,6 +34,8 @@ testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:
+testexamples_BLAS:
+testexamples_MPI:
 
 buildexamples_C: 
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
