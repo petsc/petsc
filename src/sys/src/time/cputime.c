@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.16 1998/04/13 17:30:26 bsmith Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.17 1998/04/17 20:10:56 balay Exp balay $";
 #endif
 
 /*
@@ -55,16 +55,6 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#if defined(__cplusplus)
-extern "C" {
-#endif
-#if !defined (PARCH_linux)
-extern int getrusage(int,struct rusage*);
-#endif
-
-#if defined(__cplusplus)
-}
-#endif
 
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.

@@ -32,6 +32,7 @@ extern void   perror(const char *);
 extern double atof(const char *);
 extern void    free(void *);
 extern void   *malloc(long unsigned int );
+extern int    getrusage(int,struct rusage*);
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
@@ -52,6 +53,7 @@ extern double atof(const char*);
 extern int    fclose(FILE *);
 extern void   perror(const char *);
 extern int    vfprintf (FILE *, const char *, char * );
+extern int    getrusage(int,struct rusage*);
 extern int    strcasecmp(const char *,const char *);
 /*
    On some machines the following prototype might be
@@ -87,13 +89,16 @@ extern double atof(const char *);
 extern void   free(void *);
 extern void   *malloc(long unsigned int );
 extern int    strcasecmp(const char *, const char *);
+extern int    getrusage(int,struct rusage*);
 /* extern int    readlink(const char *,char *,size_t); */
 }
 
 #else
+extern int    getrusage(int,struct rusage*);
 extern char *mktemp(char *);
 /* strcasecmp() is not in AIX 3.X but is in 4.2 */
 extern int  strcasecmp(const char *, const char *);
+extern int    getrusage(int,struct rusage*);
 #endif
 #endif
 
@@ -107,6 +112,7 @@ extern char   *getwd(char *);
 extern int    getdomainname(char *,int);
 extern void   perror(const char *);
 extern double atof(const char *);
+extern int    getrusage(int,struct rusage*);
 /*
     These where added to freeBSD recently, thus no longer are needed.
     If you have an old installation of freeBSD you may need the 
@@ -124,6 +130,7 @@ extern int    abort();
 
 #else
 extern int    getdomainname(char *,int);
+extern int    getrusage(int,struct rusage*);
 /* 
     These were added to the latest freeBSD release, thus no longer needed.
     If you have an old installation of freeBSD you may need the 
@@ -157,11 +164,13 @@ extern int    abort();
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
 extern void   *memalign(size_t, size_t);
+extern int    getrusage(int,struct rusage*);
 }
 
 #else
 extern char   *getenv( char *);
 extern int    atoi(char*);
+extern int    getrusage(int,struct rusage*);
 #endif
 #endif
 
@@ -181,6 +190,7 @@ extern void   *malloc(long unsigned int );
 extern int    readlink(const char *,char *,int);
 extern void   usleep(unsigned int);
 extern unsigned int sleep(unsigned int);
+extern int    getrusage(int,struct rusage*);
 }
 
 #else
@@ -190,6 +200,7 @@ extern char   *getenv( char *);
 extern void   perror(char *);
 extern double atof(char *);
 extern int    atoi(char*);
+extern int    getrusage(int,struct rusage*);
 #endif
 #endif
 
