@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.27 1996/02/20 19:31:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1996/02/20 21:47:45 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -14,8 +14,6 @@ The command line options are:\n\
   -snes_mf: use matrix-free methods\n\
   -defaultH: use default finite difference approximation of Hessian\n\n";
 
-#if !defined(PETSC_COMPLEX)
-
 #include "snes.h"
 #include "da.h"
 #include <math.h>
@@ -28,7 +26,7 @@ The command line options are:\n\
       int     ndim;           /* problem dimension */
       int     number;         /* test problem number */
       Vec     s,y,xvec;       /* work space for computing Hessian */
-      double  hx, hy;    
+      Scalar  hx, hy;    
       Vec     localX, localS; /* ghosted local vector */
       DA      da;             /* distributed array data structure */
    } AppCtx;
@@ -72,11 +70,8 @@ int main(int argc,char **argv)
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
-  user.ndim = mx * my;
-  user.mx = mx;
-  user.my = my;
-  user.hx = one/(double)(mx+1);
-  user.hy = one/(double)(my+1);
+  user.ndim = mx * my; user.mx = mx; user.my = my;
+  user.hx = one/(mx+1); user.hy = one/(my+1);
 
   /* Set up distributed array and vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
@@ -169,8 +164,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx   *user = (AppCtx *) ptr;
   int      i, j, ierr, ndim, xs, xe, ys, ye, xm, ym, rstart, rend, ldim, iglob;
-  Scalar   *y, zero = 0.0, one = 1.0;
-  double   gamma1;
+  Scalar   *y, zero = 0.0, one = 1.0, gamma1;
   SNESType method;
 
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
@@ -209,10 +203,14 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   /* Modify diagonal if necessary */
   ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
   if (method == SNES_UM_NLS) {
-    SNESGetLineSearchDampingParameter(snes,&gamma1);
+    ierr = SNESGetLineSearchDampingParameter(snes,&gamma1); CHKERRQ(ierr);
+#if !defined(PETSC_COMPLEX)
     MPIU_printf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);
+#else
+    MPIU_printf(MPI_COMM_WORLD,"  gamma1 = %g\n",real(gamma1));
+#endif
     for (i=rstart; i<rend; i++) {
-      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(*H,1,&i,1,&i,&gamma1,ADD_VALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -244,9 +242,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 int FormInitialGuess(AppCtx *user,Vec X)
 {
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
-  double hx = user->hx, hy = user->hy, temp;
+  Scalar hx = user->hx, hy = user->hy, temp, *x;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye;
-  Scalar *x;
 
   /* Get local vector (including ghost points) */
   ierr = VecGetArray(user->localX,&x); CHKERRQ(ierr);
@@ -259,7 +256,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
     temp = PetscMin(j+1,ny-j)*hy;
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
+#if !defined(PETSC_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
+#else
+      x[k] = PetscMin(real((PetscMin(i+1,nx-i))*hx),real(temp));
+#endif
     }
   }
   ierr = VecRestoreArray(user->localX,&x); CHKERRQ(ierr);
@@ -273,8 +274,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
 int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
-  double hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
-  double zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
+  Scalar hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
+  Scalar zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
   Scalar val, *x, szero = 0.0, floc;
   Vec    localX = user->localX;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
@@ -371,7 +372,11 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
+#if !defined(PETSC_COMPLEX)
     floc = area*(p5*fquad+flin);
+#else
+    floc = real(area*(p5*fquad+flin));
+#endif
     MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
@@ -387,9 +392,8 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 int HessianProduct(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  double p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
-  double v, vb, vl, vr, vt, hxhx, hyhy;
-  Scalar val, area, *x, *s, szero = 0.0;
+  Scalar p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
+  Scalar val, area, *x, *s, szero = 0.0, v, vb, vl, vr, vt, hxhx, hyhy;
   Vec    localX = user->localX, localS = user->localS;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
   int    nx = user->mx, ny = user->my, i, j, k, ierr, ind, nloc, *ltog;
@@ -479,14 +483,6 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   ierr = VecScale(&area,y); CHKERRQ(ierr);
   return 0;
 }
-#else
-#include <stdio.h>
-int main(int argc,char **args)
-{
-  fprintf(stdout,"This example does not work for complex numbers.\n");
-  return 0;
-}
-#endif
 
 
 

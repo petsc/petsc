@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.96 1996/03/08 05:47:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.97 1996/03/10 17:28:20 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1638,7 +1638,8 @@ int MatLoad_MPIRowbs(Viewer viewer,MatType type,Mat *newmat)
 #include "mat.h"
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *info,Mat *newmat)
 {
-  SETERRQ(1,"MatCreateMPIRowbs:This matrix format requires BlockSolve");
+  SETERRQ(1,"MatCreateMPIRowbs:This matrix format requires BlockSolve95.\n\
+  See $(PETSC_DIR)/Installation for information on using PETSc with BlockSolve95.");
 }
 #endif
 
