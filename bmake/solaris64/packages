@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1997/11/12 15:30:45 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.18 1997/11/12 15:33:11 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -35,7 +35,7 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
 MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun.ch_p4
+MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
