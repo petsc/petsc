@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.6 2000/11/03 22:23:16 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.7 2000/11/06 18:46:54 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -17,7 +17,11 @@ public class PETScRun extends java.applet.Applet
   static final int MACHINE = 0,DIRECTORY = 1,MAXNP = 2,EXAMPLES = 3;
   Hashtable        systems[];
 
+  java.applet.AppletContext appletcontext;
+
   JPanel      tpanel;
+
+  Checkbox toptions;
 
     Choice    arch;
     Choice    dir;
@@ -27,8 +31,9 @@ public class PETScRun extends java.applet.Applet
   JTextArea   opanel;
 
   public void init() {
-
+    appletcontext = getAppletContext();
     try {
+      System.out.println("parameter"+this.getParameter("server"));
       Socket sock = new Socket(this.getParameter("server"),2000);
       sock.setSoLinger(true,5);
 
@@ -44,7 +49,7 @@ public class PETScRun extends java.applet.Applet
       systems[MAXNP]     = (Hashtable) os.readObject();
       systems[EXAMPLES]  = (Hashtable) os.readObject();
       sock.close();
-    } catch (java.io.IOException ex) {;}
+    } catch (java.io.IOException ex) {ex.printStackTrace(); System.out.println("no systems");}
       catch (ClassNotFoundException ex) {    System.out.println("no class");}
  
     this.setLayout(new FlowLayout());
@@ -53,6 +58,11 @@ public class PETScRun extends java.applet.Applet
     this.add(tpanel, BorderLayout.NORTH);
       
       arch = new Choice();
+      arch.addItemListener(new ItemListener() {
+                            public void itemStateChanged(ItemEvent e) {
+                              Choice choice = (Choice) e.getItemSelectable();
+                              setnp(np,choice.getSelectedItem());}
+	                  });
       Enumeration keys = systems[MAXNP].keys();
       while (keys.hasMoreElements()) {
         arch.add((String)keys.nextElement());
@@ -62,10 +72,8 @@ public class PETScRun extends java.applet.Applet
       dir = new Choice();
       dir.addItemListener(new ItemListener() {
                             public void itemStateChanged(ItemEvent e) {
-                            System.out.println("Called choie");
-                            Choice choice = (Choice) e.getItemSelectable();
-                            setexamples(example,choice.getSelectedItem());
-		            System.out.println("Called ch");}
+                              Choice choice = (Choice) e.getItemSelectable();
+                              setexamples(example,choice.getSelectedItem());}
 	                  });
       keys = systems[EXAMPLES].keys();
       while (keys.hasMoreElements()) {
@@ -79,8 +87,7 @@ public class PETScRun extends java.applet.Applet
 
 
       np = new Choice();
-      np.add("1");
-      np.add("2");
+      setnp(np,(String)systems[MAXNP].keys().nextElement());
       tpanel.add(np);
 
       JButton rbutton = new JButton("Run");
@@ -99,6 +106,10 @@ public class PETScRun extends java.applet.Applet
         }
       }); 
 
+      toptions = new Checkbox("Set options graphically");
+      tpanel.add(toptions);
+
+
     opanel = new JTextArea(30,60);
     this.add(new JScrollPane(opanel), BorderLayout.NORTH); 
     opanel.setLineWrap(true);
@@ -108,12 +119,23 @@ public class PETScRun extends java.applet.Applet
   /*
       Fills in the examples pull down menu based on the directory selected
   */
-  public void setexamples(Choice example,String exin) {
-    ArrayList ex = (ArrayList)systems[EXAMPLES].get(exin);
+  public void setexamples(Choice example,String arch) {
+    ArrayList ex = (ArrayList)systems[EXAMPLES].get(arch);
     Iterator its = ex.iterator();
     example.removeAll();
     while (its.hasNext()) {
       example.add((String)its.next());
+    }
+  }
+
+  /*
+     Fills in the number processors pull down menu based on the arch selected
+  */
+  public void setnp(Choice np,String arch){
+    int onp = Integer.parseInt((String)systems[MAXNP].get(arch)),i;
+    np.removeAll();
+    for (i=1; i<=onp;i++) {
+      np.add(""+i);
     }
   }
 
@@ -125,32 +147,54 @@ public class PETScRun extends java.applet.Applet
   {
 
     try {
-      Socket sock = new Socket(this.getParameter("server"),2000);
+      final Socket sock = new Socket(this.getParameter("server"),2000);
       sock.setSoLinger(true,5);
-      InputStream sstream = sock.getInputStream();
+      final InputStream sstream = sock.getInputStream();
 
       /* construct properties to send to server */
-      Properties   properties = new Properties();
+      final Properties   properties = new Properties();
       properties.setProperty("PETSC_ARCH",arch.getSelectedItem());
       properties.setProperty("DIRECTORY",dir.getSelectedItem());
       properties.setProperty("EXAMPLE",example.getSelectedItem());
       properties.setProperty("NUMBERPROCESSORS",np.getSelectedItem());
       properties.setProperty("COMMAND",what);
+      if (toptions.getState()) {
+	URL urlb = this.getDocumentBase();
+        properties.setProperty("OPTIONS","-ams_publish_options");
+	try {
+	  final URL url = new URL(""+urlb+"AMSPETScOptions.html");  
+          System.out.println("loading url"+url);
+          (new Thread() {
+            public void run() {
+              System.out.println("open new");
+              appletcontext.showDocument(url,"AMSOptions");
+              System.out.println("done open new");
+            }
+	  }).start();
+        } catch (MalformedURLException ex) {System.out.println("bad luck");;} 
+      } 
+      System.out.println("getting back");
 
-      (new ObjectOutputStream(sock.getOutputStream())).writeObject(properties);
+      (new Thread() {
+        public void run() {
+          try {
+            (new ObjectOutputStream(sock.getOutputStream())).writeObject(properties);
 
-      /* get output and print to screen */
-      InputStreamReader stream = new InputStreamReader(sstream);
-      char[] results = new char[128];
-      int    fd      = 0,cnt = 0;
+            /* get output and print to screen */
+            InputStreamReader stream = new InputStreamReader(sstream);
+            char[] results = new char[128];
+            int    fd      = 0,cnt = 0;
 
-      opanel.setText(null);
-      while (true) {
-        fd  = stream.read(results);
-        if (fd == -1) {break;}
-        opanel.append(new String(results,0,fd));
-	cnt += fd;
-      }
+            opanel.setText(null);
+            while (true) {
+              fd  = stream.read(results);
+              if (fd == -1) {break;}
+              opanel.append(new String(results,0,fd));
+	      cnt += fd;
+            }
+          } catch (java.io.IOException ex) {;}
+        }
+      }).start();
     } catch (java.io.IOException ex) {;}
   }
 }
