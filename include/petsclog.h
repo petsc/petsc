@@ -115,6 +115,7 @@ EXTERN int PetscLogStageGetId(const char [], int *);
 EXTERN int PetscLogEventRegister(int *, const char[], int);
 EXTERN int PetscLogEventActivate(int);
 EXTERN int PetscLogEventDeactivate(int);
+EXTERN int PetscLogEventSetActiveAll(int, PetscTruth);
 EXTERN int PetscLogEventActivateClass(int);
 EXTERN int PetscLogEventDeactivateClass(int);
 /* Class functions */
