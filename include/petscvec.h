@@ -1,7 +1,7 @@
-/* $Id: vec.h,v 1.59 1997/03/26 01:38:58 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.60 1997/04/02 21:03:40 bsmith Exp bsmith $ */
 /* 
-   This defines the abstract vector component of PETSc. Vectors generally
-  represent degrees of freedom for finite element/finite difference functions
+    Defines the vector component of PETSc. Vectors generally represent 
+  degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
 

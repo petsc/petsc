@@ -1,7 +1,7 @@
-/* $Id: pc.h,v 1.66 1997/02/04 21:27:32 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.67 1997/04/02 21:03:40 bsmith Exp bsmith $ */
 
 /*
-      Preconditioner module. Defines the preconditioner routines.
+      Preconditioner module. 
 */
 #if !defined(__PC_PACKAGE)
 #define __PC_PACKAGE

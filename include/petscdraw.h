@@ -1,6 +1,6 @@
-/* $Id: draw.h,v 1.41 1997/04/02 21:03:40 bsmith Exp balay $ */
+/* $Id: draw.h,v 1.42 1997/05/07 01:45:06 balay Exp bsmith $ */
 /*
-  Public include file for all of the PETSc graphics routines
+  Interface to the graphics
 */
 #if !defined(__DRAW_PACKAGE)
 #define __DRAW_PACKAGE
@@ -161,6 +161,5 @@ int DrawTensorMapSurfaceContour(Draw,DrawMesh,double,double,double,
 				int,int, VRMLGetHue_fcn, void *, int,double);
 int DrawTensorSurface(Draw, DrawMesh, int);
 /*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,DrawMesh,int); */
-
 
 #endif

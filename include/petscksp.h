@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.51 1997/03/26 01:38:58 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.52 1997/04/02 21:03:40 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -105,8 +105,6 @@ extern int KSPLGMonitorDestroy(DrawLG);
 extern int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,DrawLG*);
 extern int KSPLGTrueMonitor(KSP,int,double,void*);
 extern int KSPLGTrueMonitorDestroy(DrawLG);
-
-
 
 #endif
 

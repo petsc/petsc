@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.131 1997/05/03 20:44:48 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.132 1997/05/03 21:12:39 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -96,15 +96,15 @@ extern int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
          to adjust MAT_INFO_SIZE in FINCLUDE/mat.h
  */
 typedef struct {
-  double rows_global, columns_global;         /* number of global rows and columns */
-  double rows_local, columns_local;           /* number of local rows and columns */
-  double block_size;                          /* block size */
-  double nz_allocated, nz_used, nz_unneeded;  /* number of nonzeros */
-  double memory;                              /* memory allocated */
-  double assemblies;                          /* number of matrix assemblies */
-  double mallocs;                             /* number of mallocs during MatSetValues() */
-  double fill_ratio_given, fill_ratio_needed; /* fill ratio for LU/ILU */
-  double factor_mallocs;                      /* number of mallocs during factorization */
+  PLogDouble rows_global, columns_global;         /* number of global rows and columns */
+  PLogDouble rows_local, columns_local;           /* number of local rows and columns */
+  PLogDouble block_size;                          /* block size */
+  PLogDouble nz_allocated, nz_used, nz_unneeded;  /* number of nonzeros */
+  PLogDouble memory;                              /* memory allocated */
+  PLogDouble assemblies;                          /* number of matrix assemblies */
+  PLogDouble mallocs;                             /* number of mallocs during MatSetValues() */
+  PLogDouble fill_ratio_given, fill_ratio_needed; /* fill ratio for LU/ILU */
+  PLogDouble factor_mallocs;                      /* number of mallocs during factorization */
 } MatInfo;
 
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;

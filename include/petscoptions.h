@@ -1,6 +1,6 @@
-/* $Id: options.h,v 1.17 1996/08/04 23:14:42 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.18 1996/08/05 03:54:07 bsmith Exp bsmith $ */
 /*
-   Application callable routines to determine options set in the options database.
+   Routines to determine options set in the options database.
 */
 #if !defined(__OPTIONS_PACKAGE)
 #define __OPTIONS_PACKAGE
