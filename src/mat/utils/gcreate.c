@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.91 1996/06/26 18:29:02 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.92 1996/07/08 01:30:56 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -176,6 +176,9 @@ $    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
    Even More Options Database Keys:
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
    for additional format-specific options.
+
+   Notes:
+   This routine calls MatGetTypeFromOptions() to determind the matrix type.
 
 .keywords: matrix, create
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.29 1996/06/18 20:35:09 balay Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.30 1996/07/02 18:07:09 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -25,7 +25,9 @@ extern int MatLoadGetInfo_Private(Viewer);
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
-   with MatView().
+   with MatView().  The matrix format is determined from the options database.
+   Generates a parallel MPI matrix if the communicator has more than one
+   processor.  The default matrix type is AIJ.
 
    Input Parameters:
 .  viewer - binary file viewer, created with ViewerFileOpenBinary()
@@ -35,9 +37,32 @@ extern int MatLoadGetInfo_Private(Viewer);
    Output Parameters:
 .  newmat - new matrix
 
-   Options Database Key:
-   Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, etc.)
+   Basic Options Database Keys:
+   These options use MatCreateSeqXXX or MatCreateMPIXXX,
+   depending on the communicator, comm.
+$    -mat_aij      : AIJ type
+$    -mat_baij     : block AIJ type
+$    -mat_dense    : dense type
+$    -mat_bdiag    : block diagonal type
+
+   More Options Database Keys:
+$    -mat_seqaij   : AIJ type
+$    -mat_mpiaij   : parallel AIJ type
+$    -mat_seqbaij  : block AIJ type
+$    -mat_mpibaij  : parallel block AIJ type
+$    -mat_seqbdiag : block diagonal type
+$    -mat_mpibdiag : parallel block diagonal type
+$    -mat_mpirowbs : parallel rowbs type
+$    -mat_seqdense : dense type
+$    -mat_mpidense : parallel dense type
+
+   More Options Database Keys:
+   Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, ...) to specify
+   block size
 $    -matload_block_size <bs>
+
+   Used to specify block diagonal numbers for MATSEQBDIAG and MATMPIBDIAG formats
+$    -matload_bdiag_diags <s1,s2,s3,...>
 
    Notes:
    In parallel, each processor can load a subset of rows (or the
