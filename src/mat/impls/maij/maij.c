@@ -16,7 +16,7 @@
      This single directory handles both the sequential and parallel codes
 */
 
-#include "maij.h"
+#include "src/mat/impls/maij/maij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMAIJGetAIJ" 
