@@ -62,6 +62,64 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public esi::petsc::O
   private:
     PetscMap map;
 };
+
+
+/**=========================================================================**/
+/*
+    This is required for certain C++ compilers (borland,solaris) to 
+   allow providing methods directly for IndexSpace<int>
+*/
+template<> 
+class IndexSpace<int>: public virtual esi::IndexSpace<int>, public esi::petsc::Object
+{
+  public:
+
+    // constructor.
+    IndexSpace(MPI_Comm icomm) {};	
+
+    // Construct an IndexSpace form an IndexSpace 
+    IndexSpace(esi::IndexSpace<int>& sourceIndexSpace);
+
+    // Construct an IndexSpace from a PETSc (old-style) map.
+    IndexSpace(PetscMap sourceIndexSpace);
+
+    // Basic constructor
+    IndexSpace(MPI_Comm comm, int n, int N);
+
+    // destructor.
+    virtual ~IndexSpace(void);
+
+    //  Interface for esi::Object  ---------------
+
+    virtual esi::ErrorCode getInterface(const char* name, void*& iface);
+    virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
+
+    //  Interface for esi::IndexSpace  ---------------
+
+    // Get the size of this mapped dimension of the problem.
+    virtual esi::ErrorCode getGlobalSize(int& globalSize);
+    virtual esi::ErrorCode getLocalSize(int& localSize);
+
+    // Get the size of this dimension of the problem, as well as 
+    // the global offset info for all processors.
+    virtual esi::ErrorCode getGlobalPartitionSizes(int* globalSizes);
+    virtual esi::ErrorCode getGlobalPartitionOffsets(int* globalOffsets);
+
+    virtual esi::ErrorCode getGlobalPartitionSetSize(int &) {return 1;};
+    virtual esi::ErrorCode getLocalPartitionRank(int &) {return 1;};
+
+    virtual esi::ErrorCode getGlobalColorSetSize(int &) {return 1;};
+    virtual esi::ErrorCode getLocalColors(int *) {return 1;};
+    virtual esi::ErrorCode getLocalIdentifiers(int *) {return 1;};
+
+    // Get the local size offset info in this dimension.
+    virtual esi::ErrorCode getLocalPartitionOffset(int& localOffset);
+
+  private:
+    PetscMap map;
+};
+
+
 }
 
   /* -------------------------------------------------------------------------*/

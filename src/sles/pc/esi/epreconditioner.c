@@ -4,7 +4,7 @@
 
 #include "esi/petsc/preconditioner.h"
 
-PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
+esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 {
   int ierr;
   this->pc      = ipc;
@@ -14,13 +14,13 @@ PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 }
 
 
-PETSC_TEMPLATE esi::petsc::Preconditioner<double,int>::~Preconditioner()
+esi::petsc::Preconditioner<double,int>::~Preconditioner()
 {
   int ierr;
   ierr = PetscObjectDereference((PetscObject)this->pc);if (ierr) return;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterface(const char* name, void *& iface)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
 
@@ -40,7 +40,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfa
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfacesSupported(esi::Argv * list)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfacesSupported(esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");
@@ -51,7 +51,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfa
 }
 
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -63,12 +63,12 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi
   return PCApply(this->pc,px,py);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solve( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solve( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   return this->apply(xx,yy);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -79,7 +79,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft(
   return PCApplySymmetricLeft(this->pc,px,py);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -90,7 +90,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight
   return PCApplySymmetricRight(this->pc,px,py);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int    ierr;
   Vec    py,px,work;
@@ -107,24 +107,24 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( es
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setup()
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::setup()
 {
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(esi::PreconditionerSide iside)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(esi::PreconditionerSide iside)
 {
   this->side = iside;
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(esi::PreconditionerSide & iside)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(esi::PreconditionerSide & iside)
 {
   iside = this->side;
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operator<double,int> &op)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operator<double,int> &op)
 {
   /*
         For now require Operator to be a PETSc Mat

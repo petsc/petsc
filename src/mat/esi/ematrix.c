@@ -4,7 +4,7 @@
 
 #include "esi/petsc/matrix.h"
 
-PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
+esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
 {
   int      ierr,rn,rN,cn,cN;
   MPI_Comm *icomm;
@@ -28,7 +28,7 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrm
 }
 
 
-PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat imat)
+esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 {
   int m,n,M,N,ierr;
 
@@ -43,13 +43,13 @@ PETSC_TEMPLATE esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 }
 
 
-PETSC_TEMPLATE esi::petsc::Matrix<double,int>::~Matrix()
+esi::petsc::Matrix<double,int>::~Matrix()
 {
   int ierr;
   ierr = MatDestroy(this->mat);if (ierr) return;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, void *& iface)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
 
@@ -65,13 +65,15 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const
     iface = (void *) (esi::MatrixRowWriteAccess<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::petsc::Matrix",&flg),flg){
     iface = (void *) (esi::petsc::Matrix<double,int> *) this;
+  } else if (!PetscStrcmp(name,"Mat",&flg),flg){
+    iface = (void *) this->mat;
   } else {
     iface = 0;
   }
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");
@@ -83,7 +85,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSuppo
 }
 
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -94,42 +96,42 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector
   return MatMult(this->mat,px,py);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
+esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
 {
   int ierr;
   ierr = MatAssemblyBegin(this->mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return MatAssemblyEnd(this->mat,MAT_FINAL_ASSEMBLY);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getIndexSpaces(esi::IndexSpace<int>*& rowIndexSpace, esi::IndexSpace<int>*& colIndexSpace)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getIndexSpaces(esi::IndexSpace<int>*& rowIndexSpace, esi::IndexSpace<int>*& colIndexSpace)
 {
   rowIndexSpace = this->rmap;
   colIndexSpace = this->cmap;
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::isLoaded(bool &State)
+esi::ErrorCode esi::petsc::Matrix<double,int>::isLoaded(bool &State)
 {
   return MatAssembled(this->mat,(PetscTruth *)&State);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::isAllocated(bool &State)
+esi::ErrorCode esi::petsc::Matrix<double,int>::isAllocated(bool &State)
 {
   State = 1;
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::loadComplete()
+esi::ErrorCode esi::petsc::Matrix<double,int>::loadComplete()
 {
   return this->setup();
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::allocate(int rowlengths[])
+esi::ErrorCode esi::petsc::Matrix<double,int>::allocate(int rowlengths[])
 {
   return 0;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,int> &diagVector)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,int> &diagVector)
 {
   int ierr;
   Vec py;
@@ -138,29 +140,29 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::V
   return MatGetDiagonal(this->mat,py);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getGlobalSizes(int& rows, int& columns)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getGlobalSizes(int& rows, int& columns)
 {
   return MatGetSize(this->mat,&rows,&columns);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getLocalSizes(int& rows, int& columns)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getLocalSizes(int& rows, int& columns)
 {
   return MatGetLocalSize(this->mat,&rows,&columns);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getRowNonzeros(int row,int &length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getRowNonzeros(int row,int &length)
 {
   int ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   return  MatRestoreRow(this->mat,row,&length,PETSC_NULL,PETSC_NULL);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::setRowLength(int row,int length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::setRowLength(int row,int length)
 {
 
   return 1;
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs, int* colIndices,int alength,int &length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs, int* colIndices,int alength,int &length)
 {
   int         *col;
   PetscScalar *values;
@@ -173,47 +175,47 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row
   return(0);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getRow(int row, int& length, double*& coefs, int*& colIndices)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getRow(int row, int& length, double*& coefs, int*& colIndices)
 {
   return MatGetRow(this->mat,row,&length,&colIndices,&coefs);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getRowCoefs(int row, int& length, double*& coefs)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getRowCoefs(int row, int& length, double*& coefs)
 {
   return MatGetRow(this->mat,row,&length,PETSC_NULL,&coefs);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getRowIndices(int row, int& length, int*& colIndices)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getRowIndices(int row, int& length, int*& colIndices)
 {
   return MatGetRow(this->mat,row,&length,&colIndices,PETSC_NULL);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRow(int row, int& length, double*& coefs, int*& colIndices)
+esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRow(int row, int& length, double*& coefs, int*& colIndices)
 {
   return MatRestoreRow(this->mat,row,&length,&colIndices,&coefs);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowCoefs(int row, int& length, double*& coefs)
+esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowCoefs(int row, int& length, double*& coefs)
 {
   return MatRestoreRow(this->mat,row,&length,PETSC_NULL,&coefs);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowIndices(int row, int& length, int*& colIndices)
+esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowIndices(int row, int& length, int*& colIndices)
 {
   return MatRestoreRow(this->mat,row,&length,&colIndices,PETSC_NULL);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::copyIntoRow(int row,double* coefs, int* colIndices, int length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::copyIntoRow(int row,double* coefs, int* colIndices, int length)
 {
   return MatSetValues(this->mat,1,&row,length,colIndices,coefs,INSERT_VALUES);  
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::sumIntoRow(int row, double* coefs, int* colIndices,int length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::sumIntoRow(int row, double* coefs, int* colIndices,int length)
 {
   return MatSetValues(this->mat,1,&row,length,colIndices,coefs,ADD_VALUES);  
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
+esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
 {
   int         ierr,length,i;
   PetscScalar *values;
@@ -227,7 +229,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, do
   return(0);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
+esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
 {
   int         ierr,length,i;
   PetscScalar *values;
@@ -241,7 +243,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, do
   return(0);
 }
 
-PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>& rowSumVector)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>& rowSumVector)
 {
   int         i,ierr,rstart,rend,length,j;
   PetscScalar *values,sum;

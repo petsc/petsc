@@ -1,11 +1,12 @@
 
+
 /*
       Makes a PETSc Map look like an esi::IndexSpace
 */
 
 #include "esi/petsc/indexspace.h"
 
-PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
+esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 {
   int ierr;
   ierr = PetscMapCreateMPI(icomm,n,N,&this->map);if (ierr) return;
@@ -13,7 +14,7 @@ PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, in
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
-PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
+esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
 {
   int      ierr,n,N;
   MPI_Comm *icomm;
@@ -31,7 +32,7 @@ PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &s
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
-PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
+esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 {
   PetscObjectReference((PetscObject) sourceIndexSpace);
   this->map = sourceIndexSpace;
@@ -39,14 +40,14 @@ PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace
   PetscObjectGetComm((PetscObject)sourceIndexSpace,&this->comm);
 }
 
-PETSC_TEMPLATE esi::petsc::IndexSpace<int>::~IndexSpace()
+esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   int ierr;
   ierr = PetscMapDestroy(this->map); if (ierr) return;
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
@@ -55,13 +56,15 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const 
     iface = (void *) (::esi::IndexSpace<int> *) this;
   } else if (PetscStrcmp(name,"esi::petsc::IndexSpace",&flg),flg){
     iface = (void *) (::esi::petsc::IndexSpace<int> *) this;
+  } else if (PetscStrcmp(name,"PetscMap",&flg),flg){
+    iface = (void *) this->map;
   } else {
     iface = 0;
   }
   return 0;
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(::esi::Argv * list)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(::esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::IndexSpace");
@@ -71,22 +74,22 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSuppor
 
 
 /* -------------- esi::IndexSpace methods --------------------------------------------*/
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
 {
   return PetscMapGetSize(this->map,&globalSize);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
 {
   return PetscMapGetLocalSize(this->map,&localSize);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
 { 
   return PetscMapGetLocalRange(this->map,&localoffset,PETSC_IGNORE);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
   int ierr,*iglobaloffsets;
   int size;   
@@ -97,7 +100,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionO
   return 0;
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
   int ierr,i,n,*globalranges;
 

@@ -81,6 +81,75 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     Mat                        mat;
     esi::IndexSpace<Ordinal> *rmap,*cmap;
 };
+
+/**=========================================================================**/
+template<>
+class Matrix<double,int> : public virtual esi::Operator<double,int>, 
+               public virtual esi::MatrixData<int>,
+               public virtual esi::MatrixRowReadAccess<double,int>,
+               public virtual esi::MatrixRowWriteAccess<double,int>, 
+               public         esi::petsc::Object
+{
+  public:
+
+    // Default destructor.
+    ~Matrix();
+
+    // Construct a matrix from two IndexSpaces.
+    Matrix(esi::IndexSpace<int> *rsource,esi::IndexSpace<int> *csource);
+
+    // Construct a esi::petsc::matrix from a PETSc Mat
+    Matrix(Mat pmat);
+
+    //  Interface for esi::Object  ---------------
+
+    virtual esi::ErrorCode getInterface(const char* name, void*& iface) ;
+    virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
+
+
+    //  Interface for esi::Operator  ---------------
+
+    virtual esi::ErrorCode setup();
+    virtual esi::ErrorCode apply( esi::Vector<double,int>& x, esi::Vector<double,int>& y);
+
+    //  Interface for esi::MatrixData  ---------------
+    virtual esi::ErrorCode getGlobalSizes(int& rows, int& columns);
+    virtual esi::ErrorCode getLocalSizes(int& rows, int& columns);
+
+    //  Interface for esi::MatrixRowAccess  --------
+
+    virtual esi::ErrorCode getIndexSpaces(esi::IndexSpace<int>*& rowIndexSpace, esi::IndexSpace<int>*& colIndexSpace);
+    virtual esi::ErrorCode isLoaded(bool &state);
+    virtual esi::ErrorCode isAllocated(bool &state);
+    virtual esi::ErrorCode loadComplete(void);
+    virtual esi::ErrorCode allocate(int *rowLengths);
+    virtual esi::ErrorCode getDiagonal(esi::Vector<double,int>& diagVector) ;
+    virtual esi::ErrorCode getRowSum(esi::Vector<double,int>& rowSumVector) ;
+    virtual esi::ErrorCode getRowNonzeros(int row, int& length);
+    virtual esi::ErrorCode setRowLength(int row,int length);
+    virtual esi::ErrorCode getRow(int row, int& length, double*& coefs, int*& colIndices) ;
+    virtual esi::ErrorCode getRowCoefs(int row, int& length, double*& coefs) ;
+    virtual esi::ErrorCode getRowIndices(int row, int& length, int*& colIndices) ;
+    virtual esi::ErrorCode restoreRow(int row, int& length, double*& coefs, int*& colIndices) ;
+    virtual esi::ErrorCode restoreRowCoefs(int row, int& length, double*& coefs) ;
+    virtual esi::ErrorCode restoreRowIndices(int row, int& length, int*& colIndices) ;
+    virtual esi::ErrorCode copyIntoRow(int row,  double* coefs, int* colIndices, int length);
+    virtual esi::ErrorCode sumIntoRow(int row,  double* coefs, int* colIndices, int length);
+    virtual esi::ErrorCode rowMax(int row, double& result) ;
+    virtual esi::ErrorCode rowMin(int row, double& result) ;
+
+    virtual esi::ErrorCode getRowAllocatedLength(int row, int& result) {return 1;};
+    virtual esi::ErrorCode setAllValues(double) {return 1;};
+    virtual esi::ErrorCode allocateRowsSameLength(int) {return 1;};
+    virtual esi::ErrorCode copyOutRow(int, double *,int *,int,int&) ;
+    virtual esi::ErrorCode copyOutRowIndices(int, int *,int,int&) {return 1;};
+    virtual esi::ErrorCode copyOutRowCoefficients(int, double *,int,int&) {return 1;};
+
+  private:
+    Mat                        mat;
+    esi::IndexSpace<int> *rmap,*cmap;
+};
+
 }
 
   /* -------------------------------------------------------------------------*/

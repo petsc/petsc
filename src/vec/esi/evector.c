@@ -7,7 +7,7 @@
 
 #include "esi/petsc/vector.h"
 
-PETSC_TEMPLATE esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
+esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
 {
   ::esi::ErrorCode  ierr;
   int               n,N;
@@ -27,7 +27,7 @@ PETSC_TEMPLATE esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *i
   ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);if (ierr) return;
 }
 
-PETSC_TEMPLATE esi::petsc::Vector<double,int>::Vector( Vec pvec)
+esi::petsc::Vector<double,int>::Vector( Vec pvec)
 {
   ::esi::ErrorCode  ierr;
   int               n,N;
@@ -42,7 +42,7 @@ PETSC_TEMPLATE esi::petsc::Vector<double,int>::Vector( Vec pvec)
   this->map = new esi::petsc::IndexSpace<int>(this->comm,n,N);
 }
 
-PETSC_TEMPLATE esi::petsc::Vector<double,int>::~Vector()
+esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
   ierr = this->map->deleteReference();if (ierr) return;
@@ -51,7 +51,7 @@ PETSC_TEMPLATE esi::petsc::Vector<double,int>::~Vector()
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getInterface(const char* name, void *& iface)
+::esi::ErrorCode esi::petsc::Vector<double,int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
@@ -71,7 +71,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getInterface(con
 }
 
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSupported(::esi::Argv * list)
+::esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSupported(::esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Vector");
@@ -85,23 +85,23 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSup
     Note: this returns the map used in creating the vector;
   it is not the same as the PETSc map contained inside the PETSc vector
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getIndexSpace( ::esi::IndexSpace<int>*& outmap)
+::esi::ErrorCode esi::petsc::Vector<double,int>::getIndexSpace( ::esi::IndexSpace<int>*& outmap)
 {
   outmap = this->map;
   return 0;
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getGlobalSize( int & dim) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::getGlobalSize( int & dim) 
 {
   return VecGetSize(this->vec,&dim);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getLocalSize( int & dim) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::getLocalSize( int & dim) 
 {
   return VecGetLocalSize(this->vec,&dim);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::clone( ::esi::Vector<double,int>*& outvector)  
+::esi::ErrorCode esi::petsc::Vector<double,int>::clone( ::esi::Vector<double,int>*& outvector)  
 {
   int                    ierr;
   ::esi::IndexSpace<int> *lmap; 
@@ -116,7 +116,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::clone( ::esi::Ve
 /*
   Currently only works if both vectors are PETSc 
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::copy( ::esi::Vector<double,int> &yy)
+::esi::ErrorCode esi::petsc::Vector<double,int>::copy( ::esi::Vector<double,int> &yy)
 {
   esi::petsc::Vector<double,int> *y = 0;  
   int                            ierr;
@@ -127,12 +127,12 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::copy( ::esi::Vec
   return VecCopy(y->vec,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::put( double scalar)
+::esi::ErrorCode esi::petsc::Vector<double,int>::put( double scalar)
 {
   return VecSet(&scalar,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::scale( double scalar)
+::esi::ErrorCode esi::petsc::Vector<double,int>::scale( double scalar)
 {
   return VecScale(&scalar,this->vec);
 }
@@ -140,7 +140,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::scale( double sc
 /*
   Currently only works if both vectors are PETSc 
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::scaleDiagonal( ::esi::Vector<double,int> &yy)
+::esi::ErrorCode esi::petsc::Vector<double,int>::scaleDiagonal( ::esi::Vector<double,int> &yy)
 {
   ::esi::ErrorCode                 ierr;
   esi::petsc::Vector<double,int> *y;  
@@ -151,24 +151,24 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::scaleDiagonal( :
   return VecPointwiseMult(y->vec,this->vec,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::norm1(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm1(double &scalar) 
 {
   return VecNorm(this->vec,NORM_1,&scalar);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::norm2(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm2(double &scalar) 
 {
   return VecNorm(this->vec,NORM_2,&scalar);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::norm2squared(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm2squared(double &scalar) 
 {
   int ierr = VecNorm(this->vec,NORM_2,&scalar);CHKERRQ(ierr);
   scalar *= scalar;
   return 0;
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::normInfinity(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::normInfinity(double &scalar) 
 {
   return VecNorm(this->vec,NORM_INFINITY,&scalar);
 }
@@ -176,7 +176,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::normInfinity(dou
 /*
   Currently only works if both vectors are PETSc 
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::dot( ::esi::Vector<double,int> &yy,double &product) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::dot( ::esi::Vector<double,int> &yy,double &product) 
 {
   int ierr;
 
@@ -188,7 +188,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::dot( ::esi::Vect
 /*
   Currently only works if both vectors are PETSc 
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  ::esi::Vector<double,int> &yy,double scalar)
+::esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  ::esi::Vector<double,int> &yy,double scalar)
 {
   int ierr;
 
@@ -197,7 +197,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  ::esi::Ve
   return VecAXPY(&scalar,y->vec,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
+::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
 {
   int ierr;
 
@@ -214,7 +214,7 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1
 /*
   Currently only works if both vectors are PETSc 
 */
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::aypx(double scalar,  ::esi::Vector<double,int> &yy)
+::esi::ErrorCode esi::petsc::Vector<double,int>::aypx(double scalar,  ::esi::Vector<double,int> &yy)
 {
   int ierr;
   
@@ -223,22 +223,22 @@ PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::aypx(double scal
   return VecAYPX(&scalar,y->vec,this->vec);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadLock(double *&pointer) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadLock(double *&pointer) 
 {
   return VecGetArray(this->vec,&pointer);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadWriteLock(double *&pointer)
+::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadWriteLock(double *&pointer)
 {
   return VecGetArray(this->vec,&pointer);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::releaseCoefPtrLock(double *&pointer)  
+::esi::ErrorCode esi::petsc::Vector<double,int>::releaseCoefPtrLock(double *&pointer)  
 {
   return VecRestoreArray(this->vec,&pointer);
 }
 
-PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::Vector<double,int>::setArrayPointer(double *pointer,int length)
+::esi::ErrorCode esi::petsc::Vector<double,int>::setArrayPointer(double *pointer,int length)
 {
   return VecPlaceArray(this->vec,pointer);
 }
