@@ -2878,7 +2878,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 }
 
 #include "src/mat/utils/freespace.h"
- #include "petscbt.h"
+#include "petscbt.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPI"
 /*@C
@@ -2904,6 +2904,9 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
+
+#define TMP2
+#undef TMP3 /* not work for mat_reuse yet! */
 PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
 {
   PetscErrorCode    ierr; 
@@ -2912,9 +2915,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscMPIInt       size,rank;
   int               M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j;
   int               len,*len_s,proc;
-  int               taga,tagi,tagj,*len_si,*len_ri,*id_r,**buf_ri,**buf_rj;  
+  int               taga,tagi,tagj,*len_si,*len_ri,*id_ri,**buf_ri,**buf_ri_new,**buf_rj;  
   int               *nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj; 
-  MPI_Request       *s_waits,*r_waits,*si_waits,*sj_waits,*ri_waits,*rj_waits,*s_waitsa,*r_waitsa;
+  MPI_Request       *s_waits,*r_waits,*si_waits,*si_waits_new,*sj_waits,*ri_waits,*ri_waits_new,*rj_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
   MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;
   FreeSpaceList     free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -2922,6 +2925,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   Mat_Merge_SeqsToMPI  *merge;
   PetscObjectContainer container;
   int                  *rowstart,*rowend,*len_si_new;
+  int nrows,*buf_s,*buf_si,*buf_si_tmp,*buf_si_i,*len_ri_new,tagi_new,*buf_tmp;
+  int **buf_ri_k,**nextrow,**nextai;
+  int anzi_new;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2990,8 +2996,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
 
     /* post the Isend of j-structure */
     /*--------------------------------*/
-    ierr = PetscMalloc((2*merge->nsend+1)*sizeof(MPI_Request),&si_waits);CHKERRQ(ierr);
+    ierr = PetscMalloc((3*merge->nsend+1)*sizeof(MPI_Request),&si_waits);CHKERRQ(ierr);
     sj_waits = si_waits + merge->nsend;
+    si_waits_new = sj_waits + merge->nsend;
 
     k = 0;
     for (proc=0; proc<size; proc++){  
@@ -3007,9 +3014,37 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     ierr = MPI_Waitall(merge->nsend,sj_waits,status);CHKERRQ(ierr);
   
     /* send and recv i-structure */
-    /*---------------------------*/
-    int nrows,*buf_si,*buf_si_i;
+    /*---------------------------*/   
+    len = 0;
+    for (proc=0; proc<size; proc++){  
+      len_si_new[proc] = 0;
+      if (!len_s[proc]) continue;
+      nrows = 0;
+      for (i=owners[proc]; i<owners[proc+1]; i++){
+        if (ai[i+1] > ai[i]) nrows++;
+      }
+      /* printf(" [%d] send nrows=%d to [%d]\n",rank,nrows,proc); */
+      len_si_new[proc] = 2*(nrows+1);
+      len += len_si_new[proc];
+    }
 
+    ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_si_new,&id_ri,&len_ri_new);CHKERRQ(ierr);
+#ifdef TMP3    
+    if (rank==3){
+      for (i=0; i<merge->nrecv; i++){
+        ierr = PetscPrintf(PETSC_COMM_SELF," %d, merge->id_r: %d, id_ri: %d\n",i,merge->id_r[i],id_ri[i]);
+      }
+    }
+#endif    
+    /*
+    for (i=0; i<merge->nrecv; i++){
+      printf(" [%d] expect to recv len_ri_new=%d from [%d]\n",rank,len_ri_new[i],id_ri[i]);
+    } 
+    */
+    ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&tagi_new);CHKERRQ(ierr);
+    ierr = PetscPostIrecvInt(comm,tagi_new,merge->nrecv,id_ri,len_ri_new,&buf_ri_new,&ri_waits_new);CHKERRQ(ierr);
+    
+    ierr = PetscMalloc((len+1)*sizeof(int),&buf_s);CHKERRQ(ierr); 
     ierr = PetscMalloc((merge->nrecv+1)*sizeof(int),&len_ri);CHKERRQ(ierr);
     for (i=0; i<merge->nrecv; i++) len_ri[i] = owners[rank+1] - owners[rank] + 1;
 
@@ -3017,24 +3052,16 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     ierr = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&ri_waits);CHKERRQ(ierr);
 
     k = 0;
+    buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
     for (proc=0; proc<size; proc++){  
-      len_si_new[proc] = 0;
       if (!len_s[proc]) continue;
-
       /* form outgoing message for i-structure: 
          buf_si[0]:                 nrows to be sent
                [1:nrows]:           row index (global)
                [nrows+1:2*nrows+1]: i-structure index
       */
-      /*-------------------------------------------*/
-      nrows = 0;
-      for (i=owners[proc]; i<owners[proc+1]; i++){
-        if (ai[i+1] > ai[i]) nrows++;
-      }
-       printf(" [%d] send nrows=%d to [%d]\n",rank,nrows,proc);
-      len_si_new[proc] = 2*nrows+2;
-
-      ierr = PetscMalloc(len_si_new[proc]*sizeof(int),&buf_si);CHKERRQ(ierr); 
+      /*-------------------------------------------*/      
+      nrows = len_si_new[proc]/2 - 1; 
       buf_si_i    = buf_si + nrows+1;
       buf_si[0]   = nrows;
       buf_si_i[0] = 0;
@@ -3043,26 +3070,47 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
         anzi = ai[i+1] - ai[i];
         if (anzi) {
           buf_si_i[nrows+1] = buf_si_i[nrows] + anzi; /* i-structure */
-          buf_si[nrows+1] = i; /* global row index */
+          buf_si[nrows+1] = i-owners[proc]; /* local row index */
           nrows++;
         }
       }
-      printf(" [%d] send nrows_next=%d to [%d]\n",rank,nrows,proc);
+      /*
+      printf(" [%d] send nrows_next=%d to [%d]\n",rank,nrows,proc); 
       if (rank ==2){
         for (i=0; i<=nrows; i++){
           printf(" %d,%d;",buf_si[i],buf_si_i[i]);
         }
         printf(" len_s: %d\n",len_s[proc]);
       }
-      ierr = PetscFree(buf_si);CHKERRQ(ierr); 
-      /* --------- form outgoing i-structure --- */
+      */
+ 
+      ierr = MPI_Isend(buf_si,len_si_new[proc],MPI_INT,proc,tagi_new,comm,si_waits_new+k);CHKERRQ(ierr);
 
       i    = owners[proc];
       ierr = MPI_Isend(ai+i,len_si[proc],MPI_INT,proc,tagi,comm,si_waits+k);CHKERRQ(ierr);
       k++;
+
+      buf_si += len_si_new[proc];
     } 
     ierr = MPI_Waitall(merge->nrecv,ri_waits,status);CHKERRQ(ierr);
     ierr = MPI_Waitall(merge->nsend,si_waits,status);CHKERRQ(ierr);
+
+    ierr = MPI_Waitall(merge->nrecv,ri_waits_new,status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(merge->nsend,si_waits_new,status);CHKERRQ(ierr);
+    /*
+    if (rank == 1){
+      for (k=0; k<merge->nrecv; k++){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] recv len_ri_new=%d from [%d], buf_ri_new:\n",rank,len_ri_new[k],merge->id_r[k]);CHKERRQ(ierr);
+
+        for (i=0; i<len_ri_new[k]; i++){
+          buf_tmp = buf_ri_new[k] + i; 
+          printf(" %d,",*buf_tmp); 
+        }
+        printf(" len_ri_new: %d\n",len_ri_new[k]);
+
+      }
+    }
+*/
 
     ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %d, nrecv: %d\n",merge->nsend,merge->nrecv);CHKERRQ(ierr);
     for (i=0; i<merge->nrecv; i++){
@@ -3074,6 +3122,13 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     ierr = PetscFree(ri_waits);CHKERRQ(ierr);
     ierr = PetscFree(rj_waits);CHKERRQ(ierr);
     ierr = PetscFree(si_waits);CHKERRQ(ierr);
+
+    ierr = PetscFree(ri_waits_new);CHKERRQ(ierr);
+    /*
+    ierr = PetscFree(len_ri_new);CHKERRQ(ierr);
+    ierr = PetscFree(id_ri);CHKERRQ(ierr);
+    */
+    ierr = PetscFree(buf_s);CHKERRQ(ierr);
 
     /* create seq matrix B_seq in each processor */
     /*-------------------------------------------*/
@@ -3092,6 +3147,17 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     current_space = free_space;
 
     /* determine symbolic info for each row of B_seq */
+#ifdef TMP2
+    ierr = PetscMalloc((3*merge->nrecv+1)*sizeof(int**),&buf_ri_k);CHKERRQ(ierr);
+    nextrow = buf_ri_k + merge->nrecv;
+    nextai  = nextrow + merge->nrecv;
+    for (k=0; k<merge->nrecv; k++){
+      buf_ri_k[k] = buf_ri_new[k]; /* beginning of k-th recved i-structure */
+      nrows = *buf_ri_k[k];
+      nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
+      nextai[k]   = buf_ri_k[k] + nrows + 1;/* poins to the next i-structure of k-th recved i-structure  */
+    }
+#endif
     for (i=0;i<m;i++) {
       bnzi   = 0;
       /* add local non-zero cols of this proc's seqmat into lnk */
@@ -3102,11 +3168,22 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
       bnzi += nlnk;
       /* add received col data into lnk */
       for (k=0; k<merge->nrecv; k++){ /* k-th received message */
-        /* i-th row */
+        /* i-th row */   
+        
         anzi = *(buf_ri[k]+i+1) - *(buf_ri[k]+i);
         aj   = buf_rj[k] + (*(buf_ri[k]+i) - *(buf_ri[k])); 
         ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
         bnzi += nlnk;
+        
+#ifdef TMP3
+        if (i == *nextrow[k]) {
+          anzi = *(nextai[k]+1) - *nextai[k]; 
+          aj   = buf_rj[k] + *nextai[k];
+          ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+          bnzi += nlnk;
+          nextrow[k]++; nextai[k]++;
+        }
+#endif /* TMP3 */
       }
 
       /* if free space is not available, make more free space */
@@ -3156,6 +3233,12 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   /*-----------------------------*/
   ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&taga);CHKERRQ(ierr);
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waitsa);CHKERRQ(ierr);
+  /*
+  if (rank==3){
+    for (i=0; i<merge->nrecv; i++){
+      ierr = PetscPrintf(PETSC_COMM_SELF," %d, merge->id_r: %d, id_ri: %d\n",i,merge->id_r[i],id_ri[i]);
+    }
+    } */
 
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waitsa);CHKERRQ(ierr);
   k = 0;
@@ -3176,7 +3259,17 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   /* insert mat values of B_mpi */
   /*----------------------------*/
   ierr = PetscMalloc(N*sizeof(MatScalar),&ba_i);CHKERRQ(ierr);
- 
+#ifdef TMP3
+  nextrow = buf_ri_k + merge->nrecv;
+  nextai  = nextrow + merge->nrecv;
+  for (k=0; k<merge->nrecv; k++){
+    buf_ri_k[k] = buf_ri_new[k]; /* beginning of k-th recved i-structure */
+    nrows = *buf_ri_k[k];
+    nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
+    nextai[k]   = buf_ri_k[k] + nrows + 1;/* poins to the next i-structure of k-th recved i-structure  */
+  }
+#endif
+
   /* set values of ba */
   for (i=0; i<m; i++) {
     arow = owners[rank] + i; 
@@ -3201,6 +3294,17 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
       anzi = *(buf_ri[k]+i+1) - *(buf_ri[k]+i);
       aj   = buf_rj[k] + (*(buf_ri[k]+i) - *(buf_ri[k])); 
       aa   = abuf_r[k] + (*(buf_ri[k]+i) - *(buf_ri[k]));
+#ifdef TMP3
+      if (i == *nextrow[k]) {
+        anzi_new = *(nextai[k]+1) - *nextai[k]; 
+        /* if (rank == 3) printf("anzi: %d, anzi_new: %d\n",anzi,anzi_new); */ 
+        /*
+        aj   = buf_rj[k] + *nextai[k];
+        aa   = abuf_r[k] + *nextai[k];
+        */
+        nextrow[k]++; nextai[k]++;
+      }
+#endif
       nextaj = 0;
       for (j=0; nextaj<anzi; j++){ 
         if (*(bj_i + j) == aj[nextaj]){ /* bcol == acol */
@@ -3216,6 +3320,15 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
 
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
+
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscFree(buf_ri_new);CHKERRQ(ierr);
+#ifdef TMP2
+    ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
+    ierr = PetscFree(len_ri_new);CHKERRQ(ierr);
+    ierr = PetscFree(id_ri);CHKERRQ(ierr);
+#endif
+  }
 
   PetscFunctionReturn(0);
 }
