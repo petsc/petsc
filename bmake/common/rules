@@ -1,4 +1,4 @@
-# $Id: common,v 1.202 1997/11/09 03:51:16 bsmith Exp bsmith $ 
+# $Id: common,v 1.203 1997/11/24 22:44:40 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -100,8 +100,8 @@ chkopts: chkopts_basic
 	if [ -f $(LDIR)/$$LIBNAME.$(SLSUFFIX) ]; then \
 	flag=`find $(LDIR) -type f -name $$LIBNAME.a -newer $(LDIR)/$$LIBNAME.$(SLSUFFIX) -print` ;\
 	if [ "$$flag" != "" ]; then \
-	echo "shared libs in $(LDIR) out of date" ;\
-	echo "rerun: $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
+	echo "shared libs in $(LDIR) out of date. rebuilding them." ;\
+	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
 	false; \
 	fi ;\
 	fi ;\
