@@ -253,8 +253,8 @@ int Solution(PetscReal t,Vec solution,void *ctx)
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
 
-  ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*t); 
-  ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); 
+  ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
