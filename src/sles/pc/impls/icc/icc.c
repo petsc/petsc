@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.61 1999/05/04 20:34:15 balay Exp balay $ ";
+static char vcid[] = "$Id: icc.c,v 1.62 1999/06/30 23:53:09 balay Exp balay $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -39,7 +39,7 @@ static int PCDestroy_ICC(PC pc)
   int    ierr;
 
   PetscFunctionBegin;
-  MatDestroy(icc->fact);
+  if (icc->fact) {ierr = MatDestroy(icc->fact);CHKERRQ(ierr);}
   ierr = PetscFree(icc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
