@@ -12,5 +12,5 @@
 #
 #15 0 * * * /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
 15 0 * * * rsh lava /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
-15 0 * * * rsh maple /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
+15 0 * * * rsh fire /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
