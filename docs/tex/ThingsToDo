@@ -6,6 +6,7 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
+  - Add fortran interface for VecSetValue()/MatSetValue()
 
   - Add MatGetOwnershipRangeColumn() for AIJ and BAIJ
 
