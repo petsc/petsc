@@ -84,25 +84,11 @@ struct _IntStack {
 
 #ifdef PETSC_USE_LOG
 
-/* Creation and destruction functions */
-EXTERN int StageLogCreate(StageLog *);
-EXTERN int StageLogDestroy(StageLog);
-/* Registration functions */
-EXTERN int StageLogRegister(StageLog, const char [], int *);
 /* Runtime functions */
-EXTERN int PetscLogGetStageLog(StageLog *);
-EXTERN int StageLogPush(StageLog, int);
-EXTERN int StageLogPop(StageLog);
-EXTERN int StageLogGetCurrent(StageLog, int *);
-EXTERN int StageLogSetActive(StageLog, int, PetscTruth);
-EXTERN int StageLogGetActive(StageLog, int, PetscTruth *);
-EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
-EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
 EXTERN int StageLogGetClassRegLog(StageLog, ClassRegLog *);
 EXTERN int StageLogGetEventRegLog(StageLog, EventRegLog *);
 EXTERN int StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
 EXTERN int StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
-EXTERN int StageLogGetStage(StageLog, const char [], int *);
 /* Stack Functions */
 EXTERN int StackCreate(IntStack *);
 EXTERN int StackDestroy(IntStack);

@@ -264,6 +264,22 @@ struct _StageLog {
   PETSC_LOG_EVENT_MPE_END(e); \
 } 
 
+/* Creation and destruction functions */
+EXTERN int StageLogCreate(StageLog *);
+EXTERN int StageLogDestroy(StageLog);
+/* Registration functions */
+EXTERN int StageLogRegister(StageLog, const char [], int *);
+/* Runtime functions */
+EXTERN int PetscLogGetStageLog(StageLog *);
+EXTERN int StageLogPush(StageLog, int);
+EXTERN int StageLogPop(StageLog);
+EXTERN int StageLogGetCurrent(StageLog, int *);
+EXTERN int StageLogSetActive(StageLog, int, PetscTruth);
+EXTERN int StageLogGetActive(StageLog, int, PetscTruth *);
+EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
+EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
+EXTERN int StageLogGetStage(StageLog, const char [], int *);
+
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
@@ -416,6 +432,22 @@ EXTERN int PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Startall_isend(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Start_isend(count,requests) MPI_Start(requests)
+
+/* Creation and destruction functions */
+#define StageLogCreate(stageLog)                     0
+#define StageLogDestroy(stageLog)                    0
+/* Registration functions */
+#define StageLogRegister(stageLog, name, stage)      0
+/* Runtime functions */
+#define PetscLogGetStageLog(stageLog)                0
+#define StageLogPush(stageLog, stage)                0
+#define StageLogPop(stageLog)                        0
+#define StageLogGetCurrent(stageLog, stage)          0
+#define StageLogSetActive(stageLog, stage, active)   0
+#define StageLogGetActive(stageLog, stage, active)   0
+#define StageLogSetVisible(stageLog, stage, visible) 0
+#define StageLogGetVisible(stageLog, stage, visible) 0
+#define StageLogGetStage(stageLog, name, stage)      0
 
 #endif   /* PETSC_USE_LOG */
 
