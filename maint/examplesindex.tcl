@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.38 1999/02/03 00:19:05 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.39 1999/03/16 20:41:04 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -548,15 +548,15 @@ proc main { }  {
         # the Section Examples is already added to the manualpage,
         # and if it is not, then it is added.
 
-        set temp [regexp "<H2>Examples</H2>" $routine_file_buff]
+        set temp [regexp "<H2><FONT COLOR=\"#CC3333\">Examples</FONT></H2>" $routine_file_buff]
         if { $temp == 0 } {
             # New Section entry for Examples
-            set buf [format "%s%s" "<P><H2>Examples</H2>" $buf]
+            set buf [format "%s%s" "<P><H2><FONT COLOR=\"#CC3333\">Examples</FONT></H2>" $buf]
         }
-        set buf [format "%s%s" $buf "<P><B>Level:</B>" ]
+        set buf [format "%s%s" $buf "<P><B><FONT COLOR=\"#CC3333\">Level:</FONT></B>" ]
 
 # This string must match what's in docs/tex/doctext/html.def
-        set temp [regsub  "<P><B>Level:</B>" $routine_file_buff $buf routine_file_buff]
+        set temp [regsub  "<P><B><FONT COLOR=\"#CC3333\">Level:</FONT></B>" $routine_file_buff $buf routine_file_buff]
         if { $temp == 0 } { 
             puts "******* Unable to modify $routines_file"
         }
