@@ -1,4 +1,4 @@
-#include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I */
+#include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
 
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -386,7 +386,7 @@ int MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningScotchSetStrategy"
-/*@
+/*@C
     MatPartitioningScotchSetStrategy - Set the strategy to be used by Scotch.
     This is an alternative way of specifying the global method, the local
     method, the coarse level and the multilevel option.
@@ -442,7 +442,7 @@ int MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningScotchSetArch"
-/*@
+/*@C
      MatPartitioningScotchSetArch - Specify the file that describes the
      architecture used for mapping. The format of this file is documented in
      the Scotch manual.
@@ -470,7 +470,7 @@ int MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningScotchSetHostList"
-/*@
+/*@C
      MatPartitioningScotchSetHostList - Specify host list file for mapping.
 
   Input Parameter:

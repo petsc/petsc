@@ -1,5 +1,5 @@
 
-#include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I */
+#include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
 
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -199,7 +199,7 @@ int MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetGlobal"
-/*@
+/*@C
      MatPartitioningPartySetGlobal - Set method for global partitioning.
 
   Input Parameter:
@@ -225,7 +225,7 @@ int MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetLocal"
-/*@
+/*@C
      MatPartitioningPartySetLocal - Set method for local partitioning.
 
   Input Parameter:

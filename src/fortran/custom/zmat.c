@@ -72,6 +72,11 @@
 #define matmpidensesetpreallocation_     MATMPIDENSESETPREALLOCATION
 #define matmpiadjsetpreallocation_       MATMPIADJSETPREALLOCATION
 #define matmpirowbssetpreallocation_     MATMPIROWBSSETPREALLOCATION
+#define matpartitioningpartysetglobal_   MATPARTITIONINGPARTYSETGLOBAL
+#define matpartitioningpartysetlocal_    MATPARTITIONINGPARTYSETLOCAL
+#define matpartitioningscotchsetstrategy_ MATPARTITIONINGSCOTCHSETSTRATEGY
+#define matpartitioningscotchsetarch_    MATPARTITIONINGSCOTCHSETARCH
+#define matpartitioningscotchsethostlist_ MATPARTITIONINGSCOTCHSETHOSTLIST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
@@ -139,6 +144,11 @@
 #define matmpidensesetpreallocation_     matmpidensesetpreallocation
 #define matmpiadjsetpreallocation_       matmpiadjsetpreallocation
 #define matmpirowbssetpreallocation_     matmpirowbssetpreallocation
+#define matpartitioningpartysetglobal_   matpartitioningpartysetglobal
+#define matpartitioningpartysetlocal_    matpartitioningpartysetlocal
+#define matpartitioningscotchsetstrategy_ matpartitioningscotchsetstrategy
+#define matpartitioningscotchsetarch_    matpartitioningscotchsetarch
+#define matpartitioningscotchsethostlist_ matpartitioningscotchsethostlist
 #endif
 
 #include "petscts.h"
@@ -741,5 +751,50 @@ void PETSC_STDCALL matmpirowbssetpreallocation_(Mat *mat,int *nz,int *nnz,int *i
   *ierr = MatMPIRowbsSetPreallocation(*mat,*nz,nnz);
 }
 #endif
+
+void PETSC_STDCALL matpartitioningpartysetglobal_(MatPartitioning *part,CHAR method PETSC_MIXED_LEN(len),
+                                           int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(method,len,t);
+  *ierr = MatPartitioningPartySetGlobal(*part,t);
+  FREECHAR(method,t);
+}
+
+void PETSC_STDCALL matpartitioningpartysetlocal_(MatPartitioning *part,CHAR method PETSC_MIXED_LEN(len),
+                                           int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(method,len,t);
+  *ierr = MatPartitioningPartySetLocal(*part,t);
+  FREECHAR(method,t);
+}
+
+void PETSC_STDCALL matpartitioningscotchsetstrategy_(MatPartitioning *part,CHAR strategy PETSC_MIXED_LEN(len),
+                                           int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(strategy,len,t);
+  *ierr = MatPartitioningScotchSetStrategy(*part,t);
+  FREECHAR(strategy,t);
+}
+
+void PETSC_STDCALL matpartitioningscotchsetarch_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
+                                           int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(filename,len,t);
+  *ierr = MatPartitioningScotchSetArch(*part,t);
+  FREECHAR(filename,t);
+}
+
+void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
+                                           int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(filename,len,t);
+  *ierr = MatPartitioningScotchSetHostList(*part,t);
+  FREECHAR(filename,t);
+}
 
 EXTERN_C_END
