@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.303 1999/03/08 22:40:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.304 1999/03/08 23:01:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1030,6 +1030,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     if (!a->idiag) {
       a->idiag = (Scalar *) PetscMalloc(2*m*sizeof(Scalar));CHKPTRQ(a->idiag);
       a->ssor  = a->idiag + m;
+      for ( i=0; i<m; i++ ) { a->idiag[i] = 1.0/v[diag[i]];}
     }
     t     = a->ssor;
     idiag = a->idiag;
@@ -1043,7 +1044,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
       v    = a->a + diag[i] + 1;
       sum  = b[i];
       SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-      x[i] = sum/d;
+      x[i] = sum*idiag[i];
     }
 
     /*  t = b - (2*E - D)x */
@@ -1061,11 +1062,12 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
       v    = a->a + a->i[i];
       sum  = t[i];
       SPARSEDENSEMDOT(sum,t,v,idx,n); 
-      t[i] = sum/d;
+      t[i] = sum*idiag[i];
     }
 
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
+    PLogFlops(m-1);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
@@ -1116,6 +1118,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
 
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
+    PLogFlops(m-1);
     PetscFree(t);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
