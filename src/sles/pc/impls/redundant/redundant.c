@@ -323,6 +323,7 @@ int PCCreate_Redundant(PC pc)
 
   /* create the sequential PC that each processor has copy of */
   ierr = PCCreate(PETSC_COMM_SELF,&red->pc);CHKERRQ(ierr);
+  ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(red->pc,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(red->pc,"redundant_");CHKERRQ(ierr);

@@ -816,7 +816,7 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqSBAIJ_Check_Blocks"
-static int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
+int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
 {
   int        i,j,k,row;
   PetscTruth flg;

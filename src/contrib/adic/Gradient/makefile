@@ -13,6 +13,7 @@ OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/contrib/adic/adic/
+MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
