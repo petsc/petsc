@@ -35,8 +35,14 @@ class Retriever(install.base.Base):
     localFile = root+'.tgz'
     if os.path.exists(localFile):
       os.remove(localFile)
+    dir = os.path.dirname(localFile)
+    if dir and not os.path.exists(dir):
+      os.makedirs(dir)
     urllib.urlretrieve(url+'.tgz', localFile)
-    output = self.executeShellCommand('tar -zxf '+localFile)
+    if dir:
+      output = self.executeShellCommand('tar -zxf '+localFile+' -C '+dir)
+    else:
+      output = self.executeShellCommand('tar -zxf '+localFile)
     os.remove(localFile)
     return root
 
