@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 1997/09/11 22:17:32 balay Exp balay $ 
+# $Id: base.site,v 1.25 1997/09/11 22:22:10 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-#FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
-FC_LIB          =
+FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
+#FC_LIB          =
 #FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
 #
@@ -21,10 +21,10 @@ FC_LIB          =
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-BLAS_LIB        = -lpetscblas
-LAPACK_LIB      = 
-#BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
-#LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+#BLAS_LIB        = -lpetscblas
+#LAPACK_LIB      = 
+BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
+LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
 #
 # Location of X-windows software
 #
