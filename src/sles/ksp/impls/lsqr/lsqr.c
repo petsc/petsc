@@ -51,7 +51,7 @@ static int KSPSetUp_LSQR(KSP ksp)
 #define __FUNCT__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
-  int          i,maxit,ierr;
+  int          i,ierr;
   PetscScalar  rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
   PetscReal    beta,alpha,rnorm;
   Vec          X,B,V,V1,U,U1,TMP,W;
@@ -65,7 +65,6 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
-  maxit    = ksp->max_it;
 
   /* vectors of length m, where system size is mxn */
   B        = ksp->vec_rhs;
@@ -109,7 +108,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   phibar = beta;
   rhobar = alpha;
-  for (i=0; i<maxit; i++) {
+  i = 0;
+  do {
 
     ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
     tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1);CHKERRQ(ierr);
@@ -150,8 +150,10 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     if (ksp->reason) break;
     SWAP(U1,U,TMP);
     SWAP(V1,V,TMP);
-  }
-  if (i == maxit) {
+
+    i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

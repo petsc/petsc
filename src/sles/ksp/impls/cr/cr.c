@@ -22,7 +22,7 @@ static int KSPSetUp_CR(KSP ksp)
 #define __FUNCT__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
-  int          i = 0, maxit, ierr;
+  int          i = 0, ierr;
   MatStructure pflag;
   PetscReal    dp;
   PetscScalar  ai, bi;
@@ -32,7 +32,6 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 
   PetscFunctionBegin;
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -71,7 +70,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
 
-  for ( i=0; i<maxit; i++) {
+  i = 0;
+  do {
     ierr   = KSP_PCApply(ksp,ksp->B,AP,Q);CHKERRQ(ierr);/*   Q <- B* AP          */
                                                         /* Step 3                */
 
@@ -111,8 +111,9 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     bi = btop/bbot;
     ierr = VecAYPX(&bi,RT,P);CHKERRQ(ierr);              /*   P <- RT + Bi P     */
     ierr = VecAYPX(&bi,ART,AP);CHKERRQ(ierr);            /*   AP <- ART + Bi AP  */
-  }
-  if (i == maxit) {
+    i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason =  KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

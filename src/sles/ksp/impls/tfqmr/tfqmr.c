@@ -29,13 +29,12 @@ static int KSPSetUp_TFQMR(KSP ksp)
 #define __FUNCT__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
-  int       i,maxit,m, ierr;
+  int       i,m, ierr;
   PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   PetscReal dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
 
   PetscFunctionBegin;
-  maxit    = ksp->max_it;
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
   R        = ksp->work[0];
@@ -77,7 +76,8 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
   ierr = VecSet(&zero,D);CHKERRQ(ierr);
 
-  for (i=0; i<maxit; i++) {
+  i=0;
+  do {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -129,8 +129,10 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 
     rhoold = rho;
     dpold  = dp;
-  }
-  if (i == maxit) {
+
+    i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

@@ -36,7 +36,7 @@ int KSPSetUp_MINRES(KSP ksp)
 #define __FUNCT__ "KSPSolve_MINRES"
 int  KSPSolve_MINRES(KSP ksp,int *its)
 {
-  int          ierr,i,maxit;
+  int          ierr,i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
   PetscScalar  rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np;
@@ -50,7 +50,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -113,7 +112,8 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
 
-  for (i=0; i<maxit; i++) {
+  i = 0;
+  do {
      ksp->its = i+1;
 
 /*   Lanczos  */
@@ -188,8 +188,9 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      KSPMonitor(ksp,i+1,np);
      ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
-  }
-  if (i == maxit) {
+     i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
