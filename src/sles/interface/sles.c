@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.119 1999/05/04 20:33:50 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.120 1999/05/06 20:40:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -826,6 +826,10 @@ int SLESSetUpOnBlocks(SLES sles)
 
     This routine is only used if the matrix and preconditioner matrix are
     the same thing.
+ 
+    If you use this with the PCType Eisenstat preconditioner than you can 
+    use the PCEisenstatNoDiagonalScaling() option, or -pc_eisenstat_no_diagonal_scaling
+    to save some unneeded, redundant flops.
 
    Level: intermediate
 

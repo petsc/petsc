@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.91 1999/04/21 18:17:28 bsmith Exp balay $";
+static char vcid[] = "$Id: eisen.c,v 1.92 1999/05/04 20:34:11 balay Exp bsmith $";
 #endif
 
 /*
@@ -282,6 +282,10 @@ int PCEisenstatSetOmega(PC pc,double omega)
 .  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatNoDiagonalScaling()
 
    Level: intermediate
+
+   Note:
+     If you use the SLESSetDiagonalScaling() or -sles_diagonal_scale option then you will
+   likley want to use this routine since it will save you some unneeded flops.
 
 .keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
 
