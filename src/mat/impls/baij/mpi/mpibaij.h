@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.9 1997/12/02 19:33:04 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.10 1998/01/12 20:34:54 balay Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -50,6 +50,7 @@ typedef struct {
   int           rstart_bs, rend_bs; 
   int           cstart_bs, cend_bs;
   int           *ht;              /* Hast table to speed up matrix assembly */
+  Scalar        **hd;             /* Hast table data */
   int           ht_size;
 } Mat_MPIBAIJ;
 
