@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.1 1996/01/30 04:43:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.2 1996/01/30 04:46:00 bsmith Exp balay $";
 #endif
 
 /*
@@ -16,6 +16,31 @@ static char vcid[] = "$Id: sortd.c,v 1.1 1996/01/30 04:43:06 bsmith Exp bsmith $
 #include "sys.h"             /*I  "sys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
+   
+/* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
+int SYiDqsort(double *v,int right)
+{
+  register int    i,last;
+  register double vl;
+  double          tmp;
+  
+  if (right <= 1) {
+      if (right == 1) {
+	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
+      }
+      return 0;
+  }
+  SWAP(v[0],v[right/2],tmp);
+  vl   = v[0];
+  last = 0;
+  for ( i=1; i<=right; i++ ) {
+    if (v[i] < vl ) {last++; SWAP(v[last],v[i],tmp);}
+  }
+  SWAP(v[0],v[last],tmp);
+  SYiDqsort(v,last-1);
+  SYiDqsort(v+last+1,right-(last+1));
+  return 0;
+}
 
 /*@
   SYDsort - Sort an array of doubles inplace in increasing order
@@ -42,31 +67,6 @@ int SYDsort(int n, double *v )
   }
   else
     SYiDqsort( v, n-1 );
-  return 0;
-}
-   
-/* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-int SYiDqsort(double *v,int right)
-{
-  register int    i,last;
-  register double vl;
-  double          tmp;
-  
-  if (right <= 1) {
-      if (right == 1) {
-	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-      }
-      return 0;
-  }
-  SWAP(v[0],v[right/2],tmp);
-  vl   = v[0];
-  last = 0;
-  for ( i=1; i<=right; i++ ) {
-    if (v[i] < vl ) {last++; SWAP(v[last],v[i],tmp);}
-  }
-  SWAP(v[0],v[last],tmp);
-  SYiDqsort(v,last-1);
-  SYiDqsort(v+last+1,right-(last+1));
   return 0;
 }
 

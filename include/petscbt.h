@@ -1,3 +1,5 @@
+/* $Id: pc.h,v 1.52 1996/01/26 02:02:46 curfman Exp $ */
+
 /*    
       BT_LOOKUP - Expexts a charecter array -'array' as input, and 
       treats it as  an array of bits. It Checks if a given bit location
