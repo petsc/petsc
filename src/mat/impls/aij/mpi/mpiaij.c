@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.279 1999/02/11 20:28:21 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.280 1999/02/15 21:54:55 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1953,10 +1953,11 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
-  mat->ops->destroy    = MatDestroy_MPIAIJ;
-  mat->ops->view       = MatView_MPIAIJ;
-  mat->factor     = matin->factor;
-  mat->assembled  = PETSC_TRUE;
+  mat->ops->destroy = MatDestroy_MPIAIJ;
+  mat->ops->view    = MatView_MPIAIJ;
+  mat->factor       = matin->factor;
+  mat->assembled    = PETSC_TRUE;
+  mat->insertmode   = NOT_SET_VALUES;
 
   a->m = mat->m   = oldmat->m;
   a->n = mat->n   = oldmat->n;
@@ -1969,7 +1970,9 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   a->cend         = oldmat->cend;
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
-  mat->insertmode = NOT_SET_VALUES;
+  a->donotstash   = oldmat->donotstash;
+  a->roworiented  = oldmat->roworiented;
+  a->rowindices   = 0;
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
 
