@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.50 1997/08/09 20:20:14 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.51 1997/11/12 16:08:19 bsmith Exp bsmith $ 
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -28,7 +28,6 @@ homepage:
 	@echo "Making PETSc homepage"
 	-/usr/bin/cp  ../manual.ps /home/ftp/pub/petsc/manual.ps
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
-	-/usr/bin/cp  ftp_readme /home/ftp/pub/petsc/README
 	-/usr/bin/cp  ../installation.html /mcs/www/petsc/docs
 	-/usr/bin/cp  ../machines.html /mcs/www/petsc/docs
 	-/usr/bin/cp  ../changes.html /mcs/www/petsc/docs
@@ -42,13 +41,8 @@ homepage:
 	-/usr/bin/cp -r ../manual /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-chmod ug+w /home/ftp/pub/petsc/* /mcs/www/petsc/*
-	-cd ..; tar cf $(HOME)/www.tar www 
-	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar 
-	-cd /mcs/www/petsc/www; /bin/rm -rf *.cit 
-	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
-	-/bin/rm $(HOME)/www.tar
-	-rm -r /mcs/www/petsc/www/RCS
-	@echo "Finshed making PETSc homepage: remember to do the source!"
+	-cd /mcs/www/petsc/; chgrp -R pdetools docs/www; chmod -R g+w docs/www
+	@echo "Finshed making PETSc homepage: remember to do the source! and manpages!"
 
 
 
