@@ -1,26 +1,48 @@
 
-C      "$Id: ex36.F,v 1.8 1996/02/08 18:27:25 bsmith Exp bsmith $";
+C      "$Id: ex36.F,v 1.9 1996/02/13 23:29:56 bsmith Exp curfman $";
+C
+C   This program demonstrates use of PETSc dense matrices.
+C
 
 #include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/viewer.h"
 
+      integer err
+
+      call PetscInitialize(err)
+
+C  Demo of PETSc-allocated dense matrix storage
+      call Demo1()
+
+C  Demo of user-allocated dense matrix storage
+      call Demo2()
+
+      call PetscFinalize(err)
+      stop
+      end
+
+C -----------------------------------------------------------------
 C
-C  This example demonstrates the use of MatGetArray() for direct access to
-C  the array that stores a PETSc dense matrix.  The user declares an array
-C  (aa(1)) and index variable (ia), which are then used together to
-C  manipulate the array contents.
+C  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
+C  matrix storage.  Here MatGetArray() is used for direct access to the
+C  array that stores the dense matrix.  The user declares an array (aa(1))
+C  and index variable (ia), which are then used together to manipulate
+C  the array contents.
 C
 C  Note the use of PETSC_NULL in MatCreateSeqDense() to indicate that no
 C  storage is being provided by the user. (Do NOT pass a zero in that
 C  location.)
 C
-      Mat              A
-      integer          ia, n, m, err
-      Scalar           aa(1)
+      subroutine Demo1()
 
-      call PetscInitialize(err)
-      n = 5
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/viewer.h"
+
+      Mat      A
+      integer  ia, n, m, err
+      Scalar   aa(1)
+
+      n = 4
       m = 5
 
 C  Create matrix
@@ -41,8 +63,41 @@ C  View matrix
 
 C  Clean up
       call MatDestroy(A,err)     
-      call PetscFinalize(err)
-      stop
+      return 
+      end
+
+C -----------------------------------------------------------------
+C
+C  Demo2 -  This subroutine demonstrates the use of user-allocated dense
+C  matrix storage.
+C
+      subroutine Demo2()
+
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/viewer.h"
+
+      parameter (m=5, n=4)
+      Mat       A
+      integer   n, m, err
+      Scalar    aa(m,n)
+
+C  Create matrix
+      call MatCreateSeqDense(MPI_COMM_SELF,m,n,aa,A,err)
+
+C  Set matrix values directly
+      call FillUpMatrix(m,n,aa)
+
+C  Finalize matrix assembly
+      call MatAssemblyBegin(A,FINAL_ASSEMBLY,err)
+      call MatAssemblyEnd(A,FINAL_ASSEMBLY,err)
+
+C  View matrix
+      call MatView(A,STDOUT_VIEWER_SELF,err)
+
+C  Clean up
+      call MatDestroy(A,err)     
+      return 
       end
 
 C -----------------------------------------------------------------

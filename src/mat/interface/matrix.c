@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.140 1996/02/13 23:29:15 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.141 1996/02/14 15:47:16 balay Exp curfman $";
 #endif
 
 /*
@@ -1069,13 +1069,13 @@ int MatTranspose(Mat mat,Mat *B)
 .  mat1 - the first matrix
 .  mat2 - the second matrix
 
-   Output Parameters:
-   flg : 1 if the matrices are equal
+   Output Parameter:
+.  flg : 1 if the matrices are equal;
          0 otherwise.
 
 .keywords: matrix, equal, equivalent
 @*/
-int MatEqual(Mat mat1,Mat mat2, int * flg)
+int MatEqual(Mat mat1,Mat mat2,int *flg)
 {
   PETSCVALIDHEADERSPECIFIC(mat1,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(mat2,MAT_COOKIE);
   if (!mat1->assembled) SETERRQ(1,"MatEqual:Not for unassembled matrix");
