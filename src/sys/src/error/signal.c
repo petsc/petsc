@@ -140,7 +140,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGUSR1] = "User 1";
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-  SIGNAME[SIGUSR1] = "User 2";
+  SIGNAME[SIGUSR2] = "User 2";
 #endif
 
   signal(sig,SIG_DFL);
