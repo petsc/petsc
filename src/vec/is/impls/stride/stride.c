@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.68 1998/04/09 04:08:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.69 1998/04/13 17:25:21 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -242,20 +242,21 @@ static struct _ISOps myops = { ISGetSize_Stride,
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - the MPI communicator
++  comm - the MPI communicator
 .  n - the length of the index set
 .  first - the first element of the index set
-.  step - the change to the next index
+-  step - the change to the next index
 
    Output Parameter:
 .  is - the new index set
 
-   Collective on MPI_Comm
-
-   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
-          conceptually the same as MPI_Group operations. The IS are 
-          distributed sets of indices. 
+   Notes: 
+   When communicator is not MPI_COMM_SELF, the operations on IS are NOT
+   conceptually the same as MPI_Group operations. The IS are the 
+   distributed sets of indices. 
 
 .keywords: IS, index set, create, stride
 

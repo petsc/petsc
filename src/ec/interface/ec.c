@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.11 1997/09/11 23:58:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.12 1998/04/27 16:09:26 bsmith Exp curfman $";
 #endif
 
 /*
@@ -15,10 +15,10 @@ static char vcid[] = "$Id: ec.c,v 1.11 1997/09/11 23:58:01 curfman Exp bsmith $"
 /*@C
    ECDestroy - Destroys EC context that was created with ECCreate().
 
+   Collective on EC
+
    Input Parameter:
 .  ec - the eigenvalue computation context
-
-   Collective on EC
 
 .keywords: EC, destroy
 
@@ -41,22 +41,22 @@ int ECDestroy(EC ec)
 /*@ 
    ECView - Prints the EC data structure.
 
-   Input Parameters:
-.  EC - the eigenvalue computation context
-.  viewer - visualization context
-
    Collective on EC unless view is sequential
+
+   Input Parameters:
++  EC - the eigenvalue computation context
+-  viewer - visualization context
 
    Note:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open an alternative visualization context with
+   ViewerFileOpenASCII() - output to a specified file.
 
 .keywords: EC, view
 
@@ -92,15 +92,15 @@ int ECView(EC ec,Viewer viewer)
    imaginary components of the eigenvalues computed 
    with an EC context.
 
+   Not Collective
+
    Input Parameters:
 .  ec - the eigenvalue computation context
 
    Output Parameters:
-.  n - number of eigenvalues computed
++  n - number of eigenvalues computed
 .  rpart - array containing the real parts of the eigenvalues
-.  ipart - array containing the imaginary parts of the eigenvalues
-
-   Note Collective
+-  ipart - array containing the imaginary parts of the eigenvalues
 
    Notes:
    ECGetEigenvalues() may be called only after ECSolve().
@@ -127,14 +127,14 @@ int ECGetEigenvalues(EC ec,int *n,double **rpart,double **ipart)
    ECGetEigenvectors - Returns pointers to the eigenvectors
    computed  with an EC context.
 
+   Not Collective
+
    Input Parameters:
 .  ec - the eigenvalue computation context
 
    Output Parameters:
-.  n - number of eigenvectors computed
-.  evecs - the eigenvectors
-
-   Not Collective
++  n - number of eigenvectors computed
+-  evecs - the eigenvectors
 
    Notes:
    ECGetEigenvectors() may be called only after ECSolveEigenvectors().
@@ -158,10 +158,10 @@ int ECGetEigenvectors(EC ec,int *n,Vec *evecs)
 /*@
    ECSetUp - Prepares for the use of an eigenvalue solver.
 
+   Collective on EC
+
    Input parameters:
 .  ec - the eigenvalue computation context
-
-   Collective on EC
 
 .keywords: EC, setup
 
@@ -188,10 +188,10 @@ int ECSetUp(EC ec)
    ECSetEigenvectorsRequired - Indicates that both eigenvalues and
    eigenvectors should be computed.
 
+   Collective on EC
+
    Output Parameter:
 .  ec - eigenvalue computation context
-
-   Collective on EC
 
 .keywords: EC, set, eigenvectors, required
 
@@ -213,15 +213,12 @@ static NRList *__ECList = 0;
 /*@C
    ECCreate - Creates the default EC context.
 
-   Output Parameter:
-.  ec - location to put the EC context
-.  pt - either EC_EIGENVALUE or EC_GENERALIZED_EIGENVALUE
-.  comm - MPI communicator
-
    Collective on MPI_Comm
 
-   Notes:
-   The default EC type is ?????
+   Output Parameter:
++  ec - location to put the EC context
+.  pt - either EC_EIGENVALUE or EC_GENERALIZED_EIGENVALUE
+-  comm - MPI communicator
 
 .keywords: EC, create, context
 
@@ -265,19 +262,17 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 /*@
    ECSetFromOptions - Set EC options from the options database.
 
-   Input Parameter:
-.   ec - the eigenvalue computation context
-
    Collective on EC
 
+   Input Parameter:
+.  ec - the eigenvalue computation context
+
    Options Database Commands:
-$  -ec_type  <method>
-$      Use -help for a list of available methods
-$      (for instance, LAPACK, ???)
-$  -ec_spectrum_portion <largest_real_part,largest_magnitude, 
-$                        smallest_real_part,smallest_magnitude,
-$                        interior>
-$  -ec_spectrum_number number of eigenvalues requested
++  -ec_type  <type> - Sets EC type; use -help for a list of available methods
+.  -ec_spectrum_portion <portion> - Specifies portion of spectrum of interest.
+           Options include [largest_real_part,largest_magnitude, 
+           smallest_real_part,smallest_magnitude, interior]
+-  -ec_spectrum_number - Specifies number of eigenvalues requested
 
 .keywords: EC, set, options
 
@@ -332,13 +327,14 @@ int ECSetFromOptions(EC ec)
 /*@
    ECPrintHelp - Prints a help message about the eigenvalue computations.
 
-   Input Parameter:
-.   ec - the eigenvalue computation context
-
    Collective on EC
 
+   Input Parameter:
+.  ec - the eigenvalue computation context
+
    Options Database Command:
-$  -help
++  -help - PrintsEC options
+-  -h - Prints EC options
 
 .keywords: EC, print, help
 @*/
@@ -373,12 +369,12 @@ int ECPrintHelp(EC ec)
 /*@
    ECSetOperators - Sets the operators for which eigenvalues are to be computed.
 
-   Input Parameter:
-.  ec - the eigenvalue computation context
-.  A  - the matrix for which eigenvalues are requested
-.  B  - optional matrix for generalized eigenvalue problem
-
    Collective on EC
+
+   Input Parameter:
++  ec - the eigenvalue computation context
+.  A  - the matrix for which eigenvalues are requested
+-  B  - optional matrix for generalized eigenvalue problem
 
 .keywords: EC, set, operators
 
@@ -408,21 +404,26 @@ int ECSetOperators(EC ec,Mat A,Mat B)
    ECSetSpectrumPortion - Sets the portion of the spectrum from which 
    eigenvalues will be computed.
 
-   Input Parameter:
-.   ec - the eigenvalue computation context
-.   n - number of eigenvalues requested
-.   portion - one of EC_LARGEST_REAL_PART, EC_LARGEST_MAGNITUDE,
-               EC_SMALLEST_REAL_PART, EC_SMALLEST_MAGNITUDE,
-               EC_INTERIOR
-.   location - value near which you wish the spectrum computed
-
    Collective on EC
 
+   Input Parameters:
++  ec - the eigenvalue computation context
+.  n - number of eigenvalues requested
+.  portion - portion of the spectrum (see below)
+- location - value near which you wish the spectrum computed
+
+   Possible Portions of Spectrum:
++  EC_LARGEST_REAL_PART - largest real part
+.  EC_LARGEST_MAGNITUDE - largest magnitude
+.  EC_SMALLEST_REAL_PART - smalles real part
+.  EC_SMALLEST_MAGNITUDE - smallest magnitude
+-  EC_INTERIOR - interior
+
    Options Database Keys:
-$  -ec_spectrum_portion <largest_real,largest_magnitude, 
-$                        smallest_real,smallest_magnitude,
-$                        interior>
-$  -ec_number <ne>, where <ne> is the number of eigenvalues requested
++  -ec_spectrum_portion <portion> - Specifies portion of spectrum of interest.
+           Options include [largest_real_part,largest_magnitude, 
+           smallest_real_part,smallest_magnitude, interior]
+-  -ec_spectrum_number - Specifies number of eigenvalues requested
 
 .keywords: EC, set, spectrum, portion
 
@@ -444,10 +445,10 @@ int ECSetEigenvaluePortion(EC ec,int n,ECSpectrumPortion portion,Scalar location
 /*@
    ECSolve - Computes the appropriate eigenvalues.
 
-   Input Parameter:
-.   ec - the eigenvalue computation context
-
    Collective on EC
+
+   Input Parameter:
+.  ec - the eigenvalue computation context
 
 .keywords: EC, solve
 
@@ -509,10 +510,10 @@ int ECSolve(EC ec)
 /*@
    ECSolveEigenvectors - Computes the appropriate eigenvectors
 
-   Input Parameter:
-.   ec - the eigenvalue computation context
-
    Collective on EC
+
+   Input Parameter:
+.  ec - the eigenvalue computation context
 
    Notes: Must be called after ECSolve().
 
@@ -542,32 +543,30 @@ int ECSolveEigenvectors(EC ec)
 /*@
    ECSetType - Builds EC for a particular solver. 
 
-   Input Parameter:
-.  ctx      - the eigenvalue computation context
-.  itmethod - a known method
-
    Collective on EC
 
+   Input Parameter:
++  ctx      - the eigenvalue computation context
+-  itmethod - a known method
+
    Options Database Command:
-$  -ec_type  <method>
-$      Use -help for a list of available methods
-$      (for instance, lapack, arpack)
+.  -ec_type <type> - Specified EC method; use -help for a list of available methods
 
    Notes:  
    See "petsc/include/ec.h" for available methods (for instance,
-   EC_LAPACK, EC_???
+   EC_LAPACK, eventually others)
 
-  Normally, it is best to use the ECSetFromOptions() command and
-  then set the EC type from the options database rather than by using
-  this routine.  Using the options database provides the user with
-  maximum flexibility in evaluating the many different Krylov methods.
-  The ECSetType() routine is provided for those situations where it
-  is necessary to set the iterative solver independently of the command
-  line or options database.  This might be the case, for example, when
-  the choice of iterative solver changes during the execution of the
-  program, and the user's application is taking responsibility for
-  choosing the appropriate method.  In other words, this routine is
-  for the advanced user.
+   Normally, it is best to use the ECSetFromOptions() command and
+   then set the EC type from the options database rather than by using
+   this routine.  Using the options database provides the user with
+   maximum flexibility in evaluating the many different Krylov methods.
+   The ECSetType() routine is provided for those situations where it
+   is necessary to set the iterative solver independently of the command
+   line or options database.  This might be the case, for example, when
+   the choice of iterative solver changes during the execution of the
+   program, and the user's application is taking responsibility for
+   choosing the appropriate method.  In other words, this routine is
+   for the advanced user.
 
 .keywords: EC, set, type
 
@@ -602,12 +601,16 @@ int ECSetType(EC ec,ECType itmethod)
    ECRegister - Adds the iterative method to the EC package,  given
    an iterative name (ECType) and a function pointer.
 
-   Input Parameters:
-.  name   - for instance ECCG, ECGMRES, ...
-.  sname  - corresponding string for name
-.  create - routine to create method context
+   Not Collective
 
-   Note Collective
+   Input Parameters:
++  name   - for instance ECCG, ECGMRES, ...
+.  sname  - corresponding string for name
+-  create - routine to create method context
+
+   Notes:
+   ECRegister() has NOT yet been updated to use the new dynamic linking
+   registration approach, though eventually it will be.
 
 .keywords: EC, register
 
@@ -629,7 +632,7 @@ int  ECRegister(ECType name, char *sname, int  (*create)(EC))
    ECRegisterDestroy - Frees the list of EC methods that were
    registered by ECRegister().
 
-  Not Collective
+   Not Collective
 
 .keywords: EC, register, destroy
 
@@ -651,14 +654,14 @@ int ECRegisterDestroy(void)
    ECGetType - Gets the EC type and method name (as a string) from 
    the method type.
 
+   Not Collective
+
    Input Parameter:
 .  ec - Krylov context 
 
    Output Parameters:
-.  itmeth - EC method (or use PETSC_NULL)
-.  name - name of EC method (or use PETSC_NULL)
-
-   Not Collective
++  itmeth - EC method (or use PETSC_NULL)
+-  name - name of EC method (or use PETSC_NULL)
 
 .keywords: EC, get, type, name
 @*/

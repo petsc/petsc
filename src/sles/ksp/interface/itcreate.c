@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.121 1998/04/25 03:08:59 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.122 1998/04/26 02:16:58 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -370,15 +370,15 @@ int KSPSetFromOptions(KSP ksp)
 
   /* -----------------------------------------------------------------------*/
   /*
-     Cancels all monitors hardwired into code before call to KSPSetFromOptions()
-  */
+    Cancels all monitors hardwired into code before call to KSPSetFromOptions()
+    */
   ierr = OptionsHasName(ksp->prefix,"-ksp_cancelmonitors",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = KSPClearMonitor(ksp); CHKERRQ(ierr);
   }
   /*
-     Prints preconditioned residual norm at each iteration
-  */
+    Prints preconditioned residual norm at each iteration
+    */
   ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg); CHKERRQ(ierr);
   if (flg) {
     int rank = 0;
@@ -388,23 +388,23 @@ int KSPSetFromOptions(KSP ksp)
     }
   }
   /*
-     Prints preconditioned and true residual norm at each iteration
-  */
+    Prints preconditioned and true residual norm at each iteration
+    */
   ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); CHKERRQ(ierr);
   }
   /*
-     Prints extreme eigenvalue estimates at each iteration
-  */
+    Prints extreme eigenvalue estimates at each iteration
+    */
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
     ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0);CHKERRQ(ierr); 
   }
   /*
-     Prints true residual for BlockSolve95 preconditioners
-  */
+    Prints true residual for BlockSolve95 preconditioners
+    */
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = OptionsHasName(ksp->prefix,"-ksp_bsmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -412,8 +412,8 @@ int KSPSetFromOptions(KSP ksp)
   }
 #endif
   /*
-     Prints preconditioned residual norm with fewer digits
-  */
+    Prints preconditioned residual norm with fewer digits
+    */
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg); CHKERRQ(ierr); 
   if (flg) {
     int rank = 0;
@@ -423,8 +423,8 @@ int KSPSetFromOptions(KSP ksp)
     }
   }
   /*
-     Graphically plots preconditioned residual norm
-  */
+    Graphically plots preconditioned residual norm
+    */
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg); CHKERRQ(ierr);
   if (flg) {
@@ -439,8 +439,8 @@ int KSPSetFromOptions(KSP ksp)
     }
   }
   /*
-     Graphically plots preconditioned and true residual norm
-  */
+    Graphically plots preconditioned and true residual norm
+    */
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
@@ -476,9 +476,9 @@ int KSPSetFromOptions(KSP ksp)
   }
 
   /*
-        Since the private setfromoptions requires the type to all ready have 
-      been set we make sure a type is set by this time
-  */
+    Since the private setfromoptions requires the type to all ready have 
+    been set we make sure a type is set by this time
+    */
   if (!ksp->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
@@ -499,11 +499,13 @@ int KSPSetFromOptions(KSP ksp)
    Synopsis:
    KSPRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
 
+   Not Collective
+
    Input Parameters:
-.  name_solver - name of a new user-defined solver
++  name_solver - name of a new user-defined solver
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
-.  routine_create - routine to create method context
+-  routine_create - routine to create method context
 
    Notes:
    KSPRegister() may be called multiple times to add several user-defined solvers.
@@ -512,8 +514,10 @@ int KSPSetFromOptions(KSP ksp)
    is ignored.
 
    Sample usage:
+.vb
    KSPRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
+               "MySolverCreate",MySolverCreate);
+.ve
 
    Then, your solver can be chosen with the procedural interface via
 $     KSPSetType(ksp,"my_solver")

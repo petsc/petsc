@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.25 1998/04/13 17:25:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.26 1998/04/23 20:50:34 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -180,24 +180,25 @@ static struct _ISOps myops = { ISGetSize_Block,
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  n - the length of the index set (the number of blocks)
++  n - the length of the index set (the number of blocks)
 .  bs - number of elements in each block
 .  idx - the list of integers
-.  comm - the MPI communicator
+-  comm - the MPI communicator
 
    Output Parameter:
 .  is - the new index set
 
-   Collective on MPI_Comm
-
-   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
-          conceptually the same as MPI_Group operations. The IS are 
-          distributed sets of indices. 
+   Notes:
+   When communicator is not MPI_COMM_SELF, the operations on IS are NOT
+   conceptually the same as MPI_Group operations. The IS are then
+   distributed sets of indices. 
 
    Example:
-$   If you wish to index {0,1,4,5} then use
-$   a block size of 2 and idx of 0,4.
+   If you wish to index {0,1,4,5}, then use
+   a block size of 2 and idx of {0,4}.
 
 .keywords: IS, index set, create, block
 
@@ -244,13 +245,13 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  idx - the integer indices
-
-   Not Collective
 
 .keywords: IS, index set, block, get, indices
 
@@ -275,13 +276,13 @@ int ISBlockGetIndices(IS in,int **idx)
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  idx - the integer indices
-
-   Not Collective
 
 .keywords: IS, index set, block, restore, indices
 
@@ -301,13 +302,13 @@ int ISBlockRestoreIndices(IS is,int **idx)
 /*@
    ISBlockGetBlockSize - Returns the number of elements in a block.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  size - the number of elements in a block
-
-   Not Collective
 
 .keywords: IS, index set, block, get, size
 
@@ -332,13 +333,13 @@ int ISBlockGetBlockSize(IS is,int *size)
 /*@C
    ISBlock - Checks if an index set is blocked.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  flag - PETSC_TRUE if a block index set, else PETSC_FALSE
-
-   Not Collective
 
 .keywords: IS, index set, block
 
@@ -359,13 +360,13 @@ int ISBlock(IS is,PetscTruth *flag)
 /*@
    ISBlockGetSize - Returns the number of blocks in the index set.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  size - the number of blocks
-
-   Not Collective
 
 .keywords: IS, index set, block, get, size
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.146 1998/04/22 13:47:56 balay Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.147 1998/04/24 21:20:22 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -538,11 +538,8 @@ int PCSetUpOnBlocks(PC pc)
    Collective on PC
 
    Calling sequence of func:
-.vb
-   func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
-.ve
+$     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
-+  nsub - the number of local submatrices
 .  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
 .  col - an array of index sets that contain the global column numbers
@@ -1045,6 +1042,8 @@ int PCView(PC pc,Viewer viewer)
 
    Synopsis:
    PCRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+
+   Not collective
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
