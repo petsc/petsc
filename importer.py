@@ -1,6 +1,8 @@
+import maker
+
 import ihooks
 
-class Hooks(ihooks.Hooks):
+class Hooks(ihooks.Hooks, maker.Maker):
   def __init__(self):
     ihooks.Hooks.__init__(self)
     import bs
@@ -11,11 +13,25 @@ class Hooks(ihooks.Hooks):
     self.usingSIDL = BSTemplates.sidlDefaults.UsingSIDL(bs.Project('', ''), [], argDB = self.argDB)
     return
 
+  def getImplementations(self):
+    dirs = []
+##    for proj in self.argDB['installedprojects']:
+##      try:
+##        maker = self.getMakeModule(proj.getRoot()).PetscMake(argDB = self.argDB)
+##        maker.main([])
+##        # Must call this after main()
+##        sidl  = maker.getSIDLDefaults().usingSIDL
+##        if 'Python' in sidl.serverLanguages:
+##          for package in sidl.getPackages():
+##            dirs.append(sidl.getServerRootDir('Python', package))
+##      except ImportError: pass
+    return dirs
+
   # sys interface replacement
   def default_path(self):
     import sys
     projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
-    return sys.path+projects
+    return sys.path+projects+self.getImplementations()
 
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):
