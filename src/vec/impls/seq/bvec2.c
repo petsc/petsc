@@ -232,14 +232,43 @@ static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_Seq_Netcdf"
+static int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
+{
+  int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart=0;
+  MPI_Comm    comm = xin->comm;  
+  PetscScalar *values,*xarray;
 
+  PetscFunctionBegin;
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
+  if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  /* define dimensions */
+  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim); CHKERRQ(ierr);
+  /* define variables */
+  ierr = ncmpi_def_var(ncid,"PETSc_Vector_Seq",NC_DOUBLE,xdim_num,&xdim,&xin_id); CHKERRQ(ierr);
+  /* leave define mode */
+  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  /* store the vector */
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&n,xarray); CHKERRQ(ierr);
+#else 
+    PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
+#endif
+  PetscFunctionReturn(0);
+}
+#endif
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq"
 int VecView_Seq(Vec xin,PetscViewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   int         ierr;
-  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica;
+  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica,isnetcdf;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -247,6 +276,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (isascii){
@@ -257,6 +287,10 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
+ #if defined(PETSC_HAVE_NETCDF_noneed)
+  } else if (isnetcdf) {
+    ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
+#endif
   } else {
     SETERRQ1(1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
