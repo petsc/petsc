@@ -9,14 +9,15 @@ static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parall
 int main(int argc,char **args)
 {
   Mat         A,Atrans,sA,*submatA,*submatsA;
-  int         bs=1,mbs=11,ov=1,i,j,k,*rows,*cols,ierr,nd=5,*idx,size;
-  int         rank,rstart,rend,sz,mm,M,N,Mbs;
+  int         bs=1,mbs=11,ov=1,i,j,k,*rows,*cols,ierr,nd=5,*idx,size,
+              rank,rstart,rend,sz,mm,M,N,Mbs;
   PetscScalar *vals,rval,one=1.0;
   IS          *is1,*is2;
   PetscRandom rand;
   Vec         xx,s1,s2;
   PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth  flg;
+  int         stages[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -126,9 +127,18 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is1+i);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is2+i);CHKERRQ(ierr);
   }
+
+  ierr = PetscLogStageRegister(&stages[0],"MatOv_SBAIJ");
+  ierr = PetscLogStageRegister(&stages[1],"MatOv_ BAIJ");
  
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  
+  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr); 
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     if (!flg ){
