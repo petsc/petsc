@@ -1,7 +1,7 @@
 C
-C static char vcid[] = "$Id: ex1f.F,v 1.2 1996/08/17 14:35:28 bsmith Exp bsmith $"
+C static char vcid[] = "$Id: ex1f.F,v 1.3 1996/09/12 16:24:47 bsmith Exp bsmith $"
 C
-C        Tests IS general routines
+C  Formated test for IS general routines
 C
       implicit none
 #include "FINCLUDE/petsc.h"

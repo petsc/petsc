@@ -1,6 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1996/08/15 19:21:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.2 1996/08/17 14:35:28 bsmith Exp bsmith $";
 #endif
+
+/*
+       Formated test for ISStride routines.
+*/
 
 static char help[] = "Tests IS stride routines\n\n";
 

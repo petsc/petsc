@@ -67,4 +67,14 @@ ex6: ex6.o
 	-$(FLINKER) -o ex6 ex6.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex6.o
 
+ex7: ex7.o 
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
+	$(RM) -f ex7.o
+
+ex7f: ex7f.o 
+	-$(FLINKER) -o ex7f ex7f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) -f ex7f.o
+
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+
