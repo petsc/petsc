@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.13 1998/04/03 20:58:25 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.14 1998/12/03 04:04:50 bsmith Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
@@ -9,7 +9,7 @@
 
 typedef struct {
   int           port;
-} Viewer_Matlab;
+} Viewer_Socket;
 
 #define DEFAULTPORT    5005
 
