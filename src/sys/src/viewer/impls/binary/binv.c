@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.18 1996/04/01 03:12:06 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.19 1996/04/25 15:40:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -10,25 +10,46 @@ static char vcid[] = "$Id: binv.c,v 1.18 1996/04/01 03:12:06 curfman Exp curfman
 
 struct _Viewer {
   VIEWERHEADER
-  int         fdes;            /* file descriptor */
+  int          fdes;         /* file descriptor */
+  FILE         *fdes_info;   /* optional file containing info on binary file*/
 };
 
 /*@C
     ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
 
 .   viewer - viewer context, obtained from ViewerFileOpenBinary()
-.   fd - file descriptor
+.   fdes - file descriptor
 
     Fortran Note:
     This routine is not supported in Fortran.
 
 .keywords: Viewer, file, get, descriptor
 
-.seealso: ViewerFileOpenBinary()
+.seealso: ViewerFileOpenBinary(),ViewerBinaryGetInfoPointer()
 @*/
 int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
   *fdes = viewer->fdes;
+  return 0;
+}
+
+/*@C
+    ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
+          info file associated with a binary file.
+
+.   viewer - viewer context, obtained from ViewerFileOpenBinary()
+.   file - file pointer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: Viewer, file, get, descriptor
+
+.seealso: ViewerFileOpenBinary(),ViewerBinaryGetDescriptor()
+@*/
+int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
+{
+  *file = viewer->fdes_info;
   return 0;
 }
 
@@ -38,6 +59,7 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
   Viewer v = (Viewer) obj;
   MPI_Comm_rank(v->comm,&rank);
   if (!rank) close(v->fdes);
+  if (!rank && v->fdes_info) fclose(v->fdes_info);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
   return 0;
@@ -83,9 +105,15 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
         SETERRQ(1,"ViewerFileOpenBinary:Cannot create file for writing");
     } 
     else if (type == BINARY_RDONLY) {
+      char *infoname;
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
         SETERRQ(1,"ViewerFileOpenBinary:Cannot open file for reading");
       }
+      /* try to open info file */
+      infoname = PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
+      PetscStrcpy(infoname,name);
+      PetscStrcat(infoname,".info");
+      v->fdes_info = fopen(infoname,"r");
     }
     else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
