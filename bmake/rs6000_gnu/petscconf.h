@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.11 1999/02/08 22:22:33 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.12 1999/03/31 23:57:34 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,7 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_rs6000 
-#define USE_IBM_ASM_CLOCK
+#define USE_READ_REAL_TIME
 
 #define HAVE_STROPTS_H 
 #define HAVE_SEARCH_H 
