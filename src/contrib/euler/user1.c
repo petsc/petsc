@@ -958,6 +958,16 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     } else {
       ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
     }
+    /* Set flag for controlling "frozen" limiters:
+          matrix_free_mult = 0: not in the midst of a matrix-free multiply
+          matrix_free_mult = 1: matrix-free mult: using frozen limiter
+          matrix_free_mult = 2: matrix-free mult: compute new limiter for
+                                first matrix-vector mult of a new linear solve
+     */
+    if (app->matrix_free_mult && app->new_linear_solve) {
+      app->matrix_free_mult++;
+      app->new_linear_solve = 0;
+    } 
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -987,7 +997,8 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,
          app->f1,app->g1,app->h1,
-         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
+         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
+         &app->matrix_free_mult); CHKERRQ(ierr);
 
   /* Compute pseudo-transient continuation array, dt.  Really need to
      recalculate dt only when the iterates change.  */
@@ -1295,6 +1306,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->matrix_free      = 0;
   app->matrix_free_mult = 0;
   app->first_time_resid = 1;
+  app->new_linear_solve = 1;
   app->J                = 0;
   app->Jmf              = 0;
   app->Fvrml            = 0;
