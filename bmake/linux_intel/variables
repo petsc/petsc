@@ -22,8 +22,7 @@ C_CLINKER	   = icc
 C_FLINKER	   = icc
 C_CCV		   = icc -V 2>&1| head -1
 C_FCV              = ifc -V 2>&1| head -1
-# -lpthread and -lg2c is for intel MKL
-C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lintrins  -lF90 -lpthread -ldl /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a
+C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lintrins  -lF90 -ldl
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -use_msasm
 G_FOPTFLAGS	   = -g
@@ -40,7 +39,7 @@ CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_CLINKER	   = icc -Kc++
 CXX_FLINKER	   = icc -Kc++
 CXX_CCV		   = icc -Kc++ -Kc++eh -V 2>&1| head -1
-CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lintrins -lF90 -lpthread -ldl  /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a
+CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lintrins -lF90 -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g -use_msasm
 GCXX_FOPTFLAGS	   = -g
