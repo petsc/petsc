@@ -14,8 +14,8 @@ LOCDIR    = src/sys/src/viewer/impls/mathematica/
 include ${PETSC_DIR}/bmake/common/base
 
 runtime: runtime.o chkopts
-	${CLINKER} -o $@ $<  ${PETSC_SLES_LIB}
-	${RM} -f $<
+	${CLINKER} -o $@ $@.o  ${PETSC_SLES_LIB}
+	${RM} -f $@.o
 
 include ${PETSC_DIR}/bmake/common/test
 
