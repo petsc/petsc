@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.19 2000/10/03 19:26:07 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.20 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -41,7 +41,7 @@ extern char PetscErrorBaseMessage[1024];
    Not Collective
 
    Input Parameter:
-.   errno - the error code
+.   errnum - the error code
 
    Output Parameter: 
 +  text - the error message (PETSC_NULL if not desired) 
@@ -54,11 +54,11 @@ extern char PetscErrorBaseMessage[1024];
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscErrorMessage(int errno,char **text,char **specific)
+int PetscErrorMessage(int errnum,char **text,char **specific)
 {
   PetscFunctionBegin;
-  if (text && errno >= PETSC_ERR_MEM && errno <= PETSC_ERR_MAT_CH_ZRPVT) {
-    *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
+  if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MAT_CH_ZRPVT) {
+    *text = PetscErrorStrings[errnum-PETSC_ERR_MEM];
   } else if (text) *text = 0;
 
   if (specific) {
