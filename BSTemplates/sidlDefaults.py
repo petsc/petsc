@@ -42,9 +42,8 @@ class UsingSIDL (logging.Logger):
       import BSTemplates.scandalTargets
       self.compilerDefaults = BSTemplates.scandalTargets.Defaults(self)
     # Flags for the SIDL compiler
-    self.compilerFlags       = ''
-    self.serverCompilerFlags = ''
-    self.clientCompilerFlags = ''
+    self.serverCompilerFlags = sidlStructs.SIDLLanguageDict(self)
+    self.clientCompilerFlags = sidlStructs.SIDLLanguageDict(self)
     self.includeDirs         = sidlStructs.SIDLPackageDict(self)
     self.extraLibraries      = sidlStructs.SIDLPackageDict(self)
     self.libDir              = os.path.join(self.getRootDir(), 'lib')
@@ -62,9 +61,10 @@ class UsingSIDL (logging.Logger):
     return self.includeDirs
 
   def setupExtraLibraries(self):
+    rootDir   = os.path.join(self.getRootDir(), 'lib')
     using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
-    clientLib = using.getClientLibrary('sidlruntime', self.getBaseLanguage(), isArchive = 0)
-    serverLib = using.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
+    clientLib = using.getClientLibrary('sidlruntime', self.getBaseLanguage(), isArchive = 0, root = rootDir)
+    serverLib = using.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), isArchive = 0, root = rootDir)
     self.extraLibraries['executable'].extend(serverLib)
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.extraLibraries[lang].extend(serverLib)
@@ -97,37 +97,43 @@ class UsingSIDL (logging.Logger):
   def getPackages(self):
     return self.packages
 
-  def getServerCompilerFlags(self):
-    return self.serverCompilerFlags
+  def getServerCompilerFlags(self, language):
+    return self.serverCompilerFlags[language]
 
-  def getClientCompilerFlags(self):
-    return self.clientCompilerFlags
+  def getClientCompilerFlags(self, language):
+    return self.clientCompilerFlags[language]
 
-  def getCompilerFlags(self):
+  def getCompilerFlags(self, language):
     flags = ''
-    if self.serverCompilerFlags:
+    if self.serverCompilerFlags[language]:
       if flags: flags += ' '
-      flags += self.serverCompilerFlags
-    if self.clientCompilerFlags:
+      flags += self.serverCompilerFlags[language]
+    if self.clientCompilerFlags[language]:
       if flags: flags += ' '
-      flags += self.clientCompilerFlags
-    if self.compilerFlags:
-      if flags: flags += ' '
-      flags += self.compilerFlags
+      flags += self.clientCompilerFlags[language]
     return flags
 
-  def setServerCompilerFlags(self, flags):
-    self.serverCompilerFlags = flags
+  def setServerCompilerFlags(self, flags, language = '', notLanguage = ''):
+    if language:
+      self.serverCompilerFlags[language] = flags
+    else:
+      for language in sidlStructs.SIDLConstants.getLanguages():
+        if notLanguage and language == notLanguage: continue
+        self.serverCompilerFlags[language] = flags
     return
 
-  def setClientCompilerFlags(self, flags):
-    self.clientCompilerFlags = flags
+  def setClientCompilerFlags(self, flags, language = '', notLanguage = ''):
+    if language:
+      self.clientCompilerFlags[language] = flags
+    else:
+      for language in sidlStructs.SIDLConstants.getLanguages():
+        if notLanguage and language == notLanguage: continue
+        self.clientCompilerFlags[language] = flags
     return
 
-  def setCompilerFlags(self, flags):
-    self.compilerFlags       = flags
-    self.serverCompilerFlags = ''
-    self.clientCompilerFlags = ''
+  def setCompilerFlags(self, flags, language = '', notLanguage = ''):
+    self.setServerCompilerFlags(flags, language, notLanguage)
+    self.setClientCompilerFlags(flags, language, notLanguage)
     return
 
   def getRootDir(self):

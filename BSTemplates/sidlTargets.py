@@ -72,7 +72,7 @@ class Defaults(logging.Logger):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], sources)
 
   def getSIDLServerCompiler(self, lang, rootDir, generatedRoots, flags = None):
-    if not flags: flags = self.usingSIDL.getServerCompilerFlags()
+    if not flags: flags = self.usingSIDL.getServerCompilerFlags(lang)
     compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
                                                                                                 compilerFlags = flags)
     compiler.language   = lang
@@ -81,7 +81,7 @@ class Defaults(logging.Logger):
     return compiler
 
   def getSIDLClientCompiler(self, lang, rootDir, flags = None):
-    if not flags: flags = self.usingSIDL.getClientCompilerFlags()
+    if not flags: flags = self.usingSIDL.getClientCompilerFlags(lang)
     compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
                                                                                                 compilerFlags = flags)
     compiler.language   = lang
@@ -90,14 +90,14 @@ class Defaults(logging.Logger):
     return compiler
 
   def getSIDLPrintCompiler(self, outputDir = None, printer = None):
-    compiler = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLPrint(compilerFlags = self.usingSIDL.getCompilerFlags())
+    compiler = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLPrint()
     if outputDir: compiler.outputDir = outputDir
     if printer:   compiler.printer   = printer
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
   def getRepositoryTargets(self):
-    action = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getCompilerFlags())
+    action = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getClientCompilerFlags(self.usingSIDL.getBaseLanguage()))
     action.outputDir = os.path.join(self.usingSIDL.repositoryDir, 'xml')
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return [target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('repository'), action])]
@@ -132,8 +132,7 @@ class Defaults(logging.Logger):
     for package in self.getPackages():
       for lang in self.usingSIDL.internalClientLanguages[package]:
         targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('client'),
-                                            self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package),
-                                                                       flags = self.usingSIDL.getCompilerFlags())]))
+                                            self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package))]))
     return targets
 
   def getSIDLTarget(self):

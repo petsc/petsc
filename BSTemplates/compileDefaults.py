@@ -23,19 +23,19 @@ class UsingCompiler:
   def getDefines(self):
     return self.defines
 
-  def getClientLibrary(self, project, lang, isArchive = 1):
+  def getClientLibrary(self, project, lang, isArchive = 1, root = None):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    if isArchive:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
-    else:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.so')])
+    if not root: root = self.libDir
+    if isArchive:  ext = '.a'
+    else:          ext = '.so'
+    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-client'+ext)])
 
-  def getServerLibrary(self, project, lang, package, isArchive = 1):
+  def getServerLibrary(self, project, lang, package, isArchive = 1, root = None):
     '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    if isArchive:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
-    else:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.so')])
+    if not root: root = self.libDir
+    if isArchive:  ext = '.a'
+    else:          ext = '.so'
+    return fileset.FileSet([os.path.join(root, 'lib'+project+'-'+lang.lower()+'-'+package+'-server'+ext)])
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())

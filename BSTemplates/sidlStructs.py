@@ -37,8 +37,23 @@ class SIDLPackageList (list, SIDLPackages):
     self.checkPackage(value)
     self.data[key] = value
 
+class SIDLLanguageDict (dict, SIDLPackages):
+  '''We allow only SIDL languages as keys'''
+  def __init__(self, defaults):
+    dict.__init__(self)
+    SIDLPackages.__init__(self, defaults)
+
+  def __getitem__(self, key):
+    SIDLConstants.checkLanguage(key)
+    if not self.has_key(key): dict.__setitem__(self, key, '')
+    return dict.__getitem__(self, key)
+
+  def __setitem__(self, key, value):
+    SIDLConstants.checkLanguage(key)
+    dict.__setitem__(self, key, value)
+
 class SIDLPackageDict (dict, SIDLPackages):
-  '''We now allow packages or languages as keys'''
+  '''We now allow packages or languages as keys, and the values must be lists'''
   def __init__(self, defaults):
     dict.__init__(self)
     SIDLPackages.__init__(self, defaults)
