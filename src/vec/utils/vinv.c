@@ -1,11 +1,93 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.40 1998/04/27 14:31:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.41 1998/05/18 22:28:09 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
 */
-#include "vec.h"   /*I "vec.h" I*/
+#include "vec.h"                 /*I "vec.h" I*/
 #include "src/vec/vecimpl.h"
+
+#undef __FUNC__  
+#define __FUNC__ "VecStrideNorm"
+/*@
+   VecStrideNorm - Computes the norm of subvector of a vector defined 
+       by a starting point and a stride
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+.  start - starting point of the subvector (defined by a stride)
+-  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
+
+   Output Parameter:
+.  norm - the norm
+
+   Notes:
+     One must call VecSetBlockSize() before this routine to set the stride 
+     information.
+
+     If x is the array representing the vector x then this computes the norm 
+     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+
+     This is useful for computing, say the norm of the pressure variable when
+     the pressure is stored (interlaced) with other variables, say density etc.
+
+     This will only work if the desire subvector is a stride subvector
+
+.keywords: vector, subvector norm, norm
+@*/
+int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
+{
+  int      i,n,ierr,bs;
+  Scalar   *x;
+  double   tnorm;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (start >= bs) {
+    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
+            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+  }
+  x += start;
+
+  if (ntype == NORM_2) {
+    Scalar sum = 0.0;
+    for ( i=0; i<n; i+=bs ) {
+      sum += x[i]*(PetscConj(x[i]));
+    }
+    tnorm  = PetscReal(sum);
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    *norm = sqrt(*norm);
+  } else if (ntype == NORM_1) {
+    tnorm = 0.0;
+    for ( i=0; i<n; i+=bs ) {
+      tnorm += PetscAbsScalar(x[i]);
+    }
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  } else if (ntype == NORM_INFINITY) {
+    double tmp;
+    tnorm = 0.0;
+
+    for (i=0; i<n; i+=bs) {
+      if ((tmp = PetscAbsScalar(x[i])) > tnorm) tnorm = tmp;
+      /* check special case of tmp == NaN */
+      if (tmp != tmp) {tnorm = tmp; break;}
+    } 
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Unknown norm type");
+  }
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "VecReciprocal"
