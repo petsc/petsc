@@ -114,9 +114,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   }
   if (i == maxit) {
     ksp->reason =  KSP_DIVERGED_ITS;
-    i--;
   }
-  *its = i + 1;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

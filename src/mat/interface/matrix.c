@@ -265,7 +265,7 @@ int MatView(Mat mat,PetscViewer viewer)
    Input Parameter:
 +  mat - the matrix
 .  x - solution vector (or PETSC_NULL)
-+  b - right hand side vector (or PETSC_NULL)
+-  b - right hand side vector (or PETSC_NULL)
 
 
    Notes: 
@@ -310,7 +310,7 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
    Input Parameter:
 +  mat - the matrix
 .  x - solution vector (or PETSC_NULL)
-+  b - right hand side vector (or PETSC_NULL)
+-  b - right hand side vector (or PETSC_NULL)
 
 
    Notes: 
@@ -2366,7 +2366,8 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
    
    Concepts: matrices^copying
 
-.seealso: MatConvert()
+.seealso: MatConvert(), MatDuplicate()
+
 @*/
 int MatCopy(Mat A,Mat B,MatStructure str)
 {
