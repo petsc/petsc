@@ -71,7 +71,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Indices for local part of scatter\n",rank);CHKERRQ(ierr);
         for (i=0; i<to->local.n; i++){
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]From %D to %D \n",rank,from->local.slots[i],to->local.slots[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]From %D to %D \n",rank,from->local.vslots[i],to->local.vslots[i]);CHKERRQ(ierr);
         }
       }
 
@@ -93,7 +93,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 #define __FUNCT__ "VecScatterLocalOptimize_Private"
 PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
 {
-  PetscInt       n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
+  PetscInt       n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->vslots,*from_slots = gen_from->vslots;
   PetscErrorCode ierr;
   PetscInt       *nto_slots,*nfrom_slots,j = 0;
   
@@ -166,12 +166,12 @@ PetscErrorCode VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   out_to->local.n_nonmatching        = 0;
   out_to->local.slots_nonmatching    = 0;
   if (in_to->local.n) {
-    ierr = PetscMalloc2(in_to->local.n,PetscInt,&out_to->local.slots,in_from->local.n,PetscInt,&out_from->local.slots);CHKERRQ(ierr);
-    ierr = PetscMemcpy(out_to->local.slots,in_to->local.slots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(out_from->local.slots,in_from->local.slots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc2(in_to->local.n,PetscInt,&out_to->local.vslots,in_from->local.n,PetscInt,&out_from->local.vslots);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.vslots,in_to->local.vslots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.vslots,in_from->local.vslots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
   } else {
-    out_to->local.slots   = 0;
-    out_from->local.slots = 0;
+    out_to->local.vslots   = 0;
+    out_from->local.vslots = 0;
   }
 
   /* allocate entire receive context */
@@ -205,7 +205,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 
   PetscFunctionBegin;
   CHKMEMQ;
-  if (gen_to->local.slots)             {ierr = PetscFree2(gen_to->local.slots,gen_from->local.slots);CHKERRQ(ierr);}
+  if (gen_to->local.vslots)             {ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);}
   if (gen_to->local.slots_nonmatching) {ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
   ierr = PetscFree7(gen_to->values,gen_to->requests,gen_to->indices,gen_to->starts,gen_to->procs,gen_to->sstatus,gen_to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree5(gen_from->values,gen_from->requests,gen_from->indices,gen_from->starts,gen_from->procs);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
     if (gen_to->local.is_copy) {
       ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
     } else if (yv != xv || !gen_to->local.nonmatching_computed) {
-      PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+      PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
       PetscInt n       = gen_to->local.n;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } else {
@@ -316,7 +316,7 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } 
   } else if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n = gen_to->local.n;
     if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] += xv[tslots[i]];}
@@ -437,7 +437,7 @@ PetscErrorCode VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,Scatte
 #define __FUNCT__ "VecScatterLocalOptimizeCopy_Private"
 PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,PetscInt bs)
 {
-  PetscInt       n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
+  PetscInt       n = gen_to->n,i,*to_slots = gen_to->vslots,*from_slots = gen_from->vslots;
   PetscInt       to_start,from_start;
   PetscErrorCode ierr;
 
@@ -504,12 +504,12 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_to->local.n_nonmatching        = 0;
   out_to->local.slots_nonmatching    = 0;
   if (in_to->local.n) {
-    ierr = PetscMalloc2(in_to->local.n,PetscInt,&out_to->local.slots,in_from->local.n,PetscInt,&out_from->local.slots);CHKERRQ(ierr);
-    ierr = PetscMemcpy(out_to->local.slots,in_to->local.slots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(out_from->local.slots,in_from->local.slots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc2(in_to->local.n,PetscInt,&out_to->local.vslots,in_from->local.n,PetscInt,&out_from->local.vslots);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.vslots,in_to->local.vslots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.vslots,in_from->local.vslots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
   } else {
-    out_to->local.slots   = 0;
-    out_from->local.slots = 0;
+    out_to->local.vslots   = 0;
+    out_from->local.vslots = 0;
   }
 
   /* allocate entire receive context */
@@ -687,7 +687,7 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -1022,7 +1022,7 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -1267,7 +1267,7 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -1505,7 +1505,7 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -1735,7 +1735,7 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -1942,7 +1942,7 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -2195,7 +2195,7 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -2398,7 +2398,7 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   /* take care of local scatters */
   if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
     PetscInt n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
@@ -2530,7 +2530,7 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
     }
   }
 
-  if (gen_to->local.slots)              {ierr = PetscFree2(gen_to->local.slots,gen_from->local.slots);CHKERRQ(ierr);}
+  if (gen_to->local.vslots)              {ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);}
   if (gen_to->local.slots_nonmatching)  {ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
 
   /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
@@ -2740,21 +2740,21 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   if (nprocslocal) {
     PetscInt nt = from->local.n = to->local.n = nprocslocal;
     /* we have a scatter to ourselves */
-    ierr = PetscMalloc2(nt,PetscInt,&to->local.slots,nt,PetscInt,&from->local.slots);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nt,PetscInt,&to->local.vslots,nt,PetscInt,&from->local.vslots);CHKERRQ(ierr);
     nt   = 0;
     for (i=0; i<nx; i++) {
       idx = inidx[i];
       if (idx >= owners[rank] && idx < owners[rank+1]) {
-        to->local.slots[nt]     = idx - owners[rank];        
-        from->local.slots[nt++] = inidy[i];        
+        to->local.vslots[nt]     = idx - owners[rank];        
+        from->local.vslots[nt++] = inidy[i];        
         if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
       }
     }
   } else { 
     from->local.n     = 0;
-    from->local.slots = 0;
+    from->local.vslots = 0;
     to->local.n       = 0; 
-    to->local.slots   = 0;
+    to->local.vslots   = 0;
   } 
   from->local.nonmatching_computed = PETSC_FALSE;
   from->local.n_nonmatching        = 0;
@@ -3042,20 +3042,20 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   if (nprocslocal) {
     /* we have a scatter to ourselves */
     PetscInt nt = from->local.n = to->local.n = nprocslocal;    
-    ierr = PetscMalloc2(nt,PetscInt,&to->local.slots,nt,PetscInt,&from->local.slots);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nt,PetscInt,&to->local.vslots,nt,PetscInt,&from->local.vslots);CHKERRQ(ierr);
     nt   = 0;
     for (i=0; i<ny; i++) {
       idx = inidy[i];
       if (idx >= owners[rank] && idx < owners[rank+1]) {
-        from->local.slots[nt] = idx - owners[rank];        
-        to->local.slots[nt++] = inidx[i];        
+        from->local.vslots[nt] = idx - owners[rank];        
+        to->local.vslots[nt++] = inidx[i];        
       }
     }
   } else {
     from->local.n     = 0; 
-    from->local.slots = 0;
+    from->local.vslots = 0;
     to->local.n       = 0;
-    to->local.slots   = 0;
+    to->local.vslots   = 0;
 
   }
   from->local.nonmatching_computed = PETSC_FALSE;
