@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.17 1996/01/02 19:48:53 balay Exp balay $ */
+/* $Id: sles.h,v 1.18 1996/03/01 00:01:56 balay Exp bsmith $ */
 
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
@@ -20,6 +20,7 @@ extern int SLESSetFromOptions(SLES);
 extern int SLESPrintHelp(SLES);
 extern int SLESView(SLES,Viewer);
 extern int SLESSetUp(SLES,Vec,Vec);
+extern int SLESSetUpOnBlocks(SLES);
 
 extern int SLESSetOptionsPrefix(SLES,char*);
 extern int SLESAppendOptionsPrefix(SLES,char*);
