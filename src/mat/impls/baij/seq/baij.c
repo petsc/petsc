@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.41 1996/04/30 19:14:56 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.42 1996/04/30 19:19:34 balay Exp balay $";
 #endif
 
 /*
@@ -912,6 +912,8 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
+extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
+extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatGetSubMatrixCall,Mat**);
 
 extern int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
@@ -1047,7 +1049,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,0,
        0,0,/*  MatConvert_SeqBAIJ  */ 0,
-       0,0,
+       MatGetSubMatrix_SeqBAIJ,0,
        MatConvertSameType_SeqBAIJ,0,0,
        MatILUFactor_SeqBAIJ,0,0,
        0,MatIncreaseOverlap_SeqBAIJ,
