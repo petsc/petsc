@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1998/05/12 18:49:42 bsmith Exp balay $ 
+# $Id: base.site,v 1.14 1998/09/25 19:11:28 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -11,6 +11,12 @@
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
 FC_LIB		=  -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+#
+# Alternative which worked for some users
+#
+# FC_LIB = -L/opt/fortran90/lib/pa2.0 -L/opt/fortran90/lib \
+# -L/opt/langtools/lib -lF90 -lcl -lc -lisamstub
+
 #
 # Use this if using f77 instead of f90 compiler
 #FC_LIB		=  -lf -L/opt/fortran/lib  -lU77
