@@ -1,6 +1,6 @@
 
 
-C    "$Id: ex1f.F,v 1.11 1996/10/02 20:54:44 bsmith Exp $";
+C    "$Id: ex1f.F,v 1.1 1996/10/10 23:58:02 balay Exp balay $";
 C
 C   Description: Demonstrates how users can augment the PETSc profiling by
 C                nserting their own event logging.
@@ -13,7 +13,7 @@ C   Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
 C   Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();
 C   Routines: PetscSleep();
 C   Processors: n
-T*/
+CT*/
 C -----------------------------------------------------------------------
 
       program main
