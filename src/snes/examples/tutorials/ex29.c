@@ -701,6 +701,8 @@ int Update(DMMG *dmmg)
 
 #endif
 
+    tsCtx->t += tsCtx->dt;
+
     if (ts_monitor) {
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
@@ -708,7 +710,6 @@ int Update(DMMG *dmmg)
       ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
       nfailsCum += nfails;
       if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
-      tsCtx->t += tsCtx->dt;
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Time Step %d time = %g Newton steps %d linear steps %d fnorm %g\n",
 			 tsCtx->itstep, tsCtx->t, its, lits, tsCtx->fnorm);
       CHKERRQ(ierr);
