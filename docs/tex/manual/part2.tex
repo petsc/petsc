@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.241 1997/11/12 19:17:07 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.242 1997/11/13 23:11:03 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -228,14 +228,11 @@ VecShift(Scalar *s,Vec x); & $ x_i = s + x_{i}$ \\
 As listed in Table \ref{fig:vectorops}, we have chosen certain 
 basic vector operations to support within the PETSc vector library.
 These operations were selected because they often arise in application 
-codes.
-Several of these operations could easily be constructed by a
-combination of the other operations.  We implement them directly to
-avoid a potentially large loss of efficiency, mainly because in such
-cases the vectors would have to move from main memory to the CPU
-multiple times, rather than just once.  Also, the arithmetic pipeline
-operations can be used more effectively in the hybrid vector
-operations.
+codes. The {\tt NormType} argument to {\tt VecNorm()} is one of \findex{VecNorm()}
+\findex{NormType} {\tt NORM\_1}, {\tt NORM\_2}, or {\tt NORM\_INFINITY}.
+\findex{NORM_1} \findex{NORM_2} \findex{NORM_INFINITY} \sindex{2-norm}
+\sindex{1-norm} \sindex{infinity norm}
+
 
 For parallel vectors that are distributed across the processors by ranges, 
 it is possible to determine \findex{VecGetOwnershipRange()}
@@ -1539,6 +1536,10 @@ MatZeroEntries(Mat A); & $ A = 0 $ \\
 \caption{\hbox{PETSc Matrix Operations}}
 \label{fig:matrixops}
 \end{table}
+The {\tt NormType} argument to {\tt MatNorm()} is one of \findex{MatNorm()}
+\findex{NormType} {\tt NORM\_1} or {\tt NORM\_INFINITY}.
+\findex{NORM_1}  \findex{NORM_INFINITY}
+\sindex{1-norm} \sindex{infinity norm}
 
 \section{Matrix-Free Matrices} \sindex{matrix-free methods}
 
@@ -1673,7 +1674,10 @@ Another matrix routine of interest is \findex{MatConvert()}
 which converts the matrix {\tt mat} to new matrix, {\tt M}, that has
 either the same or different format.  Set {\tt newtype} to {\tt MATSAME}
 to copy the matrix, keeping the same matrix format.  See 
-{\tt \$(PETSC\_DIR)/include/mat.h} for other available matrix types.
+{\tt \$(PETSC\_DIR)/include/mat.h} for other available matrix types;
+standard ones are {\tt MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,  
+               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ}, and
+               {\tt MATMPIBAIJ}.
 
 In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
