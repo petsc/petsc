@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.7 2000/01/11 21:02:32 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.8 2000/02/02 20:10:02 bsmith Exp balay $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -13,7 +13,7 @@
 #if !defined(__SNESMFJ_H__)
 #define __SNESMFJ_H__
 
-#include "include/snes.h"         /*I  "snes.h"   I*/
+#include "include/petscsnes.h"         /*I  "petscsnes.h"   I*/
 
 /*
     Table of functions that manage the computation and understanding

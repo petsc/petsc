@@ -1,7 +1,7 @@
-/*$Id: iscomp.c,v 1.24 2000/04/09 04:35:18 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.25 2000/04/12 04:22:08 bsmith Exp balay $*/
 
-#include "sys.h"   /*I "sys.h" I*/
-#include "is.h"    /*I "is.h"  I*/
+#include "petscsys.h"   /*I "petscsys.h" I*/
+#include "petscis.h"    /*I "petscis.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISEqual"

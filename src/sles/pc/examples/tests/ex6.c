@@ -1,11 +1,11 @@
-/*$Id: ex6.c,v 1.9 1999/11/05 14:46:31 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.10 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
 test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
   -m <size>       : problem size\n\
   -x1, -x2 <size> : no of subdomains in x and y directions\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "FormElementStiffness"

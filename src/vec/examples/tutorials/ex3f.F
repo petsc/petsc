@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.10 1999/01/12 23:13:48 bsmith Exp bsmith $";
+!      "$Id: ex3f.F,v 1.11 2000/01/11 21:00:24 bsmith Exp balay $";
 !
 !  Description: Displays a vector visually.
 !
@@ -21,13 +21,13 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!  Include viewer.h so that we can use the PETSc viewers.
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!  Include petscviewer.h so that we can use the PETSc viewers.
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/viewer.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscviewer.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

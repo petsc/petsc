@@ -1,10 +1,10 @@
-/*$Id: ex21.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
 parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
 for the parallel case.";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

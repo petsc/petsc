@@ -1,10 +1,10 @@
-/*$Id: block.c,v 1.45 2000/04/09 04:35:11 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.46 2000/04/12 04:22:00 bsmith Exp balay $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
-#include "src/vec/is/isimpl.h"               /*I  "is.h"     I*/
-#include "sys.h"
+#include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
+#include "petscsys.h"
 
 typedef struct {
   int n;            /* number of blocks */

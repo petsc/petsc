@@ -1,11 +1,11 @@
-/*$Id: pmap.c,v 1.15 2000/04/09 04:35:30 bsmith Exp bsmith $*/
+/*$Id: pmap.c,v 1.16 2000/04/12 04:22:23 bsmith Exp balay $*/
 
 /*
    This file contains routines for basic map object implementation.
 */
 
 #include "petsc.h"
-#include "src/vec/vecimpl.h"   /*I  "vec.h"   I*/
+#include "src/vec/vecimpl.h"   /*I  "petscvec.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MapGetLocalSize_MPI"

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 1999/11/05 14:45:59 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.16 2000/01/11 21:01:18 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -23,13 +23,13 @@ users manual for a discussion of preloading.  Input parameters include\n\
 T*/
 
 /* 
-  Include "mat.h" so that we can use matrices.
+  Include "petscmat.h" so that we can use matrices.
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h    - vectors
-     sys.h    - system routines       mat.h    - matrices
-     is.h     - index sets            viewer.h - viewers               
+     petsc.h       - base PETSc routines   petscvec.h    - vectors
+     petscsys.h    - system routines       petscmat.h    - matrices
+     petscis.h     - index sets            petscviewer.h - viewers               
 */
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,6 +1,6 @@
-/*$Id: partition.c,v 1.46 2000/04/09 04:37:03 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.47 2000/04/12 04:24:18 bsmith Exp balay $*/
  
-#include "src/mat/matimpl.h"               /*I "mat.h" I*/
+#include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
 /*
    Simplest partitioning, keeps the current partitioning.
@@ -38,7 +38,7 @@ EXTERN_C_END
 
 /* ===========================================================================================*/
 
-#include "sys.h"
+#include "petscsys.h"
 
 FList      MatPartitioningList = 0;
 PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;

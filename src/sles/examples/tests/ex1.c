@@ -1,8 +1,8 @@
-/*$Id: ex1.c,v 1.10 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.11 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,9 +1,9 @@
-/*$Id: ex70.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex70.c,v 1.6 1999/10/24 14:02:39 bsmith Exp balay $*/
 
 static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
 
-#include "mat.h"
-#include "pc.h"
+#include "petscmat.h"
+#include "petscpc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

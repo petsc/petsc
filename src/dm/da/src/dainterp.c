@@ -1,11 +1,11 @@
-/*$Id: dainterp.c,v 1.7 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.8 2000/04/12 04:26:20 bsmith Exp balay $*/
  
 /*
   Code for interpolating between grids represented by DAs
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
-#include "mg.h"
+#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "petscmg.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation"

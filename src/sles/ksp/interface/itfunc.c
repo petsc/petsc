@@ -1,9 +1,9 @@
-/*$Id: itfunc.c,v 1.143 2000/04/12 04:24:52 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.144 2000/05/04 16:26:08 bsmith Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
 
-#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues"

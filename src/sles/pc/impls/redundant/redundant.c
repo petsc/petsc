@@ -1,10 +1,10 @@
-/*$Id: redundant.c,v 1.18 2000/04/12 04:24:47 bsmith Exp balay $*/
+/*$Id: redundant.c,v 1.19 2000/05/04 14:04:16 balay Exp balay $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
 */
-#include "src/sles/pc/pcimpl.h"     /*I "pc.h" I*/
-#include "sles.h"
+#include "src/sles/pc/pcimpl.h"     /*I "petscpc.h" I*/
+#include "petscsles.h"
 
 typedef struct {
   PC         pc;                    /* actual preconditioner used on each processor */

@@ -1,12 +1,12 @@
-/*$Id: aobasic.c,v 1.53 2000/04/09 04:39:35 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.54 2000/04/12 04:26:13 bsmith Exp balay $*/
 
 /*
     The most basic AO application ordering routines. These store the 
   entire orderings on each processor.
 */
 
-#include "src/dm/ao/aoimpl.h"          /*I  "ao.h"   I*/
-#include "sys.h"
+#include "src/dm/ao/aoimpl.h"          /*I  "petscao.h"   I*/
+#include "petscsys.h"
 
 typedef struct {
   int N;

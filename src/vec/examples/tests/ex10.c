@@ -1,12 +1,12 @@
-/*$Id: ex10.c,v 1.9 1999/11/05 14:44:58 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.10 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
 
 #include "petsc.h"
-#include "is.h"
-#include "vec.h"
-#include "sys.h"
+#include "petscis.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

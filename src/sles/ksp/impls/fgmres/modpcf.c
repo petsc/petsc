@@ -1,6 +1,6 @@
-/* $Id: modpcf.c,v 1.9 2000/04/09 04:38:08 bsmith Exp bsmith $*/
+/* $Id: modpcf.c,v 1.10 2000/04/12 04:25:11 bsmith Exp balay $*/
 
-#include "sles.h" 
+#include "petscsles.h" 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPFGMRESSetModifyPC"
 /*@C

@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.42 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.43 2000/04/12 04:21:38 bsmith Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -6,7 +6,7 @@
 
 */
 #include "petsc.h"                   /*I  "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif

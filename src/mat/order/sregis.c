@@ -1,6 +1,6 @@
-/*$Id: sregis.c,v 1.31 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.32 2000/04/12 04:24:20 bsmith Exp balay $*/
 
-#include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
+#include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
 extern int MatOrdering_Natural(Mat,MatOrderingType,IS*,IS*);

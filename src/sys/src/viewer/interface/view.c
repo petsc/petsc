@@ -1,4 +1,4 @@
-/*$Id: view.c,v 1.36 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: view.c,v 1.37 2000/04/12 04:20:59 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -60,7 +60,7 @@ int ViewerDestroy(Viewer viewer)
    Level: intermediate
 
    Note:
-   See include/viewer.h for a complete list of viewers.
+   See include/petscviewer.h for a complete list of viewers.
 
    ViewerType is actually a string
 

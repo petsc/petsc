@@ -1,6 +1,6 @@
-/*$Id: vecreg.c,v 1.13 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: vecreg.c,v 1.14 2000/04/12 04:22:10 bsmith Exp balay $*/
 
-#include "src/vec/vecimpl.h"  /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"  /*I "petscvec.h" I*/
 
 EXTERN_C_BEGIN
 extern int VecCreate_Seq(Vec);

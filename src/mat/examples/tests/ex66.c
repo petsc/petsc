@@ -1,9 +1,9 @@
-/*$Id: ex66.c,v 1.6 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex66.c,v 1.7 1999/10/24 14:02:39 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads in rectangular matrix from disk, stored from ex65.c\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

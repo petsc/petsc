@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.81 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.82 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -7,7 +7,7 @@ elasticity. This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\
   -m : problem size\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.

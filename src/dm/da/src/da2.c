@@ -1,6 +1,6 @@
-/*$Id: da2.c,v 1.142 2000/05/04 18:58:59 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.143 2000/05/05 18:30:52 bsmith Exp balay $*/
  
-#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DAGetOwnershipRange"

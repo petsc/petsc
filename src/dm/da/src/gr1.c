@@ -1,10 +1,10 @@
-/*$Id: gr1.c,v 1.19 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.20 2000/04/12 04:26:20 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
 */
 
-#include "da.h"      /*I  "da.h"   I*/
+#include "petscda.h"      /*I  "petscda.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DASetUniformCoordinates"

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex2f.F,v 1.13 1998/04/15 18:02:43 balay Exp bsmith $";
+!      "$Id: ex2f.F,v 1.14 2000/01/11 21:00:01 bsmith Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a stride index set;
@@ -11,11 +11,11 @@
 !    Comment: Creates an index set based on a stride. Views that index set
 !    and then destroys it.
 !
-!  Include is.h so we can use PETSc IS objects.
+!  Include petscis.h so we can use PETSc IS objects.
 !
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/is.h"
+#include "finclude/petscis.h"
 
       integer     i,n,ierr,index(1),first,step,val
       IS          set

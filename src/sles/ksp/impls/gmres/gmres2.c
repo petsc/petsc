@@ -1,5 +1,5 @@
-/*$Id: gmres2.c,v 1.26 2000/04/09 04:37:55 bsmith Exp bsmith $*/
-#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
+/*$Id: gmres2.c,v 1.27 2000/04/12 04:25:01 bsmith Exp balay $*/
+#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPGMRESSetRestart" 

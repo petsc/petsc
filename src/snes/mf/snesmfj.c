@@ -1,7 +1,7 @@
-/*$Id: snesmfj.c,v 1.104 2000/04/09 04:38:35 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.105 2000/04/12 04:25:30 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"
-#include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 FList      MatSNESMFList              = 0;
 PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;

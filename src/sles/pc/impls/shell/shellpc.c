@@ -1,11 +1,11 @@
-/*$Id: shellpc.c,v 1.68 2000/04/12 04:24:37 bsmith Exp balay $*/
+/*$Id: shellpc.c,v 1.69 2000/05/04 14:04:31 balay Exp balay $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create their own preconditioner without writing much interface code.
 */
 
-#include "src/sles/pc/pcimpl.h"        /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"        /*I "petscpc.h" I*/
 #include "src/vec/vecimpl.h"  
 
 typedef struct {

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.73 1999/11/24 21:55:18 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.74 2000/01/11 21:02:45 bsmith Exp balay $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -40,17 +40,17 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "draw.h" so that we can use PETSc drawing routines.
-   Include "snes.h" so that we can use SNES solvers.  Note that
+   Include "petscdraw.h" so that we can use PETSc drawing routines.
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that
    this file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
 
-#include "snes.h"
+#include "petscsnes.h"
 
 /* 
    User-defined application context - contains data needed by the 

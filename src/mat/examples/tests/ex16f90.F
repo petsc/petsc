@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.11 1998/07/06 16:00:04 balay Exp bsmith $";
+!  "$Id: ex16f90.F,v 1.12 2000/01/11 21:01:03 bsmith Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -16,14 +16,14 @@
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
 !     petsc.h  - base PETSc routines
-!     vec.h - defines (INSERT_VALUES)
-!     mat.h    - matrices
-!     mat.h90  - to allow access to Fortran 90 features of matrices
+!     petscvec.h - defines (INSERT_VALUES)
+!     petscmat.h    - matrices
+!     petscmat.h90  - to allow access to Fortran 90 features of matrices
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/mat.h90"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscmat.h90"
 
       Mat A
       integer i,j,m,n,ierr

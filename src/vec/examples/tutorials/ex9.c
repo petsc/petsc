@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.21 2000/04/09 03:09:41 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.22 2000/05/04 16:25:20 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -19,12 +19,12 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use vectors.  Note that this file
+  Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   is.h     - index sets
-     sys.h    - system routines       viewer.h - viewers
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
 */
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

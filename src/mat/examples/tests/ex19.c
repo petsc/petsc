@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.19 2000/01/11 21:01:03 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.20 2000/05/04 03:19:45 bsmith Exp balay $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -6,7 +6,7 @@ the matrix across processors differently from the way it is assembled.\n\
 This example uses bilinear elements on the unit square.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "FormElementStiffness"

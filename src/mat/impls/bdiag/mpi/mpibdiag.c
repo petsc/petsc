@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.185 2000/05/04 16:25:35 bsmith Exp balay $*/
+/*$Id: mpibdiag.c,v 1.186 2000/05/04 18:59:17 balay Exp balay $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -1092,7 +1092,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***dia
   PetscFunctionReturn(0);
 }
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPIBDiag"

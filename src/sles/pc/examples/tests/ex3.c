@@ -1,11 +1,11 @@
-/*$Id: ex3.c,v 1.45 1999/11/05 14:46:31 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.46 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
  -n <n> : problem dimension\n\n";
 
-#include "ksp.h"
-#include "pc.h"
+#include "petscksp.h"
+#include "petscpc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

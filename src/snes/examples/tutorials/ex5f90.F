@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.20 1999/02/15 21:56:49 balay Exp bsmith $"
+! "$Id: ex5f90.F,v 1.21 2000/01/11 21:02:45 bsmith Exp balay $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -51,9 +51,9 @@
 !  additional comments in the file ex5f.h.
 !
 #include "ex5f.h"
-#include "include/finclude/vec.h90"
-#include "include/finclude/da.h90"
-!#include "include/finclude/mat.h90"
+#include "include/finclude/petscvec.h90"
+#include "include/finclude/petscda.h90"
+!#include "include/finclude/petscmat.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -286,7 +286,7 @@
       implicit none
 
 #include "ex5f.h"
-#include "include/finclude/vec.h90"
+#include "include/finclude/petscvec.h90"
 
 !  Input/output variables:
       Vec      X
@@ -402,7 +402,7 @@
       implicit none
 
 #include "ex5f.h"
-#include "include/finclude/vec.h90"
+#include "include/finclude/petscvec.h90"
 
 !  Input/output variables:
       SNES     snes
@@ -561,7 +561,7 @@
       implicit none
 
 #include "ex5f.h"
-#include "include/finclude/vec.h90"
+#include "include/finclude/petscvec.h90"
 
 !  Input/output variables:
       SNES         snes

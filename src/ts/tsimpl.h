@@ -1,8 +1,8 @@
-  /* $Id: tsimpl.h,v 1.18 1999/12/13 01:10:06 bsmith Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.19 2000/01/11 21:02:54 bsmith Exp balay $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
-#include "ts.h"
+#include "petscts.h"
 
 /*
     Timesteping context. 

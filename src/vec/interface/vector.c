@@ -1,10 +1,10 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.202 2000/04/12 15:47:31 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.203 2000/05/04 16:25:10 bsmith Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
-#include "src/vec/vecimpl.h"    /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecSetBlockSize"></a>*/"VecSetBlockSize"

@@ -1,9 +1,9 @@
-/*$Id: fpath.c,v 1.32 2000/04/09 04:34:31 bsmith Exp bsmith $*/
+/*$Id: fpath.c,v 1.33 2000/04/12 04:21:24 bsmith Exp balay $*/
 /*
       Code for opening and closing files.
 */
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

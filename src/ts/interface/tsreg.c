@@ -1,6 +1,6 @@
-/*$Id: tsreg.c,v 1.59 2000/04/09 04:39:08 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.60 2000/04/12 04:25:55 bsmith Exp balay $*/
 
-#include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
+#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
 FList      TSList              = 0;
 PetscTruth TSRegisterAllCalled = PETSC_FALSE;
@@ -21,7 +21,7 @@ PetscTruth TSRegisterAllCalled = PETSC_FALSE;
    of available methods (for instance, euler)
 
    Notes:
-   See "petsc/include/ts.h" for available methods (for instance)
+   See "petsc/include/petscts.h" for available methods (for instance)
 +  TS_EULER - Euler
 .  TS_PVODE - PVODE interface
 .  TS_BEULER - Backward Euler

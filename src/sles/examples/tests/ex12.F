@@ -1,14 +1,14 @@
 !
-!      "$Id: ex12.F,v 1.29 1998/12/03 04:02:35 bsmith Exp bsmith $";
+!      "$Id: ex12.F,v 1.30 2000/01/11 21:02:16 bsmith Exp balay $";
 !
        implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/viewer.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscviewer.h"
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:

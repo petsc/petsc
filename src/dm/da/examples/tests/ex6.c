@@ -1,10 +1,10 @@
-/*$Id: ex6.c,v 1.37 2000/01/11 21:03:26 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.38 2000/05/04 16:26:53 bsmith Exp balay $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
-#include "da.h"
-#include "sys.h"
-#include "ao.h"
+#include "petscda.h"
+#include "petscsys.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

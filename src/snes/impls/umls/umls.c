@@ -1,6 +1,6 @@
-/*$Id: umls.c,v 1.94 2000/04/12 04:25:37 bsmith Exp balay $*/
+/*$Id: umls.c,v 1.95 2000/05/04 14:03:57 balay Exp balay $*/
 
-#include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
+#include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
 extern int SNESStep(SNES,double*,double*,double*,double*,
                     double*,double*,double*,double*,double*);

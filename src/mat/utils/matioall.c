@@ -1,6 +1,6 @@
-/*$Id: matioall.c,v 1.15 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: matioall.c,v 1.16 2000/04/12 04:24:13 bsmith Exp balay $*/
 
-#include "mat.h"
+#include "petscmat.h"
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);

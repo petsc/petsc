@@ -1,9 +1,9 @@
-/*$Id: ex12.c,v 1.19 1999/11/24 21:54:09 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.20 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
 
-#include "mat.h"
+#include "petscmat.h"
 
 extern int TestMatZeroRows_Basic(Mat,IS,Scalar *);
 extern int TestMatZeroRows_with_no_allocation(Mat,IS,Scalar *);

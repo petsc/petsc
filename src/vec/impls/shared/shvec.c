@@ -1,9 +1,9 @@
-/*$Id: shvec.c,v 1.40 2000/04/09 04:35:33 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.41 2000/04/12 04:22:26 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
  */
-#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
+#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 /*
      Could not get the include files to work properly on the SGI with 
@@ -72,7 +72,7 @@ EXTERN_C_END
 
   We associate with a communicator a shared memory "areana" from which memory may be shmalloced.
 */
-#include "sys.h"
+#include "petscsys.h"
 #include "petscfix.h"
 #include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)

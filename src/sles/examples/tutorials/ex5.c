@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.81 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.82 2000/01/11 21:02:20 bsmith Exp balay $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -18,14 +18,14 @@ also uses multiple profiling stages.  Input arguments are\n\
 T*/
 
 /* 
-  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.15 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.16 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -8,8 +8,8 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "mat.h"
-#include "sles.h"
+#include "petscmat.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

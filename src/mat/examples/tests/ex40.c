@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex40.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -6,7 +6,7 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
   -nd <size>      : > 0  number of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,8 +1,8 @@
-/*$Id: none.c,v 1.26 2000/04/09 04:37:23 bsmith Exp bsmith $*/
+/*$Id: none.c,v 1.27 2000/04/12 04:24:34 bsmith Exp balay $*/
 /*
     Identity preconditioner, simply copies vector x to y.
 */
-#include "src/sles/pc/pcimpl.h"          /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"          /*I "petscpc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCApply_None"

@@ -1,4 +1,4 @@
-/*$Id: ex34.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex34.c,v 1.10 1999/11/05 14:45:44 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a matrix and vector from a file and writes to another. Input options:\n\
@@ -6,7 +6,7 @@ static char help[] =
                       use the file matbinary.ex.\n\
   -fout <output_file> : file for saving output matrix and vector\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.30 2000/04/23 19:00:44 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.31 2000/04/23 19:01:00 bsmith Exp balay $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -6,8 +6,8 @@
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "petsc.h"           /*I  "petsc.h"  I*/
-#include "sys.h"             /*I  "sys.h"    I*/
+#include "petsc.h"                /*I  "petsc.h"  I*/
+#include "petscsys.h"             /*I  "petscsys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 

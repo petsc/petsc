@@ -1,7 +1,7 @@
-/*$Id: bread.c,v 1.3 2000/04/09 04:33:48 bsmith Exp bsmith $*/
+/*$Id: bread.c,v 1.4 2000/04/12 04:20:49 bsmith Exp balay $*/
 
 #include <stdio.h>
-#include "sys.h"
+#include "petscsys.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
 

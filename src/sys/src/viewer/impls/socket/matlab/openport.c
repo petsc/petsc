@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.16 2000/04/09 04:33:48 bsmith Exp bsmith $*/
+/*$Id: openport.c,v 1.17 2000/04/12 04:20:49 bsmith Exp balay $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -9,7 +9,7 @@ exist for certain systems. Only compiles as C code.
 */
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't

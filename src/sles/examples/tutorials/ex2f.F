@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.57 1999/11/24 21:55:05 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.58 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -42,26 +42,26 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
 !  The following include statements are required for SLES Fortran programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     pc.h     - preconditioners
-!     ksp.h    - Krylov subspace methods
-!     sles.h   - SLES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscpc.h     - preconditioners
+!     petscksp.h    - Krylov subspace methods
+!     petscsles.h   - SLES interface
 !  Include the following to use PETSc random numbers:
-!     sys.h    - system routines
+!     petscsys.h    - system routines
 !  Additional include statements may be needed if using additional
 !  PETSc routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/sys.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -342,8 +342,8 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/ksp.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscksp.h"
 
       KSP              ksp
       Vec              x
@@ -384,8 +384,8 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/ksp.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscksp.h"
 
       KSP              ksp
       integer          ierr,n,dummy,flag

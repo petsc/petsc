@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.111 2000/04/12 04:24:44 bsmith Exp balay $*/
+/*$Id: asm.c,v 1.112 2000/05/04 14:04:23 balay Exp balay $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -10,8 +10,8 @@
        n_local_true - actual number of subdomains on this processor
        n_local = maximum over all processors of n_local_true
 */
-#include "src/sles/pc/pcimpl.h"     /*I "pc.h" I*/
-#include "sles.h"
+#include "src/sles/pc/pcimpl.h"     /*I "petscpc.h" I*/
+#include "petscsles.h"
 
 typedef struct {
   int        n,n_local,n_local_true;

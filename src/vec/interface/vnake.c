@@ -1,6 +1,6 @@
-/*$Id: vnake.c,v 1.16 2000/04/12 04:22:17 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.17 2000/05/04 16:25:10 bsmith Exp balay $*/
 
-#include "src/vec/vecimpl.h"    /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecCreate"></a>*/"VecCreate"

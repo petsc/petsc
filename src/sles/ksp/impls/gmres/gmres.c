@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.143 2000/04/27 03:52:23 bsmith Exp balay $*/
+/*$Id: gmres.c,v 1.144 2000/05/04 14:04:13 balay Exp balay $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -29,7 +29,7 @@
     of a unsuccessful gmres iteration always be the solution x.
  */
 
-#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors(KSP,int);

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.15 2000/04/12 04:25:30 bsmith Exp balay $*/
+/*$Id: snesmfjdef.c,v 1.16 2000/05/04 14:04:04 balay Exp balay $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -34,7 +34,7 @@
    includes information about the computation of h. It is shared by 
    all implementations that people provide
 */
-#include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 /*
       The default method has one parameter that is used to 

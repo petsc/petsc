@@ -1,5 +1,5 @@
 
-/* $Id: sda.h,v 1.6 1997/02/07 23:31:26 bsmith Exp bsmith $ */
+/* $Id: sda.h,v 1.7 2000/01/11 21:03:35 bsmith Exp balay $ */
 /*
     Defines the interface object for the simplified distributed array
     */
@@ -7,7 +7,7 @@
 #ifndef __SDA_H
 #define __SDA_H
 
-#include "da.h"
+#include "petscda.h"
 
 typedef struct _SDA* SDA;
 

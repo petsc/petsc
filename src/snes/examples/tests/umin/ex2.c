@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.57 1999/11/24 21:55:16 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.58 2000/01/11 21:02:43 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -11,7 +11,7 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
   -snes_mf: use matrix-free methods\n\
   -par param, where param = angle of twist per unit length (problem 1 only)\n\n";
 
-#include "snes.h"
+#include "petscsnes.h"
 
 /* User-defined application context */
    typedef struct {

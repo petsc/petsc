@@ -1,8 +1,8 @@
-/*$Id: euler.c,v 1.21 2000/04/09 04:39:11 bsmith Exp bsmith $*/
+/*$Id: euler.c,v 1.22 2000/04/12 04:25:58 bsmith Exp balay $*/
 /*
        Code for Timestepping with explicit Euler.
 */
-#include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
+#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;     /* work vector where F(t[i],u[i]) is stored */

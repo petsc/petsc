@@ -1,9 +1,9 @@
-/*$Id: ex2.c,v 1.6 1999/11/05 14:48:01 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.7 2000/01/11 21:03:29 bsmith Exp balay $*/
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
 
-#include "da.h"
-#include "sys.h"
+#include "petscda.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

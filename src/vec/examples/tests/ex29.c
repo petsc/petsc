@@ -1,10 +1,10 @@
-/*$Id: ex29.c,v 1.9 1999/11/05 14:44:58 bsmith Exp bsmith $*/
+/*$Id: ex29.c,v 1.10 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

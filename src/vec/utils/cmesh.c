@@ -1,6 +1,6 @@
-/*$Id: cmesh.c,v 1.68 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: cmesh.c,v 1.69 2000/04/12 04:22:10 bsmith Exp balay $*/
 
-#include "vec.h"        /*I "vec.h" I*/
+#include "petscvec.h"        /*I "petscvec.h" I*/
 
 
 #undef __FUNC__  

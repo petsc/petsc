@@ -1,7 +1,7 @@
-/* $Id: smatlab.c,v 1.5 2000/04/09 04:34:31 bsmith Exp bsmith $ */
+/* $Id: smatlab.c,v 1.6 2000/04/12 04:21:24 bsmith Exp balay $ */
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ /*<a name=""></a>*/"PetscStartMatlab"	

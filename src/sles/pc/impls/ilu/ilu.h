@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.9 1999/03/11 16:20:50 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.10 2000/01/11 21:01:47 bsmith Exp balay $ */
 
 /* 
    Private data structure for ILU preconditioner.
@@ -6,7 +6,7 @@
 #if !defined(__ILU_H)
 #define __ILU_H
 
-#include "mat.h"
+#include "petscmat.h"
 
 typedef struct {
   Mat               fact;             /* factored matrix */

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.14 2000/04/12 04:25:11 bsmith Exp balay $ */
+/* $Id: fgmres.c,v 1.15 2000/05/04 14:04:05 balay Exp balay $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -13,7 +13,7 @@
 
 */
 
-#include "src/sles/ksp/impls/fgmres/fgmresp.h"       /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/fgmres/fgmresp.h"       /*I  "petscksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static int    FGMRESGetNewVectors(KSP,int);

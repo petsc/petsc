@@ -1,37 +1,37 @@
-! "$Id: ex2f.h,v 1.7 2000/01/02 04:45:04 bsmith Exp curfman $"
+! "$Id: ex2f.h,v 1.8 2000/03/05 16:27:18 curfman Exp balay $"
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
 !  included in each routine within the program ex2f. 
 !
 !  The following include statements are generally used in TS Fortran
 !  programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     ksp.h    - Krylov subspace methods
-!     pc.h     - preconditioners
-!     sles.h   - SLES interface
-!     snes.h   - SNES interface
-!     ts.h     - TS interface
-!     viewer.h - viewers
-!     draw.h   - drawing
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscksp.h    - Krylov subspace methods
+!     petscpc.h     - preconditioners
+!     petscsles.h   - SLES interface
+!     petscsnes.h   - SNES interface
+!     petscts.h     - TS interface
+!     petscviewer.h - viewers
+!     petscdraw.h   - drawing
 !  In addition, we need the following for use of distributed arrays
-!     da.h     - distributed arrays (DAs)
+!     petscda.h     - distributed arrays (DAs)
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
-!     is.h     - index sets
+!     petscis.h     - index sets
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/snes.h"
-#include "include/finclude/ts.h"
-#include "include/finclude/viewer.h"
-#include "include/finclude/draw.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
+#include "include/finclude/petscts.h"
+#include "include/finclude/petscviewer.h"
+#include "include/finclude/petscdraw.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !

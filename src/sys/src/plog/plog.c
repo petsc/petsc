@@ -1,16 +1,16 @@
-/*$Id: plog.c,v 1.235 2000/04/18 03:17:59 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.236 2000/04/18 03:32:10 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "ts.h"      /* This include is to define all the PETSc cookies */
+#include "petscts.h"      /* This include is to define all the PETSc cookies */
 #include "petscmachineinfo.h"
 #if defined(PETSC_HAVE_MPE)
 #include "mpe.h"
 #endif
 #include <stdarg.h>
 #include <sys/types.h>
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

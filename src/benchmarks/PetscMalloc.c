@@ -1,7 +1,7 @@
-/*$Id: PetscMalloc.c,v 1.18 2000/01/11 21:03:44 bsmith Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.19 2000/04/18 03:24:27 bsmith Exp balay $*/
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

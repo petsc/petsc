@@ -1,6 +1,6 @@
-/*$Id: cgtype.c,v 1.18 2000/04/09 04:37:53 bsmith Exp bsmith $*/
+/*$Id: cgtype.c,v 1.19 2000/04/12 04:24:58 bsmith Exp balay $*/
 
-#include "src/sles/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
+#include "src/sles/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPCGSetType" 

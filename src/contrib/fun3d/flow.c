@@ -1,11 +1,11 @@
-/* "$Id: flow.c,v 1.34 2000/05/01 23:13:14 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.35 2000/05/01 23:14:38 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
-#include "snes.h"
-#include "ao.h"
+#include "petscsnes.h"
+#include "petscao.h"
 #include "user.h"
 
 #define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.11 1999/11/05 14:47:39 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.12 2000/01/11 21:03:05 bsmith Exp balay $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -52,16 +52,16 @@ Input parameters include:\n\
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "ts.h" so that we can use TS solvers.  Note that this file
+   Include "petscts.h" so that we can use TS solvers.  Note that this file
    automatically includes:
-     petsc.h  - base PETSc routines   vec.h  - vectors
-     sys.h    - system routines       mat.h  - matrices
-     is.h     - index sets            ksp.h  - Krylov subspace methods
-     viewer.h - viewers               pc.h   - preconditioners
-     sles.h   - linear solvers        snes.h - nonlinear solvers
+     petsc.h       - base PETSc routines   petscvec.h  - vectors
+     petscsys.h    - system routines       petscmat.h  - matrices
+     petscis.h     - index sets            petscksp.h  - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h   - preconditioners
+     petscsles.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
-#include "ts.h"
+#include "petscts.h"
 
 /* 
    User-defined application context - contains data needed by the 

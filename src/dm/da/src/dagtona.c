@@ -1,4 +1,4 @@
-/*$Id: dagtona.c,v 1.4 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: dagtona.c,v 1.5 2000/04/12 04:26:20 bsmith Exp balay $*/
  
 /*
      Tools to help solve the coarse grid problem redundantly.
@@ -8,7 +8,7 @@
   out this processors piece in GLOBAL numbering
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalAllCreate"

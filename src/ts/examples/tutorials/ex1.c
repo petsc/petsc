@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.19 1999/11/05 14:47:39 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2000/01/11 21:03:05 bsmith Exp balay $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -28,11 +28,11 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 
   ----------------------------------------------------------------------------- */
 /*
-    Include "ts.h" to use the PETSc timestepping routines. Note that
+    Include "petscts.h" to use the PETSc timestepping routines. Note that
     this file automatically includes "petsc.h" and other lower-level
     PETSc include files.
 */
-#include "ts.h"
+#include "petscts.h"
 
 /*
   Create an application context to contain data needed by the 

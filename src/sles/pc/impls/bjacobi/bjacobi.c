@@ -1,9 +1,9 @@
-/*$Id: bjacobi.c,v 1.142 2000/04/12 04:24:38 bsmith Exp balay $*/
+/*$Id: bjacobi.c,v 1.143 2000/05/04 14:04:29 balay Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
 #include "src/mat/matimpl.h"
-#include "src/sles/pc/pcimpl.h"              /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"              /*I "petscpc.h" I*/
 #include "src/sles/pc/impls/bjacobi/bjacobi.h"
 
 static int PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);

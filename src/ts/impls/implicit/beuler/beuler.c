@@ -1,8 +1,8 @@
-/*$Id: beuler.c,v 1.44 2000/04/09 04:39:12 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.45 2000/04/12 04:26:00 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
-#include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
+#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */

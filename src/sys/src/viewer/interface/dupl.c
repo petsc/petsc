@@ -1,6 +1,6 @@
-/*$Id: dupl.c,v 1.5 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.6 2000/04/12 04:20:59 bsmith Exp balay $*/
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
+#include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton" 

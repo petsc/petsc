@@ -1,8 +1,8 @@
-/*$Id: ex1.c,v 1.31 1999/10/24 14:03:06 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.32 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
-#include "pc.h"
+#include "petscpc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.51 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: random.c,v 1.52 2000/04/12 04:21:38 bsmith Exp balay $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -13,7 +13,7 @@
  */
 
 #include "petsc.h"
-#include "sys.h"        /*I "sys.h" I*/
+#include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>
 
 /* Private data */

@@ -1,6 +1,6 @@
-/*$Id: umtr.c,v 1.94 2000/04/09 04:38:44 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.95 2000/04/12 04:25:36 bsmith Exp balay $*/
 
-#include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
+#include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
 #include "src/sles/ksp/impls/qcg/qcg.h"
 

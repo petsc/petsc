@@ -1,9 +1,9 @@
-/*$Id: ex5.c,v 1.40 1999/11/05 14:45:05 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.41 2000/01/11 21:00:24 bsmith Exp balay $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
 
-#include "vec.h"
+#include "petscvec.h"
 
 /* Note:  Most applications would not read and write a vector within
   the same program.  This example is intended only to demonstrate

@@ -1,9 +1,9 @@
-/*$Id: ex2.c,v 1.12 1999/11/05 14:47:47 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.13 2000/01/11 21:03:13 bsmith Exp balay $*/
 
 static char help[] = "Tests application ordering\n\n";
 
 #include "petsc.h"
-#include "ao.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

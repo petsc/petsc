@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.10 1999/11/05 14:47:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.11 2000/01/11 21:03:15 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -15,15 +15,15 @@ static char help[] =
 T*/
 
 /* 
-  Include "ao.h" so that we can use the various AO and AOData routines for
+  Include "petscao.h" so that we can use the various AO and AOData routines for
   manipulating simple parallel databases of grid (and related) information.
   Note that this file automatically includes:
-     petsc.h  - base PETSc routines   
-     sys.h    - system routines
-     is.h     - index sets            
+     petsc.h       - base PETSc routines   
+     petscsys.h    - system routines
+     petscis.h     - index sets            
 */
 
-#include "ao.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

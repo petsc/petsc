@@ -1,6 +1,6 @@
-/*$Id: itregis.c,v 1.49 2000/04/12 04:24:52 bsmith Exp bsmith $*/
+/*$Id: itregis.c,v 1.50 2000/05/04 16:26:08 bsmith Exp balay $*/
 
-#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
 extern int KSPCreate_Richardson(KSP);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.35 1999/11/05 14:47:37 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.36 2000/01/11 21:03:03 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -9,9 +9,9 @@
 
 static char help[] = "Solves 1D heat equation.\n\n";
 
-#include "da.h"
-#include "sys.h"
-#include "ts.h"
+#include "petscda.h"
+#include "petscsys.h"
+#include "petscts.h"
 
 #define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
 

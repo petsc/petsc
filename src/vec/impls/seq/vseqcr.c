@@ -1,9 +1,9 @@
-/*$Id: vseqcr.c,v 1.11 2000/04/09 04:35:28 bsmith Exp bsmith $*/
+/*$Id: vseqcr.c,v 1.12 2000/04/12 04:22:20 bsmith Exp balay $*/
 /*
    Implements the sequential vectors.
 */
 
-#include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
+#include "src/vec/vecimpl.h"          /*I  "petscvec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
 
 #undef __FUNC__  

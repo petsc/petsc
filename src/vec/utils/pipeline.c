@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.20 2000/04/12 04:22:10 bsmith Exp bsmith $*/
+/*$Id: pipeline.c,v 1.21 2000/05/04 16:25:07 bsmith Exp balay $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -11,8 +11,8 @@
 
 */
 
-#include "src/vec/vecimpl.h" /*I "vec.h" I*/
-#include "sys.h"
+#include "src/vec/vecimpl.h" /*I "petscvec.h" I*/
+#include "petscsys.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 typedef int (*PipelineFunction)(int,PetscObject);

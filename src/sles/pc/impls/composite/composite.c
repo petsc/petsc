@@ -1,9 +1,9 @@
-/*$Id: composite.c,v 1.34 2000/04/12 04:24:46 bsmith Exp balay $*/
+/*$Id: composite.c,v 1.35 2000/05/04 14:04:18 balay Exp balay $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
-#include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
-#include "sles.h"            /*I "sles.h" I*/
+#include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
+#include "petscsles.h"            /*I "petscsles.h" I*/
 
 typedef struct _PC_CompositeLink *PC_CompositeLink;
 struct _PC_CompositeLink {

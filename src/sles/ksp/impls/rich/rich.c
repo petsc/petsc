@@ -1,8 +1,8 @@
-/*$Id: rich.c,v 1.89 2000/04/12 04:25:05 bsmith Exp balay $*/
+/*$Id: rich.c,v 1.90 2000/05/04 14:04:07 balay Exp balay $*/
 /*          
             This implements Richardson Iteration.       
 */
-#include "src/sles/ksp/kspimpl.h"              /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"              /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"
 
 #undef __FUNC__  

@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.157 2000/05/01 23:05:16 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.158 2000/05/02 03:24:57 bsmith Exp balay $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -7,7 +7,7 @@
 */
 
 #include "src/vec/is/isimpl.h"
-#include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"                     /*I "petscvec.h" I*/
 
 /*
      Checks if any indices are less than zero and generates an error

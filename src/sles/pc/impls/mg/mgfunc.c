@@ -1,7 +1,7 @@
-/*$Id: mgfunc.c,v 1.35 2000/04/09 04:37:28 bsmith Exp bsmith $*/
+/*$Id: mgfunc.c,v 1.36 2000/04/12 04:24:39 bsmith Exp balay $*/
 
-#include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
-                          /*I "mg.h"   I*/
+#include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
+                          /*I "petscmg.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MGDefaultResidual"

@@ -1,6 +1,6 @@
-/*$Id: strgen.c,v 1.12 2000/04/12 04:21:58 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.13 2000/05/04 16:25:02 bsmith Exp balay $*/
 
-#include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
+#include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
 extern int ISDuplicate_General(IS,IS *);
 extern int ISDestroy_General(IS);

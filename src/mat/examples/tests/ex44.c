@@ -1,9 +1,9 @@
-/*$Id: ex44.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex44.c,v 1.9 1999/10/24 14:02:39 bsmith Exp balay $*/
 
 static char help[] = 
 "Loads matrix dumped by ex43.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

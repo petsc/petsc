@@ -1,9 +1,9 @@
-/*$Id: ex28.c,v 1.10 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex28.c,v 1.11 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

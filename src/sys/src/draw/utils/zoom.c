@@ -1,6 +1,6 @@
-/*$Id: zoom.c,v 1.13 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: zoom.c,v 1.14 2000/04/12 04:21:18 bsmith Exp balay $*/
 
-#include "draw.h"     /*I "draw.h"  I*/
+#include "petscdraw.h"     /*I "petscdraw.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DrawZoom" 

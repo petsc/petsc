@@ -1,4 +1,4 @@
-/*$Id: receivedense.c,v 1.10 2000/04/09 04:33:48 bsmith Exp bsmith $*/
+/*$Id: receivedense.c,v 1.11 2000/04/12 04:20:49 bsmith Exp balay $*/
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 
@@ -9,7 +9,7 @@
 */
 
 #include <stdio.h>
-#include "sys.h"
+#include "petscsys.h"
 #include "mex.h"
 #define ERROR(a) {fprintf(stderr,"RECEIVE %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/

@@ -1,6 +1,6 @@
-/*$Id: snesregi.c,v 1.33 2000/04/09 04:38:32 bsmith Exp bsmith $*/
+/*$Id: snesregi.c,v 1.34 2000/04/12 04:25:27 bsmith Exp balay $*/
 
-#include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
+#include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
 extern int SNESCreate_EQ_LS(SNES);

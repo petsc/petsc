@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.22 1999/04/16 16:09:25 bsmith Exp bsmith $";
+!    "$Id: ex1f.F,v 1.23 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -36,23 +36,23 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
 !  The following include statements are required for SLES Fortran programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     ksp.h    - Krylov subspace methods
-!     pc.h     - preconditioners
-!     sles.h   - SLES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscksp.h    - Krylov subspace methods
+!     petscpc.h     - preconditioners
+!     petscsles.h   - SLES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

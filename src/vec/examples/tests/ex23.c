@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.9 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.10 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -9,8 +9,8 @@ static char help[] = "Scatters from a parallel vector to a sequential vector\n\
      Scatter first and third block to first processor and 
      second and third block to second processor
 */
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.47 2000/04/12 04:24:26 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.48 2000/05/04 16:25:54 bsmith Exp balay $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -205,7 +205,7 @@ EXTERN_C_END
   
 /* ===========================================================================================*/
 
-#include "sys.h"
+#include "petscsys.h"
 
 FList      MatColoringList = 0;
 PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;

@@ -1,9 +1,9 @@
-/*$Id: cheby.c,v 1.85 2000/04/12 04:25:04 bsmith Exp balay $*/
+/*$Id: cheby.c,v 1.86 2000/05/04 14:04:10 balay Exp balay $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
 */
-#include "src/sles/ksp/kspimpl.h"                    /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"                    /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/cheby/chebctx.h"
 
 #undef __FUNC__  

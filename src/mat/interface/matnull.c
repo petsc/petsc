@@ -1,10 +1,10 @@
-/*$Id: pcnull.c,v 1.29 2000/04/09 04:37:19 bsmith Exp bsmith $*/
+/*$Id: pcnull.c,v 1.30 2000/04/12 04:24:31 bsmith Exp balay $*/
 /*
     Routines to project vectors out of null spaces.
 */
 
-#include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
-#include "sys.h"
+#include "src/sles/pc/pcimpl.h"      /*I "petscpc.h" I*/
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCNullSpaceCreate"

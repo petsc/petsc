@@ -1,10 +1,10 @@
-/* $Id: pcimpl.h,v 1.25 1999/08/23 19:14:07 curfman Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.26 1999/11/24 21:54:30 bsmith Exp balay $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
 
-#include "ksp.h"
-#include "pc.h"
+#include "petscksp.h"
+#include "petscpc.h"
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {

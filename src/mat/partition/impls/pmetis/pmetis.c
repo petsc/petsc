@@ -1,6 +1,6 @@
-/*$Id: pmetis.c,v 1.33 2000/04/09 04:37:04 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.34 2000/04/12 04:24:20 bsmith Exp balay $*/
  
-#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
+#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
 /* 
    Currently using ParMetis-2.0. The following include file has

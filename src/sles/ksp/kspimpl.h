@@ -1,9 +1,9 @@
-/* $Id: kspimpl.h,v 1.43 1999/11/24 21:54:46 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.44 2000/01/11 21:01:55 bsmith Exp balay $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
-#include "ksp.h"
+#include "petscksp.h"
 
 typedef struct _KSPOps *KSPOps;
 

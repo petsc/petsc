@@ -1,9 +1,9 @@
-/*$Id: ex13.c,v 1.7 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.8 1999/11/05 14:47:57 bsmith Exp balay $*/
 
 static char help[] = "Tests loading DA vector from file\n\n";
 
-#include "da.h"
-#include "sys.h"
+#include "petscda.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.63 2000/04/12 04:22:10 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.64 2000/05/04 16:25:07 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -7,8 +7,8 @@
  */
 
 #include "petsc.h"
-#include "sys.h"
-#include "vec.h"         /*I  "vec.h"  I*/
+#include "petscsys.h"
+#include "petscvec.h"         /*I  "petscvec.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"VecLoad"

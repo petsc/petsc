@@ -1,12 +1,12 @@
-/*$Id: matio.c,v 1.66 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.67 2000/04/12 04:24:13 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
  */
 
 #include "petsc.h"
-#include "src/mat/matimpl.h"             /*I  "mat.h"  I*/
-#include "sys.h"
+#include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
+#include "petscsys.h"
 
 static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*) = 
            {0,0,0,0,0,0,0,0,0,0,0,0};
@@ -20,7 +20,7 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
   Not Collective
 
   Input Parameters:
-+   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
++   type - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
 -   loader - the function that reads the matrix from the binary file.
 
   Level: developer
@@ -65,7 +65,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    Input Parameters:
 +  viewer - binary file viewer, created with ViewerBinaryOpen()
 -  outtype - type of matrix desired, for example MATSEQAIJ,
-             MATMPIROWBS, etc.  See types in petsc/include/mat.h.
+             MATMPIROWBS, etc.  See types in petsc/include/petscmat.h.
 
    Output Parameters:
 .  newmat - new matrix

@@ -1,5 +1,5 @@
-/*$Id: const.c,v 1.4 2000/04/09 04:40:40 bsmith Exp bsmith $*/
-#include "src/pf/pfimpl.h"            /*I "pf.h" I*/
+/*$Id: const.c,v 1.5 2000/04/12 04:26:59 bsmith Exp balay $*/
+#include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PFApply_Constant"

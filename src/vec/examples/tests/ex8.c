@@ -1,9 +1,9 @@
-/*$Id: ex8.c,v 1.38 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.39 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

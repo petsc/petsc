@@ -1,4 +1,4 @@
-/*$Id: readinvecs.c,v 1.3 2000/04/09 04:33:48 bsmith Exp bsmith $*/
+/*$Id: readinvecs.c,v 1.4 2000/04/12 04:20:49 bsmith Exp balay $*/
 
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 
@@ -6,8 +6,8 @@
 */
 
 
-#include "sys.h"
-#include "vec.h"
+#include "petscsys.h"
+#include "petscvec.h"
 #include "mex.h"
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)

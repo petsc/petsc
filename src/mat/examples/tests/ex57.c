@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex57.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -8,8 +8,8 @@ Options:\n\
   -start <row> : the row from where the submat should be extracted\n\
   -size  <sx>  : the size of the submatrix\n";
 
-#include "mat.h"
-#include "vec.h"
+#include "petscmat.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.233 2000/04/18 02:30:57 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.234 2000/04/27 03:06:18 bsmith Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -8,7 +8,7 @@
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

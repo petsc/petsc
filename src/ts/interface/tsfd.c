@@ -1,7 +1,7 @@
-/*$Id: tsfd.c,v 1.18 2000/04/09 04:39:08 bsmith Exp bsmith $*/
+/*$Id: tsfd.c,v 1.19 2000/04/12 04:25:55 bsmith Exp balay $*/
 
-#include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
-#include "src/ts/tsimpl.h"        /*I  "ts.h"  I*/
+#include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
+#include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"TSDefaultComputeJacobianColor"

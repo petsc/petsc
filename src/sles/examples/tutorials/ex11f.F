@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.23 1999/05/12 03:32:11 bsmith Exp bsmith $";
+!    "$Id: ex11f.F,v 1.24 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -37,26 +37,26 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  The following include statements are required for SLES Fortran programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     pc.h     - preconditioners
-!     ksp.h    - Krylov subspace methods
-!     sles.h   - SLES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscpc.h     - preconditioners
+!     petscksp.h    - Krylov subspace methods
+!     petscsles.h   - SLES interface
 !  Include the following to use PETSc random numbers:
-!     sys.h    - system routines
+!     petscsys.h    - system routines
 !  Additional include statements may be needed if using other PETSc
 !  routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/sys.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

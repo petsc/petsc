@@ -1,8 +1,8 @@
-/* $Id: pdvec.c,v 1.137 2000/05/04 16:25:13 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.138 2000/05/05 18:29:29 bsmith Exp balay $*/
 /*
      Code for some of the parallel vector primatives.
 */
-#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
+#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"VecGetOwnershipRange_MPI"

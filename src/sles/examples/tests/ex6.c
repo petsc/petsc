@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.60 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.61 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -6,7 +6,7 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 #include "petsclog.h"
 
 #undef __FUNC__

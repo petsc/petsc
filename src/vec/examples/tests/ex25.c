@@ -1,10 +1,10 @@
-/*$Id: ex25.c,v 1.7 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex25.c,v 1.8 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

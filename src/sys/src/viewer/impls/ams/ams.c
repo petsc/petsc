@@ -1,6 +1,6 @@
-/*$Id: ams.c,v 1.34 2000/05/04 16:24:25 bsmith Exp balay $*/
+/*$Id: ams.c,v 1.35 2000/05/04 18:55:56 balay Exp balay $*/
 
-#include "sys.h"
+#include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.21 1999/11/05 14:44:58 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.22 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 /* np = 1 */
 
@@ -6,8 +6,8 @@ static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,6 +1,6 @@
-/*$Id: PetscVecNorm.c,v 1.9 1999/11/05 14:48:10 bsmith Exp bsmith $*/
+/*$Id: PetscVecNorm.c,v 1.10 2000/01/11 21:03:44 bsmith Exp balay $*/
 
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

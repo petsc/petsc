@@ -1,4 +1,4 @@
-c  $Id: userJac.F,v 1.5 2000/01/21 16:05:51 bsmith Exp kaushik $
+c  $Id: userJac.F,v 1.6 2000/01/23 19:59:37 kaushik Exp balay $
 c---------------------------------------------------------------
 c The following subroutines are from node6t.f in the original
 c code.
@@ -22,10 +22,10 @@ c=============================================================================
 c
       implicit none     
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsnes.h"
       integer nnodes, nedge,
      &        nsface,
      &        nsnode, nvnode, nfnode,

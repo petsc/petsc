@@ -1,11 +1,11 @@
 !
-!  "$Id: ex2f.F,v 1.12 1998/04/15 18:02:53 balay Exp bsmith $"
+!  "$Id: ex2f.F,v 1.13 2000/01/11 20:59:59 bsmith Exp balay $"
 !
 !  Formatted Test for IS stride routines
 !
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/is.h"
+#include "finclude/petscis.h"
 
       integer     i,n,ierr,ii(1),start,stride
       IS          is

@@ -1,6 +1,6 @@
-/*$Id: viewers.c,v 1.8 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: viewers.c,v 1.9 2000/04/12 04:20:59 bsmith Exp balay $*/
 
-#include "viewer.h"
+#include "petscviewer.h"
 
 struct _p_Viewers {
    MPI_Comm comm;

@@ -1,11 +1,11 @@
-/*$Id: ex1.c,v 1.31 2000/01/11 20:59:59 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.32 2000/02/02 20:08:36 bsmith Exp balay $*/
 /*
        Formatted test for ISGeneral routines.
 */
 
 static char help[] = "Tests IS general routines\n\n";
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

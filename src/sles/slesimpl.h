@@ -1,8 +1,8 @@
-/* $Id: makefile,v 1.25 1999/01/31 16:08:00 bsmith Exp $ */
+/* $Id: slesimpl.h,v 1.11 1999/11/23 18:08:52 bsmith Exp balay $ */
 
 #if !defined(_SLESIMPL_H)
 #define _SLESIMPL_H
-#include "sles.h"
+#include "petscsles.h"
 
 struct _p_SLES {
   PETSCHEADER(int)

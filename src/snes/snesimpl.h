@@ -1,9 +1,9 @@
-/* $Id: snesimpl.h,v 1.50 1999/12/01 16:15:33 balay Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.51 2000/01/11 21:02:28 bsmith Exp balay $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 
-#include "snes.h"
+#include "petscsnes.h"
 
 /*
    Nonlinear solver context

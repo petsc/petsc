@@ -1,6 +1,6 @@
-/*$Id: aopart.c,v 1.12 2000/04/09 04:39:46 bsmith Exp bsmith $*/
+/*$Id: aopart.c,v 1.13 2000/04/12 04:26:18 bsmith Exp balay $*/
 
-#include "ao.h"       /*I  "ao.h"  I*/
+#include "petscao.h"       /*I  "petscao.h"  I*/
 
 #undef __FUNC__
 #define __FUNC__ /*<a name=""></a>*/"AODataKeyPartition"

@@ -1,8 +1,8 @@
-/*$Id: pf.c,v 1.8 2000/04/09 04:40:38 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.9 2000/04/12 04:26:58 bsmith Exp balay $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
-#include "src/pf/pfimpl.h"            /*I "pf.h" I*/
+#include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 FList      PFList = 0; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
@@ -397,7 +397,7 @@ int PFGetType(PF pf,PFType *meth)
 
 
   Notes:
-  See "petsc/include/pf.h" for available methods (for instance,
+  See "petsc/include/petscpf.h" for available methods (for instance,
   PFCONSTANT)
 
   Level: intermediate

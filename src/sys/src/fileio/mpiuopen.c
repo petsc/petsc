@@ -1,9 +1,9 @@
-/*$Id: mpiuopen.c,v 1.29 2000/04/24 03:47:01 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.30 2000/05/05 03:21:13 bsmith Exp balay $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

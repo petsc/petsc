@@ -1,8 +1,8 @@
-/*$Id: ex15.c,v 1.19 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.20 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

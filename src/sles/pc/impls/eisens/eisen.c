@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.103 2000/04/12 04:24:41 bsmith Exp balay $*/
+/*$Id: eisen.c,v 1.104 2000/05/04 14:04:27 balay Exp balay $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -6,7 +6,7 @@
  method. But it requires actually solving the preconditioned problem 
  with both left and right preconditioning. 
 */
-#include "src/sles/pc/pcimpl.h"           /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"           /*I "petscpc.h" I*/
 
 typedef struct {
   Mat        shell,A;

@@ -1,10 +1,10 @@
-/*$Id: itcl.c,v 1.116 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: itcl.c,v 1.117 2000/04/12 04:24:52 bsmith Exp balay $*/
 /*
     Code for setting KSP options from the options database.
 */
 
-#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
-#include "sys.h"
+#include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
+#include "petscsys.h"
 
 /*
        We retain a list of functions that also take KSP command 

@@ -1,10 +1,10 @@
-/*$Id: ex8.c,v 1.19 1999/11/05 14:47:57 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.20 2000/01/11 21:03:26 bsmith Exp balay $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
-#include "da.h"
-#include "sys.h"
-#include "ao.h"
+#include "petscda.h"
+#include "petscsys.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "GenerateSliceScatter"

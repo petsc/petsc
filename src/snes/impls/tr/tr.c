@@ -1,6 +1,6 @@
-/*$Id: tr.c,v 1.115 2000/04/12 04:25:34 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.116 2000/04/18 23:07:54 bsmith Exp balay $*/
 
-#include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
+#include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
 /*
    This convergence test determines if the two norm of the 

@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.14 2000/01/11 21:02:45 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.15 2000/03/31 20:53:46 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -70,15 +70,15 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "snes.h" so that we can use SNES solvers.  Note that this
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
-#include "snes.h"
+#include "petscsnes.h"
 
 /* 
    User-defined application context - contains data needed by the 
@@ -108,7 +108,7 @@ extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 int main(int argc,char **argv)
 {
   SNES           snes;                /* nonlinear solver */
-  Vec            x,r;                /* solution, residual vectors */
+  Vec            x,r;                 /* solution, residual vectors */
   AppCtx         user;                /* user-defined work context */
   int            its;                 /* iterations for convergence */
   int            N,ierr,rstart,rend,*colors,i,ii,ri,rj;

@@ -1,8 +1,8 @@
-/*$Id: ex20.c,v 1.12 2000/02/16 16:25:42 balay Exp balay $*/
+/*$Id: ex20.c,v 1.13 2000/02/16 16:46:32 balay Exp balay $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.184 2000/04/09 04:35:57 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.185 2000/04/12 04:22:56 bsmith Exp balay $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -565,7 +565,7 @@ int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
 
 /* -----------------------------------------------------------------*/
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_SeqDense"
@@ -637,7 +637,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense_ASCII"

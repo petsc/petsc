@@ -1,8 +1,8 @@
-/*$Id: posindep.c,v 1.42 2000/04/12 04:26:03 bsmith Exp balay $*/
+/*$Id: posindep.c,v 1.43 2000/05/04 14:03:54 balay Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
-#include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
+#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */

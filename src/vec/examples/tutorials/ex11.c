@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.9 1999/11/05 14:45:05 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.10 2000/01/11 21:00:24 bsmith Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -11,13 +11,13 @@ static char help[] = "Demonstrates VecStrideNorm().\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use vectors.  Note that this file
+  Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   is.h     - index sets
-     sys.h    - system routines       viewer.h - viewers
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
 */
 
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

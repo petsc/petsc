@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.19 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: hists.c,v 1.20 2000/04/12 04:21:18 bsmith Exp balay $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
@@ -332,7 +332,7 @@ int DrawHGDraw(DrawHG hist)
 
   Input Parameters:
 + hist - The histogram context
-- color - one of the colors defined in draw.h or DRAW_ROTATE to make each bar a 
+- color - one of the colors defined in petscdraw.h or DRAW_ROTATE to make each bar a 
           different color
 
   Level: intermediate

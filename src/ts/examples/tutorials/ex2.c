@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.28 1999/11/05 14:47:39 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.29 2000/01/11 21:03:05 bsmith Exp balay $*/
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -37,15 +37,15 @@ timestepping.  Runtime options include:\n\
   ------------------------------------------------------------------------- */
 
 /*
-   Include "ts.h" to use the PETSc timestepping routines. Note that
+   Include "petscts.h" to use the PETSc timestepping routines. Note that
    this file automatically includes "petsc.h" and other lower-level
    PETSc include files.
 
-   Include the "da.h" to allow us to use the distributed array data 
+   Include the "petscda.h" to allow us to use the distributed array data 
    structures to manage the parallel grid.
 */
-#include "ts.h"
-#include "da.h"
+#include "petscts.h"
+#include "petscda.h"
 
 /* 
    User-defined application context - contains data needed by the 

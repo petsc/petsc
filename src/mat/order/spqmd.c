@@ -1,6 +1,6 @@
-/*$Id: spqmd.c,v 1.34 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: spqmd.c,v 1.35 2000/04/12 04:24:20 bsmith Exp balay $*/
 
-#include "mat.h"
+#include "petscmat.h"
 #include "src/mat/order/order.h"
 
 EXTERN_C_BEGIN

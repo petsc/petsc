@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.65 2000/04/09 04:37:22 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.66 2000/04/12 04:24:33 bsmith Exp balay $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -50,7 +50,7 @@
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
-#include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
 
 /* 
    Private context (data structure) for the Jacobi preconditioner.  

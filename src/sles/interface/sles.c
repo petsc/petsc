@@ -1,6 +1,6 @@
-/*$Id: sles.c,v 1.136 2000/04/15 03:56:09 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.137 2000/05/04 16:25:55 bsmith Exp balay $*/
 
-#include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
+#include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SLESPublish_Petsc"

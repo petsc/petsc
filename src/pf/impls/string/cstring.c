@@ -1,5 +1,5 @@
-/*$Id: cstring.c,v 1.4 2000/04/09 04:40:41 bsmith Exp bsmith $*/
-#include "src/pf/pfimpl.h"            /*I "pf.h" I*/
+/*$Id: cstring.c,v 1.5 2000/04/12 04:27:00 bsmith Exp balay $*/
+#include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
         Ths PF generates a function on the fly and loads it into the running 

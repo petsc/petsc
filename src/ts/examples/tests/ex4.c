@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.23 2000/01/11 21:03:03 bsmith Exp $*/
+/*$Id: ex4.c,v 1.1 2000/01/26 22:01:01 bsmith Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -15,8 +15,8 @@
 
 static char help[] = "Solve the convection-diffusion equation \n\n";
 
-#include "sys.h"
-#include "ts.h"
+#include "petscsys.h"
+#include "petscts.h"
 
 extern int Monitor(TS,int,double,Vec,void *);
 extern int Initial(Vec,void *);

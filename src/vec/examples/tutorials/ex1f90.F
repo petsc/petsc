@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.18 2000/01/24 15:45:08 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.19 2000/02/07 16:08:30 bsmith Exp balay $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -22,18 +22,18 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     vec.h90  - to allow access to Fortran90 features of vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscvec.h90  - to allow access to Fortran90 features of vectors
 !
 !  Additional include statements may be needed if using additional
 !  PETSc routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/vec.h90"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscvec.h90"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

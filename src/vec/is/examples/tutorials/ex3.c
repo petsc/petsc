@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.10 1999/10/22 23:58:50 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.11 2000/01/11 21:00:01 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -14,7 +14,7 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
     and then destroys it.
 T*/
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

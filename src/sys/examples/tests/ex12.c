@@ -1,9 +1,9 @@
-/*$Id: ex12.c,v 1.8 1999/11/05 14:44:28 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.9 2000/01/11 20:59:47 bsmith Exp balay $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

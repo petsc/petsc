@@ -1,9 +1,9 @@
-/*$Id: fuser.c,v 1.26 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: fuser.c,v 1.27 2000/04/12 04:21:38 bsmith Exp balay $*/
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
+! "$Id: ex1f.F,v 1.22 2000/01/02 04:44:49 bsmith Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -22,20 +22,20 @@
 !   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
 !   and solved using the method of Newton alone.
 !
-!   Include "ts.h"    to use the PETSc timestepping routines,
+!   Include "petscts.h"    to use the PETSc timestepping routines,
 !           "petsc.h" for basic PETSc operation,
-!           "mat.h"   for matrix operations,
-!           "pc.h"    for preconditions, and
-!           "vec.h"   for vector operations.
+!           "petscmat.h"   for matrix operations,
+!           "petscpc.h"    for preconditions, and
+!           "petscvec.h"   for vector operations.
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/pc.h"
-#include "finclude/ts.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscts.h"
 !
 !  Create an application context to contain data needed by the 
 !  application-provided call-back routines, FormJacobian() and
@@ -196,10 +196,10 @@
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/pc.h"
-#include "finclude/ts.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscts.h"
       Vec              X
       double precision user(3)
       integer          i,j,row,mx,my,ierr
@@ -248,10 +248,10 @@
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/pc.h"
-#include "finclude/ts.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscts.h"
       TS       ts
       double precision  t
       Vec               X,F
@@ -310,10 +310,10 @@
       subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/pc.h"
-#include "finclude/ts.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscts.h"
       TS               ts
       Vec              X
       Mat              JJ,B

@@ -1,10 +1,10 @@
-/*$Id: ex21.c,v 1.3 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.4 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Tests VecMax() with index\
   -n <length> : vector length\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,10 +1,10 @@
-/*$Id: pcsles.c,v 1.30 2000/04/12 04:24:45 bsmith Exp balay $*/
+/*$Id: pcsles.c,v 1.31 2000/05/04 14:04:21 balay Exp balay $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
 */
-#include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
-#include "sles.h"            /*I "sles.h" I*/
+#include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
+#include "petscsles.h"            /*I "petscsles.h" I*/
 
 typedef struct {
   PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */

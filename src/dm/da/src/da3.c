@@ -1,11 +1,11 @@
-/*$Id: da3.c,v 1.113 2000/05/04 16:26:49 bsmith Exp balay $*/
+/*$Id: da3.c,v 1.114 2000/05/04 18:58:54 balay Exp balay $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
    File created by Peter Mell  7/14/95
  */
 
-#include "src/dm/da/daimpl.h"     /*I   "da.h"    I*/
+#include "src/dm/da/daimpl.h"     /*I   "petscda.h"    I*/
 
 #if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN

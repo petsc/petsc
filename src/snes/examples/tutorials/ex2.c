@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.71 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.72 2000/01/11 21:02:45 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -13,17 +13,17 @@ This example employs a user-defined monitoring routine.\n\n";
 T*/
 
 /* 
-   Include "draw.h" so that we can use PETSc drawing routines.
-   Include "snes.h" so that we can use SNES solvers.  Note that this
+   Include "petscdraw.h" so that we can use PETSc drawing routines.
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
 
-#include "snes.h"
+#include "petscsnes.h"
 
 /* 
    User-defined routines

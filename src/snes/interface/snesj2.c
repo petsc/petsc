@@ -1,7 +1,7 @@
-/*$Id: snesj2.c,v 1.22 2000/04/09 04:38:32 bsmith Exp bsmith $*/
+/*$Id: snesj2.c,v 1.23 2000/04/12 04:25:27 bsmith Exp balay $*/
 
-#include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
-#include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
+#include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
+#include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESDefaultComputeJacobianColor"

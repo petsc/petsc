@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.22 2000/04/12 04:20:59 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.23 2000/05/04 16:24:28 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -56,7 +56,7 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
    Level: advanced
 
    Notes:  
-   See "include/viewer.h" for available methods (for instance,
+   See "include/petscviewer.h" for available methods (for instance,
    SOCKET_VIEWER)
 
 .keywords: Viewer, set, method, type

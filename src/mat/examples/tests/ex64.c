@@ -1,8 +1,8 @@
-/*$Id: ex64.c,v 1.7 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex64.c,v 1.8 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

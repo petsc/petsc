@@ -1,9 +1,9 @@
-/*$Id: ex17.c,v 1.32 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.33 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern int FormTestMatrix(Mat,int,TestType);

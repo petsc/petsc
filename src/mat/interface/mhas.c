@@ -1,8 +1,8 @@
-/*$Id: mhas.c,v 1.18 2000/04/09 04:35:53 bsmith Exp bsmith $*/
+/*$Id: mhas.c,v 1.19 2000/04/12 04:22:51 bsmith Exp balay $*/
 
 
 #include "petsc.h"
-#include "src/mat/matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
        
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatHasOperation"
@@ -22,7 +22,7 @@
    Level: advanced
 
    Notes:
-   See the file include/mat.h for a complete list of matrix
+   See the file include/petscmat.h for a complete list of matrix
    operations, which all have the form MATOP_<OPERATION>, where
    <OPERATION> is the name (in all capital letters) of the
    user-level routine.  E.g., MatNorm() -> MATOP_NORM.

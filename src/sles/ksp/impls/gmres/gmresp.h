@@ -1,11 +1,11 @@
-/* $Id: gmresp.h,v 1.12 1999/04/19 22:14:47 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.13 2000/01/11 21:02:05 bsmith Exp balay $ */
 /*
    Private data structure used by the GMRES method.
 */
 #if !defined(__GMRES)
 #define __GMRES
 
-#include "src/sles/ksp/kspimpl.h"        /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"        /*I "petscksp.h" I*/
 
 typedef struct {
     /* Hessenberg matrix and orthogonalization information.  Hes holds

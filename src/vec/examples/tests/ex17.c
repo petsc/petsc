@@ -1,10 +1,10 @@
-/*$Id: ex17.c,v 1.28 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.29 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

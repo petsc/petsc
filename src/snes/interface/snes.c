@@ -1,6 +1,6 @@
-/*$Id: snes.c,v 1.212 2000/04/12 04:25:27 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.213 2000/04/30 22:17:08 bsmith Exp balay $*/
 
-#include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
+#include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
 PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 FList      SNESList = 0;
@@ -1820,7 +1820,7 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscR
 .  snes - the SNES context
 
    Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see snes.h or the 
+.  reason - negative value indicates diverged, positive value converged, see petscsnes.h or the 
             manual pages for the individual convergence tests for complete lists
 
    Level: intermediate
@@ -2043,7 +2043,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
    of available methods (for instance, ls or tr)
 
    Notes:
-   See "petsc/include/snes.h" for available methods (for instance)
+   See "petsc/include/petscsnes.h" for available methods (for instance)
 +    SNESEQLS - Newton's method with line search
      (systems of nonlinear equations)
 .    SNESEQTR - Newton's method with trust region

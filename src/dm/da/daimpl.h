@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.30 1999/03/19 21:24:06 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.31 2000/01/11 21:03:18 bsmith Exp balay $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -6,7 +6,7 @@
 
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
-#include "da.h"
+#include "petscda.h"
 
 struct _p_DA {
   PETSCHEADER(int)

@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.13 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.14 2000/01/11 21:00:24 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
@@ -11,12 +11,12 @@ a parallel vector.\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use vectors.  Note that this file
+  Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   is.h     - index sets
-     sys.h    - system routines       viewer.h - viewers
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
 */
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

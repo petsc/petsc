@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.59 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.60 2000/01/11 21:02:45 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -20,15 +20,15 @@ with a user-provided preconditioner.  Input arguments are:\n\
 T*/
 
 /* 
-   Include "snes.h" so that we can use SNES solvers.  Note that this
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
-#include "snes.h"
+#include "petscsnes.h"
 
 /* 
    User-defined routines

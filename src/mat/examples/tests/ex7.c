@@ -1,10 +1,10 @@
-/*$Id: ex7.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
 routines directly.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

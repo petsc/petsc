@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.12 1999/11/05 14:43:58 bsmith Exp bsmith $ */
+/* $Id: ximpl.h,v 1.13 2000/01/11 20:59:14 bsmith Exp balay $ */
 
 /*
       Defines the internal data structures for the X-windows 
@@ -6,7 +6,7 @@
 */
 
 #include "src/sys/src/draw/drawimpl.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #if !defined(_XIMPL_H)
 #define _XIMPL_H

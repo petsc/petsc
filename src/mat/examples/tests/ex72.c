@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.9 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex72.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -8,7 +8,7 @@ output file. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

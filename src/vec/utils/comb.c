@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.28 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: comb.c,v 1.29 2000/04/12 04:22:10 bsmith Exp balay $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -20,7 +20,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include "src/vec/vecimpl.h"                              /*I   "vec.h"   I*/
+#include "src/vec/vecimpl.h"                              /*I   "petscvec.h"   I*/
 
 #define STATE_BEGIN 0
 #define STATE_END   1

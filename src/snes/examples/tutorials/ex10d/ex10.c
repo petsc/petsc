@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.13 1999/11/05 14:47:27 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.14 2000/01/11 21:02:53 bsmith Exp balay $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -47,17 +47,17 @@ T*/
    -----------------------------------------------------------------------*/
 
 /*
-   Include ao.h so that we can use AO (Application Ordering) object's services.
-   Include "snes.h" so that we can use SNES solvers.  Note that this
+   Include petscao.h so that we can use AO (Application Ordering) object's services.
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
-#include "ao.h"
-#include "snes.h"
+#include "petscao.h"
+#include "petscsnes.h"
 
 
 #define MAX_ELEM      500  /* Maximum number of elements */

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.314 2000/04/30 22:29:06 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.315 2000/05/04 14:04:42 balay Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1600,7 +1600,7 @@ int MatRetrieveValues_MPIAIJ(Mat mat)
 }
 EXTERN_C_END
 
-#include "pc.h"
+#include "petscpc.h"
 EXTERN_C_BEGIN
 extern int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
@@ -1960,7 +1960,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPIAIJ"

@@ -1,7 +1,7 @@
-/*$Id: gcreate.c,v 1.118 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.119 2000/04/12 04:24:13 bsmith Exp balay $*/
 
-#include "sys.h"
-#include "mat.h"       /*I "mat.h"  I*/
+#include "petscsys.h"
+#include "petscmat.h"       /*I "petscmat.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreate"

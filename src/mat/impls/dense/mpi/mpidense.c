@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.137 2000/04/12 04:22:59 bsmith Exp balay $*/
+/*$Id: mpidense.c,v 1.138 2000/05/04 14:04:46 balay Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -1168,7 +1168,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPIDense_DenseInFile"

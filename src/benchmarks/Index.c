@@ -1,7 +1,7 @@
-/*$Id: Index.c,v 1.24 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: Index.c,v 1.25 2000/01/11 21:03:44 bsmith Exp balay $*/
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 extern int BlastCache(void);
 extern int test1(void);

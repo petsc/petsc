@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.24 2000/04/12 04:21:38 bsmith Exp bsmith $*/
+/*$Id: sorti.c,v 1.25 2000/04/23 04:20:27 bsmith Exp balay $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -7,8 +7,8 @@
    aliased.  For some compilers, marking variables as register can improve 
    the compiler optimizations.
  */
-#include "petsc.h"           /*I  "petsc.h"  I*/
-#include "sys.h"             /*I  "sys.h"    I*/
+#include "petsc.h"                /*I  "petsc.h"  I*/
+#include "petscsys.h"             /*I  "petscsys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 

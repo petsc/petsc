@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.20 1999/11/05 14:47:16 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.21 2000/01/11 21:02:41 bsmith Exp balay $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -29,8 +29,8 @@ options are:\n\
     system of equations.
 */
 
-#include "snes.h"
-#include "da.h"
+#include "petscsnes.h"
+#include "petscda.h"
 
 /* User-defined application context */
 typedef struct {

@@ -1,8 +1,8 @@
 !
-!    "$Id: ex19.F,v 1.32 1999/01/12 23:13:42 bsmith Exp bsmith $";
+!    "$Id: ex19.F,v 1.33 2000/01/11 21:00:17 bsmith Exp balay $";
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 !
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.

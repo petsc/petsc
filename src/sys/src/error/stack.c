@@ -1,7 +1,7 @@
-/*$Id: stack.c,v 1.26 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: stack.c,v 1.27 2000/04/12 04:21:20 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 
 #if defined(PETSC_USE_STACK)
 

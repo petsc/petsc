@@ -1,9 +1,9 @@
-/*$Id: stride.c,v 1.92 2000/04/09 04:35:10 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.93 2000/04/12 04:21:59 bsmith Exp balay $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
-#include "src/vec/is/isimpl.h"             /*I   "is.h"   I*/
+#include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
 
 typedef struct {
   int n,first,step;

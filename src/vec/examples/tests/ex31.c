@@ -1,10 +1,10 @@
-/*$Id: ex31.c,v 1.1 2000/05/04 17:42:05 bsmith Exp bsmith $*/
+/*$Id: ex31.c,v 1.2 2000/05/05 18:29:33 bsmith Exp balay $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
 */
 
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

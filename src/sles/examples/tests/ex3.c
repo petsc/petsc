@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.60 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.61 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -7,7 +7,7 @@ matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "FormElementStiffness"

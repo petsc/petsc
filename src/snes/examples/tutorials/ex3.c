@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.67 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.68 2000/01/11 21:02:45 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -23,19 +23,19 @@ The command line options include:\n\
 T*/
 
 /* 
-   Include "draw.h" so that we can use distributed arrays (DAs).
-   Include "draw.h" so that we can use PETSc drawing routines.
-   Include "snes.h" so that we can use SNES solvers.  Note that this
+   Include "petscdraw.h" so that we can use distributed arrays (DAs).
+   Include "petscdraw.h" so that we can use PETSc drawing routines.
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscsles.h   - linear solvers
 */
 
-#include "da.h"
-#include "snes.h"
+#include "petscda.h"
+#include "petscsnes.h"
 
 /* 
    User-defined routines.  Note that immediately before each routine below,

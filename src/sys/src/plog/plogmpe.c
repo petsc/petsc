@@ -1,10 +1,10 @@
-/*$Id: plogmpe.c,v 1.50 2000/04/09 04:34:52 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.51 2000/04/12 04:21:43 bsmith Exp balay $*/
 /*
       PETSc code to log PETSc events using MPE
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
-#include "sys.h"
+#include "petscsys.h"
 #include "mpe.h"
 
 /* 

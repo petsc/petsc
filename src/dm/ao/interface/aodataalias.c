@@ -1,6 +1,6 @@
-/*$Id: aodataalias.c,v 1.4 2000/04/09 04:39:28 bsmith Exp bsmith $*/
+/*$Id: aodataalias.c,v 1.5 2000/04/12 04:26:11 bsmith Exp balay $*/
 
-#include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
+#include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"AODataAddAlias" 

@@ -1,6 +1,6 @@
-/*$Id: pfall.c,v 1.4 2000/04/09 04:40:38 bsmith Exp bsmith $*/
+/*$Id: pfall.c,v 1.5 2000/04/12 04:26:58 bsmith Exp balay $*/
 
-#include "pf.h"          /*I   "pf.h"   I*/
+#include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
 extern int PFCreate_Constant(PF,void*);

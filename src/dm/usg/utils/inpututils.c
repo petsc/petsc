@@ -1,12 +1,12 @@
-/* $Id: inpututils.c,v 1.5 2000/04/12 04:26:33 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.6 2000/05/04 16:26:56 bsmith Exp balay $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
 */
 
 #include "src/dm/ao/aoimpl.h"
-#include "bitarray.h"
-#include "draw.h"
+#include "petscba.h"
+#include "petscdraw.h"
 
 /*
     cell_n        - number of cells

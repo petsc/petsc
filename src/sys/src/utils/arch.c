@@ -1,6 +1,6 @@
-/*$Id: arch.c,v 1.37 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: arch.c,v 1.38 2000/04/12 04:21:38 bsmith Exp balay $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
-#include "sys.h"           /*I  "sys.h"  I*/
+#include "petscsys.h"           /*I  "petscsys.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscGetArchType"

@@ -1,9 +1,9 @@
-/*$Id: index.c,v 1.73 2000/04/09 04:35:07 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.74 2000/04/12 04:21:56 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "src/vec/is/isimpl.h" 
-     /*I "is.h" I*/
+     /*I "petscis.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISIdentity" 

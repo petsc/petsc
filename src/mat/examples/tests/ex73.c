@@ -1,4 +1,4 @@
-/*$Id: ex73.c,v 1.1 2000/01/26 19:35:19 bsmith Exp bsmith $*/
+/*$Id: ex73.c,v 1.2 2000/02/02 16:44:34 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
@@ -11,14 +11,14 @@ static char help[] =
 T*/
 
 /* 
-  Include "mat.h" so that we can use matrices.  Note that this file
+  Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            
-     viewer.h - viewers               
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            
+     petscviewer.h - viewers               
 */
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,7 +1,7 @@
-/*$Id: spartition.c,v 1.17 2000/04/09 04:37:03 bsmith Exp bsmith $*/
+/*$Id: spartition.c,v 1.18 2000/04/12 04:24:18 bsmith Exp balay $*/
  
 #include "petsc.h"
-#include "mat.h"
+#include "petscmat.h"
 
 EXTERN_C_BEGIN
 extern int MatPartitioningCreate_Current(MatPartitioning);

@@ -1,8 +1,8 @@
-/*$Id: ex5.c,v 1.10 1999/11/05 14:47:47 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.11 2000/01/11 21:03:13 bsmith Exp balay $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
-#include "ao.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

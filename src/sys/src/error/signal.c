@@ -1,11 +1,11 @@
-/*$Id: signal.c,v 1.67 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.68 2000/04/12 04:21:20 bsmith Exp balay $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
 */
 #include <signal.h>
 #include "petsc.h"             /*I   "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 #include "petscfix.h"     
 
 struct SH {

@@ -1,6 +1,6 @@
-/*$Id: shellcnv.c,v 1.12 2000/04/09 04:36:08 bsmith Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.13 2000/04/12 04:23:17 bsmith Exp balay $*/
 
-#include "src/mat/matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
   
 #undef __FUNC__  

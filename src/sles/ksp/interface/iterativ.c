@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.94 2000/04/12 04:24:52 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.95 2000/04/15 04:04:25 bsmith Exp balay $*/
 
 /*
    This file contains some simple default routines.  
@@ -7,7 +7,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPDefaultFreeWork"
@@ -528,7 +528,7 @@ int KSPDefaultDestroy(KSP ksp)
 .  ksp - the KSP context
 
    Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see ksp.h
+.  reason - negative value indicates diverged, positive value converged, see petscksp.h
 
    Possible values for reason:
 +  KSP_CONVERGED_RTOL (residual norm decreased by a factor of rtol)

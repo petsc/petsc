@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.8 2000/01/11 21:00:24 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.9 2000/04/09 03:09:41 bsmith Exp balay $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
@@ -10,12 +10,12 @@ static char help[] = "Tests PetscObjectPublish().\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use vectors.  Note that this file
+  Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   is.h     - index sets
-     sys.h    - system routines       viewer.h - viewers
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
 */
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.17 1998/04/15 18:02:50 balay Exp bsmith $";
+!  "$Id: ex1f.F,v 1.18 2000/01/11 21:00:01 bsmith Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -13,12 +13,12 @@
 !  The following include statements are required for Fortran programs
 !  that use PETSc index sets:
 !     petsc.h  - base PETSc routines
-!     is.h     - index sets (IS objects)
+!     petscis.h     - index sets (IS objects)
 !
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
+#include "include/finclude/petscis.h"
 
       integer     ierr,indices(5),rank,n,index1,index5
       PetscOffset ix

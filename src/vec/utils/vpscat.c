@@ -1,11 +1,11 @@
-/*$Id: vpscat.c,v 1.134 2000/04/23 04:11:32 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.135 2000/04/23 04:15:07 bsmith Exp balay $*/
 /*
     Defines parallel vector scatters.
 */
 
-#include "sys.h"
+#include "petscsys.h"
 #include "src/vec/is/isimpl.h"
-#include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"                     /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h"
 #include "src/vec/impls/mpi/pvecimpl.h"
 

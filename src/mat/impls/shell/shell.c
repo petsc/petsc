@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.78 2000/04/09 04:36:08 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.79 2000/04/12 04:23:17 bsmith Exp balay $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -6,7 +6,7 @@
   much of anything.
 */
 
-#include "src/mat/matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
 
 typedef struct {
@@ -303,7 +303,7 @@ $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
 $      ierr = MatShellSetOperation(A,MATOP_MULT,(void*) usermult);
 
     Notes:
-    See the file include/mat.h for a complete list of matrix
+    See the file include/petscmat.h for a complete list of matrix
     operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the
     user interface routine (e.g., MatMult() -> MATOP_MULT).
@@ -356,7 +356,7 @@ int MatShellSetOperation(Mat mat,MatOperation op,void *f)
     Level: advanced
 
     Notes:
-    See the file include/mat.h for a complete list of matrix
+    See the file include/petscmat.h for a complete list of matrix
     operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the
     user interface routine (e.g., MatMult() -> MATOP_MULT).

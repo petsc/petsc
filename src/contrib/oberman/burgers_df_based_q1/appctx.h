@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appctx.h,v 1.6 2000/01/06 20:43:22 bsmith Exp balay $*/
 /*
     Defines some simple data structures for writing cell (element) based PDE codes.
 
@@ -8,9 +8,9 @@
 #if !defined(__APPCTX_H)
 #define __APPCTX_H
 
-#include "ao.h"
-#include "bitarray.h"
-#include "snes.h"
+#include "petscao.h"
+#include "petscba.h"
+#include "petscsnes.h"
 /*
   cell_n               - number of cells on this processor 
   cell_vertex          - vertices of the cells (in local numbering)

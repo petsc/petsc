@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.16 2000/04/09 04:34:52 bsmith Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.17 2000/04/12 04:21:43 bsmith Exp balay $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -6,7 +6,7 @@
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include <stdarg.h>
 #include <sys/types.h>
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

@@ -1,7 +1,7 @@
-/*$Id: drawv.c,v 1.48 2000/04/12 04:20:56 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.49 2000/05/04 16:24:25 bsmith Exp balay $*/
 
 #include "petsc.h"
-#include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
+#include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_Draw" 

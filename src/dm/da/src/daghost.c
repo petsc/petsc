@@ -1,10 +1,10 @@
-/*$Id: daghost.c,v 1.20 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: daghost.c,v 1.21 2000/04/12 04:26:20 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DAGetGhostCorners"

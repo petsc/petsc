@@ -1,10 +1,10 @@
-/*$Id: dalocal.c,v 1.23 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: dalocal.c,v 1.24 2000/04/12 04:26:20 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DACreateLocalVector"

@@ -1,9 +1,9 @@
-/*$Id: ex4.c,v 1.37 1999/10/24 14:03:06 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.38 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";
 
-#include "pc.h"
+#include "petscpc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

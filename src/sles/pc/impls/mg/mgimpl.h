@@ -1,4 +1,4 @@
-/* $Id: mgimpl.h,v 1.11 1999/01/31 16:08:17 bsmith Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.12 1999/10/13 20:37:56 bsmith Exp balay $ */
 
 /*
       Data structure used for Multigrid preconditioner.
@@ -6,8 +6,8 @@
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
 #include "src/sles/pc/pcimpl.h"
-#include "mg.h"
-#include "sles.h"
+#include "petscmg.h"
+#include "petscsles.h"
 
 typedef struct _MG* MG;
 

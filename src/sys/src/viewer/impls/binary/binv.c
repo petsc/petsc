@@ -1,6 +1,6 @@
-/*$Id: binv.c,v 1.82 2000/04/12 04:20:53 bsmith Exp balay $*/
+/*$Id: binv.c,v 1.83 2000/05/04 14:04:53 balay Exp balay $*/
 
-#include "sys.h"
+#include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)

@@ -1,8 +1,8 @@
-/* $Id: matimpl.h,v 1.107 2000/04/12 04:22:49 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.108 2000/05/04 16:25:22 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
-#include "mat.h"
+#include "petscmat.h"
 
 /*
   This file defines the parts of the matrix data structure that are 
@@ -11,7 +11,7 @@
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/mat.h and include/finclude/mat.h
+    in include/petscmat.h and include/finclude/petscmat.h
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {

@@ -1,8 +1,8 @@
-/*$Id: ex4.c,v 1.6 1999/05/04 20:30:16 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.7 1999/10/24 14:01:46 bsmith Exp balay $*/
 
 static char help[] = "Tests ISStrideToGeneral()\n\n";
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

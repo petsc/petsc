@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.51 1999/11/24 21:55:15 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.52 2000/01/11 21:02:41 bsmith Exp balay $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -35,7 +35,7 @@ is solved.  The command line options are:\n\
     nonlinear equations. 
 */
 
-#include "snes.h"
+#include "petscsnes.h"
 
 typedef struct {
       double      param;        /* test problem parameter */

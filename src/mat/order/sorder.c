@@ -1,10 +1,10 @@
-/*$Id: sorder.c,v 1.70 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.71 2000/04/12 04:24:20 bsmith Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
 #include "src/mat/matimpl.h"
-#include "sys.h"
+#include "petscsys.h"
 
 FList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;

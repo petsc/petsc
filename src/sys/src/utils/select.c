@@ -1,6 +1,6 @@
-/*$Id: select.c,v 1.3 2000/04/24 04:03:53 bsmith Exp bsmith $*/
-#include "petsc.h"         /*I  "petsc.h"  I*/
-#include "sys.h"           /*I  "sys.h"  I*/
+/*$Id: select.c,v 1.4 2000/05/04 16:24:51 bsmith Exp balay $*/
+#include "petsc.h"              /*I  "petsc.h"  I*/
+#include "petscsys.h"           /*I  "petscsys.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscPopUpSelect"></a>*/"PetscPopUpSelect"

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.24 1999/04/16 16:10:23 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.25 2000/01/11 21:02:45 bsmith Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -22,25 +22,25 @@
 !
 !  The following include statements are generally used in SNES Fortran
 !  programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     ksp.h    - Krylov subspace methods
-!     pc.h     - preconditioners
-!     sles.h   - SLES interface
-!     snes.h   - SNES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscksp.h    - Krylov subspace methods
+!     petscpc.h     - preconditioners
+!     petscsles.h   - SLES interface
+!     petscsnes.h   - SNES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -203,8 +203,8 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscsnes.h"
 
       SNES     snes
       Vec      x,f
@@ -259,10 +259,10 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsnes.h"
 
       SNES         snes
       Vec          X
@@ -311,12 +311,12 @@
       subroutine MyLineSearch(snes,lctx,x,f,g,y,w,fnorm,ynorm,gnorm,     &
      &                        flag,ierr)
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 
       SNES    snes
       integer lctx

@@ -1,11 +1,11 @@
-/*$Id: da1.c,v 1.113 2000/05/04 16:26:49 bsmith Exp balay $*/
+/*$Id: da1.c,v 1.114 2000/05/04 18:58:57 balay Exp balay $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
    This file was created by Peter Mell   6/30/95    
 */
 
-#include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
+#include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
 #if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN

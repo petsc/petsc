@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.22 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: sortd.c,v 1.23 2000/04/12 04:21:38 bsmith Exp balay $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -8,8 +8,8 @@
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "petsc.h"           /*I  "petsc.h"  I*/
-#include "sys.h"             /*I  "sys.h"    I*/
+#include "petsc.h"                /*I  "petsc.h"  I*/
+#include "petscsys.h"             /*I  "petscsys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    

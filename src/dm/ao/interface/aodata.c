@@ -1,8 +1,8 @@
-/*$Id: aodata.c,v 1.46 2000/04/09 04:39:28 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.47 2000/04/12 04:26:11 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on AOData
 */
-#include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
+#include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 
 #undef __FUNC__  

@@ -1,11 +1,11 @@
-/*$Id: baij2.c,v 1.58 2000/04/12 04:23:32 bsmith Exp kaushik $*/
+/*$Id: baij2.c,v 1.59 2000/04/30 15:54:04 kaushik Exp balay $*/
 
-#include "sys.h"
+#include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/inline/ilu.h"
-#include "bitarray.h"
+#include "petscba.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatIncreaseOverlap_SeqBAIJ"

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.20 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.21 2000/01/11 21:02:20 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -54,16 +54,16 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "da.h" so that we can use distributed arrays (DAs).
-   Include "sles.h" so that we can use SLES solvers.  Note that this
+   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscsles.h" so that we can use SLES solvers.  Note that this
    file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "da.h"
-#include "sles.h"
+#include "petscda.h"
+#include "petscsles.h"
 
 /* 
    User-defined application context - contains data needed by the 

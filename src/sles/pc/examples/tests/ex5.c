@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.62 1999/11/24 21:54:45 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.63 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -13,7 +13,7 @@ This example also demonstrates matrix-free methods\n\n";
 /*
   This is not a good example to understand the use of multigrid with PETSc.
 */
-#include "mg.h"
+#include "petscmg.h"
 
 int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);

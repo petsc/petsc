@@ -1,10 +1,10 @@
-/*$Id: ex7.c,v 1.25 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.26 2000/01/11 21:00:24 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
 and from Fortran to C\n\n";
 
-#include "vec.h"
+#include "petscvec.h"
 
 /*
   Ugly stuff to insure the function names match between Fortran 

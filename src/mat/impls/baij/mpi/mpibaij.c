@@ -1,6 +1,6 @@
-/*$Id: mpibaij.c,v 1.196 2000/04/30 22:30:20 bsmith Exp balay $*/
+/*$Id: mpibaij.c,v 1.197 2000/05/04 14:04:37 balay Exp balay $*/
 
-#include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
+#include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
 
 extern int MatSetUpMultiply_MPIBAIJ(Mat); 
@@ -2361,7 +2361,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PetscFunctionReturn(0);
 }
 
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPIBAIJ"

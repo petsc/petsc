@@ -1,5 +1,5 @@
 !
-!     "$Id: ex14f.F,v 1.1 1999/05/20 19:41:21 bsmith Exp bsmith $";
+!     "$Id: ex14f.F,v 1.2 1999/06/30 22:50:14 bsmith Exp balay $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -25,12 +25,12 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
 !
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 
       integer    rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
       integer    flag,bs

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.53 1999/03/24 22:28:40 balay Exp bsmith $";
+!    "$Id: ex12.F,v 1.54 2000/01/11 21:02:41 bsmith Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -27,10 +27,10 @@
        implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsnes.h"
 
       PetscFortranAddr ctx(6)
       integer          rank,size,ierr,N,start,end,nn,i,ii,its,flg
@@ -132,10 +132,10 @@
       PetscOffset      ixx,iff,iF2
       Scalar           h,d,vf2(1),vxx(1),vff(1)
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsnes.h"
 
 
       rank  = ctx(4)
@@ -206,8 +206,8 @@
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscsnes.h"
       integer          ierr
       Vec              x
       SNES             snes
@@ -223,10 +223,10 @@
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsnes.h"
       SNES             snes
       Vec              x
       Mat              jac,B

@@ -1,11 +1,11 @@
-/*$Id: zerodiag.c,v 1.37 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.38 2000/04/12 04:24:13 bsmith Exp balay $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
     elements are nonzero.
  */
 
-#include "src/mat/matimpl.h"       /*I  "mat.h"  I*/
+#include "src/mat/matimpl.h"       /*I  "petscmat.h"  I*/
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
 

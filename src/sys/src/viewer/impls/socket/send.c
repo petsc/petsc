@@ -1,7 +1,7 @@
-/* $Id: send.c,v 1.109 2000/04/12 04:20:47 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.110 2000/05/04 16:24:21 bsmith Exp balay $ */
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but do not
@@ -311,7 +311,7 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
 
 #else /* defined (PARCH_win32) */
  
-#include "viewer.h"
+#include "petscviewer.h"
 #undef __FUNC__  
 #define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)

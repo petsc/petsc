@@ -1,9 +1,9 @@
-/*$Id: ex9.c,v 1.9 1999/11/05 14:47:57 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.10 2000/01/11 21:03:26 bsmith Exp balay $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
-#include "mat.h"
-#include "da.h"
+#include "petscmat.h"
+#include "petscda.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

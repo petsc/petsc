@@ -1,11 +1,11 @@
-/*$Id: dl.c,v 1.60 2000/04/12 04:21:23 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.61 2000/05/04 16:24:41 bsmith Exp balay $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
 */
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #include "petscfix.h"
 #include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)

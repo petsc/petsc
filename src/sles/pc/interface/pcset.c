@@ -1,10 +1,10 @@
-/*$Id: pcset.c,v 1.102 2000/04/09 04:37:19 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.103 2000/04/12 04:24:31 bsmith Exp balay $*/
 /*
     Routines to set PC methods and options.
 */
 
-#include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
-#include "sys.h"
+#include "src/sles/pc/pcimpl.h"      /*I "petscpc.h" I*/
+#include "petscsys.h"
 
 PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 /*
@@ -30,7 +30,7 @@ FList PCList = 0;
    jacobi or bjacobi)
 
   Notes:
-  See "petsc/include/pc.h" for available methods (for instance,
+  See "petsc/include/petscpc.h" for available methods (for instance,
   PCJACOBI, PCILU, or PCBJACOBI).
 
   Normally, it is best to use the SLESSetFromOptions() command and

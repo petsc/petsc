@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f.F,v 1.21 1998/04/15 18:00:13 balay Exp bsmith $";
+!      "$Id: ex4f.F,v 1.22 2000/01/11 21:00:24 bsmith Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArray().
@@ -22,11 +22,11 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Macro definitions

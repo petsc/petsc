@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex30.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -9,7 +9,7 @@ Note that most users should employ the SLES interface to the\n\
 linear solvers instead of using the factorization routines\n\
 directly.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

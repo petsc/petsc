@@ -1,6 +1,6 @@
-/*$Id: getcolv.c,v 1.13 2000/04/30 21:56:04 bsmith Exp bsmith $*/
+/*$Id: getcolv.c,v 1.14 2000/05/04 03:12:33 bsmith Exp balay $*/
 
-#include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
+#include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetColumnVector"

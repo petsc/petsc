@@ -1,11 +1,11 @@
 !
-!    "$Id: ex20.F,v 1.8 1999/01/31 16:04:09 bsmith Exp bsmith $";
+!    "$Id: ex20.F,v 1.9 2000/01/11 21:00:17 bsmith Exp balay $";
 !
        implicit none
 #include "include/finclude/petsc.h"
-#include "include/finclude/sys.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/viewer.h"
+#include "include/finclude/petscsys.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscviewer.h"
 !
 !  This example demonstrates writing an array to a file in binary format
 !  that may be read in by PETSc's VecLoad() routine.

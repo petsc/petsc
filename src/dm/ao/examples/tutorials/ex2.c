@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.25 2000/01/11 21:03:15 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.26 2000/04/09 03:11:18 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -47,16 +47,16 @@ T*/
 */
 
 /* 
-  Include "mat.h" so that we can use matrices.
+  Include "petscmat.h" so that we can use matrices.
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h    - vectors
-     sys.h    - system routines       mat.h    - matrices
-     is.h     - index sets            viewer.h - viewers               
+     petsc.h       - base PETSc routines   petscvec.h    - vectors
+     petscsys.h    - system routines       petscmat.h    - matrices
+     petscis.h     - index sets            petscviewer.h - viewers               
 
-  Include "ao.h" allows use of the AO (application ordering) commands,
+  Include "petscao.h" allows use of the AO (application ordering) commands,
   used below for renumbering the vertex numbers after the partitioning.
 
-  Include "bitarray.h" for managing logical bit arrays that are used to 
+  Include "petscba.h" for managing logical bit arrays that are used to 
   conserve space. Note that the code does use order N bit arrays on each 
   processor so is theoretically not scalable, but even with 64 million 
   vertices it will only need temporarily 8 megabytes of memory for the 
@@ -64,9 +64,9 @@ T*/
   since the bit arrays are freed before the vectors and matrices are
   created.
 */
-#include "mat.h"
-#include "ao.h"
-#include "bitarray.h"
+#include "petscmat.h"
+#include "petscao.h"
+#include "petscba.h"
 
 /* 
     This is the user-defined grid data context 

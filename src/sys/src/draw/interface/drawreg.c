@@ -1,8 +1,8 @@
-/*$Id: drawreg.c,v 1.29 2000/04/09 04:34:05 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.30 2000/04/12 04:21:02 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
-#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 /*
    Contains the list of registered Draw routines
@@ -83,7 +83,7 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
    Level: intermediate
 
    Notes:  
-   See "petsc/include/draw.h" for available methods (for instance,
+   See "petsc/include/petscdraw.h" for available methods (for instance,
    DRAW_X)
 
 .keywords: Draw, set, method

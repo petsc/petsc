@@ -1,6 +1,6 @@
-/*$Id: snesut.c,v 1.54 2000/04/09 04:38:32 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.55 2000/04/12 04:25:27 bsmith Exp balay $*/
 
-#include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
+#include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESVecViewMonitor"

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.18 1999/04/08 17:38:05 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.19 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -58,18 +58,18 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!     petsc.h  - base PETSc routines   vec.h - vectors
-!     sys.h    - system routines       mat.h - matrices
-!     is.h     - index sets            ksp.h - Krylov subspace methods
-!     viewer.h - viewers               pc.h  - preconditioners
+!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h    - system routines       petscmat.h - matrices
+!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+!     petscviewer.h - viewers               petscpc.h  - preconditioners
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/da.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscda.h"
 
       MPI_Comm comm
       SLES     sles
@@ -299,18 +299,18 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-!     petsc.h  - base PETSc routines   vec.h - vectors
-!     sys.h    - system routines       mat.h - matrices
-!     is.h     - index sets            ksp.h - Krylov subspace methods
-!     viewer.h - viewers               pc.h  - preconditioners
+!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h    - system routines       petscmat.h - matrices
+!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+!     petscviewer.h - viewers               petscpc.h  - preconditioners
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/da.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscda.h"
       integer          ierr
       PetscOffset      idx
       Vec              X,localX,localF
@@ -387,18 +387,18 @@
       subroutine  ComputeFunction(X,F,ierr)
       implicit none
 
-!     petsc.h  - base PETSc routines   vec.h - vectors
-!     sys.h    - system routines       mat.h - matrices
-!     is.h     - index sets            ksp.h - Krylov subspace methods
-!     viewer.h - viewers               pc.h  - preconditioners
+!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h    - system routines       petscmat.h - matrices
+!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+!     petscviewer.h - viewers               petscpc.h  - preconditioners
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/da.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscda.h"
 
       Vec              X,F,localX,localF
       integer          gys,gxm,gym
@@ -493,18 +493,18 @@
       subroutine ComputeJacobian(X,jac,ierr)
       implicit none
 
-!     petsc.h  - base PETSc routines   vec.h - vectors
-!     sys.h    - system routines       mat.h - matrices
-!     is.h     - index sets            ksp.h - Krylov subspace methods
-!     viewer.h - viewers               pc.h  - preconditioners
+!     petsc.h  - base PETSc routines   petscvec.h - vectors
+!     petscsys.h    - system routines       petscmat.h - matrices
+!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+!     petscviewer.h - viewers               petscpc.h  - preconditioners
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/da.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscda.h"
 
       Vec         X
       Mat         jac

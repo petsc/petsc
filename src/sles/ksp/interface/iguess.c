@@ -1,6 +1,6 @@
-/*$Id: iguess.c,v 1.31 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: iguess.c,v 1.32 2000/04/12 04:24:52 bsmith Exp balay $*/
 
-#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
   This code inplements Paul Fischer's initial guess code for situations where
   a linear system is solved repeatedly 

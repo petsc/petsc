@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.8 1998/04/15 18:00:19 balay Exp bsmith $"
+!    "$Id: ex2f.F,v 1.9 2000/01/11 21:00:24 bsmith Exp balay $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -22,15 +22,15 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
 !  Additional include statements may be needed if using additional
 !  PETSc routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

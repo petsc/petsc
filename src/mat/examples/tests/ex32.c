@@ -1,11 +1,11 @@
-/*$Id: ex32.c,v 1.19 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex32.c,v 1.20 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

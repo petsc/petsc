@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.58 1999/11/05 14:47:19 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.59 2000/01/11 21:02:43 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -10,8 +10,8 @@ The command line options are:\n\
   -snes_mf: use matrix-free methods\n\
   -defaultH: use default finite difference approximation of Hessian\n\n";
 
-#include "snes.h"
-#include "da.h"
+#include "petscsnes.h"
+#include "petscda.h"
 
 /* User-defined application context */
    typedef struct {

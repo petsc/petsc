@@ -1,5 +1,5 @@
-/* $Id: ts.c,v 1.27 2000/04/12 04:25:55 bsmith Exp bsmith $ */
-#include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
+/* $Id: ts.c,v 1.28 2000/04/30 22:20:24 bsmith Exp balay $ */
+#include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"TSComputeRHSJacobian"

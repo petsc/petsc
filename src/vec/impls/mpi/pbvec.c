@@ -1,9 +1,9 @@
-/*$Id: pbvec.c,v 1.152 2000/05/04 14:04:48 balay Exp bsmith $*/
+/*$Id: pbvec.c,v 1.153 2000/05/05 18:29:29 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations.
  */
-#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
+#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 /*
        Note this code is very similar to VecPublish_Seq()

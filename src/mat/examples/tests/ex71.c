@@ -1,8 +1,8 @@
-/*$Id: ex71.c,v 1.36 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex71.c,v 1.37 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

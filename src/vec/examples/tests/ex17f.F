@@ -1,5 +1,5 @@
 !
-! "$Id: ex17f.F,v 1.4 1998/04/15 18:00:36 balay Exp bsmith $";
+! "$Id: ex17f.F,v 1.5 1999/03/26 15:37:35 bsmith Exp balay $";
 !
 !
 !   "Scatters from a parallel vector to a sequential vector.  In
@@ -7,9 +7,9 @@
 !
       implicit none
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/sys.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscsys.h"
 
       integer    n,ierr
       integer    size,rank,NN,low,high,iglobal,i

@@ -1,11 +1,11 @@
-/* $Id: aoimpl.h,v 1.19 2000/01/11 21:03:08 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.20 2000/02/02 20:10:23 bsmith Exp balay $ */
 /* 
    This private file should not be included in users' code.
 */
 
 #ifndef __AOIMPL 
 #define __AOIMPL
-#include "ao.h"
+#include "petscao.h"
 
 /*
     Defines the abstract AO operations
@@ -113,7 +113,7 @@ extern int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
 extern int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
 
 
-#include "bitarray.h"
+#include "petscba.h"
 
 struct _p_AOData2dGrid {
    int     cell_n, vertex_n, edge_n;

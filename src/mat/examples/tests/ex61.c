@@ -1,8 +1,8 @@
-/*$Id: ex61.c,v 1.5 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex61.c,v 1.6 1999/11/05 14:45:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
 
-#include "mat.h"
+#include "petscmat.h"
 
 /*
       Generate the following matrix:

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.2 1999/12/14 19:37:18 bsmith Exp bsmith $";
+!    "$Id: ex21f.F,v 1.3 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -25,17 +25,17 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!     petsc.h  - base PETSc routines      vec.h - vectors
-!     sys.h    - system routines          mat.h - matrices
-!     ksp.h    - Krylov subspace methods  pc.h  - preconditioners
-!     sles.h   - SLES interface
+!     petsc.h  - base PETSc routines      petscvec.h - vectors
+!     petscsys.h    - system routines          petscmat.h - matrices
+!     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
+!     petscsles.h   - SLES interface
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscsles.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -273,8 +273,8 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
 
       Vec     x
       Mat     pmat
@@ -329,7 +329,7 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 
       Vec     x,y
       integer dummy,ierr

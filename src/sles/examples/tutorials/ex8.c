@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.39 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.40 2000/01/11 21:02:20 bsmith Exp balay $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -32,14 +32,14 @@ parameters include:\n\
 T*/
 
 /* 
-  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,9 +1,9 @@
-/*$Id: sor.c,v 1.94 2000/04/12 04:24:35 bsmith Exp balay $*/
+/*$Id: sor.c,v 1.95 2000/05/04 14:04:35 balay Exp balay $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
-#include "src/sles/pc/pcimpl.h"               /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"               /*I "petscpc.h" I*/
 
 typedef struct {
   int        its;        /* inner iterations, number of sweeps */

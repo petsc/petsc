@@ -1,7 +1,7 @@
-/*$Id: iscoloring.c,v 1.57 2000/04/16 16:42:04 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.58 2000/05/04 16:25:06 bsmith Exp balay $*/
 
-#include "sys.h"   /*I "sys.h" I*/
-#include "is.h"    /*I "is.h"  I*/
+#include "petscsys.h"   /*I "petscsys.h" I*/
+#include "petscis.h"    /*I "petscis.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISColoringDestroy"

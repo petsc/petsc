@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.60 2000/04/27 04:21:31 bsmith Exp curfman $*/
+/*$Id: init.c,v 1.61 2000/04/28 16:56:44 curfman Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -8,7 +8,7 @@
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -36,7 +36,7 @@ Scalar        PETSC_i = 0.0;
 #endif
 
 /*
-     These are needed by bitarray.h
+     These are needed by petscba.h
 */
 char _BT_mask,_BT_c;
 int  _BT_idx;

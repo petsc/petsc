@@ -1,9 +1,9 @@
-/*$Id: ex6.c,v 1.22 1999/11/05 14:45:05 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.23 2000/01/11 21:00:24 bsmith Exp balay $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
 
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

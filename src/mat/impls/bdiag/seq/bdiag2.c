@@ -1,8 +1,8 @@
-/*$Id: bdiag2.c,v 1.12 2000/04/09 04:36:13 bsmith Exp bsmith $*/
+/*$Id: bdiag2.c,v 1.13 2000/04/12 04:23:25 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
-#include "sys.h"
+#include "petscsys.h"
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"

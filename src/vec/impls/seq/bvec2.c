@@ -1,9 +1,9 @@
-/*$Id: bvec2.c,v 1.176 2000/04/12 04:22:20 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.177 2000/05/05 18:29:27 bsmith Exp balay $*/
 /*
    Implements the sequential vectors.
 */
 
-#include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
+#include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"
 #if defined(PETSC_HAVE_AMS)
@@ -65,8 +65,8 @@ int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
   *low = 0; *high = xin->n;
   PetscFunctionReturn(0);
 }
-#include "viewer.h"
-#include "sys.h"
+#include "petscviewer.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"VecView_Seq_File"

@@ -1,7 +1,7 @@
-/*$Id: fdate.c,v 1.34 2000/04/09 04:34:46 bsmith Exp bsmith $*/
+/*$Id: fdate.c,v 1.35 2000/04/12 04:21:36 bsmith Exp balay $*/
 
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #include "petscfix.h"
 #include "pinclude/ptime.h"
 #include <ctype.h>

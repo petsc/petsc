@@ -1,6 +1,6 @@
-/*$Id: tsregall.c,v 1.27 2000/04/09 04:39:08 bsmith Exp bsmith $*/
+/*$Id: tsregall.c,v 1.28 2000/04/12 04:25:55 bsmith Exp balay $*/
 
-#include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
+#include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
 extern int TSCreate_Euler(TS);
 extern int TSCreate_BEuler(TS);

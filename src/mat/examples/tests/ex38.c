@@ -1,8 +1,8 @@
-/*$Id: ex38.c,v 1.9 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex38.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

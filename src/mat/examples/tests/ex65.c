@@ -1,8 +1,8 @@
-/*$Id: ex65.c,v 1.6 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex65.c,v 1.7 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

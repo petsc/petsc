@@ -1,9 +1,9 @@
-/*$Id: itcreate.c,v 1.184 2000/04/12 04:24:52 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.185 2000/04/30 22:07:34 bsmith Exp balay $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include "src/sles/ksp/kspimpl.h"      /*I "ksp.h" I*/
-#include "sys.h"
+#include "src/sles/ksp/kspimpl.h"      /*I "petscksp.h" I*/
+#include "petscsys.h"
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
@@ -240,7 +240,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
     of available methods (for instance, cg or gmres)
 
    Notes:  
-   See "petsc/include/ksp.h" for available methods (for instance,
+   See "petsc/include/petscksp.h" for available methods (for instance,
    KSPCG or KSPGMRES).
 
   Normally, it is best to use the SLESSetFromOptions() command and

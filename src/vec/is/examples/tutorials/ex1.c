@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 1999/10/24 14:01:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.16 2000/01/11 21:00:01 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
 
@@ -12,10 +12,10 @@ static char help[] = "Demonstrates creating a general index set.\n\n";
 T*/
  
 /*
-    Include is.h so we can use PETSc IS objects. Note that this automatically 
+    Include petscis.h so we can use PETSc IS objects. Note that this automatically 
   includes petsc.h.
 */
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

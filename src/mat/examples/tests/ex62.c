@@ -1,8 +1,8 @@
-/*$Id: ex62.c,v 1.11 1999/11/24 21:54:09 bsmith Exp bsmith $*/
+/*$Id: ex62.c,v 1.12 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

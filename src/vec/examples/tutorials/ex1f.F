@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.22 2000/01/11 21:00:24 bsmith Exp bsmith $"
+!    "$Id: ex1f.F,v 1.23 2000/01/17 23:22:38 bsmith Exp balay $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -23,15 +23,15 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
 !  Additional include statements may be needed if using additional
 !  PETSc routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/finclude/petscvec.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

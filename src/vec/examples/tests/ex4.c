@@ -1,9 +1,9 @@
-/*$Id: ex4.c,v 1.46 1999/11/05 14:44:58 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.47 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,10 +1,10 @@
-/*$Id: ex33.c,v 1.12 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex33.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

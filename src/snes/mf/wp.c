@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.23 2000/04/12 04:25:30 bsmith Exp balay $*/
+/*$Id: wp.c,v 1.24 2000/05/04 14:04:02 balay Exp balay $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -24,7 +24,7 @@
    includes information about the computation of h. It is shared by 
    all implementations that people provide.
 */
-#include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 typedef struct {
   PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */

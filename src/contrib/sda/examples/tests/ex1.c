@@ -1,10 +1,10 @@
-/*$Id: ex1.c,v 1.9 1999/11/05 14:48:04 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.10 2000/01/11 21:03:33 bsmith Exp balay $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
-#include "da.h"
+#include "petscda.h"
 #include "src/contrib/sda/src/sda.h"
-#include "sys.h"
+#include "petscsys.h"
 
 /*
          For testing purposes this example also creates a 

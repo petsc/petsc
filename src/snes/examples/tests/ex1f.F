@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.44 2000/04/06 14:37:29 curfman Exp bsmith $";
+! "$Id: ex4f.F,v 1.45 2000/05/04 16:26:33 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -46,29 +46,29 @@
 !
 !  The following include statements are generally used in SNES Fortran
 !  programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     ksp.h    - Krylov subspace methods
-!     pc.h     - preconditioners
-!     sles.h   - SLES interface
-!     snes.h   - SNES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscksp.h    - Krylov subspace methods
+!     petscpc.h     - preconditioners
+!     petscsles.h   - SLES interface
+!     petscsnes.h   - SNES interface
 !  In addition, we need the following for use of PETSc drawing routines
-!     draw.h   - drawing routines
+!     petscdraw.h   - drawing routines
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/is.h"
-#include "include/finclude/draw.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscdraw.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -309,9 +309,9 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
       Vec      X
@@ -428,8 +428,8 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
       SNES              snes
@@ -560,10 +560,10 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
       SNES         snes
@@ -639,10 +639,10 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/snes.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsnes.h"
 
 !  Common blocks:
       double precision   lambda

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.1 2000/02/02 20:10:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: triconvert.c,v 1.2 2000/05/04 16:26:56 bsmith Exp balay $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: triconvert.c,v 1.1 2000/02/02 20:10:37 bsmith Exp bsm
 
 */
 
-#include "ao.h"
-#include "bitarray.h"
+#include "petscao.h"
+#include "petscba.h"
 
 int main(int argc,char **args)
 {

@@ -1,6 +1,6 @@
-/*$Id: dlregis.c,v 1.8 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: dlregis.c,v 1.9 2000/04/12 04:24:13 bsmith Exp balay $*/
 
-#include "mat.h"
+#include "petscmat.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  

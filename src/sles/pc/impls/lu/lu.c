@@ -1,10 +1,10 @@
-/*$Id: lu.c,v 1.129 2000/04/12 04:24:36 bsmith Exp balay $*/
+/*$Id: lu.c,v 1.130 2000/05/04 14:04:33 balay Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
          a direct solver.
 */
-#include "src/sles/pc/pcimpl.h"                /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"                /*I "petscpc.h" I*/
 
 typedef struct {
   Mat             fact;             /* factored matrix */

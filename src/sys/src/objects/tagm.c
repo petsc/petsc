@@ -1,8 +1,8 @@
-/*$Id: tagm.c,v 1.24 2000/04/28 20:16:32 balay Exp bsmith $*/
+/*$Id: tagm.c,v 1.25 2000/05/04 16:24:45 bsmith Exp balay $*/
 /*
       Some PETSc utilites
 */
-#include "sys.h"             /*I    "sys.h"   I*/
+#include "petscsys.h"             /*I    "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.27 1999/04/16 16:09:25 bsmith Exp bsmith $";
+!    "$Id: ex6f.F,v 1.28 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -16,23 +16,23 @@
 !T*/
 !
 !  The following include statements are required for SLES Fortran programs:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     pc.h     - preconditioners
-!     ksp.h    - Krylov subspace methods
-!     sles.h   - SLES interface
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscpc.h     - preconditioners
+!     petscksp.h    - Krylov subspace methods
+!     petscsles.h   - SLES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
-!     viewer.h - viewers
-!     is.h     - index sets
+!     petscviewer.h - viewers
+!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/ksp.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
 
 !  Variables:
 !
@@ -148,11 +148,11 @@
       subroutine solve1(sles,A,x,b,u,count,nsteps,ierr)
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/ksp.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
 
 !
 !   solve1 - This routine is used for repeated linear system solves.

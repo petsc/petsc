@@ -1,9 +1,9 @@
-/*$Id: ex7.c,v 1.49 1999/11/05 14:47:16 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.50 2000/01/11 21:02:41 bsmith Exp balay $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
 
-#include "snes.h"
+#include "petscsnes.h"
 
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int  FormFunction(SNES,Vec,Vec,void*);

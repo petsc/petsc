@@ -1,9 +1,9 @@
-/*$Id: map.c,v 1.7 2000/04/09 04:35:24 bsmith Exp bsmith $*/
+/*$Id: map.c,v 1.8 2000/04/12 04:22:17 bsmith Exp balay $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
 */
-#include "src/vec/vecimpl.h"    /*I "vec.h" I*/
+#include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MapGetLocalSize"

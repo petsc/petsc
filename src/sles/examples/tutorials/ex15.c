@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.14 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.15 2000/01/11 21:02:20 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -17,14 +17,14 @@ Input parameters include:\n\
 T*/
 
 /* 
-  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "sles.h"
+#include "petscsles.h"
 
 /* Define context for user-provided preconditioner */
 typedef struct {

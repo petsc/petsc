@@ -1,6 +1,6 @@
-/*$Id: scolor.c,v 1.19 2000/04/09 04:37:11 bsmith Exp bsmith $*/
+/*$Id: scolor.c,v 1.20 2000/04/12 04:24:26 bsmith Exp balay $*/
  
-#include "mat.h"
+#include "petscmat.h"
 #include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN

@@ -1,7 +1,7 @@
-/*$Id: pdisplay.c,v 1.18 2000/04/12 04:21:38 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.19 2000/05/04 16:24:51 bsmith Exp balay $*/
 
 #include "petsc.h"        
-#include "sys.h"             /*I    "sys.h"   I*/
+#include "petscsys.h"             /*I    "petscsys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

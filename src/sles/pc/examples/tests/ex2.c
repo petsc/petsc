@@ -1,10 +1,10 @@
-/*$Id: ex2.c,v 1.46 1999/10/24 14:03:06 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.47 2000/01/11 21:01:53 bsmith Exp balay $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
 
-#include "ksp.h"
-#include "pc.h"
+#include "petscksp.h"
+#include "petscpc.h"
 #include "petsc.h"
 #include <stdio.h>
 

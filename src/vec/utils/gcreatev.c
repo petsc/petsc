@@ -1,9 +1,9 @@
-/*$Id: gcreatev.c,v 1.74 2000/05/04 16:25:07 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.75 2000/05/05 18:29:24 bsmith Exp balay $*/
 
-#include "sys.h"
+#include "petscsys.h"
 #include "petsc.h"
-#include "is.h"
-#include "vec.h"    /*I "vec.h" I*/
+#include "petscis.h"
+#include "petscvec.h"    /*I "petscvec.h" I*/
 
 
 #include "src/vec/vecimpl.h"
@@ -141,7 +141,7 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
 .  -vec_type <type> - Sets the vector type; use -help for a list of available types
 
     Notes:
-    See "petsc/include/vec.h" for available vector types (for instance,
+    See "petsc/include/petscvec.h" for available vector types (for instance,
     VEC_SEQ, VEC_MPI, or VEC_SHARED).
 
      Use VecDuplicate() or VecDuplicateVecs() to form additional vectors

@@ -1,8 +1,8 @@
-/*$Id: ex9.c,v 1.13 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
-#include "mat.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex36.F,v 1.25 1998/04/21 18:30:37 balay Exp bsmith $";
+!      "$Id: ex36.F,v 1.26 2000/01/11 21:01:03 bsmith Exp balay $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
@@ -34,8 +34,8 @@
       subroutine Demo1()
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/viewer.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscviewer.h"
 
       Mat         A
       integer     n,m,err
@@ -78,8 +78,8 @@
       subroutine Demo2()
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/viewer.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscviewer.h"
 
       integer   n,m,err
       parameter (m=5,n=4)

@@ -1,9 +1,9 @@
-/*$Id: mpiadj.c,v 1.38 2000/04/09 04:36:28 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.39 2000/04/12 04:23:45 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
 */
-#include "sys.h"
+#include "petscsys.h"
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 
 #undef __FUNC__  

@@ -1,6 +1,6 @@
-/*$Id: mfregis.c,v 1.9 2000/04/09 04:38:35 bsmith Exp bsmith $*/
+/*$Id: mfregis.c,v 1.10 2000/04/12 04:25:30 bsmith Exp balay $*/
 
-#include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
+#include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 EXTERN_C_BEGIN
 extern int MatSNESMFCreate_Default(MatSNESMFCtx);

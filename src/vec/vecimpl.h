@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.70 2000/05/04 16:25:00 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.71 2000/05/05 18:29:18 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -8,7 +8,7 @@
 
 #ifndef __VECIMPL_H
 #define __VECIMPL_H
-#include "vec.h"
+#include "petscvec.h"
 
 struct _MapOps {
   int  (*getlocalsize)(Map,int*),

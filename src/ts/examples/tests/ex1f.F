@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.33 2000/01/11 21:03:03 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.34 2000/04/09 03:11:09 bsmith Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -12,16 +12,16 @@
       program main
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/draw.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscdraw.h"
+#include "finclude/petscviewer.h"
 
       integer   linear_no_matrix,linear_no_time,linear
       integer   nonlinear_no_jacobian,nonlinear
@@ -265,15 +265,15 @@
       subroutine Initial(global,ctx,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       Vec         global
       integer     ctx
 
@@ -314,15 +314,15 @@
       subroutine Solution(t,sol,ctx)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       double precision  t
       Vec               sol
       integer           ctx
@@ -364,16 +364,16 @@
       subroutine Monitor(ts,step,time,global,ctx,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/draw.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscdraw.h"
+#include "finclude/petscviewer.h"
       TS                ts
       integer           step,ctx,ierr
       double precision  time,lnrm_2,lnrm_max
@@ -417,15 +417,15 @@
       subroutine RHSMatrixFree(mat,x,y,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       Mat              mat
       Vec              x,y
       integer          ierr
@@ -442,15 +442,15 @@
       subroutine RHSFunctionHeat(ts,t,globalin,globalout,ctx,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       TS               ts
       double precision t
       Vec              globalin,globalout
@@ -508,15 +508,15 @@
       subroutine RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       Mat              AA,BB
       double precision t
       TS               ts
@@ -581,15 +581,15 @@
       subroutine RHSJacobianHeat(ts,t,x,AA,BB,str,ctx,ierr)
       implicit none
 #include "finclude/petsc.h"
-#include "finclude/vec.h"
-#include "finclude/mat.h"
-#include "finclude/da.h"
-#include "finclude/sys.h"
-#include "finclude/pc.h"
-#include "finclude/sles.h"
-#include "finclude/snes.h"
-#include "finclude/ts.h"
-#include "finclude/viewer.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscda.h"
+#include "finclude/petscsys.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsles.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
       TS               ts
       double precision t
       Vec              x

@@ -1,10 +1,10 @@
-/*$Id: icc.c,v 1.66 2000/04/09 04:37:33 bsmith Exp bsmith $*/
+/*$Id: icc.c,v 1.67 2000/04/12 04:24:43 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
 */
 
-#include "src/sles/pc/impls/icc/icc.h"   /*I "pc.h" I*/
+#include "src/sles/pc/impls/icc/icc.h"   /*I "petscpc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCSetup_ICC"

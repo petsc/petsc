@@ -1,7 +1,7 @@
-/*$Id: fdda.c,v 1.44 2000/04/09 04:40:05 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.45 2000/04/12 04:26:32 bsmith Exp balay $*/
  
-#include "da.h"     /*I      "da.h"     I*/
-#include "mat.h"    /*I      "mat.h"    I*/
+#include "petscda.h"     /*I      "petscda.h"     I*/
+#include "petscmat.h"    /*I      "petscmat.h"    I*/
 #include "src/dm/da/daimpl.h" 
 
 extern int DAGetColoring1d(DA,ISColoring *,Mat *);

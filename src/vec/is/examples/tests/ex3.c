@@ -1,11 +1,11 @@
-/*$Id: ex3.c,v 1.9 1999/10/24 14:01:46 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.10 2000/01/11 20:59:59 bsmith Exp balay $*/
 /*
        Tests ISAllGather()
 */
 
 static char help[] = "Tests ISAllGather()\n\n";
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

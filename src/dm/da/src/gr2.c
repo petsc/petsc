@@ -1,10 +1,10 @@
-/*$Id: gr2.c,v 1.37 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.38 2000/04/12 04:26:20 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
 */
 
-#include "src/dm/da/daimpl.h"      /*I  "da.h"   I*/
+#include "src/dm/da/daimpl.h"      /*I  "petscda.h"   I*/
 
 /*
         The data that is passed into the graphics callback

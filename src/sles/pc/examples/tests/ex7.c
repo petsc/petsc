@@ -1,9 +1,9 @@
-/*$Id: ex7.c,v 1.5 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.6 1999/10/24 14:03:06 bsmith Exp balay $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
-#include "mat.h"
-#include "pc.h"
+#include "petscmat.h"
+#include "petscpc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,10 +1,10 @@
-/*$Id: reg.c,v 1.58 2000/04/27 04:39:02 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.59 2000/05/04 16:24:41 bsmith Exp balay $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="FListGetPathAndFunction"></a>*/"FListGetPathAndFunction"

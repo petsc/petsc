@@ -1,8 +1,8 @@
-/*$Id: mg.c,v 1.105 2000/04/12 04:24:39 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.106 2000/05/04 16:26:01 bsmith Exp balay $*/
 /*
     Defines the multigrid preconditioner interface.
 */
-#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
+#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 
 
 /*

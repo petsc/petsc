@@ -1,4 +1,4 @@
-/*$Id: ex41.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex41.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
@@ -7,7 +7,7 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

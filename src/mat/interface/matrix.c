@@ -1,10 +1,10 @@
-/*$Id: matrix.c,v 1.361 2000/04/09 04:35:53 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.362 2000/04/12 04:22:51 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
 */
 
-#include "src/mat/matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
 
 #undef __FUNC__  
@@ -1084,7 +1084,7 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 $       -log_info -mat_view_info
 
    Example for C/C++ Users:
-   See the file ${PETSC_DIR}/include/mat.h for a complete list of
+   See the file ${PETSC_DIR}/include/petscmat.h for a complete list of
    data within the MatInfo context.  For example, 
 .vb
       MatInfo info;
@@ -1099,7 +1099,7 @@ $       -log_info -mat_view_info
    Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension MAT_INFO_SIZE, and then extract the parameters
-   of interest.  See the file ${PETSC_DIR}/include/finclude/mat.h
+   of interest.  See the file ${PETSC_DIR}/include/finclude/petscmat.h
    a complete list of parameter names.
 .vb
       double  precision info(MAT_INFO_SIZE)
@@ -2050,7 +2050,7 @@ static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*
     Not Collective
 
     Input Parameters:
-+   intype - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
++   intype - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
 -   outtype - new matrix type, or MATSAME
 
     Level: advanced
@@ -3704,7 +3704,7 @@ int MatGetType(Mat mat,MatType *type,char **name)
 
   if (type) *type = (MatType) mat->type;
   if (name) {
-    /* Note:  Be sure that this list corresponds to the enum in mat.h */
+    /* Note:  Be sure that this list corresponds to the enum in petscmat.h */
     matname[0] = "MATSEQDENSE";
     matname[1] = "MATSEQAIJ";
     matname[2] = "MATMPIAIJ";

@@ -1,4 +1,4 @@
-/* $Id: psimpl.h,v 1.1 1999/11/15 19:48:29 bsmith Exp bsmith $ */
+/* $Id: psimpl.h,v 1.2 1999/11/24 21:52:54 bsmith Exp balay $ */
 
 /*
       Defines the internal data structures for the Postscript
@@ -6,7 +6,7 @@
 */
 
 #include "src/sys/src/draw/drawimpl.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #if !defined(_PSIMPL_H)
 #define _PSIMPL_H

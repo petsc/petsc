@@ -1,11 +1,11 @@
-/*$Id: adebug.c,v 1.103 2000/04/12 04:21:20 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.104 2000/05/04 16:24:38 bsmith Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 

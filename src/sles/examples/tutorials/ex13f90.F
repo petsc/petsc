@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.16 1999/03/02 16:19:07 balay Exp bsmith $";
+!    "$Id: ex13f90.F,v 1.17 2000/01/11 21:02:20 bsmith Exp balay $";
 !
 !
 !/*T
@@ -23,18 +23,18 @@
 !
 !  The following include statements are required for SLES Fortran programs:
 !     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     mat.h    - matrices
-!     ksp.h    - Krylov subspace methods
-!     pc.h     - preconditioners
-!     sles.h   - SLES interface
+!     petscvec.h    - vectors
+!     petscmat.h    - matrices
+!     petscksp.h    - Krylov subspace methods
+!     petscpc.h     - preconditioners
+!     petscsles.h   - SLES interface
 !
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
@@ -174,11 +174,11 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
 
       integer          m,n,ierr
       PetscFortranAddr userctx(*)
@@ -240,11 +240,11 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
 
       integer ierr
       PetscFortranAddr userctx(*)
@@ -373,11 +373,11 @@
       implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
 
       integer ierr
       PetscFortranAddr userctx(*)

@@ -1,10 +1,10 @@
-/*$Id: ex4.c,v 1.53 1999/11/05 14:46:54 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.54 2000/01/11 21:02:16 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "sles.h"
+#include "petscsles.h"
 
 #undef __FUNC__
 #define __FUNC__ "FormatElementStiffness"

@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.2 1999/11/24 21:55:03 bsmith Exp bsmith $" */
+/* "$Id: ex19.c,v 1.3 2000/01/11 21:02:16 bsmith Exp balay $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -21,9 +21,9 @@ static char help[] ="\
     system of equations.
 */
 
-#include "sles.h"
-#include "da.h"
-#include "mg.h"
+#include "petscsles.h"
+#include "petscda.h"
+#include "petscmg.h"
 
 /* User-defined application contexts */
 

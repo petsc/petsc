@@ -1,8 +1,8 @@
-/*$Id: vinv.c,v 1.61 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.62 2000/04/12 04:22:10 bsmith Exp balay $*/
 /*
      Some useful vector utility functions.
 */
-#include "vec.h"                 /*I "vec.h" I*/
+#include "petscvec.h"                 /*I "petscvec.h" I*/
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  

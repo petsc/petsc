@@ -1,10 +1,10 @@
-/*$Id: pinit.c,v 1.31 2000/04/29 02:53:52 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.32 2000/05/04 16:24:45 bsmith Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "sys.h"
+#include "petscsys.h"
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ extern int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern int PLogCloseHistoryFile(FILE **);
 
-#include "snes.h" /* so that cookies are defined */
+#include "petscsnes.h" /* so that cookies are defined */
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 int __gierr = 0;

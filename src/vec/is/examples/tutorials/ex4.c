@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.5 1999/05/04 20:30:20 balay Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.6 2000/01/11 21:00:01 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -12,7 +12,7 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
     and then destroys it.
 T*/
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

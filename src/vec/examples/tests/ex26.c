@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.7 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex26.c,v 1.7 2000/01/11 21:00:17 bsmith Exp balay $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -18,7 +18,7 @@ If this is not clear, I'll try to elaborate.
    E.g., processor 3 computes 1^2+2^2+3^+4^2 = 30.
    Every processor computes its term, then passes it on to the next.
 */
-#include "vec.h"
+#include "petscvec.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,8 +1,8 @@
-/*$Id: ilu.c,v 1.146 2000/04/12 04:24:42 bsmith Exp balay $*/
+/*$Id: ilu.c,v 1.147 2000/05/04 14:04:25 balay Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
-#include "src/sles/pc/pcimpl.h"                 /*I "pc.h"  I*/
+#include "src/sles/pc/pcimpl.h"                 /*I "petscpc.h"  I*/
 #include "src/sles/pc/impls/ilu/ilu.h"
 #include "src/mat/matimpl.h"
 

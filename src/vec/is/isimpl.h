@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.20 2000/01/11 20:59:53 bsmith Exp bsmith $ */
+/* $Id: isimpl.h,v 1.21 2000/02/02 20:08:31 bsmith Exp balay $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -8,7 +8,7 @@ and matrices.
 
 #if !defined(_IS_H)
 #define _IS_H
-#include "is.h"
+#include "petscis.h"
 
 struct _ISOps {
   int  (*getsize)(IS,int*),

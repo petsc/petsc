@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.12 1999/11/05 14:44:41 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.13 2000/01/11 20:59:59 bsmith Exp balay $*/
 
 /*
        Formatted test for ISStride routines.
@@ -6,7 +6,7 @@
 
 static char help[] = "Tests IS stride routines\n\n";
 
-#include "is.h"
+#include "petscis.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,8 +1,8 @@
-/*$Id: precon.c,v 1.191 2000/04/12 04:24:31 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.192 2000/04/30 22:12:37 bsmith Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "src/sles/pc/pcimpl.h"            /*I "sles.h" I*/
+#include "src/sles/pc/pcimpl.h"            /*I "petscsles.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCNullSpaceAttach"

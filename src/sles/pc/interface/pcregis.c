@@ -1,6 +1,6 @@
-/*$Id: pcregis.c,v 1.54 2000/04/09 04:37:19 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.55 2000/04/12 04:24:31 bsmith Exp balay $*/
 
-#include "src/sles/pc/pcimpl.h"          /*I   "pc.h"   I*/
+#include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
 extern int PCCreate_Jacobi(PC);

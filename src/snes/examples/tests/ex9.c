@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.38 1999/11/05 14:47:16 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.39 2000/01/11 21:02:41 bsmith Exp balay $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -26,8 +26,8 @@ ignition) test problem. The command line options are:\n\
     system of equations.
 */
 
-#include "snes.h"
-#include "da.h"
+#include "petscsnes.h"
+#include "petscda.h"
 
 typedef struct {
     double    param;           /* test problem nonlinearity parameter */

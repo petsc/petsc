@@ -1,9 +1,9 @@
-/*$Id: ex7.c,v 1.39 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.40 2000/01/11 21:00:17 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
-#include "vec.h"
-#include "sys.h"
+#include "petscvec.h"
+#include "petscsys.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

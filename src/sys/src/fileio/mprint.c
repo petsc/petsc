@@ -1,8 +1,8 @@
-/*$Id: mprint.c,v 1.48 2000/05/04 16:24:43 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.49 2000/05/05 18:29:04 bsmith Exp balay $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
-#include "sys.h"             /*I    "sys.h"   I*/
+#include "petscsys.h"             /*I    "petscsys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

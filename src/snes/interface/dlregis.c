@@ -1,6 +1,6 @@
-/*$Id: dlregis.c,v 1.14 2000/04/09 04:38:32 bsmith Exp bsmith $*/
+/*$Id: dlregis.c,v 1.15 2000/04/12 04:25:27 bsmith Exp balay $*/
 
-#include "snes.h"
+#include "petscsnes.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  

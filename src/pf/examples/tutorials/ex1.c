@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.1 2000/01/24 16:58:27 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.2 2000/04/09 03:11:45 bsmith Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -12,12 +12,12 @@ static char help[] = "Demonstrates various vector routines.\n\n";
 T*/
 
 /* 
-  Include "pf.h" so that we can use pf functions and "da.h" so
+  Include "petscpf.h" so that we can use pf functions and "petscda.h" so
  we can use the PETSc distributed arrays
 */
 
-#include "pf.h"
-#include "da.h"
+#include "petscpf.h"
+#include "petscda.h"
 
 #undef __FUNC__
 #define __FUNC__ "myfunction"

@@ -1,11 +1,11 @@
-/*$Id: sysio.c,v 1.67 2000/04/09 04:34:31 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.68 2000/04/12 04:21:24 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines.
  */
 
 #include "petsc.h"     /*I          "petsc.h"    I*/
-#include "sys.h"
+#include "petscsys.h"
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
@@ -13,7 +13,7 @@
 #if defined (PARCH_win32)
 #include <io.h>
 #endif
-#include "bitarray.h"
+#include "petscba.h"
 
 
 #if !defined(PETSC_WORDS_BIGENDIAN)

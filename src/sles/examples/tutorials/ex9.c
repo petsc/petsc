@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.38 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.39 2000/01/11 21:02:20 bsmith Exp balay $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -19,14 +19,14 @@ structures throughout the process.  Note the various stages of event logging.\n\
 T*/
 
 /* 
-  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  Include "petscsles.h" so that we can use SLES solvers.  Note that this file
   automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "sles.h"
+#include "petscsles.h"
 
 /* 
    Declare user-defined routines

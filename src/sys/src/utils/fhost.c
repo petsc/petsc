@@ -1,9 +1,9 @@
-/*$Id: fhost.c,v 1.43 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: fhost.c,v 1.44 2000/04/12 04:21:38 bsmith Exp balay $*/
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
-#include "sys.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

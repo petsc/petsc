@@ -1,12 +1,12 @@
-/* $Id: makefile,v 1.5 1999/07/17 16:54:04 balay Exp bsmith $ */
+/* $Id: input.c,v 1.2 2000/02/02 20:10:37 bsmith Exp balay $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*
 
 */
 
-#include "ao.h"
-#include "bitarray.h"
+#include "petscao.h"
+#include "petscba.h"
 
 int main(int argc, char **argv)
 {

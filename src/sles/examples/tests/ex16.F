@@ -1,15 +1,15 @@
 !
-!      "$Id: ex16.F,v 1.21 1998/12/05 21:08:39 balay Exp bsmith $";
+!      "$Id: ex16.F,v 1.22 2000/01/11 21:02:16 bsmith Exp balay $";
 !
        implicit none
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/viewer.h"
-#include "include/finclude/is.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscviewer.h"
+#include "include/finclude/petscis.h"
 !
 !  This example is a modified Fortran version of ex6.c.  It tests the use of
 !  options prefixes in PETSc. Two linear problems are solved in this program.

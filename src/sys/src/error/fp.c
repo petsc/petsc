@@ -1,11 +1,11 @@
-/*$Id: fp.c,v 1.64 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.65 2000/04/12 04:21:20 bsmith Exp balay $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
 *
 */
 #include "petsc.h"           /*I  "petsc.h"  I*/
-#include "sys.h"
+#include "petscsys.h"
 #include <signal.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f90.F,v 1.7 1998/04/15 18:00:10 balay Exp bsmith $";
+!      "$Id: ex4f90.F,v 1.8 2000/01/11 21:00:24 bsmith Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
@@ -23,13 +23,13 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h  - base PETSc routines
-!     vec.h    - vectors
-!     vec.h90  - to allow access to Fortran90 features of vectors
+!     petsc.h       - base PETSc routines
+!     petscvec.h    - vectors
+!     petscvec.h90  - to allow access to Fortran90 features of vectors
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/vec.h90"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscvec.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

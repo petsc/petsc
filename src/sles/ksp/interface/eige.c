@@ -1,6 +1,6 @@
-/*$Id: eige.c,v 1.24 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: eige.c,v 1.25 2000/04/12 04:24:52 bsmith Exp balay $*/
 
-#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPComputeExplicitOperator"

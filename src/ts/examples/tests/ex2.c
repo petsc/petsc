@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.23 1999/11/05 14:47:37 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.24 2000/01/11 21:03:03 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -15,9 +15,9 @@
 
 static char help[] = "Solves a nonlinear ODE \n\n";
 
-#include "sys.h"
-#include "ts.h"
-#include "pc.h"
+#include "petscsys.h"
+#include "petscts.h"
+#include "petscpc.h"
 
 extern int RHSFunction(TS,double,Vec,Vec,void*);
 extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);

@@ -1,4 +1,4 @@
-/* "$Id: general.h,v 1.4 1999/01/31 16:03:26 bsmith Exp bsmith $"; */
+/* "$Id: general.h,v 1.5 2000/05/04 16:25:02 bsmith Exp balay $"; */
 
 #if !defined(__GENERAL_H)
 #define __GENERAL_H
@@ -7,7 +7,7 @@
     Defines the data structure used for the general index set
 */
 #include "src/vec/is/isimpl.h"
-#include "sys.h"
+#include "petscsys.h"
 
 typedef struct {
   int        n;         /* number of indices */ 

@@ -1,8 +1,8 @@
-/*$Id: ao.c,v 1.33 2000/04/12 04:26:11 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.34 2000/04/30 22:22:40 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
-#include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
+#include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"AOView" 

@@ -1,9 +1,9 @@
-/* $Id: pfimpl.h,v 1.3 2000/02/02 21:21:15 bsmith Exp bsmith $ */
+/* $Id: pfimpl.h,v 1.4 2000/04/09 03:11:41 bsmith Exp balay $ */
 
 #ifndef _PFIMPL
 #define _PFIMPL
 
-#include "pf.h"
+#include "petscpf.h"
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {

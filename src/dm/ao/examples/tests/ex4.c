@@ -1,8 +1,8 @@
-/*$Id: ex4.c,v 1.9 1999/10/24 14:04:01 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.10 2000/01/11 21:03:13 bsmith Exp balay $*/
 
 static char help[] = "Tests AOData loading\n\n";
 
-#include "ao.h"
+#include "petscao.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
