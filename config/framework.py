@@ -82,6 +82,7 @@ class Framework(config.base.Configure):
     for child in self.children:
       if isinstance(child, type):
         config = child
+        break
     if not config:
       config = apply(type, [self], keywordArgs)
       self.children.append(config)

@@ -34,9 +34,9 @@ class Configure(config.base.Configure):
     '''
     haveStdC = self.checkCompile(includes)
     # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
-    if haveStdC and not self.outputPreprocess('#include string.h').find('memchr'): haveStdC = 0
+    if haveStdC and not self.outputPreprocess('#include <string.h>').find('memchr'): haveStdC = 0
     # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
-    if haveStdC and not self.outputPreprocess('#include stdlib.h').find('free'): haveStdC = 0
+    if haveStdC and not self.outputPreprocess('#include <stdlib.h>').find('free'): haveStdC = 0
     # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
     if haveStdC:
       includes = '''
