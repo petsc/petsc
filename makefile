@@ -5,7 +5,7 @@
 #
 ALL: all
 LOCDIR = . 
-DIRS   = src include docs 
+DIRS   = src include 
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
@@ -224,26 +224,26 @@ install:
         else \
 	  echo Installing PETSc at ${INSTALL_DIR};\
           if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
-	    mkdir `dirname ${INSTALL_DIR}` ; \
+	    ${MKDIR} `dirname ${INSTALL_DIR}` ; \
           fi;\
           if [ ! -d ${INSTALL_DIR} ]; then \
-	    mkdir ${INSTALL_DIR} ; \
+	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
           cp -fr include ${INSTALL_DIR};\
           if [ ! -d ${INSTALL_DIR}/bmake ]; then \
-	    mkdir ${INSTALL_DIR}/bmake ; \
+	    ${MKDIR} ${INSTALL_DIR}/bmake ; \
           fi;\
           cp -f bmake/adic* bmake/variables ${INSTALL_DIR}/bmake ; \
           cp -fr bmake/common ${INSTALL_DIR}/bmake;\
           cp -fr bmake/${PETSC_ARCH} ${INSTALL_DIR}/bmake;\
           cp -fr bin ${INSTALL_DIR};\
           if [ ! -d ${INSTALL_DIR}/lib ]; then \
-	    mkdir ${INSTALL_DIR}/lib ; \
+	    ${MKDIR} ${INSTALL_DIR}/lib ; \
           fi;\
           for i in lib/lib*; do \
             bopt=`echo $${i} | ${SED} s=lib/lib==g`;\
             if [ ! -d ${INSTALL_DIR}/$${i} ]; then \
-              mkdir ${INSTALL_DIR}/$${i};\
+              ${MKDIR} ${INSTALL_DIR}/$${i};\
             fi; \
             if [ -d $${i}/${PETSC_ARCH} ]; then \
               cp -fr $${i}/${PETSC_ARCH} ${INSTALL_DIR}/$${i};\
@@ -262,10 +262,10 @@ install_src:
         else \
 	  echo Installing PETSc source at ${INSTALL_DIR};\
           if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
-	    mkdir `dirname ${INSTALL_DIR}` ; \
+	    ${MKDIR} `dirname ${INSTALL_DIR}` ; \
           fi;\
           if [ ! -d ${INSTALL_DIR} ]; then \
-	    mkdir ${INSTALL_DIR} ; \
+	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
           cp -fr src ${INSTALL_DIR};\
         fi;
@@ -276,10 +276,10 @@ install_docs:
         else \
 	  echo Installing PETSc documentation at ${INSTALL_DIR};\
           if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
-	    mkdir `dirname ${INSTALL_DIR}` ; \
+	    ${MKDIR} `dirname ${INSTALL_DIR}` ; \
           fi;\
           if [ ! -d ${INSTALL_DIR} ]; then \
-	    mkdir ${INSTALL_DIR} ; \
+	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
           cp -fr docs ${INSTALL_DIR};\
           ${RM} -fr docs/tex;\
@@ -354,23 +354,12 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              python/PETSc/packages/BlockSolve.py python/PETSc/packages/NetCDF.py python/PETSc/packages/ParMetis.py \
              python/PETSc/packages/update.py maint/confignightly/* config/*.py
 
-
-updatewebdocs:
-	-chmod -R ug+w /mcs/tmp/petsc-tmp
-	-chgrp -R petsc /mcs/tmp/petsc-tmp
-	-/bin/rm -rf /mcs/tmp/petscdocs
-	-/bin/cp -r /mcs/tmp/petsc-tmp/docs /mcs/tmp/petscdocs
-	-maint/update-docs.py /mcs/tmp/petscdocs
-	-find /mcs/tmp/petscdocs -type d -name "*" -exec chmod g+w {} \;
-	-/bin/cp -r /mcs/tmp/petscdocs/* ${PETSC_DIR}/docs
-	-/bin/rm -rf /mcs/tmp/petscdocs
-
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
 	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
 	  echo "******************************************************";  false; fi
-	@${MKDIR} -p ${LOC}/docs/manualpages
+	@${MKDIR} ${LOC}/docs/manualpages
 
 # Builds all the documentation - should be done every night
 alldoc: alldoc1 alldoc2
@@ -378,7 +367,7 @@ alldoc: alldoc1 alldoc2
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
-	cd docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
+	cd src/docs/tex/manual; ${OMAKE} clean LOC=${LOC}; ${OMAKE} manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree LOC=${LOC}
@@ -564,7 +553,7 @@ petscPython.tgz:
 	-@scp $@ tg-login2.uc.teragrid.org:./
 
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
-        alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
+        alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean petscPython.tgz
 

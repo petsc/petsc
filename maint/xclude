@@ -20,7 +20,7 @@ petsc-dist/config/osf5.0
 petsc-dist/config/python
 petsc-dist/config/solaris2.9
 petsc-dist/config/solaris2.9-lam
-petsc-dist/docs/website
+petsc-dist/src/docs
 petsc-dist/lib
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
@@ -29,8 +29,6 @@ petsc-dist/src/contrib/sda/examples/tests/scripts
 petsc-dist/src/ksp/examples/tests/scripts
 petsc-dist/src/contrib/lahaye/samg
 petsc-dist/src/contrib/markadams2
-petsc-dist/docs/exercises
-petsc-dist/docs/html
 petsc-dist/docs/manualpages/logfile.txt
 petsc-dist/docs/manualpages/manualpages.cit
 petsc-dist/bmake/alpha_uni
@@ -49,7 +47,6 @@ petsc-dist/src/contrib/mattevents
 petsc-dist/src/contrib/fgmres
 petsc-dist/src/contrib/fischer
 petsc-dist/src/contrib/markadamscolor
-petsc-dist/docs/splitmanual
 petsc-dist/src/contrib/fun3d
 petsc-dist/src/contrib/oberman/oldstuff
 petsc-dist/src/contrib/oberman/quasigeo_q1
@@ -76,7 +73,6 @@ petsc-dist/bin/petscrun
 petsc-dist/bin/petscrun.demo
 petsc-dist/bin/demos
 petsc-dist/bin/petscdemo
-petsc-dist/docs/manualpages/sec
 petsc-dist/src/blaslapack
 petsc-dist/src/apps
 petsc-dist/src/contrib/flash
@@ -90,7 +86,6 @@ petsc-dist/src/snes/examples/tutorials/unstruct
 petsc-dist/src/adic
 petsc-dist/src/ec
 petsc-dist/bin/petscrun
-petsc-dist/docs/man
 petsc-dist/src/contrib/euler
 petsc-dist/src/contrib/pfull/oldversions
 petsc-dist/src/contrib/vankat
@@ -112,9 +107,6 @@ petsc-dist/TAGS_COMPLETE
 petsc-dist/maint
 petsc-dist/lib
 petsc-dist/Keywords
-petsc-dist/docs/tex
-petsc-dist/docs/tex/grants
-petsc-dist/docs/tex/accounts
 petsc-dist/src/examples
 petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn

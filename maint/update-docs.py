@@ -76,7 +76,7 @@ def main():
           cleanfiles = 1
     
     baseurl = 'http://www-unix.mcs.anl.gov/petsc/petsc-2/documentation'
-    baseurl = PETSC_DIR + '/docs/website/documentation/'
+    baseurl = PETSC_DIR + '/src/docs/website/documentation/'
     htmlfiles = [
         'bugreporting.html',
         'codemanagement.html',
