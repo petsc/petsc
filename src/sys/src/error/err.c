@@ -1,8 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.16 1995/07/20 03:58:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.17 1995/07/28 04:19:40 bsmith Exp curfman $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #include "petscfix.h"
 
 struct EH {
@@ -36,8 +39,8 @@ $       debugger is gdb; alternatives are dbx and xxgdb.
 
    Notes:
    Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERR, which has 
-   the calling sequence
+   handlers, but can instead use the simplified interface SETERRQ, which
+   has the calling sequence
 $     SETERRQ(number,message)
 
    Notes for experienced users:
@@ -71,7 +74,7 @@ int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
 
    Notes:
    Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERR, which has 
+   handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
 $     SETERRQ(number,message)
 
