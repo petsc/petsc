@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.29 1997/04/04 19:11:16 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.30 1997/04/08 01:34:15 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: zsys.c,v 1.29 1997/04/04 19:11:16 balay Exp balay $";
 #define petscobjectgetcomm_        PETSCOBJECTGETCOMM
 #define petscobjectgetname_        PETSCOBJECTGETNAME
 #define petscgettime_              PETSCGETTIME
+#define petscgetcputime_           PETSCGETCPUTIME
 #define petscgetflops_             PETSCGETFLOPS
 #define petscerror_                PETSCERROR
 #define petscrandomcreate_         PETSCRANDOMCREATE
@@ -36,6 +37,7 @@ static char vcid[] = "$Id: zsys.c,v 1.29 1997/04/04 19:11:16 balay Exp balay $";
 #define petscobjectgetcomm_        petscobjectgetcomm
 #define petscobjectgetname_        petscobjectgetname
 #define petscgettime_              petscgettime  
+#define petscgetcputime_           petscgetcputime  
 #define petscgetflops_             petscgetflops 
 #define petscerror_                petscerror
 #define petscrandomcreate_         petscrandomcreate
@@ -140,6 +142,10 @@ void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
 double petscgettime_()
 { 
   return PetscGetTime();
+}
+double petscgetcputime_()
+{
+  return PetscGetCPUTime();
 }
 
 double  petscgetflops_()
