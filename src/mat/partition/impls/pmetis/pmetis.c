@@ -80,12 +80,19 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
     int wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
     float *tpwgts,*ubvec;
     ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts); CHKERRQ(ierr);
-    for (i=0; i<ncon; i++)
-      for (j=0; j<nparts; j++)
-	tpwgts[i*nparts+j] = 1./nparts;
+    for (i=0; i<ncon; i++) {
+      for (j=0; j<nparts; j++) {
+        if (part->part_weights) {
+          tpwgts[i*nparts+j] = part->part_weights[i*nparts+j];
+        } else {
+          tpwgts[i*nparts+j] = 1./nparts;
+        }
+      }
+    }
     ierr = PetscMalloc(ncon*sizeof(float),&ubvec); CHKERRQ(ierr);
-    for (i=0; i<ncon; i++)
+    for (i=0; i<ncon; i++) {
       ubvec[i] = 1.05;
+    }
     options[0] = 0;
     ParMETIS_V3_PartKway
       (vtxdist,xadj,adjncy,part->vertex_weights,adj->values,

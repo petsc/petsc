@@ -209,6 +209,7 @@ struct _p_MatPartitioning {
   PETSCHEADER(struct _MatPartitioningOps)
   Mat         adj;
   int         *vertex_weights;
+  PetscReal   *part_weights;
   int         n;                                 /* number of partitions */
   void        *data;
   int         setupcalled;

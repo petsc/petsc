@@ -298,6 +298,9 @@ int MatPartitioningDestroy(MatPartitioning part)
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   }
+  if (part->part_weights){
+    ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+  }
   PetscLogObjectDestroy(part);
   PetscHeaderDestroy(part);
   PetscFunctionReturn(0);
@@ -322,7 +325,7 @@ int MatPartitioningDestroy(MatPartitioning part)
 
 .keywords: Partitioning, destroy, context
 
-.seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetAdjacency()
+.seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
 int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
 {
@@ -335,6 +338,41 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   }
   part->vertex_weights = weights;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetPartitionWeights"
+/*@C
+   MatPartitioningSetPartitionWeights - Sets the weights for each partition.
+
+   Collective on Partitioning
+
+   Input Parameters:
++  part - the partitioning context
+-  weights - the weights
+
+   Level: beginner
+
+   Notes:
+      The array weights is freed by PETSc so the user should not free the array. In C/C++
+   the array must be obtained with a call to PetscMalloc(), not malloc().
+
+.keywords: Partitioning, destroy, context
+
+.seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetVertexWeights()
+@*/
+int MatPartitioningSetPartitionWeights(MatPartitioning part,PetscReal *weights)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
+
+  if (part->part_weights){
+    ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+  }
+  part->part_weights = weights;
   PetscFunctionReturn(0);
 }
 
@@ -371,7 +409,8 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
                     MatPartitioningView);
   PetscLogObjectCreate(part);
   part->type           = -1;
-  part->vertex_weights = 0;
+  part->vertex_weights = PETSC_NULL;
+  part->part_weights   = PETSC_NULL;
   ierr = MPI_Comm_size(comm,&part->n);CHKERRQ(ierr);
 
   *newp = part;
