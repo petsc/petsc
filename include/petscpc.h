@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.67 1997/04/02 21:03:40 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.68 1997/05/20 03:19:44 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -90,7 +90,9 @@ extern int PCShellSetName(PC,char*);
 extern int PCShellGetName(PC,char**);
 
 extern int PCLUSetUseInPlace(PC);
+extern int PCLUSetFill(PC,double);
 extern int PCILUSetUseInPlace(PC);
+extern int PCILUSetFill(PC,double);
 extern int PCILUSetLevels(PC,int);
 extern int PCILUSetReuseReordering(PC,PetscTruth);
 extern int PCILUSetUseDropTolerance(PC,double,int);
