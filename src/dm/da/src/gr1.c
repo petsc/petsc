@@ -107,7 +107,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscReal      coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   PetscScalar    *array,*xg;
   PetscDraw      draw;
-  PetscTruth     isnull;
+  PetscTruth     isnull,showpoints;
   MPI_Comm       comm;
   PetscDrawAxis  axis;
   Vec            xcoor;
@@ -119,6 +119,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,"Vector not generated from a DA");
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_vec_mark_points",&showpoints);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
@@ -210,6 +212,9 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = PetscDrawLine(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+step*(i-1)]),
                       PetscRealPart(xg[i]),PetscRealPart(array[j+step*i]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
+      if (showpoints) {
+        ierr = PetscDrawPoint(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+step*(i-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      }
     }
     if (rank) { /* receive value from left */
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag1,comm,&status);CHKERRQ(ierr);
@@ -220,6 +225,9 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),
                       PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
+      if (showpoints) {
+        ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      }
     }
     if (rank == size-1 && periodic) {
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
@@ -229,6 +237,9 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = PetscDrawLine(draw,PetscRealPart(xg[n-2]),PetscRealPart(array[j+step*(n-1)]),
                       PetscRealPart(xg[n-1]),tmp,PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
+      if (showpoints) {
+        ierr = PetscDrawPoint(draw,PetscRealPart(xg[n-2]),PetscRealPart(array[j+step*(n-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      }
     }
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);

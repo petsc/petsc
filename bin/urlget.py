@@ -1,5 +1,5 @@
-#!/usr/bin/env python1.5
-#!/bin/env python1.5
+#!/usr/bin/env python
+#!/bin/env python
 # $Id: urlget.py,v 1.28 2001/06/13 15:39:23 bsmith Exp $ 
 #
 # change python1.5 to whatever is needed on your system to invoke python
