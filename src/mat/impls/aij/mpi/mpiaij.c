@@ -3065,7 +3065,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
 
-  /* determine the number of messages to send, their lengths */
+  /* determine row ownership */
   /*---------------------------------------------------------*/
   ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
   if (m == PETSC_DECIDE) {
@@ -3079,6 +3079,9 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   
   if (m == PETSC_DECIDE) {ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr); }
   ierr = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
+
+  /* determine the number of messages to send, their lengths */
+  /*---------------------------------------------------------*/
   len_s  = merge->len_s;
 
   len = 0;  /* length of buf_si[] */
@@ -3086,7 +3089,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   for (proc=0; proc<size; proc++){
     len_si[proc] = 0;
     if (proc == rank){
-      len_si[proc] = len_s[proc] = 0;  
+      len_s[proc] = 0;  
     } else {
       len_si[proc] = owners[proc+1] - owners[proc] + 1;
       len_s[proc] = ai[owners[proc+1]] - ai[owners[proc]]; /* num of rows to be sent to [proc] */
@@ -3260,17 +3263,8 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((len+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
-  ierr = PetscMemzero(ba,(len+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  for (i=0;i<m;i++) {
-    k = i + +owners[rank];
-    bnzi = bi[i+1] - bi[i]; 
-    ierr = MatSetValues(B_mpi,1,&k,bnzi,bj+bi[i],ba,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(ba);CHKERRQ(ierr); 
-
+  /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
+  B_mpi->assembled     = PETSC_FALSE; 
   B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI; 
   merge->bi            = bi;
   merge->bj            = bj;
