@@ -9,6 +9,7 @@ EXTERN int PetscViewerCreate_Binary(PetscViewer);
 EXTERN int PetscViewerCreate_String(PetscViewer);
 EXTERN int PetscViewerCreate_Draw(PetscViewer);
 EXTERN int PetscViewerCreate_AMS(PetscViewer);
+EXTERN int PetscViewerCreate_VU(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -36,6 +37,7 @@ int PetscViewerRegisterAll(char *path)
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_AMS,      path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 
 #endif
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_VU,       path,"PetscViewerCreate_VU",         PetscViewerCreate_VU);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

@@ -40,6 +40,7 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_STRING       "string"
 #define PETSC_VIEWER_DRAW         "draw"
 #define PETSC_VIEWER_AMS          "ams"
+#define PETSC_VIEWER_VU           "vu"
 #define PETSC_VIEWER_MATHEMATICA  "mathematica"
 #define PETSC_VIEWER_SILO         "silo"
 
