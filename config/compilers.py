@@ -119,50 +119,69 @@ class Configure(config.base.Configure):
   def checkFortranNameMangling(self):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, or HAVE_FORTRAN_CAPS
     Also checks wierd g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
-    fobj    = 'conff.o'
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+fobj
+    oldLIBS = self.framework.argDB['LIBS']
 
-    self.pushLanguage('F77')
-    if not self.checkCompile('        subroutine d1chk()\n        return\n        end\n', None, cleanup = 0):
-      raise RuntimeError('Cannot compile Fortran program')
+    # Define known manglings and write tests in C
+    numtest = [0,1,2]
+    cobj    = ['confc0.o','confc1.o','confc2.o']
+    cfunc   = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n']
+    mangler = ['underscore','unchanged','capitalize']
+    manglDEF= ['HAVE_FORTRAN_UNDERSCORE','HAVE_FORTRAN_NOUNDERSCORE','HAVE_FORTRAN_CAPS']
+
+    # Compile each of the C test objects
+    self.pushLanguage('C')
+    for i in numtest:
+      if not self.checkCompile(cfunc[i],None,cleanup = 0):
+        raise RuntimeError('Cannot compile C function: '+cfunc[i])
+      if not os.path.isfile(self.compilerObj):
+        raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
+      os.rename(self.compilerObj,cobj[i])
     self.popLanguage()
-    if not os.path.isfile(self.compilerObj):
-      raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
-    os.rename(self.compilerObj, fobj)
 
-    # Check single trailing underscore
-    if self.checkLink('void d1chk_(void);\n', 'd1chk_();\nreturn 0;\n'):
-      self.fortranMangling = 'underscore'
-      self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
-    # Check no change
-    elif self.checkLink('void d1chk(void);\n', 'd1chk();\nreturn 0;\n'):
-      self.fortranMangling = 'unchanged'
-      self.addDefine('HAVE_FORTRAN_NOUNDERSCORE', 1)
-    # Check capitalization
-    elif self.checkLink('void D1CHK(void);\n', 'D1CHK();\nreturn 0;\n'):
-      self.fortranMangling = 'capitalize'
-      self.addDefine('HAVE_FORTRAN_CAPS', 1)
+    # Link each test object against F77 driver.  If successful, then mangling found.
+    self.pushLanguage('F77')
+    for i in numtest:
+      self.framework.argDB['LIBS'] += ' '+cobj[i]
+      if self.checkLink(None,'       call d1chk()\n'):
+        self.fortranMangling = mangler[i]
+        self.addDefine(manglDEF[i],1)
+        break
+      self.framework.argDB['LIBS'] = oldLIBS
     else:
       raise RuntimeError('Unknown Fortran name mangling')
-    if os.path.isfile(fobj): os.remove(fobj)
-
-    self.pushLanguage('F77')
-    if not self.checkCompile('        subroutine d1_chk()\n        return\n        end\n', None, cleanup = 0):
-      raise RuntimeError('Cannot compile Fortran program')
     self.popLanguage()
-    os.rename(self.compilerObj, fobj)
+
+    # Clean up C test objects
+    for i in numtest:
+      if os.path.isfile(cobj[i]): os.remove(cobj[i])
 
     # Check double trailing underscore
-    if self.checkLink('void d1_chk__(void);\n', 'd1_chk__();\nreturn 0;\n'):
+    #
+    #   Create C test object
+    self.pushLanguage('C')
+    if not self.checkCompile('void d1_chk__(void) {return;}\n',None,cleanup = 0):
+      raise RuntimeError('Cannot compile C function: double underscore test')
+    if not os.path.isfile(self.compilerObj):
+      raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
+    os.rename(self.compilerObj,cobj[0])
+    self.framework.argDB['LIBS'] += ' '+cobj[0]
+    self.popLanguage()
+
+    #   Test against driver
+    self.pushLanguage('F77')
+    if self.checkLink(None,'       call d1_chk()\n'):
       self.fortranManglingDoubleUnderscore = 1
-      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE', 1)
+      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     else:
       self.fortranManglingDoubleUnderscore = 0
-    if os.path.isfile(fobj): os.remove(fobj)
 
-    self.framework.argDB['LIBS'] = oldLibs
+    #   Cleanup
+    if os.path.isfile(cobj[0]): os.remove(cobj[0])
+    self.framework.argDB['LIBS'] = oldLIBS
+    self.popLanguage()
+
     return
+
 
   def checkFortran90Compiler(self):
     if self.framework.argDB.has_key('with-f90'):
