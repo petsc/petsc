@@ -121,7 +121,22 @@ class Preconditioner<double,int> : public virtual esi::Preconditioner<double,int
     esi::IndexSpace<int>     *rmap,*cmap;
     esi::PreconditionerSide  side;
 };
-}}
+}
+
+  /* -------------------------------------------------------------------------*/
+
+template<class Scalar,class Ordinal> class PreconditionerFactory 
+{
+  public:
+
+    // Destructor.
+    virtual ~PreconditionerFactory(void){};
+
+    // Construct a Preconditioner
+    virtual esi::ErrorCode getPreconditioner(MPI_Comm comm,esi::Preconditioner<Scalar,Ordinal>*&v) = 0; 
+};
+
+}
 
 #endif
 

@@ -156,15 +156,15 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 #define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
-  DMMG    dmmg = (DMMG)ptr;
-  AppCtx  *user = (AppCtx*)dmmg->user;
-  int     ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  DMMG         dmmg = (DMMG)ptr;
+  AppCtx       *user = (AppCtx*)dmmg->user;
+  int          ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
   PetscScalar  zero = 0.0,one = 1.0;
   PetscScalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
   PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
   PetscScalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
   PetscScalar  ***x,***f;
-  Vec     localX;
+  Vec          localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
@@ -474,11 +474,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   DMMG         dmmg = (DMMG)ptr;
   AppCtx       *user = (AppCtx*)dmmg->user;
   int          ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
-  PetscScalar   zero = 0.0,one = 1.0;
-  PetscScalar   hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
-  PetscScalar   t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  PetscScalar   tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
-  PetscScalar   ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
+  PetscScalar  zero = 0.0,one = 1.0;
+  PetscScalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  PetscScalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
+  PetscScalar  ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
   Vec          localX;
   MatStencil   c[7],row;
   Mat          jac = *B;

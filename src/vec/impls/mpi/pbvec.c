@@ -547,7 +547,8 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
    Concepts: vectors^ghosted
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
-          VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray()
+          VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
 int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
@@ -555,6 +556,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   int          ierr;
   Vec_MPI      *w;
   PetscScalar  *larray;
+  IS           from,to;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -577,16 +579,12 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   /*
        Create scatter context for scattering (updating) ghost values 
   */
-  if (ghosts) {
-    IS from,to;
-  
-    ierr = ISCreateGeneral(comm,nghost,ghosts,&from);CHKERRQ(ierr);   
-    ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
-    ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
-    PetscLogObjectParent(*vv,w->localupdate);
-    ierr = ISDestroy(to);CHKERRQ(ierr);
-    ierr = ISDestroy(from);CHKERRQ(ierr);
-  }
+  ierr = ISCreateGeneral(comm,nghost,ghosts,&from);CHKERRQ(ierr);   
+  ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
+  ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
+  PetscLogObjectParent(*vv,w->localupdate);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -618,7 +616,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
-          VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd()
+          VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
+          VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
 int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
@@ -734,6 +733,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   int          ierr;
   Vec_MPI      *w;
   PetscScalar  *larray;
+  IS           from,to;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -758,16 +758,12 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   /*
        Create scatter context for scattering (updating) ghost values 
   */
-  if (ghosts) {
-    IS from,to;
-  
-    ierr = ISCreateBlock(comm,bs,nghost,ghosts,&from);CHKERRQ(ierr);   
-    ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
-    ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
-    PetscLogObjectParent(*vv,w->localupdate);
-    ierr = ISDestroy(to);CHKERRQ(ierr);
-    ierr = ISDestroy(from);CHKERRQ(ierr);
-  }
+  ierr = ISCreateBlock(comm,bs,nghost,ghosts,&from);CHKERRQ(ierr);   
+  ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
+  ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
+  PetscLogObjectParent(*vv,w->localupdate);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
