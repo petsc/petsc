@@ -19,7 +19,7 @@ options=$*
 #
 # Please modify the following path to point to the correct location of mpich2 mpiexec
 #
-mpiexec=/home/petsc/soft/linux-rh73-mpich2/mpich2-snap-20040517/bin/mpiexec
+mpiexec=/home/petsc/soft/linux-rh73-mpich2/mpich2-0.97/bin/mpiexec
 #
 # Now execute the mpirun comman
 #
