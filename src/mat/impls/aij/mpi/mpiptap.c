@@ -517,7 +517,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscMPIInt    size,rank,taga,*len_s;
   PetscInt       *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
   PetscInt       **buf_ri,**buf_rj;  
-  PetscInt       cnz,*bj_i,*bi,*bj,bnz,nextcj; /* bi,bj,ba: local array of C(mpi mat) */
+  PetscInt       cnz=0,*bj_i,*bi,*bj,bnz,nextcj; /* bi,bj,ba: local array of C(mpi mat) */
   MPI_Request    *s_waits,*r_waits; 
   MPI_Status     *status;
   MatScalar      **abuf_r,*ba_i,*pA,*coa,*ba; 
