@@ -23,6 +23,8 @@ typedef struct {
 /*  Used in Matrix-vector product */
   Vec           lvec;
   VecScatterCtx Mvctx;
+  void          *bsinterf;
+  int           flag;     /* flag for BS */
 } Mat_MPIAIJ;
 
 
