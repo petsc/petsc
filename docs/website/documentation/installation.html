@@ -249,8 +249,8 @@ that are associated with the PETSC_ARCH used.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a> &nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual">  Return to  Manual Installation Instructions</a> </b></font> </p>
       <hr>
-      <h4><font color="#551a8b"><a name="Cygwin:">Cygwin:</a></font> <span
- style="font-weight: 400;">&nbsp;it provides UNIX tools on Microsoft Windows. When installing Cygwin <font
+      <h4><font color="#551a8b"><a name="Cygwin:">Cygwin</a></font> <span
+ style="font-weight: 400;">&nbsp;provides UNIX tools on Microsoft Windows. When installing Cygwin <font
  color="#ff0000">make sure</font> you install the following additional
 packages</span></h4>
       <ul>
@@ -262,7 +262,7 @@ packages</span></h4>
         </li>
       </ul>
       <h4><span style="font-weight: 400;">Cygwin also has GNU
-compilers - which can be used&nbsp; if Microsoft compilers are not
+compilers (gcc, g++, g77) which can be used&nbsp; if Microsoft, Intel, or Borland Group compilers are not
 available</span></h4>
       <table border="1" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="72%"
@@ -413,7 +413,7 @@ Packages</a>:</b></font>&nbsp; PETSc can be installed with <a
 various optional packages</a> - including SuperLU, Spooles, Matlab
 etc..&nbsp;</p>
       <p>The optional package information is specified in
-bmake/${PETSC_ARCH/packages file. An example specification is as
+bmake/${PETSC_ARCH}/packages file. An example specification is as
 follows:</p>
       <pre>PARMETIS_INCLUDE    = -I/home/petsc/soft/solaris-9/ParMetis-3.0<br>PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0 -lparmetis -lmetis<br>PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS</pre>
       <p>Notice that the include, library paths, library files are
