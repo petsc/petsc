@@ -1,25 +1,28 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.6 1999/03/17 23:24:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.7 1999/03/19 21:22:38 bsmith Exp curfman $";
 #endif
 /*
-      Implements an alternative approach for computing the h
-  parameter used with the finite difference based matrix free Jacobian.
+  Implements an alternative approach for computing the differencing parameter
+  h used with the finite difference based matrix-free Jacobian.  This code
+  implements the strategy of M. Pernice and H. Walker:
 
-      This uses the Walker-Pernice strategy. See snesmfjdef.c for 
-  a full set of comments on the routines below.
-
-        h = error_rel * sqrt(1 + ||U||) / ||a||
+      h = error_rel * sqrt(1 + ||U||) / ||a||
 
       Notes:
-   1) || U || does not change between linear iterations so can be reused
-   2) In GMRES || a || == 1 and so does not need to ever be computed
+        1) || U || does not change between linear iterations so can be reused
+        2) In GMRES || a || == 1 and so does not need to ever be computed
 
+      Reference:  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative 
+      Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998, 
+      vol 19, pp. 302--318.
+
+   See snesmfjdef.c for  a full set of comments on the routines below.
 */
 
 /*
     This include file defines the data structure  MatSNESMF that 
    includes information about the computation of h. It is shared by 
-   all implementations that people provide
+   all implementations that people provide.
 */
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
 
