@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.29 1996/08/06 04:02:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.30 1996/08/08 14:42:27 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -300,7 +300,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 /*@
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Note: Either all or no processors in the
-    PC communicator must call this routine. 
+    PC communicator must call this routine, with the same index sets.
 
     Input Parameters:
 .   pc - the preconditioner context
@@ -383,11 +383,11 @@ int PCASMSetOverlap(PC pc, int ovl)
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential
    preconditioners.  More general related routines are
-   PCASMSetTotalSubdomains() and PCASMSetTotalSubdomains().
+   PCASMSetTotalSubdomains() and PCASMSetLocalSubdomains().
 
 .keywords: PC, ASM, additive Schwarz, create, subdomains, 2D, regular grid
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubSLES(),
           PCASMSetOverlap()
 @*/
 int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
