@@ -1,4 +1,4 @@
-# $Id: base,v 1.7 1998/04/09 00:17:45 balay Exp bsmith $ 
+# $Id: base,v 1.8 1998/04/13 16:20:43 bsmith Exp balay $ 
 
 PARCH    = solaris
 CC       = gcc  -DPARCH_solaris -fPIC
@@ -54,7 +54,9 @@ libf: ${OBJSF}
 	-${RM} $*.f __$*.c
 
 shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
+	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
+	&&  [ "${BOPT}" != "Opg_complex" ] ; then \
+	echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
 	${RM} -rf tmp; \
 	mkdir tmp; \
@@ -75,4 +77,5 @@ shared: chkopts_basic
 	  fi; \
 	done ;\
 	cd ../ ; \
-	${RM} -rf tmp
+	${RM} -rf tmp; \
+	fi
