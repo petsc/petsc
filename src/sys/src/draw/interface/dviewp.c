@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.33 1999/11/27 17:53:45 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.34 1999/12/11 22:30:16 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -190,7 +190,8 @@ int DrawViewPortsDestroy(DrawViewPorts *ports)
   int        ierr;
 
   PetscFunctionBegin;
-  
+
+  if (!ports) PetscFunctionReturn(0);  
   if (ports->draw) {ierr = DrawDestroy(ports->draw);CHKERRQ(ierr);}
   ierr = PetscFree(ports->xl);CHKERRQ(ierr);
   ierr = PetscFree(ports->xr);CHKERRQ(ierr);
