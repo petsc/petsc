@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.68 1999/01/31 16:08:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.69 1999/02/09 22:50:50 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -117,7 +117,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   ierr = VecAYPX(&scale,x,p[k]); CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
+    PetscAMSTakeAccess(ksp);
     ksp->its++;
+    PetscAMSGrantAccess(ksp);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 

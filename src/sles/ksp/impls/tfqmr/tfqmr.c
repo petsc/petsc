@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.41 1999/01/31 16:09:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.42 1999/02/09 22:52:17 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -37,7 +37,6 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
   PetscFunctionBegin;
-  ksp->its = 0;
   maxit    = ksp->max_it;
   history  = ksp->residual_history;
   hist_len = ksp->res_hist_size;
@@ -60,6 +59,10 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+  PetscAMSTakeAccess(ksp);
+  ksp->rnorm  = dp;
+  ksp->its    = 0;
+  PetscAMSGrantAccess(ksp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
 
@@ -79,7 +82,9 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ierr = VecSet(&zero,D); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
+    PetscAMSTakeAccess(ksp);
     ksp->its++;
+    PetscAMSGrantAccess(ksp);
     ierr = VecDot(V,RP,&s); CHKERRQ(ierr);          /* s <- (v,rp)          */
     a = rhoold / s;                                 /* a <- rho / s         */
     tmp = -a; VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);  /* q <- u - a v         */
