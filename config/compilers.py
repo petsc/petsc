@@ -104,7 +104,10 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
-        yield 'mpicc'
+        if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpicc'
+        if not Configure.isGNU('mpicc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpicc'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -232,8 +235,14 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
-        yield 'mpicxx'
-        yield 'mpiCC'
+        if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpicxx'
+        if not Configure.isGNU('mpicxx') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpicxx'
+        if Configure.isGNU('mpiCC') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpiCC'
+        if not Configure.isGNU('mpiCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpiCC'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -345,8 +354,14 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
-        yield 'mpif90'
-        yield 'mpif77'
+        if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpif90'
+        if not Configure.isGNU('mpif90') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpif90'
+        if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpif7'
+        if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpif77'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g77'
       vendor = self.framework.argDB['with-vendor-compilers']
