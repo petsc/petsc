@@ -1,7 +1,0 @@
-#!/bin/sh
-
-mpirun -np 2 ./ex1  -f0 m1.pb -ksp_monitor -ksp_type bcgs -pc_type spai -pc_spai_block_size 0 -pc_spai_epsilon .6 -pc_spai_nbsteps 5 -pc_spai_sp 0
-
-
-
-

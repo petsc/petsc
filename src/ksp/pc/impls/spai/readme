@@ -5,31 +5,5 @@ implemented by Steven Bernard and available at
 
      http://www.sam.math.ethz.ch/~grote/spai/
   
-   To use this, you must first get and install the SPAI package.
-Unfortunately, SPAI does not come ready to compile into a library
-and is not portable to most Unix machines; though it does say it 
-compiles on both the IBM SP and Cray T3D, you may have to hack it
-slightly for other machines. 
-
-  Once you have created the spai_3.0 directory from the tar file.
-
-  1) Compile all the .o files in the spai_3.0 directory. You will 
-     probably have to edit the Makefile and then run make spai
-  2) Create a library with the command 
-     ar cr libspai.a *.o
-  3) On machines that require it, run ranlib on the library
-     ranlib libspai.a
-  4) Edit the PETSc file bmake/$PETSC_ARCH/base.site and indicate
-     the location of the SPAI directory
-  5) Cd to src/contrib/pc/spai/src and do make BOPT=g and make BOPT=O
-  7) You are now ready to run an example, cd to src/contrib/pc/spai/examples/
-     tutorials and make ex1 in the usual PETSc way. You can run it
-     using any of the test matrices in src/mat/examples/matrices
-
-  If you have problems compiling SPAI please contact Steven Bernard
-directly. If you have problems linking PETSc with SPAI or running the 
-examples then after checking the docs/troubleshooting.html and 
-docs/bugreporting.html file contact petsc-maint@mcs.anl.gov
-
    This contribution has not been extensively tested or optimized for 
 performance yet.
