@@ -1,3 +1,6 @@
+petsc/src/contrib/RamgPetsc.c
+petsc/src/contrib/mixedrealcomplex
+petsc/src/contrib/psparse
 petsc/src/mat/impls/aij/seq/mi25bfac.f
 petsc/src/mat/impls/aij/seq/mi15blas.f
 petsc/src/mat/impls/aij/seq/LUSOL.f
