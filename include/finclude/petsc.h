@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.62 1998/03/27 21:17:52 balay Exp balay $;
+!  $Id: petsc.h,v 1.63 1998/03/30 21:14:12 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -80,10 +80,14 @@
 !
       MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
 
-      common /petscfortran1/ PETSC_NULL,PETSC_NULL_CHARACTER
-      common /petscfortran2/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
-      common /petscfortran3/ VIEWER_STDOUT_WORLD
-      common /petscfortran4/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+!
+!     A string should be in a different common block
+!  
+      common /petscfortran1/ PETSC_NULL_CHARACTER
+      common /petscfortran2/ PETSC_NULL
+      common /petscfortran3/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
+      common /petscfortran4/ VIEWER_STDOUT_WORLD
+      common /petscfortran5/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 !
 !     Macros for error checking
 !
