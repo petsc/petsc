@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.11 1995/10/12 02:31:54 curfman Exp curfman $ */
+/* $Id: plapack.h,v 1.12 1995/10/12 14:02:34 curfman Exp curfman $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -18,11 +18,12 @@ Cray T3D.  Yet another reason to hate ...
 #include "fortran.h"
 #endif
 
+/* t3d doesn't have lower level SGETF2 in library, so use SGETRF instead */
 #if !defined(PETSC_COMPLEX)
 #if defined(PARCH_cray) || defined(PARCH_t3d)
 #define LAgeqrf_ SGEQRF
 #define LAgetrf_ SGETRF
-#define LAgetf2_ SGETF2
+#define LAgetf2_ SGETRF
 #define BLdot_   SDOT
 #define BLnrm2_  SNRM2
 #define BLscal_  SSCAL
@@ -130,7 +131,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLaxpy_  CAXPY
 #define BLasum_  SCASUM
 #define LAgetrf_ CGETRF
-#define LAgetf2_ CGETF2
+#define LAgetf2_ CGETRF
 #elif defined(FORTRANCAPS)
 #define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
