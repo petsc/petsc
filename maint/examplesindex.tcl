@@ -175,14 +175,200 @@ proc deletelinefeed { name } {
     
     set buf [join [ split $buf "\n" ] " " ]
 }
+##################################################
+####       write_access_tables()             #####    
+##################################################
 
+proc write_access_tables { } {
+    global  Concepts Routines Processors Comment PETSC_DIR files html
+
+    set table1 [ open docs/tex/access/table1.txt  w ]
+    puts $table1 "Key;Dir;Name;Source;Processors;comments"
+    foreach filename $files {
+        set tempdir [ file dirname $filename ]
+        set tempfile [ file tail $filename ]
+        set tempext [ file extension $filename ]
+        set temphtml $html($filename)
+        set mesg "$filename;$temphtml;$tempdir;$tempfile;$tempext;$Processors($filename);$Comment($filename)"
+        puts  $table1 $mesg
+    }
+    close $table1
+    
+    
+    set table2 [ open docs/tex/access/table2.txt w ]
+    puts $table2 "Name of the File;Concepts"
+    
+    foreach filename $files {
+        set n [ llength $Concepts($filename)  ]
+        set temphtml $html($filename) 
+        set i 0
+        while { $i < $n } {
+            set temp [ join [ lindex $Concepts($filename) $i ] " " ]
+            set mesg "$temphtml;$temp"
+            puts  $table2 $mesg
+            set i [ expr $i + 1 ]
+        }
+    }
+    close $table2
+    
+    set table3 [ open docs/tex/access/table3.txt w ]
+    puts $table3 "Name of the File;Routines"
+    
+    foreach filename $files {
+        set n [ llength $Routines($filename)  ]
+        set temphtml $html($filename) 
+        set i 0
+        while { $i < $n } {
+            set temp [ join [ lindex $Routines($filename) $i ] " " ]
+            set mesg "$temphtml;$temp"
+            puts  $table3 $mesg
+            set i [ expr $i + 1 ]
+        }
+    }
+    close $table3
+    return 0
+}
+##################################################
+####       write_concepts_file()             #####    
+##################################################
+
+
+proc write_concepts_file { } {
+    global concepts  ConceptsFile Concepts Routines Processors Comment PETSC_DIR files html
+    
+    set PETSC_DIR ../..
+    
+    set concepts_file [ open docs/www/concepts.html w ]
+
+    # Put some  HTML Header 
+    puts $concepts_file {<HTML>}
+    puts $concepts_file {<TITLE>Concepts_File</TITLE>}
+    puts $concepts_file {<BODY>} 
+    
+    # Put the Table Header
+    puts $concepts_file {<H1> Concepts Index </H1>}
+    
+    # Puts Tabular Header
+    puts $concepts_file {<TABLE>}
+    puts $concepts_file {<TR HEIGHT=32>}
+    puts $concepts_file {<TH WIDTH=4 ><BR></TH>}
+    puts $concepts_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>Concepts</FONT></B></I></TH>}
+    puts $concepts_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Name</FONT></B></I></TH>}
+    puts $concepts_file {</TR>}
+    puts $concepts_file {</TABLE>}
+
+
+    foreach concept  $concepts {
+        set n [ llength $ConceptsFile($concept)  ]
+        puts $concepts_file {<TABLE>}
+        puts $concepts_file {<TR HEIGHT=18>}
+        puts $concepts_file {<TD WIDTH=4 ><BR></TD>}
+        puts $concepts_file {<TD WIDTH=1000 ><I><FONT SIZE=5>}
+        puts $concepts_file $concept
+        puts $concepts_file {</FONT></I></TD>}
+        puts $concepts_file {</TR>}
+        puts $concepts_file {</TABLE>}
+        
+        set i 0
+        while { $i < $n } {
+            set filename [ join [ lindex $ConceptsFile($concept) $i ] " " ]
+            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+            puts $concepts_file {<TABLE>}
+            puts $concepts_file {<TR HEIGHT=14 >}
+            puts $concepts_file {<TD WIDTH=192 ><BR></TD>}
+            puts $concepts_file {<TD WIDTH=300 >}
+            puts $concepts_file $temp
+            puts $concepts_file {</TD>}
+            puts $concepts_file {</TR>}
+            puts $concepts_file {</TABLE>}
+            
+            set i [ expr $i + 1 ]
+        }
+    }
+    
+    # HTML Tail
+    puts $concepts_file {</BODY>} 
+    puts $concepts_file {</HTML>}
+    
+    close $concepts_file
+    return 0
+}
+##################################################
+####       write_routines_file()             #####    
+##################################################
+
+
+proc write_routines_file { } {
+    global concepts  ConceptsFile Concepts routines Routines RoutinesFile 
+    global Processors Comment PETSC_DIR files html
+    
+    set PETSC_DIR ../..
+    
+    set routines_file [ open docs/www/routines.html w ]
+
+    # Put some  HTML Header 
+    puts $routines_file {<HTML>}
+    puts $routines_file {<TITLE>Routines_File</TITLE>}
+    puts $routines_file {<BODY>} 
+    
+    # Put the Table Header
+    puts $routines_file {<H1> Routines Index </H1>}
+    
+    # Puts Tabular Header
+    puts $routines_file {<TABLE>}
+    puts $routines_file {<TR HEIGHT=32>}
+    puts $routines_file {<TH WIDTH=4 ><BR></TH>}
+    puts $routines_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>Routines</FONT></B></I></TH>}
+    puts $routines_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Name</FONT></B></I></TH>}
+    puts $routines_file {</TR>}
+    puts $routines_file {</TABLE>}
+
+
+    foreach routine  $routines {
+        set n [ llength $RoutinesFile($routine)  ]
+        puts $routines_file {<TABLE>}
+        puts $routines_file {<TR HEIGHT=18>}
+        puts $routines_file {<TD WIDTH=4 ><BR></TD>}
+        puts $routines_file {<TD WIDTH=1000 ><I><FONT SIZE=5>}
+        puts $routines_file $routine
+        puts $routines_file {</FONT></I></TD>}
+        puts $routines_file {</TR>}
+        puts $routines_file {</TABLE>}
+        
+        set i 0
+        while { $i < $n } {
+            set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
+            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+            puts $routines_file {<TABLE>}
+            puts $routines_file {<TR HEIGHT=14 >}
+            puts $routines_file {<TD WIDTH=192 ><BR></TD>}
+            puts $routines_file {<TD WIDTH=300 >}
+            puts $routines_file $temp
+            puts $routines_file {</TD>}
+            puts $routines_file {</TR>}
+            puts $routines_file {</TABLE>}
+            
+            set i [ expr $i + 1 ]
+        }
+    }
+    
+    # HTML Tail
+    puts $routines_file {</BODY>} 
+    puts $routines_file {</HTML>}
+    
+    close $routines_file
+    return 0
+}
 ##################################################
 ####               main()                    #####    
 ##################################################
 # Initialise some global datastructures
 # change dir to PETSC_DIR
 proc main { }  {
-    global  Concepts Routines Processors Comment
+    global  concepts ConceptsFile Concepts 
+    global routines Routines RoutinesFile 
+    global Processors Comment PETSC_DIR files html
+
     set PETSC_DIR /home/bsmith/petsc
     cd $PETSC_DIR
     
@@ -237,93 +423,53 @@ proc main { }  {
     }
     
     # Print out the data collected in various tables for ms-access
-    cd $PETSC_DIR/docs/tex/access
-    set table1 [ open table1.txt  w ]
-    puts $table1 "Key;Dir;Name;Source;Processors;comments"
-    foreach filename $files {
-        set tempdir [ file dirname $filename ]
-        set tempfile [ file tail $filename ]
-        set tempext [ file extension $filename ]
-        set temphtml $html($filename)
-        set mesg "$filename;$temphtml;$tempdir;$tempfile;$tempext;$Processors($filename);$Comment($filename)"
-        puts  $table1 $mesg
-    }
-    close $table1
-    
-    
-    set table2 [ open table2.txt w ]
-    puts $table2 "Name of the File;Concepts"
-    
-    foreach filename $files {
-        set n [ llength $Concepts($filename)  ]
-        set temphtml $html($filename) 
+    write_access_tables
+
+    # Write to concepts.html
+    write_concepts_file
+    write_routines_file
+
+    # Update wwwmanpages
+    set PETSC_DIR ../../..
+
+    foreach routine $routines {
+        set n [ llength $RoutinesFile($routine)  ]
         set i 0
+        set buf {<H2>Examples</H2>}
+        set temp [ string first "(" $routine ]
+        if { $temp  != -1 } {
+            set routine_name [string range  $routine 0 [expr $temp -1 ] ]
+        } else {
+            set mesg "incorrect Routine: $routine "
+            puts stderr $mesg
+            return 0
+        }
+        set routines_file {}
+        set temp [ catch { glob docs/www/*/$routine_name.html} routines_file ]
+        if { $temp != 0 } {
+            set mesg $routines_file
+            puts stderr $mesg
+            puts stderr "Fix the error and start building from scratch"
+            return 0
+        }
+
+        set routines_fileid [ open $routines_file  r ]
+        set routine_file_buff [ read $routines_fileid ]
+        close $routines_fileid        
         while { $i < $n } {
-            set temp [ join [ lindex $Concepts($filename) $i ] " " ]
-            set mesg "$temphtml;$temp"
-            puts  $table2 $mesg
+            set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
+            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+            set buf [format "%s%s%s\n" $buf $temp "<BR>"]
             set i [ expr $i + 1 ]
         }
+        set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
+        #puts $buf
+        regsub  "<BR><P><B>Location:</B>" $routine_file_buff $buf routine_file_buff
+        set routines_fileid [ open $routines_file.bak.html w ]
+        puts "Writing to $routines_file.bak.html"
+        puts  $routines_fileid $routine_file_buff
+        close $routines_fileid  
     }
-    close $table2
-    
-    set table3 [ open table3.txt w ]
-    puts $table3 "Name of the File;Routines"
-    
-    foreach filename $files {
-        set n [ llength $Routines($filename)  ]
-        set temphtml $html($filename) 
-        set i 0
-        while { $i < $n } {
-            set temp [ join [ lindex $Routines($filename) $i ] " " ]
-            set mesg "$temphtml;$temp"
-            puts  $table3 $mesg
-            set i [ expr $i + 1 ]
-        }
-    }
-    close $table3
-
-    set table4 [ open table4.html w ]
-
-    # Put some  HTML Header 
-    puts $table4 {<HTML>
-
-<TITLE>Table4</TITLE>
-
-<BODY>}
-puts $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
-<TR HEIGHT=32 >
-<TD WIDTH=4 ><BR></TD><TD WIDTH=620 ><B><I><FONT SIZE=6 FACE="Times New Roman" COLOR=#000080>Table4</FONT></B></I></TD></TR>
-</TABLE> }
-
-puts $table4 {<TD WIDTH=4 ><BR></TD><TD WIDTH=788 ><B><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>Concepts</FONT></B></I></TD><TD WIDTH=632 ><B><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>Key</FONT></B></I></TD></TR></TABLE>}
-
-
-    foreach concept  $concepts {
-        set n [ llength $ConceptsFile($concept)  ]
-        puts -nonewline $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
-<TR HEIGHT=18 >
-<TD WIDTH=4 ><BR></TD><TD WIDTH=620 ><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>}
-puts -nonewline $table4 $concept
-puts $table4 {</FONT></I></TD></TR>
-</TABLE>}
-
-        set i 0
-        while { $i < $n } {
-            set temp [ join [ lindex $ConceptsFile($concept) $i ] " " ]
-            set temp $html($temp)
-            puts -nonewline $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
-<TR HEIGHT=14 >
-<TD WIDTH=192 ><BR></TD><TD WIDTH=432 ><FONT SIZE=4 FACE="Arial" COLOR=#000000>}
- puts -nonewline $table4 $temp
- puts  $table4 {</FONT></TD></TR>
-</TABLE>}
-
-            set i [ expr $i + 1 ]
-        }
-    }
-    close $table4
-
     return 0
 }
 
@@ -331,5 +477,5 @@ puts $table4 {</FONT></I></TD></TR>
 
 
 #################################################
-# the stuppid main function is called here    
+# the stupid main function is called here    
 main
