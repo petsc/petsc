@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.50 1998/10/29 23:08:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.51 1998/10/29 23:20:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -199,7 +199,7 @@ long PetscIntAddressToFortran(int *base,int *addr)
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
 
-#if !defined(USE_CRAY90_POINTER)
+#if !defined(HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(int);
     itmp2 = (long) tmp2;
@@ -245,7 +245,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
   long          itmp2;
   int           shift;
 
-#if !defined(USE_CRAY90_POINTER)
+#if !defined(HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
     itmp2 = (long) tmp2;
