@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.74 2000/04/12 04:21:56 bsmith Exp balay $*/
+/*$Id: index.c,v 1.75 2000/05/05 22:14:38 balay Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -6,7 +6,7 @@
      /*I "petscis.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISIdentity" 
+#define __FUNC__ /*<a name="ISIdentity"></a>*/"ISIdentity" 
 /*@C
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -40,7 +40,7 @@ int ISIdentity(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSetIdentity" 
+#define __FUNC__ /*<a name="ISSetIdentity"></a>*/"ISSetIdentity" 
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -64,7 +64,7 @@ int ISSetIdentity(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISPermutation" 
+#define __FUNC__ /*<a name="ISPermutation"></a>*/"ISPermutation" 
 /*@C
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
@@ -93,7 +93,7 @@ int ISPermutation(IS is,PetscTruth *perm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSetPermutation" 
+#define __FUNC__ /*<a name="ISSetPermutation"></a>*/"ISSetPermutation" 
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -117,7 +117,7 @@ int ISSetPermutation(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDestroy" 
+#define __FUNC__ /*<a name="ISDestroy"></a>*/"ISDestroy" 
 /*@C
    ISDestroy - Destroys an index set.
 
@@ -130,7 +130,7 @@ int ISSetPermutation(IS is)
 
 .keywords: IS, index set, destroy
 
-.seealso: ISCreateSeq(), ISCreateStride()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
 int ISDestroy(IS is)
 {
@@ -148,7 +148,7 @@ int ISDestroy(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISInvertPermutation" 
+#define __FUNC__ /*<a name="ISInvertPermutation"></a>*/"ISInvertPermutation" 
 /*@C
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
@@ -165,7 +165,8 @@ int ISDestroy(IS is)
 
    Level: intermediate
 
-   Notes: this inverts the permutation on each processor independently.
+   Notes: For parallel index sets this does the complete parallel permutation, but the 
+    code is not efficient for huge index sets (10,000,000 indices).
 
 .keywords: IS, index set, invert, inverse, permutation
 @*/
@@ -181,7 +182,7 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetSize" 
+#define __FUNC__ /*<a name="ISGetSize"></a>*/"ISGetSize" 
 /*@
    ISGetSize - Returns the global length of an index set. 
 
@@ -210,7 +211,36 @@ int ISGetSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetIndices" 
+#define __FUNC__ /*<a name="ISGetLocalSize"></a>*/"ISGetLocalSize" 
+/*@
+   ISGetLocalSize - Returns the local (processor) length of an index set. 
+
+   Not Collective
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  size - the local size
+
+   Level: beginner
+
+.keywords: IS, index set, get, global, size
+
+@*/
+int ISGetLocalSize(IS is,int *size)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(size);
+  ierr = (*is->ops->getlocalsize)(is,size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ISGetIndices"></a>*/"ISGetIndices" 
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 
    ISRestoreIndices() after having looked at the indices.  The user should 
@@ -259,7 +289,7 @@ int ISGetIndices(IS is,int *ptr[])
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISRestoreIndices" 
+#define __FUNC__ /*<a name="ISRestoreIndices"></a>*/"ISRestoreIndices" 
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
                       to ISGetIndices().
@@ -307,7 +337,7 @@ int ISRestoreIndices(IS is,int *ptr[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISView" 
+#define __FUNC__ /*<a name="ISView"></a>*/"ISView" 
 /*@C
    ISView - Displays an index set.
 
@@ -338,7 +368,7 @@ int ISView(IS is,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSort" 
+#define __FUNC__ /*<a name="ISSort"></a>*/"ISSort" 
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -364,7 +394,7 @@ int ISSort(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSorted" 
+#define __FUNC__ /*<a name="ISSorted"></a>*/"ISSorted" 
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 
@@ -395,9 +425,9 @@ int ISSorted(IS is,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDuplicate" 
+#define __FUNC__ /*<a name="ISDuplicate"></a>*/"ISDuplicate" 
 /*@C
-   ISDuplicate - Determines whether index set is the identity mapping.
+   ISDuplicate - Creates a duplicate copy of an index set.
 
    Collective on IS
 
@@ -405,7 +435,7 @@ int ISSorted(IS is,PetscTruth *flg)
 .  is - the index set
 
    Output Parameters:
-.  ident - PETSC_TRUE if an identity, otherwise PETSC_FALSE
+.  isnew - the copy of the index set
 
    Level: beginner
 
