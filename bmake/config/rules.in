@@ -38,39 +38,23 @@ libf: $(LIBNAME)($(OBJSF))
 
 
 #SLSUFFIX = so.1.0 
-# This is old code.  See the bmake/<arch>/base files for current information
-# on creating shared libraries.  Eventually, we should use libtool or a 
-# similar approach.
 shared: chkopts_basic
-	-@ echo making shared libraries in $(INSTALL_LIB_DIR) ;\
-	cd $(INSTALL_LIB_DIR); \
-	$(RM) -rf tmp; \
+	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
+	cd ${INSTALL_LIB_DIR}; \
+	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
-	for LIBNAME in $(SHLIBS) ; \
+	for LIBNAME in ${SHLIBS}; \
 	do \
-	  $(AR) x ../$$LIBNAME.a ;\
-	  gcc $(COPTFLAGS) -fPIC -shared  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
-	  $(RM) -f * ; \
-	done ;\
-	cd ../ ; \
-	$(RM) -rf tmp
-
-
-LIBTOOL = $(SHELL) $(PETSC_DIR)/bin/libtool
-CCLD    = $(CC)
-
-shared_lt: chkopts_basic
-	-@ echo making shared libraries in $(INSTALL_LIB_DIR) ;\
-	cd $(INSTALL_LIB_DIR); \
-	$(RM) -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in $(SHLIBS) ; \
-	do \
-	  $(AR) x ../$$LIBNAME.a ;\
-	  $(LIBTOOL) --mode=link -rpath $(PETSC_LIB_DIR) $(CCLD) $(COPTFLAGS) $(LDFLAGS) -o ../$$LIBNAME.$(SLSUFFIX) *.o ;\
-	  $(RM) -f * ; \
-	done ;\
-	cd ../ ; \
-	$(RM) -rf tmp
+	  if test -n "${LIBTOOL}"; then \
+	    ${AR} x ../lt_$$LIBNAME.${LIB_SUFFIX}; \
+	    ${LIBTOOL} --mode=link @CC@ ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${LDFLAGS} -rpath ${INSTALL_LIB_DIR} -o $$LIBNAME.la *.lo; \
+	    ${LIBTOOL} --mode=install ${PETSC_DIR}/config/install-sh $$LIBNAME.la ${INSTALL_LIB_DIR}; \
+	  else \
+	    ${AR} x ../$$LIBNAME.${LIB_SUFFIX}; \
+	    @CC@ ${COPTFLAGS} -fPIC -shared  *.o -o ../$$LIBNAME.${SLSUFFIX}; \
+	  fi; \
+	  ${RM} -f *; \
+	done; \
+	cd ../; \
+	${RM} -rf tmp

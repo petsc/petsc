@@ -33,15 +33,17 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 # The following additional variables are used by PETSc targets and should not be redifined
 #
-# LIBNAME   - library name
-# SOURCE    - source files
-# SSOURCE   - single precision versions of some source code
-# OBJS      - object files
-# SOBJS     - single precision versions of some object files
+# LIBNAME    - library name
+# LT_LIBNAME - Libtool library name
+# SOURCE     - source files
+# SSOURCE    - single precision versions of some source code
+# OBJS       - object files
+# SOBJS      - single precision versions of some object files
 #
-LIBNAME	= ${INSTALL_LIB_DIR}/${LIBBASE}.${LIB_SUFFIX}
-SOURCE	= ${SOURCEC} ${SOURCEF}
-OBJS	= ${OBJSC} ${OBJSF}
+LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${LIB_SUFFIX}
+LT_LIBNAME = ${INSTALL_LIB_DIR}/lt_${LIBBASE}.${LIB_SUFFIX}
+SOURCE     = ${SOURCEC} ${SOURCEF}
+OBJS       = ${OBJSC} ${OBJSF}
 #
 #   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files
 #

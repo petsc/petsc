@@ -109,6 +109,16 @@ build:
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
+# Builds the PETSc libraries
+# This target is the same as 'build', but uses the 'lib' target instead
+#
+build_lt:
+	-@echo "BEGINNING TO COMPILE LIBTOOL LIBRARIES IN ALL DIRECTORIES"
+	-@echo "========================================="
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree 
+	-@echo "Completed building libraries"
+	-@echo "========================================="
+#
 # Builds PETSc test examples for a given BOPT and architecture
 #
 testexamples: info chkopts
@@ -153,6 +163,10 @@ ranlib:
 # Deletes PETSc libraries
 deletelibs: chkopts_basic
 	-${RM} -f ${PETSC_LIB_DIR}/*
+
+# Cleans up build
+allclean: deletelibs
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
 
 #
 #   Updates your PETSc version to the latest set of patches
@@ -457,18 +471,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs clean update chk_petsc_dir \
+        alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
+        allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
+        countcfunctions difffortranfunctions checkbadfortranstubs noise exercises

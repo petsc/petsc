@@ -14,9 +14,12 @@ MKDIR            = @MKDIR@
 PARCH            = @PETSC_ARCH@
 LIB_SUFFIX       = a
 DIFF             = diff
+
+top_builddir     = @PETSC_DIR@
+LIBTOOL          = @LIBTOOL@
 # ######################### C and Fortran compiler ########################
 #
-C_CC       = @CC@  @CC_SHARED_OPT@
+C_CC       = @LT_CC@ @CC@ @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
 # SLFLAG=? (-R on solaris)
 # For now, assume that this is the linker dir flag
