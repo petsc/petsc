@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.99 1998/12/03 04:05:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.100 1998/12/03 21:33:46 balay Exp balay $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -478,15 +478,15 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       /* boundary points */
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
-        continue;
-      }
+      } else {
       /* interior grid points */
-      v[0] = -hxdhy; col[0] = row - gxm;
-      v[1] = -hydhx; col[1] = row - 1;
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
-      v[3] = -hydhx; col[3] = row + 1;
-      v[4] = -hxdhy; col[4] = row + gxm;
-      ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        v[0] = -hxdhy; col[0] = row - gxm;
+        v[1] = -hydhx; col[1] = row - 1;
+        v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+        v[3] = -hydhx; col[3] = row + 1;
+        v[4] = -hxdhy; col[4] = row + gxm;
+        ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+      }
     }
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
