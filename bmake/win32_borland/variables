@@ -15,7 +15,7 @@ MKDIR              = mkdir -p
 DIFF               = diff -w
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057 -w-8004
+C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057 -w-8004 -w-8066
 C_FC		   = ${WIN32FE} bcf77
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
@@ -31,7 +31,7 @@ G_FOPTFLAGS	   =
 O_COPTFLAGS	   = -O
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
-CXX_CC		   = ${WIN32FE} bcc32 -P -w-8019 -w-8060 -w-8057 -w-8004
+CXX_CC		   = ${WIN32FE} bcc32 -P -RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066
 CXX_FC		   = ${WIN32FE} bcf77
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L

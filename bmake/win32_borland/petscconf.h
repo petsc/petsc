@@ -46,6 +46,7 @@
 #define PETSC_HAVE_DOS_H
 #define PETSC_HAVE_ACCESS
 #define PETSC_HAVE_CXX_NAMESPACE
+#define PETSC_TEMPLATE template<>
 
 #endif
 
