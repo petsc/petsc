@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.14 1995/07/07 17:17:31 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.15 1995/09/11 19:20:08 bsmith Exp curfman $ */
 
 /*
       An index set is essentially a subset of the integers
@@ -26,7 +26,6 @@ extern int   ISDestroy(IS);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
 
-#define ISGENERALSEQ 0
-#define ISSTRIDESEQ  2
+typedef enum {IS_SEQ=0, IS_STRIDE_SEQ=2} IndexSetType;
 
 #endif

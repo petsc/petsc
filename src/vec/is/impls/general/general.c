@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.33 1995/09/21 03:48:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.34 1995/09/30 19:26:17 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -102,7 +102,7 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   IS_General *sub;
 
   *is = 0;
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQ,comm); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
   PLogObjectCreate(Nindex);
   sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,size + sizeof(struct _IS));
@@ -149,7 +149,7 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
   IS_General *sub;
   if (*is) PETSCVALIDHEADERSPECIFIC(*is,IS_COOKIE);
 
-  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQ,MPI_COMM_SELF); 
+  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,IS_SEQ,MPI_COMM_SELF); 
   PLogObjectCreate(Newis);
 
   if (*is) {

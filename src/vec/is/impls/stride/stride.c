@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.30 1995/10/01 21:51:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.31 1995/10/06 22:23:12 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -34,7 +34,7 @@ typedef struct {
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
-  if (is->type != ISSTRIDESEQ) return 0;
+  if (is->type != IS_STRIDE_SEQ) return 0;
   *first = sub->first; *step = sub->step;
   return 1;
 }
@@ -130,7 +130,7 @@ int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
    if (n < 0) SETERRQ(1,"ISCreateStrideSeq:Number of indices < 0");
   if (step == 0) SETERRQ(1,"ISCreateStrideSeq:Step must be nonzero");
 
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQ,comm); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,IS_STRIDE_SEQ,comm); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
   sub            = (IS_Stride *) PETSCMALLOC(sizeof(IS_Stride)); CHKPTRQ(sub);

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.33 1995/09/11 19:20:08 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.34 1995/09/21 20:13:13 bsmith Exp curfman $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -56,14 +56,14 @@ extern int VecDestroy(Vec);
 extern int VecGetVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
 
-typedef enum {NOTSETVALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
+typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
 
 extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
 
-typedef enum {SCATTERREVERSE=1,SCATTERDOWN=2,SCATTERUP=4,SCATTERALL=8,
-              SCATTERALLREVERSE=9} ScatterMode;
+typedef enum {SCATTER_REVERSE=1,SCATTER_DOWN=2,SCATTER_UP=4,SCATTER_ALL=8,
+              SCATTER_ALL_REVERSE=9} ScatterMode;
 
 extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx);
 extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx); 
@@ -71,7 +71,7 @@ extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);
 extern int VecScatterCtxDestroy(VecScatterCtx);
 extern int VecScatterCtxCopy(VecScatterCtx,VecScatterCtx *);
 
-typedef enum {PIPELINEDOWN=0,PIPELINEUP=1} PipelineMode;
+typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineMode;
 
 extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
 extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx); 

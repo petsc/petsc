@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.26 1995/10/01 21:53:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.27 1995/10/04 23:17:43 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -61,7 +61,7 @@ int ViewerFileGetFormat_Private(Viewer viewer,int *format)
   return 0;
 }
 
-/*@
+/*@C
    ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
    Input Parameters:
@@ -117,7 +117,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   return 0;
 }
 
-/*@
+/*@C
    ViewerFileSetFormat - Sets the format for file viewers.
 
    Input Parameters:

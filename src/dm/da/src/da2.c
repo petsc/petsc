@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.22 1995/09/21 20:13:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.23 1995/10/01 21:53:44 bsmith Exp curfman $";
 #endif
  
 /*
@@ -675,8 +675,8 @@ int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  ierr = VecScatterBegin(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
-  ierr = VecScatterEnd(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
+  ierr = VecScatterBegin(l,g,mode,SCATTER_ALL,da->ltog); CHKERRQ(ierr);
+  ierr = VecScatterEnd(l,g,mode,SCATTER_ALL,da->ltog); CHKERRQ(ierr);
   return 0;
 }
 
@@ -701,7 +701,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  ierr = VecScatterBegin(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
+  ierr = VecScatterBegin(g,l,mode,SCATTER_ALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }
 
@@ -726,7 +726,7 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  ierr = VecScatterEnd(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,l,mode,SCATTER_ALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }
 

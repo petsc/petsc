@@ -5,14 +5,14 @@ C
 #define VecScatterCtx integer 
 C
       integer INSERT_VALUES, ADD_VALUES
-      integer SCATTERREVERSE,SCATTERDOWN,SCATTERUP,SCATTERALL,
-     *        SCATTERALLREVERSE
-      integer PIPELINEDOWN,PIPELINEUP
+      integer SCATTER_REVERSE,SCATTER_DOWN,SCATTER_UP,SCATTER_ALL,
+     *        SCATTER_ALL_REVERSE
+      integer PIPELINE_DOWN,PIPELINE_UP
 
       parameter (INSERT_VALUES = 1, ADD_VALUES = 2)
-      parameter (SCATTERREVERSE = 1,SCATTERDOWN = 2,SCATTERUP = 4,
-     *           SCATTERALL = 8, SCATTERALLREVERSE = 9)
-      parameter (PIPELINEDOWN = 0,PIPELINEUP = 1)
+      parameter (SCATTER_REVERSE = 1,SCATTER_DOWN = 2,SCATTER_UP = 4,
+     *           SCATTER_ALL = 8, SCATTER_ALL_REVERSE = 9)
+      parameter (PIPELINE_DOWN = 0,PIPELINE_UP = 1)
 C
 C      End of Fortran include file for the Vec package in PETSc
 

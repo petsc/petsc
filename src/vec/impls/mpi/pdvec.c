@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.27 1995/09/30 19:26:41 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.28 1995/10/01 21:51:20 bsmith Exp curfman $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -492,7 +492,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
   }
   PETSCFREE(x->send_waits); PETSCFREE(x->svalues);
 
-  x->insertmode = NOTSETVALUES;
+  x->insertmode = NOT_SET_VALUES;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.68 1995/10/06 22:24:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.69 1995/10/11 15:19:47 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -322,7 +322,7 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
   int          ierr, i, j, row, col, rstart = mrow->rstart, rend = mrow->rend;
   Scalar       *zeros;
 
-  if (mrow->insertmode != NOTSETVALUES && mrow->insertmode != av) {
+  if (mrow->insertmode != NOT_SET_VALUES && mrow->insertmode != av) {
     SETERRQ(1,"MatSetValues_MPIRowbs:Cannot mix inserts and adds");
   }
   mrow->insertmode = av;
@@ -724,7 +724,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   }
   PETSCFREE(mrow->send_waits); PETSCFREE(mrow->svalues);
 
-  mrow->insertmode = NOTSETVALUES;
+  mrow->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
 
@@ -1321,7 +1321,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   mrow->fact_clone       = 0;
   mrow->vecs_permscale   = 0;
   mrow->reassemble_begun = 0;
-  mrow->insertmode       = NOTSETVALUES;
+  mrow->insertmode       = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&mrow->mytid);
   MPI_Comm_size(comm,&mrow->numtids);
 

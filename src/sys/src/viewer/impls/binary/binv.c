@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.8 1995/10/01 02:27:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.9 1995/10/01 21:53:20 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -29,7 +29,7 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
   return 0;
 }
 
-/*@
+/*@C
    ViewerFileOpenBinary - Opens a file for binary input/output.
 
    Input Parameters:

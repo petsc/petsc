@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.28 1995/09/21 20:07:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.29 1995/09/30 19:26:26 bsmith Exp curfman $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -74,10 +74,10 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
   int           *rstarts,*sstarts;
   int           *rprocs, *sprocs;
 
-  if (mode & SCATTERREVERSE ){
+  if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
     gen_from = (VecScatterMPI *) ctx->todata;
-    mode -= SCATTERREVERSE;
+    mode -= SCATTER_REVERSE;
   }
   else {
     gen_to   = (VecScatterMPI *) ctx->todata;
@@ -95,7 +95,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
   rprocs   = gen_from->procs;
   sprocs   = gen_to->procs;
 
-  if (mode == SCATTERALL) {
+  if (mode == SCATTER_ALL) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -112,9 +112,9 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
   }
-  else if (mode == SCATTERUP) {
+  else if (mode == SCATTER_UP) {
     if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterbegin:No SCATTERUP to self");
+      SETERRQ(1,"PtoPScatterbegin:No SCATTER_UP to self");
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -133,7 +133,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
   }
   else { 
     if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterbegin:No SCATTERDOWN to self");
+      SETERRQ(1,"PtoPScatterbegin:No SCATTER_DOWN to self");
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -152,12 +152,12 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
     }
   }
   /* take care of local scatters */
-  if (mode == SCATTERALL && addv == INSERT_VALUES) {
+  if (mode == SCATTER_ALL && addv == INSERT_VALUES) {
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n = gen_to->local.n;
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
   }
-  else if (mode == SCATTERALL) {
+  else if (mode == SCATTER_ALL) {
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n = gen_to->local.n;
     for ( i=0; i<n; i++ ) {yv[tslots[i]] += xv[fslots[i]];}
@@ -180,10 +180,10 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
   int           *rstarts;
 
 
-  if (mode & SCATTERREVERSE ){
+  if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
     gen_from = (VecScatterMPI *) ctx->todata;
-    mode    -= SCATTERREVERSE;
+    mode    -= SCATTER_REVERSE;
   }
   else {
     gen_to   = (VecScatterMPI *) ctx->todata;
@@ -197,7 +197,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
-  if (mode == SCATTERALL) {
+  if (mode == SCATTER_ALL) {
     /*  wait on receives */
     count = nrecvs;
     while (count) {
@@ -229,9 +229,9 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       PETSCFREE(sstatus);
     }
   }
-  else if (mode == SCATTERUP) {
+  else if (mode == SCATTER_UP) {
     if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterend:No SCATTERUP to self");
+      SETERRQ(1,"PtoPScatterend:No SCATTER_UP to self");
     /*  wait on receives */
     count = nrecvs - gen_from->nbelow ;
     while (count) {
@@ -265,7 +265,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
   }
   else { 
     if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterend:No SCATTERDOWN to self");
+      SETERRQ(1,"PtoPScatterend:No SCATTER_DOWN to self");
     /*  wait on receives */
     count = gen_from->nbelow;
     while (count) {
@@ -397,7 +397,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
   if (gen_to->nself || gen_from->nself) 
     SETERRQ(1,"PtoPPipelinebegin:No pipeline to self");
 
-  if (mode == PIPELINEDOWN) {
+  if (mode == PIPELINE_DOWN) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -472,7 +472,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,
   int           *sprocs = gen_to->procs;
   Scalar        *xv = x->array,*val;
 
-  if (mode == PIPELINEDOWN) {
+  if (mode == PIPELINE_DOWN) {
     /* do sends:  */
     indices += sstarts[gen_to->nbelow]; /* shift indices to match first i */
     for ( i=gen_to->nbelow; i<nsends; i++ ) {
@@ -710,7 +710,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 
   if (nprocslocal) {
     int nt;
-    /* we have a scatter to ourselfs */
+    /* we have a scatter to ourselves */
     from->local.n = to->local.n = nt = nprocslocal;    
     from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
     CHKPTRQ(from->local.slots);
@@ -912,7 +912,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
 
   if (nprocslocal) {
     int nt;
-    /* we have a scatter to ourselfs */
+    /* we have a scatter to ourselves */
     from->local.n = to->local.n = nt = nprocslocal;    
     from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
     CHKPTRQ(from->local.slots);

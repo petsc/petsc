@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.24 1995/10/01 02:27:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.25 1995/10/01 21:53:17 bsmith Exp curfman $";
 #endif
 /* 
  
@@ -145,7 +145,7 @@ int SOCKCall_Private(char *hostname,int portnum)
   return(s);
 }
 
-/*@
+/*@C
    ViewerMatlabOpen - Opens a connection to a Matlab server.
 
    Input Parameters:

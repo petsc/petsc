@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.94 1995/10/08 16:48:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.95 1995/10/11 15:19:25 bsmith Exp curfman $";
 #endif
 
 /*
@@ -880,7 +880,7 @@ int MatGetDiagonal(Mat mat,Vec v)
   SETERRQ(PETSC_ERR_SUP,"MatGetDiagonal");
 }
 
-/*@ 
+/*@C
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
    Input Parameters:

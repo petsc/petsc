@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.37 1995/10/04 15:14:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.38 1995/10/06 22:24:49 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -12,7 +12,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
-  if (mbd->insertmode != NOTSETVALUES && mbd->insertmode != addv) {
+  if (mbd->insertmode != NOT_SET_VALUES && mbd->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIBDiag:Cannot mix inserts and adds");
   }
   mbd->insertmode = addv;
@@ -179,7 +179,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   PETSCFREE(mbd->send_waits); PETSCFREE(mbd->svalues);
 
-  mbd->insertmode = NOTSETVALUES;
+  mbd->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
 
@@ -346,9 +346,9 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   int        ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
@@ -360,9 +360,9 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   int        ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mbd->lvec,ADD_VALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,ADD_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,ADD_VALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,ADD_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
@@ -626,7 +626,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mat->view	= MatView_MPIBDiag;
   mat->factor	= 0;
 
-  mbd->insertmode = NOTSETVALUES;
+  mbd->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&mbd->mytid);
   MPI_Comm_size(comm,&mbd->numtids);
 
