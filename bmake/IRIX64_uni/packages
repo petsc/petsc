@@ -1,0 +1,109 @@
+# $Id: base.site,v 1.20 1997/11/12 15:50:49 bsmith Exp $ 
+
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+#
+FC_LIB         =  -lftn
+# For IRIX Release less than,6.2 the above should probably be replaced by
+# FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
+# FC_LIB         = -lF77 -lU77 -lI77 -lisam
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(BS_DIR)/docs/installation.html for information on retrieving them.
+#
+# BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
+#
+BLAS_LIB       = -lblas $(FC_LIB)
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#
+# Location of MPI (Message Passing Interface) software  
+#
+# We recommend using SGI's MPI implementation over MPICH on the Origin and 
+# Powerchallenge.
+#
+# If you are using the MPICH implementation of MPI with version BELOW 1.1,
+# you should remove the -DUSES_INT_MPI_COMM. If you are using MPICH Version 1.1
+# or SGI's version of MPI you MUST retain it.
+#
+MPI_LIB        = -lmpi
+MPI_INCLUDE    = -DUSES_INT_MPI_COMM
+MPIRUN         =  /bin/mpirun
+#
+# The following lines can be used with MPICH
+#
+#MPI_LIB        = -L/home/petsc/mpich/lib/IRIX64/ch_p4 -lmpi
+#MPI_INCLUDE    = -DUSES_INT_MPI_COMM -I/home/petsc/mpich/include
+#MPIRUN         =  /home/petsc/mpich/lib/IRIX64/ch_p4/mpirun
+#
+# The following lines can be used with MPIUNI
+#
+#MPI_LIB         =$(LDIR)/libmpiuni.a
+#MPI_INCLUDE     = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
+#MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+#
+#MPE_LIB       = -L/usr/local/mpi/lib/IRIX64/ch_shmem -lmpe -lpmpi
+#MPE_INCLUDE   = -I/usr/local/mpi/include
+#
+# Optional location of BlockSolve (MPI version)
+#
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#
+# Optional Matlab location
+#
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/IRIX64/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX64/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         = -DHAVE_BLOCKSOLVE 
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
+EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using dynamic libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+#DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas
