@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.5 1997/10/12 17:22:18 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.6 1997/10/13 17:36:13 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -175,7 +175,14 @@ int UserSetJacobian(SNES snes,Euler *app)
     /* Use matrix-free Jacobian to define Newton system; use finite difference
        approximation of Jacobian for preconditioner */
    if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
-   ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
+
+   /*   if (app->mmtype == MMFP) {
+     ierr = SNESDefaultMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
+   } else if (app->mmtype == MMEULER) {
+     ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
+   } else {
+     SETERRQ(1,0,"Need a new matrix-free option\n");
+     */
 
     if (jac_snes_fd) {
      ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDColoring,app); CHKERRQ(ierr);
