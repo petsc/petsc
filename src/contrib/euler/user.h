@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.34 1997/10/17 19:46:50 curfman Exp keyes $ */
+/* $Id: user.h,v 1.35 1997/10/19 21:49:27 keyes Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -208,15 +208,17 @@ typedef struct {
        multi-model data
       -------------------------------------------------------- */
 
-    MM     multimodel;
-    MMType mmtype;
+    MM     multimodel;                        /* multi-model context */
+    MMType mmtype;                            /* type of multi-model */
     Vec    den, xvel, yvel, zvel;             /* full potential work space */
-    Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* full potential work space */
+    Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* pointers to local arrays */
     Scalar phi_te[2];                         /* 2-component circulation */
     VecScatter phi_te_scatter;                /* scatter for boundary conditins */
 
     /* duct problem */
     Scalar bump;                              /* flow parameter - max bump height */
+    mm_xse, mm_xfe;                           /* Euler region is mm_xse <= x < mm_xfe for
+                                                 all j,k; everything else uses FP model */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
