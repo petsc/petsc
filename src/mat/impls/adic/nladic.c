@@ -77,7 +77,7 @@ int NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 
   /* tell ADIC we will be computing one dimensional Jacobians */
   PetscADResetIndep();
-  PetscADIncrementTotalGradSize(1);
+  ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
   ierr = DAGetLocalInfo(A->da,&info);CHKERRQ(ierr);

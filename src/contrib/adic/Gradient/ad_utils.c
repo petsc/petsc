@@ -45,9 +45,10 @@ void PetscADSetIndepArrayColored(DERIV_TYPE *var,int size,int *coloring)
   ad_AD_SetIndepArrayColored(var,size,coloring);
 }
 
-void PetscADIncrementTotalGradSize(int num)
+int PetscADIncrementTotalGradSize(int num)
 {
   ad_AD_IncrementTotalGradSize(num);
+  return(0);
 }
 
 void PetscADSetIndepDone(void)

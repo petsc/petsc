@@ -84,10 +84,10 @@ EXTERN void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #define fortranrelaxaijforwardzero_   fortranrelaxaijforwardzero
 #define fortranrelaxaijbackwardzero_   fortranrelaxaijbackwardzero
 #endif
-EXTERN void fortranrelaxaijforward_(int *,PetscReal*,void*,int *,int *,int*,void *,void*);
-EXTERN void fortranrelaxaijbackward_(int *,PetscReal*,void*,int *,int *,int*,void *,void*);
-EXTERN void fortranrelaxaijforwardzero_(int*,PetscReal*,void*,int*,int*,int*,void*,void*,void*);
-EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,int*,void*,void*,void*);
+EXTERN void fortranrelaxaijforward_(int *,PetscReal*,void*,int *,int *,const int*,void *,void*);
+EXTERN void fortranrelaxaijbackward_(int *,PetscReal*,void*,int *,int *,const int*,void *,void*);
+EXTERN void fortranrelaxaijforwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
+EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
