@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.5 1999/02/25 04:22:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.6 1999/02/25 04:25:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -28,6 +28,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   Vec            xlocal,xcoor;
   DAPeriodicType periodic;
   DA             dac;
+  DAStencilType  st;
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -37,21 +38,37 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  /*
-       Create DA for 1 set of ghost points with the box stencil.
-  */
-  ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,0);CHKERRQ(ierr);
-  ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
+
+  ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*) &xlocal);CHKERRQ(ierr);
+  if (!xlocal) {
+    /* create local vector for holding ghosted values used in graphics */
+    ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,&periodic,&st);CHKERRQ(ierr);
+    if (periodic != DA_NONPERIODIC || s != 1 || st != DA_STENCIL_BOX) {
+      /* 
+         if original da is not of stencil width one, or periodic or not a box stencil then
+         create a special DA to handle one level of ghost points for graphics
+      */
+      ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
+      PLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
+    } else {
+      dac = da;
+    }
+    ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
+    if (dac != da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
+    ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject) xlocal);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectQuery((PetscObject)xlocal,"DA",(PetscObject*) &dac);CHKERRQ(ierr);
+  }
 
   /*
       Get local (ghosted) values of vector
   */
-  ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic);CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
   ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
@@ -80,7 +97,8 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
   ierr = VecGetArray(xcoor,&xy);CHKERRQ(ierr);
 
-  PLogInfo(da,"Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
+  PLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",
+           coors[0],coors[1],coors[2],coors[3]);
 
   for ( k=0; k<step; k++ ) {
     ierr = ViewerDrawGetDraw(viewer,k,&draw);CHKERRQ(ierr);
@@ -104,7 +122,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
       ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
     }
     ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    PLogInfo(da,"DA 2d contour plot min %g max %g\n",min,max);
+    PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",min,max);
 
     scale = (245.0 - DRAW_BASIC_COLORS)/(max - min);
 
@@ -117,6 +135,10 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
         id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
         id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
 #else
+        id = i+j*m;    x1 = PetscReal(xy[2*id]);y_1 = PetscReal(xy[2*id+1]);c1 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
+        id = i+j*m+1;  x2 = PetscReal(xy[2*id]);y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
+        id = i+j*m+1+m;x3 = x2;      y3  = PetscReal(xy[2*id+1]);c3 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
+        id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
 #endif
         ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
         ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
@@ -132,8 +154,6 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   }
   ierr = VecRestoreArray(xcoor,&xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&v); CHKERRQ(ierr);
-  ierr = VecDestroy(xlocal);CHKERRQ(ierr);
-  ierr = DADestroy(dac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
