@@ -1,9 +1,10 @@
-# $Id: makefile,v 1.1 1998/04/01 19:46:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1998/04/28 00:58:25 bsmith Exp balay $ 
 
 # -----------------------------------------------------------------------
-# Specify PETSc installation and user-defined compiler flags
+# Specify user-defined compiler flags
 # -----------------------------------------------------------------------
-CFLAGS    = $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
+CFLAGS    = 
+FFLAGS    =
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
@@ -20,7 +21,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/usg/2d/quadratic
+LOCDIR     = src/dm/usg/2d/quadratic/
 
 main: chkopts main.o appview.o appload.o
 	-$(CLINKER) -o main main.o appview.o appload.o $(PETSC_LIB)

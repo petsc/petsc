@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 1998/06/12 21:33:12 balay Exp balay $ 
+# $Id: makefile,v 1.4 1998/06/15 15:46:37 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,6 +11,6 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = 
 DIRS     = 2d
-LOCDIR   = src/usg/
+LOCDIR   = src/dm/usg/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 1998/06/15 16:41:34 balay Exp balay $ 
+# $Id: makefile,v 1.4 1999/02/01 23:34:10 balay Exp balay $ 
 
 ALL: input
 
@@ -11,7 +11,7 @@ CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
 FPPFLAGS  =
-LOCDIR     = src/contrib/flash/
+LOCDIR    = src/dm/usg/utils/
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
