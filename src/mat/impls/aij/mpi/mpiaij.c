@@ -1508,8 +1508,6 @@ int MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
   a = matA->A; b = matA->B;
   c = matB->A; d = matB->B;
 

@@ -172,9 +172,6 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   PetscTruth  flag;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPIADJ,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
-
   /* If the  matrix dimensions are not equal,or no of nonzeros */
   if ((A->m != B->m) ||(a->nz != b->nz)) {
     flag = PETSC_FALSE;

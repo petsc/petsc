@@ -1059,11 +1059,8 @@ int MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
   Mat_SeqDense *mat2 = (Mat_SeqDense*)A2->data;
   int          ierr,i,j;
   PetscScalar  *v1 = mat1->v,*v2 = mat2->v;
-  PetscTruth   flag;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A2,MATSEQDENSE,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_SUP,"Matrices should be of type  MATSEQDENSE");
   if (A1->m != A2->m) {*flg = PETSC_FALSE; PetscFunctionReturn(0);}
   if (A1->n != A2->n) {*flg = PETSC_FALSE; PetscFunctionReturn(0);}
   for (i=0; i<A1->m; i++) {

@@ -2933,12 +2933,8 @@ int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data,*b = (Mat_SeqAIJ *)B->data;
   int        ierr;
-  PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
-
   /* If the  matrix dimensions are not equal,or no of nonzeros */
   if ((A->m != B->m) || (A->n != B->n) ||(a->nz != b->nz)) {
     *flg = PETSC_FALSE;

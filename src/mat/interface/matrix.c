@@ -2885,6 +2885,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %d %d %d %d",A->M,B->M,A->N,B->N);
   if (!A->ops->equal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",A->type_name);
+  if (!B->ops->equal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",B->type_name);
+  if (A->ops->equal != B->ops->equal) SETERRQ2(PETSC_ERR_ARG_INCOMP,"A is type: %s\nB is type: %s",A->type_name,B->type_name);
   ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
