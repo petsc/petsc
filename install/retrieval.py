@@ -56,9 +56,9 @@ class Retriever(install.base.Base):
     output         = self.executeShellCommand(command)
     return root
 
-  def retrieve(self, url, root = None, canExist = 0):
+  def retrieve(self, url, root = None, canExist = 0, force = 0):
     project = self.getInstalledProject(url)
-    if not project is None:
+    if not project is None and not force:
       return project.getRoot()
     if root is None: root = self.getInstallRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)

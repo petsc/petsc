@@ -16,8 +16,10 @@ class Installer(install.base.Base):
 
   def install(self, projectUrl):
     self.debugPrint('Installing '+projectUrl, 3, 'install')
-    root = self.retriever.retrieve(projectUrl);
+    force = self.argDB.has_key('forceInstall') and int(self.argDB['forceInstall'])
+    root  = self.retriever.retrieve(projectUrl, force = force);
     self.builder.build(root)
+    if self.argDB.has_key('forceInstall'): del self.argDB['forceInstall']
     return
 
 if __name__ == '__main__':
