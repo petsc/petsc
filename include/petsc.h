@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.116 1996/05/03 19:28:48 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.117 1996/05/22 13:43:02 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -29,7 +29,7 @@ extern void *(*PetscTrMalloc)(unsigned int,int,char*);
 extern int  (*PetscTrFree)(void *,int,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 #define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FILE__)
-#define PetscNew(A)          (A*) PetscTrMalloc(sizeof(A))
+#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FILE__)
 
 extern int  PetscTrDump(FILE *);
