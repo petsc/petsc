@@ -323,6 +323,14 @@ adic2:
           fi; done ; \
         fi
 
+adiclib:
+	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+          $(CC) -c $(CFLAGS) $(COPTFLAGS) -I$(ADIC)/include  -I$(ADIC)/adintrinsics/include -I$(ADIC)/gradient -Dad_GRAD_MAX=10 vector.ad.c ; \
+          fi; done ; \
+        fi; fi
+	$(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o
+	$(RM) *.ad.o
 #
 #
 #     Functions that need not be differentiated with ADIC are listed with a
