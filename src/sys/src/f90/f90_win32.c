@@ -1,7 +1,7 @@
-/*$Id: f90_win32.c,v 1.1 2000/07/11 19:36:15 balay Exp balay $*/
+/*$Id: f90_win32.c,v 1.2 2000/07/11 19:43:50 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
-#if defined(PETSC_HAVE_DECF90)
+#if defined(PETSC_HAVE_WIN32F90)
 
 /* --------------------------------------------------------*/
 /*
