@@ -38,10 +38,14 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@echo "C Compiler version: " `${C_CCV}`
-	-@echo "Using C++ compiler: ${CXX_CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@echo "C++ Compiler version: " `${CXX_CCV}`
-	-@echo "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}"
-	-@echo "Fortran Compiler version: " `${C_FCV}`
+	-@if [ "${CXX}" != "" ]; then \
+	   echo "Using C++ compiler: ${CXX_CC} ${COPTFLAGS} ${CCPPFLAGS}";\
+	   echo "C++ Compiler version: " `${CXX_CCV}`;\
+	fi
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}";\
+	   echo "Fortran Compiler version: " `${C_FCV}`;\
+         fi
 	-@echo "-----------------------------------------"
 	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
@@ -56,7 +60,9 @@ info:
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "------------------------------------------"
 	-@echo "Using C linker: ${CLINKER}"
-	-@echo "Using Fortran linker: ${FLINKER}"
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran linker: ${FLINKER}";\
+         fi
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpirun: ${MPIRUN}"
