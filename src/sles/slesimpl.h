@@ -5,9 +5,11 @@
 
 struct _p_SLES {
   PETSCHEADER(int)
-  int setupcalled;
-  PC  pc;
-  KSP ksp;
+  int        setupcalled;
+  PetscTruth dscale;      /* diagonal scale system; used with SLESSetDiagonalScale() */
+  Vec        diagonal;    /* 1/sqrt(diag of matrix) */
+  PC         pc;
+  KSP        ksp;
 };
 
 #endif
