@@ -14,6 +14,9 @@ Additional Capabilities that PETSc Needs:
   - find LAgesvd_ on Cray T3D.
 
   - Fix BDiag factorization to use Barry's new Linpack-modified stuff.
+    Also change to actually invert diagonal blocks rather then keeping 
+    triangular factors and doing triangular solves on the blocks in 
+    each backsolve. As is done in SeqBAIJ.
 
   - fix output formats for -log_summary so that 3-digit numbers (e.g., 100.0) 
     doesn't screw up column alignment
