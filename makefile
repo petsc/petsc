@@ -124,10 +124,10 @@ deletelatexpages:
 
 # Builds all etags files
 alletags:
+	-make etags_complete
 	-make etags
 	-make etags_noexamples
 	-make etags_makefiles
-	-make etags_complete
 
 # Builds the basic etags file.	This should be employed by most users.
 etags:
