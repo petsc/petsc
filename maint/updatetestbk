@@ -17,5 +17,5 @@ cd /sandbox/petsc/petsc-test
 bk pull
 bk -r co -q
 echo "*************************************************************************************"
-make allfortranstubs
+make BOPT=g allfortranstubs
 echo "*************************************************************************************"

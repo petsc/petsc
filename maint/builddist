@@ -47,13 +47,13 @@ bk -r co -q
 
 # update petscapps* for www-fp
 cd $PETSC_DIR/docs
-make bib2html
+make BOPT=g bib2html
 
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
-make allfortranstubs
-make alldoc LOC=${PETSC_DIR}
-make ACTION=clean tree
+make BOPT=g allfortranstubs
+make BOPT=g alldoc LOC=${PETSC_DIR}
+make BOPT=g ACTION=clean tree
 # now tar up the PETSc tree
 cd /sandbox/petsc
 /bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
@@ -84,7 +84,7 @@ cd $tmpdir/petsc
 # eliminate .pyc files if any
 /usr/bin/find . -type f -name "*.pyc" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
-make etags etags_examples TAGSDIR=`pwd`
+make BOPT=g etags etags_examples TAGSDIR=`pwd`
 # Update project files
 cd $tmpdir/petsc/projects; make
 cd $tmpdir/petsc
