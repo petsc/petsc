@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.2 2000/06/23 21:59:55 buschelm Exp balay $*/
+/*$Id: sbaij2.c,v 1.3 2000/06/25 17:01:23 balay Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1051,7 +1051,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*x_ptr,*y,*z,*z_ptr,*xb,*zb,*work,*workt;
+  Scalar          *x,*x_ptr,*y,*z,*z_ptr=0,*xb,*zb,*work,*workt;
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
   int             ncols,k;
