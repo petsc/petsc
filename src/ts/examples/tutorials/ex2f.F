@@ -75,14 +75,15 @@
       TS               ts
       Vec              u
       Mat              A
-      integer          flg,ierr
-      integer          time_steps_max,steps
+      PetscTruth       flg,monitor
+      PetscErrorCode ierr
+      PetscInt          time_steps_max,steps,i1
       double precision dt,ftime,time_total_max
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
 
-      external Monitor,RHSFunction
+      external MyMonitor,RHSFunction
       external InitialConditions,RHSJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -102,6 +103,8 @@
       debug          = 0
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-monitor',monitor,       &
+     &                         ierr)
       one_d0  = 1.0d0
       two_d0  = 2.0d0
       four_d0 = 4.0d0
@@ -114,8 +117,8 @@
 !  Create distributed array (DA) to manage parallel grid and vectors
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
-
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,1,1,
+      i1 = 1
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,i1,i1,
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
@@ -143,8 +146,11 @@
 !  Set optional user-defined monitoring routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,
-     &                  PETSC_NULL_FUNCTION,ierr)
+
+      if (monitor .eq. 1) then
+        call TSSetMonitor(ts,MyMonitor,PETSC_NULL_OBJECT,
+     &                    PETSC_NULL_FUNCTION,ierr)
+      endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  For nonlinear problems, the user can provide a Jacobian evaluation
@@ -238,7 +244,8 @@
 
 !  Local variables:
       double  precision localptr(1),x
-      integer           i,mybase,myend,ierr
+      PetscInt           i,mybase,myend
+      PetscErrorCode ierr
       PetscOffset       idx
 
 !  Determine starting and ending point of each processor's range of
@@ -300,11 +307,11 @@
 
 !  Input/output parameters:
       double precision  t,x
-      integer           ierr
+      PetscErrorCode          ierr
 
 !  Local variables:
       double precision  localptr(1)
-      integer           i,mybase,myend
+      PetscInt           i,mybase,myend
       PetscOffset       idx
 
 !  Determine starting and ending point of each processors range of
@@ -335,7 +342,7 @@
 
 !  ------------------------------------------------------------------------
 !
-!   Monitor - A user-provided routine to monitor the solution computed at 
+!   MyMonitor - A user-provided routine to monitor the solution computed at 
 !   each time-step.  This example plots the solution and computes the
 !   error in two different norms.
 !
@@ -348,16 +355,17 @@
 !   dummy  - optional user-provided context for this monitoring
 !            routine (not used here)
 !
-      subroutine Monitor(ts,step,time,u,dummy,ierr)
+      subroutine MyMonitor(ts,step,time,u,dummy,ierr)
       implicit none
 #include "ex2f.h"
 
 !  Input/output parameters:
       TS               ts
-      integer          step,dummy
+      PetscInt          step
+      PetscObject dummy
       double precision time
       Vec              u
-      integer          ierr
+      PetscErrorCode          ierr
 
 !  Local variables:
       double precision en2,en2s,enmax
@@ -443,7 +451,8 @@
 
 !  Local variables:
       double precision localptr(1),copyptr(1),sc
-      integer          i,il,ierr,localsize
+      PetscErrorCode ierr
+      PetscInt          i,il,localsize
       PetscOffset      idx_c,idx_l
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -557,8 +566,9 @@
 
 !  Local variables:
       double precision localptr(1),sc,v(3)
-      integer          i,ierr,col(3),is
-      integer          mstart,mend,mstarts,mends
+      PetscInt         i,col(3),is,i1,i3
+      PetscErrorCode ierr
+      PetscInt          mstart,mend,mstarts,mends
       PetscOffset      idx
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -596,16 +606,17 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Set matrix rows corresponding to boundary data
-
+      i1 = 1
+      i3 = 3
       if (mstart .eq. 0) then
         v(1) = zero_d0
-        call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr)
+        call MatSetValues(A,i1,mstart,i1,mstart,v,INSERT_VALUES,ierr)
         mstart = mstart + 1
       endif
       if (mend .eq. m) then
         mend = mend - 1
         v(1) = zero_d0
-        call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr)
+        call MatSetValues(A,i1,mend,i1,mend,v,INSERT_VALUES,ierr)
       endif
 
 !  Set matrix rows corresponding to interior data.
@@ -621,7 +632,7 @@
          v(2)   = sc*(localptr(is+1) + localptr(is-1) -                 &
      &                four_d0*localptr(is))
          v(3)   = sc*localptr(is)
-        call MatSetValues(A,1,i,3,col,v,INSERT_VALUES,ierr)
+        call MatSetValues(A,i1,i,i3,col,v,INSERT_VALUES,ierr)
  10   continue
 
 !  Restore vector

@@ -6,9 +6,9 @@
 
 #define PetscViewer PetscFortranAddr
 #define PetscViewers PetscFortranAddr
-#define PetscViewerFileType integer
+#define PetscViewerFileType PetscEnum
 #define PetscViewerType character*(80)
-#define PetscViewerFormat integer
+#define PetscViewerFormat PetscEnum
 
 #define PETSC_VIEWER_SOCKET 'socket'
 #define PETSC_VIEWER_ASCII 'ascii'

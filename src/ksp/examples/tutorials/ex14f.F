@@ -71,9 +71,10 @@
       DA       da
       KSP      ksp
 
-      integer  Nx,Ny,flg,N,ierr,mx,my
-      integer  usemf,nooutput
-      common   /mycommon/ B,mx,my,localX,localF,da
+      PetscInt  Nx,Ny,N,mx,my,ifive,ithree
+      PetscTruth flg,nooutput,usemf
+      PetscMPIInt rank
+      common   /mycommon/ mx,my,B,localX,localF,da
 !
 !
 !      This is the routine to use for matrix-free approach
@@ -83,15 +84,19 @@
 !     --------------- Data to define nonlinear solver -------------- 
       double precision   rtol,xtol,ttol
       double precision   fnorm,ynorm,xnorm
-      integer            max_nonlin_its
-      integer            lin_its
-      integer            i,m
+      PetscInt            max_nonlin_its,one
+      PetscInt            lin_its
+      PetscInt           i,m
       PetscScalar        mone
+      PetscErrorCode ierr
 
       mone           = -1.d0
       rtol           = 1.d-8
       xtol           = 1.d-8
       max_nonlin_its = 10
+      one            = 1
+      ifive          = 5
+      ithree         = 3
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       comm = PETSC_COMM_WORLD
@@ -127,7 +132,7 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
       call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
-     &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,          &
+     &     my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &     da,ierr)
 
 !  
@@ -157,7 +162,7 @@
 !     for preallocating matrix memory.
 !  
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL_INTEGER,3,         &
+      call MatCreateMPIAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
      &     PETSC_NULL_INTEGER,B,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -307,17 +312,17 @@
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscda.h"
-      integer          ierr
+      PetscErrorCode    ierr
       PetscOffset      idx
       Vec              X,localX,localF
-      integer          i,j,row,mx,my, xs,ys,xm
-      integer          ym,gxm,gym,gxs,gys
+      PetscInt          i,j,row,mx,my, xs,ys,xm
+      PetscInt          ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       double precision hxdhy,hydhx,sc
       PetscScalar      xx(1)
       DA               da
       Mat              B
-      common   /mycommon/ B,mx,my,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,localF,da
  
       one    = 1.d0
       lambda = 6.d0
@@ -397,15 +402,16 @@
 #include "include/finclude/petscda.h"
 
       Vec              X,F,localX,localF
-      integer          gys,gxm,gym
+      PetscInt         gys,gxm,gym
       PetscOffset      idx,idf
-      integer          ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs 
+      PetscErrorCode ierr
+      PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs 
       double precision two,one,lambda,hx
       double precision hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
       DA               da
       Mat              B
-      common   /mycommon/ B,mx,my,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,localF,da
 
       two    = 2.d0
       one    = 1.d0
@@ -506,15 +512,18 @@
       Mat         jac
       Vec         localX,localF
       DA          da
-      integer     ltog(1)
+      PetscInt     ltog(1)
       PetscOffset idltog,idx
-      integer     ierr,i,j,row,mx,my,col(5)
-      integer     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow
+      PetscErrorCode ierr
+      PetscInt nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow,i,j,row,mx,my
+      PetscInt ione,col(5),ifive
       PetscScalar two,one,lambda,v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(1)
       Mat         B
-      common   /mycommon/ B,mx,my,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,localF,da
 
+      ione   = 1
+      ifive  = 5
       one    = 1.d0
       two    = 2.d0
       hx     = one/(mx-1)
@@ -565,7 +574,8 @@
           grow = ltog(idltog+row)
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or.            &
      &        j .eq. (my-1)) then
-             call MatSetValues(jac,1,grow,1,grow,one,INSERT_VALUES,ierr)
+             call MatSetValues(jac,ione,grow,ione,grow,one,             &
+     &                         INSERT_VALUES,ierr)
              go to 20
           endif
           v(1)   = -hxdhy
@@ -578,7 +588,8 @@
           col(4) = ltog(idltog+row + 1)
           v(5)   = -hxdhy 
           col(5) = ltog(idltog+row + gxm)
-          call MatSetValues(jac,1,grow,5,col,v,INSERT_VALUES,ierr)
+          call MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,       &
+     &                      ierr)
  20     continue
  10   continue
 
@@ -608,11 +619,12 @@
       implicit none
       Mat     J,B
       Vec     X,F
-      integer ierr,mx,my
+      PetscErrorCode ierr
+      PetscInt mx,my
       DA      da
       Vec     localX,localF
 
-      common   /mycommon/ B,mx,my,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,localF,da
 !
 !       Here we use the actual formed matrix B; users would 
 !     instead write their own matrix vector product routine

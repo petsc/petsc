@@ -78,11 +78,11 @@ PetscErrorCode VecMTDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
 #define __FUNCT__ "VecNorm_MPI"
 PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
-  Vec_MPI      *x = (Vec_MPI*)xin->data;
-  PetscReal    sum,work = 0.0;
-  PetscScalar  *xx = x->array;
+  Vec_MPI        *x = (Vec_MPI*)xin->data;
+  PetscReal      sum,work = 0.0;
+  PetscScalar    *xx = x->array;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n;
+  PetscInt       n = xin->n;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {

@@ -15,14 +15,15 @@
 !                          use the file petsc/src/mat/examples/matbinary.ex
 !
 
-      integer          ierr,its,flg
+      PetscErrorCode  ierr
+      PetscInt its
+      PetscTruth flg
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
       character*(128)  f 
       PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)
-      PetscLogDouble   time1,time2
       KSP              ksp
 
       none = -1.0
@@ -30,6 +31,7 @@
 
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
+      print *,f
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_FILE_RDONLY,  &
      &     fd,ierr)
 
@@ -57,9 +59,7 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp,ierr)
-      call PetscGetTime(time1,ierr)
       call KSPSolve(ksp,b,x,ierr)
-      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
@@ -68,7 +68,6 @@
       call KSPGetIterationNumber(ksp,its,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
-      print*, 'Time for solve = ',time2-time1
 
 ! Cleanup
       call KSPDestroy(ksp,ierr)

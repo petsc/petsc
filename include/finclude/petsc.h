@@ -125,6 +125,7 @@
       PetscInt            PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
       PetscInt            PETSC_NULL
+      PetscObject         PETSC_NULL_OBJECT
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
@@ -145,6 +146,7 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran8/ PETSC_NULL_OBJECT
 !
 !     Possible arguments to PetscPushErrorHandler()
 !

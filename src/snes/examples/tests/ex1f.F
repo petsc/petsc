@@ -79,9 +79,10 @@
       Vec                x,r
       PetscDraw               draw
       Mat                J
-      integer            its,matrix_free,flg,N,ierr
-      integer            mx,my,size,rank
-      integer            fd_coloring
+      PetscTruth         matrix_free,flg,fd_coloring
+      PetscErrorCode ierr
+      PetscInt   its,N, mx,my,i5
+      PetscMPIInt size,rank
       PetscReal          lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
@@ -115,7 +116,7 @@
       endif
 
 !  Initialize problem parameters
-
+      i5 = 5
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
@@ -166,7 +167,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL_INTEGER, &
+        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
      &        J,ierr)
       endif
 
@@ -309,7 +310,7 @@
 
 !  Input/output variables:
       Vec           X
-      integer       ierr
+      PetscErrorCode    ierr
 
 !  Declarations for use with local arrays:
       PetscScalar   lx_v(0:1)
@@ -359,15 +360,15 @@
 
 !  Common blocks:
       PetscReal   lambda
-      integer     mx,my
+      PetscInt     mx,my
       common      /params/ lambda,mx,my
 
 !  Input/output variables:
       PetscScalar x(mx,my)
-      integer     ierr
+      PetscErrorCode     ierr
 
 !  Local variables:
-      integer     i,j,hxdhy,hydhx
+      PetscInt     i,j,hxdhy,hydhx
       PetscScalar temp1,temp,hx,hy,sc,one
 
 !  Set parameters
@@ -429,11 +430,11 @@
       SNES              snes
       Vec               X,F
       PetscFortranAddr  dummy
-      integer           ierr
+      PetscErrorCode          ierr
 
 !  Common blocks:
       PetscReal         lambda
-      integer           mx,my
+      PetscInt          mx,my
       common            /params/ lambda,mx,my
 
 !  Declarations for use with local arrays:
@@ -486,17 +487,17 @@
 
 !  Common blocks:
       PetscReal      lambda
-      integer        mx,my
+      PetscInt        mx,my
       common         /params/ lambda,mx,my
 
 !  Input/output variables:
       PetscScalar    x(mx,my),f(mx,my)
-      integer        ierr
+      PetscErrorCode       ierr
 
 !  Local variables:
       PetscScalar    two,one,hx,hy,hxdhy,hydhx,sc
       PetscScalar    u,uxx,uyy
-      integer        i,j
+      PetscInt        i,j
 
       ierr   = 0
       one    = 1.0
@@ -564,11 +565,12 @@
       Vec           X
       Mat           jac,jac_prec
       MatStructure  flag
-      integer       dummy,ierr
+      PetscErrorCode      ierr
+      integer dummy
 
 !  Common blocks:
       PetscReal     lambda
-      integer       mx,my
+      PetscInt       mx,my
       common        /params/ lambda,mx,my
 
 !  Declarations for use with local array:
@@ -640,20 +642,22 @@
 
 !  Common blocks:
       PetscReal    lambda
-      integer      mx,my
+      PetscInt      mx,my
       common       /params/ lambda,mx,my
 
 !  Input/output variables:
       PetscScalar  x(mx,my)
       Mat          jac,jac_prec
-      integer      ierr
+      PetscErrorCode      ierr
 
 !  Local variables:
-      integer      i,j,row,col(5)
+      PetscInt      i,j,row,col(5),i1,i5
       PetscScalar  two,one, hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 
+      i1     = 1
+      i5     = 5
       one    = 1.0
       two    = 2.0
       hx     = one/dble(mx-1)
@@ -674,7 +678,7 @@
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac_prec,1,row,1,row,one,              &
+               call MatSetValues(jac_prec,i1,row,i1,row,one,              &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -689,7 +693,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + mx
-               call MatSetValues(jac_prec,1,row,5,col,v,                &
+               call MatSetValues(jac_prec,i1,row,i5,col,v,                &
      &                           INSERT_VALUES,ierr)
             endif
  10      continue

@@ -70,8 +70,10 @@
       PetscRandom      rctx
       double precision norm,h2,sigma1
       PetscScalar      none,sigma2,v,pfive
-      integer          dim,flg,its,ierr,n,rank
-      integer          Istart,Iend,i,j,II,JJ
+      PetscInt          dim,its,n,Istart,Iend,i,j,II,JJ,one
+      PetscErrorCode ierr
+      PetscMPIInt rank
+      PetscTruth flg
       logical          use_random
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,29 +133,30 @@
       endif
       h2 = 1.0/((n+1)*(n+1))
 
+      one = 1
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.n-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (use_random) call PetscRandomGetValue(rctx,sigma2,ierr)
         v = 4.0 - sigma1*h2 + sigma2*h2
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  10   continue
       if (use_random) call PetscRandomDestroy(rctx,ierr)
 

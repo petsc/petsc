@@ -22,7 +22,9 @@
 !     -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
-      integer          ierr,its,flg
+      PetscErrorCode  ierr
+      PetscInt its,ione,ifive,izero
+      PetscErrorCode flg
       PetscScalar      norm,none,five
       Vec              x,b,u
       Mat              A
@@ -30,12 +32,14 @@
       character*(128)  f 
       PetscViewer      fd
       IS               isrow
-      PetscLogDouble   time1,time2
-      KSP              ksp
-      none = -1.0
-      five = 5.0
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      none  = -1.0
+      five  = 5.0
+      ifive = 5
+      ione  = 1
+      izero = 0
 
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_FILE_RDONLY,            &
@@ -64,23 +68,20 @@
       call KSPAppendOptionsPrefix(ksp1,'_',ierr)
       call KSPSetOperators(ksp1,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp1,ierr)
-      call PetscGetTime(time1,ierr)
       call KSPSolve(ksp1,b,x,ierr)
-      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
+      call KSPGetIterationNumber(ksp1,its,ierr)
 
-!      print*, 'Time for solve = ',time2-time1
 
       write(6,100) norm,its
   100 format('Residual norm ',e10.4,' iterations ',i5)
 
 ! Create system 2 by striping off some rows of the matrix
-      call ISCreateStride(PETSC_COMM_SELF,5,0,1,isrow,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,ifive,izero,ione,isrow,ierr)
       call MatZeroRows(A,isrow,five,ierr)
 
 ! Solve system-2
@@ -89,16 +90,13 @@
       call KSPAppendOptionsPrefix(ksp2,'_',ierr)
       call KSPSetOperators(ksp2,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp2,ierr)
-      call PetscGetTime(time1,ierr)
       call KSPSolve(ksp2,b,x,ierr)
-      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
-!      print*, 'Time for solve = ',time2-time1
+      call KSPGetIterationNumber(ksp2,its,ierr)
       write(6,100) norm,its
 
 ! Cleanup

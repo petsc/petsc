@@ -54,7 +54,9 @@
       KSP      ksp
       Vec      x,r
       Mat      J
-      integer  ierr,its,size,rank
+      PetscErrorCode  ierr
+      PetscInt its,i2,i20
+      PetscMPIInt size,rank
       PetscScalar   pfive
       double precision   tol
       PetscTruth  setls
@@ -90,6 +92,8 @@
          SETERRQ(1,' ',ierr)
       endif
 
+      i2  = 2
+      i20 = 20
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Create nonlinear solver context
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -102,12 +106,12 @@
 
 !  Create vectors for solution and nonlinear function
 
-      call VecCreateSeq(PETSC_COMM_SELF,2,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 !  Create Jacobian matrix data structure
 
-      call MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,J,   &
+      call MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,i2,i2,J,   &
      &               ierr)
       call MatSetFromOptions(J,ierr)
 
@@ -133,7 +137,7 @@
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &                      PETSC_DEFAULT_DOUBLE_PRECISION,20,ierr)
+     &                      PETSC_DEFAULT_DOUBLE_PRECISION,i20,ierr)
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -202,7 +206,8 @@
 
       SNES     snes
       Vec      x,f
-      integer  ierr,dummy(*)
+      PetscErrorCode ierr
+      integer dummy(*)
 
 !  Declarations for use with local arrays
 
@@ -263,7 +268,9 @@
       Mat          jac,B
       MatStructure flag
       PetscScalar  A(4)
-      integer      ierr,idx(2),dummy(*)
+      PetscErrorCode ierr
+      PetscInt idx(2),i2
+      integer dummy(*)
 
 !  Declarations for use with local arrays
 
@@ -272,6 +279,7 @@
 
 !  Get pointer to vector data
 
+      i2 = 2
       call VecGetArray(x,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries and insert into matrix.
@@ -286,7 +294,7 @@
       A(2) = lx_a(1)
       A(3) = lx_a(2)
       A(4) = lx_a(1) + 2.0*lx_a(2)
-      call MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES,ierr)
+      call MatSetValues(jac,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
       flag = SAME_NONZERO_PATTERN
 
 !  Restore vector
@@ -315,7 +323,8 @@
       integer           lctx
       Vec               x, f,g, y, w
       double  precision fnorm,ynorm,gnorm
-      integer           flag,ierr
+      PetscTruth           flag
+      PetscErrorCode ierr
 
       PetscScalar       mone
 

@@ -32,7 +32,10 @@
 #include "include/finclude/petscsnes.h"
 
       PetscFortranAddr ctx(6)
-      integer          rank,size,ierr,N,start,end,nn,i,ii,its,flg
+      PetscMPIInt rank,size
+      PetscErrorCode ierr
+      PetscInt N,start,end,nn,i,ii,its,i1,i0,i3
+      PetscTruth flg
       SNES             snes
       Mat              J
       Vec              x,r,u
@@ -41,7 +44,10 @@
       external         FormJacobian,FormFunction
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      N = 10
+      i1 = 1
+      i0 = 0
+      i3 = 3
+      N  = 10
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
@@ -52,7 +58,7 @@
       ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,            &
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
       call DACreateGlobalVector(ctx(1),x,ierr)
@@ -65,7 +71,7 @@
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
       call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
-     &     N,3,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,J,ierr)
+     &     N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr)
 
       call MatGetType(J,matrixname,ierr)
 
@@ -77,8 +83,8 @@
       do 10, i=0,nn-1
         FF = 6.0*xp + (xp+1.e-12)**6.e0
         UU = xp*xp*xp
-        call VecSetValues(ctx(2),1,ii,FF,INSERT_VALUES,ierr)
-        call VecSetValues(U,1,ii,UU,INSERT_VALUES,ierr)
+        call VecSetValues(ctx(2),i1,ii,FF,INSERT_VALUES,ierr)
+        call VecSetValues(U,i1,ii,UU,INSERT_VALUES,ierr)
         xp = xp + h
         ii = ii + 1
  10   continue
@@ -127,7 +133,9 @@
       SNES             snes
       Vec              x,f
       PetscFortranAddr ctx(*)
-      integer          rank,size,i,s,n,ierr
+      PetscMPIInt  rank,size
+      PetscInt i,s,n
+      PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
 #include "include/finclude/petsc.h"
@@ -205,7 +213,7 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscsnes.h"
-      integer          ierr
+      PetscErrorCode   ierr
       Vec              x
       SNES             snes
       PetscScalar      five 
@@ -228,12 +236,14 @@
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      integer          flag,ii,istart
+      PetscTruth       flag
+      PetscInt         ii,istart,iend,i,j,n,end,start,i1
+      PetscErrorCode ierr
+      PetscMPIInt rank,size
       PetscOffset      ixx
-      integer          iend,i,j,n,rank,size,end,start,ierr
       PetscScalar      d,A,h,vxx(1)
 
-
+      i1 = 1
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
       rank = ctx(4)
@@ -245,7 +255,7 @@
 
       if (rank .eq. 0) then
         A = 1.0 
-        call MatSetValues(jac,1,start,1,start,A,INSERT_VALUES,ierr)
+        call MatSetValues(jac,i1,start,i1,start,A,INSERT_VALUES,ierr)
         istart = 1
       else 
         istart = 0
@@ -253,7 +263,7 @@
       if (rank .eq. size-1) then
         i = ctx(6)-1
         A = 1.0 
-        call MatSetValues(jac,1,i,1,i,A,INSERT_VALUES,ierr)
+        call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1
       else
         iend = n
@@ -261,11 +271,11 @@
       do 10 i=istart,iend-1
         ii = i + start
         j = start + i - 1 
-        call MatSetValues(jac,1,ii,1,j,d,INSERT_VALUES,ierr)
+        call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
         j = start + i + 1 
-        call MatSetValues(jac,1,ii,1,j,d,INSERT_VALUES,ierr)
+        call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
-        call MatSetValues(jac,1,ii,1,ii,A,INSERT_VALUES,ierr)
+        call MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr)
  10   continue
       call VecRestoreArray(x,vxx,ixx,ierr)
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)

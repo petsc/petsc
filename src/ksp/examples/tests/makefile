@@ -187,6 +187,11 @@ runex5:
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
+runex5f:
+	-@${MPIRUN} ex5f -ksp_smonitor >& ex5f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
+	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
+	   ${RM} -f ex5f_1.tmp
 #
 #   The arco sparse matrices, as well as a few others are available at
 # ftp://info.mcs.anl.gov/pub/petsc/testmatrices
@@ -267,12 +272,20 @@ runex11:
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex12f:
-	-@${MPIRUN} -np 3  ex12f -ksp_gmres_cgs_refinement_type always -f ../../../mat/examples/matbinary.ex
+	-@${MPIRUN} ex12f  -f ../../../mat/examples/matbinary.ex > ex12f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
+	   else echo "Possible problem with ex12f_1, diffs above"; fi; \
+	   ${RM} -f ex12f_1.tmp
 runex13:
 	-@${MPIRUN} -np 2  ex13 -ksp_gmres_cgs_refinement_type always -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
+runex16f:
+	-@${MPIRUN} ex16f  -f ../../../mat/examples/matbinary.ex > ex16f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex16f_1.out ex16f_1.tmp) then true; \
+	   else echo "Possible problem with ex16f_1, diffs above"; fi; \
+	   ${RM} -f ex16f_1.tmp
 runex17:
 	-@${MPIRUN} -np 1 ex17 -ksp_gmres_cgs_refinement_type always -n 6 -ksp_smonitor -p 5 -norandom -ksp_type gmres \
 	   -pc_type jacobi > ex17_1.tmp 2>&1; \
@@ -343,7 +356,7 @@ TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
 		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
-TESTEXAMPLES_3  = ex12f.PETSc ex12f.rm
+TESTEXAMPLES_3  = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc runex12f ex12f.rm  ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_9  = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		  runex4 ex4.rm
