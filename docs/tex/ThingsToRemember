@@ -82,3 +82,6 @@ To add an object to the PETSc logging:
 Delete (or "outdate") range of versions from RCS file:
   rcs -o[r1]:[r2] file, where r1 and r2 denote beginning and ending of range
   (e.g., "rcs -o1.1:1.65 matrix.c")
+
+To run parallel jobs using the /tmp/petsc installations: Use, e.g.,
+    mpirun -machinefile $PETSC_DIR/maint/hosts.local -np 2 ex1
