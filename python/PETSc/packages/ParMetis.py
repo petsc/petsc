@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
       self.framework.logClear()
       self.logPrint('=================================================================================', debugSection='screen')
       self.logPrint("      Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
-      self.logPrint('=================================================================================', debugSection='screen')
+      self.logPrint('=================================================================================\n', debugSection='screen')
       try:
         import logging
         import sys

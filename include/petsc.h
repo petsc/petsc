@@ -262,17 +262,20 @@ M*/
 #define PETSC_DETERMINE      PETSC_DECIDE
 
 /*M
-    PETSC_COMM_WORLD - a duplicate of the MPI_COMM_WORLD communicator which represents
-           all the processs
+    PETSC_COMM_WORLD - the equivalent of the MPI_COMM_WORLD communicator which represents
+           all the processs that PETSc knows about. 
 
    Level: beginner
 
-   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent.
+   Notes: By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to 
+          run PETSc on ONLY a subset of MPI_COMM_WORLD. In that case create your new (smaller)
+          communicator, call it, say comm, and set PETSC_COMM_WORLD = comm BEFORE calling
+          PetscInitialize()
 
 .seealso: PETSC_COMM_SELF
 
 M*/
-#define PETSC_COMM_WORLD MPI_COMM_WORLD
+extern MPI_Comm PETSC_COMM_WORLD;
 
 /*M
     PETSC_COMM_SELF - a duplicate of the MPI_COMM_SELF communicator which represents

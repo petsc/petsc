@@ -40,7 +40,7 @@ class Configure(PETSc.package.Package):
       self.framework.logClear()      
       self.logPrint('=================================================================================', debugSection='screen')
       self.logPrint("         Configuring and compiling Spai; this may take several minutes\n", debugSection='screen')
-      self.logPrint('=================================================================================', debugSection='screen')
+      self.logPrint('=================================================================================\n', debugSection='screen')
       fd = file(os.path.join(installDir,'Makefile.in'),'w')
       fd.write(args)
       fd.close()
