@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.58 2001/01/23 20:57:06 balay Exp balay $*/
+/*$Id: ex4.c,v 1.59 2001/03/23 23:24:20 balay Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   Vec        x, r;                 /* solution, residual vectors */
   Mat        J;                    /* Jacobian matrix */
   AppCtx     user;                 /* user-defined application context */
-  PetscDraw       draw;                 /* drawing context */
+  PetscDraw  draw;                 /* drawing context */
   int        ierr, its, N, nfails;
   PetscTruth flg,cavity; 
   double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;

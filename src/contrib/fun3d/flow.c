@@ -1,6 +1,6 @@
-/* "$Id: flow.c,v 1.73 2001/03/22 20:33:06 bsmith Exp balay $";*/
+/* "$Id: flow.c,v 1.74 2001/03/23 23:25:38 balay Exp bsmith $";*/
 
-static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
+static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
