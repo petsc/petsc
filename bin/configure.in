@@ -2,7 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 dnl The file must be relative to the location of the configure program
 dnl itself
 dnl
-dnl Here is a typical configure usage
+dnl Here is a typical configure usage:
+dnl
 dnl setenv PETSC_ARCH solarisconfig
 dnl setenv CC  cc
 dnl setenv FC  f77
