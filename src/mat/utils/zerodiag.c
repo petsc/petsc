@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.21 1998/04/15 22:52:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.22 1998/04/24 02:16:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,10 +26,10 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 
   PetscFunctionBegin;
   ierr = MatGetRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
-/*
-    Here one could sort the col[j[k]] to try to select the column closest
-  to the diagonal (in the new ordering) that satisfies the criteria
-*/
+   /*
+      Here one could sort the col[j[k]] to try to select the column closest
+     to the diagonal (in the new ordering) that satisfies the criteria
+  */
   for (k=0; k<nz; k++) {
     if (col[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
       /* See if this one will work */
@@ -104,12 +104,12 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
       /* Element too small or zero; find the best candidate */
       repl  = prow;
       repla = (k >= nz) ? 0.0 : PetscAbsScalar(v[k]);
-/*
-   Here one could sort the col[j[k]] list to try to select the 
-  column closest to the diagonal in the new ordering. (Note have
-  to permute the v[k] values as well, and use a fixed bound on the
-  quality of repla rather then looking for the absolute largest.
-*/
+      /*
+        Here one could sort the col[j[k]] list to try to select the 
+        column closest to the diagonal in the new ordering. (Note have
+        to permute the v[k] values as well, and use a fixed bound on the
+        quality of repla rather then looking for the absolute largest.
+      */
       for (k=0; k<nz; k++) {
 	if (col[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
 	  repl  = col[j[k]];
@@ -117,10 +117,12 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
         }
       }
       if (prow == repl) {
-	    /* Look for an element that allows us
-	       to pivot with a previous column.  To do this, we need
-	       to be sure that we don't introduce a zero in a previous
-	       diagonal */
+	/* 
+           Look for an element that allows us
+	   to pivot with a previous column.  To do this, we need
+	   to be sure that we don't introduce a zero in a previous
+	   diagonal 
+        */
         if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
 	  SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Cannot reorder matrix to eliminate zero diagonal entry");
 	}
