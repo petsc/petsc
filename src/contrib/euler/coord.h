@@ -12,10 +12,4 @@ c  For the parallel case, we clearly want to use only
 c  the local part, but currently some of the post-processing
 c  requires the global mesh.  This will eventually be upgraded.
 c
-c  local:
-c      Double x(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-c      Double y(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-c      Double z(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-c  global:
-c      Double x(ni,nj,nk),y(ni,nj,nk),z(ni,nj,nk)
-c
+

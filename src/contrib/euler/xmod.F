@@ -24,8 +24,8 @@ c
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
-     &        Axef01, Ayef01, Azef01, 
-     &        Agxef01, Agyef01, Agzef01, Anc, Aggrid)
+     &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
+     &        Agzef01, Anc, Aggrid, Abcswitch)
 
 #include "param.h"
 
@@ -33,7 +33,7 @@ c
      &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
-     &        Agxefp1, Agyefp1, Agzefp1, 
+     &        Agxefp1, Agyefp1, Agzefp1, ctot, Abcswitch,
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
@@ -51,6 +51,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       problem   = Aproblem
       no_output = Ano_output
       nc        = Anc
+      bcswitch  = Abcswitch
 
       if (problem .eq. 1) then
          OPEN (2,FILE='m6c',STATUS='OLD')
@@ -192,20 +193,26 @@ c       Using global grid
         czn = nk
       else
 c       Using local grid     
-        cx1 = gxsf1
+        cx1 = max(gxsf1-1,1)
         cxn = gxef01
-        cy1 = gysf1
+        cy1 = max(gysf1-1,1)
         cyn = gyef01
-        cz1 = gzsf1
+        cz1 = max(gzsf1-1,1)
         czn = gzef01
       endif
 
+      if (rank .eq. 0) write(6,*) 'Problem is ',problem,', nc = ',nc,
+     & ', iteration for BC impermeability switch is',bcswitch
       if (printg .eq. 1) then
-      if (rank .eq. 0) write(6,*) 'Problem is ',problem,', nc = ',nc
       call PetscSequentialPhaseBegin(comm,1,ierr)
+      ctot = (cxn-cx1+1)*(cyn-cy1+1)*(czn-cz1+1)
+      write(6,100) rank,cx1,cxn,cy1,cyn,cz1,czn,ctot
       write(6,110) rank,xsf,xsf1,xsf2,xefm1,xef01,xefp1,xm
       write(6,120) rank,ysf,ysf1,ysf2,yefm1,yef01,yefp1,ym
       write(6,130) rank,zsf,zsf1,zsf2,zefm1,zef01,zefp1,zm
+
+ 100  format('Local coord ranges: rank ',i4,
+     & ': cx1,cxn,cy1,cyn,cz1,czn:',6(i4),', ctot:'i8)
  110  format('Fort grid: rank ',i4,
      & ': xsf,xsf1,xsf2,xefm1,xef01,xefp1,xm:',7(i4))
  120  format('Fort grid: rank ',i4,
@@ -393,7 +400,6 @@ c      COMMON /FREQ/ IFREQ,ISGS
       jmonitor = 0
       cfl      = cfl_new
 
-      if (no_output .ne. 0) return
 c      IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
 c Compute and tabulate norms and the number of supersonic points in flowfield
       RTMAX=zero
@@ -481,6 +487,7 @@ c          DO 42 I=ITL+1,ITU
       TCL=TCL/AREAS*2./FSMACH**2
       TCD=TCD/AREAS*2./FSMACH**2
 
+      if (no_output .ne. 0) return
       IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
       if (rank .eq. 0)
      &   WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP

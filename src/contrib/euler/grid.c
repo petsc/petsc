@@ -260,151 +260,118 @@ int UserSetGridParameters(Euler *u)
  */
 int UserSetGrid(Euler *app)
 {
-  Scalar *xin, *yin, *zin;
-  int    i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01;
-  int    mx_l, my_l, mz_l, mx_g, my_g, mz_g, ict_g, ict_l, ierr;
-  int    itl, itu, ile, ktip, llen, llenb, rank = app->rank, send[6], *recv;
-  int    gxs1p, gxe01p, gys1p, gye01p, gzs1p, gze01p, ict, icoord, glenb;
-  int    mxp_l, myp_l, mzp_l, llenp, maxlenp, rank = app->rank, *isendp;
-  IS     to, from;
+  int        i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01, istart, iend, rank = app->rank;
+  int        mx_l, my_l, mz_l, mx_g = app->ni, my_g = app->nj, mz_g = app->nk, ierr, *isendp;
+  int        itl, itu, ile, ktip, llen, llenb, glen, glenb, ict, icoord, llenb_max;
+  Scalar     *xin, *yin, *zin;
+  IS         to, from;
+  Vec        vc_global;
+  Viewer     view;
+  char       filename[64];
   VecScatter vscat;
 
   /* Mesh coordinates */
-  glen  = app->ni * app->nj * app->nk;
-  glenb = llen * 3 * sizeof(Scalar);
+  glen  = mx_g * my_g * mz_g;
+  glenb = glen * 3;
 
   /* Read global mesh */
   if (!rank || app->global_grid) {
-    if (app->global_grid) {
-      ierr = VecCreateSeq(MPI_COMM_SELF,glenb,&app->vcoord); CHKERRQ(ierr);
+    if (app->global_grid || app->size == 1) {
+      ierr = VecCreateSeq(MPI_COMM_SELF,glenb,&vc_global); CHKERRQ(ierr);
     }
     else if (!rank) {
-      ierr = VecCreateMPI(MPI_COMM_WORLD,glenb,glenb,&app->vcoord); CHKERRQ(ierr);
+      ierr = VecCreateMPI(MPI_COMM_WORLD,glenb,glenb,&vc_global); CHKERRQ(ierr);
     }
-    ierr = VecGetArray(app->vcoord,&xin); CHKERRQ(ierr);
-    yin = xin + glen;
-    zin = yin + glen;
-    ierr = readmesh_(&itl,&itu,&ile,&ktip,xin,yin,zin); CHKERRQ(ierr);
+    ierr = VecGetArray(vc_global,&app->xc); CHKERRQ(ierr);
+    app->yc = app->xc + glen;
+    app->zc = app->yc + glen;
+    ierr = readmesh_(&itl,&itu,&ile,&ktip,app->xc,app->yc,app->zc); CHKERRQ(ierr);
     if ((app->bctype == EXPLICIT 
           && (app->ktip+2 != ktip || app->itl+2 != itl 
              || app->itu+2 != itu || app->ile+2 != ile)) ||
       ((app->bctype == IMPLICIT || app->bctype == IMPLICIT_SIZE)
           && (app->ktip+1 != ktip || app->itl+1 != itl 
             || app->itu+1 != itu || app->ile+1 != ile)))
-     SETERRQ(1,1,"Conflicting wing parameters");
+      SETERRQ(1,1,"Conflicting wing parameters");
+    app->vcoord = vc_global;
+    xin = app->xc;
+    yin = app->yc;
+    zin = app->zc;
   } else {
-    ierr = VecCreateMPI(MPI_COMM_WORLD,0,glenb,&app->vcoord); CHKERRQ(ierr);
+    ierr = VecCreateMPI(MPI_COMM_WORLD,0,glenb,&vc_global); CHKERRQ(ierr);
   }
-  if (app->global_grid || app->size == 1) {
-    app->xc = xin;
-    app->yc = yin;
-    app->zc = zin;
-    return 0;
-  }
+  return 0;
+  if (app->global_grid) return 0;
+  /*  if (app->global_grid || app->size == 1) return 0; */
   if (app->post_process) SETERRQ(1,0,"Local grid is not currently compatible with post processing");
 
-  /* Index set to define scattering (overalloc; should reduce to max local) */
-  isendp = (Scalar *)PetscMalloc(llenb); CHKPTRQ(isendp);
-
   /* Determine each processor's locally owned part of mesh */
-  gxs1 = app->gxsf1-2; gxe01 = app->gxef01;
-  gys1 = app->gysf1-2; gye01 = app->gyef01;
-  gzs1 = app->gzsf1-2; gze01 = app->gzef01;
-  send[0] = gxs1; send[1] = gxe01;
-  send[2] = gys1; send[3] = gye01;
-  send[4] = gzs1; send[5] = gze01;
-  recv = (int *)PetscMalloc(6*app->size*sizeof(int)); CHKPTRQ(recv);
-  ierr = MPI_Allgather(send,6,MPI_INT,recv,6,MPI_INT,app->comm); CHKERRQ(ierr);
+  gxs1 = PetscMax(app->gxs-2,0); gxe01 = app->gxef01;
+  gys1 = PetscMax(app->gys-2,0); gye01 = app->gyef01;
+  gzs1 = PetscMax(app->gzs-2,0); gze01 = app->gzef01;
 
   /* Allocate space for local mesh and set array pointers */
-  mx_l = gxe01 - gxs1; mx_g = app->ni1-1;
-  my_l = gye01 - gys1; my_g = app->nj1-1;
-  mz_l = gze01 - gzs1; mz_g = app->nk1-1;
+  mx_l = gxe01 - gxs1;
+  my_l = gye01 - gys1;
+  mz_l = gze01 - gzs1;
   llen = mx_l * my_l * mz_l;
   llenb = 3*llen;
-  glenb = 3*(mx_g * my_g * mz_g);
   ierr = VecCreateMPI(MPI_COMM_WORLD,llenb,glenb,&app->vcoord); CHKERRQ(ierr);
   ierr = VecGetArray(app->vcoord,&app->xc); CHKERRQ(ierr);
   app->yc = app->xc + llen;
   app->zc = app->yc + llen;
 
+  /* Allocate indices to define scattering */
+  MPI_Allreduce(&llenb,&llenb_max,1,MPI_DOUBLE,MPI_MAX,app->comm);
+  isendp = (int *)PetscMalloc(llenb_max*sizeof(int)); CHKPTRQ(isendp);
+
   /* Create index sets for use in scatter context.  Note that we use the
      communicator PETSC_COMM_SELF for these index sets.  I.e., each processor
      specifies it's own separate index set when creating the scatter context. */
-  ierr = ISCreateStride(PETSC_COMM_SELF,llenb,0,1,&to); CHKERRQ(ierr);
 
-  /* Create local mesh and free global mesh (optional if using > 1 processor) */
-  /* if (app->size > 1) { */
-  {
-    for (p=0; p<rank; p++) {
-      gxs1p = recv[6*p+1]; gze01p = recv[6*p];
-      gys1p = recv[6*p+3]; gye01p = recv[6*p+2];
-      gzs1p = recv[6*p+5]; gze01p = recv[6*p+4];
-      ict = 0;
-      for (icoord=0; icoord<3; icoord++) {
-        for (k=gzs1p; k<gze01p; k++) {
-          for (j=gys1p; j<gye01p; j++) {
-            for (i=gxs1p; i<gxe01p; i++) {
-              isendp[ict] = icoord*mx_g*my_g*mz_g + k*mx_g*my_g + j*mx_g + i; ict++;
-            }
-          }
-        }
-      }
-      printf("p=%d, ict=%d\n',p,ict);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,isendp,&from); CHKERRQ(ierr);
+  /* Receiving scatter */
+  ierr = VecGetOwnershipRange(app->vcoord,&istart,&iend); CHKERRQ(ierr);
+  printf("[%d] llen=%d, llenb=%d, istart=%d, iend=%d\n",rank,llen,llenb,istart,iend);
+  ierr = ISCreateStride(PETSC_COMM_SELF,llenb,istart,1,&to); CHKERRQ(ierr);
 
-      if (app->print_debug) {
-        sprintf(filename,"fromP.%d",app->rank);
-        ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
-        ierr = ISView(from,view); CHKERRQ(ierr);
-        ierr = ViewerDestroy(view); CHKERRQ(ierr);
-        sprintf(filename,"toP.%d",app->rank);
-        ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
-        ierr = ISView(to,view); CHKERRQ(ierr);
-        ierr = ViewerDestroy(view); CHKERRQ(ierr);
-       }
-
-      /* Create scatter context */
-      ierr = VecScatterCreate(vc_global,from,app->vcoord,to,&vscat); CHKERRQ(ierr);
-      ierr = ISDestroy(from); CHKERRQ(ierr); 
-      ierr = ISDestroy(to); CHKERRQ(ierr);
-    }
-    PetscFree(app->xc);
-  }
-
-
-    mx_l = (app->gxef01 - app->gxsf1 + 2); mx_g = app->ni1-1;
-    my_l = (app->gyef01 - app->gysf1 + 2); my_g = app->nj1-1;
-    mz_l = (app->gzef01 - app->gzsf1 + 2); mz_g = app->nk1-1;
-    llen  = mx_l * my_l * mz_l;
-    llenb = 3*llen;
-    ierr = VecCreateSeq(MPI_COMM_SELF,llenb,&app->vcoord); CHKERRQ(ierr);
-    ierr = VecGetArray(app->vcoord,&app->xc); CHKERRQ(ierr);
-    app->yc = app->xc + llen;
-    app->zc = app->yc + llen;
-
-    gxs1 = app->gxsf1-2; gxe01 = app->gxef01;
-    gys1 = app->gysf1-2; gye01 = app->gyef01;
-    gzs1 = app->gzsf1-2; gze01 = app->gzef01;
-
+  /* Create index set to define the sending scatter */
+  ict = 0;
+  for (icoord=0; icoord<3; icoord++) {
     for (k=gzs1; k<gze01; k++) {
       for (j=gys1; j<gye01; j++) {
         for (i=gxs1; i<gxe01; i++) {
-          ict_l = (k-gzs1)*mx_l*my_l + (j-gys1)*mx_l + i-gxs1;
-          ict_g = k*mx_g*my_g + j*mx_g + i;
-          app->xc[ict_l] = xin[ict_g];
-          app->yc[ict_l] = yin[ict_g];
-          app->zc[ict_l] = zin[ict_g];
+          isendp[ict] = icoord*mx_g*my_g*mz_g + k*mx_g*my_g + j*mx_g + i;
+          printf("[%d] icoord=%d k=%d, j=%d, i=%d, is=%d, ict=%d\n",rank,icoord,k,j,i,isendp[ict],ict);
+          ict++;
         }
       }
     }
-    PetscFree(xin);
-  } else {
-    app->xc = xin;
-    app->yc = yin;
-    app->zc = zin;
   }
-  PetscFree(recv);
+  printf("[%d] sendlength=%d\n",rank,ict);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,isendp,&from); CHKERRQ(ierr);
+
+  if (app->print_debug) {
+      sprintf(filename,"from_grid.%d",app->rank);
+      ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
+      ierr = ISView(from,view); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view); CHKERRQ(ierr);
+      sprintf(filename,"to_grid.%d",app->rank);
+      ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
+      ierr = ISView(to,view); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view); CHKERRQ(ierr);
+  }
+
+  /* Create scatter context; then scatter to local vector */
+  ierr = VecScatterCreate(vc_global,from,app->vcoord,to,&vscat); CHKERRQ(ierr);
+  ierr = VecScatterBegin(vc_global,app->vcoord,INSERT_VALUES,SCATTER_FORWARD,vscat); CHKERRQ(ierr);
+  ierr = VecScatterEnd(vc_global,app->vcoord,INSERT_VALUES,SCATTER_FORWARD,vscat); CHKERRQ(ierr);
+
+  ierr = ISDestroy(from); CHKERRQ(ierr); 
+  ierr = ISDestroy(to); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(vscat); CHKERRQ(ierr);
+  ierr = VecRestoreArray(vc_global,&xin); CHKERRQ(ierr);
+  ierr = VecDestroy(vc_global); CHKERRQ(ierr);
+
   MPI_Barrier(app->comm);
   return 0;
 }

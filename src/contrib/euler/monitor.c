@@ -31,12 +31,14 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   negone = -1.0, cfl1, c_lift = 0.0, c_drag = 0.0;
+  Scalar   negone = -1.0, cfl1, ratio, ratio1;
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
-  int      ierr, lits, nsup = 0;
+  char     outstring[64];
+  int      ierr, lits, overlap, flg;
 
+  PLogEventBegin(app->event_monitor,0,0,0,0);
   PetscObjectGetComm((PetscObject)snes,&comm);
 
   /* Print the vector F (intended for debugging) */
@@ -57,25 +59,43 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->cfl_init      = app->cfl;
     app->lin_its[0]    = 0;
     app->lin_rtol[0]   = 0;
+    app->nsup[0]       = 0;
+    app->c_lift[0]     = 0;
+    app->c_drag[0]     = 0;
     if (!app->no_output) {
       if (app->cfl_advance == ADVANCE)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
       else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",its,fnorm,app->cfl);
       if (app->rank == 0) {
-        app->fp = fopen("fnorm.m","w"); 
-        fprintf(app->fp,"zsnes = [\n");
+        overlap = 0;
+        ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
+        if (app->problem == 1) {
+          sprintf(filename,"f_m6%s_asm%d_p%d.m","c",overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","c",overlap,app->size);
+        }
+        else if (app->problem == 2) {
+          sprintf(filename,"f_m6%s_asm%d_p%d.m","f",overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","f",overlap,app->size);
+        }
+        else if (app->problem == 3) {
+          sprintf(filename,"f_m6%s_asm%d_p%d.m","n",overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","n",overlap,app->size);
+        }
+        app->fp = fopen(filename,"w"); 
+	fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
+        fprintf(app->fp,outstring);
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag,nsup);
+                app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
       }
     }
     app->sles_tot += app->lin_its[its];
   } else {
     /* For the first iteration and onward we do the following */
     /* Compute new CFL number if desired */
-    /* Note: BCs change at iter 10, so we defer CFL increase until after this point */
-    if (app->cfl_advance == ADVANCE && its > 11) {
+    /* Note: BCs change at iter bcswitch, so we defer CFL increase until after this point */
+    if (app->cfl_advance == ADVANCE && its > app->bcswitch) {
       /* Check to see if last step was OK ... do we want to increase CFL and DT now? */
 
       if (!app->cfl_begin_advancement) {
@@ -94,17 +114,17 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
         if (!(its%app->cfl_snes_it)) {
           if (app->cfl_advance == ADVANCE) {
-            /* if (fnorm/app->fnorm_init < .00001 && fnorm/app->fnorm_last > 0.75) 
-              cfl1 = app->cfl * 0.5;
-            else */
-              cfl1 = app->cfl_init * app->fnorm_init / fnorm;
-             /* cfl1 = app->cfl * app->fnorm_last / fnorm;   equivalent alternative */
+             if (fnorm != fnorm) SETERRQ(1,0,"Ugh ... NaN detection for fnorm!);
+             ratio1 = app->fnorm_last / fnorm;
+             if (ratio1 >= 1.0) ratio = PetscMin(ratio1,app->cfl_max_incr);
+             else               ratio = PetscMax(ratio1,app->cfl_max_decr);
+             cfl1 = app->cfl * ratio;
           } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
-          if (cfl1 > app->cfl) cfl1 = PetscMin(cfl1,app->cfl*app->cfl_max_incr);
-          else                 cfl1 = PetscMax(cfl1,app->cfl*app->cfl_max_decr);
           cfl1     = PetscMin(cfl1,app->cfl_max);
           app->cfl = PetscMax(cfl1,app->cfl_init);
-          if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
+	  /* if (!app->no_output) PetscPrintf(comm,"Next iter CFL: cfl=%g\n",app->cfl); */
+          if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
+                                           ratio1,ratio,cfl1,app->cfl);
         } else {
           if (!app->no_output) PetscPrintf(comm,"Hold CFL\n");
         }
@@ -128,7 +148,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = jmonitor_(&app->flog[its],&app->cfl,
            app->work_p,app->xx,app->p,app->dxx,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz,&c_lift,&c_drag,&nsup); CHKERRQ(ierr); 
+           app->aiz,app->ajz,app->akz,&app->c_lift[its],&app->c_drag[its],&app->nsup[its]); CHKERRQ(ierr); 
 
     /* Get some statistics about the iterative solver */
     ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
@@ -142,7 +162,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag,nsup);
+                app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
         fflush(app->fp);
       }
     }
@@ -183,9 +203,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       }
     }
   }
-
-
   app->iter = its+1;
+  PLogEventEnd(app->event_monitor,0,0,0,0);
   return 0;
 }
 int DFVecFormUniVec_MPIRegular_Private(Vec,Vec*);
@@ -308,7 +327,7 @@ extern int DFVecFormUniVec_MPIRegular_Private(DFVec,Vec*);
 #undef __FUNC__
 #define __FUNC__ "MonitorDumpVRML"
 /* 
-   MonitorDumpVRML - Outputs fields for use in VRML viewers.  The default
+   MonitrDumpVRML - Outputs fields for use in VRML viewers.  The default
    output is the pressure field.  In addition, the residual field can be
    dumped also.
 

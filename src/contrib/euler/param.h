@@ -3,6 +3,7 @@ c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
 c   mat.h   - matrices
 c   vec.h   - vectors
+c   ao.h    - application orderings
 c
         implicit none
 
@@ -78,8 +79,11 @@ c   Grid points 1,1,1
 c   If nonzero, then print grid information
        integer printg, no_output
 
-c   Type of boundary conditions
-       integer bctype
+c   Type of boundary conditions, switch for impermeability
+       integer bctype, bcswitch
+
+c   Mesh boundaries (used in coord.h)
+       integer cx1, cxn, cy1, cyn, cz1, czn
 
 c   Problem number (1, 2, or 3), number of components per node
        integer problem, nc
@@ -89,12 +93,13 @@ c   Communicator, rank, size
 
 c   Common block for local data
        common /pgrid/ rank, size, comm, problem, nc
-       common /pgrid/ printg, no_output, bctype
+       common /pgrid/ printg, no_output, bctype, bcswitch
        common /pgrid/ xsf, ysf, zsf, xef, yef, zef
        common /pgrid/ xsf2, ysf2, zsf2, xsf1, ysf1, zsf1
        common /pgrid/ xefm1, yefm1, zefm1, xm, ym, zm
        common /pgrid/ xefp1, yefp1, zefp1, xef01, yef01, zef01
        common /pgrid/ ni, nj, nk, ni1, nj1, nk1
+       common /pgrid/ cx1, cxn, cy1, cyn, cz1, czn
 
 c   Common block for local ghost parameters
        common /pghost/ gxsf, gysf, gzsf, gxef, gyef, gzef

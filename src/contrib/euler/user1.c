@@ -40,19 +40,19 @@ Runtime options include:\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
     -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
     -sub_pc_ilu_in_place     : When using matrix-free KSP with ILU(0) for subblocks, do so in-place\n\
-  -post                      : Print post-processing info\n\
-  -cfl_advance               : use advancing CFL number\n\
-  -cfl_max_incr              : maximum ratio for advancing CFL number at any given step\n\
-  -cfl_max_decr              : maximum ratio for decreasing CFL number at any given step\n\
-  -global_timestep           : use global timestepping instead of the default local version\n\
-  -cfl_snes_it <it>          : number of SNES iterations at each CFL step\n\
-  -f_red <fraction>          : reduce the function norm by this fraction before advancing CFL\n\
+  -post                      : Compute post-processing data\n\
+  -cfl_advance               : Use advancing CFL number\n\
+  -cfl_max_incr              : Maximum ratio for advancing CFL number at any given step\n\
+  -cfl_max_decr              : Maximum ratio for decreasing CFL number at any given step\n\
+  -global_timestep           : Use global timestepping instead of the default local version\n\
+  -cfl_snes_it <it>          : Number of SNES iterations at each CFL step\n\
+  -f_red <fraction>          : Reduce the function norm by this fraction before advancing CFL\n\
   -use_jratio                : Use ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
   -global_grid               : Retain global grid instead of just local part\n\
-  -no_output                 : do not print any output during SNES solve (intended for use\n\
+  -no_output                 : Do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
 
 static char help2[] = "Options for Julianne solver:\n\
@@ -103,6 +103,7 @@ int main(int argc,char **argv)
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
   int      len, its, ierr, flg, stage, pprint;
+  char     filename[64], outstring[64];
 
   /* Set Defaults */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
@@ -171,6 +172,7 @@ int main(int argc,char **argv)
   ierr = PLogEventRegister(&(app->event_pack),"PackWork        ","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&(app->event_unpack),"UnpackWork      ","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&(app->event_localf),"Local fct eval  ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&app->event_monitor,"Monitoring      ","Red:"); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Read the mesh
@@ -262,7 +264,7 @@ int main(int argc,char **argv)
   ierr = SLESGetKSP(sles,&app->ksp); CHKERRA(ierr);
   ierr = KSPSetType(app->ksp,KSPGMRES); CHKERRA(ierr);
   ierr = KSPSetTolerances(app->ksp,app->ksp_rtol_max,PETSC_DEFAULT,
-         PETSC_DEFAULT,app->ksp_max_it); CHKERRA(ierr);
+         PETSC_DEFAULT,app->ksp_max_it); CHKERRA(ierr); 
   ierr = KSPGMRESSetRestart(app->ksp,app->ksp_max_it+1); CHKERRA(ierr);
   ierr = KSPGMRESSetOrthogonalization(app->ksp,
          KSPGMRESUnmodifiedGramSchmidtOrthogonalization); CHKERRA(ierr); 
@@ -271,9 +273,9 @@ int main(int argc,char **argv)
 
   /* Use the Eisenstat-Walker method to set KSP convergence tolerances.  Set the
      initial and maximum relative tolerance for the linear solvers to ksp_rtol_max */
-  ierr = SNES_KSP_SetConvergenceTestEW(snes); CHKERRA(ierr);
+  /* ierr = SNES_KSP_SetConvergenceTestEW(snes); CHKERRA(ierr);
   ierr = SNES_KSP_SetParametersEW(snes,PETSC_DEFAULT,app->ksp_rtol_max,app->ksp_rtol_max,
-         PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
+         PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr); */
 
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -291,15 +293,18 @@ int main(int argc,char **argv)
          PETSC_NULL); CHKERRA(ierr);
   len = maxsnes + 1;
 
-  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
-  PetscMemzero(app->farray,6*len*sizeof(Scalar));
+  app->farray = (Scalar *)PetscMalloc(8*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,8*len*sizeof(Scalar));
   app->favg     = app->farray   + len;
   app->flog     = app->favg     + len;
   app->ftime    = app->flog     + len;
   app->fcfl     = app->ftime    + len;
   app->lin_rtol = app->fcfl     + len;
-  app->lin_its  = (int *)PetscMalloc(len*sizeof(int)); CHKPTRQ(app->lin_its);
-  PetscMemzero(app->lin_its,len*sizeof(int));
+  app->c_lift   = app->lin_rtol + len;
+  app->c_drag   = app->c_lift   + len;
+  app->lin_its  = (int *)PetscMalloc(2*len*sizeof(int)); CHKPTRQ(app->lin_its);
+  app->nsup     = app->lin_its  + len;
+  PetscMemzero(app->lin_its,2*len*sizeof(int));
   ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
   ierr = SNESSetConvergenceTest(snes,ConvergenceTestEuler,app); CHKERRA(ierr);
 
@@ -335,13 +340,29 @@ int main(int argc,char **argv)
      printing only after the completion of SNESSolve(), so that the timings
      are not distorted by output during the solve. */
   if (app->no_output) {
-    int i;
+    int i, overlap;
     if (app->rank == 0) {
-      app->fp = fopen("fnorm.m","w"); 
-      fprintf(app->fp,"zsnes = [\n");
+      overlap = 0;
+      ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
+      if (app->problem == 1) {
+        sprintf(filename,"f_m6%s_asm%d_p%d.m","c",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","c",overlap,app->size);
+      }
+      else if (app->problem == 2) {
+        sprintf(filename,"f_m6%s_asm%d_p%d.m","f",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","f",overlap,app->size);
+      }
+      else if (app->problem == 3) {
+        sprintf(filename,"f_m6%s_asm%d_p%d.m","n",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","n",overlap,app->size);
+      }
+      app->fp = fopen(filename,"w"); 
+      fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
+      fprintf(app->fp,outstring);
       for (i=0; i<=its; i++)
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
-           i,app->farray[i],app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]);
+        fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
+                i,app->farray[i],app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],
+                app->lin_rtol[i],app->c_lift[i],app->c_drag[i],app->nsup[i]);
     }
   }
   if (app->rank == 0) {
@@ -376,6 +397,7 @@ int main(int argc,char **argv)
      Free data structures 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   
+  /* problem with destroy on Origin2000 */
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = UserDestroyEuler(app); CHKERRA(ierr);
 
@@ -414,18 +436,19 @@ int main(int argc,char **argv)
  */
 int UserSetJacobian(SNES snes,Euler *app)
 {
-  MatType  mtype = MATSEQAIJ;      /* matrix format */
-  MPI_Comm comm = app->comm;       /* comunicator */
-  Mat      J;                      /* Jacobian matrix context */
-  int      ldim = app->ldim;	   /* local dimension of vectors and matrix */
-  int      gdim = app->gdim;	   /* global dimension of vectors and matrix */
-  int      nc = app->nc;	   /* DoF per node */
-  int      nc_block;               /* size of matrix blocks (nc, except when
-                                      experimenting with block size = 1) */
-  int      istart, iend;           /* range of locally owned matrix rows */
-  int      *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
-  int      wkdim;                  /* dimension of nnz_d and nnz_o */
-  int      ierr, flg;
+  MatType    mtype = MATSEQAIJ;      /* matrix format */
+  MPI_Comm   comm = app->comm;       /* comunicator */
+  Mat        J;                      /* Jacobian matrix context */
+  int        ldim = app->ldim;       /* local dimension of vectors and matrix */
+  int        gdim = app->gdim;	     /* global dimension of vectors and matrix */
+  int        nc = app->nc;	     /* DoF per node */
+  int        nc_block;               /* size of matrix blocks (nc, except when
+                                        experimenting with block size = 1) */
+  int        istart, iend;           /* range of locally owned matrix rows */
+  int        *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
+  int        wkdim;                  /* dimension of nnz_d and nnz_o */
+  PetscTruth mset; 
+  int        ierr, flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      First, compute amount of space for matrix preallocation, to enable
@@ -434,8 +457,8 @@ int UserSetJacobian(SNES snes,Euler *app)
 
   /* Determine matrix format, where we choose block AIJ as the default if
      no runtime option is specified */
-  ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&flg); CHKERRQ(ierr);
-  if (!flg) {
+  ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&mset); CHKERRQ(ierr);
+  if (mset == PETSC_TRUE) {
     if (app->size == 1) mtype = MATSEQBAIJ;
     else                mtype = MATMPIBAIJ;
   }
@@ -560,9 +583,6 @@ int UserDestroyEuler(Euler *app)
   PetscFree(app->label);
   if (app->is1) PetscFree(app->is1);
 
-  /*
-  This section of code causes seg fault for BOPT=O on Origin2000
- 
   if (app->bctype != IMPLICIT || app->dump_vrml || app->dump_general || app->post_process) {
     ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
     ierr = DADestroy(app->da1); CHKERRQ(ierr);
@@ -574,10 +594,9 @@ int UserDestroyEuler(Euler *app)
     PetscFree(app->fbcri1); PetscFree(app->fbcrj1); PetscFree(app->fbcrk1);
     if (!app->mat_assemble_direct) PetscFree(app->b1bc);
   }
-  */
+  ierr = VecDestroy(app->vcoord); CHKERRQ(ierr);
 
   /* Free misc work space for Fortran arrays */
-  /*
   if (app->farray)  PetscFree(app->farray);
   if (app->dt)      PetscFree(app->dt);
   if (app->diag)    PetscFree(app->diag);
@@ -587,10 +606,6 @@ int UserDestroyEuler(Euler *app)
   if (app->sp)      PetscFree(app->sp);
   if (app->sadai)   PetscFree(app->sadai);
   if (app->bl)      PetscFree(app->bl);
-  if (app->xc)      PetscFree(app->xc);
-
-  */
-
   PetscFree(app);
   return 0;
 }
@@ -650,7 +665,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
      this case the current preconditioner should be retained. */
   if (iter > 1) {
     if (app->use_jratio) {
-      if (iter != 10) {  /* force Jacobian eval at iteration 10, since BCs change there */
+      if (iter != app->bcswitch) {  /* force Jacobian eval at iteration bcswitch, since BCs change there */
         if (app->fnorm_last_jac/app->fnorm_last < app->jratio) {
           if (iter - app->iter_last_jac < app->jfreq) {
             *flag = SAME_PRECONDITIONER;
@@ -660,14 +675,14 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       }
     } else {
       /* Form Jacobian every few nonlinear iterations (as set by -jfreq option) */
-      if (iter%app->jfreq) {
+      if ((iter-app->bcswitch)%app->jfreq) {
         *flag = SAME_PRECONDITIONER;
         return 0;
       }
     }
   }
 
-  if (iter == 10) {
+  if (iter == app->bcswitch) {
     ierr = OptionsHasName(PETSC_NULL,"-switch_matrix_free",&flg); CHKERRQ(ierr);
     if (flg) {
       /* Use matrix-free Jacobian to define Newton system; use finite difference
@@ -904,8 +919,8 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
    Notes for Euler code:
   -----------------------
    Correspondence between SNES vectors and Julianne work arrays is: 
-      X    : (dr,dru,drv,drw,de) in Julianne code
-      F(X) : (r,ru,rv,rw,e) in Julianne code
+      F(X) : (dr,dru,drv,drw,de) in Julianne code
+      X    : (r,ru,rv,rw,e) in Julianne code
    We pack/unpack these work arrays with the routines PackWork()
    and UnpackWork().
 
@@ -1136,8 +1151,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
-      app->cfl_snes_it    = 2;
-      app->ksp_max_it     = 25;   /* max number of KSP iterations */
+      app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 10;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
       break;
     case 2:
@@ -1146,8 +1161,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.52e-5;
-      app->cfl_snes_it    = 4;
-      app->ksp_max_it     = 50; 
+      app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 20; 
       app->f_reduction    = 0.3;
       break;
     case 3:
@@ -1156,9 +1171,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.42e-5;
-      app->cfl_snes_it    = 4;
-      app->ksp_max_it     = 100;
-      app->f_reduction    = 0.1; 
+      app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 40;
+      app->f_reduction    = 0.3; 
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1185,7 +1200,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
-  app->ksp_rtol_max          = 1.0e-2;   /* maximum KSP relative convergence tolerance */
+  app->ksp_rtol_max          = 1.0e-6;   /* maximum KSP relative convergence tolerance */
   app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
   app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
   app->no_output             = 0;        /* flag - by default print some output as program runs */
@@ -1197,7 +1212,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->lin_its               = 0;
   app->last_its              = 0;
   app->post_process          = 0;
-  app->pvar                  = 0;
   app->global_grid           = 0;
 
   /* control of forming new preconditioner matrices */
@@ -1231,16 +1245,18 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-f_red",&app->f_reduction,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-eps_jac",&app->eps_jac,&flg); CHKERRQ(ierr);
   app->eps_jac_inv = 1.0/app->eps_jac;
+  app->bcswitch = 10;
+  ierr = OptionsGetInt(PETSC_NULL,"-bc_imperm",&app->bcswitch,&flg); CHKERRQ(ierr);
+  if (app->bcswitch > 10) app->bcswitch = 10;
   ierr = OptionsGetDouble(PETSC_NULL,"-stagnate_ratio",&app->fstagnate_ratio,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-angle",&app->angle,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&app->no_output); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-post",&app->post_process); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-pvar",&app->pvar); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-global_grid",&app->global_grid); CHKERRA(ierr);
-  if (app->pvar || app->post_process) {
-    app->global_grid = 1;
-  }
+  /* temporarily MUST use global grid! */
+  app->global_grid = 1;
+  /*  if (app->post_process) app->global_grid = 1; */
   if (app->global_grid) PetscPrintf(app->comm,"Using global grid (needed for post processing only)\n");
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
@@ -1460,7 +1476,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->gxm, &app->gym, &app->gzm,
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
-            &nc, &app->global_grid); CHKERRQ(ierr);
+            &nc, &app->global_grid, &app->bcswitch); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
@@ -1596,24 +1612,19 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             * (app->zef01 - app->gzsf1+1);
   llenb = 3*llen*sizeof(Scalar);
   app->f1 = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->f1);
+  PetscMemzero(app->f1,llenb);
   app->g1 = app->f1 + llen;
   app->h1 = app->g1 + llen;
 
   llen = nc * app->ni;
   llenb = 6*llen*sizeof(Scalar);
   app->sp  = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->sp);
+  PetscMemzero(app->sp,llenb);
   app->sp1 = app->sp  + llen;
   app->sp2 = app->sp1 + llen;
   app->sm  = app->sp2 + llen;
   app->sm1 = app->sm  + llen;
   app->sm2 = app->sm1 + llen;
-
-  /* Mesh coordinates */
-  llen  = app->ni * app->nj * app->nk;
-  llenb = llen * 3 * sizeof(Scalar);
-  app->xc = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->xc);
-  app->yc = app->xc + llen;
-  app->zc = app->yc + llen;
 
   /* Misc Fortran work space */
   llenb = 2*(app->size+1)*sizeof(Scalar);

@@ -33,6 +33,7 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
         if (rank .eq. 0) write(6,*) 'bc_uni: uniprocessor only!'
         stop
       endif
+      bcswitch = 10
 
 C  Note that we MUST set i=1 boundary first, since the fields at points
 C  (i=1,j=2,k=<anything>) are used to set the (i=49,j=1,k=<anything>) boundary.
@@ -67,7 +68,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
       DO 2 I=2,NI
       IF (K.GT.KTIP) GO TO 4
       IF (I.LE.ITL.OR.I.GT.ITU) GO TO 4
-      IF (NCYC.GT.10) GO TO 15
+      IF (NCYC.GT.bcswitch) GO TO 15
       ADA=SADAJ(I,1,K)**2
       QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
      *   +RW(I,2,K)*AJZ(I,1,K)

@@ -46,13 +46,13 @@ typedef struct {
     int    no_output;            /* flag: 1: no runtime output (use when timing code) */
     int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
     int    post_process;         /* flag: 1: do post-processing */
-    int    pvar;                 /* flag: 1: compute lift/drag data */
     int    global_grid;          /* flag: 1: store global grid instead of just local part */
     int    iter;                 /* nonlinear iteration number */
     int    sles_tot;             /* total linear solve iterations */
     Scalar fstagnate_ratio;      /* stagnation detection */
     Scalar ksp_rtol_max;         /* maximum KSP relative tolerance */
     int    ksp_max_it;           /* maximum KSP iterations per linear solve */
+    int    bcswitch;             /* iteration for activating BC switch for impermeability */
 
   /* ------------- Control of computing Jacobian (preconditioner matrix) ------------ */
 
@@ -160,9 +160,10 @@ typedef struct {
     Scalar *favg;                           /* array of average fnorm for the past 10 iterations */
     FILE   *fp;                             /* file for stashing convergence info */
     Scalar *flog, *ftime, *fcfl, *lin_rtol; /* the convergence info */
-    int    *lin_its, last_its;
+    Scalar *c_lift, *c_drag;
+    int    *lin_its, *nsup, last_its;
     int    event_pack, event_unpack;        /* events for performance monitoring */
-    int    event_localf;
+    int    event_localf, event_monitor;
 
 
   /* ------------------- Fortran work arrays ------------------- */
@@ -179,6 +180,7 @@ typedef struct {
     Scalar *diag;                            /* diagonal block */
     int    diag_len;                         /* length of work array to store diagonal block */
     Scalar *b1bc, *b2bc, *b3bc, *b2bc_tmp;   /* matrix elements for implicit bcs */
+    Vec    vcoord;
     Scalar *xc, *yc, *zc;                    /* mesh geometry */
     Scalar *work_p;                          /* misc work space for Fortran */
     Scalar *f1, *g1, *h1;
@@ -382,7 +384,7 @@ extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);

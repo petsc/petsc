@@ -426,7 +426,7 @@ c        DO 2 K=2,NK
 c        DO 2 I=2,NI
         IF (K.GT.KTIP) GO TO 4
         IF (I.LE.ITL.OR.I.GT.ITU) GO TO 4
-        IF (NCYC.GT.10) GO TO 15
+        IF (NCYC.GE.bcswitch) GO TO 15
         ADA=SADAJ(I,1,K)**2
         QDA=RU(I,2,K)*AJX(I,1,K)+ RV(I,2,K)*AJY(I,1,K)
      &     +RW(I,2,K)*AJZ(I,1,K)
