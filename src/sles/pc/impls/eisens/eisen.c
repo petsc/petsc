@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.7 1995/03/21 23:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.8 1995/03/25 01:26:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -50,6 +50,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   KSPGetRhs(ksp,&b);
   if (!jac->b) {
     ierr = VecCreate(b,&jac->b); CHKERR(ierr);
+    PLogObjectParent(pc,jac->b);
   }
   
   /* save true b, other option is to swap pointers */
