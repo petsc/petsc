@@ -137,14 +137,15 @@ class SourceDB (dict, base.Base):
       self[k] = d[k]
     return
 
-  def getChecksum(source):
-    '''Return the md5 checksum for a given file'''
+  def getChecksum(source, chunkSize = 1024*1024):
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
     if isinstance(source, file):
       f = source
     else:
       f = file(source)
     m = md5.new()
-    size = 1024*1024
+    size = chunkSize
     buf  = f.read(size)
     while buf:
       m.update(buf)
