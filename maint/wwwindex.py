@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.9 1999/01/27 18:57:43 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.10 1999/02/01 18:04:59 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -42,12 +42,14 @@ def printindex(outfilename,headfilename,titles,tables):
       fd.write('<TABLE>')
       for i in range(len(titles)):
             title = titles[i]
-            # If no functions in 'None' category, then don't print
-            # this category.
             if len(tables[i]) == 0:
+                  # If no functions in 'None' category, then don't print
+                  # this category.
                   if title == 'none':
                         continue
                   else:
+                        # If no functions in any other category, then print
+                        # the header saying no functions in this cagetory.
                         fd.write('</TR><TD>')
                         fd.write('<B>' + 'No ' + title +' routines' + '</B>')
                         fd.write('</TD></TR>')
