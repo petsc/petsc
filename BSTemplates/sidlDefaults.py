@@ -1,5 +1,6 @@
 import bs
 import fileset
+import transform
 
 import os
 import re
@@ -168,3 +169,27 @@ class UsingSIDL:
       return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
     else:
       return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.so')])
+
+class TagSIDL (transform.GenericTag):
+  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+
+class TagAllSIDL (transform.GenericTag):
+  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+    self.taggedFiles = fileset.FileSet()
+
+  def fileExecute(self, source):
+    (base, ext) = os.path.splitext(source)
+    if ext in self.ext:
+      self.taggedFiles.append(source)
+    transform.GenericTag.fileExecute(self, source)
+
+  def execute(self):
+    self.genericExecute(self.sources)
+    if len(self.changed):
+      ## This is bad, should have a clear()
+      self.changed.data   = []
+      self.changed.extend(self.taggedFiles)
+      self.unchanged.data = []
+    return self.products

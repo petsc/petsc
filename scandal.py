@@ -3,10 +3,6 @@ import transform
 
 import os
 
-class TagSIDL (transform.GenericTag):
-  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
-
 class CompileSIDL (compile.Process):
   def __init__(self, generatedSources, sources, compiler, compilerFlags, isRepository):
     if isRepository:
