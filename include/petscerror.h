@@ -296,11 +296,11 @@ EXTERN int PetscSetFPTrap(PetscFPTrap);
 #define PETSCSTACKSIZE 15
 
 typedef struct  {
-  char *function[PETSCSTACKSIZE];
-  char *file[PETSCSTACKSIZE];
-  char *directory[PETSCSTACKSIZE];
-  int  line[PETSCSTACKSIZE];
-  int  currentsize;
+  const char *function[PETSCSTACKSIZE];
+  const char *file[PETSCSTACKSIZE];
+  const char *directory[PETSCSTACKSIZE];
+        int  line[PETSCSTACKSIZE];
+        int currentsize;
 } PetscStack;
 
 extern PetscStack *petscstack;

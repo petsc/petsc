@@ -556,7 +556,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
 
   Level: intermediate
 @*/
-int VecESISetType(Vec V,char *name)
+int VecESISetType(Vec V,const char *name)
 {
   int                                ierr;
   ::esi::Vector<double,int>          *ve;

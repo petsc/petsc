@@ -96,7 +96,7 @@ int PetscObjectView(PetscObject obj,PetscViewer viewer)
    Concepts: object type^comparing
 
 @*/
-int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
+int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
 {
   int ierr;
 

@@ -49,10 +49,10 @@ EXTERN int PFApply(PF,int,PetscScalar*,PetscScalar*);
 EXTERN int PFApplyVec(PF,Vec,Vec);
 
 EXTERN int        PFRegisterDestroy(void);
-EXTERN int        PFRegisterAll(char*);
+EXTERN int        PFRegisterAll(const char[]);
 extern PetscTruth PFRegisterAllCalled;
 
-EXTERN int PFRegister(char*,char*,char*,int(*)(PF,void*));
+EXTERN int PFRegister(const char[],const char[],const char[],int(*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,0)
 #else

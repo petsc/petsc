@@ -32,7 +32,7 @@ PetscTruth PetscMapSerializeRegisterAllCalled = PETSC_FALSE;
 .keywords: map, set, type
 .seealso PetscMapGetType(), PetscMapCreate()
 @*/
-int PetscMapSetType(PetscMap map, PetscMapType method)
+int PetscMapSetType(PetscMap map, const PetscMapType method)
 {
   int      (*r)(PetscMap);
   PetscTruth match;

@@ -26,7 +26,7 @@
 .seealso: PetscDrawStringVertical()
 
 @*/
-int PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,char *text)
+int PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   int        ierr ;
   PetscTruth isnull;

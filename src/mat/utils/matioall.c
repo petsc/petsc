@@ -21,7 +21,7 @@ EXTERN_C_END
 .seealso: MatRegister(), MatConvert()
 
 @*/
-int MatConvertRegisterAll(char *path)
+int MatConvertRegisterAll(const char path[])
 {
   int ierr;
 

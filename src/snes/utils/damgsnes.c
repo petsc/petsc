@@ -380,7 +380,6 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   MG          *mg;
   PC          pc;
   KSP         ksp;
-  KSP         ksp;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,dmmg[level]->r);CHKERRQ(ierr);

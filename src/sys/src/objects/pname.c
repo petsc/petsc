@@ -100,7 +100,7 @@ int PetscObjectPublish(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectChangeTypeName"
-int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
+int PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {
   int ierr;
 

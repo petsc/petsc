@@ -77,7 +77,7 @@ EXTERN PetscTruth MatRegisterAllCalled;
 
 .seealso:  MatRegisterDestroy()
 @*/
-int MatRegisterAll(char *path)
+int MatRegisterAll(const char path[])
 {
   int ierr;
 

@@ -34,7 +34,7 @@ EXTERN_C_END
 
 .seealso: MatColoringRegisterDynamic(), MatColoringRegisterDestroy()
 @*/
-int MatColoringRegisterAll(char *path)
+int MatColoringRegisterAll(const char path[])
 {
   int         ierr;
 

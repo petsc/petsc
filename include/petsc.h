@@ -477,12 +477,12 @@ EXTERN int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 EXTERN int PetscObjectPublish(PetscObject);
-EXTERN int PetscObjectChangeTypeName(PetscObject,char *);
+EXTERN int PetscObjectChangeTypeName(PetscObject,const char[]);
 EXTERN int PetscObjectChangeSerializeName(PetscObject,char *);
 EXTERN int PetscObjectRegisterDestroy(PetscObject);
 EXTERN int PetscObjectRegisterDestroyAll(void);
 EXTERN int PetscObjectName(PetscObject);
-EXTERN int PetscTypeCompare(PetscObject,char*,PetscTruth*);
+EXTERN int PetscTypeCompare(PetscObject,const char[],PetscTruth*);
 EXTERN int PetscSerializeCompare(PetscObject,char*,PetscTruth*);
 
 /*

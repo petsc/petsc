@@ -154,7 +154,7 @@ extern PetscFList CCAList;
    Level: intermediate
 
 @*/
-int PCESISetType(PC V,char *name)
+int PCESISetType(PC V,const char *name)
 {
   int                                        ierr;
   ::esi::Preconditioner<double,int>          *ve;

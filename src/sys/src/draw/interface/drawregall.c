@@ -22,7 +22,7 @@ EXTERN_C_END
 
 .seealso:  PetscDrawRegisterDestroy()
 @*/
-int PetscDrawRegisterAll(char *path)
+int PetscDrawRegisterAll(const char *path)
 {
   int ierr;
 

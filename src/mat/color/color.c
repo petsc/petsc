@@ -222,7 +222,7 @@ PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
-int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))
+int MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatColoringType,ISColoring*))
 {
   int  ierr;
   char fullname[256];

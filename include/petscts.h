@@ -127,7 +127,7 @@ EXTERN int TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
 extern PetscFList TSList;
 extern PetscTruth TSRegisterAllCalled;
 EXTERN int TSGetType(TS,TSType*);
-EXTERN int TSSetType(TS,TSType);
+EXTERN int TSSetType(TS,const TSType);
 EXTERN int TSRegister(const char[], const char[], const char[], int (*)(TS));
 EXTERN int TSRegisterAll(const char[]);
 EXTERN int TSRegisterDestroy(void);

@@ -29,7 +29,7 @@ PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegisterDynamic)
 @*/
-int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
+int MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
 {
   int          ierr,(*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;

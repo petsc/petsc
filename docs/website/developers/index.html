@@ -58,11 +58,8 @@
       <td width="549" valign="top"><p align="left">&nbsp;These pages are for
         people interested in developing and contributing to the PETSc
         libraries. It is intended only  for people who are experienced with
-        building, using and debugging PETSc.  We <b>cannot provide
-        support</b> (debugging, building, etc) for people using the
-        development copy of PETSc, but we <b>will</b> provide support for the
-        automatic configuration (see below). If you cannot use a debugger and
-        EMACS etags then please don't access these pages.<br>
+        building, using and debugging PETSc.   If you cannot use makefiles, a
+        debugger and EMACS etags then please don't access these pages.<br>
         </p>
 
         <h2>Building Fortran Interfaces::<br>
@@ -81,17 +78,15 @@
         PETSc:</span></big><br>
         <br>
         To obtain the development version of PETSc,  download and install
-        <b>BitKeeper</b> from <a href="http://bitkeeper.com">
-        bitkeeper.com</a>. This is a free download, but registration might be
-         required. This is a version control software similar to <a
-        href="http://www.cvshome.org">CVS</a>. Using BitKeeper, invoke the 
-        following command to obtain PETSc. (This creates a local directory
-        with the name petsc-dev)
+        <b>BitKeeper</b> (free) from <a href="http://bitkeeper.com">
+        bitkeeper.com</a>. This is a free download. Using BitKeeper, invoke
+        the following command to obtain PETSc. (This creates a local
+        directory with the name petsc-dev)
         <ul>
           <li><font color="#800000">bk&nbsp; clone&nbsp;
             http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp;
           petsc-dev</font></li>
-          <li><font color="#800000">bk -r co -q</font></li>
+          <li><font color="#800000">bk  -r co -q</font></li>
         </ul>
         For additional help on using BitKeeper you can use
         <ul>
@@ -138,13 +133,6 @@
         see a <span style="color: rgb(51, 102, 255);">'Nothing to
         pull'</span> message)
 
-        <p align="left">&nbsp; However we         recommend creating a new
-        repository (using bk clone) - this way, you         still have the
-        old clone/libraries for use in case the latest snapshot         is
-        buggy. It is always possible that the current development snapshot is
-        in an unuseable state (with errors when building libraries or
-        examples randomly crashing)</p>
-
         <p align="left" style="font-weight: bold;"><big>Building
         Documentation:</big></p>
 
@@ -159,7 +147,7 @@
           </li>
           <li><p align="left"><font size="4"><a
             href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
-            A a text processing package required to generate the PETSc
+            A text processing package required to generate the PETSc
             documentation.</p>
           </li>
           <li><p align="left"><a href="http://www.tug.org/teTeX/"><font

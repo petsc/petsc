@@ -16,8 +16,8 @@ struct _PetscDrawOps {
   int (*linegetwidth)(PetscDraw,PetscReal*);
   int (*point)(PetscDraw,PetscReal,PetscReal,int);
   int (*pointsetsize)(PetscDraw,PetscReal);
-  int (*string)(PetscDraw,PetscReal,PetscReal,int,char*);
-  int (*stringvertical)(PetscDraw,PetscReal,PetscReal,int,char*);
+  int (*string)(PetscDraw,PetscReal,PetscReal,int,const char[]);
+  int (*stringvertical)(PetscDraw,PetscReal,PetscReal,int,const char[]);
   int (*stringsetsize)(PetscDraw,PetscReal,PetscReal);
   int (*stringgetsize)(PetscDraw,PetscReal*,PetscReal*);
   int (*setviewport)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);

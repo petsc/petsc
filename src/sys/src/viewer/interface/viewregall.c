@@ -27,7 +27,7 @@ EXTERN_C_END
 
 .seealso:  PetscViewerRegisterDestroy()
 @*/
-int PetscViewerRegisterAll(char *path)
+int PetscViewerRegisterAll(const char *path)
 {
   int ierr;
 

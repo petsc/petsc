@@ -127,7 +127,6 @@ int PCISSetUp(PC pc)
   */
   {
     PC  pc_ctx;
-    KSP ksp_ctx;
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);

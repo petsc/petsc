@@ -96,8 +96,7 @@ static int PCSetUp_ASM(PC pc)
   int      start,start_val,end_val,size,sz,bs;
   MatReuse scall = MAT_REUSE_MATRIX;
   IS       isl;
-  KSP     ksp;
-  KSP      subksp;
+  KSP      ksp;
   PC       subpc;
   char     *prefix,*pprefix;
 

@@ -89,7 +89,7 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
+EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
 EXTERN int PetscHeaderDestroy_Private(PetscObject);
 
 /*

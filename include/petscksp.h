@@ -55,7 +55,7 @@ extern int KSP_GMRESOrthogonalization;
 extern int KSP_SetUp, KSP_Solve;
 
 EXTERN int KSPCreate(MPI_Comm,KSP *);
-EXTERN int KSPSetType(KSP,KSPType);
+EXTERN int KSPSetType(KSP,const KSPType);
 EXTERN int KSPSetUp(KSP);
 EXTERN int KSPSetUpOnBlocks(KSP);
 EXTERN int KSPSolve(KSP);
@@ -144,6 +144,10 @@ EXTERN int KSPGetMonitorContext(KSP,void **);
 EXTERN int KSPGetResidualHistory(KSP,PetscReal*[],int *);
 EXTERN int KSPSetResidualHistory(KSP,PetscReal[],int,PetscTruth);
 
+/* not sure where to put this */
+EXTERN int PCKSPGetKSP(PC,KSP*);
+EXTERN int PCBJacobiGetSubKSP(PC,int*,int*,KSP*[]);
+EXTERN int PCASMGetSubKSP(PC,int*,int*,KSP*[]);
 
 EXTERN int KSPBuildSolution(KSP,Vec,Vec *);
 EXTERN int KSPBuildResidual(KSP,Vec,Vec,Vec *);

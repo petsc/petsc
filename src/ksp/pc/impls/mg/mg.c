@@ -679,7 +679,6 @@ int MGSetNumberSmoothDown(PC pc,int n)
 { 
   MG  *mg;
   int i,levels,ierr;
-  KSP ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

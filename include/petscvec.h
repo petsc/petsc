@@ -53,7 +53,7 @@ EXTERN int PetscMapGetGlobalRange(PetscMap,int *[]);
 /* Dynamic creation and loading functions */
 extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
-EXTERN int PetscMapSetType(PetscMap, PetscMapType);
+EXTERN int PetscMapSetType(PetscMap, const PetscMapType);
 EXTERN int PetscMapGetType(PetscMap, PetscMapType *);
 EXTERN int PetscMapRegister(const char[],const char[],const char[],int(*)(PetscMap));
 EXTERN int PetscMapRegisterAll(const char []);
@@ -251,7 +251,7 @@ EXTERN int VecSetValuesBlocked(Vec,int,const int[],const PetscScalar[],InsertMod
 /* Dynamic creation and loading functions */
 extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
-EXTERN int VecSetType(Vec, VecType);
+EXTERN int VecSetType(Vec, const VecType);
 EXTERN int VecGetType(Vec, VecType *);
 EXTERN int VecRegister(const char[],const char[],const char[],int(*)(Vec));
 EXTERN int VecRegisterAll(const char []);
@@ -457,7 +457,7 @@ EXTERN int VecConvertMPIToSeqAll(Vec vin,Vec *vout);
 EXTERN int VecConvertMPIToMPIZero(Vec vin,Vec *vout);
 
 
-EXTERN int VecESISetType(Vec,char*);
+EXTERN int VecESISetType(Vec,const char*);
 EXTERN int VecESISetFromOptions(Vec);
 
 EXTERN int PetscViewerMathematicaGetVector(PetscViewer, Vec);

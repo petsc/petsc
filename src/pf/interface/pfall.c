@@ -28,7 +28,7 @@ EXTERN_C_END
 
 .seealso: PFRegisterDynamic(), PFRegisterDestroy()
 @*/
-int PFRegisterAll(char *path)
+int PFRegisterAll(const char path[])
 {
   int ierr;
 

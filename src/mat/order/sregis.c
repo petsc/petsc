@@ -36,7 +36,7 @@ EXTERN_C_END
 
 .seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterDestroy()
 @*/
-int MatOrderingRegisterAll(char *path)
+int MatOrderingRegisterAll(const char path[])
 {
   int           ierr;
 

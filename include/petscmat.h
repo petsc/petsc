@@ -92,11 +92,11 @@ extern int MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 EXTERN int MatInitializePackage(char *);
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
-EXTERN int MatSetType(Mat,MatType);
+EXTERN int MatSetType(Mat,const MatType);
 EXTERN int MatSetFromOptions(Mat);
 EXTERN int MatSetUpPreallocation(Mat);
-EXTERN int MatRegisterAll(char*);
-EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
+EXTERN int MatRegisterAll(const char[]);
+EXTERN int MatRegister(const char[],const char[],const char[],int(*)(Mat));
 EXTERN int MatSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Mat *, PetscViewer, PetscTruth));
 
 /*MC
@@ -317,13 +317,13 @@ EXTERN int MatMultTransposeConstrained(Mat,Vec,Vec);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN int MatConvertRegister(char*,char*,char*,int (*)(Mat,MatType,Mat*));
+EXTERN int MatConvertRegister(const char[],const char[],const char[],int (*)(Mat,MatType,Mat*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,0)
 #else
 #define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,d)
 #endif
-EXTERN int        MatConvertRegisterAll(char*);
+EXTERN int        MatConvertRegisterAll(const char[]);
 EXTERN int        MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
 extern PetscFList MatConvertList;
@@ -778,7 +778,7 @@ typedef char* MatOrderingType;
 #define MATORDERING_REVERSE   "reverse"
 
 EXTERN int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
-EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
+EXTERN int MatOrderingRegister(const char[],const char[],const char[],int(*)(Mat,MatOrderingType,IS*,IS*));
 
 /*MC
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
@@ -825,7 +825,7 @@ M*/
 #endif
 
 EXTERN int        MatOrderingRegisterDestroy(void);
-EXTERN int        MatOrderingRegisterAll(char*);
+EXTERN int        MatOrderingRegisterAll(const char[]);
 extern PetscTruth MatOrderingRegisterAllCalled;
 extern PetscFList MatOrderingList;
 
@@ -919,7 +919,7 @@ typedef char* MatColoringType;
 #define MATCOLORING_ID      "id"
 
 EXTERN int MatGetColoring(Mat,MatColoringType,ISColoring*);
-EXTERN int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
+EXTERN int MatColoringRegister(const char[],const char[],const char[],int(*)(Mat,MatColoringType,ISColoring *));
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
@@ -964,7 +964,7 @@ M*/
 #define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
 #endif
 
-EXTERN int        MatColoringRegisterAll(char *);
+EXTERN int        MatColoringRegisterAll(const char[]);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
 EXTERN int        MatColoringPatch(Mat,int,int,const ISColoringValue[],ISColoring*);
@@ -1024,7 +1024,7 @@ typedef char* MatPartitioningType;
 #define MAT_PARTITIONING_PARMETIS "parmetis"
 
 EXTERN int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-EXTERN int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
+EXTERN int MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
 EXTERN int MatPartitioningSetNParts(MatPartitioning,int);
 EXTERN int MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN int MatPartitioningSetVertexWeights(MatPartitioning,const int[]);
@@ -1032,7 +1032,7 @@ EXTERN int MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []
 EXTERN int MatPartitioningApply(MatPartitioning,IS*);
 EXTERN int MatPartitioningDestroy(MatPartitioning);
 
-EXTERN int MatPartitioningRegister(char*,char*,char*,int(*)(MatPartitioning));
+EXTERN int MatPartitioningRegister(const char[],const char[],const char[],int(*)(MatPartitioning));
 
 /*MC
    MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the 
@@ -1077,7 +1077,7 @@ M*/
 #define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,d)
 #endif
 
-EXTERN int        MatPartitioningRegisterAll(char *);
+EXTERN int        MatPartitioningRegisterAll(const char[]);
 extern PetscTruth MatPartitioningRegisterAllCalled;
 EXTERN int        MatPartitioningRegisterDestroy(void);
 
@@ -1228,7 +1228,7 @@ EXTERN int MatMAIJGetAIJ(Mat,Mat*);
 
 EXTERN int MatComputeExplicitOperator(Mat,Mat*);
 
-EXTERN int MatESISetType(Mat,char*);
+EXTERN int MatESISetType(Mat,const char*);
 EXTERN int MatESISetFromOptions(Mat);
 
 EXTERN int MatDiagonalScaleLocal(Mat,Vec);

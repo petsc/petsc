@@ -115,7 +115,7 @@ static int PetscDrawTriangle_X(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawString_X" 
-static int PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
+static int PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   int          xx,yy,ierr,len;
   PetscDraw_X  *XiWin = (PetscDraw_X*)draw->data;
@@ -175,7 +175,7 @@ int PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringVertical_X" 
-int PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
+int PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   int         xx,yy,n,i,ierr;
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;

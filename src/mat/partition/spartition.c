@@ -33,7 +33,7 @@ EXTERN_C_END
 
 .seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterDestroy()
 @*/
-int MatPartitioningRegisterAll(char *path)
+int MatPartitioningRegisterAll(const char path[])
 {
   int         ierr;
 

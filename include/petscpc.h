@@ -50,7 +50,7 @@ E*/
 #define PCILU       "ilu"
 #define PCICC       "icc"
 #define PCASM       "asm"
-#define PCKSP      "ksp"
+#define PCKSP       "ksp"
 #define PCCOMPOSITE "composite"
 #define PCREDUNDANT "redundant"
 #define PCSPAI      "spai"
@@ -83,7 +83,7 @@ E*/
 typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 
 EXTERN int PCCreate(MPI_Comm,PC*);
-EXTERN int PCSetType(PC,PCType);
+EXTERN int PCSetType(PC,const PCType);
 EXTERN int PCSetUp(PC);
 EXTERN int PCSetUpOnBlocks(PC);
 EXTERN int PCApply(PC,Vec,Vec,PCSide);

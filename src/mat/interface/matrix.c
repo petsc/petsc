@@ -2439,7 +2439,7 @@ PetscFList MatConvertList              = 0;
 .seealso: MatConvertRegisterAll(), MatConvert()
 
 @*/
-int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,MatType,Mat*))
+int MatConvertRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatType,Mat*))
 {
   int  ierr;
   char fullname[PETSC_MAX_PATH_LEN];

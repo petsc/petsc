@@ -110,7 +110,7 @@ extern PetscFList CCAList;
     MatESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
           by name and wraps the ESI operator to look like a PETSc matrix.
 @*/
-int MatESISetType(Mat V,char *name)
+int MatESISetType(Mat V,const char *name)
 {
   int                                  ierr;
   ::esi::Operator<double,int>          *ve;

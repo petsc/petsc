@@ -1098,7 +1098,7 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsHead(char *head)
+int PetscOptionsHead(const char *head)
 {
   int             ierr;
 

@@ -38,7 +38,7 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-int MatSetType(Mat mat,MatType matype)
+int MatSetType(Mat mat,const MatType matype)
 {
   int        ierr,(*r)(Mat);
   PetscTruth sametype;
@@ -148,7 +148,7 @@ int MatGetType(Mat mat,MatType *type)
 
   Level: advanced
 @*/
-int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
+int MatRegister(const char sname[],const char path[],const char name[],int (*function)(Mat))
 {
   int  ierr;
   char fullname[PETSC_MAX_PATH_LEN];

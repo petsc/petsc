@@ -782,7 +782,6 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
   PC                     subpc;
-  KSP                    ksp;
 
   PetscFunctionBegin;
   /* 
@@ -816,7 +815,6 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
   PC                     subpc;
-  KSP                    ksp;
 
   PetscFunctionBegin;
   /* 

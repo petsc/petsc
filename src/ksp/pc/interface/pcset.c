@@ -52,7 +52,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-int PCSetType(PC pc,PCType type)
+int PCSetType(PC pc,const PCType type)
 {
   int        ierr,(*r)(PC);
   PetscTruth match;

@@ -99,7 +99,7 @@ M*/
 
 EXTERN int PetscOptionsBegin_Private(MPI_Comm,char*,char*,char*);
 EXTERN int PetscOptionsEnd_Private(void);
-EXTERN int PetscOptionsHead(char*);
+EXTERN int PetscOptionsHead(const char*);
 
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()

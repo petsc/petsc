@@ -1750,7 +1750,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
 .seealso: SNESType, SNESCreate()
 
 @*/
-int SNESSetType(SNES snes,SNESType type)
+int SNESSetType(SNES snes,const SNESType type)
 {
   int        ierr,(*r)(SNES);
   PetscTruth match;

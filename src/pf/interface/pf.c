@@ -372,7 +372,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFRegister"
-int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
+int PFRegister(const char sname[],const char path[],const char name[],int (*function)(PF,void*))
 {
   int  ierr;
   char fullname[256];
@@ -441,7 +441,7 @@ int PFGetType(PF pf,PFType *meth)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
 
 @*/
-int PFSetType(PF pf,PFType type,void *ctx)
+int PFSetType(PF pf,const PFType type,void *ctx)
 {
   int        ierr,(*r)(PF,void*);
   PetscTruth match;

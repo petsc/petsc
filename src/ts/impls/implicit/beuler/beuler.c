@@ -310,7 +310,6 @@ int TSCreate_BEuler(TS ts)
 {
   TS_BEuler  *beuler;
   int        ierr;
-  KSP        ksp;
 
   PetscFunctionBegin;
   ts->ops->destroy = TSDestroy_BEuler;

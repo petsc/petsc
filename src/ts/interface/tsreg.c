@@ -45,7 +45,7 @@ PetscTruth TSSerializeRegisterAllCalled = PETSC_FALSE;
 .keywords: TS, set, type
 .seealso TSSetSerializeType()
 @*/
-int TSSetType(TS ts, TSType type)
+int TSSetType(TS ts, const TSType type)
 {
   int      (*r)(TS);
   PetscTruth match;

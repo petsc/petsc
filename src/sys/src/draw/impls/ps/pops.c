@@ -112,7 +112,7 @@ static int PetscDrawStringGetSize_PS(PetscDraw draw,PetscReal *x,PetscReal  *y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawString_PS" 
-static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
+static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;
@@ -128,7 +128,7 @@ static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringVertical_PS" 
-static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
+static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;

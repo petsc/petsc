@@ -16,7 +16,6 @@ static int PCApply_KSP(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
   PC_KSP *jac = (PC_KSP*)pc->data;
-  KSP     ksp;
 
   PetscFunctionBegin;
   ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);
@@ -33,7 +32,6 @@ static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
   int     its,ierr;
   PC_KSP *jac = (PC_KSP*)pc->data;
-  KSP     ksp;
 
   PetscFunctionBegin;
   ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);

@@ -357,7 +357,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-int KSPSetType(KSP ksp,KSPType type)
+int KSPSetType(KSP ksp,const KSPType type)
 {
   int        ierr,(*r)(KSP);
   PetscTruth match;

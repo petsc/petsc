@@ -34,7 +34,7 @@ PetscTruth VecSerializeRegisterAllCalled = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-int VecSetType(Vec vec, VecType method)
+int VecSetType(Vec vec, const VecType method)
 {
   int      (*r)(Vec);
   PetscTruth match;

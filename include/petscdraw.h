@@ -34,10 +34,10 @@ S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
 extern PetscFList PetscDrawList;
-EXTERN int PetscDrawRegisterAll(char *);
+EXTERN int PetscDrawRegisterAll(const char *);
 EXTERN int PetscDrawRegisterDestroy(void);
 
-EXTERN int PetscDrawRegister(char*,char*,char*,int(*)(PetscDraw));
+EXTERN int PetscDrawRegister(const char*,const char*,const char*,int(*)(PetscDraw));
 
 /*MC
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
@@ -84,7 +84,7 @@ M*/
 #endif
 
 EXTERN int PetscDrawGetType(PetscDraw,PetscDrawType*);
-EXTERN int PetscDrawSetType(PetscDraw,PetscDrawType);
+EXTERN int PetscDrawSetType(PetscDraw,const PetscDrawType);
 EXTERN int PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 EXTERN int PetscDrawSetFromOptions(PetscDraw);
 
@@ -160,8 +160,8 @@ EXTERN int PetscDrawEllipse(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,in
 EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscReal*);
 EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
 
-EXTERN int PetscDrawString(PetscDraw,PetscReal,PetscReal,int,char*);
-EXTERN int PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,char*);
+EXTERN int PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
+EXTERN int PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
 EXTERN int PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
 EXTERN int PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
 

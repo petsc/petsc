@@ -97,7 +97,7 @@ PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningRegister" 
-int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(MatPartitioning))
+int MatPartitioningRegister(const char sname[],const char path[],const char name[],int (*function)(MatPartitioning))
 {
   int  ierr;
   char fullname[256];
@@ -500,7 +500,7 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply()
 
 @*/
-int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
+int MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
 {
   int        ierr,(*r)(MatPartitioning);
   PetscTruth match;

@@ -19,7 +19,7 @@ EXTERN int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name,MPI_Comm comm,
+int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class_name[],MPI_Comm comm,
                               int (*des)(PetscObject),int (*vie)(PetscObject,PetscViewer))
 {
   static int idcnt = 1;
@@ -28,7 +28,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name
   PetscFunctionBegin;
   h->cookie                 = cookie;
   h->type                   = type;
-  h->class_name             = class_name;
+  h->class_name             = (char*)class_name;
   h->prefix                 = 0;
   h->refct                  = 1;
   h->amem                   = -1;

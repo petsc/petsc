@@ -96,7 +96,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
+int MatOrderingRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   int  ierr;
   char fullname[256];

@@ -41,7 +41,7 @@ EXTERN int SNESInitializePackage(const char[]);
 
 EXTERN int SNESCreate(MPI_Comm,SNES*);
 EXTERN int SNESDestroy(SNES);
-EXTERN int SNESSetType(SNES,SNESType);
+EXTERN int SNESSetType(SNES,const SNESType);
 EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,PetscReal,void*),void *,int (*)(void *));
 EXTERN int SNESClearMonitor(SNES);
 EXTERN int SNESSetConvergenceHistory(SNES,PetscReal[],int[],int,PetscTruth);
@@ -147,7 +147,7 @@ typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"
 typedef char* MatSNESMFType;
-EXTERN int MatSNESMFSetType(Mat,MatSNESMFType);
+EXTERN int MatSNESMFSetType(Mat,const MatSNESMFType);
 EXTERN int MatSNESMFRegister(const char[],const char[],const char[],int (*)(MatSNESMFCtx));
 
 /*MC

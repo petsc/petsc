@@ -361,7 +361,6 @@ int PCNNCreateCoarseMatrix (PC pc)
   /* Create the coarse linear solver context */
   {
     PC  pc_ctx, inner_pc;
-    KSP ksp_ctx;
     ierr = KSPCreate(pc->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);

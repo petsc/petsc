@@ -56,10 +56,10 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_MATLAB       "matlab"
 
 extern PetscFList PetscViewerList;
-EXTERN int PetscViewerRegisterAll(char *);
+EXTERN int PetscViewerRegisterAll(const char *);
 EXTERN int PetscViewerRegisterDestroy(void);
 
-EXTERN int PetscViewerRegister(char*,char*,char*,int(*)(PetscViewer));
+EXTERN int PetscViewerRegister(const char*,const char*,const char*,int(*)(PetscViewer));
 
 /*MC
    PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
@@ -119,7 +119,7 @@ EXTERN int PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 EXTERN int PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 
 EXTERN int PetscViewerGetType(PetscViewer,PetscViewerType*);
-EXTERN int PetscViewerSetType(PetscViewer,PetscViewerType);
+EXTERN int PetscViewerSetType(PetscViewer,const PetscViewerType);
 EXTERN int PetscViewerDestroy(PetscViewer);
 EXTERN int PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN int PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);

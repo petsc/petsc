@@ -63,7 +63,7 @@ int PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
 .seealso: PetscViewerCreate(), PetscViewerGetType()
 @*/
-int PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
+int PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 {
   int        ierr,(*r)(PetscViewer);
   PetscTruth match;
@@ -122,7 +122,7 @@ int PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRegister" 
-int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscViewer))
+int PetscViewerRegister(const char *sname,const char *path,const char *name,int (*function)(PetscViewer))
 {
   int  ierr;
   char fullname[PETSC_MAX_PATH_LEN];
