@@ -594,16 +594,17 @@ class Configure:
       self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
     command = './'+self.linkerObj
+    output  = ''
+    error   = ''
+    status  = 1
     self.framework.log.write('Executing: '+command+'\n')
     try:
       (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
     except RuntimeError, e:
       self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
-      status = 1
-      output = ''
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return (output, status)
+    return (output+error, status)
 
   def checkRun(self, includes = '', body = '', cleanup = 1):
     (output, returnCode) = self.outputRun(includes, body, cleanup)
