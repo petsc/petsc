@@ -690,7 +690,7 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetRestart"
 /*@
-   KSPGMRESSetRestart - Sets number of iterations at which GMRES restarts.
+   KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
    Collective on KSP
 
@@ -701,11 +701,13 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
   Options Database:
 .  -ksp_gmres_restart <positive integer>
 
+    Note: The default value is 30.
+
    Level: intermediate
 
 .keywords: KSP, GMRES, restart, iterations
 
-.seealso: KSPSetTolerances()
+.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 @*/
 int KSPGMRESSetRestart(KSP ksp, int restart) {
   int ierr;
@@ -718,7 +720,7 @@ int KSPGMRESSetRestart(KSP ksp, int restart) {
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetHapTol"
 /*@
-   KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES.
+   KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES, FGMRES and LGMRES.
 
    Collective on KSP
 
@@ -728,6 +730,10 @@ int KSPGMRESSetRestart(KSP ksp, int restart) {
 
   Options Database:
 .  -ksp_gmres_haptol <positive real value>
+
+   Note: Happy breakdown is the rare case in GMRES where an 'exact' solution is obtained after
+         a certain number of iterations. If you attempt more iterations after this point unstable 
+         things can happen hence very occasionally you may need to set this value to detect this condition
 
    Level: intermediate
 

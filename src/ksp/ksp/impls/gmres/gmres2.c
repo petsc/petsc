@@ -2,59 +2,6 @@
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetHapTol" 
-/*M
-    KSPGMRESSetHapTol - Sets the tolerence for GMRES and FGMRES to declare happy breakdown.
-    for GMRES before restart.
-
-   Synopsis:
-     int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp - the iterative context
--   tol - the tolerance (1.e-10 is the default)
-
-    Options Database Key:
-.   -ksp_gmres_haptol <tol>
-
-    Level: advanced
-
-.keywords: KSP, GMRES, set, happy breakdown
-
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
-M*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetRestart" 
-/*MC
-    KSPGMRESSetRestart - Sets the number of search directions 
-    for GMRES and FGMRES before restart.
-
-   Synopsis:
-     int KSPGMRESSetRestart(KSP ksp,int max_k)
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp - the iterative context
--   max_k - the number of directions
-
-    Options Database Key:
-.   -ksp_gmres_restart <max_k> - Sets max_k
-
-    Level: intermediate
-
-    Note:
-    The default value of max_k = 30.
-
-.keywords: KSP, GMRES, set, restart
-
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
-M*/
-
-#undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization" 
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES and FGMRES.

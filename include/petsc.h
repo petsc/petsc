@@ -395,22 +395,13 @@ typedef void (**PetscVoidFunction)(void);
 
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.
-          Can support argument checking. This was an experiment that seems to work ok
-          (see KSPGMRESSetRestart()) but we never followed through on it.
+              These are intended to be used only inside PETSc functions.
 */
-#if defined(PETSC_FORTRAN_STUBS)
-#define  PetscTryMethod(obj,A,B,C) \
-  0;{ int (*f)B; \
-   *ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidFunction)&f);if (*ierr) return; \
-    if (f) {*ierr = (*f)C;if (*ierr) return;}\
-  }
-#else
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ int (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
-#endif
 #define  PetscUseMethod(obj,A,B,C) \
   0;{ int (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
