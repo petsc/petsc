@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.5 2001/06/25 14:03:05 balay Exp bsmith $*/
+/*$Id: superlu.c,v 1.6 2001/07/06 14:27:43 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -151,7 +151,7 @@ extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
 extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
+  Mat_SeqAIJ         *b;
   Mat                 B;
   Mat_SeqAIJ_SuperLU *lu;
   int                 ierr,*ca;
@@ -192,7 +192,6 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)(*F)->data;
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
-  IS                  tempIS;
   NCformat           *store;
   int                *etree,i,ierr;
 

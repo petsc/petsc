@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.24 2001/03/23 23:23:20 balay Exp bsmith $*/
+/* $Id: ispai.c,v 1.25 2001/04/10 19:36:18 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -62,7 +62,6 @@ static int PCSetUp_SPAI(PC pc)
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
   int      ierr;
   Mat      AT;
-  Mat      PBT;
   MPI_Comm comm;
 
   PetscFunctionBegin;

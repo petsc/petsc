@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.1 2001/05/11 03:02:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2001/06/21 21:17:13 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   = ${ADIC_INCLUDE}
 FFLAGS   =
 SOURCEC  = matadic.c
 SOURCEF  = 
