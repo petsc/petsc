@@ -1,13 +1,10 @@
+/* This file contains information for ex9.c, which demonstrated advanced
+   use of the PETSc/BlockSolve interface. */
+
 #include<stdio.h>
 #include<math.h>
 #include <limits.h>
-#include "mpi.h"
-
-MPI_Status __STATUS;
-extern int __NUMNODES, __MYPROCID, __MPILEN, __FLAG;
-
-/* BlockSolve interface stuff */
-#include "bsinterf.h"
+#include "BSprivate.h"  /* BlockSolve include file */
 
 /* set up max stencil sizes, etc */
 #define MAX_LEN 27
@@ -71,16 +68,7 @@ typedef struct __par_grid {
 + Mypos(grid,procinfo)*grid->worker_x \
 + Mxpos(grid,procinfo))
 
- /*	SENDSYNCNOMEM(msg_type,msg,count99*sizeof(point),to,MSG_INT); */
-/* #define SENDSYNCNOMEM(type,buffer,length,to,datatype) \
-       MPI_Send( buffer, length, MPI_BYTE, to, type, MPI_COMM_WORLD );\ */
-
-        /* RECVSYNCNOMEM(intype,in_msg99,in_msg_size99,MSG_INT); */
-/* #define RECVSYNCNOMEM(type,buffer,length,datatype) {\
-        MPI_Recv( buffer, length, MPI_BYTE, MPI_ANY_SOURCE, type, \
-                  MPI_COMM_WORLD, &__STATUS );}\ */
-
-#define Msend_border_msg(points,msg,msg_type,to,x1,x2,y1,y2,z1,z2) \
+#define Msend_border_msg(msg_list,points,msg,msg_type,to,x1,x2,y1,y2,z1,z2,pi) \
 { \
   int	count99, i99, j99, k99; \
   count99 = 0; \
@@ -93,19 +81,20 @@ typedef struct __par_grid {
       } \
     } \
   } \
-  MPI_Send( msg, count99*sizeof(point), MPI_BYTE, to, msg_type,\
-                 MPI_COMM_WORLD );\
+  MY_SEND_SYNC(msg_list,msg_type,msg,(count99*sizeof(point)/sizeof(int)), \
+		(to),MPI_INT,pi); \
 }
 
-#define Mrecv_border_msg(points,intype,x1,x2,y1,y2,z1,z2) \
+#define Mrecv_border_msg(points,intype,x1,x2,y1,y2,z1,z2,procinfo) \
 { \
   int	count99, i99, j99, k99, in_msg_size99; \
   point	*in_msg99; \
+  MPI_Status	stat99; \
   in_msg_size99 = sizeof(point)*((x2)-(x1)+1)* \
 		((y2)-(y1)+1)*((z2)-(z1)+1); \
   in_msg99 = (point *) MALLOC(in_msg_size99); \
-  MPI_Recv( in_msg99, in_msg_size99, MPI_BYTE, MPI_ANY_SOURCE, intype, \
-                  MPI_COMM_WORLD, &__STATUS );\
+  RECVSYNCNOMEM(intype,in_msg99,(in_msg_size99/sizeof(int)),MPI_INT, \
+		procinfo,stat99); \
   count99 = 0; \
   for (i99=x1;i99<=x2;i99++) { \
     for (j99=y1;j99<=y2;j99++) { \
