@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.37 1995/11/02 04:09:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.38 1995/11/15 13:45:50 bsmith Exp curfman $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -508,6 +508,7 @@ static int PtoPScatterDestroy(PetscObject obj)
 }
 
 /* --------------------------------------------------------------*/
+/* create parallel to sequential scatter context */
 int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx)
 {
   Vec_MPI        *x = (Vec_MPI *)xin->data;
@@ -714,8 +715,8 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
 
 /* ----------------------------------------------------------------*/
 /*
-     scatter from local Seq vectors to a parallel vector.
-*/
+    Scatter from local Seq vectors to a parallel vector. 
+ */
 int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
 {
   Vec_MPI        *y = (Vec_MPI *)yin->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.19 1995/12/29 22:22:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.20 1995/12/29 23:19:09 curfman Exp curfman $";
 #endif
 
 /*
@@ -886,6 +886,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   Mat          mat;
   Mat_MPIDense *a,*oldmat = (Mat_MPIDense *) A->data;
   int          ierr;
+  FactorCtx    *factor;
 
   if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIDense:Must assemble matrix");
   *newmat       = 0;
@@ -901,6 +902,10 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   a->n          = oldmat->n;
   a->M          = oldmat->M;
   a->N          = oldmat->N;
+  if (oldmat->factor) {
+    a->factor = (FactorCtx *) (factor = PetscNew(FactorCtx)); CHKPTRQ(factor);
+    /* copy factor contents ... add this code! */
+  } else a->factor = 0;
 
   a->assembled  = 1;
   a->rstart     = oldmat->rstart;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.47 1995/12/06 00:23:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.48 1995/12/07 15:07:41 bsmith Exp curfman $";
 #endif
 
 /*
@@ -93,9 +93,7 @@ static int MPIToAllDestroy(PetscObject obj)
   return 0;
 }
 
-/*
-    Sequential general to general scatter 
-*/
+/* Scatter: sequential general to sequential general */
 static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_General *gen_to = (VecScatter_General *) ctx->todata;
@@ -121,7 +119,7 @@ static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   return 0;
 }
 
-
+/* Scatter: sequential general to sequential stride 1 */
 static int SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
@@ -151,6 +149,7 @@ static int SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   return 0;
 }
 
+/* Scatter: sequential general to sequential stride */
 static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
@@ -178,6 +177,7 @@ static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   return 0;
 }
 
+/* Scatter: sequential stride 1 to sequential general */
 static int SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_from = (VecScatter_Stride *) ctx->fromdata;
@@ -207,6 +207,7 @@ static int SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   return 0;
 }
 
+/* Scatter: sequential stride to sequential general */
 static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_from = (VecScatter_Stride *) ctx->fromdata;
@@ -234,6 +235,7 @@ static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   return 0;
 }
 
+/* Scatter: sequential stride to sequential stride */
 static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
@@ -268,6 +270,7 @@ static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   }
   return 0;
 }
+
 static int SGtoSGDestroy(PetscObject obj)
 {
   VecScatter ctx = (VecScatter) obj;
@@ -277,23 +280,49 @@ static int SGtoSGDestroy(PetscObject obj)
   return 0;
 }
 
+/* Scatter: parallel to sequential vector, sequential strides for both.
+   Eventually we should better organize the copy routines */
+static int PtoSCopy_StrideSeq(VecScatter in,VecScatter out)
+{
+  VecScatter_Stride *in_to   = (VecScatter_Stride *) in->todata;
+  VecScatter_Stride *in_from = (VecScatter_Stride *) in->fromdata,*out_to,*out_from;
+
+  out->scatterbegin     = in->scatterbegin;
+  out->scatterend       = in->scatterend;
+  out->pipelinebegin    = in->pipelinebegin;
+  out->pipelineend      = in->pipelineend;
+  out->copy             = in->copy;
+  out->destroy          = in->destroy;
+  out->view             = in->view;
+
+  out_to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(out_to);
+  out_to->n = in_to->n; out_to->first = in_to->first; out_to->step = in_to->step;
+  out_from = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(out_from);
+  PLogObjectMemory(out,2*sizeof(VecScatter_Stride));
+  out_from->n = in_from->n; out_from->first = in_from->first; out_from->step = in_from->step;
+  out->todata = (void *) out_to; out->fromdata = (void *) out_from;
+  return 0;
+}
+
 int PtoSScatterCreate(int,int *,int,int *,Vec,VecScatter);
 int PtoPScatterCreate(int,int *,int,int *,Vec,Vec,VecScatter);
 int StoPScatterCreate(int,int *,int,int *,Vec,VecScatter);
 /* --------------------------------------------------------------*/
 /*@C
-   VecScatterCreate - Creates a vector scatter context. This routine
-   should be called when you need to create a vector scatter context. 
-   You cannot use a VecScatter in two or more simultaneous scatters. 
+   VecScatterCreate - Creates a vector scatter context.
 
    Input Parameters:
-.  xin - the vector to scatter from
-.  yin - the vector to scatter to
-.  ix - the indices in xin to scatter
-.  iy - the indices in yin to put results
+.  xin - the vector from which we scatter
+.  yin - the vector to which we scatter
+.  ix - the indices of xin to scatter
+.  iy - the indices of yin to hold results
 
    Output Parameter:
-.  newctx - location to store the scatter context
+.  newctx - location to store the new scatter context
+
+   Notes:
+   A VecScatter context CANNOT be used in two or more simultaneous scatters.
+   In this case a separate VecScatter is needed for each concurrent scatter.
 
 .keywords: vector, scatter, context, create
 
@@ -313,6 +342,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PetscHeaderCreate(ctx,_VecScatter,VEC_SCATTER_COOKIE,0,comm);
   PLogObjectCreate(ctx);
   PLogObjectMemory(ctx,sizeof(struct _VecScatter));
+  ctx->inuse = 0;
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
     if (ix->type == IS_SEQ && iy->type == IS_SEQ){
@@ -401,7 +431,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       return 0;
     }
     else {
-      SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
+      SETERRQ(1,"VecScatterCreate:Cannot generate such a scatter context yet");
     }
   }
   if (xin->type == VECMPI && yin->type == VECSEQ) {
@@ -426,7 +456,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
         ctx->scatterend = 0; ctx->pipelinebegin = 0; 
-        ctx->pipelineend = 0; ctx->copy = 0;
+        ctx->pipelineend = 0; ctx->copy = PtoSCopy_StrideSeq;
         *newctx = ctx;
         return 0;
       }
@@ -542,18 +572,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
 /* ------------------------------------------------------------------*/
 /*@
-   VecScatterBegin - Begins scattering from one vector to
+   VecScatterBegin - Begins a generalized scatter from one vector to
    another. Complete the scattering phase with VecScatterEnd().
-   This scatter is far more general than the conventional
-   scatter, since it can be a gather or a scatter or a combination,
-   depending on the indices ix and iy.  If x is a parallel vector and y
-   is sequential, VecScatterBegin() can serve to gather values to a
-   single processor.  Similarly, if y is parallel and x sequential, the
-   routine can scatter from one processor to many processors.
 
    Input Parameters:
-.  x - vector to scatter from
-.  y - vector to scatter to
+.  x - the vector from which we scatter
+.  y - the vector to which we scatter
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
    added or set
 .  mode - the scattering mode, usually SCATTER_ALL.  The available modes are:
@@ -562,10 +586,17 @@ $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 .  inctx - scatter context generated by VecScatterCreate()
 
    Output Parameter:
-.  y - vector to scatter to 
+.  y - the vector to which we scatter
 
    Notes:
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+
+   This scatter is far more general than the conventional
+   scatter, since it can be a gather or a scatter or a combination,
+   depending on the indices ix and iy.  If x is a parallel vector and y
+   is sequential, VecScatterBegin() can serve to gather values to a
+   single processor.  Similarly, if y is parallel and x sequential, the
+   routine can scatter from one processor to many processors.
 
 .keywords: vector, scatter, gather, begin
 
@@ -577,6 +608,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
+  inctx->inuse = 1;
   PLogEventBegin(VEC_ScatterBegin,inctx,x,y,0);
   ierr = (*inctx->scatterbegin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
   PLogEventEnd(VEC_ScatterBegin,inctx,x,y,0);
@@ -585,12 +617,12 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 
 /* --------------------------------------------------------------------*/
 /*@
-   VecScatterEnd - Ends scattering from one vector to another.
-   Call after first calling VecScatterBegin().
+   VecScatterEnd - Ends a generalized scatter from one vector to another.  Call
+   after first calling VecScatterBegin().
 
    Input Parameters:
-.  x - vector to scatter from
-.  y - vector to scatter to 
+.  x - the vector from which we scatter
+.  y - the vector to which we scatter
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
    added or set
 .  mode - the scattering mode, usually SCATTER_ALL.  The available modes are:
@@ -598,8 +630,8 @@ $    SCATTER_ALL, SCATTER_UP, SCATTER_DOWN,
 $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 .  ctx - scatter context generated by VecScatterCreate()
 
-   Output Parameters:
-.  y - vector to scatter to 
+   Output Parameter:
+.  y - the vector to which we scatter
 
    Notes:
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
@@ -630,7 +662,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
 
 .keywords: vector, scatter, context, destroy
 
-.seealso: VecScatterCreate()
+.seealso: VecScatterCreate(), VecScatterCopy()
 @*/
 int VecScatterDestroy( VecScatter ctx )
 {
@@ -648,7 +680,7 @@ int VecScatterDestroy( VecScatter ctx )
 
 .keywords: vector, scatter, copy, context
 
-.seealso: VecScatterCreate()
+.seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
 int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 {
@@ -666,8 +698,8 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
    VecPipelineBegin - Begins a vector pipeline operation.  
 
    Input Parameters:
-.  x - vector to scatter from
-.  y - vector to scatter to 
+.  x - the vector from which we scatter
+.  y - the vector to which we scatter
 .  inctx - is used to coordinate communication
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
           added or set
@@ -675,7 +707,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 .  mode - pipelining mode, either PIPELINE_UP or PIPELINE_DOWN
 
    Output Parameter:
-.  y - vector to scatter to 
+.  y - the vector to which we scatter
 
   Notes:
   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
@@ -703,16 +735,16 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter in
    after calling VecPipelineBegin().
 
    Input Parameters:
-.  x - vector to scatter from
-.  y - vector to scatter to 
+.  x - the vector from which we scatter
+.  y - the vector to which we scatter
 .  inctx - is used to coordinate communication
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
           added or set
 .  ctx - scatter context generated by VecScatterCreate()
 .  mode - pipelining mode, either PIPELINE_UP or PIPELINE_DOWN
 
-   Output Parameters:
-.  y - vector to scatter to 
+   Output Parameter:
+.  y - the vector to which we scatter
 
    Notes:
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
