@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.9 1995/11/23 04:15:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.10 1995/11/27 19:02:45 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -28,6 +28,7 @@ static char vcid[] = "$Id: zmat.c,v 1.9 1995/11/23 04:15:38 bsmith Exp bsmith $"
 #define matcreateseqbdiag_            MATCREATESEQBDIAG
 #define matcreatempibdiag_            MATCREATEMPIBDIAG
 #define matcreateseqdense_            MATCREATESEQDENSE
+#define matcreatempidense_            MATCREATEMPIDENSE
 #define matconvert_                   MATCONVERT
 #define matreorderingregister_        MATREORDERINGREGISTER
 #define matgetsubmatrix_              MATGETSUBMATRIX
@@ -54,6 +55,7 @@ static char vcid[] = "$Id: zmat.c,v 1.9 1995/11/23 04:15:38 bsmith Exp bsmith $"
 #define matcreateseqbdiag_            matcreateseqbdiag
 #define matcreatempibdiag_            matcreatempibdiag
 #define matcreateseqdense_            matcreateseqdense
+#define matcreatempidense_            matcreatempidense
 #define matconvert_                   matconvert
 #define matreorderingregister_        matreorderingregister
 #define matgetsubmatrix_              matgetsubmatrix
@@ -61,6 +63,8 @@ static char vcid[] = "$Id: zmat.c,v 1.9 1995/11/23 04:15:38 bsmith Exp bsmith $"
 #define mattranspose_                 mattranspose
 #define matgetarray_                  matgetarray
 #endif
+
+/* Definitions of Fortran Wrapper routines */
 
 void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,int *__ierr,int len){
   char *t;
@@ -144,6 +148,14 @@ void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Scalar *data,Mat *newmat,int
   Mat mm;
   if (data == PetscNull_Fortran) data = 0;
   *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,data,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+void matcreatempidense_(MPI_Comm comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat, int *__ierr ){
+  Mat mm;
+  if (data == PetscNull_Fortran) data = 0;
+*__ierr = MatCreateMPIDense(
+	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*M,*N,data,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
