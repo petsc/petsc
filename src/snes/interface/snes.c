@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.44 1996/01/24 04:16:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.45 1996/01/26 04:35:16 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -512,7 +512,7 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 
 .keywords: SNES, nonlinear, set, function
 
-.seealso: SNESGetFunction(), SNESSetJacobian(), SNESSetSolution()
+.seealso: SNESGetFunction(), SNESSetJacobian()
 @*/
 int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
@@ -580,7 +580,6 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
 .keywords: SNES, nonlinear, set, minimization, function
 
 .seealso:  SNESGetMinimizationFunction(), SNESSetHessian(), SNESSetGradient(), 
-           SNESSetSolution()
 @*/
 int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
                       void *ctx)
@@ -646,7 +645,6 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetGradient(), SNESSetHessian(), SNESSetMinimizationFunction(),
-          SNESSetSolution()
 @*/
 int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),
                      void *ctx)
@@ -743,7 +741,7 @@ int SNESComputeHessian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: SNESSetFunction(), SNESSetSolution()
+.seealso: SNESSetFunction()
 @*/
 int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
@@ -810,7 +808,7 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 
 .keywords: SNES, nonlinear, set, Hessian, matrix
 
-.seealso: SNESSetMinimizationFunction(), SNESSetSolution(), SNESSetGradient()
+.seealso: SNESSetMinimizationFunction(), SNESSetGradient()
 @*/
 int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
@@ -835,16 +833,18 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 
    Input Parameter:
 .  snes - the SNES context
+.  x - the solution vector
 
 .keywords: SNES, nonlinear, setup
 
 .seealso: SNESCreate(), SNESSolve(), SNESDestroy()
 @*/
-int SNESSetUp(SNES snes)
+int SNESSetUp(SNES snes,Vec x)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  if (!snes->vec_sol) SETERRQ(1,"SNESSetUp:Must call SNESSetSolution() first");
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  snes->vec_sol = snes->vec_sol_always = x;
 
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
@@ -1090,29 +1090,6 @@ int SNESSetMinFunctionTolerance(SNES snes,double ftol)
   return 0;
 }
 
-
-
-/* ---------- Routines to set various aspects of nonlinear solver --------- */
-
-/*@C
-   SNESSetSolution - Sets the solution vector for use by the SNES routines.
-
-   Input Parameters:
-.  snes - the SNES context
-.  x - the solution vector
-
-
-.keywords: SNES, nonlinear, set, solution, initial guess
-
-.seealso: SNESGetSolution(), SNESSetJacobian(), SNESSetFunction()
-@*/
-int SNESSetSolution(SNES snes,Vec x)
-{
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  snes->vec_sol             = snes->vec_sol_always = x;
-  return 0;
-}
-
 /* ------------ Routines to set performance monitoring options ----------- */
 
 /*@C
@@ -1236,19 +1213,26 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 
    Input Parameter:
 .  snes - the SNES context
+.  x - the solution vector
 
    Output Parameter:
    its - number of iterations until termination
+
+   Note:
+   The user should initialize the vector, x, with the initial guess
+   for the nonlinear solve prior to calling SNESSolve.  In particular,
+   to employ an initial guess of zero, the user should explicitly set
+   this vector to zero by calling VecSet().
 
 .keywords: SNES, nonlinear, solve
 
 .seealso: SNESCreate(), SNESSetUp(), SNESDestroy()
 @*/
-int SNESSolve(SNES snes,int *its)
+int SNESSolve(SNES snes,Vec x,int *its)
 {
   int ierr, flg;
 
-  if (!snes->setup_called) {ierr = SNESSetUp(snes); CHKERRQ(ierr);}
+  if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
@@ -1421,7 +1405,7 @@ int SNESPrintTypes_Private(char* prefix,char *name)
 
 .keywords: SNES, nonlinear, get, solution
 
-.seealso: SNESSetSolution(), SNESGetFunction(), SNESGetSolutionUpdate()
+.seealso: SNESGetFunction(), SNESGetSolutionUpdate()
 @*/
 int SNESGetSolution(SNES snes,Vec *x)
 {

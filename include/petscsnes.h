@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.41 1996/01/12 17:33:54 balay Exp bsmith $ */
+/* $Id: snes.h,v 1.42 1996/01/23 00:21:00 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -25,12 +25,11 @@ extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
 extern int SNESSetType(SNES,SNESType);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
-extern int SNESSetSolution(SNES,Vec);
 extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
-extern int SNESSetUp(SNES);
-extern int SNESSolve(SNES,int*);
+extern int SNESSetUp(SNES,Vec);
+extern int SNESSolve(SNES,Vec,int*);
 extern int SNESRegister(int,char*,int(*)(SNES));
 extern int SNESRegisterDestroy();
 extern int SNESRegisterAll();
