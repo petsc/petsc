@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.33 1995/10/12 04:21:53 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.34 1995/11/19 00:55:08 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -97,6 +97,8 @@ extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
 extern int SNESGetMinimizationFunction(SNES,double*);
 extern int SNESSetMinFunctionTolerance(SNES,double);
 extern int SNESGetLineSearchDampingParameter(SNES,double*);
+extern int SNESConverged_UMLS(SNES,double,double,double,void*);
+extern int SNESConverged_UMTR(SNES,double,double,double,void*);
 
 /* Should these 2 routines be private? */
 extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);

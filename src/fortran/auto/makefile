@@ -4,28 +4,27 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..  $(PCONF)\
           $(CONF) -D__DIR__='"fortran/auto/"'
-SOURCEC  = vectorf.c indexf.c da2f.c drawf.c \
-           itfuncf.c itcreatef.c itclf.c \
-           matrixf.c preconf.c pcsetf.c slesf.c\
-           snesf.c snesutf.c stridef.c\
-           signalf.c fpf.c trf.c archf.c \
-           comsortf.c destroyf.c  \
-           cgeigf.c chebyf.c gmresf.c richf.c \
-           axisf.c lgf.c axpyf.c zerodiagf.c \
-           vinvf.c vscatf.c  cmeshf.c iluf.c \
-           bjacobif.c luf.c sorf.c 
+
+SOURCEC  = archf.c axisf.c axpyf.c bjacobif.c cgeigf.c \
+           chebyf.c cmeshf.c comsortf.c da2f.c destroyf.c \
+           drawf.c eisenf.c fpf.c gmresf.c iccbsf.c \
+           iluf.c indexf.c itclf.c itcreatef.c itfuncf.c \
+           itresf.c lgf.c luf.c matrixf.c mgf.c mgfuncf.c \
+           pcsetf.c preconf.c  richf.c signalf.c slesf.c \
+           snesf.c snesutf.c sorf.c stridef.c trf.c \
+           umlsf.c umtrf.c vectorf.c vinvf.c vscatf.c \
+           zerodiagf.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vectorf.o indexf.o da2f.o drawf.o \
-           itfuncf.o itcreatef.o itclf.o  \
-           matrixf.o preconf.o pcsetf.o slesf.o\
-           snesf.o snesutf.o stridef.o\
-           signalf.o fpf.o trf.o archf.o \
-           comsortf.o destroyf.o \
-           cgeigf.o chebyf.o gmresf.o richf.o \
-           axisf.o lgf.o axpyf.o zerodiagf.o \
-           vinvf.o vscatf.o  cmeshf.o iluf.o \
-           bjacobif.o luf.o sorf.o 
+OBJSC    = archf.o axisf.o axpyf.o bjacobif.o cgeigf.o \
+           chebyf.o cmeshf.o comsortf.o da2f.o destroyf.o \
+           drawf.o eisenf.o fpf.o gmresf.o iccbsf.o \
+           iluf.o indexf.o itclf.o itcreatef.o itfuncf.o \
+           itresf.o lgf.o luf.o matrixf.o mgf.o mgfuncf.o \
+           pcsetf.o preconf.o  richf.o signalf.o slesf.o \
+           snesf.o snesutf.o sorf.o stridef.o trf.o \
+           umlsf.o umtrf.o vectorf.o vinvf.o vscatf.o \
+           zerodiagf.o
 OBJSF    =
 LIBBASE  = libpetscfortran
 MANSEC   = 1
