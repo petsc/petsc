@@ -383,7 +383,7 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' IOR '+baseName)
     if 'ELF' in config.outputFiles:
       return config.outputFiles['ELF']
-    return []
+    return sets.Set()
 
   def buildPythonClient(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
@@ -395,7 +395,7 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Stub '+baseName)
     if 'Linked ELF' in config.outputFiles:
       return config.outputFiles['Linked ELF']
-    return []
+    return sets.Set()
 
   def buildPythonSkeleton(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
@@ -406,14 +406,14 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Skeleton '+baseName)
     if 'ELF' in config.outputFiles:
       return config.outputFiles['ELF']
-    return []
+    return sets.Set()
 
   def buildPythonServer(self, builder, sidlFile, language, generatedSource):
     baseName    = os.path.splitext(os.path.basename(sidlFile))[0]
-    iorObjects  = self.buildIOR(builder, sidlFile, language, generatedSource['Server IOR']['Cxx'])
+    iorObjects  = self.buildIOR(builder, sidlFile, language, generatedSource['Server IOR Python']['Cxx'])
     skelObjects = self.buildPythonSkeleton(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
     config      = builder.pushConfiguration(language+' Server '+baseName)
-    library     = os.path.join(os.getcwd(), 'lib', 'lib'+baseName+'.so')
+    library     = os.path.join(os.getcwd(), 'lib', 'lib-'+language.lower()+'-'+baseName+'.so')
     if not os.path.isdir(os.path.dirname(library)):
       os.makedirs(os.path.dirname(library))
     builder.link(iorObjects.union(skelObjects), library, shared = 1)
@@ -421,7 +421,7 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Server '+baseName)
     if 'Linked ELF' in config.outputFiles:
       return config.outputFiles['Linked ELF']
-    return []
+    return sets.Set()
 
   def buildCxxClient(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
@@ -433,7 +433,7 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Stub '+baseName)
     if 'Linked ELF' in config.outputFiles:
       return config.outputFiles['Linked ELF']
-    return []
+    return sets.Set()
 
   def buildCxxImplementation(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
@@ -444,14 +444,14 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Skeleton '+baseName)
     if 'ELF' in config.outputFiles:
       return config.outputFiles['ELF']
-    return []
+    return sets.Set()
 
   def buildCxxServer(self, builder, sidlFile, language, generatedSource):
     baseName    = os.path.splitext(os.path.basename(sidlFile))[0]
-    iorObjects  = self.buildIOR(builder, sidlFile, language, generatedSource['Server IOR']['Cxx'])
+    iorObjects  = self.buildIOR(builder, sidlFile, language, generatedSource['Server IOR Cxx']['Cxx'])
     implObjects = self.buildCxxImplementation(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
     config      = builder.pushConfiguration(language+' Server '+baseName)
-    library     = os.path.join(os.getcwd(), 'lib', 'lib'+baseName+'.so')
+    library     = os.path.join(os.getcwd(), 'lib', 'lib-'+language.lower()+'-'+baseName+'.so')
     if not os.path.isdir(os.path.dirname(library)):
       os.makedirs(os.path.dirname(library))
     builder.link(iorObjects.union(implObjects), library, shared = 1)
@@ -459,7 +459,7 @@ class SIDLMake(Make):
     builder.saveConfiguration(language+' Server '+baseName)
     if 'Linked ELF' in config.outputFiles:
       return config.outputFiles['Linked ELF']
-    return []
+    return sets.Set()
 
   def build(self, builder):
     for f in self.sidl:
@@ -469,7 +469,7 @@ class SIDLMake(Make):
       for language in self.clientLanguages:
         getattr(self, 'setup'+language+'Client')(builder, f, language)
       self.editServer(builder, f)
-      # We here require certain keys to be present in generateSource, e.g. 'Server IOR'.
+      # We here require certain keys to be present in generateSource, e.g. 'Server IOR Python'.
       # These keys can be checked for, and if absent the SIDL file would be compiled
       generatedSource = self.buildSIDL(builder, f)
       self.checkinServer(builder, f)
