@@ -570,7 +570,7 @@ class Configure(config.base.Configure):
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
-          self.framework.argDB['LIBS'] = '-lconf1'
+          self.framework.argDB['LIBS'] = '-L. -lconf1'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('libconf1.a','libconf1.lib')
           if not success:
