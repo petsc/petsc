@@ -4,7 +4,8 @@ CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = Changes
+SOURCEH  = Changes Machines readme maint/addlinks maint/buildtest maint/builddist \
+           maint/buildlinks maint/wwwman maint/xclude maint/crontab
 OBJSC    =
 WOBJS    = 
 OBJSF    =
