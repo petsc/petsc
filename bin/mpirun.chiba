@@ -34,7 +34,7 @@ while [ $# -gt 0 ] ; do
     -showtimesoff)
     showtimes="no"
     ;;
-    -keepoutput
+    -keepoutput)
     keepoutput="yes"
     ;;
     -myrinet)
