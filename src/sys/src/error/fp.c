@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.14 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.15 1995/07/20 03:58:36 bsmith Exp curfman $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -12,6 +12,9 @@ static char vcid[] = "$Id: fp.c,v 1.14 1995/07/17 03:54:14 bsmith Exp bsmith $";
 #include <stdio.h>
 #include "petsc.h"
 #include "sys.h"
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #include "petscfix.h"
 
 #if !defined(PETSC_INSIGHT)
