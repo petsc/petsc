@@ -348,7 +348,7 @@ chk_concepts_dir: chk_loc
 #
 #  checks if should build Fortran stubs
 chk_fortranstubs:
-	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" ]; then \
+	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" -a "${C_FC}" != "" ]; then \
           ${OMAKE} PETSC_DIR=${PETSC_DIR} allfortranstubs ;\
         fi
 
