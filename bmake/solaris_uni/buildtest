@@ -7,6 +7,8 @@
 #
 set TMP=/sandbox/petsc/petsc-test
 set MACH=spark
+set RSH='ssh -2'
+set RCP='scp -q -B -oProtocol=2'
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
