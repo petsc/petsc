@@ -139,7 +139,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,int *flag,void *dummy)
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*prejac,FINAL_ASSEMBLY); CHKERR(ierr);
 
-  *flag = MAT_SAME_NONZERO_PATTERN;
+  *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }
 /* --------------------  User-defined preconditioner  -------------------- */
