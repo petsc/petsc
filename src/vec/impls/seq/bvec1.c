@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.22 1998/03/16 19:28:19 balay Exp bsmith $ */
+/* $Id: bvec1.c,v 1.23 1998/05/08 16:12:04 bsmith Exp balay $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -27,7 +27,7 @@ int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   int    i;
   Scalar sum = 0.0, *xa = x->array, *ya = y->array;
   for ( i=0; i<x->n; i++ ) {
-    sum += xa[i]*conj(ya[i]);
+    sum += xa[i]*PetscConj(ya[i]);
   }
   *z = sum;
 #else

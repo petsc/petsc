@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.140 1998/05/15 13:21:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.141 1998/05/29 20:37:25 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -793,7 +793,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
       len  = a->bdlen[d]*bs*bs;
       for (i=0; i<len; i++) {
 #if defined(USE_PETSC_COMPLEX)
-        sum += real(conj(dv[i])*dv[i]);
+        sum += PetscReal(PetscConj(dv[i])*dv[i]);
 #else
         sum += dv[i]*dv[i];
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.43 1998/01/06 20:09:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.44 1998/03/16 18:54:09 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -160,7 +160,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
     /* Note that dnorm = (norm(d))**2 */
     dnorm = 0.0;
 #if defined(USE_PETSC_COMPLEX)
-    for (j = 0; j <= it; j++) dnorm += real(lhh[j] * conj(lhh[j]));
+    for (j = 0; j <= it; j++) dnorm += PetscReal(lhh[j] * PetscConj(lhh[j]));
 #else
     for (j = 0; j <= it; j++) dnorm += lhh[j] * lhh[j];
 #endif

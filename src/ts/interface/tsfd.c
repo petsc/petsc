@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.5 1997/11/03 04:48:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.6 1998/04/13 17:50:17 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -150,8 +150,8 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (abs(dx) < dx_min && real(dx) >= 0.0) dx = dx_par;
-      else if (real(dx) < 0.0 && abs(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
+      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;

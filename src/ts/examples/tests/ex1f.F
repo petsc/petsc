@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.25 1998/04/16 16:06:13 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.26 1998/04/21 18:31:53 balay Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -225,12 +225,12 @@
 !
         call PetscStrncpy(etype,type,5)
         if (etype .eq. TS_EULER) then
-          if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
+          if (PetscAbsScalar(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &
      &            ' expecting: ',0.00257244
           endif
         else
-          if (abs(nrm_2/steps - 0.00506174) .gt. 1.e-4) then
+          if (PetscAbsScalar(nrm_2/steps - 0.00506174) .gt. 1.e-4) then
             print*,'Error in ',tsinfo, ': 2-norm ',nrm_2/steps,         &
      &             ' expecting: ',0.00506174
           endif

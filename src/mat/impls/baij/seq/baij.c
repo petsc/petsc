@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.136 1998/05/13 14:18:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.137 1998/05/29 20:37:31 bsmith Exp balay $";
 #endif
 
 /*
@@ -401,14 +401,14 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(a->a[bs2*k + l*bs + j]) > 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
+          if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
             fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-              real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
-          else if (imag(a->a[bs2*k + l*bs + j]) < 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
+              PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
+          else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
             fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-              real(a->a[bs2*k + l*bs + j]),-imag(a->a[bs2*k + l*bs + j]));
-          else if (real(a->a[bs2*k + l*bs + j]) != 0.0)
-            fprintf(fd," %d %g ",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
+              PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
+          else if (PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
+            fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
 #else
           if (a->a[bs2*k + l*bs + j] != 0.0)
             fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
@@ -426,16 +426,16 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(a->a[bs2*k + l*bs + j]) > 0.0) {
+          if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0) {
             fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-              real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
+              PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
           }
-          else if (imag(a->a[bs2*k + l*bs + j]) < 0.0) {
+          else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0) {
             fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-              real(a->a[bs2*k + l*bs + j]),-imag(a->a[bs2*k + l*bs + j]));
+              PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
           }
           else {
-            fprintf(fd," %d %g ",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
+            fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
           }
 #else
             fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);

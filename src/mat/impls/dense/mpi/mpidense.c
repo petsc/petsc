@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.90 1998/05/15 13:23:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.91 1998/05/29 20:37:01 bsmith Exp balay $";
 #endif
 
 /*
@@ -779,7 +779,7 @@ int MatNorm_MPIDense(Mat A,NormType type,double *norm)
     if (type == NORM_FROBENIUS) {
       for (i=0; i<mat->n*mat->m; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        sum += real(conj(*v)*(*v)); v++;
+        sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
 #endif

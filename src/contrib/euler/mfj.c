@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.21 1998/05/14 02:46:23 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.22 1998/05/29 22:07:13 balay Exp balay $";
 #endif
 
 /* 
@@ -215,8 +215,8 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(USE_PETSC_COMPLEX)
-      else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
-      else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
+      else if (PetscAbsScalar(dot) < umin*sum && PetscReal(dot) >= 0.0) dot = umin*sum;
+      else if (PetscAbsScalar(dot) < 0.0 && PetscReal(dot) > -umin*sum) dot = -umin*sum;
 #else
       else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
       else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.96 1998/04/09 04:10:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.97 1998/05/29 20:35:50 bsmith Exp balay $";
 #endif
 
 /*
@@ -446,7 +446,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
   for (j=1; j<=it; j++) {
     tt  = *hh;
 #if defined(USE_PETSC_COMPLEX)
-    *hh = conj(*cc) * tt + *ss * *(hh+1);
+    *hh = PetscConj(*cc) * tt + *ss * *(hh+1);
 #else
     *hh = *cc * tt + *ss * *(hh+1);
 #endif
@@ -461,7 +461,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
     thus obtaining the updated value of the residual
   */
 #if defined(USE_PETSC_COMPLEX)
-  tt        = sqrt( conj(*hh) * *hh + conj(*(hh+1)) * *(hh+1) );
+  tt        = sqrt( PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1) );
 #else
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
 #endif
@@ -470,8 +470,8 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );
 #if defined(USE_PETSC_COMPLEX)
-  *RS(it)   = conj(*cc) * *RS(it);
-  *hh       = conj(*cc) * *hh + *ss * *(hh+1);
+  *RS(it)   = PetscConj(*cc) * *RS(it);
+  *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
 #else
   *RS(it)   = *cc * *RS(it);
   *hh       = *cc * *hh + *ss * *(hh+1);

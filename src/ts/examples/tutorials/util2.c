@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.4 1997/08/07 14:41:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.5 1997/10/19 03:28:33 bsmith Exp balay $";
 #endif
 
 /*
@@ -85,8 +85,8 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (abs(dx) < dx_min && real(dx) >= 0.0) dx = dx_par;
-      else if (real(dx) < 0.0 && abs(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
+      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;

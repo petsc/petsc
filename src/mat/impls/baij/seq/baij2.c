@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.26 1998/04/13 17:39:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.27 1998/05/08 16:13:42 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1028,7 +1028,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   if (type == NORM_FROBENIUS) {
     for (i=0; i< bs2*nz; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      sum += real(conj(*v)*(*v)); v++;
+      sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;
 #endif

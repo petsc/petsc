@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.32 1998/04/13 17:35:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.33 1998/04/27 04:03:35 curfman Exp balay $";
 #endif
 
 /*
@@ -541,8 +541,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (abs(dx) < umin && real(dx) >= 0.0)     dx = umin;
-      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -umin;
+      if (PetscAbsScalar(dx) < umin && PetscReal(dx) >= 0.0)     dx = umin;
+      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
@@ -658,8 +658,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (abs(dx) < umin && real(dx) >= 0.0)     dx = umin;
-      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -umin;
+      if (PetscAbsScalar(dx) < umin && PetscReal(dx) >= 0.0)     dx = umin;
+      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;

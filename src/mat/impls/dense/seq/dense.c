@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.149 1998/05/29 20:36:59 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.150 1998/05/29 22:43:06 balay Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -657,7 +657,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=0; j<a->n; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (PetscReal(*v) != 0.0 && PetscImag(*v) != 0.0) fprintf(fd," %d %g + %g i",j,PetscReal(*v),PetscImag(*v));
+        if (PetscReal(*v) != 0.0 && PetscImaginary(*v) != 0.0) fprintf(fd," %d %g + %g i",j,PetscReal(*v),PetscImaginary(*v));
         else if (PetscReal(*v)) fprintf(fd," %d %g ",j,PetscReal(*v));
 #else
         if (*v) fprintf(fd," %d %g ",j,*v); 
@@ -672,7 +672,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
     /* determine if matrix has all real values */
     v = a->v;
     for ( i=0; i<a->m*a->n; i++ ) {
-      if (PetscImag(v[i])) { allreal = 0; break ;}
+      if (PetscImaginary(v[i])) { allreal = 0; break ;}
     }
 #endif
     for ( i=0; i<a->m; i++ ) {
@@ -682,7 +682,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
         if (allreal) {
           fprintf(fd,"%6.4e ",PetscReal(*v)); v += a->m;
         } else {
-          fprintf(fd,"%6.4e + %6.4e i ",PetscReal(*v),PetscImag(*v)); v += a->m;
+          fprintf(fd,"%6.4e + %6.4e i ",PetscReal(*v),PetscImaginary(*v)); v += a->m;
         }
 #else
         fprintf(fd,"%6.4e ",*v); v += a->m;

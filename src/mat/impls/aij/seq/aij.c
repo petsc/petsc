@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.268 1998/05/15 17:46:12 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.269 1998/05/29 20:37:05 bsmith Exp balay $";
 #endif
 
 /*
@@ -354,7 +354,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,real(a->a[j]),imag(a->a[j]));
+        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
 #else
         fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
 #endif
@@ -369,12 +369,12 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (imag(a->a[j]) > 0.0 && real(a->a[j]) != 0.0)
-          fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
-        else if (imag(a->a[j]) < 0.0 && real(a->a[j]) != 0.0)
-          fprintf(fd," %d %g - %g i",a->j[j]+shift,real(a->a[j]),-imag(a->a[j]));
-        else if (real(a->a[j]) != 0.0)
-          fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
+        if (PetscImaginary(a->a[j]) > 0.0 && PetscReal(a->a[j]) != 0.0)
+          fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
+        else if (PetscImaginary(a->a[j]) < 0.0 && PetscReal(a->a[j]) != 0.0)
+          fprintf(fd," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));
+        else if (PetscReal(a->a[j]) != 0.0)
+          fprintf(fd," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));
 #else
         if (a->a[j] != 0.0) fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
 #endif
@@ -390,7 +390,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0) nzd++;
+          if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0) nzd++;
 #else
           if (a->a[j] != 0.0) nzd++;
 #endif
@@ -420,8 +420,8 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0)
-            fprintf(fd," %18.16e %18.16e ",real(a->a[j]),imag(a->a[j]));
+          if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0)
+            fprintf(fd," %18.16e %18.16e ",PetscReal(a->a[j]),PetscImaginary(a->a[j]));
 #else
           if (a->a[j] != 0.0) fprintf(fd," %18.16e ",a->a[j]);
 #endif
@@ -434,12 +434,12 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (imag(a->a[j]) > 0.0) {
-          fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
-        } else if (imag(a->a[j]) < 0.0) {
-          fprintf(fd," %d %g - %g i",a->j[j]+shift,real(a->a[j]),-imag(a->a[j]));
+        if (PetscImaginary(a->a[j]) > 0.0) {
+          fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
+        } else if (PetscImaginary(a->a[j]) < 0.0) {
+          fprintf(fd," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));
         } else {
-          fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
+          fprintf(fd," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));
         }
 #else
         fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
@@ -478,7 +478,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
 #if defined(USE_PETSC_COMPLEX)
-        if (real(a->a[j]) >=  0.) continue;
+        if (PetscReal(a->a[j]) >=  0.) continue;
 #else
         if (a->a[j] >=  0.) continue;
 #endif
@@ -500,7 +500,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
 #if defined(USE_PETSC_COMPLEX)
-        if (real(a->a[j]) <=  0.) continue;
+        if (PetscReal(a->a[j]) <=  0.) continue;
 #else
         if (a->a[j] <=  0.) continue;
 #endif
@@ -1197,7 +1197,7 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
   if (type == NORM_FROBENIUS) {
     for (i=0; i<a->nz; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      sum += real(conj(*v)*(*v)); v++;
+      sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;
 #endif

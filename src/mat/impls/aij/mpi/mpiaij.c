@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.247 1998/05/19 20:55:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.248 1998/05/29 18:15:58 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1300,7 +1300,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       v = amat->a;
       for (i=0; i<amat->nz; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        sum += real(conj(*v)*(*v)); v++;
+        sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
 #endif
@@ -1308,7 +1308,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       v = bmat->a;
       for (i=0; i<bmat->nz; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        sum += real(conj(*v)*(*v)); v++;
+        sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
 #endif

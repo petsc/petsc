@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.156 1998/04/27 03:53:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.157 1998/05/29 20:37:17 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -49,7 +49,7 @@ static int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,I
 #if !defined(USE_PETSC_COMPLEX)
           if (a->user_alloc && value) {
 #else
-          if (a->user_alloc && real(value) || imag(value)) {
+          if (a->user_alloc && PetscReal(value) || PetscImaginary(value)) {
 #endif
             PLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
           }
@@ -138,7 +138,7 @@ static int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
 #if !defined(USE_PETSC_COMPLEX)
           if (a->user_alloc && value) {
 #else
-          if (a->user_alloc && real(value) || imag(value)) {
+          if (a->user_alloc && PetscReal(value) || PetscImaginary(value)) {
 #endif
             PLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
           }
@@ -1357,7 +1357,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
       if (diag > 0) {
         for (i=0; i<len; i++) {
 #if defined(USE_PETSC_COMPLEX)
-          sum += real(conj(dv[i+diag])*dv[i+diag]);
+          sum += PetscReal(PetscConj(dv[i+diag])*dv[i+diag]);
 #else
           sum += dv[i+diag]*dv[i+diag];
 #endif
@@ -1365,7 +1365,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
       } else {
         for (i=0; i<len; i++) {
 #if defined(USE_PETSC_COMPLEX)
-          sum += real(conj(dv[i])*dv[i]);
+          sum += PetscReal(PetscConj(dv[i])*dv[i]);
 #else
           sum += dv[i]*dv[i];
 #endif
@@ -1588,7 +1588,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
         if (val[j] != zero)
 #if defined(USE_PETSC_COMPLEX)
           fprintf(fd,"%d %d  %18.16e  %18.16e \n",
-             i+1, col[j]+1, real(val[j]), imag(val[j]) );
+             i+1, col[j]+1, PetscReal(val[j]), PetscImaginary(val[j]) );
 #else
           fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
 #endif
@@ -1608,9 +1608,9 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
           for (j=0; j<len; j++) {
             if (dv[diag+j] != zero) {
 #if defined(USE_PETSC_COMPLEX)
-              if (imag(dv[diag+j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
-                                     j+diag,j,real(dv[diag+j]),imag(dv[diag+j]));
-              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,real(dv[diag+j]));
+              if (PetscImaginary(dv[diag+j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
+                                     j+diag,j,PetscReal(dv[diag+j]),PetscImaginary(dv[diag+j]));
+              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,PetscReal(dv[diag+j]));
 #else
               fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,dv[diag+j]);
 
@@ -1622,9 +1622,9 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
           for (j=0; j<len; j++) {
             if (dv[j] != zero) {
 #if defined(USE_PETSC_COMPLEX)
-              if (imag(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
-                                         j,j-diag,real(dv[j]),imag(dv[j]));
-              else fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,real(dv[j]));
+              if (PetscImaginary(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
+                                         j,j-diag,PetscReal(dv[j]),PetscImaginary(dv[j]));
+              else fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,PetscReal(dv[j]));
 #else
               fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,dv[j]);
 #endif
@@ -1648,12 +1648,12 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 		if (dv[kshift + j*bs + i] != zero) {
                   iprint = 1;
 #if defined(USE_PETSC_COMPLEX)
-                  if (imag(dv[kshift + j*bs + i]))
+                  if (PetscImaginary(dv[kshift + j*bs + i]))
                     fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ",(k+diag)*bs+i,k*bs+j,
-                      real(dv[kshift + j*bs + i]),imag(dv[kshift + j*bs + i]));
+                      PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));
                   else
                     fprintf(fd,"A[%d,%d]=%5.2e   ",(k+diag)*bs+i,k*bs+j,
-                      real(dv[kshift + j*bs + i]));
+                      PetscReal(dv[kshift + j*bs + i]));
 #else
 		  fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*bs+i,k*bs+j,
                       dv[kshift + j*bs + i]);
@@ -1672,12 +1672,12 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
                 if (dv[kshift + j*bs + i] != zero) {
                   iprint = 1;
 #if defined(USE_PETSC_COMPLEX)
-                  if (imag(dv[kshift + j*bs + i]))
+                  if (PetscImaginary(dv[kshift + j*bs + i]))
                     fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ", k*bs+i,(k-diag)*bs+j,
-                       real(dv[kshift + j*bs + i]),imag(dv[kshift + j*bs + i]));
+                       PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));
                   else
                     fprintf(fd,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
-                       real(dv[kshift + j*bs + i]));
+                       PetscReal(dv[kshift + j*bs + i]));
 #else
                   fprintf(fd,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
                      dv[kshift + j*bs + i]);
@@ -1697,10 +1697,10 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
       ierr = MatGetRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
 #if defined(USE_PETSC_COMPLEX)
-        if (imag(val[j]) != 0.0 && real(val[j]) != 0.0)
-          fprintf(fd," %d %g + %g i ",col[j],real(val[j]),imag(val[j]));
-        else if (real(val[j]) != 0.0)
-	  fprintf(fd," %d %g ",col[j],real(val[j]));
+        if (PetscImaginary(val[j]) != 0.0 && PetscReal(val[j]) != 0.0)
+          fprintf(fd," %d %g + %g i ",col[j],PetscReal(val[j]),PetscImaginary(val[j]));
+        else if (PetscReal(val[j]) != 0.0)
+	  fprintf(fd," %d %g ",col[j],PetscReal(val[j]));
 #else
         if (val[j] != 0.0) fprintf(fd," %d %g ",col[j],val[j]);
 #endif

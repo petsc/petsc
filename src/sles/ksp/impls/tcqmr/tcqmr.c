@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.35 1998/03/06 00:11:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.36 1998/03/20 22:47:18 bsmith Exp balay $";
 #endif
 
 /*
@@ -133,7 +133,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
 #if defined(USE_PETSC_COMPLEX)
-    rnorm = rnorm0 * sqrt((double)it+2.0) * real(sprod);     
+    rnorm = rnorm0 * sqrt((double)it+2.0) * PetscReal(sprod);     
 #else
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
 #endif

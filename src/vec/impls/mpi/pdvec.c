@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.97 1998/05/19 15:33:44 balay Exp bsmith $ */
+/* $Id: pdvec.c,v 1.98 1998/05/20 16:04:27 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -67,12 +67,12 @@ int VecView_MPI_File(Vec xin, Viewer ptr )
   if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-    if (imag(x->array[i]) > 0.0) {
-      fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-    } else if (imag(x->array[i]) < 0.0) {
-      fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+    if (PetscImaginary(x->array[i]) > 0.0) {
+      fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+    } else if (PetscImaginary(x->array[i]) < 0.0) {
+      fprintf(fd,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
     } else {
-      fprintf(fd,"%g\n",real(x->array[i]));
+      fprintf(fd,"%g\n",PetscReal(x->array[i]));
     }
 #else
     fprintf(fd,"%g\n",x->array[i]);
@@ -113,12 +113,12 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
       fprintf(fd,"%s = [\n",outputname);
       for ( i=0; i<x->n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (imag(x->array[i]) > 0.0) {
-          fprintf(fd,"%18.16e + %18.16e i\n",real(x->array[i]),imag(x->array[i]));
-        } else if (imag(x->array[i]) < 0.0) {
-          fprintf(fd,"%18.16e - %18.16e i\n",real(x->array[i]),-imag(x->array[i]));
+        if (PetscImaginary(x->array[i]) > 0.0) {
+          fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+        } else if (PetscImaginary(x->array[i]) < 0.0) {
+          fprintf(fd,"%18.16e - %18.16e i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
         } else {
-          fprintf(fd,"%18.16e\n",real(x->array[i]));
+          fprintf(fd,"%18.16e\n",PetscReal(x->array[i]));
         }
 #else
         fprintf(fd,"%18.16e\n",x->array[i]);
@@ -130,12 +130,12 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n); CHKERRQ(ierr);         
         for ( i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(values[i]) > 0.0) {
-            fprintf(fd,"%18.16e + %18.16e i\n",real(values[i]),imag(values[i]));
-          } else if (imag(values[i]) < 0.0) {
-            fprintf(fd,"%18.16e - %18.16e i\n",real(values[i]),-imag(values[i]));
+          if (PetscImaginary(values[i]) > 0.0) {
+            fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(values[i]),PetscImaginary(values[i]));
+          } else if (PetscImaginary(values[i]) < 0.0) {
+            fprintf(fd,"%18.16e - %18.16e i\n",PetscReal(values[i]),-PetscImaginary(values[i]));
           } else {
-            fprintf(fd,"%18.16e\n",real(values[i]));
+            fprintf(fd,"%18.16e\n",PetscReal(values[i]));
           }
 #else
           fprintf(fd,"%18.16e\n",values[i]);
@@ -147,7 +147,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
     } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
       for (i=0; i<x->n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        fprintf(fd,"%18.16e %18.16e\n",real(x->array[i]),imag(x->array[i]));
+        fprintf(fd,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
 #else
         fprintf(fd,"%18.16e\n",x->array[i]);
 #endif
@@ -158,7 +158,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n); CHKERRQ(ierr);         
         for ( i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          fprintf(fd,"%18.16e %18.16e\n",real(values[i]),imag(values[i]));
+          fprintf(fd,"%18.16e %18.16e\n",PetscReal(values[i]),PetscImaginary(values[i]));
 #else
           fprintf(fd,"%18.16e\n",values[i]);
 #endif
@@ -173,12 +173,12 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
           fprintf(fd,"%d: ",cnt++);
         }
 #if defined(USE_PETSC_COMPLEX)
-        if (imag(x->array[i]) > 0.0) {
-          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-        } else if (imag(x->array[i]) < 0.0) {
-          fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+        if (PetscImaginary(x->array[i]) > 0.0) {
+          fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+        } else if (PetscImaginary(x->array[i]) < 0.0) {
+          fprintf(fd,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
         } else {
-          fprintf(fd,"%g\n",real(x->array[i]));
+          fprintf(fd,"%g\n",PetscReal(x->array[i]));
         }
 #else
         fprintf(fd,"%g\n",x->array[i]);
@@ -196,12 +196,12 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
             fprintf(fd,"%d: ",cnt++);
           }
 #if defined(USE_PETSC_COMPLEX)
-          if (imag(values[i]) > 0.0) {
-            fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
-          } else if (imag(values[i]) < 0.0) {
-            fprintf(fd,"%g - %g i\n",real(values[i]),-imag(values[i]));
+          if (PetscImaginary(values[i]) > 0.0) {
+            fprintf(fd,"%g + %g i\n",PetscReal(values[i]),PetscImaginary(values[i]));
+          } else if (PetscImaginary(values[i]) < 0.0) {
+            fprintf(fd,"%g - %g i\n",PetscReal(values[i]),-PetscImaginary(values[i]));
           } else {
-            fprintf(fd,"%g\n",real(values[i]));
+            fprintf(fd,"%g\n",PetscReal(values[i]));
           }
 #else
           fprintf(fd,"%g\n",values[i]);
@@ -287,7 +287,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
       double *xr;
       xr = (double *) PetscMalloc( (x->n+1)*sizeof(double) ); CHKPTRQ(xr);
       for ( i=0; i<x->n; i++ ) {
-        xr[i] = real(x->array[i]);
+        xr[i] = PetscReal(x->array[i]);
       }
       ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
       PetscFree(xr);
@@ -305,7 +305,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
       double *xr;
       xr = (double *) PetscMalloc( (x->n+1)*sizeof(double) ); CHKPTRQ(xr);
       for ( i=0; i<x->n; i++ ) {
-        xr[i] = real(x->array[i]);
+        xr[i] = PetscReal(x->array[i]);
       }
       ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
       PetscFree(xr);
@@ -343,8 +343,8 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   xmin = 1.e20; xmax = -1.e20;
   for ( i=0; i<x->n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-    if (real(x->array[i]) < xmin) xmin = real(x->array[i]);
-    if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
+    if (PetscReal(x->array[i]) < xmin) xmin = PetscReal(x->array[i]);
+    if (PetscReal(x->array[i]) > xmax) xmax = PetscReal(x->array[i]);
 #else
     if (x->array[i] < xmin) xmin = x->array[i];
     if (x->array[i] > xmax) xmax = x->array[i];
@@ -379,8 +379,8 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
     ierr = DrawLine(draw,(double)(i-1+start),x->array[i-1],(double)(i+start),
                    x->array[i],DRAW_RED);CHKERRQ(ierr);
 #else
-    ierr = DrawLine(draw,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
-                   real(x->array[i]),DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,(double)(i-1+start),PetscReal(x->array[i-1]),(double)(i+start),
+                   PetscReal(x->array[i]),DRAW_RED);CHKERRQ(ierr);
 #endif
   }
   if (rank) { /* receive value from right */
@@ -388,7 +388,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
 #if !defined(USE_PETSC_COMPLEX)
     ierr = DrawLine(draw,(double)start-1,tmp,(double)start,x->array[0],DRAW_RED);CHKERRQ(ierr);
 #else
-    ierr = DrawLine(draw,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,(double)start-1,tmp,(double)start,PetscReal(x->array[0]),DRAW_RED);CHKERRQ(ierr);
 #endif
   }
   ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);

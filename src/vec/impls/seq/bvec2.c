@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.124 1998/05/19 15:32:56 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.125 1998/05/21 20:14:10 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -89,12 +89,12 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      if (imag(x->array[i]) > 0.0) {
-        fprintf(fd,"%18.16e + %18.16e i\n",real(x->array[i]),imag(x->array[i]));
-      } else if (imag(x->array[i]) < 0.0) {
-        fprintf(fd,"%18.16e - %18.16e i\n",real(x->array[i]),-imag(x->array[i]));
+      if (PetscImaginary(x->array[i]) > 0.0) {
+        fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+      } else if (PetscImaginary(x->array[i]) < 0.0) {
+        fprintf(fd,"%18.16e - %18.16e i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
       } else {
-        fprintf(fd,"%18.16e\n",real(x->array[i]));
+        fprintf(fd,"%18.16e\n",PetscReal(x->array[i]));
       }
 #else
       fprintf(fd,"%18.16e\n",x->array[i]);
@@ -104,7 +104,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
   } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
     for (i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      fprintf(fd,"%18.16e %18.16e\n",real(x->array[i]),imag(x->array[i]));
+      fprintf(fd,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
 #else
       fprintf(fd,"%18.16e\n",x->array[i]);
 #endif
@@ -115,12 +115,12 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
         fprintf(fd,"%d: ",i);
       }
 #if defined(USE_PETSC_COMPLEX)
-      if (imag(x->array[i]) > 0.0) {
-        fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-      } else if (imag(x->array[i]) < 0.0) {
-        fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+      if (PetscImaginary(x->array[i]) > 0.0) {
+        fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+      } else if (PetscImaginary(x->array[i]) < 0.0) {
+        fprintf(fd,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
       } else {
-        fprintf(fd,"%g\n",real(x->array[i]));
+        fprintf(fd,"%g\n",PetscReal(x->array[i]));
       }
 #else
       fprintf(fd,"%g\n",x->array[i]);
@@ -157,7 +157,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
     double *yy;
     yy = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(yy);    
     for ( i=0; i<n; i++ ) {
-      yy[i] = real(x->array[i]);
+      yy[i] = PetscReal(x->array[i]);
     }
     DrawLGAddPoints(lg,n,&xx,&yy);
     PetscFree(yy);

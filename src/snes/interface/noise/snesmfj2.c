@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.7 1998/05/13 19:40:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.8 1998/05/13 20:02:02 curfman Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -187,8 +187,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(USE_PETSC_COMPLEX)
-      else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
-      else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
+      else if (PetscAbsScalar(dot) < umin*sum && PetscReal(dot) >= 0.0) dot = umin*sum;
+      else if (PetscAbsScalar(dot) < 0.0 && PetscReal(dot) > -umin*sum) dot = -umin*sum;
 #else
       else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
       else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
