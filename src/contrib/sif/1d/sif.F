@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.6 1999/03/02 19:40:23 bsmith Exp bsmith $";
+C "$Id: sif.F,v 1.7 1999/03/02 22:29:16 bsmith Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -19,7 +19,6 @@ C
 C  --------------------------------------------------------------------------
 
       program main
-      implicit none
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                    Include files
@@ -78,8 +77,8 @@ C  See the Fortran section of the PETSc users manual for details.
       Draw              draw
 
       integer           flg, ierr
-      integer           time_steps, steps
-      double precision  dt, ftime, duration, errabs, errrel
+      integer           time_steps, steps, kdim
+      double precision  dt, ftime, duration, errabs, errrel, faclin
 
 C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
@@ -103,10 +102,15 @@ C
       time_steps = 100000
       duration   = 1
 C
-      M          = 60 
-      debug      = 0
+      M          = 130
+C      M          = 60
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
+      errabs     = 1.d-10
+      errrel     = 1.d-10
+      faclin     = 0.0005d0
+      kdim       = M  
+      debug      = 0
 
 C  Double buffering makes graphics look better.
 C
@@ -183,15 +187,20 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create timestepping solver context; set various callback routines
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      errabs = 1.d-6
-      errrel = 1.d-6
-      write (6,*) 'errabs, errrel = ', errabs, errrel
-1     format (1x,2e18.8)
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
       call TSSetMonitor(ts,Monitor,PETSC_NULL_DOUBLE,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_DOUBLE,ierr)
       call TSSetType(ts,TS_PVODE,ierr)
       call TSPvodeSetTolerance(ts,errabs,errrel,ierr)
+      call TSPVodeSetLinearTolerance(ts,faclin,ierr)
+      call TSPVodeSetGMRESRestart(ts,kdim,ierr)
+      if (rank .eq. 0)  then
+      write (6,*) 'Use PETSc'
+      write (6,*) 'errabs, errrel = ', errabs, errrel
+      write (6,*) '# of mesh points', M-1
+      write (6,*) 'K_dimension',kdim
+      write (6,*) 'Factor of linear tolerance',faclin  
+      endif
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine;
@@ -273,7 +282,6 @@ C  Output Parameter:
 C     global - vector with solution at initial time
 C
       subroutine InitialConditions(global)
-      implicit none
 #include "sif.h"
 
 C  Input/output parameters:
@@ -354,7 +362,6 @@ C   Output Parameter:
 C   global - the solution at this timestep
 
       subroutine Monitor(ts,step,time,global,dummy)
-      implicit none
 #include "sif.h"
 
 C  Input/output parameters:
@@ -415,7 +422,6 @@ C   Output Parameter:
 C      globalout - value of function
 C
       subroutine RHSFunction(ts,t,globalin,globalout,dummy,ierr)
-      implicit none
 #include "sif.h"
 
 C  Input/output parameters:
@@ -480,7 +486,6 @@ c
 c Parallel version
 c
 	subroutine res2 (neq,t,y,del)
-        implicit none
 #include "sif.h"
 c
 c  Evaluate the time derivatives resulted in spatial discretization of
@@ -495,7 +500,7 @@ c
 c
         double precision d0s,d1,d2,yp1,dp,cur,d1o,yab,fltip,par1,d1p,f1h
      &                   ,dm,di,cm,ci,f1,f0h,f0,p1,ym1,ym2,d1s,cp
-     &                   ,dp,cf,df,d1i
+     &                   ,cf,df,d1i
 c
         integer          i,neq
 c
