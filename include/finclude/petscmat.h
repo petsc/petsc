@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.52 1999/03/24 18:07:39 balay Exp balay $;
+!  $Id: mat.h,v 1.53 1999/04/02 16:59:17 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -23,7 +23,10 @@
 #define MatILUInfo          double precision
 #define MatDuplicateOption  integer      
 #define MatStructure        integer
-#define MatPartitioningType integer
+#define MatPartitioningType character*(80)
+
+#define MATPARTITIONING_CURRENT  'current'
+#define MATPARTITIONING_PARMETIS 'parmetis'
 
 #endif
 !
@@ -181,14 +184,6 @@
       
       parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LF=2)
       parameter (COLORING_ID=3, COLORING_NEW=4)
-!     
-!     Partitioning
-!     
-      integer MATPARTITIONING_CURRENT,MATPARTITIONING_PARMETIS
-      integer MATPARTITIONING_NEW           
-
-      parameter (MATPARTITIONING_CURRENT=0, MATPARTITIONING_PARMETIS=1)
-      parameter (MATPARTITIONING_NEW=2)
 !
 !  MatOperation
 !
