@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.15 1995/10/22 04:17:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.16 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Scalar        value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
-  VecScatter    ctx = 0;
+  VecScatter    ctx;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
