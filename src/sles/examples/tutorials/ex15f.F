@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.5 1997/07/10 15:47:03 balay Exp $";
+C    "$Id: ex15f.F,v 1.1 1997/09/02 15:08:22 curfman Exp balay $";
 C
 C   Solves a linear system in parallel with SLES.  Also indicates
 C   use of a user-provided preconditioner.  Input parameters include:
@@ -242,8 +242,11 @@ C  are no longer needed.
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
-      call VecDestroy(diag,ierr)
       call MatDestroy(A,ierr)
+      if (user_defined_pc .eq. 1) then
+         call VecDestroy(diag,ierr)
+      endif
+
 
 C  Always call PetscFinalize() before exiting a program. 
 

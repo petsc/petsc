@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.33 1997/07/09 20:52:47 balay Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.34 1997/08/22 15:12:39 bsmith Exp balay $";
 #endif
 
 /*
@@ -90,14 +90,18 @@ int PCCreate_Shell(PC pc)
   shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
   PLogObjectMemory(pc,sizeof(PC_Shell));
 
-  pc->data       = (void *) shell;
-  pc->apply      = PCApply_Shell;
-  pc->applyrich  = 0;
-  pc->setup      = 0;
-  pc->type       = PCSHELL;
-  pc->view       = PCView_Shell;
-  pc->name       = 0;
-  shell->apply   = 0;
+  pc->data         = (void *) shell;
+  pc->apply        = PCApply_Shell;
+  pc->applyrich    = 0;
+  pc->setup        = 0;
+  pc->type         = PCSHELL;
+  pc->view         = PCView_Shell;
+  pc->name         = 0;
+  shell->apply     = 0;
+  shell->name      = 0;
+  shell->applyrich = 0;
+  shell->ctxrich   = 0;
+  shell->ctx       = 0;
   return 0;
 }
 
