@@ -1,6 +1,5 @@
-import bs
 import fileset
-import logging
+import maker
 import transform
 import BSTemplates.compileDefaults as compileDefaults
 import BSTemplates.sidlStructs as sidlStructs
@@ -8,9 +7,11 @@ import BSTemplates.sidlStructs as sidlStructs
 import os
 import re
 
-class UsingSIDL (logging.Logger):
+class UsingSIDL (maker.Maker):
   '''This class handles all interaction specific to the SIDL language'''
-  def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None, bootstrapPackages = []):
+  def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None, bootstrapPackages = [], argDB = None):
+    maker.Maker.__init__(self, argDB)
+    self.setupArgDB()
     self.project  = project
     self.packages = packages
     rootDir       = project.getRoot()
@@ -34,7 +35,7 @@ class UsingSIDL (logging.Logger):
     self.bootstrapPackages = sidlStructs.SIDLPackageList(self)
     self.bootstrapPackages.extend(bootstrapPackages)
     # Setup compiler specific defaults
-    if bs.argDB.has_key('babelCrap') and int(bs.argDB['babelCrap']):
+    if int(self.argDB['babelCrap']):
       self.debugPrint('Compiling SIDL with Babel', 3, 'sidl')
       import BSTemplates.babelTargets
       self.compilerDefaults = BSTemplates.babelTargets.Defaults(self)
@@ -49,6 +50,17 @@ class UsingSIDL (logging.Logger):
     self.extraLibraries      = sidlStructs.SIDLPackageDict(self)
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
+    return
+
+  def setupArgDB(self):
+    import nargs
+
+    self.argDB.setType('SIDL_LANG', nargs.ArgString('The language of the SIDL runtime'))
+    self.argDB.setLocalType('babelCrap', nargs.ArgBool('True if using Babel'))
+
+    if not self.argDB.has_key('SIDL_LANG'): self.argDB['SIDL_LANG'] = 'C++'
+    if not self.argDB.has_key('babelCrap'): self.argDB['babelCrap'] = 0
+    return
 
   def setupIncludeDirectories(self):
     rootDir = self.getRuntimeProject().getRoot()
@@ -62,8 +74,8 @@ class UsingSIDL (logging.Logger):
 
   def getRuntimeProject(self):
     projects = [self.project]
-    if bs.argDB.has_key('installedprojects'):
-      projects += bs.argDB['installedprojects']
+    if self.argDB.has_key('installedprojects'):
+      projects += self.argDB['installedprojects']
     for project in projects:
       if project.getName() == 'sidlruntime':
         return project
@@ -71,13 +83,13 @@ class UsingSIDL (logging.Logger):
 
   def setupExtraLibraries(self):
     runtimeProject = self.getRuntimeProject()
-    using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
+    using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self, argDB = self.argDB)
     serverLib = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
     self.extraLibraries['executable'].extend(serverLib)
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.extraLibraries[lang].extend(serverLib)
       if not self.project == runtimeProject and not lang == self.getBaseLanguage():
-        using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self)
+        using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self, argDB = self.argDB)
         self.extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0))
     for package in self.getPackages():
       if not self.project == runtimeProject or not package in self.bootstrapPackages:
@@ -98,10 +110,7 @@ class UsingSIDL (logging.Logger):
 
   def getBaseLanguage(self):
     '''The implementation language for the SIDL runtime library, usually C++'''
-    if bs.argDB.has_key('SIDL_LANG'):
-      return bs.argDB['SIDL_LANG']
-    else:
-      return 'C++'
+    return self.argDB['SIDL_LANG']
 
   def getPackages(self):
     return self.packages

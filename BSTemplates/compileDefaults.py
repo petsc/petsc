@@ -1,7 +1,7 @@
-import bs
 import compile
 import fileset
 import link
+import maker
 import nargs
 import transform
 import BSTemplates.sidlStructs
@@ -10,15 +10,10 @@ import distutils.sysconfig
 import os
 import sys
 
-def guessProject(dir):
-  for project in bs.argDB['installedprojects']:
-    if project.getRoot() == dir:
-      return project
-  return bs.Project(os.path.basename(dir).lower(), '')
-
-class UsingCompiler:
+class UsingCompiler(maker.Maker):
   '''This class handles all interaction specific to a compiled language'''
-  def __init__(self, usingSIDL):
+  def __init__(self, usingSIDL, argDB = None):
+    maker.Maker.__init__(self, argDB = argDB)
     self.usingSIDL      = usingSIDL
     self.defines        = ['PIC']
     self.includeDirs    = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
@@ -74,7 +69,7 @@ class UsingCompiler:
     libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
     for dir in self.usingSIDL.repositoryDirs:
-      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+      for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
     linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
@@ -88,7 +83,7 @@ class UsingCompiler:
       libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries[package])
     for dir in self.usingSIDL.repositoryDirs:
-      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+      for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
     linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
@@ -118,15 +113,15 @@ class UsingCompiler:
     libraries.extend(self.extraLibraries['executable'])
     libraries.extend(self.usingSIDL.extraLibraries['executable'])
     for dir in self.usingSIDL.repositoryDirs:
-      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+      for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
     return [link.TagLibrary(self.usingSIDL.sourceDB), link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)]
 
 class UsingC (UsingCompiler):
   '''This class handles all interaction specific to the C language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
 
   def getLanguage(self):
     '''The language name'''
@@ -163,8 +158,8 @@ class UsingC (UsingCompiler):
 
 class UsingCxx (UsingCompiler):
   '''This class handles all interaction specific to the C++ language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
 
   def getLanguage(self):
     '''The language name'''
@@ -211,10 +206,10 @@ class UsingCxx (UsingCompiler):
 
 class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(1,'The directory containing Python.h'))
-    #TODO: bs.argDB.setType('PYTHON_LIB', nargs.ArgLibrary(1, 'The library containing PyInitialize()'))
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    self.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(1,'The directory containing Python.h'))
+    #TODO: self.argDB.setType('PYTHON_LIB', nargs.ArgLibrary(1, 'The library containing PyInitialize()'))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     try:
@@ -227,10 +222,10 @@ class UsingPython(UsingCompiler):
 
   def setupIncludeDirectories(self):
     try:
-      if not bs.argDB.has_key('PYTHON_INCLUDE'):
-        bs.argDB['PYTHON_INCLUDE'] = distutils.sysconfig.get_python_inc()
+      if not self.argDB.has_key('PYTHON_INCLUDE'):
+        self.argDB['PYTHON_INCLUDE'] = distutils.sysconfig.get_python_inc()
     except: pass
-    includeDir = bs.argDB['PYTHON_INCLUDE']
+    includeDir = self.argDB['PYTHON_INCLUDE']
     if isinstance(includeDir, list):
       self.includeDirs[self.getLanguage()].extend(includeDir)
     else:
@@ -239,16 +234,16 @@ class UsingPython(UsingCompiler):
 
   def setupExtraLibraries(self):
     try:
-      if not bs.argDB.has_key('PYTHON_LIB'):
+      if not self.argDB.has_key('PYTHON_LIB'):
         lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
         # if .so was not built then need to strip .a off of end
         if lib[-2:] == '.a': lib = lib[0:-2]
         # may be stuff after .so like .0, so cannot use splitext()
         lib = lib.split('.so')[0]+'.so'
-        bs.argDB['PYTHON_LIB'] = lib
+        self.argDB['PYTHON_LIB'] = lib
     except: pass
 
-    extraLibraries = [bs.argDB['PYTHON_LIB']]
+    extraLibraries = [self.argDB['PYTHON_LIB']]
     for lib in distutils.sysconfig.get_config_var('LIBS').split():
       # Change -l<lib> to lib<lib>.so
       extraLibraries.append('lib'+lib[2:]+'.so')
@@ -307,16 +302,16 @@ class UsingPython(UsingCompiler):
 
 class UsingMathematica(UsingCompiler):
   '''This class handles all interaction specific to the Mathematica language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setType('MATHEMATICA_INCLUDE', nargs.ArgDir(1,'The directory containing mathlink.h'))
-    #TODO: bs.argDB.setType('MATHEMATICA_LIB', nargs.ArgLibrary(1, 'The library containing MathOpenEnv()'))
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    self.argDB.setType('MATHEMATICA_INCLUDE', nargs.ArgDir(1,'The directory containing mathlink.h'))
+    #TODO: self.argDB.setType('MATHEMATICA_LIB', nargs.ArgLibrary(1, 'The library containing MathOpenEnv()'))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
 
   def setupIncludeDirectories(self):
-    includeDir = bs.argDB['MATHEMATICA_INCLUDE']
+    includeDir = self.argDB['MATHEMATICA_INCLUDE']
     if isinstance(includeDir, list):
       self.includeDirs[self.getLanguage()].extend(includeDir)
     else:
@@ -325,7 +320,7 @@ class UsingMathematica(UsingCompiler):
 
   def setupExtraLibraries(self):
     for package in self.usingSIDL.getPackages():
-      self.extraLibraries[package].append(bs.argDB['MATHEMATICA_LIB'])
+      self.extraLibraries[package].append(self.argDB['MATHEMATICA_LIB'])
     return self.extraLibraries
 
   def getLanguage(self):
@@ -373,8 +368,8 @@ class UsingMathematica(UsingCompiler):
 
 class UsingF77 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 77 language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
 
   def getLanguage(self):
     '''The language name'''
@@ -420,15 +415,15 @@ class UsingF77 (UsingCompiler):
 
 class UsingF90 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 90 language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
-    #TODO: bs.argDB.setType('F90_LIB', nargs.ArgLibrary(1, 'The libraries containing F90 intrinsics'))
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    #TODO: self.argDB.setType('F90_LIB', nargs.ArgLibrary(1, 'The libraries containing F90 intrinsics'))
     self.setupExtraLibraries()
     return
 
   def setupExtraLibraries(self):
-    if bs.argDB.has_key('F90_LIB'):
-      extraLibraries = bs.argDB['F90_LIB']
+    if self.argDB.has_key('F90_LIB'):
+      extraLibraries = self.argDB['F90_LIB']
       if not isinstance(extraLibraries, list):
         extraLibraries = [extraLibraries]
       self.extraLibraries[self.getLanguage()].extend(extraLibraries)
@@ -491,15 +486,15 @@ class UsingF90 (UsingCompiler):
 
 class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(1, 'The directory containing jni.h'))
-    #TODO: bs.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgLibrary(1, 'The library containing holders for Java builtin types'))
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    self.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(1, 'The directory containing jni.h'))
+    #TODO: self.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgLibrary(1, 'The library containing holders for Java builtin types'))
     self.setupIncludeDirectories()
 
   def setupIncludeDirectories(self):
     '''The directory containing jni.h'''
-    includeDir = bs.argDB['JAVA_INCLUDE']
+    includeDir = self.argDB['JAVA_INCLUDE']
     if isinstance(includeDir, list):
       self.includeDirs[self.getLanguage()].extend(includeDir)
     else:
@@ -517,7 +512,7 @@ class UsingJava (UsingCompiler):
   def getSIDLRuntimeLibraries(self):
     '''The SIDL runtime library for Java'''
     # Should be self.babelLibDir/sidl.jar
-    runtimeLibs = bs.argDB['JAVA_RUNTIME_LIB']
+    runtimeLibs = self.argDB['JAVA_RUNTIME_LIB']
     if not isinstance(runtimeLibs, list):
       runtimeLibs = [runtimeLibs]
     return runtimeLibs
@@ -564,24 +559,24 @@ class UsingJava (UsingCompiler):
 #------------------------------------------------------------------------------------------------------
 class UsingMatlab(UsingCompiler):
   '''This class handles all interaction specific to the Matlab language'''
-  def __init__(self, usingSIDL):
-    UsingCompiler.__init__(self, usingSIDL)
-    if bs.argDB['MATLAB_DIR']:
-      bs.argDB['MATLAB_INCLUDE'] = bs.argDB['MATLAB_DIR'] + '/extern/include'
-      bs.argDB['MATLAB_LIB']     = [bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmat.a',
-                                      bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmx.a',
-                                      bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libut.a',
-                                      bs.argDB['MATLAB_DIR']+'/bin/glnx86/libmex.a']
+  def __init__(self, usingSIDL, argDB = None):
+    UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    if self.argDB['MATLAB_DIR']:
+      self.argDB['MATLAB_INCLUDE'] = self.argDB['MATLAB_DIR'] + '/extern/include'
+      self.argDB['MATLAB_LIB']     = [self.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmat.a',
+                                      self.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmx.a',
+                                      self.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libut.a',
+                                      self.argDB['MATLAB_DIR']+'/bin/glnx86/libmex.a']
     else:
-      bs.argDB['MATLAB_INCLUDE'] = ''
-      bs.argDB['MATLAB_LIB']     = ''
+      self.argDB['MATLAB_INCLUDE'] = ''
+      self.argDB['MATLAB_LIB']     = ''
 
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
 
   def setupIncludeDirectories(self):
-    includeDir = bs.argDB['MATLAB_INCLUDE']
+    includeDir = self.argDB['MATLAB_INCLUDE']
     if isinstance(includeDir, list):
       self.includeDirs[self.getLanguage()].extend(includeDir)
     else:
@@ -590,7 +585,7 @@ class UsingMatlab(UsingCompiler):
 
   def setupExtraLibraries(self):
     for package in self.usingSIDL.getPackages():
-      self.extraLibraries[package].append(bs.argDB['MATLAB_LIB'])
+      self.extraLibraries[package].append(self.argDB['MATLAB_LIB'])
     return self.extraLibraries
 
   def getLanguage(self):

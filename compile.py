@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import action
-import bs
 import fileset
 import logging
 import transform

@@ -1,5 +1,22 @@
 import ihooks
 
+class Hooks(ihooks.Hooks):
+  def __init__(self):
+    ihooks.Hooks.__init__(self)
+    import bs
+    import nargs
+    import BSTemplates.sidlDefaults
+
+    self.argDB     = nargs.ArgDict('ArgDict')
+    self.usingSIDL = BSTemplates.sidlDefaults.UsingSIDL(bs.Project('', ''), [], argDB = self.argDB)
+    return
+
+  # sys interface replacement
+  def default_path(self):
+    import sys
+    projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
+    return sys.path+projects
+
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):
     if path is None:
@@ -127,6 +144,6 @@ class Importer(ihooks.ModuleImporter):
     return self.import_it(name[i+1:], name, parent, force_load=1)
 
 # Setup custom loading
-loader   = Loader()
+loader   = Loader(Hooks())
 importer = Importer(loader)
 importer.install()

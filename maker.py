@@ -144,3 +144,9 @@ class Maker (logging.Logger):
       return output+']'
     else:
       raise RuntimeError('Invalid fileset '+str(set))
+
+  def guessProject(self, dir):
+    for project in self.argDB['installedprojects']:
+      if project.getRoot() == dir:
+        return project
+    return bs.Project(os.path.basename(dir).lower(), '')
