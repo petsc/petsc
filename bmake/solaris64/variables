@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.16 2000/07/21 13:22:42 balay Exp balay $ 
+# $Id: base_variables,v 1.17 2000/07/21 14:20:19 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -8,6 +8,7 @@ RM		   = rm -f
 OMAKE		   = make
 RANLIB		   = true
 SHELL		   = /bin/sh
+LD                 = /usr/ccs/bin/ld
 SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
