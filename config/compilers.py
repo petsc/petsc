@@ -73,7 +73,7 @@ class Configure(config.base.Configure):
       import commands
 
       (status, output) = commands.getstatusoutput(compiler+' --help')
-      if not status and (output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0):
+      if not status and (output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0):
         return 1
     except Exception:
       pass
@@ -264,7 +264,7 @@ class Configure(config.base.Configure):
         if vendor == 'ibm' or not vendor:
           yield 'xlC'
         if vendor == 'intel' or not vendor:
-          yield 'icc'
+          yield 'icc -Kc++'
         if vendor == 'microsoft' or not vendor:
           yield 'cl'
         if vendor == 'portland' or not vendor:
