@@ -1,8 +1,14 @@
-static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
+#ifndef lint
+static char vcid[] = "$Id: mpiaij.c,v 1.110 1996/01/12 22:31:24 bsmith Exp bsmith $";
+#endif
+
+#include "mpiaij.h"
+
+int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
-  int        shift, **table; **data , *xtable, *xdata;, **idx, *n, *w1;
-  int        *w2, *w3, *w4, *rtable ;
+  int        **idx, *n, *w1, *w2, *w3, *w4, *rtable, size, rank, m, i, j, ierr ;
+  int        row, proc, mct, msz, **outdat, **ptr, *ctr;
                                   /* assume overlap = 1 */
   
   size   = a->size;
@@ -10,7 +16,7 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
   m      = a->M;
   idx    = PetscMalloc((is_max)*sizeof(int *));
   n      = PetscMalloc((is_max)*sizeof(int ));
-  rtable = PetscMalloc((m+1)sizeof(int )); /* Hash table for maping row ->proc */
+  rtable = PetscMalloc((m+1)*sizeof(int )); /* Hash table for maping row ->proc */
   
   for ( i=0 ; i<is_max ; ++i) {
     ierr = ISGetIndices(is[i],&idx[i]);  CHKERRQ(ierr);
@@ -18,8 +24,8 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
   }
   
   /* Create hash table for the mapping :row -> proc*/
-  for( i=0 j=0; i< size; ++i) {
-    for (; j <rowners[i+1]; ++j) {
+  for( i=0, j=0; i< size; ++i) {
+    for (; j <a->rowners[i+1]; ++j) {
       rtable[j] = i;
     }
   }
@@ -64,7 +70,7 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
   ctr       = PetscMalloc( size*sizeof(int));  
 
   for (i = 1; i < size ; ++i) {
-    if ( w1[i]) { outdat[i] = w1[ i-1];}
+    if ( w1[i]) { outdat[i] = outdat[i-1] + w1[ i-1];}
     else { outdat[i] = PETSC_NULL; }
   }
 
@@ -86,7 +92,7 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
       row  = idx[i][j];
       proc = rtable[row];
       if (proc != rank) {
-        ++count[proc];
+        ++ctr[proc];
         *ptr[proc] = row;
         ++ptr[proc];
       }
@@ -99,17 +105,17 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
       }
     }
   }
-
+  
   /* Check Validity */
   for ( i=0 ; i<size ; ++i) {
     if (w3[i] != outdat[i][0]) {SETERRQ(1,"MatIncreaseOverlap_MPIAIJ: Blew it!\n"); }
   }
+  
 
 
 
-
-  table = PetscMalloc((ismax)*sizeof(int *));  /* Hash table for each IS */
-  data  = PetscMalloc((is_max)*sizeof(int *)); /* The overlap sol stored here */
+  /*  table = PetscMalloc((ismax)*sizeof(int *)); 
+  data  = PetscMalloc((is_max)*sizeof(int *));
   table[0] = PetscMalloc((m+1)*(is_max+1)*2*sizeof(int));
   data [0] = table[0] + (m+1)*(is_max+1);
 
@@ -118,8 +124,16 @@ static int MatIncreaseOverlap_MPIAIJ(Mat, int id_msx, IS *is, int ov);
     data[i]  = table[0] + (m+1)*i;
   }
   xdata  = table[0] + (m+1)*i;
-  PetscMemzero(*table,(m+1)*(is_max+1)*sizeof(int));
-
+  PetscMemzero(*table,(m+1)*(is_max+1)*sizeof(int));*/
+  
   /* whew! already done? check again :) */
-  return 0
+  PetscFree(idx);
+  PetscFree(n);
+  PetscFree(rtable);
+  PetscFree(w1);
+  PetscFree(outdat[0]);
+  PetscFree(  outdat);
+  PetscFree(ctr);
+  return 0;
 }
+
