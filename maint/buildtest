@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.128 1998/04/06 15:41:40 balay Exp balay $ 
+# $Id: buildtest,v 1.129 1998/04/06 22:51:01 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -140,6 +140,14 @@ foreach job ($*)
   else
     set TEST = testexamples_
   endif
+#
+# Use nice to reduce priority on yukon,alaska
+#
+  if ( $mach == yukon || $mach == alaska ) then 
+    set NICE = 'nice -20 '
+  else
+    set NICE = ''
+  endif
 
   rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme >& /dev/null
   rsh $mach -n "cd $hme/maint ;rm -f build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
@@ -151,27 +159,27 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
   if ( $job1 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job2 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job2 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job2 tree  >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job3 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job3 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job3 tree  >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job4 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job5 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job6 != 0 ) then 
-    rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
