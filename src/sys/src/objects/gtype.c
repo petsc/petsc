@@ -18,6 +18,9 @@
    Output Parameter:
 .  type - the object type
 
+   Note: This is being PHASED out; all classes derived from abstract classes instead have a
+         type_name
+
    Level: advanced
 
    Concepts: object type

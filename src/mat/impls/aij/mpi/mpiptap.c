@@ -107,7 +107,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_SeqAIJ           *p_loc,*p_oth;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pdti,*pdtj,*poti,*potj,*ptJ;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz; 
-  PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,j,k,pnz,row;
+  PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,k,pnz,row;
   PetscInt             am=A->m,pN=P->N,pn=P->n;  
   PetscBT              lnkbt;
   MPI_Comm             comm=A->comm;
@@ -120,6 +120,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Status           *sstatus,rstatus;
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon;
+  PetscMPIInt          j;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)P,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);

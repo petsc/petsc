@@ -6,14 +6,14 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqBDiag_1"
-PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
+PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,row,newnz,*bdlen_new;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       kk,ldiag,row,newnz,*bdlen_new;
   PetscErrorCode ierr;
-  int          j,k, *diag_new;
-  PetscTruth   roworiented = a->roworiented,dfound;
-  PetscScalar  value,**diagv_new;
+  PetscInt       j,k, *diag_new;
+  PetscTruth     roworiented = a->roworiented,dfound;
+  PetscScalar    value,**diagv_new;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
@@ -52,7 +52,7 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
           PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
-          ierr      = PetscMalloc(2*(a->nd+1)*sizeof(int),&diag_new);CHKERRQ(ierr);
+          ierr      = PetscMalloc(2*(a->nd+1)*sizeof(PetscInt),&diag_new);CHKERRQ(ierr);
           bdlen_new = diag_new + a->nd + 1;
           ierr      = PetscMalloc((a->nd+1)*sizeof(PetscScalar*),&diagv_new);CHKERRQ(ierr);
           for (k=0; k<a->nd; k++) {
@@ -85,7 +85,7 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
           if (is == ADD_VALUES) a->diagv[a->nd][row] += value;
           else                  a->diagv[a->nd][row] = value;
           a->nd++;
-          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(int)+sizeof(PetscScalar*));
+          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));
         }
       }
     }
@@ -96,14 +96,14 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqBDiag_N"
-PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
+PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          kk,ldiag,shift,row,newnz,*bdlen_new;
-  int          j,k,bs = A->bs,*diag_new,idx=0;
-  PetscTruth   roworiented = a->roworiented,dfound;
-  PetscScalar  value,**diagv_new;
+  PetscInt       kk,ldiag,shift,row,newnz,*bdlen_new;
+  PetscInt       j,k,bs = A->bs,*diag_new,idx=0;
+  PetscTruth     roworiented = a->roworiented,dfound;
+  PetscScalar    value,**diagv_new;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
@@ -141,7 +141,7 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
           PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
-          ierr      = PetscMalloc(2*(a->nd+1)*sizeof(int),&diag_new);CHKERRQ(ierr);
+          ierr      = PetscMalloc(2*(a->nd+1)*sizeof(PetscInt),&diag_new);CHKERRQ(ierr);
           bdlen_new = diag_new + a->nd + 1;
           ierr      = PetscMalloc((a->nd+1)*sizeof(PetscScalar*),&diagv_new);CHKERRQ(ierr);
           for (k=0; k<a->nd; k++) {
@@ -173,7 +173,7 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
           if (is == ADD_VALUES) a->diagv[k][shift + (in[j]%bs)*bs] += value;
           else                  a->diagv[k][shift + (in[j]%bs)*bs] = value;
           a->nd++;
-          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(int)+sizeof(PetscScalar*));
+          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));
         }
       }
     }
@@ -183,10 +183,10 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqBDiag_1"
-PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
+PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,row,j,k;
+  PetscInt     kk,ldiag,row,j,k;
   PetscScalar  zero = 0.0;
   PetscTruth   dfound;
 
@@ -215,10 +215,10 @@ PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqBDiag_N"
-PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
+PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,shift,row,j,k,bs = A->bs;
+  PetscInt     kk,ldiag,shift,row,j,k,bs = A->bs;
   PetscScalar  zero = 0.0;
   PetscTruth   dfound;
 
@@ -251,12 +251,12 @@ PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
 #define __FUNCT__ "MatMult_SeqBDiag_1"
 PetscErrorCode MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,diag,*a_diag = a->diag,*a_bdlen = a->bdlen;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,diag,*a_diag = a->diag,*a_bdlen = a->bdlen;
   PetscErrorCode ierr;
-  int   d,j,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv;
+  PetscInt       d,j,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -286,12 +286,12 @@ PetscErrorCode MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqBDiag_2"
 PetscErrorCode MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,nb_diag;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,nb_diag;
   PetscErrorCode ierr;
-  int    *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr); 
@@ -328,12 +328,12 @@ PetscErrorCode MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqBDiag_3"
 PetscErrorCode MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,nb_diag;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,nb_diag;
   PetscErrorCode ierr;
-  int    *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -371,12 +371,12 @@ PetscErrorCode MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqBDiag_4"
 PetscErrorCode MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,nb_diag;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,nb_diag;
   PetscErrorCode ierr;
-  int       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -415,12 +415,12 @@ PetscErrorCode MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqBDiag_5"
 PetscErrorCode MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,nb_diag;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,nb_diag;
   PetscErrorCode ierr;
-  int   *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3,pvin4;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3,pvin4;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -460,12 +460,12 @@ PetscErrorCode MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqBDiag_N"
 PetscErrorCode MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
   PetscErrorCode ierr;
-  int  *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -501,11 +501,11 @@ PetscErrorCode MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_1"
 PetscErrorCode MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,diag,*a_diag = a->diag,*a_bdlen = a->bdlen,d,j,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv;
+  PetscInt       nd = a->nd,diag,*a_diag = a->diag,*a_bdlen = a->bdlen,d,j,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -535,12 +535,12 @@ PetscErrorCode MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_2"
 PetscErrorCode MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,nb_diag;
-  int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1;
+  PetscInt       nd = a->nd,nb_diag;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -577,12 +577,12 @@ PetscErrorCode MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_3"
 PetscErrorCode MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,nb_diag;
-  int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2;
+  PetscInt       nd = a->nd,nb_diag;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -620,12 +620,12 @@ PetscErrorCode MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_4"
 PetscErrorCode MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,nb_diag;
-  int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3;
+  PetscInt       nd = a->nd,nb_diag;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -664,12 +664,12 @@ PetscErrorCode MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_5"
 PetscErrorCode MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int    nd = a->nd,nb_diag;
-  int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3,pvin4;
+  PetscInt       nd = a->nd,nb_diag;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv,pvin0,pvin1,pvin2,pvin3,pvin4;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -709,12 +709,12 @@ PetscErrorCode MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqBDiag_N"
 PetscErrorCode MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 { 
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
-  int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
-  PetscScalar     *vin,*vout,**a_diagv = a->diagv;
-  PetscScalar     *pvin,*pvout,*dv;
+  PetscInt       nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
+  PetscInt       *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
+  PetscScalar    *vin,*vout,**a_diagv = a->diagv;
+  PetscScalar    *pvin,*pvout,*dv;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -750,11 +750,11 @@ PetscErrorCode MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultTranspose_SeqBDiag_1"
 PetscErrorCode MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,diag,d,j,len;
-  PetscScalar     *pvin,*pvout,*dv;
-  PetscScalar     *vin,*vout;
+  PetscInt       nd = a->nd,diag,d,j,len;
+  PetscScalar    *pvin,*pvout,*dv;
+  PetscScalar    *vin,*vout;
   
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -785,11 +785,11 @@ PetscErrorCode MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultTranspose_SeqBDiag_N"
 PetscErrorCode MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int  nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
-  PetscScalar     *pvin,*pvout,*dv;
-  PetscScalar     *vin,*vout;
+  PetscInt       nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
+  PetscScalar    *pvin,*pvout,*dv;
+  PetscScalar    *vin,*vout;
   
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
@@ -830,11 +830,11 @@ PetscErrorCode MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultTransposeAdd_SeqBDiag_1"
 PetscErrorCode MatMultTransposeAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,diag,d,j,len;
-  PetscScalar     *pvin,*pvout,*dv;
-  PetscScalar     *vin,*vout;
+  PetscInt       nd = a->nd,diag,d,j,len;
+  PetscScalar    *pvin,*pvout,*dv;
+  PetscScalar    *vin,*vout;
   
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -865,11 +865,11 @@ PetscErrorCode MatMultTransposeAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultTransposeAdd_SeqBDiag_N"
 PetscErrorCode MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int  nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
-  PetscScalar     *pvin,*pvout,*dv;
-  PetscScalar     *vin,*vout;
+  PetscInt       nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
+  PetscScalar    *pvin,*pvout,*dv;
+  PetscScalar    *vin,*vout;
   
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -904,13 +904,13 @@ PetscErrorCode MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqBDiag_N"
-PetscErrorCode MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscScalar  *x,*b,*xb,*dd,*dv,dval,sum;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscScalar    *x,*b,*xb,*dd,*dv,dval,sum;
   PetscErrorCode ierr;
-  int  i,j,k,d,kbase,bs = A->bs,kloc;
-  int          mainbd = a->mainbd,diag,mblock = a->mblock,bloc;
+  PetscInt       i,j,k,d,kbase,bs = A->bs,kloc;
+  PetscInt       mainbd = a->mainbd,diag,mblock = a->mblock,bloc;
 
   PetscFunctionBegin;
   its = its*lits;
@@ -1075,13 +1075,13 @@ PetscErrorCode MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqBDiag_1"
-PetscErrorCode MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscScalar  *x,*b,*xb,*dd,dval,sum;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscScalar    *x,*b,*xb,*dd,dval,sum;
   PetscErrorCode ierr;
-  int   m = A->m,i,d,loc;
-  int          mainbd = a->mainbd,diag;
+  PetscInt       m = A->m,i,d,loc;
+  PetscInt       mainbd = a->mainbd,diag;
 
   PetscFunctionBegin;
   its = its*lits;

@@ -463,7 +463,8 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
 PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels,flag;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscMPIInt    flag;
   MPI_Comm       comm;
   PetscTruth     iascii,isbinary;
 

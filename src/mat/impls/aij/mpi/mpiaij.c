@@ -949,8 +949,8 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   } else {
     /* assemble the entire matrix onto first processor. */
     Mat         A;
-    Mat_SeqAIJ *Aloc;
-    PetscInt         M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
+    Mat_SeqAIJ  *Aloc;
+    PetscInt    M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
     PetscScalar *a;
 
     if (!rank) {
@@ -1912,8 +1912,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
-  m = M/size + ((M % size) > rank);
-  mm = (PetscMPIInt) m;
+  m    = M/size + ((M % size) > rank);
+  mm   = (PetscMPIInt) m;
   ierr = PetscMalloc((size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&mm,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
@@ -3557,11 +3557,12 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   PetscMPIInt       *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt          *rowlen,*bufj,*bufJ,ncols,aBn=a->B->n,row,*b_othi,*b_othj;
   PetscScalar       *rvalues,*svalues,*b_otha,*bufa,*bufA;
-  PetscInt          i,j,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
+  PetscInt          i,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
   MPI_Request       *rwaits,*swaits;
   MPI_Status        *sstatus,rstatus;
   const PetscInt    *cols;
   const PetscScalar *vals;
+  PetscMPIInt       j;
  
   PetscFunctionBegin;
   if (a->cstart != b->rstart || a->cend != b->rend){

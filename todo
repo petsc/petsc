@@ -1,4 +1,9 @@
 
+Before release
+   PetscInt long long
+
+   configure for all packages, with install option for as many as possible
+
 PETSc configure
    Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
 

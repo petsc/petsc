@@ -20,75 +20,74 @@
     PetscScalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
 
     /* Work space for computing eigenvalues/singular values */
-    PetscReal *Dsvd;
+    PetscReal   *Dsvd;
     PetscScalar *Rsvd;
       
     /* parameters */
-    PetscReal haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
-    int    max_k;             /* maximum size of the approximation space  
+    PetscReal   haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
+    PetscInt    max_k;             /* maximum size of the approximation space  
                                  before restarting */
 
-    PetscErrorCode (*orthog)(KSP,int); /* orthogonalization function to use */
+    PetscErrorCode (*orthog)(KSP,PetscInt); /* orthogonalization function to use */
     KSPGMRESCGSRefinementType cgstype;
     
-    Vec   *vecs;              /* holds the work vectors */
+    Vec         *vecs;              /* holds the work vectors */
    
-    int    q_preallocate;     /* 0 = don't pre-allocate space for work vectors */
-    int    delta_allocate;    /* the number of vectors to allocate in each block 
-                                 if not pre-allocated */
-    int    vv_allocated;      /* vv_allocated is the number of allocated lgmres 
-                                 direction vectors */
+    PetscInt    q_preallocate;     /* 0 = don't pre-allocate space for work vectors */
+    PetscInt    delta_allocate;    /* the number of vectors to allocate in each block 
+                                      if not pre-allocated */
+    PetscInt    vv_allocated;      /* vv_allocated is the number of allocated lgmres 
+                                      direction vectors */
     
-    int    vecs_allocated;    /* vecs_allocated is the total number of vecs 
-                                 available - used to simplify the dynamic
-                                 allocation of vectors */
+    PetscInt    vecs_allocated;    /* vecs_allocated is the total number of vecs 
+                                      available - used to simplify the dynamic
+                                     allocation of vectors */
    
-    Vec    **user_work;       /* Since we may call the user "obtain_work_vectors" 
-                                 several times, we have to keep track of the pointers
-                                 that it has returned (so that we may free the 
-                                 storage) */
+    Vec         **user_work;       /* Since we may call the user "obtain_work_vectors" 
+                                     several times, we have to keep track of the pointers
+                                     that it has returned (so that we may free the 
+                                     storage) */
 
-    int    *mwork_alloc;      /* Number of work vectors allocated as part of
-                                 a work-vector chunck */
-    int    nwork_alloc;       /* Number of work-vector chunks allocated */
+    PetscInt    *mwork_alloc;      /* Number of work vectors allocated as part of
+                                      a work-vector chunck */
+    PetscInt    nwork_alloc;       /* Number of work-vector chunks allocated */
 
 
     /* In order to allow the solution to be constructed during the solution
        process, we need some additional information: */
 
-    int    it;              /* Current iteration */
+    PetscInt    it;              /* Current iteration */
     PetscScalar *nrs;            /* temp that holds the coefficients of the 
-                               Krylov vectors that form the minimum residual
-                               solution */
-    Vec    sol_temp;        /* used to hold temporary solution */
+                                    Krylov vectors that form the minimum residual
+                                    solution */
+    Vec         sol_temp;        /* used to hold temporary solution */
 
 
     /* LGMRES_MOD - make these for the z vectors - new storage for lgmres */
-    Vec  *augvecs;            /* holds the error approximation vectors for lgmres. */
-    Vec  **augvecs_user_work; /* same purpose as user_work above, but this one is
-                                for our error approx vectors */
-    int    aug_vv_allocated;      /* aug_vv_allocated is the number of allocated lgmres 
-                                 augmentation vectors */
-    int    aug_vecs_allocated;    /* aug_vecs_allocated is the total number of augmentation vecs 
-                                 available - used to simplify the dynamic
-                                 allocation of vectors */
+    Vec         *augvecs;            /* holds the error approximation vectors for lgmres. */
+    Vec         **augvecs_user_work; /* same purpose as user_work above, but this one is
+                                         for our error approx vectors */
+    PetscInt    aug_vv_allocated;      /* aug_vv_allocated is the number of allocated lgmres 
+                                          augmentation vectors */
+    PetscInt    aug_vecs_allocated;    /* aug_vecs_allocated is the total number of augmentation vecs 
+                                          available - used to simplify the dynamic
+                                       allocation of vectors */
 
-    int   augwork_alloc;       /*size of chunk allocated for augmentation vectors */ 
+    PetscInt    augwork_alloc;       /*size of chunk allocated for augmentation vectors */ 
 
-    int   aug_dim;             /* max number of augmented directions to add */
+    PetscInt    aug_dim;             /* max number of augmented directions to add */
 
-    int   aug_ct;              /* number of aug. vectors available */ 
+    PetscInt    aug_ct;              /* number of aug. vectors available */ 
 
-    int   *aug_order;          /*keeps track of order to use aug. vectors*/
+    PetscInt    *aug_order;          /*keeps track of order to use aug. vectors*/
 
-    int   approx_constant;   /* = 1 then the approx space at each restart will 
+    PetscInt    approx_constant;   /* = 1 then the approx space at each restart will 
                                   be  size max_k .  Therefore, more than (max_k - aug_dim) 
                                   krylov vectors may be used if less than aug_dim error 
                                   approximations are available (in the first few restarts,
                                   for example) to keep the space a constant size. */ 
   
-    int   matvecs;            /*keep track of matvecs */
-
+    PetscInt    matvecs;            /*keep track of matvecs */
 } KSP_LGMRES;
 
 

@@ -17,11 +17,11 @@ typedef struct {
 #define __FUNCT__ "PCView_Redundant"
 static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
-  PC_Redundant *red = (PC_Redundant*)pc->data;
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  int rank;
-  PetscTruth   iascii,isstring;
-  PetscViewer  sviewer;
+  PetscMPIInt    rank;
+  PetscTruth     iascii,isstring;
+  PetscViewer    sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -55,7 +55,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  int mstart,mlocal,m,size;
+  PetscInt       mstart,mlocal,m;
+  PetscMPIInt    size;
   IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
@@ -125,7 +126,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 #define __FUNCT__ "PCApply_Redundant"
 static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 {
-  PC_Redundant      *red = (PC_Redundant*)pc->data;
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -147,7 +148,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_Redundant"
 static PetscErrorCode PCDestroy_Redundant(PC pc)
 {
-  PC_Redundant *red = (PC_Redundant*)pc->data;
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -176,7 +177,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
 PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
-  PC_Redundant *red = (PC_Redundant*)pc->data;
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -333,8 +334,8 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Redundant *red;
-  char         *prefix;
+  PC_Redundant   *red;
+  char           *prefix;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);

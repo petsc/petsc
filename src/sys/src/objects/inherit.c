@@ -18,7 +18,7 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,v
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class_name[],MPI_Comm comm,
+PetscErrorCode PetscHeaderCreate_Private(PetscObject h,PetscCookie cookie,PetscInt type,const char class_name[],MPI_Comm comm,
                                          PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
@@ -137,7 +137,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 @*/
-PetscErrorCode PetscObjectGetReference(PetscObject obj,int *cnt)
+PetscErrorCode PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -557,7 +557,7 @@ PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *co
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
+  PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }

@@ -6,7 +6,7 @@
 
 /* Logging support */
 PetscCookie KSP_COOKIE = 0;
-PetscEvent    KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
+PetscEvent  KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
 
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
@@ -128,7 +128,6 @@ $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs
 @*/
 PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
@@ -272,7 +271,7 @@ PetscErrorCode KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
 @*/
 PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
 {
-  KSP ksp;
+  KSP            ksp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -373,7 +372,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
 PetscErrorCode KSPSetType(KSP ksp,const KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
-  PetscTruth match;
+  PetscTruth     match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -499,10 +498,10 @@ $                    natural - see KSPSetNormType()
 PetscErrorCode KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode ierr;
-  int indx;
-  char       type[256];
-  const char *stype[] = {"none","preconditioned","unpreconditioned","natural"};
-  PetscTruth flg;
+  PetscInt       indx;
+  char           type[256];
+  const char     *stype[] = {"none","preconditioned","unpreconditioned","natural"};
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -672,7 +671,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

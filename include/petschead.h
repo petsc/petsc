@@ -54,30 +54,30 @@ typedef struct {
   PetscOps       *bops;                                         \
   ObjectOps      *ops;                                          \
   MPI_Comm       comm;                                          \
-  int            type;                                          \
+  PetscInt       type;                                          \
   PetscLogDouble flops,time,mem;                                \
-  int            id;                                            \
-  int            refct;                                         \
-  int            tag;                                           \
+  PetscInt       id;                                            \
+  PetscInt       refct;                                         \
+  PetscMPIInt    tag;                                           \
   PetscFList     qlist;                                         \
   PetscOList     olist;                                         \
   char           *class_name;                                   \
   char           *type_name;                                    \
   PetscObject    parent;                                        \
-  int            parentid;                                      \
+  PetscInt       parentid;                                      \
   char*          name;                                          \
   char           *prefix;                                       \
   void           *cpp;                                          \
-  int            amem;                                          \
-  int            state;                                         \
-  int            int_idmax,        intstar_idmax;               \
-  int            *intcomposedstate,*intstarcomposedstate;       \
-  int            *intcomposeddata, **intstarcomposeddata;       \
-  int            real_idmax,        realstar_idmax;             \
-  int            *realcomposedstate,*realstarcomposedstate;     \
+  PetscInt       amem;                                          \
+  PetscInt       state;                                         \
+  PetscInt       int_idmax,        intstar_idmax;               \
+  PetscInt       *intcomposedstate,*intstarcomposedstate;       \
+  PetscInt       *intcomposeddata, **intstarcomposeddata;       \
+  PetscInt       real_idmax,        realstar_idmax;             \
+  PetscInt       *realcomposedstate,*realstarcomposedstate;     \
   PetscReal      *realcomposeddata, **realstarcomposeddata;     \
-  int            scalar_idmax,        scalarstar_idmax;         \
-  int            *scalarcomposedstate,*scalarstarcomposedstate; \
+  PetscInt       scalar_idmax,        scalarstar_idmax;         \
+  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; \
   PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;	\
   void           (**fortran_func_pointers)(void);
 
@@ -85,7 +85,7 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 
 typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */

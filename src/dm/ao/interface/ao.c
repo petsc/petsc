@@ -113,8 +113,8 @@ PetscErrorCode AODestroy(AO ao)
 PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
-  int        n,*ia;
-  PetscTruth flag;
+  PetscInt       n,*ia;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
@@ -162,8 +162,8 @@ PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
-  int        n,*ia;
-  PetscTruth flag;
+  PetscInt       n,*ia;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
@@ -207,7 +207,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOPetscToApplication(AO ao,int n,int ia[])
+PetscErrorCode AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -243,7 +243,7 @@ PetscErrorCode AOPetscToApplication(AO ao,int n,int ia[])
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOApplicationToPetsc(AO ao,int n,int ia[])
+PetscErrorCode AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -272,7 +272,7 @@ PetscErrorCode AOApplicationToPetsc(AO ao,int n,int ia[])
 .keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
+PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -302,7 +302,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
+PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -332,7 +332,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
+PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, double array[])
 {
   PetscErrorCode ierr;
 
@@ -362,7 +362,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
+PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, double array[])
 {
   PetscErrorCode ierr;
 

@@ -20,10 +20,10 @@ static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  int         i;
-  PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
-  Vec         X,B,V,P,R,RP,T,S;
-  PetscReal   dp = 0.0;
+  PetscInt       i;
+  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
+  Vec            X,B,V,P,R,RP,T,S;
+  PetscReal      dp = 0.0;
 
   PetscFunctionBegin;
 

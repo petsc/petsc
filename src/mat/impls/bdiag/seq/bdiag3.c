@@ -38,11 +38,11 @@ PetscErrorCode MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqBDiag"
-PetscErrorCode MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
+PetscErrorCode MatGetRow_SeqBDiag(Mat A,PetscInt row,PetscInt *nz,PetscInt **col,PetscScalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          nd = a->nd,bs = A->bs;
-  int          nc = A->n,*diag = a->diag,pcol,shift,i,j,k;
+  PetscInt     nd = a->nd,bs = A->bs;
+  PetscInt     nc = A->n,*diag = a->diag,pcol,shift,i,j,k;
 
   PetscFunctionBegin;
   /* For efficiency, if ((nz) && (col) && (v)) then do all at once */
@@ -157,7 +157,7 @@ PetscErrorCode MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SeqBDiag"
-PetscErrorCode MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscScalar **vals)
+PetscErrorCode MatRestoreRow_SeqBDiag(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals)
 {
   PetscFunctionBegin;
   /* Work space is allocated during matrix creation and freed
@@ -172,12 +172,12 @@ PetscErrorCode MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscS
  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqBDiag_Columns"
-PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
+PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,PetscInt n)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
-  PetscScalar  *dv;
+  PetscInt       d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
+  PetscScalar    *dv;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
@@ -230,11 +230,11 @@ PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 #define __FUNCT__ "MatNorm_SeqBDiag"
 PetscErrorCode MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscReal    sum = 0.0,*tmp;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscReal      sum = 0.0,*tmp;
   PetscErrorCode ierr;
-  int          d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
-  PetscScalar  *dv;
+  PetscInt       d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
+  PetscScalar    *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -328,15 +328,15 @@ PetscErrorCode MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
 #define __FUNCT__ "MatTranspose_SeqBDiag"
 PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data,*anew;
-  Mat          tmat;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data,*anew;
+  Mat            tmat;
   PetscErrorCode ierr;
-  int          i,j,k,d,nd = a->nd,*diag = a->diag,*diagnew;
-  int          bs = A->bs,kshift,shifto,shiftn;
-  PetscScalar  *dwork,*dvnew;
+  PetscInt       i,j,k,d,nd = a->nd,*diag = a->diag,*diagnew;
+  PetscInt       bs = A->bs,kshift,shifto,shiftn;
+  PetscScalar    *dwork,*dvnew;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((nd+1)*sizeof(int),&diagnew);CHKERRQ(ierr);
+  ierr = PetscMalloc((nd+1)*sizeof(PetscInt),&diagnew);CHKERRQ(ierr);
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
@@ -402,30 +402,31 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
 #define __FUNCT__ "MatView_SeqBDiag_Binary"
 PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          i,ict,fd,*col_lens,*cval,*col,nz;
-  PetscScalar  *anonz,*val;
+  PetscInt       i,ict,*col_lens,*cval,*col,nz;
+  PetscScalar    *anonz,*val;
+  int            fd;
 
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
   /* For MATSEQBDIAG format,maxnz = nz */
-  ierr        = PetscMalloc((4+A->m)*sizeof(int),&col_lens);CHKERRQ(ierr);
+  ierr        = PetscMalloc((4+A->m)*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
   col_lens[0] = MAT_FILE_COOKIE;
   col_lens[1] = A->m;
   col_lens[2] = A->n;
   col_lens[3] = a->maxnz;
 
   /* Should do translation using less memory; this is just a quick initial version */
-  ierr = PetscMalloc((a->maxnz)*sizeof(int),&cval);CHKERRQ(ierr);
+  ierr = PetscMalloc((a->maxnz)*sizeof(PetscInt),&cval);CHKERRQ(ierr);
   ierr = PetscMalloc((a->maxnz)*sizeof(PetscScalar),&anonz);CHKERRQ(ierr);
 
   ict = 0;
   for (i=0; i<A->m; i++) {
     ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     col_lens[4+i] = nz;
-    ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(&anonz[ict],anonz,nz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     ict += nz;
@@ -450,8 +451,8 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   char              *name;
-  PetscErrorCode ierr;
-  int              *col,i,j,len,diag,nr = A->m,bs = A->bs,iprint,nz;
+  PetscErrorCode    ierr;
+  PetscInt          *col,i,j,len,diag,nr = A->m,bs = A->bs,iprint,nz;
   PetscScalar       *val,*dv,zero = 0.0;
   PetscViewerFormat format;
 
@@ -459,7 +460,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    int nline = PetscMin(10,a->nd),k,nk,np;
+    PetscInt nline = PetscMin(10,a->nd),k,nk,np;
     if (a->user_alloc) {
       ierr = PetscViewerASCIIPrintf(viewer,"block size=%D, number of diagonals=%D, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
     } else {
@@ -542,7 +543,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
         }
       }
     } else {  /* Block diagonals */
-      int d,k,kshift;
+      PetscInt d,k,kshift;
       for (d=0; d< a->nd; d++) {
         dv   = a->diagv[d];
         diag = a->diag[d];
@@ -632,11 +633,11 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_SeqBDiag_Draw"
 static PetscErrorCode MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 {
-  PetscDraw     draw;
-  PetscReal     xl,yl,xr,yr,w,h;
+  PetscDraw      draw;
+  PetscReal      xl,yl,xr,yr,w,h;
   PetscErrorCode ierr;
-  int   nz,*col,i,j,nr = A->m;
-  PetscTruth    isnull;
+  PetscInt       nz,*col,i,j,nr = A->m;
+  PetscTruth     isnull;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -669,7 +670,7 @@ static PetscErrorCode MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SeqBDiag(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii,isbinary,isdraw;
+  PetscTruth     iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

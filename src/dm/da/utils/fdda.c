@@ -16,10 +16,10 @@ EXTERN PetscErrorCode DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetBlockFills_Private"
-static PetscErrorCode DASetBlockFills_Private(int *dfill,int w,int **rfill)
+static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscInt **rfill)
 {
   PetscErrorCode ierr;
-  int i,j,nz,*fill;
+  PetscInt       i,j,nz,*fill;
 
   PetscFunctionBegin;
   /* count number nonzeros */
@@ -29,7 +29,7 @@ static PetscErrorCode DASetBlockFills_Private(int *dfill,int w,int **rfill)
       if (dfill[w*i+j]) nz++;
     }
   }
-  ierr = PetscMalloc((nz + w + 1)*sizeof(int),&fill);CHKERRQ(ierr);
+  ierr = PetscMalloc((nz + w + 1)*sizeof(PetscInt),&fill);CHKERRQ(ierr);
   /* construct modified CSR storage of nonzero structure */
   nz = w + 1;
   for (i=0; i<w; i++) {
@@ -83,7 +83,7 @@ $                            0, 1, 1}
 .seealso DAGetMatrix(), DASetGetMatrix()
 
 @*/
-PetscErrorCode DASetBlockFills(DA da,int *dfill,int *ofill)
+PetscErrorCode DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
 {
   PetscErrorCode ierr;
 
@@ -124,7 +124,7 @@ PetscErrorCode DASetBlockFills(DA da,int *dfill,int *ofill)
 PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
-  int        dim;
+  PetscInt       dim;
 
   PetscFunctionBegin;
   /*
@@ -174,9 +174,9 @@ PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring2d_MPIAIJ" 
 PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
-  int                    m,n,M,N,dim,s,k,nc,col,size;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
+  PetscMPIInt            size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -250,13 +250,13 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 #define __FUNCT__ "DAGetColoring3d_MPIAIJ" 
 PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,gxs,gys,gnx,gny;           
-  int                    m,n,p,dim,s,k,nc,col,size,zs,gzs,ii,l,nz,gnz,M,N,P;
-  MPI_Comm               comm;
-  DAPeriodicType         wrap;
-  DAStencilType          st;
-  ISColoringValue        *colors;
+  PetscErrorCode  ierr;
+  PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
+  PetscMPIInt     size;
+  MPI_Comm        comm;
+  DAPeriodicType  wrap;
+  DAStencilType   st;
+  ISColoringValue *colors;
 
   PetscFunctionBegin;
   /*     
@@ -330,12 +330,12 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 #define __FUNCT__ "DAGetColoring1d_MPIAIJ" 
 PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode ierr;
-  int xs,nx,i,i1,gxs,gnx,l;           
-  int                    m,M,dim,s,nc,col,size;
-  MPI_Comm               comm;
-  DAPeriodicType         wrap;
-  ISColoringValue        *colors;
+  PetscErrorCode  ierr;
+  PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
+  PetscMPIInt     size;
+  MPI_Comm        comm;
+  DAPeriodicType  wrap;
+  ISColoringValue *colors;
 
   PetscFunctionBegin;
   /*     
@@ -392,12 +392,11 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
 PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
-  int            m,n,dim,s,k,nc;
-  MPI_Comm       comm;
-  DAPeriodicType wrap;
-  ISColoringValue        *colors;
+  PetscErrorCode  ierr;
+  PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
+  MPI_Comm        comm;
+  DAPeriodicType  wrap;
+  ISColoringValue *colors;
 
   PetscFunctionBegin;
   /*     
@@ -490,11 +489,11 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
-  int dim,dof,nx,ny,nz,dims[3],starts[3];
-  Mat      A;
-  MPI_Comm comm;
-  MatType  Atype;
-  void     (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
+  PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];
+  Mat            A;
+  MPI_Comm       comm;
+  MatType        Atype;
+  void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
 
   PetscFunctionBegin;
   /*
@@ -591,10 +590,9 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ" 
 PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -615,8 +613,8 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   
   /* determine the matrix preallocation information */
@@ -695,11 +693,11 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ_Fill" 
 PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz;
-  int                    ifill_col,*ofill = da->ofill, *dfill = da->dfill;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
+  PetscInt               ifill_col,*ofill = da->ofill, *dfill = da->dfill;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -720,8 +718,8 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   
   /* determine the matrix preallocation information */
@@ -823,10 +821,10 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ" 
 PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -848,8 +846,8 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 
   ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(col*col*col*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*col*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
@@ -937,10 +935,10 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix1d_MPIAIJ" 
 PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,nx,i,i1,slot,gxs,gnx;           
-  int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
-  int                    istart,iend;
+  PetscErrorCode         ierr;
+  PetscInt               xs,nx,i,i1,slot,gxs,gnx;           
+  PetscInt               m,dim,s,*cols,nc,*rows,col,cnt,l;
+  PetscInt               istart,iend;
   PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
@@ -962,8 +960,8 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(col*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
@@ -999,10 +997,10 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix3d_MPIBAIJ" 
 PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1025,7 +1023,7 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 
   ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMalloc(col*col*col*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr  = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
   ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
 
@@ -1149,10 +1147,10 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix3d_MPISBAIJ" 
 PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1176,7 +1174,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   /* create the matrix */
   ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMalloc(col*col*col*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr  = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
   ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
 
@@ -1302,11 +1300,11 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ_Fill" 
 PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
 {
-  PetscErrorCode ierr;
-  int xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
-  int                    ifill_col,*dfill = da->dfill,*ofill = da->ofill;
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  PetscInt               m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscInt               ifill_col,*dfill = da->dfill,*ofill = da->ofill;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1340,8 +1338,8 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
 
   ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(col*col*col*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*col*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */

@@ -22,14 +22,14 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
-  int             i,maxit;
-  MatStructure    pflag;
-  PetscReal       rnorm = 0.0;
-  PetscScalar     scale,mone = -1.0;
-  Vec             x,b,r,z;
-  Mat             Amat,Pmat;
-  KSP_Richardson  *richardsonP = (KSP_Richardson*)ksp->data;
-  PetscTruth      exists,diagonalscale;
+  PetscInt       i,maxit;
+  MatStructure   pflag;
+  PetscReal      rnorm = 0.0;
+  PetscScalar    scale,mone = -1.0;
+  Vec            x,b,r,z;
+  Mat            Amat,Pmat;
+  KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
+  PetscTruth     exists,diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);

@@ -9,10 +9,10 @@ typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
-  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-  PetscErrorCode (*applyBA)(PC,int,Vec,Vec,Vec);
+  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
+  PetscErrorCode (*applyBA)(PC,PetscInt,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
-  PetscErrorCode (*applyBAtranspose)(PC,int,Vec,Vec,Vec);
+  PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
   PetscErrorCode (*setfromoptions)(PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);  
@@ -29,14 +29,14 @@ struct _PCOps {
 */
 struct _p_PC {
   PETSCHEADER(struct _PCOps)
-  int           setupcalled;
-  MatStructure  flag;
-  Mat           mat,pmat;
-  Vec           diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
-  PetscTruth    diagonalscale;
-  PetscErrorCode (*modifysubmatrices)(PC,int,const IS[],const IS[],Mat[],void*); /* user provided routine */
-  void          *modifysubmatricesP; /* context for user routine */
-  void          *data;
+  PetscInt       setupcalled;
+  MatStructure   flag;
+  Mat            mat,pmat;
+  Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
+  PetscTruth     diagonalscale;
+  PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
+  void           *modifysubmatricesP; /* context for user routine */
+  void           *data;
 };
 
 

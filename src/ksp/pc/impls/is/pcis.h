@@ -21,8 +21,8 @@ typedef struct {
    /*       nodes, interior plus interface).                        */
    /* In some cases, I or D would apply equaly well (e.g. vec1_D).  */
 
-  int        n;              /* number of nodes (interior+interface) in this subdomain */
-  int        n_B;            /* number of interface nodes in this subdomain */
+  PetscInt   n;              /* number of nodes (interior+interface) in this subdomain */
+  PetscInt   n_B;            /* number of interface nodes in this subdomain */
   IS         is_B_local,     /* local (sequential) index sets for interface (B) and interior (I) nodes */
              is_I_local,
              is_B_global,
@@ -30,7 +30,7 @@ typedef struct {
   Mat        A_II, A_IB,     /* local (sequential) submatrices */
              A_BI, A_BB;
   Vec        D;              /* diagonal scaling "matrix" (stored as a vector, since it's diagonal) */
-  KSP       ksp_N,         /* linear solver contexts */
+  KSP        ksp_N,         /* linear solver contexts */
              ksp_D;
   Vec        vec1_N,         /* local (sequential) work vectors */
              vec2_N,
@@ -42,17 +42,17 @@ typedef struct {
              vec3_B,
              vec1_global;
   PetscScalar*    work_N;
-  VecScatter global_to_D;    /* scattering context from global to local interior nodes */
-  VecScatter N_to_B     ;    /* scattering context from all local nodes to local interface nodes */
-  VecScatter global_to_B;    /* scattering context from global to local interface nodes */
-  PetscTruth pure_neumann;
+  VecScatter      global_to_D;    /* scattering context from global to local interior nodes */
+  VecScatter      N_to_B     ;    /* scattering context from all local nodes to local interface nodes */
+  VecScatter      global_to_B;    /* scattering context from global to local interface nodes */
+  PetscTruth      pure_neumann;
 
   PetscTruth ISLocalToGlobalMappingGetInfoWasCalled;
-  int n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
-                  /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
-  int *neigh;     /* list of neighbouring subdomains                                                          */
-  int *n_shared;  /* n_shared[j] is the number of nodes shared with subdomain neigh[j]                        */ 
-  int **shared;   /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j]          */
+  PetscInt   n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
+                         /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
+  PetscInt   *neigh;     /* list of neighbouring subdomains                                                          */
+  PetscInt   *n_shared;  /* n_shared[j] is the number of nodes shared with subdomain neigh[j]                        */ 
+  PetscInt   **shared;   /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j]          */
                   /* It is necessary some consistency in the                                                  */
                   /* numbering of the shared edges from each side.                                            */
                   /* For instance:                                                                            */

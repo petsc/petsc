@@ -7,22 +7,22 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
-  IS                 perm = b->row;
+  Mat            C = *B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  IS             perm = b->row;
   PetscErrorCode ierr;
-  int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar          *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
-  MatScalar          u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
-  MatScalar          u28,u29,u30,u31,u32,u33,u34,u35;
+  PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
+  MatScalar      *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
+  MatScalar      u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
+  MatScalar      u28,u29,u30,u31,u32,u33,u34,u35;
 
   PetscFunctionBegin;
   /* initialization */
   ierr = PetscMalloc(36*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
   ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
   jl = il + mbs;
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
@@ -38,8 +38,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
     ai   = a->inew; aj = a->jnew; 
     ierr = PetscMalloc(36*ai[mbs]*sizeof(MatScalar),&aa);CHKERRQ(ierr); 
     ierr = PetscMemcpy(aa,a->a,36*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(ai[mbs]*sizeof(int),&a2anew);CHKERRQ(ierr); 
-    ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&a2anew);CHKERRQ(ierr); 
+    ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
 
     for (i=0; i<mbs; i++){
       jmin = ai[i]; jmax = ai[i+1];

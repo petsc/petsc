@@ -14,12 +14,11 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   Mat            mat = pc->mat,pmat = pc->pmat;
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
   char           *pprefix,*mprefix;
-  PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -339,7 +338,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetTotalBlocks_BJacobi"
-PetscErrorCode PCBJacobiGetTotalBlocks_BJacobi(PC pc, int *blocks, const int *lens[])
+PetscErrorCode PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
 

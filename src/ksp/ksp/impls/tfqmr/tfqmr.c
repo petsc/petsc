@@ -20,10 +20,10 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
-  int         i,m;
-  PetscScalar rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
-  PetscReal   dp,dpold,w,dpest,tau,psi,cm;
-  Vec         X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
+  PetscInt       i,m;
+  PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
+  PetscReal      dp,dpold,w,dpest,tau,psi,cm;
+  Vec            X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
 
   PetscFunctionBegin;
   X        = ksp->vec_sol;

@@ -10,8 +10,8 @@
 PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        rank;
-  PetscTruth iascii,isdraw;
+  PetscMPIInt    rank;
+  PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
@@ -25,7 +25,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     if (da->coordinates) {
-      int       last;
+      PetscInt  last;
       PetscReal *coors;
       ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
       ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     PetscDraw       draw;
     PetscReal     ymin = -1.0,ymax = (PetscReal)da->N;
     PetscReal     xmin = -1.0,xmax = (PetscReal)((da->M+2)*da->P),x,y,ycoord,xcoord;
-    int        k,plane,base,*idx;
+    PetscInt        k,plane,base,*idx;
     char       node[10];
     PetscTruth isnull;
 
@@ -116,7 +116,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
         xmax = (da->M+1)*plane*da->w+da->M*da->w;
         for (y=ymin; y<ymax; y++) {
           for (x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
-            sprintf(node,"%d",(int)idx[base]/da->w);
+            sprintf(node,"%d",(int)(idx[base]/da->w));
             ycoord = y;
             /*Keep y wrap around points on drawing */  
             if (y<0)      { ycoord = da->N+y; } 
@@ -197,25 +197,25 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
-               int N,int P,int m,int n,int p,int dof,int s,int *lx,int *ly,int *lz,DA *inra)
+PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+               PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra)
 {
   PetscErrorCode ierr;
-  int           rank,size,start,end,pm;
-  int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
-  int           left,up,down,bottom,top,i,j,k,*idx,nn,*flx = 0,*fly = 0,*flz = 0;
-  int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
-  int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
-  int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
-  int           tM = M,tN = N,tP = P;
-  int           sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
-  int           sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
-  int           sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
-  PetscTruth    flg1,flg2;
-  DA            da;
-  Vec           local,global;
-  VecScatter    ltog,gtol;
-  IS            to,from;
+  PetscMPIInt    rank,size;
+  PetscInt       xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze,start,end,pm;
+  PetscInt       left,up,down,bottom,top,i,j,k,*idx,nn,*flx = 0,*fly = 0,*flz = 0;
+  PetscInt       n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
+  PetscInt       n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
+  PetscInt       *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
+  PetscInt       tM = M,tN = N,tP = P;
+  PetscInt       sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
+  PetscInt       sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
+  PetscInt       sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
+  PetscTruth     flg1,flg2;
+  DA             da;
+  Vec            local,global;
+  VecScatter     ltog,gtol;
+  IS             to,from;
 
   PetscFunctionBegin;
   PetscValidPointer(inra,15);
@@ -300,7 +300,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
       m--;
     }
     if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
-    if (M > N && m < n) {int _m = m; m = n; n = _m;}
+    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
     m = (int)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
@@ -311,7 +311,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
       m--;
     }
     if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
-    if (M > P && m < p) {int _m = m; m = p; p = _m;}
+    if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
     n = (int)(0.5 + sqrt(((PetscReal)N)*((PetscReal)size)/((PetscReal)P*m)));
@@ -322,10 +322,10 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
       n--;
     }
     if (!n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
-    if (N > P && n < p) {int _n = n; n = p; p = _n;}
+    if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),1./3.));
+    n = (PetscInt)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),1./3.));
     if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
@@ -333,14 +333,14 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
       n--;
     }   
     if (!n) n = 1; 
-    m = (int)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
+    m = (PetscInt)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);
       if (m*n*p == size) break;
       m--;
     }
-    if (M > P && m < p) {int _m = m; m = p; p = _m;}
+    if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m*n*p != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
   if (m*n*p != size) SETERRQ(PETSC_ERR_PLIB,"Could not find good partition");  
@@ -365,7 +365,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     flx = lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > (i % m));
@@ -383,7 +383,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);
     if ((N % n) > ((rank % (m*n)) /m)) {ys = ((rank % (m*n))/m)*y;}
     else                               {ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y;}
-    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     fly = ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > (i % n));
@@ -401,7 +401,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);
     if ((P % p) > (rank / (m*n))) {zs = (rank/(m*n))*z;}
     else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
-    ierr = PetscMalloc(p*sizeof(int),&lz);CHKERRQ(ierr);
+    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
     flz = lz;
     for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
@@ -450,9 +450,9 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 
   /* determine starting point of each processor */
   nn       = x*y*z;
-  ierr     = PetscMalloc((2*size+1)*sizeof(int),&bases);CHKERRQ(ierr);
-  ldims    = (int*)(bases+size+1);
-  ierr     = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr     = PetscMalloc((2*size+1)*sizeof(PetscInt),&bases);CHKERRQ(ierr);
+  ldims    = (PetscInt*)(bases+size+1);
+  ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
     bases[i] = ldims[i-1];
@@ -478,7 +478,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
   count  = x*(top-bottom)*(up-down);
-  ierr = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   count  = 0;
   for (i=down; i<up; i++) {
     for (j=bottom; j<top; j++) {
@@ -509,7 +509,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     count  = down*(top-bottom)*x +
              (up-down)*(bottom*x  + (top-bottom)*(Xe-Xs) + (Ye-Ys-top)*x) +
              (Ze-Zs-up)*(top-bottom)*x;
-    ierr = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count  = 0;
     for (i=0; i<down; i++) {
       for (j=bottom; j<top; j++) {
@@ -778,8 +778,8 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   }
 
 
-  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int),&idx);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int));
+  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));
 
   nn = 0;
 
@@ -1726,16 +1726,16 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   da->ao   = PETSC_NULL;
 
   if (!flx) {
-    ierr = PetscMalloc(m*sizeof(int),&flx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (!fly) {
-    ierr = PetscMalloc(n*sizeof(int),&fly);CHKERRQ(ierr);
-    ierr = PetscMemcpy(fly,ly,n*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (!flz) {
-    ierr = PetscMalloc(p*sizeof(int),&flz);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flz,lz,p*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(p*sizeof(PetscInt),&flz);CHKERRQ(ierr);
+    ierr = PetscMemcpy(flz,lz,p*sizeof(PetscInt));CHKERRQ(ierr);
   }
   da->lx = flx;
   da->ly = fly;

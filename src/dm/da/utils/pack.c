@@ -11,7 +11,7 @@ typedef enum {VECPACK_ARRAY, VECPACK_DA, VECPACK_VECSCATTER} VecPackLinkType;
 
 struct VecPackLink {
   DA                 da;
-  int                n,rstart;      /* rstart is relative to this processor */
+  PetscInt           n,rstart;      /* rstart is relative to this processor */
   VecPackLinkType    type;
   struct VecPackLink *next;
 };
@@ -28,10 +28,10 @@ struct _VecPackOps {
 
 struct _p_VecPack {
   PETSCHEADER(struct _VecPackOps)
-  int                rank;
-  int                n,N,rstart;   /* rstart is relative to all processors */
+  PetscMPIInt        rank;
+  PetscInt           n,N,rstart;   /* rstart is relative to all processors */
   Vec                globalvector;
-  int                nDA,nredundant;
+  PetscInt           nDA,nredundant;
   struct VecPackLink *next;
 };
 
@@ -58,7 +58,7 @@ struct _p_VecPack {
 PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
 {
   PetscErrorCode ierr;
-  VecPack p;
+  VecPack        p;
 
   PetscFunctionBegin;
   PetscValidPointer(packer,2);
@@ -102,7 +102,7 @@ PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
 @*/
 PetscErrorCode VecPackDestroy(VecPack packer)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next,*prev;
 
   PetscFunctionBegin;
@@ -129,7 +129,7 @@ PetscErrorCode VecPackDestroy(VecPack packer)
 PetscErrorCode VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
 {
   PetscErrorCode ierr;
-  PetscScalar *varray;
+  PetscScalar    *varray;
 
   PetscFunctionBegin;
   if (array) {
@@ -149,7 +149,7 @@ PetscErrorCode VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Ve
 PetscErrorCode VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
 {
   PetscErrorCode ierr;
-  PetscScalar *array;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
   if (global) {
@@ -188,7 +188,7 @@ PetscErrorCode VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,V
 PetscErrorCode VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   PetscErrorCode ierr;
-  PetscScalar *varray;
+  PetscScalar    *varray;
 
   PetscFunctionBegin;
 
@@ -206,8 +206,8 @@ PetscErrorCode VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec 
 PetscErrorCode VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   PetscErrorCode ierr;
-  PetscScalar *array;
-  Vec    global;
+  PetscScalar    *array;
+  Vec            global;
 
   PetscFunctionBegin;
   ierr = DAGetGlobalVector(mine->da,&global);CHKERRQ(ierr);
@@ -226,7 +226,7 @@ PetscErrorCode VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec
 PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   PetscErrorCode ierr;
-  PetscScalar *varray;
+  PetscScalar    *varray;
 
   PetscFunctionBegin;
   if (!packer->rank) {
@@ -243,8 +243,8 @@ PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec v
 PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   PetscErrorCode ierr;
-  PetscScalar *array;
-  Vec    global;
+  PetscScalar    *array;
+  Vec            global;
 
   PetscFunctionBegin;
   ierr = DAGetGlobalVector(mine->da,&global);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,
 PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -335,7 +335,7 @@ PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
 PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -384,7 +384,7 @@ PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
 PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -434,7 +434,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
 PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -481,10 +481,10 @@ PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
          VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
 
 @*/
-PetscErrorCode VecPackAddArray(VecPack packer,int n)
+PetscErrorCode VecPackAddArray(VecPack packer,PetscInt n)
 {
   struct VecPackLink *mine,*next = packer->next;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
@@ -529,8 +529,8 @@ PetscErrorCode VecPackAddArray(VecPack packer,int n)
 @*/
 PetscErrorCode VecPackAddDA(VecPack packer,DA da)
 {
-  PetscErrorCode ierr;
-  int n;
+  PetscErrorCode     ierr;
+  PetscInt           n;
   struct VecPackLink *mine,*next = packer->next;
   Vec                global;
 
@@ -586,8 +586,9 @@ PetscErrorCode VecPackAddDA(VecPack packer,DA da)
 @*/
 PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
 {
-  PetscErrorCode ierr;
-  int nprev = 0,rank;
+  PetscErrorCode     ierr;
+  PetscInt           nprev = 0;
+  PetscMPIInt        rank;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -638,8 +639,8 @@ PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
 PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
-  int i,**idx,n;
+  PetscErrorCode     ierr;
+  PetscInt           i,**idx,n;
   struct VecPackLink *next = packer->next;
   Vec                global,dglobal;
   PF                 pf;
@@ -657,19 +658,19 @@ PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
   /* loop over packed objects, handling one at at time */
   va_start(Argp,packer);
   while (next) {
-    idx = va_arg(Argp, int**);
+    idx = va_arg(Argp, PetscInt**);
 
     if (next->type == VECPACK_ARRAY) {
       
-      ierr = PetscMalloc(next->n*sizeof(int),idx);CHKERRQ(ierr);
+      ierr = PetscMalloc(next->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
       if (!packer->rank) {
         ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
         array += next->rstart;
-        for (i=0; i<next->n; i++) (*idx)[i] = (int)PetscRealPart(array[i]);
+        for (i=0; i<next->n; i++) (*idx)[i] = (PetscInt)PetscRealPart(array[i]);
         array -= next->rstart;
         ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
       }
-      ierr = MPI_Bcast(*idx,next->n,MPI_INT,0,packer->comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(*idx,next->n,MPIU_INT,0,packer->comm);CHKERRQ(ierr);
 
     } else if (next->type == VECPACK_DA) {
       Vec local;
@@ -688,8 +689,8 @@ PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
 
       ierr   = VecGetArray(local,&array);CHKERRQ(ierr);
       ierr   = VecGetSize(local,&n);CHKERRQ(ierr);
-      ierr   = PetscMalloc(n*sizeof(int),idx);CHKERRQ(ierr);
-      for (i=0; i<n; i++) (*idx)[i] = (int)PetscRealPart(array[i]);
+      ierr   = PetscMalloc(n*sizeof(PetscInt),idx);CHKERRQ(ierr);
+      for (i=0; i<n; i++) (*idx)[i] = (PetscInt)PetscRealPart(array[i]);
       ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
       ierr    = VecDestroy(local);CHKERRQ(ierr);
 
@@ -709,7 +710,6 @@ PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
 PetscErrorCode VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,PetscScalar **array)
 {
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -769,7 +769,7 @@ PetscErrorCode VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *
 PetscErrorCode VecPackGetLocalVectors(VecPack packer,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -818,7 +818,7 @@ PetscErrorCode VecPackGetLocalVectors(VecPack packer,...)
 PetscErrorCode VecPackRestoreLocalVectors(VecPack packer,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -846,7 +846,7 @@ PetscErrorCode VecPackRestoreLocalVectors(VecPack packer,...)
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackGetEntries_Array"
-PetscErrorCode VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,int *n)
+PetscErrorCode VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,PetscInt *n)
 {
   PetscFunctionBegin;
   if (n) *n = mine->n;
@@ -886,7 +886,7 @@ PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *
 PetscErrorCode VecPackGetEntries(VecPack packer,...)
 {
   va_list            Argp;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -895,8 +895,8 @@ PetscErrorCode VecPackGetEntries(VecPack packer,...)
   va_start(Argp,packer);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      int *n;
-      n = va_arg(Argp, int*);
+      PetscInt *n;
+      n = va_arg(Argp, PetscInt*);
       ierr = VecPackGetEntries_Array(packer,next,n);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       DA *da;
@@ -933,7 +933,7 @@ PetscErrorCode VecPackGetEntries(VecPack packer,...)
 @*/
 PetscErrorCode VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
   DA                 da;
 
@@ -976,8 +976,8 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
   struct VecPackLink *xnext,*ynext;
   struct MatPackLink *anext;
   PetscScalar        *xarray,*yarray;
-  PetscErrorCode ierr;
-  int i;
+  PetscErrorCode     ierr;
+  PetscInt           i;
   Vec                xglobal,yglobal;
 
   PetscFunctionBegin;
@@ -1058,7 +1058,7 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
   struct VecPackLink *xnext,*ynext;
   struct MatPackLink *anext;
   PetscScalar        *xarray,*yarray;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   Vec                xglobal,yglobal;
 
   PetscFunctionBegin;
@@ -1106,7 +1106,7 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
 {
   struct MatPack     *mpack;
   struct MatPackLink *anext,*oldanext;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr  = MatShellGetContext(A,(void**)&mpack);CHKERRQ(ierr);
@@ -1145,8 +1145,8 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
 @*/
 PetscErrorCode VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
 {
-  PetscErrorCode ierr;
-  int m,n,M,N;
+  PetscErrorCode     ierr;
+  PetscInt           m,n,M,N;
   struct VecPackLink *nextc  = coarse->next;
   struct VecPackLink *nextf = fine->next;
   struct MatPackLink *nextmat,*pnextmat = 0;

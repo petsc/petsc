@@ -11,7 +11,7 @@
 typedef struct {
   PetscScalar  *v;                /* matrix elements */
   PetscTruth   roworiented;       /* if true, row oriented input (default) */
-  int          pad;               /* padding */        
+  PetscInt     pad;               /* padding */        
   PetscBLASInt *pivots;           /* pivots in LU factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of user data */
   PetscTruth   user_alloc;        /* true if the user provided the dense data */

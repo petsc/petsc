@@ -1,4 +1,5 @@
 
+#requirespackage  'PETSC_USE_32BIT_INT'
 #requiresscalar real 
 
 ALL: lib

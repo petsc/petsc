@@ -7,20 +7,20 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_5"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
-  IS                 perm = b->row;
+  Mat            C = *B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  IS             perm = b->row;
   PetscErrorCode ierr;
-  int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar          *u,*d,*rtmp,*rtmp_ptr;
+  PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
+  MatScalar      *u,*d,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
   /* initialization */
   ierr = PetscMalloc(25*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,25*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
   jl = il + mbs;
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
@@ -36,8 +36,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
     ai = a->inew; aj = a->jnew; 
     ierr = PetscMalloc(25*ai[mbs]*sizeof(MatScalar),&aa);CHKERRQ(ierr); 
     ierr = PetscMemcpy(aa,a->a,25*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(ai[mbs]*sizeof(int),&a2anew);CHKERRQ(ierr); 
-    ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&a2anew);CHKERRQ(ierr); 
+    ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
 
     for (i=0; i<mbs; i++){
       jmin = ai[i]; jmax = ai[i+1];

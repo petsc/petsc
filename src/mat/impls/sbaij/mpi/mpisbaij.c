@@ -177,7 +177,7 @@ EXTERN_C_END
       else if (b->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        PetscInt       new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
+        PetscInt  new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         MatScalar *new_a; \
  \
         if (b->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
@@ -670,8 +670,9 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)baij->A->data;
   Mat_SeqBAIJ    *b=(Mat_SeqBAIJ*)baij->B->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,rstart,ncols,n,flg,bs2=baij->bs2;
+  PetscInt       i,j,rstart,ncols,flg,bs2=baij->bs2;
   PetscInt       *row,*col,other_disassembled;
+  PetscMPIInt    n;
   PetscTruth     r1,r2,r3;
   MatScalar      *val;
   InsertMode     addv = mat->insertmode;
@@ -2159,16 +2160,17 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
 {
   Mat            A;
   PetscErrorCode ierr;
-  PetscInt       i,nz,j,rstart,rend,fd;
+  PetscInt       i,nz,j,rstart,rend;
   PetscScalar    *vals,*buf;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  PetscInt       header[4],*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
-  PetscInt       *locrowlens,*sndcounts = 0,*procsnz = 0,jj,*mycols,*ibuf;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners;
+  PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
+  PetscInt       *locrowlens,*procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs=1,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp;
+  int            fd;
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);

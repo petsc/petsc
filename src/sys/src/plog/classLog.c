@@ -332,7 +332,6 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = CREATE;
-    actions[numActions].event  = obj->type;
     actions[numActions].cookie = obj->cookie;
     actions[numActions].id1    = numObjects;
     actions[numActions].id2    = -1;
@@ -415,7 +414,6 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = DESTROY;
-    actions[numActions].event  = obj->type;
     actions[numActions].cookie = obj->cookie;
     actions[numActions].id1    = obj->id;
     actions[numActions].id2    = -1;

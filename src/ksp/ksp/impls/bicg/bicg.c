@@ -17,7 +17,6 @@ PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 
   /* get work vectors from user code */
   ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -26,13 +25,13 @@ PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  int i;
-  PetscTruth   diagonalscale;
-  PetscScalar  dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
-  PetscReal    dp;
-  Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
+  PetscInt       i;
+  PetscTruth     diagonalscale;
+  PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
+  PetscReal      dp;
+  Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);

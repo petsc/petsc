@@ -27,11 +27,11 @@
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
-PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
+PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
-  int j;
+  PetscInt       j;
   PetscScalar    *hh,*hes,tmp;
 
   PetscFunctionBegin;

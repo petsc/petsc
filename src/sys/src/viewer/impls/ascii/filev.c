@@ -6,8 +6,8 @@
 typedef struct {
   FILE          *fd;
   PetscFileMode mode;           /* The mode in which to open the file */
-  int           tab;            /* how many times text is tabbed in from left */
-  int           tab_store;      /* store tabs value while tabs are turned off */
+  PetscInt      tab;            /* how many times text is tabbed in from left */
+  PetscInt      tab_store;      /* store tabs value while tabs are turned off */
   PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
   PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
   char          *filename;
@@ -19,7 +19,7 @@ typedef struct {
 #define __FUNCT__ "PetscViewerDestroy_ASCII" 
 PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
-  int               rank;
+  PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -72,7 +72,7 @@ PetscErrorCode PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
 #define __FUNCT__ "PetscViewerFlush_ASCII" 
 PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 {
-  int               rank;
+  PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -176,7 +176,7 @@ extern FILE *petsc_history;
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
 @*/
-PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
+PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        iascii;
@@ -345,7 +345,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscMPIInt       rank;
-  int               tab;
+  PetscInt          tab;
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
   PetscTruth        iascii;
@@ -546,7 +546,7 @@ EXTERN_C_END
 #define __FUNCT__ "PetscViewerGetSingleton_ASCII" 
 PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int               rank;
+  PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data,*ovascii;
   char              *name;
@@ -670,7 +670,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char 
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
-  int               tab = vascii->tab;
+  PetscInt          tab = vascii->tab;
   MPI_Comm          comm;
   FILE              *fp;
   PetscTruth        iascii;

@@ -88,14 +88,11 @@ PetscErrorCode MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQMAIJ, path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMAIJ,    path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_32BIT_INT)
   ierr = MatRegisterDynamic(MATIS,      path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
-#endif
   ierr = MatRegisterDynamic(MATSHELL,   path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
   ierr = MatRegisterDynamic(MATMPIROWBS,path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
 #endif
-
   ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPIAIJ",  MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqAIJ",  MatCreate_SeqAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATAIJ,     path,"MatCreate_AIJ",     MatCreate_AIJ);CHKERRQ(ierr);
@@ -104,24 +101,15 @@ PetscErrorCode MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQBAIJ,  path,"MatCreate_SeqBAIJ",  MatCreate_SeqBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATBAIJ,     path,"MatCreate_BAIJ",     MatCreate_BAIJ);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_32BIT_INT)
   ierr = MatRegisterDynamic(MATMPISBAIJ,  path,"MatCreate_MPISBAIJ",  MatCreate_MPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJ,  path,"MatCreate_SeqSBAIJ",  MatCreate_SeqSBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSBAIJ,     path,"MatCreate_SBAIJ",     MatCreate_SBAIJ);CHKERRQ(ierr);
-#endif
-
-#if defined(PETSC_USE_32BIT_INT)
   ierr = MatRegisterDynamic(MATMPIBDIAG,  path,"MatCreate_MPIBDiag",  MatCreate_MPIBDiag);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQBDIAG,  path,"MatCreate_SeqBDiag",  MatCreate_SeqBDiag);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATBDIAG,     path,"MatCreate_BDiag",     MatCreate_BDiag);CHKERRQ(ierr);
-#endif
-
-#if defined(PETSC_USE_32BIT_INT)
   ierr = MatRegisterDynamic(MATMPIDENSE,  path,"MatCreate_MPIDense",  MatCreate_MPIDense);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQDENSE,  path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATDENSE,     path,"MatCreate_Dense",     MatCreate_Dense);CHKERRQ(ierr);
-#endif
-
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
   ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJSpooles",  MatCreate_SeqAIJSpooles);CHKERRQ(ierr);

@@ -8,19 +8,18 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqSBAI_SeqAIJ"
 PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
-  Mat          B;
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
-  Mat_SeqAIJ   *b;
+  Mat            B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
-  int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,
-               *rowlengths,nz,*rowstart,itmp;
-  int          bs=A->bs,bs2=bs*bs,mbs=A->m/bs;
-  PetscScalar  *av,*bv;
+  PetscInt       *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
+  PetscInt       bs=A->bs,bs2=bs*bs,mbs=A->m/bs;
+  PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
 
   /* compute rowlengths of newmat */
-  ierr = PetscMalloc((2*m+1)*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*m+1)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   rowstart = rowlengths + m;
   
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
@@ -127,7 +126,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newma
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   ierr = MatMissingDiagonal_SeqAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
 
-  ierr = PetscMalloc(m*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - a->diag[i];
   }
@@ -175,18 +174,17 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqSBAI_SeqBAIJ"
 PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
-  Mat          B;
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
-  Mat_SeqBAIJ  *b;
+  Mat            B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,
-               *browlengths,nz,*browstart,itmp;
-  int          bs=A->bs,bs2=bs*bs,mbs=m/bs;
-  PetscScalar  *av,*bv;
+  PetscInt       *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
+  PetscInt       bs=A->bs,bs2=bs*bs,mbs=m/bs;
+  PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
-  ierr = PetscMalloc(2*mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   browstart = browlengths + mbs;
   for (i=0; i<mbs; i++) browlengths[i] = 0;
   aj = a->j;
@@ -265,20 +263,19 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newm
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
 PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
-  Mat          B;
-  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data; 
-  Mat_SeqSBAIJ *b;
+  Mat            B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
+  Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
-  int *ai=a->i,*aj,m=A->m,n=A->n,i,j,k,
-               *bi,*bj,*browlengths;
-  int          bs=A->bs,bs2=bs*bs,mbs=m/bs;
-  PetscScalar  *av,*bv;
+  PetscInt       *ai=a->i,*aj,m=A->m,n=A->n,i,j,k,*bi,*bj,*browlengths;
+  PetscInt       bs=A->bs,bs2=bs*bs,mbs=m/bs;
+  PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   ierr = MatMissingDiagonal_SeqBAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
   
-  ierr = PetscMalloc(mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc(mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     browlengths[i] = ai[i+1] - a->diag[i];
   }

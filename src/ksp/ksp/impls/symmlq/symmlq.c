@@ -26,16 +26,16 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 {
   PetscErrorCode ierr;
-  int i;
-  PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
-  PetscScalar  c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
-  PetscScalar  mone = -1.0,zero = 0.0,dp = 0.0;
-  PetscReal    np,s_prod;
-  Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  KSP_SYMMLQ   *symmlq = (KSP_SYMMLQ*)ksp->data;
-  PetscTruth   diagonalscale;
+  PetscInt       i;
+  PetscScalar    alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
+  PetscScalar    c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
+  PetscScalar    mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscReal      np,s_prod;
+  Vec            X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  KSP_SYMMLQ     *symmlq = (KSP_SYMMLQ*)ksp->data;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -213,11 +213,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_SYMMLQ"
 PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {
-  KSP_SYMMLQ *symmlq;
+  KSP_SYMMLQ     *symmlq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ksp->pc_side                   = PC_LEFT;
 
   ierr           = PetscNew(KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
@@ -234,7 +233,6 @@ PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

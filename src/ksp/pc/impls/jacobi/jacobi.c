@@ -94,14 +94,13 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetUp_Jacobi"
 static PetscErrorCode PCSetUp_Jacobi(PC pc)
 {
-  PC_Jacobi     *jac = (PC_Jacobi*)pc->data;
-  Vec           diag,diagsqrt;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  Vec            diag,diagsqrt;
   PetscErrorCode ierr;
-  int n,i,zeroflag=0;
+  PetscInt       n,i,zeroflag=0;
   PetscScalar   *x;
 
   PetscFunctionBegin;
-
   /*
        For most preconditioners the code would begin here something like
 
@@ -163,7 +162,6 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   if (zeroflag) {
     PetscLogInfo(pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n");
   }
-
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -180,10 +178,9 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-
   ierr = MatGetVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
   PetscLogObjectParent(pc,jac->diagsqrt);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
@@ -203,10 +200,9 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-
   ierr = MatGetVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
   PetscLogObjectParent(pc,jac->diag);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
@@ -229,7 +225,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 #define __FUNCT__ "PCApply_Jacobi"
 static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -258,7 +254,7 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
   if (!jac->diagsqrt) {
@@ -281,7 +277,7 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_Jacobi"
 static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -299,7 +295,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
 #define __FUNCT__ "PCSetFromOptions_Jacobi"
 static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 {
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -347,11 +343,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_Jacobi"
 PetscErrorCode PCCreate_Jacobi(PC pc)
 {
-  PC_Jacobi *jac;
+  PC_Jacobi      *jac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
