@@ -1382,6 +1382,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
 
+        if (info->shiftpd){
+          sctx.pv = PetscMin(PetscRealPart(rtmp1[row]), PetscRealPart(rtmp2[row+1]));
+        } else {
+          sctx.pv = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));
+        }
         rs           = 0.0;
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
@@ -1394,16 +1399,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         }
 
         sctx.rs  = rs/2.0; /* rs = sum(all off-diagonals in row and row+1) */
-        if (info->shiftpd){
-          sctx.pv = PetscMin(PetscRealPart(rtmp1[row]), PetscRealPart(rtmp2[row+1]));
-        } else {
-          sctx.pv = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));
-        }
         ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g",row,row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+          SETERRQ6(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g, nsz %d",row,row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
         }
         break;
 
@@ -1479,7 +1479,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile;
           } else if (newshift == -1){
-            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, nsz %d",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
           }
 
           mul2 = (*pc2)/(*pc1);
@@ -1526,26 +1526,25 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc2 = ba + bi[row+1];
         pc3 = ba + bi[row+2];
 
-        if (info->shiftpd){
-          sctx.pv = PetscRealPart(rtmp1[row]);
-          for (j=1; j<3; j++){
-            rs = PetscRealPart(rtmp2[row+j]);
-            if (PetscRealPart(sctx.pv) > rs) sctx.pv = rs;
-          }
+        if (info->shiftpd){  
+          rs = PetscRealPart(rtmp1[row]);
+          if (rs > PetscRealPart(rtmp2[row+1])) rs = PetscRealPart(rtmp2[row+1]);
+          if (rs > PetscRealPart(rtmp3[row+2])) rs = PetscRealPart(rtmp3[row+2]);                      
+          sctx.pv = rs;
         } else {
-          sctx.pv = PetscAbsScalar(rtmp1[row]);
-          for (j=1; j<3; j++){
-            rs = PetscAbsScalar(rtmp2[row+j]);
-            if (PetscRealPart(sctx.pv) > rs) sctx.pv = rs;
-          }
+          rs = PetscAbsScalar(rtmp1[row]);
+          if (rs > PetscAbsScalar(rtmp2[row+1])) rs = PetscAbsScalar(rtmp2[row+1]);
+          if (rs > PetscAbsScalar(rtmp3[row+2])) rs = PetscAbsScalar(rtmp3[row+2]);                      
+          sctx.pv = rs;
         }
+
         rs           = 0.0;
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
         rtmp3[row+2] = 1.0/rtmp3[row+2];
         /* copy row entries from dense representation to sparse */
         for (j=0; j<nz; j++) {
-          idx    = pj[j];
+          idx    = pj[j]; 
           pc1[j] = rtmps1[idx];
           pc2[j] = rtmps2[idx];
           pc3[j] = rtmps3[idx];
@@ -1559,7 +1558,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g",row,row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+          SETERRQ6(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g, nsz %d",row,row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
         }
         break;
 
