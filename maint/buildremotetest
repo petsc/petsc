@@ -1,98 +1,29 @@
 #! /bin/csh
 # 
-# Runs buildall in Barry's petsc directory
+# Builds and transports the petsc.tar.Z file for remote 
+# automatic testing.
 #
-#
-/bin/rm -f ~/.petscrc
-echo "-display eagle:0.0 " > ~/.petscrc
-echo "-trdump " >> ~/.petscrc
-
-setenv H /home/bsmith/petsc
-cd $H/maint
-/bin/rm -f build.log examples.log ftp.log
-set day=`date | cut -f1 -d" "`
-#
-# Set up configurations for library building and testing
 #
 # send copy off to ICASE, UCLA, and NERSC for testing
-  builddist >>& /dev/null
-  /bin/rm -f ~/petsc.tar.Z
-  compress ~/petsc.tar
-  chmod ug+w ~/petsc.tar.Z
-  echo "ftp logging:" > ftp.log
-  chmod 660 ftp.log
-  autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-  autoftp h4p.nersc.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-  autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-
-if ($day == Sun || $day == Wed || $day == Fri) then
-    set M=(eagle       eagle      )
-    set B=(g            O           )
-    set A=(sun4         sun4        )
-    set J=(fortran      fortran     )
-else if ($day == Mon || $day == Sat) then
-    set M=(eagle      doc       )
-    set B=(g          O_c++     )
-    set A=(sun4       rs6000_p4 )
-    set J=(fortran    fortran   )
-else
-    set M=(eagle       eagle        )
-    set B=(g            O_c++         )
-    set A=(sun4         sun4          )
-    set J=(fortran      fortran     )
-endif
-
 #
-set i=1
-foreach machine ($M)
-  set bopt    = $B[$i]
-  set arch    = $A[$i]
-  echo "*******************************************************" >> build.log
-  echo "Build on $machine $bopt `date` " >> build.log
-  rsh $machine -n "cd $H ; \
-      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all  >>& maint/build.log"
-  echo "*******************************************************" >> build.log
-  if ($J[$i] == fortran) then
-    rsh $machine -n "cd $H; \
-        make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran  >>& maint/build.log"
-  endif
-  rsh $machine -n "cd $H; chmod -R g+w lib" >& /dev/null
-  echo "Finished Build on $machine  $arch $bopt `date`" >> build.log
-  echo "******************************************************" >> examples.log
-  echo "Build on $machine  $bopt `date` " >> examples.log
-  rsh $machine -n "cd $H ;  \
-       make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  testexamples >>& maint/examples.log"
-  echo "******************************************************" >> examples.log
-  rsh $machine -n "cd $H ;  \
-       make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_2 tree >>& maint/examples.log"
-  echo "******************************************************" >> examples.log
-  if ($J[$i] == fortran) then
-    rsh $machine -n "cd $H ;  \
-         make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_3 tree >>& maint/examples.log"
-  endif
-  echo "Finished Build on $machine $arch $bopt `date`" >> examples.log
-  @ i = ($i + 1)
-end
-echo "Finished Build `date`" >> build.log
-echo "Finished Build `date`" >> examples.log
+cd /home/bsmith/petsc/maint
+/bin/rm -f ftp.log
+echo "ftp logging: `date` " > ftp.log
+chmod 660 ftp.log
+builddist >>& ftp.log
+/bin/rm -f ~/petsc.tar.Z
+compress ~/petsc.tar
+chmod ug+w ~/petsc.tar.Z
+autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
+autoftp h4p.nersc.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
+autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
+#
+#  Wait four hours then retrieve the results
+#
+sleep 3600
+autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/petsc/petsc/maint/solaris.log >>& ftp.log
+autoftp h4p.nersc.gov bsmith get buildtest.log /home/petsc/petsc/maint/t3d.log >>& ftp.log
+autoftp crabcake.larc.nasa.gov bsmith get buildtest.log /home/petsc/petsc/maint/paragon.log >>& ftp.log
+echo "ftp logging complete: `date` " >> ftp.log
 
-echo "Errors from PETSc nightly build" > trashz
-date >> trashz
-cat build.log examples.log \
-           | egrep -i 'error|warning|problem|failed|undefined' >> trashz
-if ($status == 0) then
-  echo "Errors generated in $H" > trash
-  cat trashz >> trash
-  /bin/mail balay < trash
-else
-  echo "No errors generated in $H -- hard to believe" > trash
-  /bin/mail curfman < trash
-endif 
-/bin/rm -f trash trashz
-chmod ug+w  build.log examples.log
-
-  sleep 3600
-  autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/petsc/petsc/maint/solaris.log >>& ftp.log
-  autoftp h4p.nersc.gov bsmith get buildtest.log /home/petsc/petsc/maint/t3d.log >>& ftp.log
-  autoftp crabcake.larc.nasa.gov bsmith get buildtest.log /home/petsc/petsc/maint/paragon.log >>& ftp.log
 
