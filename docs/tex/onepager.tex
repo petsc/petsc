@@ -1,4 +1,4 @@
-% $Id: onepager.tex,v 1.24 1998/10/06 03:09:04 bsmith Exp curfman $ 
+% $Id: onepager.tex,v 1.25 2000/04/14 15:02:11 curfman Exp curfman $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
@@ -71,13 +71,19 @@ unstructured grid data.
 \section*{Applications}
 \code{PETSc} is intended for use in large-scale application projects,
 and several ongoing computational science projects at Argonne and
-other institutions are built around these tools.  One such application
-for a fully unstructured, fully implicit Euler solver
-won a Gordon Bell prize at the SC99 conference.
+other institutions are built around these tools.  
+One such application for a fully unstructured, fully implicit Euler
+solver was a "special catagory" winner in the 1999 Gordon Bell
+competition at SC99 with a rate of over 225 Gflops on the ASCI
+Red machine. 
 With strict attention to component interoperability, \code{PETSc}
 facilitates the integration of independently developed application
 modules, which often most naturally employ different coding styles and
 data structures. 
+
+% This code also achieved a 95\% efficiency in going from
+% 256 to 2048 processors and over 70 Gflops on 1280 processors of the
+% Cray T3E.
 
 \section*{Availability}
 
