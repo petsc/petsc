@@ -525,6 +525,30 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkFortranFlag(self, option):
+    self.pushLanguage('F77')
+    self.sourceExtension = '.F'
+    oldFlags = self.framework.argDB['FFLAGS']
+    success  = 0
+
+    (output, returnCode) = self.outputCompile('', '')
+    if returnCode: raise RuntimeError('Could not compile anything with Fortran compiler:\n'+output)
+
+    self.framework.argDB['FFLAGS'] = option
+    (newOutput, returnCode) = self.outputCompile('', '')
+    if not returnCode and output == newOutput:
+      success = 1
+
+    self.framework.argDB['FFLAGS'] = oldFlags
+    self.popLanguage()
+    return success
+
+  def checkFortranPreprocessor(self):
+    '''Determine if Fortran handles preprocessing properly'''
+    # IBM xlF chokes on this
+    self.fortranPreprocess = self.checkFortranFlag('-DPTesting')
+    return
+
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if self.framework.argDB.has_key('with-f90-header'):
@@ -736,6 +760,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranFlags)
       self.executeTest(self.checkFortranNameMangling)
+      self.executeTest(self.checkFortranPreprocessor)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
 

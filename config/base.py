@@ -362,7 +362,10 @@ class Configure:
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'F77':
-      codeStr = includes
+      if not includes is None:
+        codeStr = includes
+      else:
+        codeStr = ''
       if not body is None:
         if codeBegin is None:
           codeBegin = '      program main\n'
