@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.8 2000/06/20 15:17:54 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.9 2000/06/20 15:22:51 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -467,7 +467,7 @@ int VecPackGetGlobalIndices(VecPack packer,...)
       if (!packer->rank) {
         ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
         array += next->rstart;
-        for (i=0; i<next->n; i++) (*idx)[i] = PetscRealPart(array[i]);
+        for (i=0; i<next->n; i++) (*idx)[i] = (int)PetscRealPart(array[i]);
         array -= next->rstart;
         ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
       }
@@ -488,7 +488,7 @@ int VecPackGetGlobalIndices(VecPack packer,...)
       ierr    = VecGetArray(local,&array);CHKERRQ(ierr);
       ierr    = VecGetSize(local,&n);CHKERRQ(ierr);
       *idx    = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(*idx);
-      for (i=0; i<n; i++) (*idx)[i] = PetscRealPart(array[i]);
+      for (i=0; i<n; i++) (*idx)[i] = (int)PetscRealPart(array[i]);
       ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
       ierr    = VecDestroy(local);CHKERRQ(ierr);
 
