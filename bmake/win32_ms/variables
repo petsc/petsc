@@ -1,9 +1,9 @@
-# $Id: base_variables,v 1.3 2001/03/08 19:03:12 balay Exp balay $ 
+# $Id: base_variables,v 1.4 2001/03/09 03:45:39 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
 WIN32FE          = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR               = ${WIN32FE} lib -nologo --quiet
+AR               = ${WIN32FE} lib -nologo
 AR_FLAGS         = 
 LIB_SUFFIX       = lib
 RM               = rm -f
@@ -14,12 +14,12 @@ SED              = sed
 MKDIR            = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = ${WIN32FE} cl -nologo --quiet
-C_FC             = ${WIN32FE} f90 -fpp:'"/m"' -nologo --quiet
+C_CC             = ${WIN32FE} cl
+C_FC             = ${WIN32FE} f90 -fpp:'"/m"'
 C_CLINKER_SLFLAG = -L
 C_FLINKER_SLFLAG = -L
-C_CLINKER        = ${WIN32FE} cl -nologo --quiet ${COPTFLAGS} 
-C_FLINKER        = ${WIN32FE} f90 -nologo --quiet ${FOPTFLAGS}
+C_CLINKER        = ${WIN32FE} cl
+C_FLINKER        = ${WIN32FE} f90
 C_CCV            = cl
 C_FCV            = f90
 C_SYS_LIB        =  kernel32.lib user32.lib  gdi32.lib advapi32.lib
@@ -31,18 +31,18 @@ O_COPTFLAGS      = -MT -O2 -W2
 O_FOPTFLAGS      = -threads -optimize:5 -fast
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = ${WIN32FE} cl -nologo --quiet -TP -GX 
+CXX_CC           = ${WIN32FE} cl -TP -GX 
 ## patch for the cref/stdcall problem with using fortran blas
 ifeq (${BLAS_FC},TRUE)
-CXX_FC           = ${WIN32FE} f90 -iface:(cref,nomixed_str_len_arg) -fpp:'"/m"' -nologo --quiet
+CXX_FC           = ${WIN32FE} f90 -iface:(cref,nomixed_str_len_arg) -fpp:'"/m"'
 else
-CXX_FC           = ${WIN32FE} f90 -fpp:'"/m"' -nologo --quiet
+CXX_FC           = ${WIN32FE} f90 -fpp:'"/m"'
 endif
 
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER      = ${WIN32FE} cl -nologo --quiet ${COPTFLAGS}
-CXX_FLINKER      = ${WIN32FE} df -nologo --quiet ${FOPTFLAGS}
+CXX_CLINKER      = ${WIN32FE} cl
+CXX_FLINKER      = ${WIN32FE} df
 CXX_CCV          = cl
 CXX_FCV          = f90
 CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib
