@@ -22,6 +22,13 @@ class Processor(args.ArgumentProcessor):
     self.targetExtension = targetExtension
     return
 
+  def setArgDB(self, argDB):
+    args.ArgumentProcessor.setArgDB(self, argDB)
+    if hasattr(self, 'configLibrary'):
+      self.configLibrary.argDB = argDB
+    return
+  argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
+
   def pushRequiredFlags(self, flags):
     self.requiredFlags.append(flags)
     return

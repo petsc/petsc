@@ -75,9 +75,9 @@ class Make(script.Script):
     doConfigure = self.shouldConfigure(builder, self.framework)
     if not doConfigure:
       try:
-        cache          = self.argDB['configureCache']
-        self.framework = cPickle.loads(cache)
-        self.framework.setArgDB(self.argDB)
+        cache                  = self.argDB['configureCache']
+        self.framework         = cPickle.loads(cache)
+        self.framework.argDB   = self.argDB
         self.builder.framework = self.framework
         self.logPrint('Loaded configure to cache: size '+str(len(cache)))
       except cPickle.UnpicklingError, e:
@@ -160,12 +160,14 @@ class SIDLMake(Make):
   def setupConfigure(self, framework):
     framework.require('config.libraries', None)
     framework.require('config.python', None)
+    framework.require('config.ase', None)
     return Make.setupConfigure(self, framework)
 
   def configure(self, builder):
     framework = Make.configure(self, builder)
     self.libraries = framework.require('config.libraries', None)
     self.python    = framework.require('config.python', None)
+    self.ase       = framework.require('config.ase', None)
     return framework
 
   def setupSIDL(self, builder, sidlFile):
@@ -194,6 +196,7 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Stub '+baseName)
     builder.getCompilerObject().includeDirectories.extend(self.python.include)
     builder.getCompilerObject().includeDirectories.append(clientDir)
+    builder.getLinkerObject().libraries.extend(self.ase.lib)
     builder.getLinkerObject().libraries.extend(self.python.lib)
     builder.popConfiguration()
     return
@@ -232,6 +235,8 @@ class SIDLMake(Make):
     self.setupPythonSkeleton(builder, sidlFile, language)
     builder.loadConfiguration(language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
+    if not baseName == 'ase':
+      builder.getLinkerObject().libraries.extend(self.ase.lib)
     builder.getLinkerObject().libraries.extend(self.python.lib)
     builder.popConfiguration()
     return
@@ -331,15 +336,15 @@ class SIDLMake(Make):
   def build(self, builder):
     for f in self.sidl:
       self.setupSIDL(builder, f)
-      for language in self.clientLanguages:
-        getattr(self, 'setup'+language+'Client')(builder, f, language)
       for language in self.serverLanguages:
         getattr(self, 'setup'+language+'Server')(builder, f, language)
+      for language in self.clientLanguages:
+        getattr(self, 'setup'+language+'Client')(builder, f, language)
       self.editServer(builder, f)
       generatedSource = self.buildSIDL(builder, f)
       self.checkinServer(builder, f)
-      for language in self.clientLanguages:
-        getattr(self, 'build'+language+'Client')(builder, f, language, generatedSource)
       for language in self.serverLanguages:
         getattr(self, 'build'+language+'Server')(builder, f, language, generatedSource)
+      for language in self.clientLanguages:
+        getattr(self, 'build'+language+'Client')(builder, f, language, generatedSource)
     return

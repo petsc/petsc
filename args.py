@@ -4,7 +4,7 @@ class ArgumentProcessor(object):
 
   def __init__(self, clArgs = None, argDB = None):
     '''Setup the argument database'''
-    self.argDB    = self.createArgDB(argDB)
+    self.argDB = self.createArgDB(argDB)
     if clArgs is None:
       import sys
 
@@ -16,19 +16,26 @@ class ArgumentProcessor(object):
   def __getstate__(self):
     '''We do not want to pickle the default RDict'''
     d = self.__dict__.copy()
-    if 'argDB' in d:
-      if d['argDB'] is ArgumentProcessor.defaultDB:
-        del d['argDB']
+    if '_argDB' in d:
+      if d['_argDB'] is ArgumentProcessor.defaultDB:
+        del d['_argDB']
       else:
-        d['argDB'] = None
+        d['_argDB'] = None
     return d
 
   def __setstate__(self, d):
     '''We must create the default RDict'''
-    if not 'argDB' in d:
+    if not '_argDB' in d:
       self.argDB = self.createArgDB(None)
     self.__dict__.update(d)
     return
+
+  def getArgDB(self):
+    return self._argDB
+  def setArgDB(self, argDB):
+    self._argDB = argDB
+    return
+  argDB = property(getArgDB, setArgDB, doc = 'The RDict argument database')
 
   def createArgDB(self, initDB):
     '''Create an argument database unless initDB is provided, and insert the command line arguments'''

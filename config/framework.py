@@ -13,12 +13,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import RDict
 
       argDB = RDict.RDict(load = loadArgDB)
-    self.argDB  = argDB
-    self.clArgs = clArgs
-    if not nargs.Arg.findArgument('debugSections', self.clArgs):
-      self.argDB['debugSections'] = ['screen']
+    script.LanguageProcessor.__init__(self, clArgs, argDB)
     config.base.Configure.__init__(self, self)
-    script.LanguageProcessor.__init__(self, clArgs, self.argDB)
     self.childGraph   = graph.DirectedGraph()
     self.substRE      = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles   = {}
@@ -27,6 +23,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.warningRE    = re.compile('warning', re.I)
+    if not nargs.Arg.findArgument('debugSections', self.clArgs):
+      self.argDB['debugSections'] = ['screen']
     self.createChildren()
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''

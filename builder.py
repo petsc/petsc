@@ -178,8 +178,8 @@ class Builder(logging.Logger):
       import cPickle
 
       cache = self.argDB[loadName]
-      self.configurations[configurationName] = cPickle.loads(cache)
-      self.configurations[configurationName].setArgDB(self.argDB)
+      self.configurations[configurationName]       = cPickle.loads(cache)
+      self.configurations[configurationName].argDB = self.argDB
       self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
     return self.getConfiguration(configurationName)
 

@@ -267,11 +267,11 @@ class OutputFiles(dict):
 
 class LanguageProcessor(args.ArgumentProcessor):
   def __init__(self, clArgs = None, argDB = None):
-    args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
+    args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.outputFiles        = OutputFiles()
     self.modulePath         = 'config.compile'
     return
@@ -292,11 +292,12 @@ class LanguageProcessor(args.ArgumentProcessor):
     return
 
   def setArgDB(self, argDB):
-    self.argDB = argDB
+    args.ArgumentProcessor.setArgDB(self, argDB)
     for obj in self.preprocessorObject.values(): obj.argDB = argDB
     for obj in self.compilerObject.values():     obj.argDB = argDB
     for obj in self.linkerObject.values():       obj.argDB = argDB
     return
+  argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
   def normalizeLanguage(self, language):
     '''Canonicalize the language name'''
