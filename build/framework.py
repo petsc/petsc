@@ -234,9 +234,10 @@ class Framework(base.Base):
   def checkClients(self):
     import build.buildGraph
 
-    for lang in self.compileTemplate.usingSIDL.clientLanguages+self.compileTemplate.clientLanguages:
+    for lang in self.compileTemplate.usingSIDL.clientLanguages:
       clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
       for v in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
+        if v == self.project: continue
         if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
           self.debugPrint('Building missing '+lang+' client in '+v.getRoot(), 1, 'build')
           maker  = self.getMakeModule(v.getRoot()).PetscMake(None, self.argDB)
