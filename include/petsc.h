@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.195 1998/01/04 20:54:50 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.196 1998/01/14 02:47:08 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -200,6 +200,32 @@ extern int PetscObjectView(PetscObject,Viewer);
     Defines PETSc error handling.
 */
 #include "petscerror.h"
+
+/*
+    Dynamic library lists. Lists of names of routines in dynamic 
+  link libraries that will be loaded as needed.
+*/
+typedef struct _DLList *DLList;
+extern int    DLRegister_Private(DLList*,char*,char*,int (*)(void *));
+extern int    DLCreate(DLList *);
+extern int    DLDestroy(DLList);
+extern int    DLFindRoutine(DLList,char*,int (**)(void*));
+extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,0)
+#else
+#define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,(int (*)(void *))c)
+#endif
+
+typedef struct _DLLibraryList *DLLibraryList;
+extern DLLibraryList DLLibrariesLoaded;
+extern int DLOpen(char *,void **);
+extern int DLSym(DLLibraryList *,char*,char *, void **);
+extern int DLAppend(DLLibraryList *,char *);
+extern int DLPrepend(DLLibraryList *,char *);
+extern int DLClose(DLLibraryList);
+
+
 #include "petschead.h"
 
 /*
@@ -262,33 +288,6 @@ extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
 
-/*
-    Dynamic library lists. Lists of names of routines in dynamic 
-  link libraries that will be loaded as needed.
-*/
-typedef struct _DLList *DLList;
-extern int    DLRegister_Private(DLList,int,char*,char*,int (*)(void *),int*);
-extern int    DLCreate(int,DLList *);
-extern int    DLDestroy(DLList);
-extern int    DLFindRoutine(DLList,int,char*,int (**)(void*));
-extern int    DLFindID(DLList,char*,int *);
-extern int    DLFindName(DLList,int,char**);
-extern int    DLDestroyAll();
-extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
-extern int    DLGetTypeFromOptions(char *,char *,DLList,int *,char*,int,int *);
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define       DLRegister(a,b,c,d,e,f) DLRegister_Private(a,b,c,d,0,f)
-#else
-#define       DLRegister(a,b,c,d,e,f) DLRegister_Private(a,b,c,d,e,f)
-#endif
-
-typedef struct _DLLibraryList *DLLibraryList;
-extern DLLibraryList DLLibrariesLoaded;
-extern int DLOpen(char *,void **);
-extern int DLSym(DLLibraryList,char *, void **);
-extern int DLAppend(DLLibraryList *,char *);
-extern int DLPrepend(DLLibraryList *,char *);
-extern int DLClose(DLLibraryList);
 
 /*
     C code optimization is often enhanced by telling the compiler 
