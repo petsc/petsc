@@ -38,7 +38,7 @@ class Help:
       nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
       descLen = max([descLen, max(map(len, self.options[section].values()))+1])
     format    = '  -%-'+str(nameLen)+'s: %s'
-    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  default: %s'
+    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s'
     for section in self.sections:
       print section+':'
       for item in self.options[section].items():
