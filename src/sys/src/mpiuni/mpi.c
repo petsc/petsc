@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.26 1997/03/01 15:59:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.27 1997/04/02 21:03:00 bsmith Exp balay $";
 #endif
 
 /* #include <signal.h> */
@@ -27,6 +27,16 @@ PLogDouble MPI_Wtime()
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+/*******MPI_Attr_get******Implemented as a function to comply 
+with ANSI aliasing. The problem appeared om IBM's with -O */
+int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
+{
+  *flag = 1;
+  *((int**)attribute_val) = MPIUNI_DUMMY;
+  return MPI_SUCCESS;
+}
+
 
 /******mpi_init*******/
 void  mpi_init(int *ierr)
