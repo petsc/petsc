@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.93 1996/11/27 22:58:13 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.94 1996/12/09 16:17:25 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -151,38 +151,38 @@ extern int PLogEventActivateClass(int);
 extern int PLogEventDeactivateClass(int);
 
 extern int PLogEventFlags[];
-extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-extern int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-extern int (*_PHC)(PetscObject);
-extern int (*_PHD)(PetscObject);
+extern int (*_PLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+extern int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+extern int (*_PLogPHC)(PetscObject);
+extern int (*_PLogPHD)(PetscObject);
 
 #if defined(HAVE_MPE)
 #define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
   { _tacky++; \
-   if (_PLB && PLogEventFlags[e]) \
-     (*_PLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+   if (_PLogPLB && PLogEventFlags[e]) \
+     (*_PLogPLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
    if (_tacky == 1 && UseMPE && PLogEventMPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e,0,"");\
   }
 #else
 #define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
   { _tacky++; \
-   if (_PLB && PLogEventFlags[e]) \
-     (*_PLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+   if (_PLogPLB && PLogEventFlags[e]) \
+     (*_PLogPLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }
 #endif
 
 #if defined(HAVE_MPE)
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLE && PLogEventFlags[e]) \
-    (*_PLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  if (_PLogPLE && PLogEventFlags[e]) \
+    (*_PLogPLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   if (_tacky == 1 && UseMPE && PLogEventMPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
   }  _tacky--;}
 #else
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLE && PLogEventFlags[e]) \
-    (*_PLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  if (_PLogPLE && PLogEventFlags[e]) \
+    (*_PLogPLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   } _tacky--;}
 #endif
 
@@ -192,8 +192,8 @@ extern int (*_PHD)(PetscObject);
                                      ((PetscObject)(c))->parent = (PetscObject) p;}
 #define PLogObjectParents(p,n,d)    {int _i; for ( _i=0; _i<n; _i++ ) \
                                     PLogObjectParent(p,(d)[_i]);}
-#define PLogObjectCreate(h)         {if (_PHC) (*_PHC)((PetscObject)h);}
-#define PLogObjectDestroy(h)        {if (_PHD) (*_PHD)((PetscObject)h);}
+#define PLogObjectCreate(h)         {if (_PLogPHC) (*_PLogPHC)((PetscObject)h);}
+#define PLogObjectDestroy(h)        {if (_PLogPHD) (*_PLogPHD)((PetscObject)h);}
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
 extern int    PLogObjectState(PetscObject,char *,...);
@@ -340,10 +340,10 @@ extern int PLogMPEDump(char *);
 #define PLogEventActivateClass(a) 0
 #define PLogEventDeactivateClass(a) 0
 
-#define _PLB                          0
-#define _PLE                          0
-#define _PHC                          0
-#define _PHD                          0
+#define _PLogPLB                        0
+#define _PLogPLE                        0
+#define _PLogPHC                        0
+#define _PLogPHD                        0
 #define PetscGetFlops                 0.0
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.137 1996/12/09 16:14:31 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.138 1996/12/13 14:53:34 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -564,15 +564,15 @@ int PLogStagePop()
 
 /* --------------------------------------------------------------------------------*/
 
-int (*_PHC)(PetscObject) = 0;
-int (*_PHD)(PetscObject) = 0;
-int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
-int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
+int (*_PLogPHC)(PetscObject) = 0;
+int (*_PLogPHD)(PetscObject) = 0;
+int (*_PLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
+int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
 
 /*
       Default object create logger 
 */
-int phc(PetscObject obj)
+int PLogDefaultPHC(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
@@ -614,7 +614,7 @@ int phc(PetscObject obj)
 /*
       Default object destroy logger 
 */
-int phd(PetscObject obj)
+int PLogDefaultPHD(PetscObject obj)
 {
   PetscObject parent;
   if (nevents >= eventsspace) {
@@ -660,7 +660,7 @@ int phd(PetscObject obj)
 /*
     Event begin logger with complete logging
 */
-int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
  if (nevents >= eventsspace) {
@@ -695,7 +695,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
 /*
      Event end logger with complete logging
 */
-int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
  if (nevents >= eventsspace) {
@@ -729,7 +729,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
 /*
      Default event begin logger
 */
-int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
@@ -744,7 +744,7 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
 /*
      Default event end logger
 */
-int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLE(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
@@ -764,7 +764,7 @@ char   *traceblanks = "                                                         
 char   tracespace[72];
 double tracetime = 0.0;
 
-int plbtrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   int  rank;
 
@@ -783,7 +783,7 @@ int plbtrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscO
 /*
      Default trace event logging
 */
-int pletrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   int rank;
 
@@ -825,8 +825,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
 int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
             int (*e)(int,int,PetscObject,PetscObject,PetscObject,PetscObject))
 {
-  _PLB    = b;
-  _PLE    = e;
+  _PLogPLB    = b;
+  _PLogPLE    = e;
   return 0;
 }
 
@@ -850,11 +850,11 @@ $      with PETSC_LOG)
 int PLogAllBegin()
 {
   int ierr;
-  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC    = phc;
-  _PHD    = phd;
-  ierr    = PLogSet(plball,pleall); CHKERRQ(ierr);
+  objects  = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PLogPHC = PLogDefaultPHC;
+  _PLogPHD = PLogDefaultPHD;
+  ierr     = PLogSet(PLogDefaultPLBAll,PLogDefaultPLEAll); CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
@@ -911,11 +911,11 @@ int PLogBegin()
 {
   int ierr;
 
-  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC    = phc;
-  _PHD    = phd;
-  ierr    = PLogSet(plb,ple); CHKERRQ(ierr);
+  objects  = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PLogPHC = PLogDefaultPHC;
+  _PLogPHD = PLogDefaultPHD;
+  ierr     = PLogSet(PLogDefaultPLB,PLogDefaultPLE); CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
@@ -947,7 +947,7 @@ int PLogTraceBegin(FILE *file)
 {
   int ierr;
 
-  ierr      = PLogSet(plbtrace,pletrace); CHKERRQ(ierr);
+  ierr      = PLogSet(PLogDefaultPLBTrace,PLogDefaultPLETrace); CHKERRQ(ierr);
   tracefile = file;
   return 0;
 }
