@@ -13,21 +13,13 @@ else:
 
 class Configure:
   def __init__(self, framework):
-    self.framework = framework
-    self.defines   = {}
-    self.subst     = {}
-    self.argSubst  = {}
-    # Interaction with Autoconf
-    self.m4           = '/usr/bin/m4'
-    self.acMacroDir   = '/usr/share/autoconf'
-    self.acLocalDir   = 'config'
-    self.acReload     = '--reload'
-    self.acMsgFD      = '2'
-    self.configAuxDir = 'config'
-    # Interaction with the shell
-    self.shell = '/bin/sh'
-    # Preprocessing, compiling, and linking
-    self.language = []
+    self.framework       = framework
+    self.defines         = {}
+    self.subst           = {}
+    self.argSubst        = {}
+    self.shell           = '/bin/sh'
+    self.language        = []
+    self.compilerDefines = 'confdefs.h'
     self.pushLanguage('C')
     return
 
@@ -38,9 +30,6 @@ class Configure:
     if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
       raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
     return
-
-  def getAcCCFD(self):
-    return str(self.framework.log.fileno())
 
   def getRoot(self):
     # This has the problem that when we reload a module of the same name, this gets screwed up
@@ -237,165 +226,49 @@ class Configure:
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
     self.language.append(language)
-    return self.setLanguage(self.language[-1])
+    return self.language[-1]
 
   def popLanguage(self):
     self.language.pop()
-    return self.setLanguage(self.language[-1])
-
-  def setLanguage(self, language):
-    if language == 'C':
-      self.compilerDefines = 'confdefs.h'
-      self.sourceExtension = '.c'
-    elif language in ['C++', 'Cxx']:
-      self.compilerDefines = 'confdefs.h'
-      self.sourceExtension = self.framework.cxxExt
-    elif language == 'F77':
-      self.compilerDefines = 'confdefs.h'
-      self.sourceExtension = '.F'
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    return
-
-  def checkCCompilerSetup(self):
-    if not self.framework.argDB.has_key('CC'):
-      raise RuntimeError('Could not find a C compiler. Please set with the option --with-cc or -CC and load the compilers module.')
-    return
-
-  def checkCPreprocessorSetup(self):
-    if not self.framework.argDB.has_key('CPP'):
-      raise RuntimeError('Could not find a C preprocessor. Please set with the option --with-cpp or -CPP and load the compilers module.')
-    return
-
-  def checkCxxCompilerSetup(self):
-    if not self.framework.argDB.has_key('CXX'):
-      raise RuntimeError('Could not find a C++ compiler. Please set with the option --with-cxx or -CXX and load the compilers module.')
-    return
-
-  def checkCxxPreprocessorSetup(self):
-    if not self.framework.argDB.has_key('CXXCPP'):
-      raise RuntimeError('Could not find a C++ preprocessor. Please set with the option --with-cxxcpp or -CXXCPP and load the compilers module.')
-    return
-
-  def checkFortranCompilerSetup(self):
-    if not self.framework.argDB.has_key('FC'):
-      raise RuntimeError('Could not find a Fortran compiler. Please set with the option --with-fc or -FC and load the compilers module.')
-    return
+    return self.language[-1]
 
   def getCompiler(self):
-    language = self.language[-1]
-    if language == 'C':
-      self.checkCCompilerSetup()
-      self.compilerName   = 'CC'
-      self.compilerSource = 'conftest'+self.sourceExtension
-      self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-    elif language in ['C++', 'Cxx']:
-      self.checkCxxCompilerSetup()
-      self.compilerName   = 'CXX'
-      self.compilerSource = 'conftest'+self.sourceExtension
-      self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['CXX_CXXFLAGS']+' '+self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-    elif language == 'F77':
-      self.checkFortranCompilerSetup()
-      self.compilerName   = 'FC'
-      self.compilerSource = 'conftest'+self.sourceExtension
-      self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['FFLAGS']
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    self.compiler = self.framework.argDB[self.compilerName]
-    return self.compiler
+    compiler            = self.framework.getCompilerObject(self.language[-1])
+    compiler.checkSetup()
+    self.compilerSource = 'conftest'+compiler.sourceExtension
+    self.compilerObj    = 'conftest'+compiler.targetExtension
+    return self.framework.argDB[compiler.name]
+
+  def getCompilerFlags(self):
+    return self.framework.getCompilerObject(self.language[-1]).getFlags()
 
   def getLinker(self):
-    language = self.language[-1]
-    if language == 'C':
-      self.checkCCompilerSetup()
-      if 'CC_LD' in self.framework.argDB:
-        self.linkerName  = 'CC_LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      elif 'LD' in self.framework.argDB:
-        self.linkerName  = 'LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      else:
-        self.linkerName  = 'CC'
-        self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerSource  = 'conftest.o'
-      self.linkerObj     = 'conftest'
-    elif language in ['C++', 'Cxx']:
-      self.checkCxxCompilerSetup()
-      if 'CXX_LD' in self.framework.argDB:
-        self.linkerName  = 'CXX_LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      elif 'LD' in self.framework.argDB:
-        self.linkerName  = 'LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      else:
-        self.linkerName  = 'CXX'
-        self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerSource  = 'conftest.o'
-      self.linkerObj     = 'conftest'
-    elif language == 'F77':
-      self.checkFortranCompilerSetup()
-      if 'FC_LD' in self.framework.argDB:
-        self.linkerName  = 'FC_LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      elif 'LD' in self.framework.argDB:
-        self.linkerName  = 'LD'
-        self.linkerFlags = self.framework.argDB['LDFLAGS']
-      else:
-        self.linkerName  = 'FC'
-        self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerSource  = 'conftest.o'
-      self.linkerObj     = 'conftest'
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    self.linker = self.framework.argDB[self.linkerName]
-    return self.linker
+    linker            = self.framework.getLinkerObject(self.language[-1])
+    linker.checkSetup()
+    self.linkerSource = 'conftest'+linker.sourceExtension
+    self.linkerObj    = 'conftest'
+    return self.framework.argDB[linker.name]
 
-  def getCppCmd(self):
-    language = self.language[-1]
+  def getLinkerFlags(self):
+    return self.framework.getLinkerObject(self.language[-1]).getFlags()
+
+  def getPreprocessorCmd(self):
     self.getCompiler()
-    if language == 'C':
-      self.checkCPreprocessorSetup()
-      self.cpp      = self.framework.argDB['CPP']
-      self.cppFlags = self.framework.argDB['CPPFLAGS']
-      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
-    elif language in ['C++', 'Cxx']:
-      self.checkCxxPreprocessorSetup()
-      self.cpp      = self.framework.argDB['CXXCPP']
-      self.cppFlags = self.framework.argDB['CPPFLAGS']
-      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
-    elif language == 'F77':
-      self.checkCPreprocessorSetup()
-      self.cpp      = self.framework.argDB['CPP']
-      self.cppFlags = self.framework.argDB['CPPFLAGS']
-      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    return self.cppCmd
+    preprocessor = self.framework.getPreprocessorObject(self.language[-1])
+    preprocessor.checkSetup()
+    return preprocessor.getCommand(self.compilerSource)
 
   def getCompilerCmd(self):
-    language = self.language[-1]
     self.getCompiler()
-    if language == 'C':
-      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-    elif language in ['C++', 'Cxx']:
-      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-    elif language == 'F77':
-      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    return self.compilerCmd
+    compiler = self.framework.getCompilerObject(self.language[-1])
+    compiler.checkSetup()
+    return compiler.getCommand(self.compilerSource, self.compilerObj)
 
   def getLinkerCmd(self):
-    language = self.language[-1]
     self.getLinker()
-    if language in ['C', 'C++', 'Cxx', 'F77']:
-      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
-    else:
-      raise RuntimeError('Unknown language: '+language)
-    return self.linkerCmd
+    linker = self.framework.getLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getCommand(self.linkerSource, self.linkerObj)
 
   def getCode(self, includes, body = None, codeBegin = None, codeEnd = None):
     language = self.language[-1]
@@ -482,7 +355,7 @@ class Configure:
         self.framework.log.write('Source:\n'+self.getCode(codeStr))
       return
 
-    command = self.getCppCmd()
+    command = self.getPreprocessorCmd()
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
@@ -668,102 +541,6 @@ class Configure:
     (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg)
     return not returnCode
 
-  ######################################
-  # Methods for Autoconf Macro Execution
-  def getDefaultMacros(self):
-    '''Macros that seems necessary to run any given Autoconf macro'''
-    return 'AC_INIT_BINSH\nAC_CONFIG_AUX_DIR('+self.configAuxDir+')\n'
-
-  def getMacroVersion(self, macro):
-    '''This is the version of Autoconf required by the macro'''
-    m = re.search(r'^dnl\s+Version:\s+(?P<version>\d+\.\d+)', macro, re.M)
-    if m:
-      return m.group('version')
-    else:
-      return ''
-
-  def getMacroVariables(self, macro):
-    '''These are the variables output by the macro'''
-    varRE = re.compile(r'^dnl\s+Variable:\s+(?P<variable>\w+)', re.M)
-    return varRE.findall(macro)
-
-  def replaceDefaultDescriptors(self, codeStr):
-    '''Autoconf defines several default file descriptors, which we must assign'''
-    newCode = re.sub('AC_FD_MSG', self.acMsgFD, codeStr)
-    newCode = re.sub('AC_FD_CC',  self.getAcCCFD(),  newCode)
-    return newCode
-
-  def findUndefinedMacros(self, codeStr):
-    '''This finds Auotconf macros which have not been expanded because no definitions have been found'''
-    matches = re.findall(r'AC_\w+', codeStr)
-    if len(matches):
-      msg = 'Undefined macros:\n'
-      for m in matches: msg += '  '+m+'\n'
-      raise RuntimeError(msg)
-    return
-
-  def macroToShell(self, macro):
-    '''This takes the text of an Autoconf macro and returns a tuple of the corresponding shell code and output variable names'''
-    self.getMacroVersion(macro)
-    command = self.m4
-    if self.acMacroDir:
-      command += ' -I'+self.acMacroDir
-    if self.acLocalDir:
-      command += ' -I'+self.acLocalDir+' -DAC_LOCALDIR='+self.acLocalDir
-    if self.acReload and os.path.exists(os.path.join(self.acMacroDir, 'autoconf.m4f')):
-      command += ' '+self.acReload+' autoconf.m4f'
-    else:
-      command += ' autoconf.m4'
-    (input, output) = os.popen2(command)
-    input.write(self.getDefaultMacros()+macro)
-    input.close()
-    out = output.read()
-    shellCode = self.replaceDefaultDescriptors(out)
-    self.findUndefinedMacros(shellCode)
-    output.close()
-    return (re.sub('__oline__', '0', shellCode), self.getMacroVariables(macro))
-
-  def getDefaultVariables(self):
-    '''These shell variables are set by Autoconf, and seem to be necessary to run any given macro'''
-    return '''
-    host=NONE
-    nonopt=NONE
-    CONFIG_SHELL=%s
-    ac_ext="c"
-    ac_exeext=""
-    ac_cpp=\'$CPP $CPPFLAGS\'
-    ac_compile=\'${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&%s\'
-    ac_link=\'${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&%s\'
-    exec %s>>%s
-    ''' % (self.shell, self.getAcCCFD(), self.getAcCCFD(), self.getAcCCFD(), self.framework.logName)
-
-  def parseShellOutput(self, output):
-    '''This retrieves the output variable values from macro shell code'''
-    results = {}
-    varRE   = re.compile(r'(?P<name>\w+)\s+=\s+(?P<value>.*)')
-    for line in output.split('\n'):
-      m = varRE.match(line)
-      if m: results[m.group('name')] = m.group('value')
-    return results
-
-  def executeShellCode(self, code):
-    '''This executes the shell code for an Autoconf macro, appending code which causes the output variables to be printed'''
-    codeStr  = self.getDefaultVariables()
-    codeStr += code[0]
-    for var in code[1]:
-      codeStr += 'echo "'+var+' = " ${'+var+'}\n'
-    self.framework.outputHeader(self.compilerDefines)
-    (input, output) = os.popen4(self.shell)
-    input.write(codeStr)
-    input.close()
-    results = output.read()
-    output.close()
-    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
-    return self.parseShellOutput(results)
-
-  def configure(self):
-    pass
-
   def splitLibs(self,libArgs):
     '''Takes a string containing a list of libraries (including potentially -L, -l, -w etc) and generates a list of libraries'''
     dirs = []
@@ -801,3 +578,6 @@ class Configure:
         # check if directory exists?
         includes.append(inc[2:])
     return includes
+
+  def configure(self):
+    pass

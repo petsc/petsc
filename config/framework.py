@@ -16,12 +16,49 @@ class Framework(config.base.Configure):
     self.warningRE    = re.compile('warning', re.I)
     self.setupChildren()
     # Universal language data
+    self.languageModule     = {}
+    self.preprocessorObject = {}
+    self.compilerObject     = {}
+    self.linkerObject       = {}
     self.cxxExt       = None
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''
     self.argDB['LIBS']       = ''
     if not 'LDFLAGS' in self.argDB:
       self.argDB['LDFLAGS']  = ''
+    return
+
+  def configureHelp(self, help):
+    import nargs
+
+    searchdirs  = []
+    packagedirs = []
+    home = os.getenv('HOME')
+    if home and os.path.isdir(home):
+      packagedirs.append(home)
+      searchdirs.append(home)
+    list = self.listDirs('/opt/ibmcmp/vacpp/','[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/','intel_cc_[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    
+    help.addArgument('Framework', '-help',                nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
+    help.addArgument('Framework', '-h',                   nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
+    help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
+    help.addArgument('Framework', '-log',                 nargs.Arg(None, 'configure.log', 'The filename for the configure log'))
+    help.addArgument('Framework', '-with-no-output',      nargs.ArgBool(None, 0, 'Do not output progress to the screen'))    
+    help.addArgument('Framework', '-with-scroll-output',  nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
+    help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
+    help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
+    help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
+    help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
+    help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
+    help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
+    help.addArgument('Framework', '-can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
     return
 
   def setupArgDB(self, clArgs, initDB, loadArgDB = 1):
@@ -102,7 +139,36 @@ class Framework(config.base.Configure):
       self.children.remove(config)
       self.children.insert(self.children.index(depChild), config)
     return config
+
+  #####################
+  # Language Operations
+  def getLanguageModule(self, language):
+    if not language in self.languageModule:
+      moduleName = 'config.compile.'+language.replace('+', 'x')
+      components = moduleName.split('.')
+      module     = __import__(moduleName)
+      for component in components[1:]:
+        module   = getattr(module, component)
+      self.languageModule[language] = module
+    return self.languageModule[language]
+
+  def getPreprocessorObject(self, language):
+    if not language in self.preprocessorObject:
+      self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.framework.argDB)
+    return self.preprocessorObject[language]
+
+  def getCompilerObject(self, language):
+    if not language in self.compilerObject:
+      self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.framework.argDB)
+    return self.compilerObject[language]
+
+  def getLinkerObject(self, language):
+    if not language in self.linkerObject:
+      self.linkerObject[language] = self.getLanguageModule(language).Linker(self.framework.argDB)
+    return self.linkerObject[language]
         
+  ###############################################
+  # Output Mechanisms
   def addSubstitutionFile(self, inName, outName = ''):
     '''Designate that file should experience substitution
       - If outName is given, inName --> outName
@@ -253,7 +319,7 @@ class Framework(config.base.Configure):
     - If the child contains "headerPrefix", this is used, otherwise
     - If the module containing the child class is not "__main__", this is used, otherwise
     - No prefix is used
-    If the child contains a dictinary name "help", then a help string will be added before the define
+    If the child contains a dictionary named "help", then a help string will be added before the define
     '''
     if not hasattr(child, 'defines') or not isinstance(child.defines, dict): return
     if hasattr(child, 'help') and isinstance(child.help, dict):
@@ -345,40 +411,6 @@ class Framework(config.base.Configure):
       pass
     return dirs
 
-    
-  def configureHelp(self, help):
-    import nargs
-
-    searchdirs  = []
-    packagedirs = []
-    home = os.getenv('HOME')
-    if home and os.path.isdir(home):
-      packagedirs.append(home)
-      searchdirs.append(home)
-    list = self.listDirs('/opt/ibmcmp/vacpp/','[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/','intel_cc_[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    
-    help.addArgument('Framework', '-help',                nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    help.addArgument('Framework', '-h',                   nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
-    help.addArgument('Framework', '-log',                 nargs.Arg(None, 'configure.log', 'The filename for the configure log'))
-    help.addArgument('Framework', '-with-no-output',      nargs.ArgBool(None, 0, 'Do not output progress to the screen'))    
-    help.addArgument('Framework', '-with-scroll-output',  nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
-    help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
-    help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
-    help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
-    help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
-    help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
-    help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
-    return
-
   def configure(self, out = None):
     '''Configure the system'''
     self.checkPython()
@@ -393,13 +425,16 @@ class Framework(config.base.Configure):
     for child in self.children:
       # FIX send to debugPrint print 'Configuring '+child.__module__
       child.configure()
-    if not out is None:
-      for child in self.children:
+    for child in self.children:
+      if not out is None:
         out.write(str(child))
-        self.log.write(str(child))
+      self.log.write(str(child))
     self.substitute()
     self.outputHeader(self.header)
     self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
+    if not out is None:
+      out.write('\n')
+      self.actions.output(out)
     self.log.write('\n')
     self.actions.output(self.log)
     return
