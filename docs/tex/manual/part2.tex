@@ -3281,7 +3281,7 @@ The general form of the $n$-dimensional Newton's method for solving
 \label{eq_n1}
 \end{equation}
 where $ \x_0 $ is an initial approximation to the solution and   
-$ \F'(\x_k) $ is nonsingular.  
+$ \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
 In practice, the Newton iteration (\ref{eq_n1}) is implemented by
 the following two steps:
 \begin{eqnarray}
@@ -3484,15 +3484,16 @@ Other line search methods provided by PETSc are
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
 \findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
 \findex{SNESQuadraticLineSearch()}
-which can be set with the option
-\trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_ls}
+which can be set with the option \findex{-snes_ls}
+\begin{tabbing}
+  \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
+\end{tabbing}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
 \trl{-snes_ls_alpha <alpha>}, \findex{-snes_ls_alpha}
 \trl{-snes_ls_maxstep <max>}, and \findex{-snes_ls_maxstep}
 \trl{-snes_ls_steptol <tol>}. \findex{-snes_ls_steptol}
-
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3507,7 +3508,6 @@ radius, computed by
 \]
 by setting $ \Delta_0 $ via the option 
 \trl{-snes_tr_delta0 <delta0>}.
-
 
 \section{General Options}
 
@@ -3937,11 +3937,12 @@ A code fragment that demonstrates this process is given below.
 Of course, we are cheating a bit. If we do not have an analytic
 formula for computing the Jacobian, then how do we know what its
 nonzero structure is so that it may be colored?  Determining the
-structure is problem dependent, but fortunately, for most grid-based
+structure is problem dependent, but fortunately, for most structured grid
 problems (the class of problems for which PETSc is designed) if one
 knows the stencil used for the nonlinear function one can usually
 fairly easily obtain an estimate of the location of nonzeros in
-the matrix.
+the matrix. This is harder in the unstructured case, and has not yet
+been implemented in general.
 
 One need not necessarily use the routine MatGetColoring() to
 determine a coloring.  For example, if a grid can be colored directly
@@ -3985,8 +3986,8 @@ where $ h $ is computed via
 \end{eqnarray*}
 These parameters may be set from the options database with 
 \begin{tabbing}
-   -mat\_fd\_coloring\_err <err>\\
-   -mat\_fd\_coloring\_umin <umin>
+   -mat\_fd\_coloring\_err {\em err}\\
+   -mat\_fd\_coloring\_umin {\em umin}
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
