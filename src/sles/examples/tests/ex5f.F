@@ -14,16 +14,17 @@
 !      Solves a linear system matrix free
 !
 
-      Mat        A
-      Vec        x,y
-      integer    m,ierr,its 
-      SLES       sles
-      external   mymatmult
+      Mat         A
+      Vec         x,y
+      integer     m,ierr,its 
+      SLES        sles
+      external    mymatmult
+      PetscScalar one
 
       m = 10
      
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
+      one = 1.d0
       call SLESCreate(PETSC_COMM_SELF,sles,ierr)
 
       call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL_OBJECT,    &
@@ -32,7 +33,7 @@
 
       call VecCreateSeq(PETSC_COMM_SELF,m,x,ierr)
       call VecDuplicate(x,y,ierr)
-      call VecSet(1.d0,x,ierr)
+      call VecSet(one,x,ierr)
 
       call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
       call SLESSetFromOptions(sles,ierr)
