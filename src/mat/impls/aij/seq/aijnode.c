@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.113 2000/04/12 04:23:03 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.114 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -1217,7 +1217,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ_Inode"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Inode"></a>*/"MatLUFactorNumeric_SeqAIJ_Inode"
 int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -1226,9 +1226,11 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   int        shift = a->indexshift,*r,*ic,*c,ierr,n = a->m,*bi = b->i; 
   int        *bj = b->j+shift,*nbj=b->j +(!shift),*ajtmp,*bjtmp,nz,row,prow;
   int        *ics,i,j,idx,*ai = a->i,*aj = a->j+shift,*bd = b->diag,node_max,nsz;
-  int        *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
+  int        *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
   Scalar     *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   Scalar     tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
+  PetscTruth damp;
+  PetscReal  damping = b->lu_damping;
 
   PetscFunctionBegin;  
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1282,243 +1284,325 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   /* Now use the correct ns */
   ns = tmp_vec2;
 
-  /* Now loop over each block-row, and do the factorization */
-  for (i=0,row=0; i<node_max; i++) { 
-    nsz   = ns[i];
-    nz    = bi[row+1] - bi[row];
-    bjtmp = bj + bi[row];
-    
-    switch (nsz){
-    case 1:
-      for  (j=0; j<nz; j++){
-        idx         = bjtmp[j];
-        rtmps1[idx] = 0.0;
-      }
-      
-      /* load in initial (unfactored row) */
-      idx   = r[row];
-      nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx];
-      v1    = aa + ai[idx];
 
-      for (j=0; j<nz; j++) {
-        idx        = ics[ajtmp[j]];
-        rtmp1[idx] = v1[j];
-      }
-      prow = *bjtmp++ + shift;
-      while (prow < row) {
+  do {
+    damp = PETSC_FALSE;
+    /* Now loop over each block-row, and do the factorization */
+    for (i=0,row=0; i<node_max; i++) { 
+      nsz   = ns[i];
+      nz    = bi[row+1] - bi[row];
+      bjtmp = bj + bi[row];
+    
+      switch (nsz){
+      case 1:
+        for  (j=0; j<nz; j++){
+          idx         = bjtmp[j];
+          rtmps1[idx] = 0.0;
+        }
+      
+        /* load in initial (unfactored row) */
+        idx   = r[row];
+        nz    = ai[idx+1] - ai[idx];
+        ajtmp = aj + ai[idx];
+        v1    = aa + ai[idx];
+
+        for (j=0; j<nz; j++) {
+          idx        = ics[ajtmp[j]];
+          rtmp1[idx] = v1[j];
+          if (ajtmp[j] == r[row]) {
+            rtmp1[idx] += damping;
+          }          
+        }
+        prow = *bjtmp++ + shift;
+        while (prow < row) {
+          pc1 = rtmp1 + prow;
+          if (*pc1 != 0.0){
+            pv   = ba + bd[prow];
+            pj   = nbj + bd[prow];
+            mul1 = *pc1 * *pv++;
+            *pc1 = mul1;
+            nz   = bi[prow+1] - bd[prow] - 1;
+            PLogFlops(2*nz);
+            for (j=0; j<nz; j++) {
+              tmp = pv[j];
+              idx = pj[j];
+              rtmps1[idx] -= mul1 * tmp;
+            }
+          }
+          prow = *bjtmp++ + shift;
+        }
+        nz  = bi[row+1] - bi[row];
+        pj  = bj + bi[row];
+        pc1 = ba + bi[row];
+        if (PetscAbsScalar(rtmp1[row]) < 1.e-12) {
+          if (b->lu_damping) {
+            damp = PETSC_TRUE;
+            if (damping) damping *= 2.0;
+            else damping = 1.e-12;
+            ndamp++;
+            goto endofwhile;
+          } else {
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+          }
+        }
+        rtmp1[row] = 1.0/rtmp1[row];
+        for (j=0; j<nz; j++) {
+          idx    = pj[j];
+          pc1[j] = rtmps1[idx];
+        }
+        break;
+      
+      case 2:
+        for  (j=0; j<nz; j++) {
+          idx         = bjtmp[j];
+          rtmps1[idx] = 0.0;
+          rtmps2[idx] = 0.0;
+        }
+      
+        /* load in initial (unfactored row) */
+        idx   = r[row];
+        nz    = ai[idx+1] - ai[idx];
+        ajtmp = aj + ai[idx];
+        v1    = aa + ai[idx];
+        v2    = aa + ai[idx+1];
+      
+        for (j=0; j<nz; j++) {
+          idx        = ics[ajtmp[j]];
+          rtmp1[idx] = v1[j];
+          rtmp2[idx] = v2[j];
+          if (ajtmp[j] == r[row]) {
+            rtmp1[idx] += damping;
+          }
+          if (ajtmp[j] == r[row+1]) {
+            rtmp2[idx] += damping;
+          }
+        }
+        prow = *bjtmp++ + shift;
+        while (prow < row) {
+          pc1 = rtmp1 + prow;
+          pc2 = rtmp2 + prow;
+          if (*pc1 != 0.0 || *pc2 != 0.0){
+            pv   = ba + bd[prow];
+            pj   = nbj + bd[prow];
+            mul1 = *pc1 * *pv;
+            mul2 = *pc2 * *pv;
+            ++pv;
+            *pc1 = mul1;
+            *pc2 = mul2;
+          
+            nz   = bi[prow+1] - bd[prow] - 1;
+            PLogFlops(2*2*nz);
+            for (j=0; j<nz; j++) {
+              tmp = pv[j];
+              idx = pj[j];
+              rtmps1[idx] -= mul1 * tmp;
+              rtmps2[idx] -= mul2 * tmp;
+            }
+          }
+          prow = *bjtmp++ + shift;
+        }
+        /* Now take care of the odd element*/
         pc1 = rtmp1 + prow;
-        if (*pc1 != 0.0){
-          pv   = ba + bd[prow];
+        pc2 = rtmp2 + prow;
+        if (*pc2 != 0.0){
           pj   = nbj + bd[prow];
-          mul1 = *pc1 * *pv++;
-          *pc1 = mul1;
+          if (PetscAbsScalar(*pc1) < 1.e-12) {
+            if (b->lu_damping) {
+              damp = PETSC_TRUE;
+              if (damping) damping *= 2.0;
+              else damping = 1.e-12;
+              ndamp++;
+              goto endofwhile;
+            } else {
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            }
+          }
+          mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
+          *pc2 = mul2;
           nz   = bi[prow+1] - bd[prow] - 1;
           PLogFlops(2*nz);
           for (j=0; j<nz; j++) {
-            tmp = pv[j];
-            idx = pj[j];
-            rtmps1[idx] -= mul1 * tmp;
+            idx = pj[j] + shift;
+            tmp = rtmp1[idx];
+            rtmp2[idx] -= mul2 * tmp;
           }
         }
-        prow = *bjtmp++ + shift;
-      }
-      nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row];
-      pc1 = ba + bi[row];
-      if (rtmp1[row] == 0.0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-      rtmp1[row] = 1.0/rtmp1[row];
-      for (j=0; j<nz; j++) {
-        idx    = pj[j];
-        pc1[j] = rtmps1[idx];
-      }
-      break;
-      
-    case 2:
-      for  (j=0; j<nz; j++) {
-        idx         = bjtmp[j];
-        rtmps1[idx] = 0.0;
-        rtmps2[idx] = 0.0;
-      }
-      
-      /* load in initial (unfactored row) */
-      idx   = r[row];
-      nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx];
-      v1    = aa + ai[idx];
-      v2    = aa + ai[idx+1];
-      
-      for (j=0; j<nz; j++) {
-        idx        = ics[ajtmp[j]];
-        rtmp1[idx] = v1[j];
-        rtmp2[idx] = v2[j];
-      }
-      prow = *bjtmp++ + shift;
-      while (prow < row) {
-        pc1 = rtmp1 + prow;
-        pc2 = rtmp2 + prow;
-        if (*pc1 != 0.0 || *pc2 != 0.0){
-          pv   = ba + bd[prow];
-          pj   = nbj + bd[prow];
-          mul1 = *pc1 * *pv;
-          mul2 = *pc2 * *pv;
-          ++pv;
-          *pc1 = mul1;
-          *pc2 = mul2;
-          
-          nz   = bi[prow+1] - bd[prow] - 1;
-          PLogFlops(2*2*nz);
-          for (j=0; j<nz; j++) {
-            tmp = pv[j];
-            idx = pj[j];
-            rtmps1[idx] -= mul1 * tmp;
-            rtmps2[idx] -= mul2 * tmp;
-          }
-        }
-        prow = *bjtmp++ + shift;
-      }
-      /* Now take care of the odd element*/
-      pc1 = rtmp1 + prow;
-      pc2 = rtmp2 + prow;
-      if (*pc2 != 0.0){
-        pj   = nbj + bd[prow];
-        if (*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
-        mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
-        *pc2 = mul2;
-        nz   = bi[prow+1] - bd[prow] - 1;
-        PLogFlops(2*nz);
-        for (j=0; j<nz; j++) {
-          idx = pj[j] + shift;
-          tmp = rtmp1[idx];
-          rtmp2[idx] -= mul2 * tmp;
-        }
-      }
  
-      nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row];
-      pc1 = ba + bi[row];
-      pc2 = ba + bi[row+1];
-      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-      rtmp1[row]   = 1.0/rtmp1[row];
-      rtmp2[row+1] = 1.0/rtmp2[row+1];
-      for (j=0; j<nz; j++) {
-        idx    = pj[j];
-        pc1[j] = rtmps1[idx];
-        pc2[j] = rtmps2[idx];
-      }
-      break;
+        nz  = bi[row+1] - bi[row];
+        pj  = bj + bi[row];
+        pc1 = ba + bi[row];
+        pc2 = ba + bi[row+1];
+        if (PetscAbsScalar(rtmp1[row]) < 1.e-12 || PetscAbsScalar(rtmp2[row+1]) < 1.e-12) {
+          if (b->lu_damping) {
+            damp = PETSC_TRUE;
+            if (damping) damping *= 2.0;
+            else damping = 1.e-12;
+            ndamp++;
+            goto endofwhile;
+          } else {
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+          }
+        }
+        rtmp1[row]   = 1.0/rtmp1[row];
+        rtmp2[row+1] = 1.0/rtmp2[row+1];
+        for (j=0; j<nz; j++) {
+          idx    = pj[j];
+          pc1[j] = rtmps1[idx];
+          pc2[j] = rtmps2[idx];
+        }
+        break;
 
-    case 3:
-      for  (j=0; j<nz; j++) {
-        idx         = bjtmp[j];
-        rtmps1[idx] = 0.0;
-        rtmps2[idx] = 0.0;
-        rtmps3[idx] = 0.0;
-      }
-      /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
-      idx   = r[row];
-      nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx];
-      v1    = aa + ai[idx];
-      v2    = aa + ai[idx+1];
-      v3    = aa + ai[idx+2];
-      for (j=0; j<nz; j++) {
-        idx        = ics[ajtmp[j]];
-        rtmp1[idx] = v1[j];
-        rtmp2[idx] = v2[j];
-        rtmp3[idx] = v3[j];
-      }
-      /* loop over all pivot row blocks above this row block */
-      prow = *bjtmp++ + shift;
-      while (prow < row) {
+      case 3:
+        for  (j=0; j<nz; j++) {
+          idx         = bjtmp[j];
+          rtmps1[idx] = 0.0;
+          rtmps2[idx] = 0.0;
+          rtmps3[idx] = 0.0;
+        }
+        /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
+        idx   = r[row];
+        nz    = ai[idx+1] - ai[idx];
+        ajtmp = aj + ai[idx];
+        v1    = aa + ai[idx];
+        v2    = aa + ai[idx+1];
+        v3    = aa + ai[idx+2];
+        for (j=0; j<nz; j++) {
+          idx        = ics[ajtmp[j]];
+          rtmp1[idx] = v1[j];
+          rtmp2[idx] = v2[j];
+          rtmp3[idx] = v3[j];
+          if (ajtmp[j] == r[row]) {
+            rtmp1[idx] += damping;
+          }
+          if (ajtmp[j] == r[row+1]) {
+            rtmp2[idx] += damping;
+          }
+          if (ajtmp[j] == r[row+2]) {
+            rtmp3[idx] += damping;
+          }
+        }
+        /* loop over all pivot row blocks above this row block */
+        prow = *bjtmp++ + shift;
+        while (prow < row) {
+          pc1 = rtmp1 + prow;
+          pc2 = rtmp2 + prow;
+          pc3 = rtmp3 + prow;
+          if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 !=0.0){
+            pv   = ba  + bd[prow];
+            pj   = nbj + bd[prow];
+            mul1 = *pc1 * *pv;
+            mul2 = *pc2 * *pv; 
+            mul3 = *pc3 * *pv;
+            ++pv;
+            *pc1 = mul1;
+            *pc2 = mul2;
+            *pc3 = mul3;
+          
+            nz   = bi[prow+1] - bd[prow] - 1;
+            PLogFlops(3*2*nz);
+            /* update this row based on pivot row */
+            for (j=0; j<nz; j++) {
+              tmp = pv[j];
+              idx = pj[j];
+              rtmps1[idx] -= mul1 * tmp;
+              rtmps2[idx] -= mul2 * tmp;
+              rtmps3[idx] -= mul3 * tmp;
+            }
+          }
+          prow = *bjtmp++ + shift;
+        }
+        /* Now take care of diagonal block in this set of rows */
         pc1 = rtmp1 + prow;
         pc2 = rtmp2 + prow;
         pc3 = rtmp3 + prow;
-        if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 !=0.0){
-          pv   = ba  + bd[prow];
+        if (*pc2 != 0.0 || *pc3 != 0.0){
           pj   = nbj + bd[prow];
-          mul1 = *pc1 * *pv;
-          mul2 = *pc2 * *pv; 
-          mul3 = *pc3 * *pv;
-          ++pv;
-          *pc1 = mul1;
+          if (PetscAbsScalar(*pc1) < 1.e-12) {
+            if (b->lu_damping) {
+              damp = PETSC_TRUE;
+              if (damping) damping *= 2.0;
+              else damping = 1.e-12;
+              ndamp++;
+              goto endofwhile;
+            } else {
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            }
+          }
+          mul2 = (*pc2)/(*pc1);
+          mul3 = (*pc3)/(*pc1);
           *pc2 = mul2;
           *pc3 = mul3;
-          
           nz   = bi[prow+1] - bd[prow] - 1;
-          PLogFlops(3*2*nz);
-          /* update this row based on pivot row */
+          PLogFlops(2*2*nz);
           for (j=0; j<nz; j++) {
-            tmp = pv[j];
-            idx = pj[j];
-            rtmps1[idx] -= mul1 * tmp;
-            rtmps2[idx] -= mul2 * tmp;
-            rtmps3[idx] -= mul3 * tmp;
+            idx = pj[j] + shift;
+            tmp = rtmp1[idx];
+            rtmp2[idx] -= mul2 * tmp;
+            rtmp3[idx] -= mul3 * tmp;
           }
         }
-        prow = *bjtmp++ + shift;
-      }
-      /* Now take care of diagonal block in this set of rows */
-      pc1 = rtmp1 + prow;
-      pc2 = rtmp2 + prow;
-      pc3 = rtmp3 + prow;
-      if (*pc2 != 0.0 || *pc3 != 0.0){
-        pj   = nbj + bd[prow];
-        if (*pc1 == 0.0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-        mul2 = (*pc2)/(*pc1);
-        mul3 = (*pc3)/(*pc1);
-        *pc2 = mul2;
-        *pc3 = mul3;
-        nz   = bi[prow+1] - bd[prow] - 1;
-        PLogFlops(2*2*nz);
-        for (j=0; j<nz; j++) {
-          idx = pj[j] + shift;
-          tmp = rtmp1[idx];
-          rtmp2[idx] -= mul2 * tmp;
-          rtmp3[idx] -= mul3 * tmp;
+        ++prow;
+        pc2 = rtmp2 + prow;
+        pc3 = rtmp3 + prow;
+        if (*pc3 != 0.0){
+          pj   = nbj + bd[prow];
+          pj   = nbj + bd[prow];
+          if (PetscAbsScalar(*pc2) < 1.e-12) {
+            if (b->lu_damping) {
+              damp = PETSC_TRUE;
+              if (damping) damping *= 2.0;
+              else damping = 1.e-12;
+              ndamp++;
+              goto endofwhile;
+            } else {
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            }
+          }
+          mul3 = (*pc3)/(*pc2);
+          *pc3 = mul3;
+          nz   = bi[prow+1] - bd[prow] - 1;
+          PLogFlops(2*2*nz);
+          for (j=0; j<nz; j++) {
+            idx = pj[j] + shift;
+            tmp = rtmp2[idx];
+            rtmp3[idx] -= mul3 * tmp;
+          }
         }
-      }
-      ++prow;
-      pc2 = rtmp2 + prow;
-      pc3 = rtmp3 + prow;
-      if (*pc3 != 0.0){
-        pj   = nbj + bd[prow];
-        if (*pc2 == 0.0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-        mul3 = (*pc3)/(*pc2);
-        *pc3 = mul3;
-        nz   = bi[prow+1] - bd[prow] - 1;
-        PLogFlops(2*2*nz);
-        for (j=0; j<nz; j++) {
-          idx = pj[j] + shift;
-          tmp = rtmp2[idx];
-          rtmp3[idx] -= mul3 * tmp;
+        nz  = bi[row+1] - bi[row];
+        pj  = bj + bi[row];
+        pc1 = ba + bi[row];
+        pc2 = ba + bi[row+1];
+        pc3 = ba + bi[row+2];
+        if (PetscAbsScalar(rtmp1[row]) < 1.e-12 || PetscAbsScalar(rtmp2[row+1]) < 1.e-12 || PetscAbsScalar(rtmp3[row+2]) < 1.e-12) {
+          if (b->lu_damping) {
+            damp = PETSC_TRUE;
+            if (damping) damping *= 2.0;
+            else damping = 1.e-12;
+            ndamp++;
+            goto endofwhile;
+          } else {
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+          }
         }
-      }
-      nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row];
-      pc1 = ba + bi[row];
-      pc2 = ba + bi[row+1];
-      pc3 = ba + bi[row+2];
-      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2] == 0.0) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-      }
-      rtmp1[row]   = 1.0/rtmp1[row];
-      rtmp2[row+1] = 1.0/rtmp2[row+1];
-      rtmp3[row+2] = 1.0/rtmp3[row+2];
-      /* copy row entries from dense representation to sparse */
-      for (j=0; j<nz; j++) {
-        idx    = pj[j];
-        pc1[j] = rtmps1[idx];
-        pc2[j] = rtmps2[idx];
-        pc3[j] = rtmps3[idx];
-      }
-      break;
+        rtmp1[row]   = 1.0/rtmp1[row];
+        rtmp2[row+1] = 1.0/rtmp2[row+1];
+        rtmp3[row+2] = 1.0/rtmp3[row+2];
+        /* copy row entries from dense representation to sparse */
+        for (j=0; j<nz; j++) {
+          idx    = pj[j];
+          pc1[j] = rtmps1[idx];
+          pc2[j] = rtmps2[idx];
+          pc3[j] = rtmps3[idx];
+        }
+        break;
 
-    default:
-      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
-    }
-    row += nsz;                 /* Update the row */
-  } 
+      default:
+        SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
+      }
+      row += nsz;                 /* Update the row */
+    } 
+    endofwhile:;
+  } while (damp);
   ierr = PetscFree(rtmp1);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
@@ -1527,6 +1611,9 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
   ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
+  if (ndamp) {
+    PLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %d damping value %g\n",ndamp,damping);
+  }
   PLogFlops(b->n);
   PetscFunctionReturn(0);
 }
