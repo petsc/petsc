@@ -39,7 +39,7 @@ extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
 extern int PCSetOptionsPrefix(PC,char*);
 
-extern int PCSORSetSymmetric(PC, int);
+extern int PCSORSetSymmetric(PC, MatSORType);
 extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
