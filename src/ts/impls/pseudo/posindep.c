@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.12 1997/01/21 18:42:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: posindep.c,v 1.13 1997/01/24 04:29:49 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -540,7 +540,7 @@ $         dt = initial_dt*initial_fnorm/current_fnorm
       rather than the default update,
 $         dt = current_dt*previous_fnorm/current_fnorm.
 
-    Input Parameters:
+    Input Parameter:
 .   ts - the timestep context
 
     Options Database Key:
