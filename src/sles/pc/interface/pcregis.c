@@ -78,7 +78,7 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_SINGLE) && !defined (PETSC_USE_COMPLEX)
   ierr = PCRegisterDynamic(PCESI          ,path,"PCCreate_ESI",PCCreate_ESI);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCPETSCESI     ,path,"PCCreate_PetscESI",PCCreate_PetscESI);CHKERRQ(ierr);
 #endif
