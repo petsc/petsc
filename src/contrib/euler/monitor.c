@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.48 1997/10/17 04:08:53 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.49 1997/10/17 19:46:47 curfman Exp curfman $";
 #endif
 
 /*
@@ -260,10 +260,19 @@ int DFVecFormUniVec_MPIRegular_Private(Vec,Vec*);
 int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
 {
   FILE     *fp;
-  int      ierr, i, j, k, ijkx, ijkcx, ijkxi, ni, nj, nk, ni1, nj1, nk1;
+  int      iter, ierr, i, j, k, ijkx, ni, nj, nk, ni1, nj1, nk1;
+  int      istart, iend, jstart, jend, kstart, kend;
   char     filename[64];
   Vec      P_uni, X_uni;
-  Scalar   *xx, *pp;
+  Scalar   *xx, *pp, *xc = app->xc, *yc = app->yc, *zc = app->zc;
+  Scalar   mach, sfluid, ssound, r, yv, xv, xmin, xmax, ymin, ymax, zmin, zmax, gamma1, gm1;
+
+#define xcoord3(i,j,k) xc[(k)*nj*ni + (j)*ni + (i)]
+#define ycoord3(i,j,k) yc[(k)*nj*ni + (j)*ni + (i)]
+#define zcoord3(i,j,k) zc[(k)*nj*ni + (j)*ni + (i)]
+#define den3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i))]
+#define ru3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 1]
+#define rv3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 2]
 
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
      computing the pressure have already been done. */
@@ -292,13 +301,14 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       pp = app->p;
     }
   
-    /* ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-    sprintf(filename,"euler.%d.out",iter); */
-    sprintf(filename,"euler.out"); 
+    ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+    sprintf(filename,"euler.%d.out",iter);
+    /* sprintf(filename,"euler.out"); */
     fp = fopen(filename,"w"); 
-    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
     ni  = app->ni;  nj  = app->nj;  nk = app->nk;
     ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
+    /*
+    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
     for (k=0; k<nk; k++) {
       for (j=0; j<nj; j++) {
         for (i=0; i<ni; i++) {
@@ -311,7 +321,69 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
         }
       }
     }
+    */
+    fprintf(fp,"VARIABLES=x,y,z,pressure,mach\n");
+
+    gamma1 = 1.4;
+    gm1    = gamma1 - 1.0;
+
+    /* These dimensions should work for the 98x18x18 grid */
+    if (app->problem == 1) {
+      kstart = 0;
+      kend   = app->ktip + 3;
+      istart = app->itl - 5;
+      iend   = app->itu + 5;
+      jstart = 0;
+      jend   = app->nj - 3;
+    } else if (app->problem == 2) {
+      kstart = 0;
+      kend   = app->ktip + 5;
+      istart = app->itl - 5;
+      iend   = app->itu + 5;
+      jstart = 0;
+      jend   = app->nj - 10;
+    } else if (app->problem == 3) {
+      kstart = 0;
+      kend   = app->ktip + 5;
+      istart = app->itl - 5;
+      iend   = app->itu + 5;
+      jstart = 0;
+      jend   = app->nj - 10;
+    } else SETERRQ(1,0,"Unsupported problem");
+
+    fprintf(fp,"istart=%d, iend=%d, jstart=%d, jend=%d, kstart=%d, kend=%d\n",
+                istart,iend,jstart,jend,kstart,kend);
+    xmin = 1000;
+    xmax = -1000;
+    ymin = 1000;
+    ymax = -1000;
+    zmin = 1000;
+    zmax = -1000;
+    for (k=kstart; k<kend; k++) {
+      for (j=jstart; j<jend; j++) {
+        for (i=istart; i<iend; i++) {
+          ijkx  = k*nj1*ni1 + j*ni1 + i;
+          yv = 0.25 * (rv3(i,j,k) + rv3(i+1,j,k) + rv3(i,j+1,k) + rv3(i+1,j+1,k));
+          xv = 0.25 * (ru3(i,j,k) + ru3(i+1,j,k) + ru3(i,j+1,k) + ru3(i+1,j+1,k));
+          r  = 0.25 * (den3(i,j,k) + den3(i+1,j,k) + den3(i,j+1,k) + den3(i+1,j+1,k));
+          sfluid = sqrt(xv*xv + yv*yv) / r;
+          ssound = sqrt(pow(r,gm1));
+          mach = sfluid/ssound;
+          fprintf(fp,"%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\n",
+            xcoord3(i,j,k),ycoord3(i,j,k),zcoord3(i,j,k),pp[ijkx],mach);
+            xmin = PetscMin(xmin,xcoord3(i,j,k));
+            xmax = PetscMax(xmax,xcoord3(i,j,k));
+            ymin = PetscMin(ymin,ycoord3(i,j,k));
+            ymax = PetscMax(ymax,ycoord3(i,j,k));
+            zmin = PetscMin(zmin,zcoord3(i,j,k));
+            zmax = PetscMax(zmax,zcoord3(i,j,k));
+        }
+      }
+    }
+    fprintf(fp,"\nxmin=%g, xmax=%g, ymin=%g, ymax=%g, zmin=%g, zmax=%g\n",
+                xmin, xmax, ymin, ymax, zmin, zmax);
   }
+  fclose(fp); 
   return 0;
 }
 /* --------------------------------------------------------------- */
@@ -328,7 +400,7 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
 {
   int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
   int    ni = app->ni, nj = app->nj;
-  int    ierr, kj, ijk, jstart, jend, istart, iend;
+  int    kj, ijk, jstart, jend, istart, iend;
   Scalar sfluid, ssound, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
@@ -409,12 +481,17 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
+
+    /* MULTI_MODEL! TO TEST:  Compute average values */ 
     fprintf(fp2,"mach = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        r  = den(i,j);
-        xv = ru(i,j);
-        yv = rv(i,j);
+        /* r  = den(i,j);
+           xv = ru(i,j);
+           yv = rv(i,j); */
+        yv = 0.25 * (rv(i,j) + rv(i+1,j) + rv(i,j+1) + rv(i+1,j+1));
+        xv = 0.25 * (ru(i,j) + ru(i+1,j) + ru(i,j+1) + ru(i+1,j+1));
+        r  = 0.25 * (den(i,j) + den(i+1,j) + den(i,j+1) + den(i+1,j+1));
         sfluid = sqrt(xv*xv + yv*yv) / r;
         ssound = sqrt(pow(r,gm1));
         fprintf(fp2,"%8.4f ",sfluid/ssound);
@@ -441,7 +518,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
 {
   int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
   int    ni = app->ni, nj = app->nj;
-  int    ierr, kj, ijk, jstart, jend, istart, iend;
+  int    kj, ijk, jstart, jend, istart, iend;
   Scalar sfluid, ssound, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
