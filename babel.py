@@ -96,7 +96,7 @@ class PythonModuleFixup (transform.Transform):
     self.pythonDir = pythonDir
 
   def copySIDLInterface(self):
-    babelPythonDir = os.path.join(bs.argDB['SIDLRUNTIME_DIR'], 'python', 'SIDL')
+    babelPythonDir = os.path.join(bs.argDB['SIDL_DIR'], 'python', 'SIDL')
     sidlDir        = os.path.join(self.pythonDir, 'SIDL')
     if not os.path.exists(sidlDir): os.makedirs(sidlDir)
     for file in os.listdir(babelPythonDir):

@@ -125,8 +125,8 @@ class UsingSIDL:
 
   def getBaseLanguage(self):
     '''The implementation language for the SIDL runtime library, usually C'''
-    if bs.argDB.has_key('SIDLRUNTIME_LANG'):
-      return bs.argDB['SIDLRUNTIME_LANG']
+    if bs.argDB.has_key('SIDL_LANG'):
+      return bs.argDB['SIDL_LANG']
     else:
       return 'C'
 
@@ -141,7 +141,7 @@ class UsingSIDL:
     return
 
   def getRootDir(self):
-    return os.path.abspath(bs.argDB['SIDLRUNTIME_DIR'])
+    return os.path.abspath(bs.argDB['SIDL_DIR'])
 
   def getServerRootDir(self, lang, package = None):
     path  = self.serverBaseDir

@@ -316,6 +316,14 @@ if __name__ ==  '__main__':
       print 'ERROR: '+str(e)
       sys.exit(1)
     sys.exit(0)
+  elif sys.argv[1] == "clear":
+    print "Clearing remote dictionary database"
+    try:
+      RArgs("ArgDict").clear()
+    except Exception, e:
+      print 'ERROR: '+str(e)
+      sys.exit(1)
+    sys.exit(0)
   else:
     print "Unknown option "+sys.argv[1]
     sys.exit(1)

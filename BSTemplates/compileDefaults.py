@@ -6,6 +6,7 @@ import nargs
 import BSTemplates.sidlDefaults as sidlDefaults
 
 import distutils.sysconfig
+import string
 import os
 
 class UsingCompiler:
@@ -172,7 +173,11 @@ class UsingPython(UsingCompiler):
     try:
       if not bs.argDB.has_key('PYTHON_LIB'):
         lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
-        bs.argDB['PYTHON_LIB'] = os.path.splitext(lib)[0]+'.so'
+        # if .so was not built then need to strip .a off of end
+        if lib[-2:] == '.a': lib = lib[0:-2]
+        # may be stuff after .so like .0, so cannot use splitext()
+        lib = string.split(lib,'.so')[0]+'.so'
+        bs.argDB['PYTHON_LIB'] = lib
     except: pass
     # This is not quite right
     for package in self.usingSIDL.getPackages():
