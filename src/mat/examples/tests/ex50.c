@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex50.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex50.c,v 1.7 1997/11/28 16:20:18 bsmith Exp balay $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -13,7 +13,7 @@ int main(int argc,char **args)
 {
   Mat    A;
   Vec    b;
-  char   filein[256],fileout[256];
+  char   filein[256],finname[256],fileout[256];
   int    n,ierr,col,row;
   int    flg,rowin;
   Scalar val,*array;
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate file for writing");
 
-  ierr = PetscFixFilename(filein);CHKERRA(ierr);
-  if ((file = fopen(filein,"r")) == 0) {
+  ierr = PetscFixFilename(filein,finname);CHKERRA(ierr);
+  if ((file = fopen(finname,"r")) == 0) {
     SETERRA(1,0,"cannot open input file\n");
   }
   fscanf(file,"%d\n",&n);
