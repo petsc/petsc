@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.21 1995/10/01 21:51:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.22 1995/10/22 04:16:48 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -165,6 +165,10 @@ int ISGetLocalSize(IS is,int *size)
    In a parallel enviroment this probably points to only the indices that 
    are local to a particular processor.
 
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the users manual and petsc/src/is/examples for details.
+
 .keywords: IS, index set, get, indices
 
 .seealso: ISRestoreIndices()
@@ -182,6 +186,10 @@ int ISGetIndices(IS is,int **ptr)
    Input Parameters:
 .  is - the index set
 .  ptr - the pointer obtained by ISGetIndices()
+
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the users manual and petsc/src/is/examples for details.
 
 .keywords: IS, index set, restore, indices
 
