@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.30 1996/05/03 03:10:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.31 1996/05/03 19:26:53 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -9,11 +9,6 @@ static char vcid[] = "$Id: bdfact.c,v 1.30 1996/05/03 03:10:19 bsmith Exp bsmith
 
 int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-
-  if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Matrix must be square");
-  if (isrow || iscol)
-    SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:permutations not supported");
   SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Not written");
 }
 
@@ -21,13 +16,18 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
                                   int levels,Mat *B)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          ierr;
 
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
   if (isrow || iscol)
     SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:permutations not supported");
   if (levels != 0)
     SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
-  return MatConvert(A,MATSAME,B);
+  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
+
+  /* Must set to zero for repeated calls with different nonzero structure */
+  (*B)->factor = 0;
+  return 0;
 }
 
 int MatLUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f)
@@ -61,12 +61,25 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
 int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
-  int          k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2;
-  int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock,ierr;
-  int          *diag = a->diag,  m = a->m, mainbd = a->mainbd, *dgptr;
-  Scalar       **dv = a->diagv, *dd = dv[mainbd],  *v_work;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
+  int          k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2 = nb*nb;
+  int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock, ierr;
+  int          *diag = a->diag,  m = a->m, mainbd = a->mainbd, *dgptr, len, i;
+  Scalar       **dv = a->diagv, *dd = dv[mainbd], *v_work;
   Scalar       *multiplier;
+
+  /* Copy input matrix to factored matrix if we've already factored the
+     matrix before AND the nonzero structure remains the same.  This is done
+     in symbolic factorization the first time through, but there's no symbolic
+     factorization for successive calls with same matrix sparsity structure. */
+  if (C->factor == FACTOR_LU) {
+    for (i=0; i<a->nd; i++) {
+      len = a->bdlen[i] * nb2 * sizeof(Scalar);
+      d   = diag[i];
+      if (d > 0) PetscMemcpy(dv[i]+nb2*d,a1->diagv[i]+nb2*d,len);
+      else       PetscMemcpy(dv[i],a1->diagv[i],len);
+    }
+  }
 
   if (!a->pivot) {
     a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
@@ -74,7 +87,6 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
   v_work = (Scalar *) PetscMalloc((nb*nb+nb)*sizeof(Scalar));CHKPTRQ(v_work);
   multiplier = v_work + nb;
-  nb2 = nb*nb;
   dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
@@ -100,7 +112,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
       }
     }
   }
-  PetscFree(dgptr);
+  PetscFree(dgptr); PetscFree(v_work);
   C->factor = FACTOR_LU;
   return 0;
 }
@@ -108,11 +120,23 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
-  int          k, d, d2, dgk, elim_row, elim_col;
-  int          dnum,nd = a->nd;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
+  int          k, d, d2, dgk, elim_row, elim_col, dnum, nd = a->nd, i, len;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
+
+  /* Copy input matrix to factored matrix if we've already factored the
+     matrix before AND the nonzero structure remains the same.  This is done
+     in symbolic factorization the first time through, but there's no symbolic
+     factorization for successive calls with same matrix sparsity structure. */
+  if (C->factor == FACTOR_LU) {
+    for (i=0; i<nd; i++) {
+      len = a->bdlen[i] * sizeof(Scalar);
+      d   = diag[i];
+      if (d > 0) PetscMemcpy(dv[i]+d,a1->diagv[i]+d,len);
+      else       PetscMemcpy(dv[i],a1->diagv[i],len);
+    }
+  }
 
   dgptr = (int *) PetscMalloc((m+n)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(m+n)*sizeof(int));
