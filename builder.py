@@ -154,12 +154,14 @@ class Builder(logging.Logger):
 
   def pushConfiguration(self, configurationName):
     '''Set the current configuration'''
+    self.logPrint('Pushed configuration '+configurationName, debugSection = 'build')
     self.configurationName.append(configurationName)
     return self.getConfiguration(self.configurationName[-1])
 
   def popConfiguration(self):
     '''Restore the previous configuration'''
-    self.configurationName.pop()
+    configurationName = self.configurationName.pop()
+    self.logPrint('Popped configuration '+configurationName, debugSection = 'build')
     return self.getConfiguration(self.configurationName[-1])
 
   def saveConfiguration(self, configurationName):

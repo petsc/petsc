@@ -332,6 +332,7 @@ class SIDLMake(Make):
     builder.popLanguage()
     builder.popConfiguration()
     builder.saveConfiguration('SIDL '+baseName)
+    self.logPrint('generatedFiles: '+str(config.outputFiles), debugSection = 'sidl')
     return config.outputFiles
 
   def editServer(self, builder, sidlFile):
@@ -428,6 +429,8 @@ class SIDLMake(Make):
       for language in self.clientLanguages:
         getattr(self, 'setup'+language+'Client')(builder, f, language)
       self.editServer(builder, f)
+      # We here require certain keys to be present in generateSource, e.g. 'Server IOR'.
+      # These keys can be checked for, and if absent the SIDL file would be compiled
       generatedSource = self.buildSIDL(builder, f)
       self.checkinServer(builder, f)
       for language in self.serverLanguages:
