@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.67 1997/11/28 16:20:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.68 1998/04/28 03:39:32 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
   int     ierr, i, n = 10, col[3], its, flg, size;
-  Scalar  none = -1.0, one = 1.0, value[3];
+  Scalar  neg_one = -1.0, one = 1.0, value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
@@ -137,7 +137,7 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+  ierr = VecAXPY(&neg_one,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
