@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.13 1996/07/11 04:06:08 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.14 1996/07/12 17:50:29 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -12,6 +12,14 @@ extern int MatSetUpMultiply_MPIBAIJ(Mat);
 extern int DisAssemble_MPIBAIJ(Mat);
 extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
 extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatLUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,Mat *);
+extern int MatLUFactorNumeric_MPIBAIJ(Mat,Mat *);
+extern int MatLUFactor_MPIBAIJ(Mat,IS,IS,double);
+extern int MatSolve_MPIBAIJ(Mat,Vec,Vec);
+extern int MatSolveAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans_MPIBAIJ(Mat,Vec,Vec);
+extern int MatSolveTransAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
+extern int MatILUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,int,Mat *);
 
 /* local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -769,14 +777,14 @@ static int MatSetOption_MPIBAIJ(Mat A,MatOption op)
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
   MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
-  MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,0,
-  0,0,0,0,
+  MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,MatSolve_MPIBAIJ,
+  MatSolveAdd_MPIBAIJ,MatSolveTrans_MPIBAIJ,MatSolveTransAdd_MPIBAIJ,MatLUFactor_MPIBAIJ,
   0,0,0,0,
   0,MatGetDiagonal_MPIBAIJ,0,MatNorm_MPIBAIJ,
   MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
-  MatZeroEntries_MPIBAIJ,0,MatGetReordering_MPIBAIJ,0,
-  0,0,0,MatGetSize_MPIBAIJ,
-  MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
+  MatZeroEntries_MPIBAIJ,0,MatGetReordering_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
+  MatLUFactorNumeric_MPIBAIJ,0,0,MatGetSize_MPIBAIJ,
+  MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,MatILUFactorSymbolic_MPIBAIJ,0,
   0,0,0,0,
   0,0,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
