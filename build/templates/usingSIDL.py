@@ -1,0 +1,69 @@
+import base
+
+import os
+
+class UsingSIDL (base.Base):
+  def __init__(self, sourceDB, project):
+    base.Base.__init__(self)
+    import build.compile.SIDL
+    self.sourceDB        = sourceDB
+    self.project         = project
+    self.serverLanguages = build.compile.SIDL.SIDLLanguageList()
+    self.clientLanguages = build.compile.SIDL.SIDLLanguageList()
+    # Languages in which the client must be linked with the server
+    self.staticPackages  = []
+    return
+
+  def addServer(self, lang):
+    '''Designate that a server for lang should be built, which also implies the client'''
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.serverLanguages:
+        self.serverLanguages.append(lang)
+      self.addClient(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    return
+
+  def addClient(self, lang):
+    '''Designate that a client for lang should be built'''
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.clientLanguages:
+        self.clientLanguages.append(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    return
+
+  def addStaticPackage(self, package):
+    '''For a static package, the client is statically linked to the server since dynamic loading is not feasible'''
+    self.staticPackages.append(package)
+    return
+
+  def getServerRootDir(self, lang, package):
+    '''Returns a server directory name'''
+    return 'server-'+lang.lower()+'-'+package
+
+  def getClientRootDir(self, lang, root = None):
+    '''Returns a client directory name'''
+    return 'client-'+lang.lower()
+
+  def getRuntimeLanguage(self):
+    '''Return the implementation language for the runtime'''
+    return 'Cxx'
+
+  def getRuntimePackage(self):
+    '''Return the implementation package for the runtime'''
+    return 'sidl'
+
+  def getRuntimeProject(self):
+    '''Return the project associated with the SIDL Runtime'''
+    projects = [self.project]
+    if 'installedprojects' in self.argDB:
+      projects += self.argDB['installedprojects']
+    for project in projects:
+      if project.getUrl() == 'bk://sidl.bkbits.net/Runtime':
+        return project
+    raise ImportError('Could not find runtime project')
+
+  def getRuntimeIncludes(self):
+    '''Return the includes for the SIDL Runtime'''
+    return [os.path.join(self.getRuntimeProject().getRoot(), self.getServerRootDir(self.getRuntimeLanguage(), self.getRuntimePackage()))]

@@ -17,31 +17,32 @@ class Logger(object):
     argDB.setType('debugSections', nargs.Arg(None, None, 'Message types to print, e.g. [compile,link,bk,install]'))
     return argDB
 
-  def debugListStr(self, list):
-    if (self.debugLevel > 4) or (len(list) < 4):
-      return str(list)
+  def debugListStr(self, l):
+    if (self.debugLevel > 4) or (len(l) < 4):
+      return str(l)
     else:
-      return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
+      return '['+str(l[0])+'-<'+str(len(l)-2)+'>-'+str(l[-1])+']'
 
   def debugFileSetStr(self, set):
+    import build.fileset
     import fileset
-    if isinstance(set, fileset.FileSet):
+    if isinstance(set, build.fileset.FileSet) or isinstance(set, fileset.FileSet):
+      s = ''
       if set.tag:
-        return '('+set.tag+')'+self.debugListStr(set.getFiles())
-      else:
-        return self.debugListStr(set.getFiles())
+        s += '('+set.tag+')'
+      s += self.debugListStr(set)
+      for child in set.children:
+        s += ', '+self.debugFileSetStr(child)
+      return s
     elif isinstance(set, list):
-      output = '['
-      for fs in set:
-        output += self.debugFileSetStr(fs)
-      return output+']'
-    else:
-      raise RuntimeError('Invalid fileset '+str(set))
+      return self.debugListStr(set)
+    raise RuntimeError('Invalid fileset '+str(set))
 
   def debugPrint(self, msg, level = 1, section = None):
     import traceback
     import sys
 
+    if not isinstance(level, int): raise RuntimeError('Debug level must be an integer')
     indentLevel = len(traceback.extract_stack())-4
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):

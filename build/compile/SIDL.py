@@ -1,0 +1,140 @@
+import build.processor
+
+import os
+
+class SIDLConstants:
+  '''This class contains data about the SIDL language'''
+  def getLanguages():
+    '''Returns a list of all permissible SIDL target languages'''
+    # This should be argDB['installedLanguages']
+    return ['C', 'C++', 'Python', 'F77', 'F90', 'Java', 'Mathematica', 'Matlab']
+  getLanguages = staticmethod(getLanguages)
+
+  def checkLanguage(language):
+    '''Check for a valid SIDL target language, otherwise raise a ValueError'''
+    if not language in SIDLConstants.getLanguages():
+      raise ValueError('Invalid SIDL language: '+language)
+  checkLanguage = staticmethod(checkLanguage)
+
+class SIDLLanguageList (list):
+  def __setitem__(self, key, value):
+    SIDLConstants.checkLanguage(value)
+    list.__setitem__(self, key, value)
+
+class Compiler(build.processor.Processor):
+  '''The SIDL compiler processes any FileSet with the tag "sidl", and outputs a FileSet of source code with the appropriate language tag.
+     - Servers always compile a single SIDL file'''
+  def __init__(self, sourceDB, language, outputDir, isServer, usingSIDL):
+    SIDLConstants.checkLanguage(language)
+    build.processor.Processor.__init__(self, sourceDB, None, 'sidl', language.lower(), not isServer, 'deferred')
+    # Can't initialize processor in constructor since I have to wait for Base to set argDB
+    self.processor = self.getCompilerDriver()
+    self.language  = language
+    self.outputDir = outputDir
+    self.isServer  = isServer
+    if isServer:
+      self.action  = 'server'
+    else:
+      self.action  = 'client'
+    self.usingSIDL = usingSIDL
+    self.repositoryDirs = []
+    self.outputTag = self.language.lower()+' '+self.action
+    return
+
+  def __str__(self):
+    return 'SIDL Compiler for '+self.language+' '+self.action
+
+  def handleErrors(self, command, status, output):
+    if status or output.find('Error:') >= 0:
+      raise RuntimeError('Could not execute \''+str(command)+'\':\n'+str(output))
+
+  def getCompilerDriver(self):
+    project = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')
+    if project is None:
+      return 'scandal.py'
+    return os.path.join(project.getRoot(), 'driver', 'python', 'scandal.py')
+
+  def getCompilerModule(self, name = 'scandal'):
+    import imp
+
+    root = os.path.dirname(self.getCompilerDriver())
+    if not root:
+      raise ImportError('Project bk://sidl.bkbits.net/Compiler is not installed')
+    (fp, pathname, description) = imp.find_module(name, [root])
+    try:
+      return imp.load_module(name, fp, pathname, description)
+    finally:
+      if fp: fp.close()
+
+  def getActionFlags(self, source):
+    '''Return a list of the compiler flags specifying the generation action.'''
+    return ['-'+self.action+'='+self.language]
+
+  def getIncludeFlags(self, source):
+    if not self.repositoryDirs: return []
+    sources = []
+    for dir in self.repositoryDirs:
+      dir = os.path.join(dir, 'sidl')
+      if not os.path.exists(dir):
+        self.debugPrint('Invalid SIDL include directory: '+dir, 4, 'compile')
+        continue
+      for source in os.listdir(dir):
+        if not os.path.splitext(source)[1] == '.sidl': continue
+        source = os.path.join(dir, source)
+        if not os.path.exists(source): raise RuntimeError('Invalid SIDL include: '+source)
+        sources.append(source)
+    arg = '-includes=['+','.join(sources)+']'
+    return [arg]
+
+  def getOutputFlags(self, source):
+    '''Return a list of the compiler flags specifying the output directories'''
+    if isinstance(source, build.fileset.FileSet): source = source[0]
+    (package, ext) = os.path.splitext(os.path.basename(source))
+    if self.isServer:
+      self.output.tag = self.outputTag+' '+package
+    else:
+      self.output.tag = self.outputTag
+    if not self.outputDir is None:
+      if self.isServer:
+        outputDir = os.path.join(self.outputDir, self.usingSIDL.getServerRootDir(self.language, package))
+      else:
+        outputDir = os.path.join(self.outputDir, self.usingSIDL.getClientRootDir(self.language))
+      return ['-'+self.action+'Dirs={'+self.language+':'+outputDir+'}']
+    return []
+
+  def getFlags(self, source):
+    return self.getActionFlags(source)+self.getIncludeFlags(source)+self.getOutputFlags(source)
+
+  def processFileShell(self, source, tag):
+    '''Compile "source" using a shell command'''
+    return self.processFileSetShell(build.fileset.FileSet([source]))
+
+  def processFileSetShell(self, set):
+    '''Compile all the files in "set" using a shell command'''
+    if not len(set): return self.output
+    self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
+    command = ' '.join([self.getProcessor()]+self.getFlags(set)+set)
+    output  = self.executeShellCommand(command, self.handleErrors)
+    #self.output.extend(map(self.getIntermediateFileName, set))
+    return self.output
+
+  def processFileModule(self, source, tag):
+    '''Compile "source" using a module directly'''
+    return self.processFileSetModule(build.fileset.FileSet([source]))
+
+  def processFileSetModule(self, set):
+    '''Compile all the files in "set" using a module directly'''
+    if not len(set): return self.output
+    self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
+    compiler = self.getCompilerModule().Scandal(self.getFlags(set)+set)
+    compiler.run()
+    self.output.extend(compiler.outputFiles)
+    return self.output
+
+  def processFile(self, source, tag):
+    '''Compile "source"'''
+    return self.processFileModule(source, tag)
+
+  def processFileSet(self, set):
+    '''Compile all the files in "set"'''
+    return self.processFileSetModule(set)
