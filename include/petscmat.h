@@ -49,6 +49,7 @@ E*/
 #define MATPETSCESI "petscesi"
 #define MATNORMAL   "normal"
 #define MATSEQAIJSPOOLES "seqaijspooles"
+#define MATMPIAIJSPOOLES "mpiaijspooles"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"

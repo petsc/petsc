@@ -8,19 +8,16 @@
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
-
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 extern int SetSpoolesOptions(Mat, Spooles_options *);
-extern int MatDestroy_MPIAIJ(Mat); 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_Spooles"
 int MatDestroy_MPIAIJ_Spooles(Mat A)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
-  int           ierr;
+  int           ierr,(*destroy)(Mat);
   
   PetscFunctionBegin;
  
@@ -42,9 +39,9 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
   }
-
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  destroy = lu->MatDestroy;
+  ierr    = PetscFree(lu);CHKERRQ(ierr); 
+  ierr    = (*destroy)(A);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -585,6 +582,24 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#endif
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_MPIAIJ_Spooles"
+int MatCreate_MPIAIJ_Spooles(Mat A) {
+  int ierr;
+  Mat_Spooles *lu;
 
+  PetscFunctionBegin;
+  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr);
 
+  ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
+  lu->MatView         = A->ops->view;
+  lu->MatAssemblyEnd  = A->ops->assemblyend;
+  lu->MatDestroy      = A->ops->destroy;
+  A->spptr            = (void*)lu;
+  A->ops->view        = MatView_SeqAIJ_Spooles;
+  A->ops->assemblyend = MatAssemblyEnd_MPIAIJ_Spooles;
+  A->ops->destroy     = MatDestroy_MPIAIJ_Spooles;
+  PetscFunctionReturn(0);
+}

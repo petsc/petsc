@@ -355,7 +355,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         *row,*col,other_disassembled;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_MUMPS)
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_MUMPS)
   PetscTruth  flag;
 #endif
 
@@ -412,11 +412,6 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 #if defined(PETSC_HAVE_SUPERLUDIST) 
   ierr = PetscOptionsHasName(mat->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(mat);CHKERRQ(ierr); }
-#endif 
-
-#if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseSpooles_MPIAIJ(mat);CHKERRQ(ierr); }
 #endif 
 
 #if defined(PETSC_HAVE_MUMPS) 
@@ -763,7 +758,6 @@ int MatDestroy_MPIAIJ(Mat mat)
 }
 
 extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
-extern int MatFactorInfo_Spooles(Mat,PetscViewer);
 extern int MatFactorInfo_MUMPS(Mat,PetscViewer);
 
 #undef __FUNCT__  
@@ -929,9 +923,6 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
       ierr = MatMPIAIJFactorInfo_SuperLu(mat,viewer);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
-      ierr = MatFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
       ierr = MatFactorInfo_MUMPS(mat,viewer);CHKERRQ(ierr);
@@ -1720,7 +1711,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJ"
-int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[])
 {
   Mat_MPIAIJ   *b;
   int          ierr,i;
@@ -1918,7 +1909,7 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
   int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
-#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_MUMPS) 
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_MUMPS) 
   PetscTruth   flag;
 #endif
 
@@ -2030,8 +2021,10 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  ierr = MatCreateMPIAIJ(comm,m,n,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
-  A = *newmat;
+  ierr = MatCreate(comm,m,n,M,N,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,type);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,0,ourlens,0,offlens);CHKERRQ(ierr);
+
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ourlens[i] += offlens[i];
@@ -2089,16 +2082,6 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) {
-    if (size == 1) {
-      ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
-    } else {
-      ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr); 
-    }
-  }
-#endif 
 #if defined(PETSC_HAVE_SUPERLUDIST)
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr); }
@@ -2107,6 +2090,7 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_mumps",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); }
 #endif
+  *newmat = A;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

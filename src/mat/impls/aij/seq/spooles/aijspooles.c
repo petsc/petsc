@@ -4,8 +4,6 @@
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
-
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__
@@ -48,19 +46,20 @@ int MatAssemblyEnd_SeqAIJ_Spooles(Mat A,MatAssemblyType mode) {
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Spooles"
 int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_Spooles   *lu;   
-  int           ierr,m=A->m,n=A->n;
+  Mat          B;
+  Mat_Spooles  *lu;
+  int          ierr,m=A->m,n=A->n;
 
   PetscFunctionBegin;	
-  /* Create the factorization matrix F */  
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
-  ierr = MatSetType(*F,MATSEQAIJSPOOLES);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  /* Create the factorization matrix */  
+  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  (*F)->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-  (*F)->factor                = FACTOR_LU;  
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  B->factor                = FACTOR_LU;  
 
-  lu                        = (Mat_Spooles*)((*F)->spptr);
+  lu                        = (Mat_Spooles*)(B->spptr);
   lu->options.symflag       = SPOOLES_NONSYMMETRIC;
   lu->options.pivotingflag  = SPOOLES_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
@@ -69,7 +68,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   if (info->dtcol == 0.0) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }
- 
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
@@ -78,24 +77,26 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 #define __FUNCT__ "MatQRFactorSymbolic_SeqAIJ_Spooles"
 int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_Spooles   *lu;   
-  int           ierr,m=A->m,n=A->n;
+  Mat          B;
+  Mat_Spooles  *lu;   
+  int          ierr,m=A->m,n=A->n;
 
   PetscFunctionBegin;	
-  /* Create the factorization matrix F */  
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
-  ierr = MatSetType(*F,MATSEQAIJSPOOLES);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  /* Create the factorization matrix */  
+  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  (*F)->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-  (*F)->factor                = FACTOR_LU;  
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  B->factor                = FACTOR_LU;  
 
-  lu                        = (Mat_Spooles*)((*F)->spptr);
+  lu                        = (Mat_Spooles*)(B->spptr);
   lu->options.symflag       = SPOOLES_NONSYMMETRIC;
   lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_TRUE;
 
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
@@ -104,25 +105,27 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJ_Spooles"
 int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
-  Mat_Spooles          *lu;   
-  int                  ierr,m=A->m,n=A->n;
+  Mat         B;
+  Mat_Spooles *lu;   
+  int         ierr,m=A->m,n=A->n;
 
   PetscFunctionBegin;	
-  /* Create the factorization matrix F */
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
-  ierr = MatSetType(*F,MATSEQAIJSPOOLES);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  /* Create the factorization matrix */
+  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-/*   (*F)->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles; */
-  (*F)->factor                      = FACTOR_CHOLESKY;  
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+/*   B->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles; */
+  B->factor                      = FACTOR_CHOLESKY;  
 
-  lu                        = (Mat_Spooles*)((*F)->spptr);
+  lu                        = (Mat_Spooles*)(B->spptr);
   lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   lu->options.symflag       = SPOOLES_SYMMETRIC;   /* default */
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_FALSE;
 
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
@@ -143,7 +146,5 @@ int MatUseSpooles_SeqAIJ(Mat A)
   } 
   PetscFunctionReturn(0);
 }
-
-#endif
 
 

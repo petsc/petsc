@@ -2,15 +2,15 @@
 
 ALL: lib
 
-CFLAGS   = ${SUPERLUDIST_INCLUDE} ${SPOOLES_INCLUDE} ${MUMPS_INCLUDE}
+CFLAGS   = ${SUPERLUDIST_INCLUDE} ${MUMPS_INCLUDE}
 FFLAGS   =
-SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c superlu_dist.c mpiaijspooles.c mpispooles.c mumps.c
+SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c superlu_dist.c mumps.c
 SOURCEF	 =
 SOURCEH	 = mpiaij.h
-OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o superlu_dist.o mpiaijspooles.o mpispooles.o mumps.o
+OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o superlu_dist.o mumps.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
-DIRS	 = 
+DIRS	 = spooles
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/
 

@@ -49,6 +49,7 @@ typedef struct {
   /* A few function pointers for inheritance */
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatDestroy)(Mat);
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
@@ -63,6 +64,7 @@ EXTERN int MatAssemblyEnd_SeqAIJ_Spooles(Mat,MatAssemblyType);
 EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
 EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
+EXTERN int MatAssemblyEnd_MPIAIJ_Spooles(Mat,MatAssemblyType);
 
 EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int*,int*,int*);
 #endif

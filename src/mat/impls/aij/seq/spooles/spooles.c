@@ -4,17 +4,14 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
-extern int MatDestroy_SeqAIJ(Mat); 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_Spooles"
 int MatDestroy_SeqAIJ_Spooles(Mat A)
 {
   Mat_Spooles *lu = (Mat_Spooles*)A->spptr; 
-  int         ierr;
+  int         ierr,(*destroy)(Mat);
   
   PetscFunctionBegin;
  
@@ -27,8 +24,9 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
   SubMtxManager_free(lu->mtxmanager) ; 
   Graph_free(lu->graph);
   
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  destroy = lu->MatDestroy;
+  ierr    = PetscFree(lu);CHKERRQ(ierr); 
+  ierr    = (*destroy)(A);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -469,10 +467,11 @@ int MatCreate_SeqAIJ_Spooles(Mat A) {
   ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   lu->MatView         = A->ops->view;
   lu->MatAssemblyEnd  = A->ops->assemblyend;
+  lu->MatDestroy      = A->ops->destroy;
   A->spptr            = (void*)lu;
   A->ops->view        = MatView_SeqAIJ_Spooles;
   A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_Spooles;
+  A->ops->destroy     = MatDestroy_SeqAIJ_Spooles;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#endif
