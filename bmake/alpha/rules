@@ -1,4 +1,4 @@
-# $Id: base,v 1.34 1999/01/25 22:02:56 bsmith Exp balay $ 
+# $Id: base,v 1.35 1999/02/08 23:37:35 balay Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
@@ -27,3 +27,12 @@ shared: chkopts_basic
 	    fi; \
 	  fi; \
 	done
+	done
+#
+#  Generates a shared library from any .a library; not just the PETSc ones
+#  This is to allow any user to generate his or her own shared library
+#
+
+oshared: 
+	-@echo "building $$LIBNAME.${SLSUFFIX}"
+	-@${LD} -shared  -all  ${LIBNAME}.a  -o ${LIBNAME}.${SLSUFFIX}  > /dev/null 2>&1 
