@@ -163,9 +163,9 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
-  if (!rank && vbinary->fdes) {
+  if ((!rank || vbinary->btype == PETSC_FILE_RDONLY ) && vbinary->fdes) {
     close(vbinary->fdes);
-    if (vbinary->storecompressed) {
+    if (!rank && vbinary->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
       /* compress the file */
