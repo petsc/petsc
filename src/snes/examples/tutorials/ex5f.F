@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.20 1997/02/05 22:04:41 bsmith Exp bsmith $";
+C "$Id: ex5f.F,v 1.21 1997/03/26 01:38:02 bsmith Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -125,6 +125,7 @@ C
       integer  its, Nx, Ny, matrix_free, size, flg, N, ierr, m
       integer  user(6), mx, my, rank
       Double   lambda_max, lambda_min, lambda
+      integer  ltog_a(0:1), ltog_i, nloc
 
 C  Store nonlinearity parameter in common block
 
@@ -257,6 +258,16 @@ C     for preallocating matrix memory.
      &                         3,PETSC_NULL,J,ierr)
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
+
+C       Get the global node numbers for all local nodes, including ghost points.
+C       Associate this mapping with the matrix for later use in setting matrix
+C       entries via MatSetValuesLocal().
+C        - Note that the Fortran interface to DAGetGlobalIndices() differs from
+C          the C version.  See the Fortran chapter of the users manual for details.
+
+        call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
+        call MatSetLocalToGlobalMapping(J,nloc,ltog_a(ltog_i),ierr)
+
       endif
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -529,6 +540,23 @@ C  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
 C  We cannot work directly with the global numbers for the original
 C  uniprocessor grid!
 C
+C  Two methods are available for imposing this transformation
+C  when setting matrix entries:
+C    (A) MatSetValuesLocal(), using the local ordering (including
+C        ghost points!)
+C        - Use DAGetGlobalIndices() to extract the local-to-global map
+C        - Associate this map with the matrix by calling
+C          MatSetLocalToGlobalMapping() once
+C        - Set matrix entries using the local ordering
+C          by calling MatSetValuesLocal()
+C    (B) MatSetValues(), using the global ordering 
+C        - Use DAGetGlobalIndices() to extract the local-to-global map
+C        - Then apply this map explicitly yourself
+C        - Set matrix entries using the global ordering by calling
+C          MatSetValues()
+C  Option (A) seems cleaner/easier in many cases, and is the procedure
+C  used in this example.
+C
       subroutine FormJacobian(snes,X,jac,B,flag,user)
       implicit none
 
@@ -544,9 +572,8 @@ C
       Vec          X, localX
       Mat          jac, B
       MatStructure flag
-      integer      user(*), ierr, i, j, row, mx, my
-      integer      col(5), grow, xe, ye
-      integer      nloc, xs, ys, xm, ym, gxs, gys, gxm, gym
+      integer      user(*), ierr, row, mx, my, col(5), xe, ye
+      integer      xs, ys, xm, ym, gxs, gys, gxm, gym, i, j
       Scalar       two, one, lambda, hx, hy, hxdhy, hydhx
       Scalar       sc, v(5)
 
@@ -556,14 +583,7 @@ C  Declarations for use with local arrays
 
       Scalar   lx_v(1)
       common   lx_v
-      integer  ltog_a(0:1), ltog_i, lx_i
-
-C  Macro to facilitate use of the local-to-global mapping
-C  (obtained via DAGetGlobalIndices) in Fortran.  Note
-C  that this mapping is always 0-based (following the
-C  C convention) rather than 1-based.
-
-#define ltog_v(ib)  ltog_a(ltog_i + (ib))
+      integer  lx_i
 
 C  Set parameters
 
@@ -599,12 +619,6 @@ C  Get local grid boundaries
       ye = ys+ym-1
       xe = xs+xm-1
 
-C  Get the global node numbers for all local nodes, including ghost points
-C    - Note that the Fortran interface to DAGetGlobalIndices() differs from
-C      the C version.  See the Fortran chapter of the users manual for details.
-
-       call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-
 C  Compute entries for the locally owned part of the Jacobian.
 C   - Currently, all PETSc parallel matrix formats are partitioned by
 C     contiguous chunks of rows across the processors. The "grow"
@@ -613,8 +627,9 @@ C     corresponding to each local grid point.
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
 C   - Here, we set all entries for a particular row at once.
+C   - We can set matrix entries either using either
+C     MatSetValuesLocal() or MatSetValues(), as discussed above.
 C   - Note that MatSetValues() uses 0-based row and column numbers
 C     in Fortran as well as in C.
 
@@ -622,11 +637,10 @@ C     in Fortran as well as in C.
          row = (j - gys)*gxm + xs - gxs - 1
          do 10 i=xs,xe
             row = row + 1
-            grow = ltog_v(row)
 C           boundary points
             if (i .eq. 0 .or. j .eq. 0 
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-               call MatSetValues(jac,1,grow,1,grow,one,
+               call MatSetValuesLocal(jac,1,row,1,row,one,
      &                           INSERT_VALUES,ierr)
 C           interior grid points
             else
@@ -636,13 +650,13 @@ C           interior grid points
      &                  - sc*lambda*exp(lx_a(row))
                v(4) = -hydhx
                v(5) = -hxdhy
-               col(1) = ltog_v(row - gxm)
-               col(2) = ltog_v(row - 1)
-               col(3) = grow
-               col(4) = ltog_v(row + 1)
-               col(5) = ltog_v(row + gxm)
-               call MatSetValues(jac,1,grow,5,col,v,
-     &                           INSERT_VALUES,ierr)
+               col(1) = row - gxm
+               col(2) = row - 1
+               col(3) = row
+               col(4) = row + 1
+               col(5) = row + gxm
+               call MatSetValuesLocal(jac,1,row,5,col,v,
+     &                                INSERT_VALUES,ierr)
             endif
  10      continue
  20   continue

@@ -10,8 +10,9 @@ Meta priorities:
 
   - DrawText(), _PC, conflict with definitions in .h files in MS Visual C++. (Satish)
 
-  - Edit snes/examples/tutorials/ex5.c to use the star stencil, take
-    out debugging printouts.  Fix ex5f.F to be the same w/ MatSetValuesLocal().
+  - Edit snes/examples/tutorials/ex5f90.F  to use MatSetValuesLocal().
+    Add routine MatSetLocalToGlobalMappingDA(Mat,DA) to alleviate the 2-step
+    process used in ex5f.F.
 
   - Add nightly testing for ts/examples/tutorials/[ex2.c,ex2f.F]
 

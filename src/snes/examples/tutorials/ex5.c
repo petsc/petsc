@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.78 1997/04/25 21:08:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.79 1997/05/01 18:02:17 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -184,17 +184,11 @@ int main( int argc, char **argv )
 
     /*
        Get the global node numbers for all local nodes, including ghost points.
-       Associate this mapping with the matrix for lat
+       Associate this mapping with the matrix for later use in setting matrix
+       entries via MatSetValuesLocal().
     */
     ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRA(ierr);
     ierr = MatSetLocalToGlobalMapping(J,nloc,ltog); CHKERRA(ierr);
-
-      /* Debugging print statement */
-    /*     { int i;
-        for (i=0; i<nloc; i++)
-           printf("[%d] nloc %d i=%d, idx=%d\n",PetscGlobalRank,nloc,i,ltog[i]);
-     } */ 
-      
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

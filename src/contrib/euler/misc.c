@@ -35,7 +35,7 @@ int __main()
    X              - vector (dimension does not include ghost points)
 
    Output Parameter:
-   X   - fully assembled vector
+   X              - fully assembled vector
 
    Note: 
    This routine is called by ComputeFunction() and other routines
@@ -43,7 +43,7 @@ int __main()
    PETSc vector.
  */
 int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
-               Scalar *v4,Vec X)
+               Scalar *v4,Scalar *xl,Vec localX,Vec X)
 {
   int    i, j, k, jkx, jkx_ng, jkv, ijkx, ijkv, ierr, ijkxt;
   int    gxs = app->gxs, gys = app->gys, gzs = app->gzs;
@@ -53,6 +53,13 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
   Scalar val[5], *x;
   int    pos[5], *ltog, nloc, nc = app->nc;
+
+  if (!app->reorder) {
+    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
+    ierr = VecRestoreArray(localX,&xl); CHKERRQ(ierr);
+    ierr = DALocalToGlobal(app->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+    return 0;
+  } 
 
   /* Note: Due to grid point reordering with DAs, we must always work
      with the local grid points for the vector X, then transform them to
@@ -216,7 +223,7 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
    work arrays.
  */
 int PackWork(Euler *app,Vec X,Vec localX,
-             Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,Scalar *v4)
+             Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,Scalar *v4,Scalar **xout)
 {
   int    ierr, i, j, k, jkx, jkv, ijkx, ijkv, ijkxt, nc = app->nc;
   int    gxm = app->gxm, gxmfp1 = app->gxmfp1, gym = app->gym, gymfp1 = app->gymfp1;
@@ -229,6 +236,12 @@ int PackWork(Euler *app,Vec X,Vec localX,
   ierr = DAGlobalToLocalBegin(app->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(app->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  *xout = x;
+
+  if (!app->reorder) {
+    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
+    return 0;
+  }
 
   /* Set Fortran work arrays, including ghost points */
   if (app->bctype == IMPLICIT) {  /* Set interior and boundary grid points */
@@ -301,7 +314,7 @@ int PackWork(Euler *app,Vec X,Vec localX,
    Note:
    This routine is used only for the parallel pressure BCs.
  */
-int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0)
+int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0,Scalar **xout)
 {
   int    ierr, i, j, k, jkx, jkv, ijkx, ijkv;
   int    gxe = app->gxe, gye = app->gye, gze = app->gze;
@@ -314,6 +327,12 @@ int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0)
   ierr = DAGlobalToLocalBegin(app->da1,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(app->da1,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  *xout = x;
+
+  if (!app->reorder) {
+    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
+    return 0;
+  }
 
   /* Set Fortran work arrays, including ghost points */
   if (app->bctype == IMPLICIT) {   /* Set interior and boundary grid points */
@@ -552,14 +571,37 @@ int GridTest(Euler *app)
   ierr = VecAssemblyBegin(app->P); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(app->P); CHKERRQ(ierr);
 
-  ierr = ViewerFileOpenASCII(app->comm,"p.out",&view1); CHKERRQ(ierr);
-  ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DFVecView(app->P,view1); CHKERRQ(ierr);
+  if (app->print_debug) {
+    ierr = ViewerFileOpenASCII(app->comm,"p.out",&view1); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+    ierr = DFVecView(app->P,view1); CHKERRQ(ierr);
+    ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+  }
 
+  /* Test packing/unpacking routines */
+  ierr = PackWork(app,X,app->localX,
+                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRQ(ierr);
+  if (app->print_debug) {
+    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,"gloc.out",&view1); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+    ierr = VecView(app->localX,view1); CHKERRQ(ierr);
+    ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+  }
+
+  ierr = UnpackWork(app,app->r,app->ru,app->rv,app->rw,app->e,app->xx,app->localX,app->F); CHKERRQ(ierr);
+  if (app->print_debug) {
+    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,"gtot2.out",&view1); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+    ierr = VecView(app->F,view1); CHKERRQ(ierr);
+    ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+  }
+
+  exit(0);
   return 0;
 }
+
 #undef __FUNC__
-#define __FUNC__ "UnpackWorkComponent"
+#define __FUNC__ "CheckSolution"
 /***************************************************************************/
 /*
   CheckSolution - Prints max/min of each component for interior of grid.
