@@ -18,11 +18,15 @@ int main(int argc,char **args)
   PetscScalar *val,*bval;
   FILE*       file;
   PetscViewer view;
+  PetscTruth  opt;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,&opt);CHKERRQ(ierr);
+  if (opt == PETSC_FALSE) {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
+  }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
