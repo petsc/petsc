@@ -1,4 +1,4 @@
-# $Id: base,v 1.41 1998/12/04 23:56:26 balay Exp $ 
+# $Id: base_variables,v 1.1 1999/02/09 00:01:26 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -62,17 +62,5 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 
 PARCH    = t3d
 
+include ${PETSC_DIR}/bmake/common_variables
 
-include ${PETSC_DIR}/bmake/common
-
-libc:
-	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libf:
-	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libmember:    ${LIBNAME}(${LIBMEMBER})
-	@-true
-
-#########
-shared:
