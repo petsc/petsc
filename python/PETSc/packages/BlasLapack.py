@@ -126,6 +126,8 @@ class Configure(config.base.Configure):
       if foundLapack: self.foundLapack = 1
       if foundBlas and foundLapack:
         functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
+        if not self.framework.argDB['with-alternatives']:
+          break
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = functionalBlasLapack[0]

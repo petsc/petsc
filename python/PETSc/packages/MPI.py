@@ -256,6 +256,7 @@ int checkInit(void) {
     # Try MPI compilers
     if self.mpiCompilers.foundCompilers:
       yield ('Default compiler locations', self.libraryGuesses(), [[]])
+      return
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -319,8 +320,6 @@ int checkInit(void) {
     functionalMPI = []
     nonsharedMPI  = []
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
-      if self.mpiCompilers.foundCompilers and len(includeGuesses[0]):
-        break
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
       self.lib     = None
@@ -343,6 +342,8 @@ int checkInit(void) {
           continue
       self.foundMPI = 1
       functionalMPI.append((name, self.lib, self.include, version))
+      if not self.framework.argDB['with-alternatives']:
+        break
     # User chooses one or take first (sort by version)
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
