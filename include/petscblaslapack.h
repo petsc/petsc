@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.33 1998/10/19 22:20:57 bsmith Exp bsmith $ */
+/* $Id: blaslapack.h,v 1.34 1998/12/09 19:37:51 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -280,7 +280,9 @@ Cray T3D/T3E.
 
 #endif
 
+#if !defined(USE_CBLASLAPACK)
 EXTERN_C_BEGIN
+#endif
 
 /* 
    BLdot cannot be used with COMPLEX because it cannot 
@@ -359,7 +361,9 @@ extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
 #endif
 #endif
 
+#if !defined(USE_CBLASLAPACK)
 EXTERN_C_END
+#endif
 
 #endif
 
