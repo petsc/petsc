@@ -1,9 +1,9 @@
-/*$Id: dupl.c,v 1.3 1999/10/24 14:01:08 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.4 2000/01/11 20:59:04 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetSingleton"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton" 
 /*@
    ViewerGetSingleton - Creates a new viewer (same type as the old)
     that lives on a single processor (with MPI_comm PETSC_COMM_SELF)
@@ -48,7 +48,7 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerRestoreSingleton"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerRestoreSingleton" 
 /*@
    ViewerRestoreSingleton - Restores a new viewer obtained with ViewerGetSingleton().
 

@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.26 2000/03/06 04:40:12 bsmith Exp bsmith $*/
+/*$Id: comb.c,v 1.27 2000/03/13 00:49:32 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -48,7 +48,7 @@ some of each.
 */
 
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReductionCreate"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReductionCreate"
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
@@ -78,7 +78,7 @@ MPI_Op PetscSplitReduction_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReduction_Local"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReduction_Local"
 void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
@@ -111,7 +111,7 @@ void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatyp
 EXTERN_C_END
 
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReductionApply"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReductionApply"
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
@@ -191,7 +191,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
 
 
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReductionExtend"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReductionExtend"
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
@@ -219,7 +219,7 @@ int PetscSplitReductionExtend(PetscSplitReduction *sr)
 }
 
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReductionDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReductionDestroy"
 int PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   int ierr;
@@ -237,7 +237,7 @@ static int Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "Petsc_DelReduction" 
+#define  __FUNC__ /*<a name=""></a>*/"Petsc_DelReduction" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -262,7 +262,7 @@ EXTERN_C_END
 
 */
 #undef __FUNC__
-#define __FUNC__ "PetscSplitReductionGet"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitReductionGet"
 int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   int      ierr,flag;
@@ -295,7 +295,7 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 /* ----------------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__
-#define __FUNC__ "VecDotBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecDotBegin"
 /*@
    VecDotBegin - Starts a split phase dot product computation.
 
@@ -337,7 +337,7 @@ int VecDotBegin(Vec x,Vec y,Scalar *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ "VecDotEnd"
+#define  __FUNC__ /*<a name=""></a>*/"VecDotEnd"
 /*@
    VecDotEnd - Ends a split phase dot product computation.
 
@@ -393,7 +393,7 @@ int VecDotEnd(Vec x,Vec y,Scalar *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ "VecTDotBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecTDotBegin"
 /*@
    VecTDotBegin - Starts a split phase transpose dot product computation.
 
@@ -436,7 +436,7 @@ int VecTDotBegin(Vec x,Vec y,Scalar *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ "VecTDotEnd"
+#define  __FUNC__ /*<a name=""></a>*/"VecTDotEnd"
 /*@
    VecTDotEnd - Ends a split phase transpose dot product computation.
 
@@ -468,7 +468,7 @@ int VecTDotEnd(Vec x,Vec y,Scalar *result)
 /* -------------------------------------------------------------------------*/
 
 #undef __FUNC__
-#define __FUNC__ "VecNormBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecNormBegin"
 /*@
    VecNormBegin - Starts a split phase norm computation.
 
@@ -520,7 +520,7 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ "VecNormBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecNormBegin"
 /*@
    VecNormEnd - Ends a split phase norm computation.
 

@@ -1,4 +1,4 @@
-/*$Id: pcnull.c,v 1.27 1999/10/24 14:02:56 bsmith Exp bsmith $*/
+/*$Id: pcnull.c,v 1.28 2000/01/11 21:01:36 bsmith Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -7,7 +7,7 @@
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PCNullSpaceCreate"
+#define  __FUNC__ /*<a name=""></a>*/"PCNullSpaceCreate"
 /*@C
    PCNullSpaceCreate - Creates a data structure used to project vectors 
    out of null spaces.
@@ -48,7 +48,7 @@ int PCNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,PCNullSpace *SP
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCNullSpaceDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"PCNullSpaceDestroy"
 /*@
    PCNullSpaceDestroy - Destroys a data structure used to project vectors 
    out of null spaces.
@@ -76,7 +76,7 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCNullSpaceRemove"
+#define  __FUNC__ /*<a name=""></a>*/"PCNullSpaceRemove"
 /*@
    PCNullSpaceRemove - Removes all the components of a null space from a vector.
 

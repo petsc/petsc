@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.13 1999/10/24 14:02:51 bsmith Exp bsmith $*/
+/*$Id: matioall.c,v 1.14 2000/01/11 21:01:18 bsmith Exp bsmith $*/
 
 #include "mat.h"
 
@@ -14,7 +14,7 @@ extern int MatLoad_SeqAdj(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadRegisterAll"
+#define  __FUNC__ /*<a name=""></a>*/"MatLoadRegisterAll"
 /*@C
     MatLoadRegisterAll - Registers all standard matrix type routines to load
         matrices from a binary file.

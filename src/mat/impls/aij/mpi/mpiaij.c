@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.310 2000/02/02 20:09:00 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.311 2000/02/28 23:33:17 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -19,7 +19,7 @@ a slightly higher hash table cost; without it it is not scalable (each processor
 has an order N integer array but is fast to acess.
 */
 #undef __FUNC__  
-#define __FUNC__ "CreateColmap_MPIAIJ_Private"
+#define  __FUNC__ /*<a name=""></a>*/"CreateColmap_MPIAIJ_Private"
 int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -191,7 +191,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatSetValues_MPIAIJ"
 int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -278,7 +278,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetValues_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetValues_MPIAIJ"
 int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -321,7 +321,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatAssemblyBegin_MPIAIJ"
 int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
@@ -348,7 +348,7 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatAssemblyEnd_MPIAIJ"
 int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -406,7 +406,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatZeroEntries_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatZeroEntries_MPIAIJ"
 int MatZeroEntries_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *l = (Mat_MPIAIJ*)A->data;
@@ -419,7 +419,7 @@ int MatZeroEntries_MPIAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatZeroRows_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatZeroRows_MPIAIJ"
 int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
@@ -570,7 +570,7 @@ MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCA
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMult_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatMult_MPIAIJ"
 int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -589,7 +589,7 @@ int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultAdd_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_MPIAIJ"
 int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -604,7 +604,7 @@ int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTranspose_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatMultTranspose_MPIAIJ"
 int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -625,7 +625,7 @@ int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransposeAdd_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_MPIAIJ"
 int MatMultTransposeAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -650,7 +650,7 @@ int MatMultTransposeAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
    diagonal block
 */
 #undef __FUNC__  
-#define __FUNC__ "MatGetDiagonal_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetDiagonal_MPIAIJ"
 int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 {
   int        ierr;
@@ -666,7 +666,7 @@ int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatScale_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatScale_MPIAIJ"
 int MatScale_MPIAIJ(Scalar *aa,Mat A)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -679,7 +679,7 @@ int MatScale_MPIAIJ(Scalar *aa,Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatDestroy_MPIAIJ"
 int MatDestroy_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -722,7 +722,7 @@ int MatDestroy_MPIAIJ(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ_Binary"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_MPIAIJ_Binary"
 int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
@@ -737,7 +737,7 @@ int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworSocket"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_MPIAIJ_ASCIIorDraworSocket"
 int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
@@ -836,7 +836,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_MPIAIJ"
 int MatView_MPIAIJ(Mat mat,Viewer viewer)
 {
   int        ierr;
@@ -863,7 +863,7 @@ int MatView_MPIAIJ(Mat mat,Viewer viewer)
      3) color updating out values betwen colors.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatRelax_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatRelax_MPIAIJ"
 int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
                            PetscReal fshift,int its,Vec xx)
 {
@@ -1005,7 +1005,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetInfo_MPIAIJ"
 int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
@@ -1054,7 +1054,7 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatSetOption_MPIAIJ"
 int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -1098,7 +1098,7 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetSize_MPIAIJ"
 int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
@@ -1110,7 +1110,7 @@ int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetLocalSize_MPIAIJ"
 int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
@@ -1122,7 +1122,7 @@ int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_MPIAIJ"
 int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
@@ -1134,7 +1134,7 @@ int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetRow_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetRow_MPIAIJ"
 int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
@@ -1214,7 +1214,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatRestoreRow_MPIAIJ"
 int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -1228,7 +1228,7 @@ int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatNorm_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatNorm_MPIAIJ"
 int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -1304,7 +1304,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatTranspose_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatTranspose_MPIAIJ"
 int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
@@ -1382,7 +1382,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDiagonalScale_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatDiagonalScale_MPIAIJ"
 int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -1416,7 +1416,7 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatPrintHelp_MPIAIJ"
 int MatPrintHelp_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ*)A->data;
@@ -1430,7 +1430,7 @@ int MatPrintHelp_MPIAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetBlockSize_MPIAIJ"
 int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
 {
   PetscFunctionBegin;
@@ -1438,7 +1438,7 @@ int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ "MatSetUnfactored_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatSetUnfactored_MPIAIJ"
 int MatSetUnfactored_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ*)A->data;
@@ -1450,7 +1450,7 @@ int MatSetUnfactored_MPIAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatEqual_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatEqual_MPIAIJ"
 int MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
 {
   Mat_MPIAIJ *matB = (Mat_MPIAIJ*)B->data,*matA = (Mat_MPIAIJ*)A->data;
@@ -1472,7 +1472,7 @@ int MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatCopy_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatCopy_MPIAIJ"
 int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
 {
   int        ierr;
@@ -1572,7 +1572,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatStoreValues_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatStoreValues_MPIAIJ"
 int MatStoreValues_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
@@ -1587,7 +1587,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatRetrieveValues_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatRetrieveValues_MPIAIJ"
 int MatRetrieveValues_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
@@ -1606,7 +1606,7 @@ extern int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatCreateMPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatCreateMPIAIJ"
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).  For good matrix assembly performance
@@ -1885,7 +1885,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDuplicate_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatDuplicate_MPIAIJ"
 int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat        mat;
@@ -1963,7 +1963,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoad_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatLoad_MPIAIJ"
 int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
@@ -2146,7 +2146,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrix_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix_MPIAIJ"
 /*
     Not great since it makes two copies of the submatrix, first an SeqAIJ 
   in local and then by concatenating the local matrices the end result.

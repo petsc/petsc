@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.29 1999/11/05 14:46:06 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.30 2000/02/02 20:09:27 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
@@ -12,7 +12,7 @@ extern int MatOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrderingRegisterAll"
+#define  __FUNC__ /*<a name=""></a>*/"MatOrderingRegisterAll"
 /*@C
   MatOrderingRegisterAll - Registers all of the matrix 
   reordering routines in PETSc.

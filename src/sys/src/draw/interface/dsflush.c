@@ -1,11 +1,11 @@
-/*$Id: dsflush.c,v 1.20 1999/03/17 23:21:11 bsmith Exp bsmith $*/
+/*$Id: dsflush.c,v 1.21 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSynchronizedFlush" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSynchronizedFlush" 
 /*@
    DrawSynchronizedFlush - Flushes graphical output. This waits until all 
    processors have arrived and flushed, then does a global flush.

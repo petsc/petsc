@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.57 2000/02/02 20:08:15 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.58 2000/04/09 03:09:09 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -60,7 +60,7 @@ extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryPrintPath"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryPrintPath"
 int DLLibraryPrintPath(void)
 {
   DLLibraryList libs;
@@ -76,7 +76,7 @@ int DLLibraryPrintPath(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryGetInfo"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryGetInfo"
 /*@C
    DLLibraryGetInfo - Gets the text information from a PETSc
        dynamic library
@@ -104,7 +104,7 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryRetrieve"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryRetrieve"
 /*@C
    DLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
      (if it is remote), indicates if it exits and its local name.
@@ -192,7 +192,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryOpen"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryOpen"
 /*@C
    DLLibraryOpen - Opens a dynamic link library
 
@@ -284,7 +284,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibrarySym"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibrarySym"
 /*@C
    DLLibrarySym - Load a symbol from the dynamic link libraries.
 
@@ -392,7 +392,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryAppend"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryAppend"
 /*@C
      DLLibraryAppend - Appends another dynamic link library to the seach list, to the end
                 of the search path.
@@ -448,7 +448,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryPrepend"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryPrepend"
 /*@C
      DLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
@@ -507,7 +507,7 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryClose"
+#define  __FUNC__ /*<a name=""></a>*/"DLLibraryClose"
 /*@C
      DLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 

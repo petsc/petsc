@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.48 2000/01/11 20:59:43 bsmith Exp balay $*/
+/*$Id: plogmpe.c,v 1.49 2000/02/09 20:51:36 balay Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -288,7 +288,7 @@ int PetscBeganMPE = 0;
 extern char *PLogEventName[];
 
 #undef __FUNC__  
-#define __FUNC__ "PLogMPEBegin"
+#define  __FUNC__ /*<a name=""></a>*/"PLogMPEBegin"
 /*@C
    PLogMPEBegin - Turns on MPE logging of events. This creates large log files 
    and slows the program down.
@@ -349,7 +349,7 @@ int PLogMPEBegin(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventMPEDeactivate"
+#define  __FUNC__ /*<a name=""></a>*/"PLogEventMPEDeactivate"
 /*@
     PLogEventMPEDeactivate - Indicates that a particular event should not be
        logged using MPE. Note: the event may be either a pre-defined
@@ -383,7 +383,7 @@ int PLogEventMPEDeactivate(int event)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventMPEActivate"
+#define  __FUNC__ /*<a name=""></a>*/"PLogEventMPEActivate"
 /*@
     PLogEventMPEActivate - Indicates that a particular event should be
        logged using MPE. Note: the event may be either a pre-defined
@@ -417,7 +417,7 @@ int PLogEventMPEActivate(int event)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogMPEDump"
+#define  __FUNC__ /*<a name=""></a>*/"PLogMPEDump"
 /*@C
    PLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
 

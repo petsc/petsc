@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.65 2000/01/11 20:59:28 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.66 2000/02/02 20:08:17 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -18,7 +18,7 @@
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapInt"
+#define  __FUNC__ /*<a name=""></a>*/"PetscByteSwapInt"
 /*
   PetscByteSwapInt - Swap bytes in an integer
 */
@@ -40,7 +40,7 @@ int PetscByteSwapInt(int *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapShort"
+#define  __FUNC__ /*<a name=""></a>*/"PetscByteSwapShort"
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
@@ -63,7 +63,7 @@ int PetscByteSwapShort(short *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapScalar"
+#define  __FUNC__ /*<a name=""></a>*/"PetscByteSwapScalar"
 /*
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
@@ -90,7 +90,7 @@ int PetscByteSwapScalar(Scalar *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapDouble"
+#define  __FUNC__ /*<a name=""></a>*/"PetscByteSwapDouble"
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
@@ -114,7 +114,7 @@ int PetscByteSwapDouble(double *buff,int n)
 #endif
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryRead"
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinaryRead"
 /*@C
    PetscBinaryRead - Reads from a binary file.
 
@@ -260,7 +260,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryWrite"
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinaryWrite"
 /*@C
    PetscBinaryWrite - Writes to a binary file.
 
@@ -370,7 +370,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryOpen" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinaryOpen" 
 /*@C
    PetscBinaryOpen - Opens a PETSc binary file.
 
@@ -425,7 +425,7 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryClose" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinaryClose" 
 /*@C
    PetscBinaryClose - Closes a PETSc binary file.
 
@@ -449,7 +449,7 @@ int PetscBinaryClose(int fd)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscBinarySeek" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinarySeek" 
 /*@C
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 

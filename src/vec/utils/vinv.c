@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.59 1999/11/24 21:53:26 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.60 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -6,7 +6,7 @@
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideNorm"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideNorm"
 /*@C
    VecStrideNorm - Computes the norm of subvector of a vector defined 
    by a starting point and a stride.
@@ -92,7 +92,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideMax"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideMax"
 /*@C
    VecStrideMax - Computes the maximum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
@@ -171,7 +171,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideMin"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideMin"
 /*@C
    VecStrideMin - Computes the minimum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
@@ -250,7 +250,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideGatherAll"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideGatherAll"
 /*@
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
    seperate vectors.
@@ -337,7 +337,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ "VecStrideScatterAll"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideScatterAll"
 /*@
    VecStrideScatterAll - Scatters all the single components from seperate vectors into 
      a multi-component vector.
@@ -421,7 +421,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideGather"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
    another vector.
@@ -501,7 +501,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecStrideScatter"
+#define  __FUNC__ /*<a name=""></a>*/"VecStrideScatter"
 /*@
    VecStrideScatter - Scatters a single component from a vector into a multi-component vector.
 
@@ -579,7 +579,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecReciprocal_Default"
+#define  __FUNC__ /*<a name=""></a>*/"VecReciprocal_Default"
 int VecReciprocal_Default(Vec v)
 {
   int    i,n,ierr;
@@ -596,7 +596,7 @@ int VecReciprocal_Default(Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSum"
+#define  __FUNC__ /*<a name=""></a>*/"VecSum"
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
@@ -632,7 +632,7 @@ int VecSum(Vec v,Scalar *sum)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecShift"
+#define  __FUNC__ /*<a name=""></a>*/"VecShift"
 /*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
@@ -667,7 +667,7 @@ int VecShift(const Scalar *shift,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecAbs"
+#define  __FUNC__ /*<a name=""></a>*/"VecAbs"
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
@@ -698,7 +698,7 @@ int VecAbs(Vec v)
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecEqual"
+#define  __FUNC__ /*<a name=""></a>*/"VecEqual"
 /*@
    VecEqual - Compares two vectors.
 

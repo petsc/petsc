@@ -1,4 +1,4 @@
-/*$Id: dsm.c,v 1.9 1999/11/24 21:54:26 bsmith Exp bsmith $*/
+/*$Id: dsm.c,v 1.10 2000/01/11 21:01:31 bsmith Exp bsmith $*/
 /* dsm.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
 #include "petsc.h"
@@ -7,7 +7,7 @@
 static int c_n1 = -1;
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKdsm" 
+#define  __FUNC__ /*<a name=""></a>*/"MINPACKdsm" 
 int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
                int *mingrp,int *info,int *ipntr,int *jpntr,int *iwa,int *liwa)
 {

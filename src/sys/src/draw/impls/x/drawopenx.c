@@ -1,4 +1,4 @@
-/*$Id: drawopenx.c,v 1.12 1999/11/10 03:17:43 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.13 2000/01/11 20:59:14 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -6,7 +6,7 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenX" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawOpenX" 
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 

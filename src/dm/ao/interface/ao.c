@@ -1,11 +1,11 @@
-/*$Id: ao.c,v 1.30 2000/01/11 21:03:09 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.31 2000/04/09 03:11:14 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
 #include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "AOView" 
+#define  __FUNC__ /*<a name=""></a>*/"AOView" 
 /*@
    AOView - Displays an application ordering.
 
@@ -45,7 +45,7 @@ int AOView(AO ao,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy" 
+#define  __FUNC__ /*<a name=""></a>*/"AODestroy" 
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -79,7 +79,7 @@ int AODestroy(AO ao)
 
 /* ---------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationIS" 
+#define  __FUNC__ /*<a name=""></a>*/"AOPetscToApplicationIS" 
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -127,7 +127,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscIS" 
+#define  __FUNC__ /*<a name=""></a>*/"AOApplicationToPetscIS" 
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -174,7 +174,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication" 
+#define  __FUNC__ /*<a name=""></a>*/"AOPetscToApplication" 
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -209,7 +209,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc" 
+#define  __FUNC__ /*<a name=""></a>*/"AOApplicationToPetsc" 
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

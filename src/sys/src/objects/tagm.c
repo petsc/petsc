@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.19 2000/02/02 20:08:20 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.20 2000/04/09 03:09:13 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -24,7 +24,7 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "Petsc_DelTag" 
+#define  __FUNC__ /*<a name=""></a>*/"Petsc_DelTag" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -48,7 +48,7 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetNewTag" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectGetNewTag" 
 /*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -88,7 +88,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectRestoreNewTag" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectRestoreNewTag" 
 /*@C
     PetscObjectRestoreNewTag - Restores a new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -128,7 +128,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommGetNewTag" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscCommGetNewTag" 
 /*@C
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
     processors that share the communicator MUST call this routine EXACTLY the same
@@ -166,7 +166,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommRestoreNewTag" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscCommRestoreNewTag" 
 /*@C
     PetscCommRestoreNewTag - Restores a new tag from a PETSc comm. All 
     processors that share the communicator MUST call this routine EXACTLY 
@@ -202,7 +202,7 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommDuplicate_Private" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscCommDuplicate_Private" 
 /*
   PetscCommDuplicate_Private - Duplicates the communicator only if it is not already a PETSc 
                          communicator.
@@ -275,7 +275,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommDestroy_Private" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscCommDestroy_Private" 
 /*
   PetscCommDestroy_Private - Frees communicator.  Use in conjunction with PetscCommDuplicate_Private().
 */

@@ -1,11 +1,11 @@
-/*$Id: aoreduced.c,v 1.19 1999/11/05 14:47:45 bsmith Exp bsmith $*/
+/*$Id: aoreduced.c,v 1.20 2000/01/11 21:03:11 bsmith Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
 #include "sys.h"
 #include "bitarray.h"
 
 #undef __FUNC__  
-#define __FUNC__ "AODataSegmentGetReduced_Basic"
+#define  __FUNC__ /*<a name=""></a>*/"AODataSegmentGetReduced_Basic"
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
   AODataSegment *segment; 

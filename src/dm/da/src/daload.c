@@ -1,10 +1,10 @@
-/*$Id: daload.c,v 1.15 1999/11/05 14:47:52 bsmith Exp bsmith $*/
+/*$Id: daload.c,v 1.16 2000/01/11 21:03:19 bsmith Exp bsmith $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
 
 
 #undef __FUNC__  
-#define __FUNC__ "DALoad"
+#define  __FUNC__ /*<a name=""></a>*/"DALoad"
 /*@C
       DALoad - Creates an appropriate DA and loads its global vector from a file.
 

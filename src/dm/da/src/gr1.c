@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.17 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.18 2000/01/30 15:21:54 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -7,7 +7,7 @@
 #include "da.h"      /*I  "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DASetUniformCoordinates"
+#define  __FUNC__ /*<a name=""></a>*/"DASetUniformCoordinates"
 /*@
     DASetUniformCoordinates - Sets a DA coordinates to be a uniform grid
 
@@ -74,7 +74,7 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_DA1d"
+#define  __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA1d"
 int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
 {
   DA             da;

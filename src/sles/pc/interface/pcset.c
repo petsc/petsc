@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.100 2000/01/26 13:35:51 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.101 2000/04/09 03:10:20 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -13,7 +13,7 @@ PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 FList PCList = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetType"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetType"
 /*@C
    PCSetType - Builds PC for a particular preconditioner.
 
@@ -102,7 +102,7 @@ int PCSetType(PC pc,PCType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegisterDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegisterDynamic().
@@ -130,7 +130,7 @@ int PCRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp"
+#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp"
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -172,7 +172,7 @@ int PCPrintHelp(PC pc)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetType"
+#define  __FUNC__ /*<a name=""></a>*/"PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -200,7 +200,7 @@ int PCGetType(PC pc,PCType *meth)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetTypeFromOptions"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetTypeFromOptions"
 /*@
    PCSetTypeFromOptions - Sets PC type from the options database; if not given
          sets default.
@@ -243,7 +243,7 @@ int PCSetTypeFromOptions(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be

@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.198 2000/04/05 03:52:56 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.199 2000/04/09 03:04:27 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -6,7 +6,7 @@
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetBlockSize"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetBlockSize"
 /*@
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
@@ -42,7 +42,7 @@ int VecSetBlockSize(Vec v,int bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetBlockSize"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetBlockSize"
 /*@
    VecGetBlockSize - Gets the blocksize for the vector, i.e. what is used for VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
@@ -73,7 +73,7 @@ int VecGetBlockSize(Vec v,int *bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecValid"
+#define  __FUNC__ /*<a name=""></a>*/"VecValid"
 /*@
    VecValid - Checks whether a vector object is valid.
 
@@ -101,7 +101,7 @@ int VecValid(Vec v,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDot"
+#define  __FUNC__ /*<a name=""></a>*/"VecDot"
 /*@
    VecDot - Computes the vector dot product.
 
@@ -166,7 +166,7 @@ int VecDot(Vec x,Vec y,Scalar *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecNorm"
+#define  __FUNC__ /*<a name=""></a>*/"VecNorm"
 /*@
    VecNorm  - Computes the vector norm.
 
@@ -229,7 +229,7 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMax"
+#define  __FUNC__ /*<a name=""></a>*/"VecMax"
 /*@C
    VecMax - Determines the maximum vector component and its location.
 
@@ -266,7 +266,7 @@ int VecMax(Vec x,int *p,PetscReal *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMin"
+#define  __FUNC__ /*<a name=""></a>*/"VecMin"
 /*@
    VecMin - Determines the minimum vector component and its location.
 
@@ -303,7 +303,7 @@ int VecMin(Vec x,int *p,PetscReal *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecTDot"
+#define  __FUNC__ /*<a name=""></a>*/"VecTDot"
 /*@
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
@@ -353,7 +353,7 @@ int VecTDot(Vec x,Vec y,Scalar *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScale"
+#define  __FUNC__ /*<a name=""></a>*/"VecScale"
 /*@
    VecScale - Scales a vector. 
 
@@ -389,7 +389,7 @@ int VecScale(const Scalar *alpha,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecCopy"
+#define  __FUNC__ /*<a name=""></a>*/"VecCopy"
 /*@
    VecCopy - Copies a vector. 
 
@@ -431,7 +431,7 @@ int VecCopy(Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSet"
+#define  __FUNC__ /*<a name=""></a>*/"VecSet"
 /*@
    VecSet - Sets all components of a vector to a single scalar value. 
 
@@ -473,7 +473,7 @@ int VecSet(const Scalar *alpha,Vec x)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetRandom"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetRandom"
 /*@C
    VecSetRandom - Sets all components of a vector to random numbers.
 
@@ -515,7 +515,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecAXPY"
+#define  __FUNC__ /*<a name=""></a>*/"VecAXPY"
 /*@
    VecAXPY - Computes y = alpha x + y. 
 
@@ -556,7 +556,7 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecAXPBY"
+#define  __FUNC__ /*<a name=""></a>*/"VecAXPBY"
 /*@
    VecAXPBY - Computes y = alpha x + beta y. 
 
@@ -598,7 +598,7 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecAYPX"
+#define  __FUNC__ /*<a name=""></a>*/"VecAYPX"
 /*@
    VecAYPX - Computes y = x + alpha y.
 
@@ -639,7 +639,7 @@ int VecAYPX(const Scalar *alpha,Vec x,Vec y)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecSwap"
+#define  __FUNC__ /*<a name=""></a>*/"VecSwap"
 /*@
    VecSwap - Swaps the vectors x and y.
 
@@ -673,7 +673,7 @@ int VecSwap(Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecWAXPY"
+#define  __FUNC__ /*<a name=""></a>*/"VecWAXPY"
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
@@ -716,7 +716,7 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecPointwiseMult"
+#define  __FUNC__ /*<a name=""></a>*/"VecPointwiseMult"
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
@@ -757,7 +757,7 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecPointwiseDivide"
+#define  __FUNC__ /*<a name=""></a>*/"VecPointwiseDivide"
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
 
@@ -796,7 +796,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicate"
+#define  __FUNC__ /*<a name=""></a>*/"VecDuplicate"
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
@@ -834,7 +834,7 @@ int VecDuplicate(Vec x,Vec *newv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"VecDestroy"
 /*@C
    VecDestroy - Destroys a vector.
 
@@ -876,7 +876,7 @@ int VecDestroy(Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicateVecs"
+#define  __FUNC__ /*<a name=""></a>*/"VecDuplicateVecs"
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
@@ -917,7 +917,7 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs"
+#define  __FUNC__ /*<a name=""></a>*/"VecDestroyVecs"
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
@@ -951,7 +951,7 @@ int VecDestroyVecs(const Vec vv[],int m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetValues"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetValues"
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
 
@@ -1006,7 +1006,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetValuesBlocked"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetValuesBlocked"
 /*@
    VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector. 
 
@@ -1093,7 +1093,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetLocalToGlobalMapping"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetLocalToGlobalMapping"
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine VecSetValuesLocal() to allow users to insert vector entries
@@ -1132,7 +1132,7 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetLocalToGlobalMappingBlocked"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetLocalToGlobalMappingBlocked"
 /*@
    VecSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
    by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
@@ -1170,7 +1170,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetValuesLocal"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetValuesLocal"
 /*@
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
@@ -1232,7 +1232,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetValuesBlockedLocal"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetValuesBlockedLocal"
 /*@
    VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
@@ -1296,7 +1296,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecAssemblyBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecAssemblyBegin"
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
    be called after completing all calls to VecSetValues().
@@ -1335,7 +1335,7 @@ int VecAssemblyBegin(Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecAssemblyEnd"
+#define  __FUNC__ /*<a name=""></a>*/"VecAssemblyEnd"
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
    be called after VecAssemblyBegin().
@@ -1410,7 +1410,7 @@ int VecAssemblyEnd(Vec vec)
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecMTDot"
+#define  __FUNC__ /*<a name=""></a>*/"VecMTDot"
 /*@C
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
@@ -1462,7 +1462,7 @@ int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMDot"
+#define  __FUNC__ /*<a name=""></a>*/"VecMDot"
 /*@C
    VecMDot - Computes vector multiple dot products. 
 
@@ -1513,7 +1513,7 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMAXPY"
+#define  __FUNC__ /*<a name=""></a>*/"VecMAXPY"
 /*@C
    VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
@@ -1556,7 +1556,7 @@ int  VecMAXPY(int nv,const Scalar *alpha,Vec y,Vec *x)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetArray"
 /*@C
    VecGetArray - Returns a pointer to a contiguous array that contains this 
    processor's portion of the vector data. For the standard PETSc
@@ -1612,7 +1612,7 @@ int VecGetArray(Vec x,Scalar *a[])
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArrays" 
+#define  __FUNC__ /*<a name=""></a>*/"VecGetArrays" 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -1654,7 +1654,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArrays"
+#define  __FUNC__ /*<a name=""></a>*/"VecRestoreArrays"
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1698,7 +1698,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
@@ -1758,7 +1758,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecView"
+#define  __FUNC__ /*<a name=""></a>*/"VecView"
 /*@C
    VecView - Views a vector object. 
 
@@ -1824,7 +1824,7 @@ int VecView(Vec vec,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetSize"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetSize"
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
@@ -1855,7 +1855,7 @@ int VecGetSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetLocalSize"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetLocalSize"
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored 
    in local memory. This routine may be implementation dependent, so use 
@@ -1888,7 +1888,7 @@ int VecGetLocalSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetOwnershipRange"
 /*@
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
@@ -1928,7 +1928,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetMap"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetMap"
 /*@C
    VecGetMap - Returns the map associated with the vector
 
@@ -1956,7 +1956,7 @@ int VecGetMap(Vec x,Map *map)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetOption"
 /*@
    VecSetOption - Sets an option for controling a vector's behavior.
 
@@ -1989,7 +1989,7 @@ int VecSetOption(Vec x,VecOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicateVecs_Default"
+#define  __FUNC__ /*<a name=""></a>*/"VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
@@ -2006,7 +2006,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs_Default"
+#define  __FUNC__ /*<a name=""></a>*/"VecDestroyVecs_Default"
 int VecDestroyVecs_Default(const Vec v[], int m)
 {
   int i,ierr;
@@ -2020,7 +2020,7 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecPlaceArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecPlaceArray"
 /*@
    VecPlaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
@@ -2060,7 +2060,7 @@ int VecPlaceArray(Vec vec,const Scalar array[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecReplaceArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecReplaceArray"
 /*@C
    VecReplaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
@@ -2236,7 +2236,7 @@ M*/
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector"
+#define  __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector"
 /*@C 
   VecLoadIntoVector - Loads a vector that has been stored in binary format
   with VecView().
@@ -2299,7 +2299,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecReciprocal"
+#define  __FUNC__ /*<a name=""></a>*/"VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
@@ -2330,7 +2330,7 @@ int VecReciprocal(Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOperation"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetOperation"
 int VecSetOperation(Vec vec,VecOperation op, void *f)
 {
   PetscFunctionBegin;
@@ -2340,7 +2340,7 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetStashInitialSize"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetStashInitialSize"
 /*@
    VecSetStashInitialSize - sets the sizes of the vec-stash, that is
    used during the assembly process to store values that belong to 
@@ -2427,7 +2427,7 @@ int VecStashView(Vec v,Viewer viewer)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArray2d"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetArray2d"
 /*@C
    VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this 
    processor's portion of the vector data.  You MUST call VecRestoreArray2d() 
@@ -2481,7 +2481,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArray2d"
+#define  __FUNC__ /*<a name=""></a>*/"VecRestoreArray2d"
 /*@C
    VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
 
@@ -2524,7 +2524,7 @@ int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArray1d"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetArray1d"
 /*@C
    VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this 
    processor's portion of the vector data.  You MUST call VecRestoreArray1d() 
@@ -2571,7 +2571,7 @@ int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArray1d"
+#define  __FUNC__ /*<a name=""></a>*/"VecRestoreArray1d"
 /*@C
    VecRestoreArray1d - Restores a vector after VecGetArray1d() has been called.
 

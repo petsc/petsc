@@ -1,4 +1,4 @@
-/*$Id: vmpicr.c,v 1.6 1999/10/24 14:01:56 bsmith Exp bsmith $*/
+/*$Id: vmpicr.c,v 1.7 2000/01/11 21:00:13 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -7,7 +7,7 @@
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateMPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateMPI"
 /*@C
    VecCreateMPI - Creates a parallel vector.
 

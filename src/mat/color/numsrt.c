@@ -1,4 +1,4 @@
-/*$Id: numsrt.c,v 1.9 1999/10/24 14:02:33 bsmith Exp bsmith $*/
+/*$Id: numsrt.c,v 1.10 1999/11/05 14:46:11 bsmith Exp bsmith $*/
 
 /* numsrt.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
@@ -6,7 +6,7 @@
 #include "src/mat/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKnumsrt" 
+#define  __FUNC__ /*<a name=""></a>*/"MINPACKnumsrt" 
 int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *next)
 {
     /* System generated locals */

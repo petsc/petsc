@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.44 2000/02/02 20:09:30 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.45 2000/03/31 20:41:26 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -12,7 +12,7 @@
       computes the degree sequence required by MINPACK coloring routines.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringDegreeSequence_Minpack" 
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringDegreeSequence_Minpack" 
 int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
@@ -34,7 +34,7 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringMinimumNumberofColors_Private" 
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringMinimumNumberofColors_Private" 
 int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 {
   int i,c = 0;
@@ -53,7 +53,7 @@ EXTERN_C_BEGIN
     MatFDColoringSL_Minpack - Uses the smallest-last (SL) coloring of minpack
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringSL_Minpack" 
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringSL_Minpack" 
 int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -92,7 +92,7 @@ EXTERN_C_BEGIN
     MatFDColoringLF_Minpack - 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringLF_Minpack" 
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringLF_Minpack" 
 int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -133,7 +133,7 @@ EXTERN_C_BEGIN
     MatFDColoringID_Minpack - 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringID_Minpack" 
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringID_Minpack" 
 int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -173,7 +173,7 @@ EXTERN_C_BEGIN
    Simplest coloring, each column of the matrix gets its own unique color.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatColoring_Natural" 
+#define  __FUNC__ /*<a name=""></a>*/"MatColoring_Natural" 
 int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   int      N,start,end,ierr,i,tag;
@@ -249,7 +249,7 @@ $     -mat_coloring_type my_color
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegister" 
+#define  __FUNC__ /*<a name=""></a>*/"MatColoringRegister" 
 int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))
 {
   int  ierr;
@@ -262,7 +262,7 @@ int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,Ma
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegisterDestroy" 
+#define  __FUNC__ /*<a name=""></a>*/"MatColoringRegisterDestroy" 
 /*@C
    MatColoringRegisterDestroy - Frees the list of coloringing routines.
 
@@ -289,7 +289,7 @@ int MatColoringRegisterDestroy(void)
 extern int MatAdjustForInodes(Mat,IS *,IS *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColoring" 
+#define  __FUNC__ /*<a name=""></a>*/"MatGetColoring" 
 /*@C
    MatGetColoring - Gets a coloring for a matrix to reduce the number of function evaluations
    needed to compute a sparse Jacobian via differencing.

@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.145 1999/11/24 21:53:31 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.146 2000/01/11 21:00:13 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -9,7 +9,7 @@
        Note this code is very similar to VecPublish_Seq()
 */
 #undef __FUNC__  
-#define __FUNC__ "VecPublish_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecPublish_MPI"
 static int VecPublish_MPI(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -41,7 +41,7 @@ static int VecPublish_MPI(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDot_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecDot_MPI"
 int VecDot_MPI(Vec xin,Vec yin,Scalar *z)
 {
   Scalar    sum,work;
@@ -58,7 +58,7 @@ int VecDot_MPI(Vec xin,Vec yin,Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecTDot_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecTDot_MPI"
 int VecTDot_MPI(Vec xin,Vec yin,Scalar *z)
 {
   Scalar    sum,work;
@@ -75,7 +75,7 @@ int VecTDot_MPI(Vec xin,Vec yin,Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetOption_MPI"
 int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI*)v->data;
@@ -135,7 +135,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecReciprocal_Default};
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreate_MPI_Private"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreate_MPI_Private"
 /*
     VecCreate_MPI_Private - Basic create routine called by VecCreate_MPI() (i.e. VecCreateMPI()),
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
@@ -201,7 +201,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "VecCreate_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreate_MPI"
 int VecCreate_MPI(Vec vv)
 {
   int ierr;
@@ -214,7 +214,7 @@ int VecCreate_MPI(Vec vv)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateMPIWithArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateMPIWithArray"
 /*@C
    VecCreateMPIWithArray - Creates a parallel, array-style vector,
    where the user provides the array space to store the vector values.
@@ -263,7 +263,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostGetLocalForm"
+#define  __FUNC__ /*<a name=""></a>*/"VecGhostGetLocalForm"
 /*@C
     VecGhostGetLocalForm - Obtains the local ghosted representation of 
     a parallel vector created with VecCreateGhost().
@@ -318,7 +318,7 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostRestoreLocalForm"
+#define  __FUNC__ /*<a name=""></a>*/"VecGhostRestoreLocalForm"
 /*@C
     VecGhostRestoreLocalForm - Restores the local ghosted representation of 
     a parallel vector obtained with VecGhostGetLocalForm().
@@ -348,7 +348,7 @@ int VecGhostRestoreLocalForm(Vec g,Vec *l)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostUpdateBegin"
+#define  __FUNC__ /*<a name=""></a>*/"VecGhostUpdateBegin"
 /*@
    VecGhostUpdateBegin - Begins the vector scatter to update the vector from
    local representation to global or global representation to local.
@@ -408,7 +408,7 @@ int VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostUpdateEnd"
+#define  __FUNC__ /*<a name=""></a>*/"VecGhostUpdateEnd"
 /*@
    VecGhostUpdateEnd - End the vector scatter to update the vector from
    local representation to global or global representation to local.
@@ -469,7 +469,7 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateGhostWithArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateGhostWithArray"
 /*@C
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space.
@@ -541,7 +541,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateGhost"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateGhost"
 /*@C
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
@@ -580,7 +580,7 @@ int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicate_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecDuplicate_MPI"
 int VecDuplicate_MPI(Vec win,Vec *v)
 {
   int     ierr;
@@ -636,7 +636,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 
 /* ------------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecCreateGhostBlockWithArray"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateGhostBlockWithArray"
 /*@C
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space. Indices in the ghost region are based on blocks.
@@ -716,7 +716,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateGhostBlock"
+#define  __FUNC__ /*<a name=""></a>*/"VecCreateGhostBlock"
 /*@C
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.

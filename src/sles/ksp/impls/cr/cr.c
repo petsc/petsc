@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.54 1999/11/24 21:54:49 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.55 2000/01/11 21:02:00 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -6,7 +6,7 @@
 #include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetUp_CR"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_CR"
 static int KSPSetUp_CR(KSP ksp)
 {
   int ierr;
@@ -19,7 +19,7 @@ static int KSPSetUp_CR(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSolve_CR"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
   int          i,maxit,pres,ierr;
@@ -123,7 +123,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPCreate_CR"
+#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_CR"
 int KSPCreate_CR(KSP ksp)
 {
   PetscFunctionBegin;

@@ -1,11 +1,11 @@
-/*$Id: destroy.c,v 1.49 2000/03/06 19:10:56 curfman Exp bsmith $*/
+/*$Id: destroy.c,v 1.50 2000/03/29 04:34:11 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectDestroy"
 /*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
 
@@ -36,7 +36,7 @@ int PetscObjectDestroy(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectView" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectView" 
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type. 
 
@@ -70,7 +70,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTypeCompare"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTypeCompare"
 /*@C
    PetscTypeCompare - Determines whether a PETSc object is of a particular type.
 

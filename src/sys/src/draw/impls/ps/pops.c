@@ -1,4 +1,4 @@
-/* $Id: pops.c,v 1.2 1999/11/24 21:52:54 bsmith Exp bsmith $*/
+/* $Id: pops.c,v 1.3 2000/01/11 20:59:17 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the Postscript Draw implementation.
@@ -7,7 +7,7 @@
 #include "src/sys/src/draw/impls/ps/psimpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenPS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawOpenPS" 
 /*@C
       DrawOpenPS - Opens a viewer that generates Postscript
 
@@ -54,7 +54,7 @@ static PetscTruth rgbfilled = PETSC_FALSE;
 (ps->currentcolor = (c),ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g setrgbcolor\n",rgb[0][c],rgb[1][c],rgb[2][c])))
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPoint_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawPoint_PS" 
 static int DrawPoint_PS(Draw draw,PetscReal x,PetscReal  y,int c)
 {
   PetscReal   xx,yy;
@@ -69,7 +69,7 @@ static int DrawPoint_PS(Draw draw,PetscReal x,PetscReal  y,int c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLine_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawLine_PS" 
 static int DrawLine_PS(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
   Draw_PS* ps = (Draw_PS*)draw->data;
@@ -85,7 +85,7 @@ static int DrawLine_PS(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscRea
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringSetSize_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawStringSetSize_PS" 
 static int DrawStringSetSize_PS(Draw draw,PetscReal x,PetscReal  y)
 {
   Draw_PS* ps = (Draw_PS*)draw->data;
@@ -99,7 +99,7 @@ static int DrawStringSetSize_PS(Draw draw,PetscReal x,PetscReal  y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringGetSize_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawStringGetSize_PS" 
 static int DrawStringGetSize_PS(Draw draw,PetscReal *x,PetscReal  *y)
 {
   PetscReal   w = 9,h = 9;
@@ -111,7 +111,7 @@ static int DrawStringGetSize_PS(Draw draw,PetscReal *x,PetscReal  *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawString_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawString_PS" 
 static int DrawString_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   Draw_PS* ps = (Draw_PS*)draw->data;
@@ -127,7 +127,7 @@ static int DrawString_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringVertical_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawStringVertical_PS" 
 static int DrawStringVertical_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   Draw_PS* ps = (Draw_PS*)draw->data;
@@ -145,7 +145,7 @@ static int DrawStringVertical_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *
 static int DrawInterpolatedTriangle_PS(Draw_PS*,PetscReal,PetscReal,int,PetscReal,PetscReal,int,PetscReal,PetscReal,int);
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTriangle_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawTriangle_PS" 
 static int DrawTriangle_PS(Draw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
                           PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
@@ -171,7 +171,7 @@ static int DrawTriangle_PS(Draw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawDestroy_PS" 
 static int DrawDestroy_PS(Draw draw)
 {
   Draw_PS    *ps = (Draw_PS*)draw->data;
@@ -194,7 +194,7 @@ static int DrawDestroy_PS(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSynchronizedFlush_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSynchronizedFlush_PS" 
 static int DrawSynchronizedFlush_PS(Draw draw)
 {
   int      ierr;
@@ -206,7 +206,7 @@ static int DrawSynchronizedFlush_PS(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSynchronizedClear_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSynchronizedClear_PS" 
 static int DrawSynchronizedClear_PS(Draw draw)
 {
   int      ierr;
@@ -251,7 +251,7 @@ static struct _DrawOps DvOps = { 0,
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DrawCreate_PS" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawCreate_PS" 
 int DrawCreate_PS(Draw draw)
 {
   Draw_PS       *ps;
@@ -421,7 +421,7 @@ EXTERN_C_END
 
 
 #undef __FUNC__  
-#define __FUNC__ "DrawInterpolatedTriangle_PS"
+#define  __FUNC__ /*<a name=""></a>*/"DrawInterpolatedTriangle_PS" 
 static int DrawInterpolatedTriangle_PS(Draw_PS* ps,PetscReal x1,PetscReal y_1,int t1,
                                 PetscReal x2,PetscReal y2,int t2,PetscReal x3,PetscReal y3,int t3)
 {

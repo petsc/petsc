@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.50 1999/10/24 14:02:16 bsmith Exp bsmith $*/
+/*$Id: mmaij.c,v 1.51 2000/01/11 21:00:41 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -7,7 +7,7 @@
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetUpMultiply_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIAIJ"
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
@@ -125,7 +125,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
 
 #undef __FUNC__  
-#define __FUNC__ "DisAssemble_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"DisAssemble_MPIAIJ"
 /*
      Takes the local part of an already assembled MPIAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix

@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.14 1999/10/24 14:01:36 bsmith Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.15 2000/01/11 20:59:43 bsmith Exp bsmith $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -27,7 +27,7 @@ extern FILE *PLogInfoFile;
 extern FILE *petsc_history;
 
 #undef __FUNC__  
-#define __FUNC__ "PLogInfo"
+#define  __FUNC__ /*<a name=""></a>*/"PLogInfo"
 /*@C
     PLogInfo - Logs informative data, which is printed to standard output
     or a file when the option -log_info <file> is specified.

@@ -1,4 +1,4 @@
-/*$Id: degree.c,v 1.16 1999/11/24 21:54:20 bsmith Exp bsmith $*/
+/*$Id: degree.c,v 1.17 2000/01/11 21:01:25 bsmith Exp bsmith $*/
 /* degree.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -26,7 +26,7 @@
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "SPARSEPACKdegree" 
+#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKdegree" 
 int SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
 {
     /* System generated locals */

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.19 2000/01/11 21:03:37 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -36,7 +36,7 @@
   User interface routines
 ****************************************************************/
 #undef __FUNC__
-#define __FUNC__ "PCmILUSetLevels"
+#define  __FUNC__ /*<a name=""></a>*/"PCmILUSetLevels"
 int PCmILUSetLevels(PC pc,int levels)
 {
   PC base_pc = (PC) pc->data;
@@ -49,7 +49,7 @@ int PCmILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__
-#define __FUNC__ "PCmILUSetBaseType"
+#define  __FUNC__ /*<a name=""></a>*/"PCmILUSetBaseType"
 int PCmILUSetBaseType(PC pc,PCType type)
 {
   PC base_pc = (PC) pc->data;
@@ -66,7 +66,7 @@ int PCmILUSetBaseType(PC pc,PCType type)
 ****************************************************************/
 
 #undef __FUNC__
-#define __FUNC__ "PCSetup_mILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetup_mILU"
 static int PCSetup_mILU(PC pc)
 {
   PC base_pc = (PC) pc->data;
@@ -140,7 +140,7 @@ static int PCSetup_mILU(PC pc)
 }
 
 #undef __FUNC__
-#define __FUNC__ "PCApply_mILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCApply_mILU"
 static int PCApply_mILU(PC pc,Vec x,Vec y)
 {
   PC base_pc = (PC) pc->data;
@@ -153,7 +153,7 @@ static int PCApply_mILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__
-#define __FUNC__ "PCDestroy_mILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_mILU"
 static int PCDestroy_mILU(PC pc)
 {
   PC base_pc = (PC) pc->data;
@@ -167,7 +167,7 @@ static int PCDestroy_mILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_mILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCView_mILU"
 static int PCView_mILU(PC pc,Viewer viewer)
 {
   PC         base_pc = (PC) pc->data;
@@ -189,7 +189,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "PCCreate_mILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCCreate_mILU"
 int PCCreate_mILU(PC pc)
 {
   PC base_pc;

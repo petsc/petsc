@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.57 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.58 2000/04/09 03:09:13 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -13,7 +13,7 @@ extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
 extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscHeaderCreate_Private"
+#define  __FUNC__ /*<a name=""></a>*/"PetscHeaderCreate_Private"
 /*
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
@@ -47,7 +47,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscHeaderDestroy_Private"
+#define  __FUNC__ /*<a name=""></a>*/"PetscHeaderDestroy_Private"
 /*
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
     the macro PetscHeaderDestroy().
@@ -78,7 +78,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectReference"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectReference"
 /*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
    referenced by another PetscObject. This increases the reference
@@ -103,7 +103,7 @@ int PetscObjectReference(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetReference"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectGetReference"
 /*@C
    PetscObjectGetReference - Gets the current reference count for 
    any PETSc object.
@@ -130,7 +130,7 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectDereference"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectDereference"
 /*@
    PetscObjectDereference - Indicates to any PetscObject that it is being
    referenced by one less PetscObject. This decreases the reference
@@ -166,7 +166,7 @@ int PetscObjectDereference(PetscObject obj)
      data structures.
 */
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetComm_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectGetComm_Petsc"
 int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 {
   PetscFunctionBegin;
@@ -175,7 +175,7 @@ int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectCompose_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectCompose_Petsc"
 int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
   int  ierr;
@@ -193,7 +193,7 @@ int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQuery_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQuery_Petsc"
 int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 {
   int ierr;
@@ -204,7 +204,7 @@ int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectComposeLanguage_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectComposeLanguage_Petsc"
 int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
 {
   PetscFunctionBegin;
@@ -217,7 +217,7 @@ int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQueryLanguage_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQueryLanguage_Petsc"
 int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
 {
   PetscFunctionBegin;
@@ -236,7 +236,7 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectComposeFunction_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectComposeFunction_Petsc"
 int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void *ptr)
 {
   int ierr;
@@ -247,7 +247,7 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const cha
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQueryFunction_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQueryFunction_Petsc"
 int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
 {
   int ierr;
@@ -261,7 +261,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
         These are the versions that are usable to any CCA compliant objects
 */
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectCompose"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectCompose"
 /*@C
    PetscObjectCompose - Associates another PETSc object with a given PETSc object. 
                        
@@ -304,7 +304,7 @@ int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQuery"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQuery"
 /*@C
    PetscObjectQuery  - Gets a PETSc object associated with a given object.
                        
@@ -334,7 +334,7 @@ int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQueryLanguage"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQueryLanguage"
 /*@C
    PetscObjectQueryLanguage - Returns a language specific interface to the given object
                        
@@ -365,7 +365,7 @@ int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectComposeLanguage"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectComposeLanguage"
 /*@C
    PetscObjectComposeLanguage - Sets a language specific interface to the given object
                        
@@ -395,7 +395,7 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectComposeFunction"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectComposeFunction"
 int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void *ptr)
 {
   int ierr;
@@ -406,7 +406,7 @@ int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fnam
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectQueryFunction"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectQueryFunction"
 /*@C
    PetscObjectQueryFunction - Gets a function associated with a given object.
                        
@@ -438,7 +438,7 @@ int PetscObjectQueryFunction(PetscObject obj,const char name[],void **ptr)
 /* -------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDataTypeToMPIDataType"
+#define  __FUNC__ /*<a name=""></a>*/"PetscDataTypeToMPIDataType"
 int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
   PetscFunctionBegin;
@@ -463,7 +463,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDataTypeGetSize"
+#define  __FUNC__ /*<a name=""></a>*/"PetscDataTypeGetSize"
 int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 {
   PetscFunctionBegin;
@@ -488,7 +488,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDataTypeGetName"
+#define  __FUNC__ /*<a name=""></a>*/"PetscDataTypeGetName"
 int PetscDataTypeGetName(PetscDataType ptype,char *name[])
 {
   PetscFunctionBegin;
@@ -518,7 +518,7 @@ struct _p_PetscObjectContainer {
 };
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectContainerGetPointer"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectContainerGetPointer"
 /*@C
    PetscObjectContainerGetPointer - Gets the pointer value contained in the container.
 
@@ -544,7 +544,7 @@ int PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectContainerSetPointer"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectContainerSetPointer"
 /*@C
    PetscObjectContainerSetPointer - Sets the pointer value contained in the container.
 
@@ -567,7 +567,7 @@ int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectContainerDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectContainerDestroy"
 /*@C
    PetscObjectContainerDestroy - Destroys a PETSc container object.
 
@@ -589,7 +589,7 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectContainerCreate"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectContainerCreate"
 /*@C
    PetscObjectContainerCreate - Creates a PETSc object that has room to hold
    a single pointer. This allows one to attach any type of data (accessible

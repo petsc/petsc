@@ -1,9 +1,9 @@
-/*$Id: viewa.c,v 1.9 1999/10/24 14:01:08 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.10 2000/01/11 20:59:04 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSetFormat"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerSetFormat" 
 /*@C
    ViewerSetFormat - Sets the format for viewers.
 
@@ -63,7 +63,7 @@ int ViewerSetFormat(Viewer viewer,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerPushFormat"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerPushFormat" 
 /*@C
    ViewerPushFormat - Sets the format for file viewers.
 
@@ -120,7 +120,7 @@ int ViewerPushFormat(Viewer viewer,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerPopFormat"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerPopFormat" 
 /*@C
    ViewerPopFormat - Resets the format for file viewers.
 
@@ -148,7 +148,7 @@ int ViewerPopFormat(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIGetOutputname"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerASCIIGetOutputname" 
 int ViewerGetOutputname(Viewer viewer,char **name)
 {
   PetscFunctionBegin;
@@ -157,7 +157,7 @@ int ViewerGetOutputname(Viewer viewer,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetFormat"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerGetFormat" 
 int ViewerGetFormat(Viewer viewer,int *format)
 {
   PetscFunctionBegin;

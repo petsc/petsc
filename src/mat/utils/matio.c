@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.64 1999/11/10 03:19:57 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.65 2000/01/11 21:01:18 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -12,7 +12,7 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
            {0,0,0,0,0,0,0,0,0,0,0,0};
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadRegister"
+#define  __FUNC__ /*<a name=""></a>*/"MatLoadRegister"
 /*@C
     MatLoadRegister - Allows one to register a routine that reads matrices
         from a binary file for a particular matrix type.
@@ -37,7 +37,7 @@ int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadPrintHelp_Private"
+#define  __FUNC__ /*<a name=""></a>*/"MatLoadPrintHelp_Private"
 static int MatLoadPrintHelp_Private(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
@@ -53,7 +53,7 @@ static int MatLoadPrintHelp_Private(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoad"
+#define  __FUNC__ /*<a name=""></a>*/"MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.

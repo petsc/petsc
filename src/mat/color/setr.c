@@ -1,4 +1,4 @@
-/*$Id: setr.c,v 1.9 1999/10/24 14:02:33 bsmith Exp bsmith $*/
+/*$Id: setr.c,v 1.10 1999/11/05 14:46:11 bsmith Exp bsmith $*/
 
 /* setr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
@@ -6,7 +6,7 @@
 #include "src/mat/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKsetr" 
+#define  __FUNC__ /*<a name=""></a>*/"MINPACKsetr" 
 int MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* iwa)
 {
     /* System generated locals */

@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.82 1999/11/24 21:54:53 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.83 2000/01/11 21:02:07 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -7,7 +7,7 @@
 #include "src/sles/ksp/impls/cheby/chebctx.h"
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetUp_Chebychev"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
   int ierr;
@@ -20,7 +20,7 @@ int KSPSetUp_Chebychev(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
+#define  __FUNC__ /*<a name=""></a>*/"KSPChebychevSetEigenvalues_Chebychev"
 int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
@@ -33,7 +33,7 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "KSPChebychevSetEigenvalues"
+#define  __FUNC__ /*<a name=""></a>*/"KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -62,7 +62,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 }
 
 #undef __FUNC__
-#define __FUNC__ "KSPSolve_Chebychev"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
@@ -175,7 +175,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_Chebychev" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPView_Chebychev" 
 int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
@@ -194,7 +194,7 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPCreate_Chebychev"
+#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
   int           ierr;

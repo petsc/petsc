@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.42 1999/11/16 22:12:00 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.43 2000/01/11 21:03:30 bsmith Exp bsmith $*/
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
@@ -10,7 +10,7 @@ extern int DAGetColoring2d(DA,ISColoring *,Mat *);
 extern int DAGetColoring3d(DA,ISColoring *,Mat *);
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring" 
+#define  __FUNC__ /*<a name=""></a>*/"DAGetColoring" 
 /*@C
     DAGetColoring - Gets the coloring required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
@@ -79,7 +79,7 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring2d" 
+#define  __FUNC__ /*<a name=""></a>*/"DAGetColoring2d" 
 int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
@@ -178,7 +178,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring3d" 
+#define  __FUNC__ /*<a name=""></a>*/"DAGetColoring3d" 
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
@@ -277,7 +277,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
       The difference is that we don't have max and min inside the loops
 */
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring2d_1" 
+#define  __FUNC__ /*<a name=""></a>*/"DAGetColoring2d_1" 
 int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,i1,slot,gxs,gys,ys1,ny1;
@@ -508,7 +508,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring1d" 
+#define  __FUNC__ /*<a name=""></a>*/"DAGetColoring1d" 
 int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,nx,*colors,i,i1,slot,gxs,gnx;           

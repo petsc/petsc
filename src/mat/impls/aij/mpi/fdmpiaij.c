@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.28 1999/11/05 14:45:21 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.29 2000/01/11 21:00:41 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -8,7 +8,7 @@ extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*
 extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate_MPIAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate_MPIAIJ"
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;

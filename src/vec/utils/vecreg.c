@@ -1,4 +1,4 @@
-/*$Id: vecreg.c,v 1.11 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: vecreg.c,v 1.12 2000/02/02 20:08:39 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
@@ -17,7 +17,7 @@ EXTERN_C_END
 extern PetscTruth VecRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ "VecRegisterAll"
+#define  __FUNC__ /*<a name=""></a>*/"VecRegisterAll"
 /*@C
   VecRegisterAll - Registers all of the Vec components in the PETSc package.
 

@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.19 1999/11/24 21:55:24 bsmith Exp bsmith $*/
+/*$Id: euler.c,v 1.20 2000/01/11 21:02:58 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -9,7 +9,7 @@ typedef struct {
 } TS_Euler;
 
 #undef __FUNC__  
-#define __FUNC__ "TSSetUp_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSSetUp_Euler"
 static int TSSetUp_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -21,7 +21,7 @@ static int TSSetUp_Euler(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSStep_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSStep_Euler"
 static int TSStep_Euler(TS ts,int *steps,double *time)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -48,7 +48,7 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "TSDestroy_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSDestroy_Euler"
 static int TSDestroy_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -62,7 +62,7 @@ static int TSDestroy_Euler(TS ts)
 /*------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_Euler"
 static int TSSetFromOptions_Euler(TS ts)
 {
   PetscFunctionBegin;
@@ -70,7 +70,7 @@ static int TSSetFromOptions_Euler(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPrintHelp_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSPrintHelp_Euler"
 static int TSPrintHelp_Euler(TS ts,char *p)
 {
   PetscFunctionBegin;
@@ -78,7 +78,7 @@ static int TSPrintHelp_Euler(TS ts,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSView_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSView_Euler"
 static int TSView_Euler(TS ts,Viewer viewer)
 {
   PetscFunctionBegin;
@@ -88,7 +88,7 @@ static int TSView_Euler(TS ts,Viewer viewer)
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "TSCreate_Euler"
+#define  __FUNC__ /*<a name=""></a>*/"TSCreate_Euler"
 int TSCreate_Euler(TS ts)
 {
   TS_Euler *euler;

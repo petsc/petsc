@@ -1,9 +1,9 @@
-/*$Id: eige.c,v 1.22 1999/11/05 14:46:35 bsmith Exp bsmith $*/
+/*$Id: eige.c,v 1.23 2000/01/11 21:01:56 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPComputeExplicitOperator"
+#define  __FUNC__ /*<a name=""></a>*/"KSPComputeExplicitOperator"
 /*@
     KSPComputeExplicitOperator - Computes the explicit preconditioned operator.  
 
@@ -87,7 +87,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 #include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ "KSPComputeEigenvaluesExplicitly"
+#define  __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
    preconditioned operator using LAPACK.  

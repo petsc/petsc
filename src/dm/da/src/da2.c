@@ -1,9 +1,9 @@
-/*$Id: da2.c,v 1.136 2000/02/02 20:10:29 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.137 2000/04/09 03:11:20 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetOwnershipRange"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetOwnershipRange"
 int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 {
   PetscFunctionBegin;
@@ -15,7 +15,7 @@ int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAView_2d"
+#define  __FUNC__ /*<a name=""></a>*/"DAView_2d"
 int DAView_2d(DA da,Viewer viewer)
 {
   int        rank,ierr;
@@ -110,7 +110,7 @@ int DAView_2d(DA da,Viewer viewer)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "AMSSetFieldBlock_DA"
+#define  __FUNC__ /*<a name=""></a>*/"AMSSetFieldBlock_DA"
 int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
 {
   int        ierr,dof,dim,ends[4],shift = 0,starts[] = {0,0,0,0};
@@ -160,7 +160,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "DAPublish_Petsc"
+#define  __FUNC__ /*<a name=""></a>*/"DAPublish_Petsc"
 int DAPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -182,7 +182,7 @@ int DAPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DACreate2d"
+#define  __FUNC__ /*<a name=""></a>*/"DACreate2d"
 /*@C
    DACreate2d -  Creates an object that will manage the communication of  two-dimensional 
    regular array data that is distributed across some processors.
@@ -986,7 +986,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAPrintHelp"
+#define  __FUNC__ /*<a name=""></a>*/"DAPrintHelp"
 /*@
    DAPrintHelp - Prints command line options for DA.
 
@@ -1022,7 +1022,7 @@ int DAPrintHelp(DA da)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DARefine"
+#define  __FUNC__ /*<a name=""></a>*/"DARefine"
 /*@
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.

@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.15 2000/01/20 17:00:09 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.16 2000/02/02 20:08:24 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -9,7 +9,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetenv"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetenv"
 /*@C
      OptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
@@ -83,7 +83,7 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
 static char PetscDisplay[128]; 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetDisplay" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscSetDisplay" 
 int PetscSetDisplay(void)
 {
   int        size,rank,len,ierr;
@@ -117,7 +117,7 @@ int PetscSetDisplay(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetDisplay" 
+#define  __FUNC__ /*<a name=""></a>*/"PetscGetDisplay" 
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 

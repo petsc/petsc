@@ -1,11 +1,11 @@
-/*$Id: general.c,v 1.90 2000/01/11 20:59:55 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.91 2000/02/02 20:08:33 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISDuplicate_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISDuplicate_General" 
 int ISDuplicate_General(IS is,IS *newIS)
 {
   int        ierr;
@@ -17,7 +17,7 @@ int ISDuplicate_General(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISDestroy_General" 
 int ISDestroy_General(IS is)
 {
   IS_General *is_general = (IS_General*)is->data;
@@ -32,7 +32,7 @@ int ISDestroy_General(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISIdentity_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISIdentity_General" 
 int ISIdentity_General(IS is,PetscTruth *ident)
 {
   IS_General *is_general = (IS_General*)is->data;
@@ -52,7 +52,7 @@ int ISIdentity_General(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISGetIndices_General" 
 int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
@@ -63,7 +63,7 @@ int ISGetIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISRestoreIndices_General" 
 int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
@@ -76,7 +76,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISGetSize_General" 
 int ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -87,7 +87,7 @@ int ISGetSize_General(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_General" 
 int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -122,7 +122,7 @@ int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISView_General" 
 int ISView_General(IS is,Viewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
@@ -164,7 +164,7 @@ int ISView_General(IS is,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISSort_General" 
 int ISSort_General(IS is)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -178,7 +178,7 @@ int ISSort_General(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted_General" 
+#define  __FUNC__ /*<a name=""></a>*/"ISSorted_General" 
 int ISSorted_General(IS is,PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -201,7 +201,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISIdentity_General };
 
 #undef __FUNC__  
-#define __FUNC__ "ISCreateGeneral" 
+#define  __FUNC__ /*<a name=""></a>*/"ISCreateGeneral" 
 /*@C
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.

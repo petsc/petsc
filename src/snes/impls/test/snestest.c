@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.46 1999/11/05 14:47:13 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.47 2000/01/11 21:02:37 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -11,7 +11,7 @@ typedef struct {
      matches one compute via finite differences.
 */
 #undef __FUNC__  
-#define __FUNC__ "SNESSolve_Test"
+#define  __FUNC__ /*<a name=""></a>*/"SNESSolve_Test"
 int SNESSolve_Test(SNES snes,int *its)
 {
   Mat          A = snes->jacobian,B;
@@ -63,7 +63,7 @@ int SNESSolve_Test(SNES snes,int *its)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_Test"
+#define  __FUNC__ /*<a name=""></a>*/"SNESDestroy_Test"
 int SNESDestroy_Test(SNES snes)
 {
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ int SNESDestroy_Test(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_Test"
+#define  __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_Test"
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   int ierr;
@@ -83,7 +83,7 @@ static int SNESPrintHelp_Test(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_Test"
+#define  __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test  *ls = (SNES_Test *)snes->data;
@@ -101,7 +101,7 @@ static int SNESSetFromOptions_Test(SNES snes)
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "SNESCreate_Test"
+#define  __FUNC__ /*<a name=""></a>*/"SNESCreate_Test"
 int SNESCreate_Test(SNES  snes)
 {
   SNES_Test *neP;

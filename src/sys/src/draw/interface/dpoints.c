@@ -1,11 +1,11 @@
-/*$Id: dpoints.c,v 1.27 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dpoints.c,v 1.28 2000/01/11 20:59:07 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPointSetSize" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawPointSetSize" 
 /*@
    DrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural

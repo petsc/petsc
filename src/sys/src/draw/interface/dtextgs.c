@@ -1,11 +1,11 @@
-/*$Id: dtextgs.c,v 1.25 1999/11/24 21:52:47 bsmith Exp bsmith $*/
+/*$Id: dtextgs.c,v 1.26 2000/01/11 20:59:07 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringGetSize" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawStringGetSize" 
 /*@
    DrawStringGetSize - Gets the size for charactor text.  The width is 
    relative to the user coordinates of the window; 0.0 denotes the natural

@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.14 1999/10/24 14:01:02 bsmith Exp bsmith $*/
+/*$Id: openport.c,v 1.15 2000/01/11 20:58:54 bsmith Exp bsmith $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -95,7 +95,7 @@ static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
 #undef __FUNC__  
-#define __FUNC__ "SOCKConnect_Private"
+#define  __FUNC__ /*<a name=""></a>*/"SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa; 
@@ -125,7 +125,7 @@ int SOCKConnect_Private(int portnumber)
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
 #undef __FUNC__  
-#define __FUNC__ "establish"
+#define  __FUNC__ /*<a name=""></a>*/"establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];

@@ -1,4 +1,4 @@
-/*$Id: dacorn.c,v 1.30 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: dacorn.c,v 1.31 2000/01/22 02:36:26 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DASetCoordinates"
+#define  __FUNC__ /*<a name=""></a>*/"DASetCoordinates"
 /*@
    DASetCoordinates - Sets into the DA a vector that indicates the 
       coordinates of the local nodes (NOT including ghost nodes).
@@ -40,7 +40,7 @@ int DASetCoordinates(DA da,Vec c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetCoordinates"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetCoordinates"
 /*@
    DAGetCoordinates - Gets the node coordinates associated with a DA.
 
@@ -71,7 +71,7 @@ int DAGetCoordinates(DA da,Vec *c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DASetFieldName"
+#define  __FUNC__ /*<a name=""></a>*/"DASetFieldName"
 /*@C
    DASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DA.
@@ -105,7 +105,7 @@ int DASetFieldName(DA da,int nf,const char name[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetFieldName"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetFieldName"
 /*@C
    DAGetFieldName - Gets the names of individual field components in multicomponent
    vectors associated with a DA.
@@ -137,7 +137,7 @@ int DAGetFieldName(DA da,int nf,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetCorners"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetCorners"
 /*@
    DAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.

@@ -1,4 +1,4 @@
-/*$Id: cputime.c,v 1.31 1999/11/24 21:53:07 bsmith Exp bsmith $*/
+/*$Id: cputime.c,v 1.32 2000/01/11 20:59:38 bsmith Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.
@@ -35,7 +35,7 @@
 #include <sys/times.h>
 #include <limits.h>
 #undef __FUNC__  
-#define __FUNC__ "PetscGetCPUTime"
+#define  __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
 int PetscGetCPUTime(PLogDouble *t)
 {
   struct tms temp;
@@ -52,7 +52,7 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/types.h>
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetCPUTime"
+#define  __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
 int PetscGetCPUTime(PLogDouble *t)
 {
   PetscFunctionBegin;
@@ -67,7 +67,7 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/resource.h>
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetCPUTime"
+#define  __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 

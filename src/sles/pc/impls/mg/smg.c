@@ -1,4 +1,4 @@
-/*$Id: smg.c,v 1.18 1999/11/24 21:54:37 bsmith Exp bsmith $*/
+/*$Id: smg.c,v 1.19 2000/01/11 21:01:44 bsmith Exp bsmith $*/
 /*
      Additive Multigrid V Cycle routine    
 */
@@ -14,7 +14,7 @@
 
 */
 #undef __FUNC__  
-#define __FUNC__ "MGACycle_Private"
+#define  __FUNC__ /*<a name=""></a>*/"MGACycle_Private"
 int MGACycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,its,ierr;

@@ -1,11 +1,11 @@
-/*$Id: gcomm.c,v 1.18 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: gcomm.c,v 1.19 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetComm"
+#define  __FUNC__ /*<a name=""></a>*/"PetscObjectGetComm"
 /*@C
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject, 
    regardless of the type.

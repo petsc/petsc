@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.46 1999/10/24 14:01:56 bsmith Exp bsmith $*/
+/*$Id: pvec2.c,v 1.47 2000/01/11 21:00:13 bsmith Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -36,7 +36,7 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecMDot_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecMDot_MPI"
 int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 {
   Scalar awork[128],*work = awork;
@@ -57,7 +57,7 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMTDot_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecMTDot_MPI"
 int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 {
   Scalar awork[128],*work = awork;
@@ -78,7 +78,7 @@ int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecNorm_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecNorm_MPI"
 int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI      *x = (Vec_MPI*)xin->data;
@@ -168,7 +168,7 @@ MPI_Op VecMin_Local_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "VecMax_Local"
+#define  __FUNC__ /*<a name=""></a>*/"VecMax_Local"
 void VecMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
@@ -189,7 +189,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "VecMin_Local"
+#define  __FUNC__ /*<a name=""></a>*/"VecMin_Local"
 void VecMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
@@ -209,7 +209,7 @@ void VecMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "VecMax_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecMax_MPI"
 int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 {
   int    ierr;
@@ -246,7 +246,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecMin_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecMin_MPI"
 int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
 {
   int    ierr;

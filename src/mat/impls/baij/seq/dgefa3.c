@@ -1,4 +1,4 @@
-/*$Id: dgefa3.c,v 1.14 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: dgefa3.c,v 1.15 2000/01/11 21:00:52 bsmith Exp bsmith $*/
 /*
      Inverts 3 by 3 matrix using partial pivoting.
 
@@ -14,7 +14,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "Kernel_A_gets_inverse_A_3"
+#define  __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_3"
 int Kernel_A_gets_inverse_A_3(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.79 2000/02/02 20:09:09 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.80 2000/03/14 17:31:28 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -12,7 +12,7 @@
   NOT good code reuse.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqBAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqBAIJ"
 int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
@@ -175,7 +175,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_N"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_N"
 int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -257,7 +257,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
       Version for when blocks are 7 by 7
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_7"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_7"
 int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -536,7 +536,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
       Version for when blocks are 7 by 7 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -810,7 +810,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 6 by 6
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_6"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_6"
 int MatLUFactorNumeric_SeqBAIJ_6(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -1033,7 +1033,7 @@ int MatLUFactorNumeric_SeqBAIJ_6(Mat A,Mat *B)
       Version for when blocks are 6 by 6 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1252,7 +1252,7 @@ int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 5 by 5
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_5"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_5"
 int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1428,7 +1428,7 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
       Version for when blocks are 5 by 5 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1598,7 +1598,7 @@ int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 4 by 4
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_4"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_4"
 int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1740,7 +1740,7 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
       Version for when blocks are 4 by 4 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1879,7 +1879,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 3 by 3
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_3"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_3"
 int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -1988,7 +1988,7 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
       Version for when blocks are 3 by 3 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -2094,7 +2094,7 @@ int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 2 by 2
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_2"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_2"
 int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -2182,7 +2182,7 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
       Version for when blocks are 2 by 2 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -2267,7 +2267,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
      Version for when blocks are 1 by 1.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_1"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_1"
 int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -2333,7 +2333,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactor_SeqBAIJ"
+#define  __FUNC__ /*<a name=""></a>*/"MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,PetscReal f)
 {
   Mat_SeqBAIJ    *mat = (Mat_SeqBAIJ*)A->data;

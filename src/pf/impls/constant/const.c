@@ -1,8 +1,8 @@
-/*$Id: const.c,v 1.2 2000/02/02 21:21:18 bsmith Exp bsmith $*/
+/*$Id: const.c,v 1.3 2000/04/09 03:11:43 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PFApply_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFApply_Constant"
 int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
 {
   int    i;
@@ -17,7 +17,7 @@ int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PFApplyVec_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFApplyVec_Constant"
 int PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   int ierr;
@@ -26,7 +26,7 @@ int PFApplyVec_Constant(void *value,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ "PFView_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFView_Constant"
 int PFView_Constant(void *value,Viewer viewer)
 {
   int        ierr;
@@ -44,7 +44,7 @@ int PFView_Constant(void *value,Viewer viewer)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ "PFDestroy_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFDestroy_Constant"
 int PFDestroy_Constant(void *value)
 {
   int ierr;
@@ -54,7 +54,7 @@ int PFDestroy_Constant(void *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PFSetFromOptions_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFSetFromOptions_Constant"
 int PFSetFromOptions_Constant(PF pf)
 {
   int        ierr;
@@ -68,7 +68,7 @@ int PFSetFromOptions_Constant(PF pf)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PFCreate_Constant"
+#define  __FUNC__ /*<a name=""></a>*/"PFCreate_Constant"
 int PFCreate_Constant(PF pf,void *value)
 {
   int    ierr;
@@ -87,7 +87,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PFCreate_Quick"
+#define  __FUNC__ /*<a name=""></a>*/"PFCreate_Quick"
 int PFCreate_Quick(PF pf,void* function)
 {
   int  ierr;

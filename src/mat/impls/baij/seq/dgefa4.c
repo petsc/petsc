@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.8 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: dgefa4.c,v 1.9 2000/01/11 21:00:52 bsmith Exp bsmith $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -14,7 +14,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "Kernel_A_gets_inverse_A_4"
+#define  __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_4"
 int Kernel_A_gets_inverse_A_4(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[4],*ipvt = ipvt_l-1,kb,k3;

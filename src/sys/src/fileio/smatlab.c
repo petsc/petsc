@@ -1,10 +1,10 @@
-/* $Id: smatlab.c,v 1.3 2000/01/21 19:55:07 bsmith Exp bsmith $ */
+/* $Id: smatlab.c,v 1.4 2000/04/09 03:09:11 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
 
 #undef __FUNC__
-#define __FUNC__ "PetscStartMatlab"
+#define  __FUNC__ /*<a name=""></a>*/"PetscStartMatlab"	
 /*@C
     PetscStartMatlab - starts up Matlab with a Matlab script
 

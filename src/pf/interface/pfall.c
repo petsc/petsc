@@ -1,4 +1,4 @@
-/*$Id: pfall.c,v 1.2 2000/02/02 21:21:16 bsmith Exp bsmith $*/
+/*$Id: pfall.c,v 1.3 2000/04/09 03:11:42 bsmith Exp bsmith $*/
 
 #include "pf.h"          /*I   "pf.h"   I*/
 
@@ -9,7 +9,7 @@ extern int PFCreate_Quick(PF,void*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "PFRegisterAll"
+#define  __FUNC__ /*<a name=""></a>*/"PFRegisterAll"
 /*@C
    PFRegisterAll - Registers all of the preconditioners in the PF package.
 

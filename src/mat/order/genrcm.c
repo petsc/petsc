@@ -1,4 +1,4 @@
-/*$Id: genrcm.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
+/*$Id: genrcm.c,v 1.11 2000/01/11 21:01:25 bsmith Exp bsmith $*/
 /* genrcm.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -34,7 +34,7 @@
 /*       FNROOT, RCM.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "SPARSEPACKgenrcm" 
+#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKgenrcm" 
 int SPARSEPACKgenrcm(int *neqns,int *xadj,int *adjncy,int *perm,int *mask,int *xls)
 {
     /* System generated locals */

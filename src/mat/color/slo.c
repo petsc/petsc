@@ -1,4 +1,4 @@
-/*$Id: slo.c,v 1.9 1999/10/24 14:02:33 bsmith Exp bsmith $*/
+/*$Id: slo.c,v 1.10 1999/11/05 14:46:11 bsmith Exp bsmith $*/
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
@@ -6,7 +6,7 @@
 #include "src/mat/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKslo" 
+#define  __FUNC__ /*<a name=""></a>*/"MINPACKslo" 
 int MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
          int * maxclq,	 int *iwa1,int * iwa2,int * iwa3,int * iwa4)
 {

@@ -1,11 +1,11 @@
-/*$Id: dpoint.c,v 1.22 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dpoint.c,v 1.23 2000/01/11 20:59:07 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPoint" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawPoint" 
 /*@
    DrawPoint - Draws a point onto a drawable.
 

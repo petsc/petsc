@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.143 1999/12/20 19:56:46 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.144 2000/01/11 21:01:47 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -9,7 +9,7 @@
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseDropTolerance_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetUseDropTolerance_ILU"
 int PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
   PC_ILU *ilu;
@@ -27,7 +27,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetFill_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetFill_ILU"
 int PCILUSetFill_ILU(PC pc,PetscReal fill)
 {
   PC_ILU *dir;
@@ -41,7 +41,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetMatOrdering_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetMatOrdering_ILU"
 int PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
@@ -56,7 +56,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseOrdering_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetReuseOrdering_ILU"
 int PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
@@ -70,7 +70,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseFill_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetReuseFill_ILU"
 int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
@@ -85,7 +85,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetLevels_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetLevels_ILU"
 int PCILUSetLevels_ILU(PC pc,int levels)
 {
   PC_ILU *ilu;
@@ -99,7 +99,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseInPlace_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetUseInPlace_ILU"
 int PCILUSetUseInPlace_ILU(PC pc)
 {
   PC_ILU *dir;
@@ -113,7 +113,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetAllowDiagonalFill"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetAllowDiagonalFill"
 int PCILUSetAllowDiagonalFill_ILU(PC pc)
 {
   PC_ILU *dir;
@@ -127,7 +127,7 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseDropTolerance"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetUseDropTolerance"
 /*@
    PCILUSetUseDropTolerance - The preconditioner will use an ILU 
    based on a drop tolerance.
@@ -164,7 +164,7 @@ int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetFill"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetFill"
 /*@
    PCILUSetFill - Indicate the amount of fill you expect in the factored matrix,
    where fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -205,7 +205,7 @@ int PCILUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetMatOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetMatOrdering"
 /*@
     PCILUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the ILU factorization.
@@ -240,7 +240,7 @@ int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseOrdering"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetReuseOrdering"
 /*@
    PCILUSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -275,7 +275,7 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseFill"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetReuseFill"
 /*@
    PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -309,7 +309,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetLevels"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetLevels"
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.
 
@@ -341,7 +341,7 @@ int PCILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetAllowDiagonalFill"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetAllowDiagonalFill"
 /*@
    PCILUSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
    treated as level 0 fill even if there is no non-zero location.
@@ -375,7 +375,7 @@ int PCILUSetAllowDiagonalFill(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseInPlace"
+#define  __FUNC__ /*<a name=""></a>*/"PCILUSetUseInPlace"
 /*@
    PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
    Collective on PC
@@ -418,7 +418,7 @@ int PCILUSetUseInPlace(PC pc)
 /* ------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
   int        levels,ierr,dtmax = 3;
@@ -466,7 +466,7 @@ static int PCSetFromOptions_ILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ILU"
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
   int ierr;
@@ -490,7 +490,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCView_ILU"
 static int PCView_ILU(PC pc,Viewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU*)pc->data;
@@ -531,7 +531,7 @@ static int PCView_ILU(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
   int        ierr;
@@ -622,7 +622,7 @@ static int PCSetUp_ILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_ILU"
 static int PCDestroy_ILU(PC pc)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -638,7 +638,7 @@ static int PCDestroy_ILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApply_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCApply_ILU"
 static int PCApply_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -650,7 +650,7 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_ILU"
 static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -662,7 +662,7 @@ static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_ILU"
 static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -675,7 +675,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_ILU"
+#define  __FUNC__ /*<a name=""></a>*/"PCCreate_ILU"
 int PCCreate_ILU(PC pc)
 {
   int    ierr;

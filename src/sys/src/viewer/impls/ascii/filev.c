@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.102 2000/01/11 20:58:57 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.103 2000/01/16 15:54:55 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -16,7 +16,7 @@ typedef struct {
 
 /* ----------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_ASCII"
+#define  __FUNC__ /*<a name="ViewerDestroy_ASCII"></a>*/"ViewerDestroy_ASCII" 
 int ViewerDestroy_ASCII(Viewer viewer)
 {
   int          rank,ierr;
@@ -46,7 +46,7 @@ int ViewerDestroy_ASCII(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_ASCII_Singleton"
+#define  __FUNC__ /*<a name="ViewerDestroy_ASCII_Singleton"></a>*/"ViewerDestroy_ASCII_Singleton" 
 int ViewerDestroy_ASCII_Singleton(Viewer viewer)
 {
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
@@ -57,7 +57,7 @@ int ViewerDestroy_ASCII_Singleton(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFlush_ASCII_Singleton_0"
+#define  __FUNC__ /*<a name="ViewerFlush_ASCII_Singleton_0"></a>*/"ViewerFlush_ASCII_Singleton_0" 
 int ViewerFlush_ASCII_Singleton_0(Viewer viewer)
 {
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
@@ -68,7 +68,7 @@ int ViewerFlush_ASCII_Singleton_0(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFlush_ASCII"
+#define  __FUNC__ /*<a name="ViewerFlush_ASCII"></a>*/"ViewerFlush_ASCII" 
 int ViewerFlush_ASCII(Viewer viewer)
 {
   int          rank,ierr;
@@ -88,7 +88,7 @@ int ViewerFlush_ASCII(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIGetPointer"
+#define  __FUNC__ /*<a name="ViewerASCIIGetPointer"></a>*/"ViewerASCIIGetPointer" 
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
@@ -123,7 +123,7 @@ int ViewerASCIIGetPointer(Viewer viewer,FILE **fd)
 extern FILE *petsc_history;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIPushTab" 
+#define  __FUNC__ /*<a name="ViewerASCIIPushTab"></a>*/"ViewerASCIIPushTab" 
 /*@C
     ViewerASCIIPushTab - Adds one more tab to the amount that ViewerASCIIPrintf()
      lines are tabbed.
@@ -160,7 +160,7 @@ int ViewerASCIIPushTab(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIPopTab" 
+#define  __FUNC__ /*<a name="ViewerASCIIPopTab"></a>*/"ViewerASCIIPopTab" 
 /*@C
     ViewerASCIIPopTab - Removes one tab from the amount that ViewerASCIIPrintf()
      lines are tabbed.
@@ -198,7 +198,7 @@ int ViewerASCIIPopTab(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIUseTabs" 
+#define  __FUNC__ /*<a name="ViewerASCIIUseTabs"></a>*/"ViewerASCIIUseTabs" 
 /*@C
     ViewerASCIIUseTabs - Turns on or off the use of tabs with the ASCII viewer
 
@@ -254,7 +254,7 @@ extern int         queuelength;
 extern FILE        *queuefile;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIPrintf" 
+#define  __FUNC__ /*<a name="ViewerASCIIPrintf"></a>*/"ViewerASCIIPrintf" 
 /*@C
     ViewerASCIIPrintf - Prints to a file, only from the first
     processor in the viewer
@@ -339,7 +339,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSetFilename"
+#define  __FUNC__ /*<a name="ViewerSetFilename"></a>*/"ViewerSetFilename" 
 /*@C
      ViewerSetFilename - Sets the name of the file the viewer uses.
 
@@ -370,7 +370,7 @@ int ViewerSetFilename(Viewer viewer,const char name[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetFilename"
+#define  __FUNC__ /*<a name="ViewerGetFilename"></a>*/"ViewerGetFilename" 
 /*@C
      ViewerGetFilename - Gets the name of the file the viewer uses.
 
@@ -403,7 +403,7 @@ int ViewerGetFilename(Viewer viewer,char **name)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetFilename_ASCII"
+#define  __FUNC__ /*<a name="ViewerGetFilename_ASCII"></a>*/"ViewerGetFilename_ASCII" 
 int ViewerGetFilename_ASCII(Viewer viewer,char **name)
 {
   Viewer_ASCII *vascii = (Viewer_ASCII*)viewer->data;
@@ -417,7 +417,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerSetFilename_ASCII"
+#define  __FUNC__ /*<a name="ViewerSetFilename_ASCII"></a>*/"ViewerSetFilename_ASCII" 
 int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
 {
   int          ierr,len;
@@ -458,7 +458,7 @@ int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetSingleton_ASCII"
+#define  __FUNC__ /*<a name="ViewerGetSingleton_ASCII"></a>*/"ViewerGetSingleton_ASCII" 
 int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 {
   int          rank,ierr;
@@ -492,7 +492,7 @@ int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerRestoreSingleton_ASCII"
+#define  __FUNC__ /*<a name="ViewerRestoreSingleton_ASCII"></a>*/"ViewerRestoreSingleton_ASCII" 
 int ViewerRestoreSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 {
   int          ierr;
@@ -517,7 +517,7 @@ int ViewerRestoreSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerCreate_ASCII"
+#define  __FUNC__ /*<a name="ViewerCreate_ASCII"></a>*/"ViewerCreate_ASCII" 
 int ViewerCreate_ASCII(Viewer viewer)
 {
   Viewer_ASCII *vascii;
@@ -554,7 +554,7 @@ EXTERN_C_END
 
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIISynchronizedPrintf"
+#define  __FUNC__ /*<a name="ViewerASCIISynchronizedPrintf"></a>*/"ViewerASCIISynchronizedPrintf" 
 /*@C
     ViewerASCIISynchronizedFPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the 

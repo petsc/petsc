@@ -1,11 +1,11 @@
-/*$Id: dviewp.c,v 1.35 1999/12/23 18:41:43 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.36 2000/01/11 20:59:07 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetViewPort" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSetViewPort" 
 /*@
    DrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
@@ -39,7 +39,7 @@ int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal y
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSplitViewPort" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSplitViewPort" 
 /*@
    DrawSplitViewPort - Splits a window shared by several processes into smaller
    view ports. One for each process. 
@@ -97,7 +97,7 @@ int DrawSplitViewPort(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawViewPortsCreate" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawViewPortsCreate" 
 /*@C
    DrawViewPortsCreate - Splits a window into smaller
        view ports. Each processor shares all the viewports.
@@ -169,7 +169,7 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawViewPortsDestroy" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawViewPortsDestroy" 
 /*@C
    DrawViewPortsDestroy - frees a DrawViewPorts object
 
@@ -203,7 +203,7 @@ int DrawViewPortsDestroy(DrawViewPorts *ports)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawViewPortsSet" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawViewPortsSet" 
 /*@C
    DrawViewPortsSet - sets a draw object to use a particular subport
 

@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.91 1999/11/24 21:54:47 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.92 2000/01/11 21:01:56 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -10,7 +10,7 @@
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultFreeWork"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultFreeWork"
 /*
   KSPDefaultFreeWork - Free work vectors
 
@@ -29,7 +29,7 @@ int KSPDefaultFreeWork(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetResidualNorm"
+#define  __FUNC__ /*<a name=""></a>*/"KSPGetResidualNorm"
 /*@C
    KSPGetResidualNorm - Gets the last (approximate preconditioned)
    residual norm that has been computed.
@@ -57,7 +57,7 @@ int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetIterationNumber"
+#define  __FUNC__ /*<a name=""></a>*/"KSPGetIterationNumber"
 /*@
    KSPGetIterationNumber - Gets the current iteration number (if the 
          KSPSolve() (SLESSolve()) is complete, returns the number of iterations
@@ -88,7 +88,7 @@ int KSPGetIterationNumber(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSingularValueMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSingularValueMonitor"
 /*@C
     KSPSingularValueMonitor - Prints the two norm of the true residual and
     estimation of the extreme singular values of the preconditioned problem
@@ -133,7 +133,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPVecViewMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPVecViewMonitor"
 /*@C
    KSPVecViewMonitor - Monitors progress of the KSP solvers by calling 
    VecView() for the approximate solution at each iteration.
@@ -175,7 +175,7 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultMonitor"
 /*@C
    KSPDefaultMonitor - Print the residual norm at each iteration of an
    iterative solver.
@@ -206,7 +206,7 @@ int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPTrueMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPTrueMonitor"
 /*@C
    KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
@@ -268,7 +268,7 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultSMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultSMonitor"
 /*
   Default (short) KSP Monitor, same as KSPDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -295,7 +295,7 @@ int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSkipConverged"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSkipConverged"
 /*@C
    KSPSkipConverged - Convergence test that NEVER returns as converged.
 
@@ -330,7 +330,7 @@ int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultConverged"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultConverged"
 /*@C
    KSPDefaultConverged - Determines convergence of
    the iterative solvers (default code).
@@ -388,7 +388,7 @@ int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultBuildSolution"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultBuildSolution"
 /*
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
@@ -436,7 +436,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultBuildResidual"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultBuildResidual"
 /*
    KSPDefaultBuildResidual - Default code to compute the residual.
 
@@ -472,7 +472,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultGetWork"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultGetWork"
 /*
   KSPDefaultGetWork - Gets a number of work vectors.
 
@@ -496,7 +496,7 @@ int  KSPDefaultGetWork(KSP ksp,int nw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"KSPDefaultDestroy"
 /*
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
@@ -518,7 +518,7 @@ int KSPDefaultDestroy(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetConvergedReason"
+#define  __FUNC__ /*<a name=""></a>*/"KSPGetConvergedReason"
 /*@C
    KSPGetConvergedReason - Gets the reason the KSP iteration was stopped.
 

@@ -1,8 +1,8 @@
-/*$Id: gmres2.c,v 1.24 1999/10/24 14:03:14 bsmith Exp bsmith $*/
+/*$Id: gmres2.c,v 1.25 2000/01/11 21:02:05 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetRestart" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetRestart" 
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -41,7 +41,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetOrthogonalization" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetOrthogonalization" 
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 

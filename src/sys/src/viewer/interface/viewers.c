@@ -1,4 +1,4 @@
-/*$Id: viewers.c,v 1.6 1999/11/05 14:43:47 bsmith Exp bsmith $*/
+/*$Id: viewers.c,v 1.7 2000/01/11 20:59:04 bsmith Exp bsmith $*/
 
 #include "viewer.h"
 
@@ -9,7 +9,7 @@ struct _p_Viewers {
 } ;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewersDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"ViewersDestroy" 
 /*@C
    ViewersDestroy - Destroys a set of viewers created with ViewersCreate().
 
@@ -38,7 +38,7 @@ int ViewersDestroy(Viewers v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewersCreate"
+#define  __FUNC__ /*<a name=""></a>*/"ViewersCreate" 
 /*@C
    ViewersCreate - Creates a container to hold a set of viewers.
 
@@ -71,7 +71,7 @@ int ViewersCreate(MPI_Comm comm,Viewers *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewersGetViewer"
+#define  __FUNC__ /*<a name=""></a>*/"ViewersGetViewer" 
 /*@C
    ViewersGetViewer - Gets a viewer from a viewer collection
 

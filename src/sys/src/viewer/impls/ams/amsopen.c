@@ -1,9 +1,9 @@
-/*$Id: amsopen.c,v 1.8 1999/10/24 14:01:06 bsmith Exp bsmith $*/
+/*$Id: amsopen.c,v 1.9 2000/01/11 20:59:00 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerAMSOpen"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerAMSOpen" 
 /*@C
     ViewerAMSOpen - Opens an AMS memory snooper viewer. 
 

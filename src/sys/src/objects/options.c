@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.229 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.230 2000/04/09 03:09:13 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -35,7 +35,7 @@ typedef struct {
 static OptionsTable *options = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsAtoi"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsAtoi"
 int OptionsAtoi(const char name[],int *a)
 {
   int        i,ierr,len;
@@ -76,7 +76,7 @@ int OptionsAtoi(const char name[],int *a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsAtod"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsAtod"
 int OptionsAtod(const char name[],PetscReal *a)
 {
   int        ierr,len;
@@ -109,7 +109,7 @@ int OptionsAtod(const char name[],PetscReal *a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetProgramName"
+#define  __FUNC__ /*<a name=""></a>*/"PetscGetProgramName"
 /*@C
     PetscGetProgramName - Gets the name of the running program. 
 
@@ -140,7 +140,7 @@ int PetscGetProgramName(char name[],int len)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetProgramName"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSetProgramName"
 int PetscSetProgramName(const char name[])
 { 
   char *sname = 0;
@@ -155,7 +155,7 @@ int PetscSetProgramName(const char name[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsInsertFile"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsInsertFile"
 /*@C
      OptionsInsertFile - Inserts options into the database from a file.
 
@@ -222,7 +222,7 @@ int OptionsInsertFile(const char file[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsInsert"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsInsert"
 /*
    OptionsInsert - Inserts into the options database from the command line,
                    the environmental variable and a file.
@@ -338,7 +338,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsPrint"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsPrint"
 /*@C
    OptionsPrint - Prints the options that have been loaded. This is
    useful for debugging purposes.
@@ -375,7 +375,7 @@ int OptionsPrint(FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetAll"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetAll"
 /*@C
    OptionsGetAll - Lists all the options the program was run with in a single string.
 
@@ -423,7 +423,7 @@ int OptionsGetAll(char *copts[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsDestroy"
 /*
     OptionsDestroy - Destroys the option database. 
 
@@ -455,7 +455,7 @@ int OptionsDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetValue"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsSetValue"
 /*@C
    OptionsSetValue - Sets an option name-value pair in the options 
    database, overriding whatever is already present.
@@ -545,7 +545,7 @@ int OptionsSetValue(const char iname[],const char value[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsClearValue"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsClearValue"
 /*@C
    OptionsClearValue - Clears an option name-value pair in the options 
    database, overriding whatever is already present.
@@ -598,7 +598,7 @@ int OptionsClearValue(const char iname[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetAlias"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsSetAlias"
 int OptionsSetAlias(const char inewname[],const char ioldname[])
 {
   int  ierr,len,n = options->Naliases;
@@ -623,7 +623,7 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsFindPair_Private"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsFindPair_Private"
 static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
   int        i,N,ierr,len;
@@ -661,7 +661,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsReject" 
+#define  __FUNC__ /*<a name=""></a>*/"OptionsReject" 
 /*@C
    OptionsReject - Generates an error if a certain option is given.
 
@@ -697,7 +697,7 @@ int OptionsReject(const char name[],const char mess[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsHasName"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsHasName"
 /*@C
    OptionsHasName - Determines whether a certain option is given in the database.
 
@@ -743,7 +743,7 @@ int OptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetInt"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetInt"
 /*@C
    OptionsGetInt - Gets the integer value for a particular option in the database.
 
@@ -785,7 +785,7 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetLogical"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetLogical"
 /*@C
    OptionsGetLogical - Gets the Logical (true or false) value for a particular 
             option in the database.
@@ -860,7 +860,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,Pets
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetDouble"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetDouble"
 /*@C
    OptionsGetDouble - Gets the double precision value for a particular 
    option in the database.
@@ -900,7 +900,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,PetscTrut
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetScalar"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetScalar"
 /*@C
    OptionsGetScalar - Gets the scalar value for a particular 
    option in the database.
@@ -964,7 +964,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetDoubleArray"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetDoubleArray"
 /*@C
    OptionsGetDoubleArray - Gets an array of double precision values for a 
    particular option in the database.  The values must be separated with 
@@ -1018,7 +1018,7 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[],int
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetIntArray"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetIntArray"
 /*@C
    OptionsGetIntArray - Gets an array of integer values for a particular 
    option in the database.  The values must be separated with commas with 
@@ -1073,7 +1073,7 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetString"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetString"
 /*@C
    OptionsGetString - Gets the string value for a particular option in
    the database.
@@ -1127,7 +1127,7 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len,Pe
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetStringArray"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsGetStringArray"
 /*@C
    OptionsGetStringArray - Gets an array of string values for a particular
    option in the database. The values must be separated with commas with 
@@ -1193,7 +1193,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsAllUsed"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsAllUsed"
 /*@C
    OptionsAllUsed - Returns a count of the number of options in the 
    database that have never been selected.
@@ -1222,7 +1222,7 @@ int OptionsAllUsed(int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsLeft"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsLeft"
 /*@
     OptionsLeft - Prints to screen any options that were set and never used.
 
@@ -1257,7 +1257,7 @@ int OptionsLeft(void)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "OptionsCreate"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsCreate"
 int OptionsCreate(void)
 {
   int ierr;

@@ -1,4 +1,4 @@
-/*$Id: spartition.c,v 1.15 1999/11/05 14:46:04 bsmith Exp bsmith $*/
+/*$Id: spartition.c,v 1.16 2000/01/30 03:42:13 bsmith Exp bsmith $*/
  
 #include "petsc.h"
 #include "mat.h"
@@ -9,7 +9,7 @@ extern int MatPartitioningCreate_Parmetis(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegisterAll" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningRegisterAll" 
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 

@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.2 2000/01/19 20:20:26 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.3 2000/02/02 20:10:37 bsmith Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -32,7 +32,7 @@
 
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridToAOData"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridToAOData"
 int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 {
   int        ierr;
@@ -66,7 +66,7 @@ int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridInput"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridInput"
 /*
        User input the cell by drawing them one at a time
 */
@@ -160,7 +160,7 @@ int AOData2dGridInput(AOData2dGrid agrid,Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridFlipCell"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridFlipCell"
 /*
    Changes the node numbering for the cell to make sure they are all in 
    clockwise ordering
@@ -196,7 +196,7 @@ int AOData2dGridFlipCells(AOData2dGrid agrid)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridAddNode"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridAddNode"
 /*
      AOData2dGridAddNode - Maintains a list of nodes given so far
 */
@@ -223,7 +223,7 @@ int AOData2dGridAddNode(AOData2dGrid agrid, double cx, double cy, int *cn)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridComputeNeighbors"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridComputeNeighbors"
 int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
   int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
@@ -326,7 +326,7 @@ int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridComputeVertexBoundary"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridComputeVertexBoundary"
 int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
   int  i,j,*count,*cell_vertex = agrid->cell_vertex,ierr;
@@ -357,7 +357,7 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridDraw"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridDraw"
 /*
      Show the numbering of the vertex, cell and edge
 */
@@ -409,7 +409,7 @@ int AOData2dGridDraw(AOData2dGrid agrid,Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridDestroy"
 /*
     Frees all the memory space allocated in AGrid
 */
@@ -430,7 +430,7 @@ int AOData2dGridDestroy(AOData2dGrid agrid)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOData2dGridCreate"
+#define  __FUNC__ /*<a name=""></a>*/"AOData2dGridCreate"
 /*
     
 */

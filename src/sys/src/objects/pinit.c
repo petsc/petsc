@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.26 2000/02/02 20:08:20 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.27 2000/02/29 16:25:42 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -29,7 +29,7 @@ int __gierr = 0;
     PETSc components
 */
 #undef __FUNC__  
-#define __FUNC__ "OptionsCheckInitial_Components"
+#define  __FUNC__ /*<a name=""></a>*/"OptionsCheckInitial_Components"
 int OptionsCheckInitial_Components(void)
 {
   MPI_Comm   comm = PETSC_COMM_WORLD;
@@ -117,7 +117,7 @@ int OptionsCheckInitial_Components(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitializeNoArguments"
+#define  __FUNC__ /*<a name=""></a>*/"PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
@@ -149,7 +149,7 @@ MPI_Op PetscMaxSum_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "PetscMaxSum_Local"
+#define  __FUNC__ /*<a name=""></a>*/"PetscMaxSum_Local"
 void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   int *xin = (int *)in,*xout = (int*)out,i,count = *cnt;
@@ -182,7 +182,7 @@ MPI_Op PetscSum_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "PetscSum_Local"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSum_Local"
 void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
@@ -205,7 +205,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitialize"
+#define  __FUNC__ /*<a name=""></a>*/"PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -380,7 +380,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFinalize"
+#define  __FUNC__ /*<a name=""></a>*/"PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().

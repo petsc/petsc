@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.18 2000/01/26 21:17:41 balay Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.19 2000/02/02 20:09:07 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -32,7 +32,7 @@ extern int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetInfo_SeqBDiag"
 int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -56,7 +56,7 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBDiag" 
+#define  __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_SeqBDiag" 
 int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -75,7 +75,7 @@ int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
  a zero)
 */
 #undef __FUNC__  
-#define __FUNC__ "MatGetRow_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetRow_SeqBDiag"
 int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -194,7 +194,7 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatRestoreRow_SeqBDiag"
 int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   PetscFunctionBegin;
@@ -209,7 +209,7 @@ int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
    routine can be used for the parallel version as well.
  */
 #undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqBDiag_Columns"
+#define  __FUNC__ /*<a name=""></a>*/"MatNorm_SeqBDiag_Columns"
 int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -264,7 +264,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatNorm_SeqBDiag"
 int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -361,7 +361,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatTranspose_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatTranspose_SeqBDiag"
 int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data,*anew;
@@ -431,7 +431,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_Binary"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_SeqBDiag_Binary"
 int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -476,7 +476,7 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_ASCII"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_SeqBDiag_ASCII"
 int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -658,7 +658,7 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_Draw"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_SeqBDiag_Draw"
 static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag  *a = (Mat_SeqBDiag*)A->data;
@@ -694,7 +694,7 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag"
+#define  __FUNC__ /*<a name=""></a>*/"MatView_SeqBDiag"
 int MatView_SeqBDiag(Mat A,Viewer viewer)
 {
   int        ierr;

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.76 2000/01/11 21:00:44 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.77 2000/02/02 20:09:02 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -17,7 +17,7 @@ typedef struct {
 } Mat_Shell;      
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellGetContext"
+#define  __FUNC__ /*<a name=""></a>*/"MatShellGetContext"
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
@@ -49,7 +49,7 @@ int MatShellGetContext(Mat mat,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_Shell"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetSize_Shell"
 int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell*)mat->data;
@@ -61,7 +61,7 @@ int MatGetSize_Shell(Mat mat,int *M,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_Shell"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetLocalSize_Shell"
 int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 {
   Mat_Shell *shell = (Mat_Shell*)mat->data;
@@ -73,7 +73,7 @@ int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_Shell"
+#define  __FUNC__ /*<a name=""></a>*/"MatDestroy_Shell"
 int MatDestroy_Shell(Mat mat)
 {
   int       ierr;
@@ -102,7 +102,7 @@ int MatDestroy_Shell(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_Shell"
+#define  __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_Shell"
 int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
 {
   int ierr,tmp;
@@ -182,7 +182,7 @@ static struct _MatOps MatOps_Values = {0,
        MatGetMaps_Petsc};
 
 #undef __FUNC__  
-#define __FUNC__ "MatCreateShell"
+#define  __FUNC__ /*<a name=""></a>*/"MatCreateShell"
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
@@ -283,7 +283,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellSetOperation"
+#define  __FUNC__ /*<a name=""></a>*/"MatShellSetOperation"
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
@@ -340,7 +340,7 @@ int MatShellSetOperation(Mat mat,MatOperation op,void *f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellGetOperation"
+#define  __FUNC__ /*<a name=""></a>*/"MatShellGetOperation"
 /*@C
     MatShellGetOperation - Gets a matrix function for a shell matrix.
 

@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.139 2000/03/09 14:19:35 curfman Exp bsmith $*/
+/*$Id: gmres.c,v 1.140 2000/04/03 03:00:14 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -37,7 +37,7 @@ static int    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
 static int    BuildGmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 #undef __FUNC__
-#define __FUNC__ "KSPSetUp_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_GMRES"
 int    KSPSetUp_GMRES(KSP ksp)
 {
   unsigned  int size,hh,hes,rs,cc;
@@ -104,7 +104,7 @@ int    KSPSetUp_GMRES(KSP ksp)
     This routine computes the initial residual
  */
 #undef __FUNC__  
-#define __FUNC__ "GMRESResidual"
+#define  __FUNC__ /*<a name=""></a>*/"GMRESResidual"
 static int GMRESResidual(KSP ksp)
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
@@ -149,7 +149,7 @@ static int GMRESResidual(KSP ksp)
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
 #undef __FUNC__  
-#define __FUNC__ "GMREScycle"
+#define  __FUNC__ /*<a name=""></a>*/"GMREScycle"
 int GMREScycle(int *itcount,KSP ksp)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
@@ -249,7 +249,7 @@ int GMREScycle(int *itcount,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSolve_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_GMRES"
 int KSPSolve_GMRES(KSP ksp,int *outits)
 {
   int       ierr,its,itcount;
@@ -300,7 +300,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy_GMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPDestroy_GMRES" 
 int KSPDestroy_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -340,7 +340,7 @@ int KSPDestroy_GMRES(KSP ksp)
      This is an internal routine that knows about the GMRES internals.
  */
 #undef __FUNC__  
-#define __FUNC__ "BuildGmresSoln"
+#define  __FUNC__ /*<a name=""></a>*/"BuildGmresSoln"
 static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
   Scalar    tt,zero = 0.0,one = 1.0;
@@ -398,7 +398,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
    Do the scalar work for the orthogonalization.  Return new residual.
  */
 #undef __FUNC__  
-#define __FUNC__ "GMRESUpdateHessenberg"
+#define  __FUNC__ /*<a name=""></a>*/"GMRESUpdateHessenberg"
 static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar    *hh,*cc,*ss,tt;
@@ -463,7 +463,7 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
 #undef __FUNC__  
-#define __FUNC__ "GMRESGetNewVectors" 
+#define  __FUNC__ /*<a name=""></a>*/"GMRESGetNewVectors" 
 static int GMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -490,7 +490,7 @@ static int GMRESGetNewVectors(KSP ksp,int it)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPBuildSolution_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPBuildSolution_GMRES"
 int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data; 
@@ -515,7 +515,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_GMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPView_GMRES" 
 int KSPView_GMRES(KSP ksp,Viewer viewer)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data; 
@@ -546,7 +546,7 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintHelp_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_GMRES"
 static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 {
   int ierr;
@@ -563,7 +563,7 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESKrylovMonitor"
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESKrylovMonitor"
 /*@C
    KSPGMRESKrylovMonitor - Calls VecView() for each direction in the 
    GMRES accumulated Krylov space.
@@ -602,7 +602,7 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 
 #if defined(PETSC_HAVE_AMS)
 #undef __FUNC__  
-#define __FUNC__ "KSPOptionsPublish_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPOptionsPublish_GMRES"
 int KSPOptionsPublish_GMRES(KSP ksp)
 {
   int       ierr;
@@ -622,7 +622,7 @@ int KSPOptionsPublish_GMRES(KSP ksp)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
   int        ierr,restart;
@@ -655,7 +655,7 @@ extern int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetRestart_GMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetRestart_GMRES" 
 int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -668,7 +668,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetOrthogonalization_GMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetOrthogonalization_GMRES" 
 int KSPGMRESSetOrthogonalization_GMRES(KSP ksp,int (*fcn)(KSP,int))
 {
   PetscFunctionBegin;
@@ -680,7 +680,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetPreAllocateVectors_GMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetPreAllocateVectors_GMRES" 
 int KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
@@ -694,7 +694,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPCreate_GMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_GMRES"
 int KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;

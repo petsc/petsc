@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.112 2000/02/02 20:10:07 bsmith Exp balay $*/
+/*$Id: tr.c,v 1.113 2000/03/27 04:37:16 balay Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -7,7 +7,7 @@
    solution lies outside the trust region, if so it halts.
 */
 #undef __FUNC__  
-#define __FUNC__ "SNES_EQ_TR_KSPConverged_Private"
+#define  __FUNC__ /*<a name=""></a>*/"SNES_EQ_TR_KSPConverged_Private"
 int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
@@ -52,7 +52,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReaso
    implementations.  
 */
 #undef __FUNC__  
-#define __FUNC__ "SNESSolve_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESSolve_EQ_TR"
 static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_EQ_TR          *neP = (SNES_EQ_TR*)snes->data;
@@ -193,7 +193,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESSetUp_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESSetUp_EQ_TR"
 static int SNESSetUp_EQ_TR(SNES snes)
 {
   int ierr;
@@ -207,7 +207,7 @@ static int SNESSetUp_EQ_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESDestroy_EQ_TR"
 static int SNESDestroy_EQ_TR(SNES snes)
 {
   int  ierr;
@@ -222,7 +222,7 @@ static int SNESDestroy_EQ_TR(SNES snes)
 /*------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_EQ_TR"
 static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
@@ -249,7 +249,7 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_EQ_TR"
 static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
   SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
@@ -269,7 +269,7 @@ static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESView_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESView_EQ_TR"
 static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 {
   SNES_EQ_TR *tr = (SNES_EQ_TR *)snes->data;
@@ -289,7 +289,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESConverged_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESConverged_EQ_TR"
 /*@C
    SNESConverged_EQ_TR - Monitors the convergence of the trust region
    method SNESEQTR for solving systems of nonlinear equations (default).
@@ -360,7 +360,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESCon
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "SNESCreate_EQ_TR"
+#define  __FUNC__ /*<a name=""></a>*/"SNESCreate_EQ_TR"
 int SNESCreate_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *neP;

@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.127 2000/02/27 02:21:44 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.128 2000/04/09 03:09:31 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -10,7 +10,7 @@
 #include "src/vec/impls/mpi/pvecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterView_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterView_MPI"
 int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 {
   VecScatter_MPI_General *to=(VecScatter_MPI_General*)ctx->todata;
@@ -83,7 +83,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   then know that we need not perform that portion of the scatter.
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterLocalOptimize_Private"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterLocalOptimize_Private"
 int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
 {
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
@@ -122,7 +122,7 @@ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Se
 
 /* --------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCopy_PtoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_PtoP"
 int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
@@ -207,7 +207,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_PtoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_PtoP"
 int VecScatterDestroy_PtoP(VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
@@ -241,7 +241,7 @@ int VecScatterDestroy_PtoP(VecScatter ctx)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP"
 int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -345,7 +345,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
 /* --------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP"
 int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -424,7 +424,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
     seen it give better performance. Accessed with the -vecscatter_rr flag.
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterPostRecvs_PtoP_X"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterPostRecvs_PtoP_X"
 int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
@@ -441,7 +441,7 @@ int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,
  
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterLocalOptimizeCopy_Private"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterLocalOptimizeCopy_Private"
 int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,int bs)
 {
   int n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
@@ -472,7 +472,7 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCopy_PtoP_X"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_PtoP_X"
 int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
@@ -628,7 +628,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP_12"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP_12"
 int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -786,7 +786,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP_12"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP_12"
 int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -893,7 +893,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP_5"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP_5"
 int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1030,7 +1030,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP_5"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP_5"
 int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1116,7 +1116,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP_4"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP_4"
 int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1248,7 +1248,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP_4"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP_4"
 int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1331,7 +1331,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP_3"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP_3"
 int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1460,7 +1460,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP_3"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP_3"
 int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1540,7 +1540,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterBegin_PtoP_2"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_PtoP_2"
 int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1659,7 +1659,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterEnd_PtoP_2"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd_PtoP_2"
 int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -1736,7 +1736,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_PtoP_X"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_PtoP_X"
 int VecScatterDestroy_PtoP_X(VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
@@ -1801,7 +1801,7 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
    this would be 1.
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCreate_PtoS"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterCreate_PtoS"
 int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
@@ -2134,7 +2134,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
          Scatter from local Seq vectors to a parallel vector. 
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCreate_StoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterCreate_StoP"
 int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
 {
   Vec_MPI                *y = (Vec_MPI *)yin->data;
@@ -2349,7 +2349,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCreate_PtoP"
+#define  __FUNC__ /*<a name=""></a>*/"VecScatterCreate_PtoP"
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   int         *lens,rank,*owners = xin->map->range,size,found;

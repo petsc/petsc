@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.44 2000/02/02 20:09:25 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.45 2000/04/09 03:10:13 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -6,7 +6,7 @@
    Simplest partitioning, keeps the current partitioning.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply_Current" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningApply_Current" 
 static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   int   ierr,m,rank,size;
@@ -25,7 +25,7 @@ static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 
 EXTERN_C_BEGIN  
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate_Current" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningCreate_Current" 
 int MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -82,7 +82,7 @@ $     -mat_partitioning_type my_part
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegister" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningRegister" 
 int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(MatPartitioning))
 {
   int  ierr;
@@ -95,7 +95,7 @@ int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(Ma
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegisterDestroy" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningRegisterDestroy" 
 /*@C
    MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
 
@@ -120,7 +120,7 @@ int MatPartitioningRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningGetType"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningGetType"
 /*@C
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
         from the partitioning context.
@@ -147,7 +147,7 @@ int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *typ
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply" 
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningApply" 
 /*@C
    MatPartitioningApply - Gets a partitioning for a matrix.
 
@@ -200,7 +200,7 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 }
  
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetAdjacency"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningSetAdjacency"
 /*@C
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
@@ -227,7 +227,7 @@ int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningDestroy"
 /*@C
    MatPartitioningDestroy - Destroys the partitioning context.
 
@@ -262,7 +262,7 @@ int MatPartitioningDestroy(MatPartitioning part)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetVertexWeights"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningSetVertexWeights"
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
@@ -297,7 +297,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningCreate"
 /*@C
    MatPartitioningCreate - Creates a partitioning context.
 
@@ -337,7 +337,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningView"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningView"
 /*@C 
    MatPartitioningView - Prints the partitioning data structure.
 
@@ -397,7 +397,7 @@ int MatPartitioningView(MatPartitioning part,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningPrintHelp"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningPrintHelp"
 /*@ 
    MatPartitioningPrintHelp - Prints all options to the partitioning object.
 
@@ -431,7 +431,7 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetType"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
 
@@ -487,7 +487,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetFromOptions"
+#define  __FUNC__ /*<a name=""></a>*/"MatPartitioningSetFromOptions"
 /*@
    MatPartitioningSetFromOptions - Sets various partitioning options from the 
         options database.

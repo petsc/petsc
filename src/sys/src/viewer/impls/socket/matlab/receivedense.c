@@ -1,4 +1,4 @@
-/*$Id: receivedense.c,v 1.8 1999/10/24 14:01:02 bsmith Exp bsmith $*/
+/*$Id: receivedense.c,v 1.9 2000/01/11 20:58:54 bsmith Exp bsmith $*/
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 
@@ -14,7 +14,7 @@
 #define ERROR(a) {fprintf(stderr,"RECEIVE %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ReceiveDenseMatrix"
+#define  __FUNC__ /*<a name=""></a>*/"ReceiveDenseMatrix"
 int ReceiveDenseMatrix(Matrix *plhs[],int t)
 {
   int    m,n,compx = 0,i;
@@ -39,7 +39,7 @@ int ReceiveDenseMatrix(Matrix *plhs[],int t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ReceiveIntDenseMatrix"
+#define  __FUNC__ /*<a name=""></a>*/"ReceiveIntDenseMatrix"
 int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
 {
   int    m,compx = 0,i,*array;

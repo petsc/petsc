@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.11 2000/01/31 04:21:06 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.12 2000/02/02 20:09:53 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -29,7 +29,7 @@ static int    BuildFgmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 */
 #undef __FUNC__  
-#define __FUNC__ "KSPSetUp_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_FGMRES"
 int    KSPSetUp_FGMRES(KSP ksp)
 {
   unsigned  int size,hh,hes,rs,cc;
@@ -119,7 +119,7 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "FGMRESResidual"
+#define  __FUNC__ /*<a name=""></a>*/"FGMRESResidual"
 static int FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -158,7 +158,7 @@ static int FGMRESResidual(KSP ksp)
 
  */
 #undef __FUNC__  
-#define __FUNC__ "FGMREScycle"
+#define  __FUNC__ /*<a name=""></a>*/"FGMREScycle"
 int FGMREScycle(int *itcount,KSP ksp)
 {
 
@@ -333,7 +333,7 @@ int FGMREScycle(int *itcount,KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "KSPSolve_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_FGMRES"
 
 int KSPSolve_FGMRES(KSP ksp,int *outits)
 {
@@ -383,7 +383,7 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy_FGMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPDestroy_FGMRES" 
 int KSPDestroy_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES*)ksp->data;
@@ -434,7 +434,7 @@ int KSPDestroy_FGMRES(KSP ksp)
      This is an internal routine that knows about the FGMRES internals.
  */
 #undef __FUNC__  
-#define __FUNC__ "BuildFgmresSoln"
+#define  __FUNC__ /*<a name=""></a>*/"BuildFgmresSoln"
 static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
   Scalar     tt,zero = 0.0,one = 1.0;
@@ -496,7 +496,7 @@ static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 	
  */
 #undef __FUNC__  
-#define __FUNC__ "FGMRESUpdateHessenberg"
+#define  __FUNC__ /*<a name=""></a>*/"FGMRESUpdateHessenberg"
 static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar     *hh,*cc,*ss,tt;
@@ -581,7 +581,7 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 
 */
 #undef __FUNC__  
-#define __FUNC__ "FGMRESGetNewVectors" 
+#define  __FUNC__ /*<a name=""></a>*/"FGMRESGetNewVectors" 
 static int FGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -639,7 +639,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "KSPBuildSolution_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPBuildSolution_FGMRES"
 int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data; 
@@ -672,7 +672,7 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 
  */
 #undef __FUNC__  
-#define __FUNC__ "KSPView_FGMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPView_FGMRES" 
 int KSPView_FGMRES(KSP ksp,Viewer viewer)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)ksp->data; 
@@ -706,7 +706,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintHelp_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_FGMRES"
 static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
 {
   PetscFunctionBegin;
@@ -724,7 +724,7 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
   int        ierr,restart;
@@ -755,7 +755,7 @@ extern int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPFGMRESSetModifyPC_FGMRES" 
+#define  __FUNC__ /*<a name=""></a>*/"KSPFGMRESSetModifyPC_FGMRES" 
 int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void *ctx,int (*d)(void*))
 {
   PetscFunctionBegin;
@@ -775,7 +775,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "KSPCreate_FGMRES"
+#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_FGMRES"
 int KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres;

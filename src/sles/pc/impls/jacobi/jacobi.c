@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.63 1999/11/24 21:54:32 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.64 2000/01/11 21:01:39 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -78,7 +78,7 @@ typedef struct {
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -154,7 +154,7 @@ static int PCSetUp_Jacobi(PC pc)
 .  pc - the preconditioner context
 */
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi_Symmetric"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi_Symmetric"
 static int PCSetUp_Jacobi_Symmetric(PC pc)
 {
   int        ierr;
@@ -177,7 +177,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 .  pc - the preconditioner context
 */
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi_NonSymmetric"
+#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi_NonSymmetric"
 static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   int        ierr;
@@ -204,7 +204,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
    Application Interface Routine: PCApply()
  */
 #undef __FUNC__  
-#define __FUNC__ "PCApply_Jacobi"
+#define  __FUNC__ /*<a name=""></a>*/"PCApply_Jacobi"
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -232,7 +232,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
 #undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
+#define  __FUNC__ /*<a name=""></a>*/"PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   int       ierr;
@@ -256,7 +256,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_Jacobi"
+#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -285,7 +285,7 @@ static int PCDestroy_Jacobi(PC pc)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_Jacobi"
+#define  __FUNC__ /*<a name=""></a>*/"PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac;

@@ -1,9 +1,9 @@
-/*$Id: view.c,v 1.33 1999/10/13 20:36:28 bsmith Exp bsmith $*/
+/*$Id: view.c,v 1.35 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerDestroy" 
 /*@C
    ViewerDestroy - Destroys a viewer.
 
@@ -38,7 +38,7 @@ int ViewerDestroy(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetType"
+#define  __FUNC__ /*<a name=""></a>*/"ViewerGetType" 
 /*@C
    ViewerGetType - Returns the type of a viewer.
 

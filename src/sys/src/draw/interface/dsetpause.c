@@ -1,11 +1,11 @@
-/*$Id: dsetpause.c,v 1.17 1999/03/17 23:21:11 bsmith Exp bsmith $*/
+/*$Id: dsetpause.c,v 1.18 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetPause" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSetPause" 
 /*@
    DrawSetPause - Sets the amount of time that program pauses after 
    a DrawPause() is called. 

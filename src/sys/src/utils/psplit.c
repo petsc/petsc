@@ -1,9 +1,9 @@
-/*$Id: psplit.c,v 1.7 1999/10/24 14:01:32 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.8 2000/01/11 20:59:39 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSplitOwnership"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSplitOwnership"
 /*@C
     PetscSplitOwnership - Given a global (or local) length determines a local 
         (or global) length via a simple formula

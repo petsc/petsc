@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.43 2000/01/11 20:59:57 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.44 2000/02/02 20:08:35 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -14,7 +14,7 @@ typedef struct {
 } IS_Block;
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISDestroy_Block" 
 int ISDestroy_Block(IS is)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -28,7 +28,7 @@ int ISDestroy_Block(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISGetIndices_Block" 
 int ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
@@ -52,7 +52,7 @@ int ISGetIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISRestoreIndices_Block" 
 int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
@@ -70,7 +70,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISGetSize_Block" 
 int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -82,7 +82,7 @@ int ISGetSize_Block(IS is,int *size)
 
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_Block" 
 int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -100,7 +100,7 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISView_Block" 
 int ISView_Block(IS is, Viewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
@@ -127,7 +127,7 @@ int ISView_Block(IS is, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISSort_Block" 
 int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -141,7 +141,7 @@ int ISSort_Block(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISSorted_Block" 
 int ISSorted_Block(IS is,PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -152,7 +152,7 @@ int ISSorted_Block(IS is,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISDuplicate_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISDuplicate_Block" 
 int ISDuplicate_Block(IS is,IS *newIS)
 {
   int      ierr;
@@ -164,7 +164,7 @@ int ISDuplicate_Block(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISIdentity_Block" 
+#define  __FUNC__ /*<a name=""></a>*/"ISIdentity_Block" 
 int ISIdentity_Block(IS is,PetscTruth *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -195,7 +195,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISView_Block,
                                ISIdentity_Block };
 #undef __FUNC__  
-#define __FUNC__ "ISCreateBlock" 
+#define  __FUNC__ /*<a name=""></a>*/"ISCreateBlock" 
 /*@C
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
@@ -261,7 +261,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetIndices" 
+#define  __FUNC__ /*<a name=""></a>*/"ISBlockGetIndices" 
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
@@ -294,7 +294,7 @@ int ISBlockGetIndices(IS in,int *idx[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockRestoreIndices" 
+#define  __FUNC__ /*<a name=""></a>*/"ISBlockRestoreIndices" 
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
@@ -322,7 +322,7 @@ int ISBlockRestoreIndices(IS is,int *idx[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetBlockSize" 
+#define  __FUNC__ /*<a name=""></a>*/"ISBlockGetBlockSize" 
 /*@
    ISBlockGetBlockSize - Returns the number of elements in a block.
 
@@ -355,7 +355,7 @@ int ISBlockGetBlockSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlock" 
+#define  __FUNC__ /*<a name=""></a>*/"ISBlock" 
 /*@C
    ISBlock - Checks whether an index set is blocked.
 
@@ -384,7 +384,7 @@ int ISBlock(IS is,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetSize" 
+#define  __FUNC__ /*<a name=""></a>*/"ISBlockGetSize" 
 /*@
    ISBlockGetSize - Returns the number of blocks in the index set.
 

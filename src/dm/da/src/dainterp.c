@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.5 1999/11/26 03:59:06 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.6 2000/01/11 21:03:19 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -8,7 +8,7 @@
 #include "mg.h"
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetInterpolation"
 int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 {
   int    ierr;
@@ -26,7 +26,7 @@ int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation_1D_dof"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_1D_dof"
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,i_start,m_f,Mx,*idx;
@@ -99,7 +99,7 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation_2D_dof"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_2D_dof"
 int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k;
@@ -223,7 +223,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation_3D_dof"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_3D_dof"
 int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k,l;
@@ -385,7 +385,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation"
+#define  __FUNC__ /*<a name=""></a>*/"DAGetInterpolation"
 /*@C
    DAGetInterpolation - Gets and interpolation matrix that maps between 
    grids associated with two DAs.

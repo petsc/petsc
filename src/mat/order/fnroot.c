@@ -1,4 +1,4 @@
-/*$Id: fnroot.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
+/*$Id: fnroot.c,v 1.11 2000/01/11 21:01:25 bsmith Exp bsmith $*/
 /* fnroot.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -30,7 +30,7 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "SPARSEPACKfnroot" 
+#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKfnroot" 
 int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {

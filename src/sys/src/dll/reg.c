@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.53 2000/02/02 20:08:15 bsmith Exp curfman $*/
+/*$Id: reg.c,v 1.54 2000/03/09 20:43:02 curfman Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -7,7 +7,7 @@
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "FListGetPathAndFunction"
+#define  __FUNC__ /*<a name=""></a>*/"FListGetPathAndFunction"
 int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   char work[256],*lfunction,ierr;
@@ -33,7 +33,7 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 DLLibraryList DLLibrariesLoaded = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitialize_DynamicLibraries"
+#define  __FUNC__ /*<a name=""></a>*/"PetscInitialize_DynamicLibraries"
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
     search path.
@@ -116,7 +116,7 @@ int PetscInitialize_DynamicLibraries(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
+#define  __FUNC__ /*<a name=""></a>*/"PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */ 
@@ -134,7 +134,7 @@ int PetscFinalize_DynamicLibraries(void)
 extern int DLLibraryRegister_Petsc(char *);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitalize_DynamicLibraries"
+#define  __FUNC__ /*<a name=""></a>*/"PetscInitalize_DynamicLibraries"
 int PetscInitialize_DynamicLibraries(void)
 {
   int ierr;
@@ -144,7 +144,7 @@ int PetscInitialize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
+#define  __FUNC__ /*<a name=""></a>*/"PetscFinalize_DynamicLibraries"
 int PetscFinalize_DynamicLibraries(void)
 {
   PetscFunctionBegin;
@@ -195,7 +195,7 @@ static FList   dlallhead = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ "FListAdd"
+#define  __FUNC__ /*<a name=""></a>*/"FListAdd"
 int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   FList   entry,ne;
@@ -256,7 +256,7 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"FListDestroy"
 /*
     FListDestroy - Destroys a list of registered routines.
 
@@ -310,7 +310,7 @@ int FListDestroy(FList fl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListDestroyAll"
+#define  __FUNC__ /*<a name=""></a>*/"FListDestroyAll"
 int FListDestroyAll(void)
 {
   FList tmp2,tmp1 = dlallhead;
@@ -327,7 +327,7 @@ int FListDestroyAll(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListFind"
+#define  __FUNC__ /*<a name=""></a>*/"FListFind"
 /*
     FListFind - Given a name, finds the matching routine.
 
@@ -433,7 +433,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[],int (**r)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListView"
+#define  __FUNC__ /*<a name=""></a>*/"FListView"
 /*
    FListView - prints out contents of an FList
 
@@ -471,7 +471,7 @@ int FListView(FList list,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListGet"
+#define  __FUNC__ /*<a name=""></a>*/"FListGet"
 /*
    FListGet - Gets an array the contains the entries in FList
 
@@ -515,7 +515,7 @@ int FListGet(FList list,char ***array,int *n)
 
 
 #undef __FUNC__  
-#define __FUNC__ "FListPrintTypes"
+#define  __FUNC__ /*<a name=""></a>*/"FListPrintTypes"
 /*
    FListPrintTypes - Prints the methods available.
 
@@ -553,7 +553,7 @@ int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[]
 }
 
 #undef __FUNC__  
-#define __FUNC__ "FListDuplicate"
+#define  __FUNC__ /*<a name=""></a>*/"FListDuplicate"
 /*
     FListDuplicate - Creates a new list from a given object list.
 
@@ -588,7 +588,7 @@ int FListDuplicate(FList fl,FList *nl)
 
 
 #undef __FUNC__  
-#define __FUNC__ "FListConcat"
+#define  __FUNC__ /*<a name=""></a>*/"FListConcat"
 /*
     FListConcat - joins name of a libary, and the path where it is located
     into a single string.

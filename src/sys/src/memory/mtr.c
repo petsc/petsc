@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.137 2000/01/11 20:59:31 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.138 2000/02/02 20:08:19 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -33,7 +33,7 @@ void *PetscLow  = (void*)0x0,*PetscHigh = (void*)0xEEEEEEEE;
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetUseTrMalloc_Private"
+#define  __FUNC__ /*<a name=""></a>*/"PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private(void)
 {
   int ierr;
@@ -123,7 +123,7 @@ EXTERN_C_END
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrValid"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrValid"
 /*@C
    PetscTrValid - Test the memory for corruption.  This can be used to
    check for memory overwrites.
@@ -201,7 +201,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrMallocDefault"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
@@ -304,7 +304,7 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrFreeDefault"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
@@ -399,7 +399,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrSpace"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -427,7 +427,7 @@ int PetscTrSpace(PLogDouble *space,PLogDouble *fr,PLogDouble *maxs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDump"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -481,7 +481,7 @@ int PetscTrDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLog"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrLog"
 /*@C
     PetscTrLog - Activates logging of all calls to malloc.
 
@@ -503,7 +503,7 @@ int PetscTrLog(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLogDump"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrLogDump"
 /*@C
     PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
     PetscGetResidentSetSize().
@@ -585,7 +585,7 @@ int PetscTrLogDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDebugLevel"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.

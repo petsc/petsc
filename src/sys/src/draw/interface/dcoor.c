@@ -1,11 +1,11 @@
-/*$Id: dcoor.c,v 1.19 1999/11/24 21:52:47 bsmith Exp bsmith $*/
+/*$Id: dcoor.c,v 1.20 2000/01/11 20:59:07 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetCoordinates" 
+#define  __FUNC__ /*<a name=""></a>*/"DrawSetCoordinates" 
 /*@
    DrawSetCoordinates - Sets the application coordinates of the corners of
    the window (or page).

@@ -1,10 +1,10 @@
-/*$Id: gcreate.c,v 1.116 1999/11/05 14:46:00 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.117 2000/01/11 21:01:18 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatCreate"
+#define  __FUNC__ /*<a name=""></a>*/"MatCreate"
 /*@C
    MatCreate - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the

@@ -1,4 +1,4 @@
-/*$Id: bread.c,v 1.1 1999/12/14 19:59:10 bsmith Exp bsmith $*/
+/*$Id: bread.c,v 1.2 2000/01/11 20:58:54 bsmith Exp bsmith $*/
 
 #include <stdio.h>
 #include "sys.h"
@@ -21,7 +21,7 @@
   SYByteSwapInt - Swap bytes in an integer
 */
 #undef __FUNC__  
-#define __FUNC__ "SYByteSwapInt"
+#define  __FUNC__ /*<a name=""></a>*/"SYByteSwapInt"
 void SYByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp;
@@ -38,7 +38,7 @@ void SYByteSwapInt(int *buff,int n)
   SYByteSwapShort - Swap bytes in a short
 */
 #undef __FUNC__  
-#define __FUNC__ "SYByteSwapShort"
+#define  __FUNC__ /*<a name=""></a>*/"SYByteSwapShort"
 void SYByteSwapShort(short *buff,int n)
 {
   int   i,j;
@@ -57,7 +57,7 @@ void SYByteSwapShort(short *buff,int n)
   Complex is dealt with as if array of double twice as long.
 */
 #undef __FUNC__  
-#define __FUNC__ "SYByteSwapScalar"
+#define  __FUNC__ /*<a name=""></a>*/"SYByteSwapScalar"
 void SYByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
@@ -77,7 +77,7 @@ void SYByteSwapScalar(Scalar *buff,int n)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryRead"
+#define  __FUNC__ /*<a name=""></a>*/"PetscBinaryRead"
 /*
     PetscBinaryRead - Reads from a binary file.
 

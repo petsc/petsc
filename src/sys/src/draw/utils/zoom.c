@@ -1,9 +1,9 @@
-/*$Id: zoom.c,v 1.11 1999/11/24 21:52:58 bsmith Exp bsmith $*/
+/*$Id: zoom.c,v 1.12 2000/01/11 20:59:21 bsmith Exp bsmith $*/
 
 #include "draw.h"     /*I "draw.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawZoom"
+#define  __FUNC__ /*<a name=""></a>*/"DrawZoom" 
 /*@C
     DrawZoom - Allows one to create a graphic that users may zoom into.
 

@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.21 1999/10/24 14:04:04 bsmith Exp balay $*/
+/*$Id: dalocal.c,v 1.22 2000/03/21 22:02:20 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DACreateLocalVector"
+#define  __FUNC__ /*<a name=""></a>*/"DACreateLocalVector"
 /*@C
    DACreateLocalVector - Creates a Seq PETSc vector that
    may be used with the DAXXX routines.

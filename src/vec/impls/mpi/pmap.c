@@ -1,4 +1,4 @@
-/*$Id: pmap.c,v 1.13 1999/10/24 14:01:56 bsmith Exp bsmith $*/
+/*$Id: pmap.c,v 1.14 2000/01/11 21:00:13 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for basic map object implementation.
@@ -8,7 +8,7 @@
 #include "src/vec/vecimpl.h"   /*I  "vec.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetLocalSize_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapGetLocalSize_MPI"
 int MapGetLocalSize_MPI(Map m,int *n)
 {
   PetscFunctionBegin;
@@ -17,7 +17,7 @@ int MapGetLocalSize_MPI(Map m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetSize_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapGetSize_MPI"
 int MapGetSize_MPI(Map m,int *N)
 {
   PetscFunctionBegin;
@@ -26,7 +26,7 @@ int MapGetSize_MPI(Map m,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetLocalRange_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapGetLocalRange_MPI"
 int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
@@ -36,7 +36,7 @@ int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetGlobalRange_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapGetGlobalRange_MPI"
 int MapGetGlobalRange_MPI(Map m,int *range[])
 {
   PetscFunctionBegin;
@@ -45,7 +45,7 @@ int MapGetGlobalRange_MPI(Map m,int *range[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapDestroy_MPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapDestroy_MPI"
 int MapDestroy_MPI(Map m)
 {
   int ierr;
@@ -66,7 +66,7 @@ static struct _MapOps DvOps = {
             MapDestroy_MPI};
 
 #undef __FUNC__  
-#define __FUNC__ "MapCreateMPI"
+#define  __FUNC__ /*<a name=""></a>*/"MapCreateMPI"
 /*@C
    MapCreateMPI - Creates a map object.
 

@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.2 2000/02/04 21:37:26 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.3 2000/04/09 03:11:44 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
 /*
@@ -7,7 +7,7 @@
 */
 
 #undef __FUNC__  
-#define __FUNC__ "PFView_String"
+#define  __FUNC__ /*<a name=""></a>*/"PFView_String"
 int PFView_String(void *value,Viewer viewer)
 {
   int        ierr;
@@ -22,7 +22,7 @@ int PFView_String(void *value,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PFDestroy_String"
+#define  __FUNC__ /*<a name=""></a>*/"PFDestroy_String"
 int PFDestroy_String(void *value)
 {
   int       ierr;
@@ -33,7 +33,7 @@ int PFDestroy_String(void *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PFStringCreateFunction"
+#define  __FUNC__ /*<a name=""></a>*/"PFStringCreateFunction"
 int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -76,7 +76,7 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PFSetFromOptions_String"
+#define  __FUNC__ /*<a name=""></a>*/"PFSetFromOptions_String"
 int PFSetFromOptions_String(PF pf)
 {
   int        ierr;
@@ -96,7 +96,7 @@ int PFSetFromOptions_String(PF pf)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PFCreate_String"
+#define  __FUNC__ /*<a name=""></a>*/"PFCreate_String"
 int PFCreate_String(PF pf,void *value)
 {
   int        ierr;

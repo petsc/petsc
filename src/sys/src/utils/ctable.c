@@ -1,4 +1,4 @@
-/*$Id: ctable.c,v 1.12 1999/11/24 21:53:08 bsmith Exp bsmith $*/
+/*$Id: ctable.c,v 1.13 2000/01/11 20:59:39 bsmith Exp bsmith $*/
 /* Contributed by - Mark Adams */
 
 #include "petsc.h"
@@ -9,7 +9,7 @@
 #define HASHT(ta,x) ((3*x)%ta->tablesize)
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableCreate"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableCreate"
 /* PetscTableCreate() ********************************************
  * 
  * hash table for non-zero data and keys 
@@ -36,7 +36,7 @@ int PetscTableCreate(const int n,PetscTable *rta)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableCreateCopy"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableCreateCopy"
 /* PetscTableCreate() ********************************************
  * 
  * hash table for non-zero data and keys 
@@ -67,7 +67,7 @@ int PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableDelete"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableDelete"
 /* PetscTableDelete() ********************************************
  * 
  *
@@ -83,7 +83,7 @@ int PetscTableDelete(PetscTable ta)
   PetscFunctionReturn(0);
 } 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableGetCount"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
  */
 int PetscTableGetCount(const PetscTable ta,int *count) 
@@ -94,7 +94,7 @@ int PetscTableGetCount(const PetscTable ta,int *count)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableIsEmpty"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableIsEmpty"
 /* PetscTableIsEmpty() ********************************************
  */
 int PetscTableIsEmpty(const PetscTable ta,int *flag) 
@@ -105,7 +105,7 @@ int PetscTableIsEmpty(const PetscTable ta,int *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableAdd"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableAdd"
 /* PetscTableAdd() ********************************************
  *
  */
@@ -164,7 +164,7 @@ int PetscTableAdd(PetscTable ta,const int key,const int data)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableRemoveAll"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableRemoveAll"
 /* PetscTableRemoveAll() ********************************************
  *
  *
@@ -184,7 +184,7 @@ int PetscTableRemoveAll(PetscTable ta)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableFind"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableFind"
 /* PetscTableFind() ********************************************
  *
  * returns data. If data==0, then no table entry exists.
@@ -210,7 +210,7 @@ int PetscTableFind(PetscTable ta,const int key,int *data)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableGetHeadPosition"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableGetHeadPosition"
 /* PetscTableGetHeadPosition() ********************************************
  *
  */
@@ -235,7 +235,7 @@ int PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTableGetNext"
+#define  __FUNC__ /*<a name=""></a>*/"PetscTableGetNext"
 /* PetscTableGetNext() ********************************************
  *
  *  - iteration - PetscTablePosition is always valid (points to a data)

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.70 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.71 2000/02/02 20:08:39 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -8,7 +8,7 @@
 
 #include "src/vec/vecimpl.h"
 #undef __FUNC__  
-#define __FUNC__ "VecGetType"
+#define  __FUNC__ /*<a name=""></a>*/"VecGetType"
 /*@C
    VecGetType - Gets the vector type name (as a string) from the vector.
 
@@ -40,7 +40,7 @@ FList      VecList = 0;
 PetscTruth VecRegisterAllCalled = PETSC_FALSE;
  
 #undef __FUNC__  
-#define __FUNC__ "VecRegisterDestroy"
+#define  __FUNC__ /*<a name=""></a>*/"VecRegisterDestroy"
 /*@C
    VecRegisterDestroy - Frees the list of Vec methods that were
    registered by VecRegisterDynamic().
@@ -114,7 +114,7 @@ int VecRegisterDestroy(void)
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecRegister"
+#define  __FUNC__ /*<a name=""></a>*/"VecRegister"
 int VecRegister(const char sname[],const char path[],const char name[],int (*function)(Vec))
 {
   int  ierr;
@@ -127,7 +127,7 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetType"
+#define  __FUNC__ /*<a name=""></a>*/"VecSetType"
 /*@C
     VecSetType - Builds a vector, for a particular vector implementation.
 

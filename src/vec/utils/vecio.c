@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.60 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.61 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -11,7 +11,7 @@
 #include "vec.h"         /*I  "vec.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecLoad"
+#define  __FUNC__ /*<a name=""></a>*/"VecLoad"
 /*@C 
   VecLoad - Loads a vector that has been stored in binary format
   with VecView().
@@ -133,7 +133,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector_Default"
+#define  __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector_Default"
 int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,(*f)(Viewer,Vec);

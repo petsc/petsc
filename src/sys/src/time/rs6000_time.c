@@ -1,4 +1,4 @@
-/*$Id: rs6000_time.c,v 1.5 2000/01/11 20:59:38 bsmith Exp balay $*/
+/*$Id: rs6000_time.c,v 1.6 2000/01/24 18:33:16 balay Exp bsmith $*/
 
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
@@ -6,7 +6,7 @@
 #include <sys/systemcfg.h>
 
 #undef __FUNC__  
-#define __FUNC__ "rs6000_time"
+#define  __FUNC__ /*<a name=""></a>*/"rs6000_time"
 PLogDouble rs6000_time(void) 
 {
    timebasestruct_t t;
