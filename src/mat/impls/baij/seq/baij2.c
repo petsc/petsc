@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.57 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: baij2.c,v 1.58 2000/04/12 04:23:32 bsmith Exp kaushik $*/
 
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1203,9 +1203,11 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
-  int         one = 1,totalnz = a->bs2*a->nz;
+  int         totalnz = a->bs2*a->nz;
 #if defined(PETSC_USE_MAT_SINGLE)
   int         i;
+#else
+  int         one = 1;
 #endif
 
   PetscFunctionBegin;
