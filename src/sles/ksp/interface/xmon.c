@@ -67,7 +67,7 @@ int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
   x = (PetscReal) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || (n % 5)) {
+  if (n < 20 || !(n % 5)) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
