@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.37 1999/01/04 21:47:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: iscoloring.c,v 1.38 1999/01/13 16:21:49 curfman Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -352,6 +352,9 @@ int ISPartitioningCount(IS part,int count[])
     each process will generate its own new IS that consists only of
     itself.
 
+.keywords: IS, index set, gather
+
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
 @*/
 int ISAllGather(IS is,IS *isout)
 {

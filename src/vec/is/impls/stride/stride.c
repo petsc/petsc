@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.75 1998/12/04 23:23:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.76 1998/12/17 22:08:02 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -261,7 +261,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 .keywords: IS, index set, create, stride
 
-.seealso: ISCreateGeneral(), ISCreateBlock()
+.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
 int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {

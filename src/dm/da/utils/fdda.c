@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.30 1998/04/21 13:23:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.31 1998/04/27 14:50:14 curfman Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -22,9 +22,11 @@ extern int DAGetColoring3d(DA,ISColoring *,Mat *);
 .   da - the distributed array
 
     Output Parameters:
-+   coloring - matrix coloring for compute Jacobians
--   J  - matrix with the correct nonzero structured 
-      (obviously without the correct Jacobian values)
++   coloring - matrix coloring for use in computing Jacobians
+-   J  - matrix with the correct nonzero structure
+        (obviously without the correct Jacobian values)
+
+.seealso ISColoringView(), ISColoringGetIS()
 
 @*/
 int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
