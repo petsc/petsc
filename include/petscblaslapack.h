@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.23 1996/09/12 16:28:52 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.26 1997/04/03 22:15:28 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -6,7 +6,7 @@ This file also deals with different Fortran 77 naming conventions on machines.
 
    Another problem is charactor strings are represented differently on 
 on some machines in C and Fortran 77. This problem comes up on the 
-Cray T3D.  Yet another reason to hate ...
+Cray T3D/T3E.
 
 */
 #if !defined(_PLAPACK_H)
@@ -15,7 +15,7 @@ Cray T3D.  Yet another reason to hate ...
 #include "petsc.h"
 
 /*
-   This include file on the Cray T3D defines the interface between 
+   This include file on the Cray T3D/T3E defines the interface between 
   Fortran and C representations of charactor strings.
 */
 #if defined(USES_CPTOFCD)
@@ -96,7 +96,7 @@ Cray T3D.  Yet another reason to hate ...
 #if defined(USES_CPTOFCD)
 /*
    Note that this assumes that machines which use cptofcd() use 
-  the HAVE_FORTRAN_CAPS option. This is true on the Cray T3d.
+  the HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
 */
 #define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  DORMQR(_cptofcd((a),1),\
              _cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
@@ -122,6 +122,7 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
+#define LAgetrf_ DGETRF
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
@@ -181,7 +182,7 @@ Cray T3D.  Yet another reason to hate ...
 #define ZGETRS  CGETRS
 #define ZGEMM   SGEMM
 #define ZTRMV   CTRMV
-#define ZTRSL   CTRSL
+#define ZGEEV   CGEEV
 #endif
 
 #if defined(HAVE_FORTRAN_CAPS)
@@ -193,6 +194,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLswap_  ZSWAP
 #define BLaxpy_  ZAXPY
 #define BLasum_  DZASUM
+#define LAgetrf_ ZGETRF
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAgeqrf_ zgeqrf
 #define LAgetrf_ zgetrf
