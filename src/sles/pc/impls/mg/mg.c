@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.88 1999/02/01 02:49:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.89 1999/03/31 18:42:23 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -183,7 +183,7 @@ static int PCSetFromOptions_MG(PC pc)
     else if (!PetscStrcmp(buff,"full"))           mg = MGFULL;
     else if (!PetscStrcmp(buff,"kaskade"))        mg = MGKASKADE;
     else if (!PetscStrcmp(buff,"cascade"))        mg = MGKASKADE;
-    else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
+    else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",buff);
     ierr = MGSetType(pc,mg); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
