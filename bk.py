@@ -77,7 +77,7 @@ class BKOpen (action.Action):
         if line[0:4] == 'edit:':
           badLines += line
       if badLines:
-        raise RuntimeError('Could not execute \''+command+'\': '+output)
+        raise RuntimeError('Could not execute \''+command+'\':\n'+output)
 
   def shellSetAction(self, set):
     if set.tag == 'bkedit':

@@ -198,22 +198,22 @@ class BS (maker.Maker):
   def main(self):
     # add to database list of packages in current project
     try:
-      import SIDLLanguage.Parser
-      import SIDLLanguage.Visitor
-      import ANL.SIDLVisitorI.GetPackageNames
-      import ANL.SIDLCompilerI.SIDLCompiler
+##      import SIDLLanguage.Parser
+##      import SIDLLanguage.Visitor
+##      import ANL.SIDLVisitorI.GetPackageNames
+##      import ANL.SIDLCompilerI.SIDLCompiler
 
-      compiler = SIDLLanguage.Parser.Parser(ANL.SIDLCompilerI.SIDLCompiler.SIDLCompiler())
+##      compiler = SIDLLanguage.Parser.Parser(ANL.SIDLCompilerI.SIDLCompiler.SIDLCompiler())
       if argDB.has_key('installedpackages'):
         ipackages = argDB['installedpackages']
       else: ipackages = []
-      for target in self.filesets['sidl'].getFiles():
-        tree = compiler.parseFile(target)
-        v = ANL.SIDLVisitorI.GetPackageNames.GetPackageNames()
-        tree.accept(v)
-        for p in v.getnames():
-           if not p in ipackages:
-              ipackages.append(p)
+##      for target in self.filesets['sidl'].getFiles():
+##        tree = compiler.parseFile(target)
+##        v = ANL.SIDLVisitorI.GetPackageNames.GetPackageNames()
+##        tree.accept(v)
+##        for p in v.getnames():
+##           if not p in ipackages:
+##              ipackages.append(p)
       argDB['installedpackages'] = ipackages
     except: pass
 

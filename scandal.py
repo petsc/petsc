@@ -14,7 +14,7 @@ class CompileSIDL (compile.Process):
 
   def handleBabelErrors(self, command, status, output):
     if status or output.find('Error:') >= 0:
-      raise RuntimeError('Could not execute \''+command+'\': '+output)
+      raise RuntimeError('Could not execute \''+command+'\':\n'+output)
 
   def constructAction(self, source, baseFlags):
     return baseFlags
