@@ -34,11 +34,12 @@ find $tmpdir/petsc-lite -type f -name "*.html" -exec rm {} \;
 
 # Tar up the remaning files to create the 'lite' distribution
 cd $tmpdir/petsc-lite
+echo $fulldistfile | sed s/petsc/petsc-lite/
+set litefile=`echo $fulldistfile | sed s/petsc/petsc-lite/`
 /bin/tar -cf  $tmpdir/petsc-lite.tar petsc*
 gzip -f $tmpdir/petsc-lite.tar
-/bin/cp  $tmpdir/petsc-lite.tar.gz ~/
+/bin/cp  $tmpdir/petsc-lite.tar.gz $litefile
 
 
 # Clean up
-/bin/rm -rf $tmpdir/petsc-lite
-
+/bin/rm -rf $tmpdir/petsc-lite   $tmpdir/petsc-lite.tar.gz 
