@@ -172,7 +172,15 @@ usage : account usage info
 (and other b-commands and lsbatch commands)
 
 ---------
+University of Bergen
 
+SGI Origin 2000
+machine  : ask.ii.uib.no ,dontask
+userid   : bsmith
+password : petsc-password
+Scheduler: lsf (similar to NCSA - commands: bjobs, bqueues etc)
+
+---------
 UT account:
   use seaboard.pe.utexas.edu (also have brazos.pe.utexas.edu  and frankfort)
   login ID: bsmith
