@@ -256,6 +256,7 @@ runex2_2:
 	      else echo "Possible problem with ex2_2 for" $$mattype", -np="$$np", diffs above"; fi; \
 	      $(RM) -f ex2_2.tmp; \
 	  done; \
+
 	done;
 runex3:
 	-@$(MPIRUN) ex3 > ex3_1.tmp 2>&1;   \
@@ -424,11 +425,23 @@ runex48:
 	  if (diff /dev/null ex48_1.tmp) then true; \
 	  else echo "Possible problem with ex48_1, diffs above"; fi; \
 	  $(RM) -f ex48_1.tmp
+
+MATBLOCKSIZE   = 1 2 3 4 5 6
+MATSIZE        = 11 47
+OVERLAP        = 1 3
+NODOMAINS      = 7
 runex51:
-	-@$(MPIRUN)  ex51 -mat_block_size 1 -ov 1  > ex51_1.tmp 2>&1; \
-	  $(MPIRUN)  ex51 -mat_block_size 2 -ov 2 >> ex51_1.tmp 2>&1; \
-	  $(MPIRUN)  ex51 -mat_block_size 3 -ov 2 >> ex51_1.tmp 2>&1; \
-	  $(MPIRUN)  ex51 -mat_block_size 5 -ov 3 >> ex51_1.tmp 2>&1; \
+	-@touch ex51_1.tmp;\
+	for bs in $(MATBLOCKSIZE); do \
+	    for matsize in $(MATSIZE); do \
+	      for ov in $(OVERLAP); do\
+	        for nd in $(NODOMAINS); do \
+	          $(MPIRUN)  ex51 -mat_block_size $$bs -ov $$ov \
+                     -mat_size $$matsize -nd $$nd >> ex51_1.tmp 2>&1; \
+		done;\
+	      done;\
+	    done;\
+	done;\
 	  grep -v "flg =1" ex51_1.tmp > ex51_12.tmp; \
 	  if (diff /dev/null  ex51_12.tmp) then true; \
 	  else echo "Possible problem with ex51_1, diffs above"; fi; \
