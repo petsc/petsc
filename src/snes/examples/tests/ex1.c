@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.67 1999/05/04 20:36:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.68 1999/09/27 21:31:55 bsmith Exp balay $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -145,6 +145,9 @@ int main( int argc, char **argv )
     efficiently using a coloring of the columns of the matrix.
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
+
+  if (matrix_free && fd_coloring)  SETERRA(1,0,"Use only one of -snes_mf, -snes_fd_coloring options!");
+
   if (fd_coloring) {
     ISColoring   iscoloring;
     MatStructure str;
