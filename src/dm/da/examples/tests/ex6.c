@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.21 1996/06/27 20:52:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.22 1996/07/08 22:23:55 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -41,7 +41,8 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-test_order",&test_order); CHKERRA(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,&da); CHKERRA(ierr);
+  ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,
+                    PETSC_NULL,PETSC_NULL,PETSC_NULL,&da); CHKERRA(ierr);
   ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);

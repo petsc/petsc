@@ -87,30 +87,30 @@ ex9: ex9.o  chkopts
 	$(RM) ex9.o
 
 runex1:
-	-@$(MPIRUN) ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 runex1f:
-	-@$(MPIRUN) ex1f -snes_smonitor > ex1f_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex1f -snes_smonitor > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp
 runex2:
-	-@$(MPIRUN) ex2 -nox -snes_cancelmonitors -snes_smonitor \
+	-@$(MPIRUN) -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor \
 		 -snes_view -pc_type jacobi >ex2_1.tmp 2>&1;	\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) ex2 -nox -snes_cancelmonitors -snes_smonitor \
+	-@$(MPIRUN) -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor \
 		-snes_type tr -snes_view \
 		-pc_type jacobi > ex2_2.tmp 2>&1; \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
 runex3:
-	-@$(MPIRUN) ex3 -nox -snes_cancelmonitors -snes_smonitor  > ex3_1.tmp 2>&1;	  \
+	-@$(MPIRUN) -np 1 ex3 -nox -snes_cancelmonitors -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
@@ -126,23 +126,23 @@ runex3_3:
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   $(RM) -f ex3_3.tmp
 runex4:
-	-@$(MPIRUN) ex4 -nox > ex4_1.tmp 2>&1;	 \
+	-@$(MPIRUN) -np 1 ex4 -nox > ex4_1.tmp 2>&1;	 \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   $(RM) -f ex4_1.tmp
 runex4_2:
-	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_type tr > ex4_2.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex4 -snes_smonitor -nox -snes_type tr > ex4_2.tmp 2>&1;\
 	   if (diff output/ex4_2.out ex4_2.tmp) then true; \
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   $(RM) -f ex4_2.tmp
 runex4_3:
-	-@$(MPIRUN) ex4 -snes_smonitor -mat_coloring sl -nox -snes_fd_coloring -mx 8 -my 11 \
+	-@$(MPIRUN) -np 1 ex4 -snes_smonitor -mat_coloring sl -nox -snes_fd_coloring -mx 8 -my 11 \
                 > ex4_3.tmp 2>&1;\
 	   if (diff output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   $(RM) -f ex4_3.tmp
 runex4f:
-	-@$(MPIRUN) ex4f -snes_smonitor -nox -snes_type tr > ex4f_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex4f -snes_smonitor -nox -snes_type tr > ex4f_1.tmp 2>&1;\
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi; \
 	   $(RM) -f ex4f_1.tmp
@@ -199,12 +199,12 @@ runex5f_3:
 	   else echo "Possible problem with ex5f_3, diffs above"; fi; \
 	   $(RM) -f ex5f_3.tmp
 runex6:
-	-@$(MPIRUN) ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   $(RM) -f ex6_1.tmp
 runex6_2:
-	-@$(MPIRUN) ex6 -snes_mf -snes_smonitor > ex6_2.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex6 -snes_mf -snes_smonitor > ex6_2.tmp 2>&1;   \
 	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   $(RM) -f ex6_2.tmp

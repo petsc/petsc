@@ -40,7 +40,7 @@ ex4: ex4.o  chkopts
 	$(RM) -f ex4.o
 
 runex1:
-	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
@@ -55,7 +55,7 @@ runex1_3:
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   $(RM) -f ex1_3.tmp
 runex2:
-	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1  ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   $(RM) -f ex2_1.tmp

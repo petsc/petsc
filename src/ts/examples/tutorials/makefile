@@ -30,13 +30,13 @@ ex1f: ex1f.o  chkopts
 	$(RM) ex1f.o
 
 runex1:
-	-@$(MPIRUN) ex1  > ex1_1.tmp 2>&1;	  \
+	-@$(MPIRUN) -np 1 ex1  > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 
 runex1f:
-	-@$(MPIRUN) ex1f  > ex1f_1.tmp 2>&1;	  \
+	-@$(MPIRUN) -np 1 ex1f  > ex1f_1.tmp 2>&1;	  \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp

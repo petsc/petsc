@@ -20,13 +20,13 @@ EXAMPLESC       =
 EXAMPLESF       =
 
 runex1:
-	-@$(MPIRUN) ex1
+	-@$(MPIRUN) -np 1 ex1
 runex2:
-	-@$(MPIRUN) ex2
+	-@$(MPIRUN) -np 1 ex2
 runex3:
-	-@$(MPIRUN) ex3
+	-@$(MPIRUN) -np 1 ex3
 runex4:
-	-@$(MPIRUN) ex4
+	-@$(MPIRUN) -np 1 ex4
 runex4_2:
 	-@$(MPIRUN) -np 2 ex4
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.69 1997/01/01 03:39:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.70 1997/01/06 20:41:43 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -513,7 +513,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   if (x == PETSC_DECIDE || y == PETSC_DECIDE) {
     /*
        PETSc tries to place windows starting in the upper left corner and 
-       moving accross to the right. 
+       moving across to the right. 
     
               --------------------------------------------
               |  Region used so far +xavailable,yavailable |

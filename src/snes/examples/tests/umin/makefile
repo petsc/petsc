@@ -47,27 +47,27 @@ ex4: ex4.o $(FOBJ4) chkopts
 	$(RM) ex4.o $(FOBJ4)
 
 runex1:
-	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_type umls > ex1_2.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex1 -nox -snes_smonitor -snes_type umls > ex1_2.tmp 2>&1;\
            if (diff output/ex1_2.out ex1_2.tmp) then true; \
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
 runex2:
-	-@$(MPIRUN) ex2 -p 1 -snes_smonitor > ex2_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex2 -p 1 -snes_smonitor > ex2_1.tmp 2>&1;   \
            if (diff output/ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) ex2 -p 1 -snes_smonitor -snes_type umls > ex2_2.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex2 -p 1 -snes_smonitor -snes_type umls > ex2_2.tmp 2>&1;\
            if (diff output/ex2_2.out ex2_2.tmp) then true; \
            else echo "Possible problem with ex2_2, diffs above"; fi; \
            $(RM) -f ex2_2.tmp
 runex2_3:
-	-@$(MPIRUN) ex2 -p 1 -snes_smonitor -snes_type umls -snes_mf > ex2_3.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -snes_mf > ex2_3.tmp 2>&1;\
            if (diff output/ex2_3.out ex2_3.tmp) then true; \
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            $(RM) -f ex2_3.tmp

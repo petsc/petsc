@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.6 1997/02/04 21:26:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.7 1997/02/05 22:05:18 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -160,6 +160,8 @@ $         DA_YPERIODIC, DA_XYPERIODIC
          (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
+.  lx, ly, lz - arrays containing the number of nodes in each cell along
+$           the x, y, and z coordinates, or PETSC_NUL
 
    Output Parameter:
 .  inra - the resulting array object
@@ -168,8 +170,8 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M, int N, int P,int m,int n, int p,int w, int s, SDA *sda)
+int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
+                int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
 {
   int        ierr,ntmp,*idx;
   DA         da;
@@ -182,7 +184,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscInitialize(&argc,&args,0,0);
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
-  ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,&da);CHKERRQ(ierr);
+  ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */

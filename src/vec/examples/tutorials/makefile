@@ -102,7 +102,7 @@ ex11: ex11.o  chkopts
 	$(RM) -f ex11.o
 
 runex1:
-	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
@@ -112,7 +112,7 @@ runex1_2:
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   $(RM) -f ex1_2.tmp
 runex1f:
-	-@$(MPIRUN)  ex1f > ex1f_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex1f > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp
@@ -122,7 +122,7 @@ runex1f_2:
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
 	   $(RM) -f ex1f_2.tmp
 runex2:
-	-@$(MPIRUN)  -np 2 ex2 > ex2_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 2 ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   $(RM) -f ex2_1.tmp
@@ -142,12 +142,12 @@ runex3f:
 	   else echo "Possible problem with ex3f_1, diffs above"; fi;\
 	   $(RM) -f ex3f_1.tmp
 runex4f:
-	-@$(MPIRUN) ex4f > ex4f_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex4f > ex4f_1.tmp 2>&1;\
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
 	   $(RM) -f ex4f_1.tmp
 runex5:
-	-@$(MPIRUN) ex5 > ex5_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex5 > ex5_1.tmp 2>&1;\
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi;\
 	   $(RM) -f ex5_1.tmp vector.dat
@@ -157,7 +157,7 @@ runex5_2:
 	   else echo "Possible problem with ex5_2, diffs above"; fi;\
 	   $(RM) -f ex5_2.tmp vector.dat
 runex6:
-	-@$(MPIRUN) ex6 > ex6_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex6 > ex6_1.tmp 2>&1;\
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi;\
 	   $(RM) -f ex6_1.tmp input.dat

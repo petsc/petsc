@@ -40,16 +40,16 @@ ex2f: ex2f.o chkopts
 	$(RM) -f ex2f.o
 
 runex1:
-	-@$(MPIRUN)  ex1 
+	-@$(MPIRUN) -np 1  ex1 
 
 runex1f:
-	-@$(MPIRUN)  ex1f 
+	-@$(MPIRUN) -np 1  ex1f 
 
 
 runex2:
-	-@$(MPIRUN)  ex2 
+	-@$(MPIRUN) -np 1  ex2 
 
 runex2f:
-	-@$(MPIRUN)  ex2f 
+	-@$(MPIRUN) -np 1  ex2f 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -138,17 +138,17 @@ ex24: ex24.o ex24f.o chkopts
 	$(RM) -f ex24.o ex24f.o
 
 runex1:
-	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN)  -np 2 ex1 > ex1_2.tmp 2>&1;\
+	-@$(MPIRUN) -np 2 ex1 > ex1_2.tmp 2>&1;\
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   $(RM) -f ex1_2.tmp
 runex2:
-	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1  ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   $(RM) -f ex2_1.tmp
@@ -168,17 +168,17 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi;\
 	   $(RM) -f ex5_1.tmp
 runex6:
-	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1  ex6 > ex6_1.tmp 2>&1;\
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi;\
 	   $(RM) -f ex6_1.tmp
 runex7:
-	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1  ex7 > ex7_1.tmp 2>&1;\
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi;\
 	   $(RM) -f ex7_1.tmp
 runex8:
-	-@$(MPIRUN)  ex8 > ex8_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1  ex8 > ex8_1.tmp 2>&1;\
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi;\
 	   $(RM) -f ex8_1.tmp
@@ -229,12 +229,12 @@ runex17:
 	   else echo "Possible problem with ex17_1, diffs above"; fi;\
 	   $(RM) -f ex17_1.tmp
 runex19:
-	-@$(MPIRUN) ex19 -n 25 > ex19_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex19 -n 25 > ex19_1.tmp 2>&1;\
 	   if (diff output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi;\
 	   $(RM) -f ex19_1.tmp
 runex20:
-	-@$(MPIRUN) ex20 > ex20_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex20 > ex20_1.tmp 2>&1;\
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi;\
 	   $(RM) -f ex20_1.tmp vector.dat
@@ -244,12 +244,12 @@ runex20_2:
 	   else echo "Possible problem with ex20_2, diffs above"; fi;\
 	   $(RM) -f ex20_2.tmp vector.dat
 runex21:
-	-@$(MPIRUN) ex21 > ex21_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex21 > ex21_1.tmp 2>&1;\
 	   if (diff output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi;\
 	   $(RM) -f ex21_1.tmp
 runex23:
-	-@$(MPIRUN) ex23 > ex23_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex23 > ex23_1.tmp 2>&1;\
 	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
 	   $(RM) -f ex23_1.tmp input.dat

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.25 1996/07/08 22:23:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.26 1997/02/05 22:05:04 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -13,7 +13,7 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 int main(int argc,char **argv)
 {
   int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;
-  int            s=1, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
+  int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
   int            Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog, testorder = 0;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL;
   DAPeriodicType wrap = DA_NONPERIODIC;
@@ -49,6 +49,10 @@ int main(int argc,char **argv)
     lx = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(lx);
     for ( i=0; i<m-1; i++ ) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
+    if (n == PETSC_DECIDE) SETERRA(1,1,"Must set -n option with -distribute option");
+    ly = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(lx);
+    for ( i=0; i<n-1; i++ ) { ly[i] = 2;}
+    ly[n-1] = N - 2*(n-1);
   }
 
 

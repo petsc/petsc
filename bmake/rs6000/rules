@@ -3,7 +3,7 @@
 # we default to xlC since it generates faster code.
 #
 PARCH    = rs6000
-CC       = xlC -DPARCH_rs6000 
+CC       = xlc -DPARCH_rs6000 
 FC       = xlf 
 AR       = ar
 RM       = rm -f

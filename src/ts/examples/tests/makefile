@@ -74,27 +74,27 @@ ex12: ex12.o  chkopts
 	$(RM) ex12.o
 
 runex1:
-	-@$(MPIRUN) ex1 -test -nox -ts_type euler  -linear_no_matrix
-	-@$(MPIRUN) ex1 -test -nox -ts_type euler -nonlinear_no_jacobian 
-	-@$(MPIRUN) ex1 -test -nox -ts_type euler -linear_constant_matrix  
-	-@$(MPIRUN) ex1 -test -nox -ts_type euler -linear_variable_matrix 
-	-@$(MPIRUN) ex1 -test -nox -ts_type euler -nonlinear_jacobian 
-	-@$(MPIRUN) ex1 -test -nox -ts_type beuler -linear_no_matrix 
-	-@$(MPIRUN) ex1 -test -nox -ts_type beuler -nonlinear_no_jacobian 
-	-@$(MPIRUN) ex1 -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
-	-@$(MPIRUN) ex1 -test -nox -ts_type beuler -linear_variable_matrix 
-	-@$(MPIRUN) ex1 -test -nox -ts_type beuler -nonlinear_jacobian 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type euler  -linear_no_matrix
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type euler -nonlinear_no_jacobian 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type euler -linear_constant_matrix  
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type euler -linear_variable_matrix 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type euler -nonlinear_jacobian 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type beuler -linear_no_matrix 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type beuler -nonlinear_no_jacobian 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type beuler -linear_variable_matrix 
+	-@$(MPIRUN) -np 1 ex1 -test -nox -ts_type beuler -nonlinear_jacobian 
 
 runex1f:
-	-@$(MPIRUN) ex1f -test -nox -ts_type euler  -linear_no_matrix
-	-@$(MPIRUN) ex1f -test -nox -ts_type euler -nonlinear_no_jacobian 
-	-@$(MPIRUN) ex1f -test -nox -ts_type euler -linear_constant_matrix  
-	-@$(MPIRUN) ex1f -test -nox -ts_type euler -linear_variable_matrix 
-	-@$(MPIRUN) ex1f -test -nox -ts_type euler -nonlinear_jacobian 
-	-@$(MPIRUN) ex1f -test -nox -ts_type beuler -linear_no_matrix 
-	-@$(MPIRUN) ex1f -test -nox -ts_type beuler -nonlinear_no_jacobian 
-	-@$(MPIRUN) ex1f -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
-	-@$(MPIRUN) ex1f -test -nox -ts_type beuler -linear_variable_matrix 
-	-@$(MPIRUN) ex1f -test -nox -ts_type beuler -nonlinear_jacobian 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type euler  -linear_no_matrix
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type euler -nonlinear_no_jacobian 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type euler -linear_constant_matrix  
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type euler -linear_variable_matrix 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type euler -nonlinear_jacobian 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -linear_no_matrix 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -nonlinear_no_jacobian 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -linear_variable_matrix 
+	-@$(MPIRUN) -np 1 ex1f -test -nox -ts_type beuler -nonlinear_jacobian 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

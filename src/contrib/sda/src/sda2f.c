@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2f.c,v 1.5 1997/02/04 21:26:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.6 1997/02/05 22:05:18 bsmith Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -68,12 +68,12 @@ void sdacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 
 void sdacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
-                 int *w,int *s,SDA *inra, int *__ierr )
+                 int *w,int *s,int *lx,int *ly,int *lz,SDA *inra, int *__ierr )
 {
   SDA da;
   *__ierr = SDACreate3d(
 	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
-           *M,*N,*P,*m,*n,*p,*w,*s,&da);
+           *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 

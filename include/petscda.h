@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.30 1997/02/04 21:27:32 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.31 1997/02/05 22:06:17 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -22,7 +22,7 @@ typedef enum { DA_X, DA_Y, DA_Z } DADirection;
 extern int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
 extern int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
 extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType, 
-                        int,int,int,int,int,int,int,int,DA *);
+                        int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
 extern int   DADestroy(DA);
 extern int   DAView(DA,Viewer);
 

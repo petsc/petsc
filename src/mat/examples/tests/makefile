@@ -309,14 +309,14 @@ NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
 MATSHAPES = A B
 runex1:
-	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 runex2:
 	-@for mattype in $(MATTYPES); do \
 	  for shape in $(MATSHAPES); do \
-	    $(MPIRUN) ex2 $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
+	    $(MPIRUN) -np 1 ex2 $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
 	      if (diff output/ex2_1_$$shape.out ex2_1.tmp) then true; \
 	      else echo "Possible problem with ex2_1_"$$shape" for" $$mattype", diffs above"; fi; \
 	      $(RM) -f ex2_1.tmp; \
@@ -333,13 +333,13 @@ runex2_2:
 
 	done;
 runex3:
-	-@$(MPIRUN) ex3 > ex3_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1 ex3 > ex3_1.tmp 2>&1;   \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
 runex4:
 	@-for mattype in $(MATTYPES); do \
-	  $(MPIRUN) ex4 $$mattype > ex4_1.tmp 2>&1; \
+	  $(MPIRUN) -np 1 ex4 $$mattype > ex4_1.tmp 2>&1; \
 	    if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	    else echo "Possible problem with ex4_1 for" $$mattype", diffs above"; fi; \
 	    $(RM) -f ex4_1.tmp; \
@@ -347,7 +347,7 @@ runex4:
 runex5:
 	-@for mattype in $(MATTYPES); do \
 	  for shape in $(MATSHAPES); do \
-	    $(MPIRUN) ex5 $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
+	    $(MPIRUN) -np 1 ex5 $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
 	      if (diff output/ex5_1_$$shape.out ex5_1.tmp) then true; \
 	      else echo "Possible problem with ex5_1_"$$shape" for" $$mattype", diffs above"; fi; \
 	      $(RM) -f ex5_1.tmp; \
@@ -363,17 +363,17 @@ runex5_2:
 	  done; \
 	done;
 runex6:
-	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex6 > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   $(RM) -f ex6_1.tmp
 runex7:
-	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex7 > ex7_1.tmp 2>&1;   \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   $(RM) -f ex7_1.tmp
 runex8:
-	-@$(MPIRUN)  ex8 > ex8_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex8 > ex8_1.tmp 2>&1;   \
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   $(RM) -f ex8_1.tmp
@@ -383,17 +383,17 @@ runex9:
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   $(RM) -f ex9_1.tmp
 runex10:
-	-@$(MPIRUN)  ex10 > ex10_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex10 > ex10_1.tmp 2>&1;   \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   $(RM) -f ex10_1.tmp
 runex11:
-	-@$(MPIRUN)  ex11 > ex11_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex11 > ex11_1.tmp 2>&1;   \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   $(RM) -f ex11_1.tmp
 runex11_2:
-	-@$(MPIRUN)  ex11 -mat_seqbaij -mat_block_size 5 > ex11_2.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex11 -mat_seqbaij -mat_block_size 5 > ex11_2.tmp 2>&1;   \
 	   if (diff output/ex11_2.out ex11_2.tmp) then true; \
 	   else echo "Possible problem with ex11_2, diffs above"; fi; \
 	   $(RM) -f ex11_2.tmp
@@ -408,17 +408,17 @@ runex12_2:
 	   else echo "Possible problem with ex12_2, diffs above"; fi; \
 	   $(RM) -f ex12_2.tmp
 runex13:
-	-@$(MPIRUN)  ex13 > ex13_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex13 > ex13_1.tmp 2>&1;   \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   $(RM) -f ex13_1.tmp
 runex14:
-	-@$(MPIRUN)  ex14 > ex14_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex14 > ex14_1.tmp 2>&1;   \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   $(RM) -f ex14_1.tmp
 runex15:
-	-@$(MPIRUN)  ex15  > ex15_1.tmp 2>&1;	\
+	-@$(MPIRUN) -np 1  ex15  > ex15_1.tmp 2>&1;	\
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
@@ -428,7 +428,7 @@ runex16:
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   $(RM) -f ex16_1.tmp
 runex17:
-	-@$(MPIRUN)  ex17 > ex17_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex17 > ex17_1.tmp 2>&1;   \
 	   if (diff output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
 	   $(RM) -f ex17_1.tmp
@@ -438,37 +438,37 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   $(RM) -f ex19_1.tmp
 runex20:
-	-@$(MPIRUN)  ex20 -conv_mat_bdiag > ex20_1.tmp 2>&1;	\
+	-@$(MPIRUN) -np 1  ex20 -conv_mat_bdiag > ex20_1.tmp 2>&1;	\
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   $(RM) -f ex20_1.tmp
 runex21:
-	-@$(MPIRUN)  ex21 > ex21_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex21 > ex21_1.tmp 2>&1;   \
 	   if (diff output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   $(RM) -f ex21_1.tmp
 runex22:
-	-@$(MPIRUN)  ex22 > ex22_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex22 > ex22_1.tmp 2>&1;   \
 	   if (diff output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   $(RM) -f ex22_1.tmp
 runex30:
-	-@$(MPIRUN)  ex30 -nox > ex30_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex30 -nox > ex30_1.tmp 2>&1;   \
 	   if (diff output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   $(RM) -f ex30_1.tmp
 runex35:
-	-@$(MPIRUN)  ex35 > ex35_1.tmp	2>&1;	\
+	-@$(MPIRUN) -np 1  ex35 > ex35_1.tmp	2>&1;	\
 	   if (diff output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi; \
 	   $(RM) -f ex35_1.tmp
 runex36:
-	-@$(MPIRUN)  ex36 > ex36_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex36 > ex36_1.tmp 2>&1;   \
 	   if (diff output/ex36_1.out ex36_1.tmp) then true; \
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   $(RM) -f ex36_1.tmp
 runex39:
-	-@$(MPIRUN)  ex39 -m 7 > ex39_1.tmp   2>&1;   \
+	-@$(MPIRUN) -np 1  ex39 -m 7 > ex39_1.tmp   2>&1;   \
 	   if (diff output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   $(RM) -f ex39_1.tmp
@@ -492,7 +492,7 @@ runex42:
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 	   $(RM) -f ex42_1.tmp ex42_12.tmp
 runex42_2:
-	-@$(MPIRUN)  ex42 -f ../matrices/arco1 -mat_aij_oneindex  \
+	-@$(MPIRUN) -np 1  ex42 -f ../matrices/arco1 -mat_aij_oneindex  \
 	   -nd 5 -ov 2 | sort -n > ex42_2.tmp 2>&1; \
 	   if (diff output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
@@ -503,7 +503,7 @@ runex46:
 	   else echo "Possible problem with ex46_1, diffs above"; fi; \
 	   $(RM) -f ex46_1.tmp
 runex47:
-	-@$(MPIRUN)  ex47 -f ../matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
+	-@$(MPIRUN) -np 1  ex47 -f ../matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
 	   if (diff output/ex47_1.out ex47_1.tmp) then true; \
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   $(RM) -f ex47_1.tmp
@@ -512,7 +512,7 @@ MATBLOCKSIZE   = 1 2 3 4 5 6
 runex48:
 	-@touch ex48_1.tmp;\
 	for bs in $(MATBLOCKSIZE); do \
-	  $(MPIRUN)  ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
+	  $(MPIRUN) -np 1  ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
 	done; \
 	if (diff output/ex48_1.out ex48_1.tmp) then true; \
 	else echo "Possible problem with ex48_1, diffs above"; fi; \
@@ -527,7 +527,7 @@ runex51:
 	    for matsize in $(MATSIZE); do \
 	      for ov in $(OVERLAP); do\
 	        for nd in $(NODOMAINS); do \
-	          $(MPIRUN)  ex51 -mat_block_size $$bs -ov $$ov \
+	          $(MPIRUN) -np 1  ex51 -mat_block_size $$bs -ov $$ov \
                      -mat_size $$matsize -nd $$nd >> ex51_1.tmp 2>&1; \
 		done;\
 	      done;\
@@ -567,13 +567,13 @@ runex54:
 	done
 
 runex56:
-	-@$(MPIRUN)  ex56 -mat_view > ex56_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex56 -mat_view > ex56_1.tmp 2>&1;   \
 	   if (diff output/ex56_1.out ex56_1.tmp) then true; \
 	   else echo "Possible problem with ex56_1, diffs above"; fi; \
 	   $(RM) -f ex56_1.tmp
 
 runex56_2:
-	-@$(MPIRUN)  ex56 -mat_view  -column_oriented > ex56_2.tmp 2>&1;   \
+	-@$(MPIRUN) -np 1  ex56 -mat_view  -column_oriented > ex56_2.tmp 2>&1;   \
 	   if (diff output/ex56_1.out ex56_2.tmp) then true; \
 	   else echo "Possible problem with ex56_2, diffs above"; fi; \
 	   $(RM) -f ex56_2.tmp

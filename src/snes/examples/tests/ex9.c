@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.22 1996/03/26 05:06:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.23 1997/01/01 03:41:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -76,8 +76,8 @@ int main( int argc, char **argv )
   N = user.mx*user.my*user.mz;
   
   /* Set up distributed array */
-  ierr = DACreate3d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,
-                    user.my,user.mz,Nx,Ny,Nz,1,1,&user.da); CHKERRA(ierr);
+  ierr = DACreate3d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
+                    Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);

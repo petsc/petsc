@@ -23,17 +23,17 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex5.F
 
 runex1:
-	-@$(MPIRUN) ex1
+	-@$(MPIRUN) -np 1 ex1
 runex2:
-	-@$(MPIRUN) ex2
+	-@$(MPIRUN) -np 1 ex2
 runex3:
-	-@$(MPIRUN) ex3
+	-@$(MPIRUN) -np 1 ex3
 runex4:
-	-@$(MPIRUN) ex4
+	-@$(MPIRUN) -np 1 ex4
 runex4_2:
 	-@$(MPIRUN) -np 2 ex4
 runex7:
-	-@$(MPIRUN) ex7 -nc 2 -dfvec_vrml_basefile junk \
+	-@$(MPIRUN) -np 1 ex7 -nc 2 -dfvec_vrml_basefile junk \
 	-@$(RM) -f junk.0.vrml junk.1.vrml
 runex7_2:
 	-@$(MPIRUN) -np 2 ex7 -nc 3 -dfvec_vrml_basefile junk \

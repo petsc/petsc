@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.23 1997/01/01 03:39:35 bsmith Exp balay $";
+static char vcid[] = "$Id: xinit.c,v 1.24 1997/01/06 20:27:07 balay Exp bsmith $";
 #endif
 
 /* 
@@ -231,9 +231,9 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
-  XFillRectangle(w->disp,w->win,w->gc.set,0,0,w->w,w->h);
   ierr = XiUniformHues(w,nc-36); CHKERRQ(ierr);
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
+  XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
   return 0;
 }
 
