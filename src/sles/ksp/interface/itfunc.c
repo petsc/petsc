@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.113 1999/01/31 21:25:34 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.114 1999/02/01 14:41:36 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -598,7 +598,7 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPSetIntialGuessNonzero()
+.seealso: KSPGetIntialGuessNonzero()
 @*/
 int KSPSetInitialGuessNonzero(KSP ksp)
 {
