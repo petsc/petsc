@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.28 2000/08/07 22:23:12 bsmith Exp balay $";
+! "$Id: ex5f90.F,v 1.29 2000/08/10 17:58:35 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -61,15 +61,95 @@
         double precision lambda
       end type userctx
       contains
-      subroutine viewvector(x)
+! ---------------------------------------------------------------------
+!
+!  FormFunction - Evaluates nonlinear function, F(x).
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  X - input vector
+!  dummy - optional user-defined context, as set by SNESSetFunction()
+!          (not used here)
+!
+!  Output Parameter:
+!  F - function vector
+!
+!  Notes:
+!  This routine serves as a wrapper for the lower-level routine
+!  "ApplicationFunction", where the actual computations are 
+!  done using the standard Fortran style of treating the local
+!  vector data as a multidimensional array over the local mesh.
+!  This routine merely handles ghost point scatters and accesses
+!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
+!
+      subroutine FormFunction(snes,X,F,user,ierr)
       implicit none
+
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
-      Vec x
-      integer ierr
-      call VecView(x,VIEWER_STDOUT_WORLD,ierr)
-      end subroutine viewvector
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
+
+#include "include/finclude/petscvec.h90"
+
+
+!  Input/output variables:
+      SNES           snes
+      Vec            X,F
+      integer        ierr
+      type (userctx) user
+
+!  Declarations for use with local arrays:
+      Scalar,pointer :: lx_v(:),lf_v(:)
+
+!  Scatter ghost points to local vector, using the 2-step process
+!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!  By placing code between these two statements, computations can
+!  be done while messages are in transition.
+
+      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
+     &     user%localX,ierr)
+      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
+
+!  Get a pointer to vector data.
+!    - For default PETSc vectors, VecGetArray90() returns a pointer to
+!      the data array. Otherwise, the routine is implementation dependent.
+!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!      the array.
+!    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
+!      and is useable from Fortran-90 Only.
+
+      call VecGetArrayF90(user%localX,lx_v,ierr)
+      call VecGetArrayF90(user%localF,lf_v,ierr)
+
+!  Compute function over the locally owned part of the grid
+
+      call ApplicationFunction(lx_v,lf_v,user,ierr)
+
+!  Restore vectors
+
+      call VecRestoreArrayF90(user%localX,lx_v,ierr)
+      call VecRestoreArrayF90(user%localF,lf_v,ierr)
+
+!  Insert values into global vector
+
+      call DALocalToGlobal(user%da,user%localF,INSERT_VALUES,F,ierr)
+      call PLogFlops(11*user%ym*user%xm,ierr)
+
+!      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
+!      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
+
+      return 
+      end subroutine formfunction
       end module f90module
+
+
+
       program main
       use f90module
       implicit none
@@ -118,7 +198,7 @@
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction,FormInitialGuess,FormJacobian
+      external FormInitialGuess,FormJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -285,8 +365,6 @@
 
       call FormInitialGuess(user,x,ierr)
       call SNESSolve(snes,x,its,ierr) 
-!  Call a subroutine form the module
-      call viewvector(x)
       if (user%rank .eq. 0) then
          write(6,100) its
       endif
@@ -436,93 +514,6 @@
             endif
  10      continue
  20   continue
-
-      return 
-      end
-
-! ---------------------------------------------------------------------
-!
-!  FormFunction - Evaluates nonlinear function, F(x).
-!
-!  Input Parameters:
-!  snes - the SNES context
-!  X - input vector
-!  dummy - optional user-defined context, as set by SNESSetFunction()
-!          (not used here)
-!
-!  Output Parameter:
-!  F - function vector
-!
-!  Notes:
-!  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationFunction", where the actual computations are 
-!  done using the standard Fortran style of treating the local
-!  vector data as a multidimensional array over the local mesh.
-!  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
-!
-      subroutine FormFunction(snes,X,F,user,ierr)
-      use f90module
-      implicit none
-
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
-#include "include/finclude/petscsnes.h"
-
-#include "include/finclude/petscvec.h90"
-
-
-!  Input/output variables:
-      SNES           snes
-      Vec            X,F
-      integer        ierr
-      type (userctx) user
-
-!  Declarations for use with local arrays:
-      Scalar,pointer :: lx_v(:),lf_v(:)
-
-!  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-!  By placing code between these two statements, computations can
-!  be done while messages are in transition.
-
-      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
-     &     user%localX,ierr)
-      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
-
-!  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArray90() returns a pointer to
-!      the data array. Otherwise, the routine is implementation dependent.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
-!      the array.
-!    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
-!      and is useable from Fortran-90 Only.
-
-      call VecGetArrayF90(user%localX,lx_v,ierr)
-      call VecGetArrayF90(user%localF,lf_v,ierr)
-
-!  Compute function over the locally owned part of the grid
-
-      call ApplicationFunction(lx_v,lf_v,user,ierr)
-
-!  Restore vectors
-
-      call VecRestoreArrayF90(user%localX,lx_v,ierr)
-      call VecRestoreArrayF90(user%localF,lf_v,ierr)
-
-!  Insert values into global vector
-
-      call DALocalToGlobal(user%da,user%localF,INSERT_VALUES,F,ierr)
-      call PLogFlops(11*user%ym*user%xm,ierr)
-
-!      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
-!      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
 
       return 
       end
