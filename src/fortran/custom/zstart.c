@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.45 1998/05/21 16:18:30 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.46 1998/06/26 19:54:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -258,8 +258,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
 
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
-  *__ierr = PetscInitializeFortran();
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up Fortran common block");return;}
+  PetscInitializeFortran();
 
   if (PetscBeganMPI) {
     int size;
