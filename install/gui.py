@@ -83,10 +83,6 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
     key = bootstrap.SelectFromList(stdscr,self.iprojects,my = 1,text = 'Select project to install')
     self.project = self.iprojects[key]
 
-  def GetProject(self,stdscr):
-    stdscr.clear()
-    bootstrap.CenterAddStr(stdscr,1,'Downloading '+self.project)
-    stdscr.refresh()
 
 #------------------------------------------------------------------
 
@@ -97,7 +93,7 @@ if __name__ ==  '__main__':
 
   curses.wrapper(gui.InstalledProjects)
   curses.wrapper(gui.SelectProject)
-  curses.wrapper(gui.GetProject)
+  print 'Downloading and installing '+gui.project
   
   import installer
   installer.runinstaller([gui.project])

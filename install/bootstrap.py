@@ -55,7 +55,7 @@ def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
     choices.append(charactors[i])
     i  = i + 1
     my = my + 1
-  stdscr.addstr(my+1,2,'Type key for Project')
+  stdscr.addstr(my+1,2,'Type key to pick selection')
   stdscr.refresh()
   ch = -1
   while not ch in choices:
@@ -87,7 +87,7 @@ class CursesInstall:
     list.append('A different browser or a browser on a different machine (you will be prompted for it)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
       (status,output) = commands.getstatusoutput('which '+l)
-      if status == 0 and not output[0:3] == 'no ':  # found it :-)
+      if status == 0 and not output[0:3] == 'no ' and output.find('not found') == -1:
         list.append(output)
 
     stdscr.clear()
