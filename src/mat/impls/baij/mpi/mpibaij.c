@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.65 1997/04/05 00:29:36 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.66 1997/04/10 00:03:33 bsmith Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1137,6 +1137,7 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
       op == MAT_COLUMNS_UNSORTED ||
       op == MAT_COLUMNS_SORTED ||
+      op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
       op == MAT_NEW_NONZERO_LOCATION_ERROR) {
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.133 1997/04/05 01:06:17 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.134 1997/04/10 00:03:08 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1826,7 +1826,8 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_SYMMETRIC ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_NEW_NONZERO_LOCATION_ERROR)
+           op == MAT_NEW_NONZERO_LOCATION_ERROR ||
+           op == MAT_NEW_NONZERO_ALLOCATION_ERROR)
     PLogInfo(A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}

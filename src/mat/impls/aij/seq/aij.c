@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.215 1997/04/10 00:02:38 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.216 1997/04/10 16:32:51 balay Exp curfman $";
 #endif
 
 /*
@@ -188,6 +188,8 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
+
+        if (nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
 
         /* malloc new storage space */
         len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int);
@@ -670,13 +672,14 @@ int MatCompress_SeqAIJ(Mat A)
 int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  if      (op == MAT_ROW_ORIENTED)               a->roworiented = 1;
-  else if (op == MAT_COLUMN_ORIENTED)            a->roworiented = 0;
-  else if (op == MAT_COLUMNS_SORTED)             a->sorted      = 1;
-  else if (op == MAT_COLUMNS_UNSORTED)           a->sorted      = 0;
-  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)   a->nonew       = 1;
-  else if (op == MAT_NEW_NONZERO_LOCATION_ERROR) a->nonew       = -1;
-  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)  a->nonew       = 0;
+  if      (op == MAT_ROW_ORIENTED)                 a->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED)              a->roworiented = 0;
+  else if (op == MAT_COLUMNS_SORTED)               a->sorted      = 1;
+  else if (op == MAT_COLUMNS_UNSORTED)             a->sorted      = 0;
+  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)     a->nonew       = 1;
+  else if (op == MAT_NEW_NONZERO_LOCATION_ERROR)   a->nonew       = -1;
+  else if (op == MAT_NEW_NONZERO_ALLOCATION_ERROR) a->nonew       = -2;
+  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)    a->nonew       = 0;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||
            op == MAT_SYMMETRIC ||
