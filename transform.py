@@ -7,13 +7,6 @@ import string
 import time
 import types
 
-class ChecksumError (RuntimeError):
-  def __init__(self, value):
-    self.value = value
-
-  def __str__(self):
-    return str(self.value)
-
 class Transform (bs.Maker):
   def __init__(self, sources = None):
     bs.Maker.__init__(self)
@@ -51,28 +44,6 @@ class Transform (bs.Maker):
     (dir, file) = os.path.split(source)
     (base, dum) = os.path.splitext(file)
     return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+ext)
-
-  def checkChecksumCall(self, command, status, output):
-    if (status): raise ChecksumError(output)
-
-  def getBKChecksum(self, source):
-    output = self.executeShellCommand('bk checksum -s8 '+source, self.checkChecksumCall)
-    return string.split(output)[1]
-
-  def getMD5Checksum(self, source):
-    output = self.executeShellCommand('md5sum --binary '+source, self.checkChecksumCall)
-    return string.split(output)[0]
-
-  def getChecksum(self, source):
-    checksum = 0
-    try:
-      checksum = self.getBKChecksum(source)
-    except ChecksumError:
-      try:
-        checksum = self.getMD5Checksum(source)
-      except ChecksumError:
-        pass
-    return checksum
 
 class FileFilter (Transform):
   def __init__(self, filter, sources = None, tags = None):

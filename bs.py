@@ -4,6 +4,7 @@ import fileset
 import atexit
 import cPickle
 import commands
+import md5
 import os
 import os.path
 import re
@@ -22,6 +23,7 @@ class Maker:
   def __init__(self):
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
+    self.setupChecksum()
     self.debugLevel    = debugLevel
     self.debugSections = list(debugSections)
     self.debugIndent   = '  '
@@ -49,6 +51,34 @@ class Maker:
     map(self.forceRemove, os.listdir(dir))
     os.chdir(oldDir)
     if remove: os.rmdir(dir)
+
+  def setupChecksum(self):
+    if (argDB['checksumType'] == 'md5'):
+      self.getChecksum = self.getMD5Checksum
+    elif (argDB['checksumType'] == 'bk'):
+      self.getChecksum = self.getBKChecksum
+    else:
+      raise RuntimeError('Invalid checksum type: '+argDB['checksumType'])
+
+  def getMD5Checksum(self, source):
+    #output = self.executeShellCommand('md5sum --binary '+source, self.checkChecksumCall)
+    #return string.split(output)[0]
+    f = open(source, 'r')
+    m = md5.new(f.read())
+    f.close()
+    return m.hexdigest()
+
+  def checkChecksumCall(self, command, status, output):
+    if (status): raise ChecksumError(output)
+
+  def getBKChecksum(self, source):
+    checksum = 0
+    try:
+      output   = self.executeShellCommand('bk checksum -s8 '+source, self.checkChecksumCall)
+      checksum = string.split(output)[1]
+    except ChecksumError:
+      pass
+    return checksum
 
   def debugListStr(self, list):
     if (self.debugLevel > 4) or (len(list) < 4):
@@ -109,8 +139,7 @@ class BS (Maker):
   def __init__(self, args = None):
     self.argDBFilename = os.path.join(os.getcwd(), 'bsArg.db')
     self.setupArgDB()
-    self.defaultArgs['target'] =  'default'
-    self.defaultArgs['TMPDIR'] =  '/tmp'
+    self.setupDefaultArgs()
     self.processArgs(args)
     Maker.__init__(self)
     self.debugPrint('Read source database from '+self.argDBFilename, 2, 'argDB')
@@ -118,6 +147,11 @@ class BS (Maker):
     self.setupSourceDB()
     for key in argDB.keys():
       self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
+
+  def setupDefaultArgs(self):
+    self.defaultArgs['target']       = 'default'
+    self.defaultArgs['TMPDIR']       = '/tmp'
+    self.defaultArgs['checksumType'] = 'md5'
 
   def processArgs(self, args):
     global argDB
@@ -246,3 +280,10 @@ class ArgDict (UserDict.UserDict):
         print
         sys.exit('Unable to get argument \''+key+'\'')
     return self.data[key]
+
+class ChecksumError (RuntimeError):
+  def __init__(self, value):
+    self.value = value
+
+  def __str__(self):
+    return str(self.value)
