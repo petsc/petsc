@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.37 1996/11/30 21:41:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.38 1996/12/01 17:55:24 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -73,14 +73,16 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         roworiented = baij->roworiented,rstart_orig,rend_orig;
   int         cstart_orig,cend_orig,bs=baij->bs;
 
+#if defined(PETSC_BOPT_g)
   if (baij->insertmode != NOT_SET_VALUES && baij->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIBAIJ:Cannot mix inserts and adds");
   }
+#endif
   baij->insertmode = addv;
-  rstart_orig = rstart*bs;
-  rend_orig   = rend*bs;
-  cstart_orig = cstart*bs;
-  cend_orig   = cend*bs;
+  rstart_orig      = rstart*bs;
+  rend_orig        = rend*bs;
+  cstart_orig      = cstart*bs;
+  cend_orig        = cend*bs;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIBAIJ:Negative row");

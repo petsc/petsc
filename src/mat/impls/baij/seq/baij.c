@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.76 1996/11/30 20:35:21 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.77 1996/12/02 20:13:16 balay Exp bsmith $";
 #endif
 
 /*
@@ -353,7 +353,6 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 
 #define CHUNKSIZE  10
 
-/* This version has row oriented v  */
 int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -369,9 +368,11 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     if (row < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative row");
     if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBAIJ:Row too large");
 #endif
-    rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
-    rmax = imax[brow]; nrow = ailen[brow]; 
-    low = 0;
+    rp   = aj + ai[brow]; 
+    ap   = aa + bs2*ai[brow];
+    rmax = imax[brow]; 
+    nrow = ailen[brow]; 
+    low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
 #if defined(PETSC_BOPT_g)  
       if (in[l] < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative column");
@@ -386,7 +387,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
         value = v[k + l*m];
       }
       if (!sorted) low = 0; high = nrow;
-      while (high-low > 5) {
+      while (high-low > 7) {
         t = (low+high)/2;
         if (rp[t] > bcol) high = t;
         else              low  = t;
