@@ -255,6 +255,9 @@ class SIDLMake(Make):
   def addDependency(self, url, sidlFile):
     if not url in self.dependencies:
       self.dependencies[url] = (self.getMake(url), sets.Set())
+      for depMake, depSidlFiles in self.dependencies[url][0].dependencies.values():
+        for depSidlFile in depSidlFiles:
+          self.addDependency(depMake.project.getUrl(), depSidlFile)
     self.dependencies[url][1].add(sidlFile)
     return
 
