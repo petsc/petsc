@@ -75,6 +75,8 @@ or matrices that generate a zero pivot.
 
   added PetscSynchronizedFGets()
 
+  If you use PreLoadBegin() etc the preloaded stages will not be printed in the -log_summary output
+
   Viewers
 
 

@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.140 2000/05/04 16:27:19 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.141 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -54,11 +54,13 @@
 #define MAT_GetRow                              35
 #define MAT_Partitioning                        36
 
+#define MAT_FDColoringApply                     38
+#define MAT_FDColoringCreate                    41
+
 #define VEC_ReduceArithmetic                    37
-#define VEC_ReduceCommunication                 38
-#define VEC_ScatterBarrier                      39
-#define VEC_ScatterCommunication                40
-#define VEC_Norm                                41
+
+#define VEC_View                                39
+
 #define VEC_Max                                 42
 #define VEC_Min                                 43
 #define VEC_TDot                                44
@@ -72,22 +74,21 @@
 #define VEC_AssemblyBegin                       52
 #define VEC_AssemblyEnd                         53
 #define VEC_MTDot                               54
-#define VEC_MDot                                55
 #define VEC_MAXPY                               56
 #define VEC_PMult                               57
 #define VEC_SetValues                           58
 #define VEC_Load                                59
-#define VEC_View                                60
+#define VEC_ScatterBarrier                      60
 #define VEC_ScatterBegin                        61
 #define VEC_ScatterEnd                          62
 #define VEC_SetRandom                           63
 
 #define VEC_NormBarrier                         64
-#define VEC_NormComm                            65
+#define VEC_Norm                                65
 #define VEC_DotBarrier                          66
-#define VEC_DotComm                             67
+#define VEC_Dot                                 67
 #define VEC_MDotBarrier                         68
-#define VEC_MDotComm                            69
+#define VEC_MDot                                69
 
 #define SLES_Solve                              70
 #define SLES_SetUp                              71
@@ -110,8 +111,7 @@
 #define SNES_HessianEval                        86
 
 #define VEC_ReduceBarrier                       87
-#define VEC_ReduceCommOnly                      88
-#define VEC_Dot                                 89
+#define VEC_ReduceComm                          88
 
 #define TS_Step                                 90
 #define TS_PseudoComputeTimeStep                91
@@ -230,11 +230,7 @@ extern int PLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
-  if (_PLogPLE && PLogEventFlags[(e)+1]) \
-    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  if (UseMPE && PLogEventMPEFlags[(e)+1])\
-     MPE_Log_event(MPEBEGIN+2*((e)+1)+1,0,"");\
-  }  
+    PLogEventEnd(e+1,o1,o2,o3,o4);}
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
     (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
@@ -243,9 +239,7 @@ extern int PLogEventDepth[];
   }  
 #else
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
-  if (_PLogPLE && PLogEventFlags[(e)+1]) {\
-    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));} \
-  } 
+      PLogEventEnd(e+1,o1,o2,o3,o4);}
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
     (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
@@ -267,6 +261,7 @@ EXTERN int  PLogDestroy(void);
 EXTERN int  PLogStagePush(int);
 EXTERN int  PLogStagePop(void);
 EXTERN int  PLogStageRegister(int,const char[]);
+EXTERN int  PLogStagePrint(int,PetscTruth);
 EXTERN int  PLogPrintSummary(MPI_Comm,const char[]);
 EXTERN int  PLogBegin(void);
 EXTERN int  PLogTraceBegin(FILE *);
@@ -423,6 +418,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define PLogStagePush(a)                0
 #define PLogStagePop()                  0
 #define PLogStageRegister(a,b)          0
+#define PLogStagePrint(a,flg)           0
 #define PLogPrintSummary(comm,file)     0
 #define PLogBegin()                     0
 #define PLogTraceBegin(file)            0
@@ -447,12 +443,13 @@ EXTERN int PLogObjectState(PetscObject,const char[],...);
                                  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
                                    __ierr = PetscBarrier(PETSC_NULL);CHKERRQ(__ierr);\
                                    __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);
+                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
+                                   __ierr = PLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
 #define PreLoadEnd()               __ierr = PLogStagePop();CHKERRQ(__ierr);PreLoading = PETSC_FALSE;}}
 #define PreLoadStage(name)         __ierr = PLogStagePop();CHKERRQ(__ierr);\
                                    __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);
-
+                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
+                                   __ierr = PLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
 #endif
 
 
