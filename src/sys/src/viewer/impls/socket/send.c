@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.20 1995/08/15 20:29:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.21 1995/08/24 22:30:26 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -44,17 +44,19 @@ typedef unsigned long   u_long;
      Many machines don't prototype many of the socket functions?
 */
 #if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
-    || defined(PARCH_hpux) || defined(PARCH_alpha) || defined(PARCH_solaris)
+    || defined(PARCH_hpux) || defined(PARCH_alpha) || defined(PARCH_solaris) \
+    || defined(PARCH_linux)
 #if defined(__cplusplus)
 extern "C" {
 #endif
 #if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
-    && !defined(PARCH_alpha) && !defined(PARCH_solaris)
+    && !defined(PARCH_alpha) && !defined(PARCH_solaris) && \
+    !defined(PARCH_linux)
 extern int setsockopt(int,int,int,char*,int);
 #endif
 extern int write(int,char*,int);
 extern int close(int);
-#if !defined(PARCH_freebsd) && !defined(PARCH_solaris)
+#if !defined(PARCH_freebsd) && !defined(PARCH_linux) && !defined(PARCH_solaris)
 extern int socket(int,int,int);
 #if !defined(PARCH_hpux) && !defined(PARCH_alpha) && !defined(PARCH_solaris)
 extern int connect(int,struct sockaddr *,int);
@@ -80,7 +82,8 @@ extern int close(int);
 /*
       Byte swapping for certain Machines.
 */
-#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
+#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)\
+    || defined(PARCH_linux)
 static int byteswapint(int *,int),byteswapdouble(double*,int);
 #define BYTESWAPINT(buff,n)    byteswapint(buff,n)
 #define BYTESWAPDOUBLE(buff,n) byteswapdouble(buff,n)
@@ -183,7 +186,8 @@ int SOCKCall_Private(char *hostname,int portnum)
   return(s);
 }
 /*  ------------------- BYTE SWAPPING ROUTINES ---------------------*/
-#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
+#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)\
+    || defined(PARCH_linux)
 static int byteswapint(int *buff,int n)
 {
   int  i,j,tmp;

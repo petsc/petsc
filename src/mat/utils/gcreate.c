@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.33 1995/07/20 03:59:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.34 1995/08/03 01:14:17 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
-/*@
+/*@C
    MatCreate - Creates a matrix, where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.
@@ -43,7 +43,7 @@ $  -mpi_objects : uses MPI matrix (parallel format), even for one processor
           MatCreateSequentialRow(), MatCreateMPIRow(), 
           MatCreateSequentialBDiag(),MatCreateMPIBDiag(),
           MatCreateSequentialDense(), MatCreateMPIRowbs(), MatConvert()
-@*/
+ @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   int numtid;

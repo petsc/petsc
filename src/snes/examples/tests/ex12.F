@@ -5,6 +5,9 @@
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 C
+C  In this example the application context is a Fortran 
+C integer array.
+C
 C      ctx(1) = da
 C          2  = F
 C          3  = xl
@@ -13,8 +16,9 @@ C          5  = numtid
 C          6  = N
 
       integer          ctx(8),ierr
-      integer          snes,J,x,r,u,F,ierr,N,start,end,nn,i,ii,its
+      integer          snes,J,x,r,u,F,N,start,end,nn,i,ii,its
       double precision xp,FF,UU,h
+      character*(10)   matrixname
       external         FormJacobian,FormFunction,FormInitialGuess
 
       call PetscInitialize(ierr)
@@ -41,6 +45,9 @@ C     /* Set up data structures */
 
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
      *                     N,3,0,0,0,J,ierr)
+
+      call MatGetName(J,matrixname,ierr)
+C      print*, 'Matrix name ',matrixname
 
 C     /* Store right-hand-side of PDE and exact solution */
       call VecGetOwnershipRange(x,start,end,ierr)
@@ -72,7 +79,9 @@ C      /* Set up nonlinear solver; then execute it */
       call SNESSetFromOptions(snes,ierr)
       call SNESSetUp(snes,ierr)
       call SNESSolve(snes,its,ierr)
-      print*,'Number of Newton iterations = ', its
+      if (ctx(4) .eq. 0) then
+        print*,'Number of Newton iterations = ', its
+      endif
 
 C  /* Free data structures */
       call VecDestroy(x,ierr)
@@ -142,7 +151,6 @@ C  /* --------------------  Form initial approximation ----------------- */
 
       subroutine FormInitialGuess(snes,x,dummy,ierr)
       integer snes,x,dummy(*),ierr
-      integer ierr
       double precision five 
 #include "include/finclude/petsc.h"
 
@@ -159,11 +167,10 @@ C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 #include "include/finclude/da.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
-      integer          snes,x,jac(*),B,flag,ctx(*),N2,ii,istart,iend
+      integer          snes,x,jac(*),B,flag,ctx(*),ii,istart,iend
       double precision xx(1000),d,A,h
-      integer          i,j,ierr,n,mytid,numtid,end,start
+      integer          i,j,n,mytid,numtid,end,start,ierr
 
-      call VecGetSize(x,N2,ierr)
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
       mytid = ctx(4)
@@ -175,30 +182,31 @@ C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
       if (mytid .eq. 0) then
         A = 1.0 
-        call MatSetValues(jac(1),1,start,1,start,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,start,1,start,A,INSERTVALUES,ierr)
         istart = 1
       else 
         istart = 0
       endif
       if (mytid .eq. numtid-1) then
-        i = N-1
+        i = ctx(6)-1
         A = 1.0 
-        call MatSetValues(jac(1),1,i,1,i,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,i,1,i,A,INSERTVALUES,ierr)
         iend = n-1
       else
         iend = n
       endif
-      do 10 i=istart,iend
+      do 10 i=istart,iend-1
         ii = i + start
         j = start + i - 1 
-        call MatSetValues(jac(1),1,ii,1,j,d,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,j,d,INSERTVALUES,ierr)
         j = start + i + 1 
-        call MatSetValues(jac(1),1,ii,1,j,d,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,j,d,INSERTVALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
-        call MatSetValues(jac(1),1,ii,1,ii,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,ii,A,INSERTVALUES,ierr)
  10   continue
-      call MatAssemblyBegin(jac(1),FINAL_ASSEMBLY,ierr)
-      callMatAssemblyEnd(jac(1),FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(jac,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac,FINAL_ASSEMBLY,ierr)
+C      call MatView(jac,STDOUT_VIEWER_WORLD)
       return
       end
 

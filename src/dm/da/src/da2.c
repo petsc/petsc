@@ -155,7 +155,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
   return 0;
 }
 
-/*@
+/*@C
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.
 
@@ -527,7 +527,7 @@ int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
   return 0;
 }
 
-/*@
+/*@C
    DADestroy - Destroy a distributed array.
 
    Input Parameter:
@@ -623,7 +623,7 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
   return 0;
 }
 
-/*@
+/*@C
    DAGetDistributedVector - Gets a distributed vector for a 
    distributed array.  Additional vectors of the same type can be 
    created with VecDuplicate().
@@ -645,7 +645,7 @@ int   DAGetDistributedVector(DA da,Vec* g)
   return 0;
 }
 
-/*@
+/*@C
    DAGetLocalVector - Gets a local vector (including ghost points) for a 
    distributed array.  Additional vectors of the same type can be created 
    with VecDuplicate().
@@ -722,7 +722,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
   return 0;
 }
 
-/*@
+/*@C
    DAGetScatterCtx - Gets the local to global and local to global 
    vector scatter contexts for a distributed array.
 

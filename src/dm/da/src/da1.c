@@ -88,7 +88,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
   return 0;
 }
 
-/*@
+/*@C
     DACreate1d - Creates a one-dimensional regular array that is
     distributed across some processors.
 

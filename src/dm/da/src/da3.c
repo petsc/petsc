@@ -291,7 +291,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
   return 0;
 }
 
-/*@
+/*@C
     DACreate3d - Creates a three-dimensional regular array that is
     distributed across some processors.
 

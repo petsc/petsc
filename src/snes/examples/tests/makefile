@@ -16,6 +16,7 @@ RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
 EXAMPLES_2    = ex1 ex2 ex7 ex8
 RUNEXAMPLES_2 = runex1 runex2 runex7 runex8
 EXAMPLES_3    = ex12
+RUNEXAMPLES_3 = runex12
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
 EXAMPLESF     = ex12.F
 DIRS          = umin
@@ -125,5 +126,11 @@ runex8:
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            $(RM) -f ex8_1.tmp
+
+runex12:
+	-@$(MPIRUN) -np 2 ex12 -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;   \
+           if (diff output/ex12_1.out ex12_1.tmp) then true; \
+           else echo "Possible problem with ex12_1, diffs above"; fi; \
+           $(RM) -f ex12_1.tmp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
