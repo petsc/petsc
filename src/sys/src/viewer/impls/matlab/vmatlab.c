@@ -87,8 +87,9 @@ int PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScalar *array,c
 #define __FUNCT__ "PetscViewerMatlabPutVariable"
 int PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name,void* mat)
 {
+  PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data; ;
+
   PetscFunctionBegin;
-  PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data; 
   matPutVariable(ml->ep,name,(mxArray*)mat);
   PetscFunctionReturn(0);
 }
