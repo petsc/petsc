@@ -2,27 +2,28 @@
 
 # Currently works on linux
 
+ALL: build_manual.pdf
+
 PDFELATEX = unset TEXINPUTS; pdfelatex 
 NOADIC    = true
 SHELL     = sh
 MV        = mv
 CP        = cp
-RM        = rm
+RM        = rm -f
 GONULL    = > /dev/null 2>&1
 
 # Build the entire manual as well as the intro part
 
 clean:
-	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp anchors manual.pdf intro.pdf ../../../../docs/manual.pdf
+	-@${RM} *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp anchors manual.pdf intro.pdf index.tex
 
-manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
+build_manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # Generate a list of labels
-	-@rm -f anchors htmlmap tmp
+	-@${MAKE} clean
 	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> htmlmap
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
-	-@${RM} part1tmp.tex part2tmp.tex index.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | ../../../../maint/mapnameslatex.py > part1tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | ../../../../maint/mapnameslatex.py > part2tmp.tex
 	${PDFELATEX} manual  ${GONULL}
