@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 /*
     This implements gmres.  It may be called recurrsively as long as 

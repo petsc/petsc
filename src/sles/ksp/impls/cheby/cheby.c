@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
     necessarily well optimized.

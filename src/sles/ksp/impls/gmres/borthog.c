@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #define RERROR  gmres_error
 #include "gmresp.h"

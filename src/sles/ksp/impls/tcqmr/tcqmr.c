@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 /*
        This file contains an implementaion of Tony Chan's 
