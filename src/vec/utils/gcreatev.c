@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.11 1995/04/17 19:58:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.12 1995/04/27 01:00:23 curfman Exp curfman $";
 #endif
 
 
@@ -10,9 +10,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.11 1995/04/17 19:58:12 bsmith Exp curfm
 #include "vec.h"
 
 /*@C
-    VecCreateInitialVector - Creates a vector, reading from the command
-    line to determine the vector type.  Generates a parallel MPI vector
-    if the communicator has more than one processor.
+    VecCreateInitialVector - Creates a vector, where the vector type 
+    is determined from the options database.  Generates a parallel MPI 
+    vector if the communicator has more than one processor.
 
     Input Parameters:
 .   comm - MPI communicator

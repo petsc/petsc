@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/23 00:14:12 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.14 1995/04/27 01:04:14 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -8,9 +8,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/23 00:14:12 curfman Exp curf
 #include "mat.h"
 
 /*@C
-   MatCreateInitialMatrix - Creates a matrix, reading from the command
-   line to determine the matrix type.  Generates a parallel MPI matrix
-   if the communicator has more than one processor.
+   MatCreateInitialMatrix - Creates a matrix, where the type is determined
+   from the options database. Generates a parallel MPI matrix if the
+   communicator has more than one processor.
 
    Input Parameters:
 .  m - number of global rows
@@ -30,7 +30,7 @@ $  -bdiag_mat : block diagonal type, uses
 $               MatCreateSequentialBDiag() and
 $               MatCreateMPIBDiag()
 $
-$  -mpi_objects : uses MPI matrices, even for uniprocessor case
+$  -mpi_objects : uses MPI matrix, even for one processor
 
    Notes:
    The default matrix type is AIJ, using MatCreateSequentialAIJ() and
