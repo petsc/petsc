@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.15 2001/06/22 19:54:37 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.16 2001/06/22 20:16:42 buschelm Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -174,7 +174,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     for  (j=0; j<nz; j++) {
       x = rtmp+16*ajtmp[j];
       SSE_INLINE_BEGIN_1(x)
-        /* Copy zero register into memory locations */
+        /* Copy zero register to memory locations */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_STOREL_PS(SSE_ARG_1,FLOAT_0,XMM7)
         SSE_STOREH_PS(SSE_ARG_1,FLOAT_2,XMM7)

@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.32 2001/08/06 21:14:15 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.33 2001/08/07 21:29:02 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -63,6 +63,8 @@ int PetscOptionsPublishCount;
 .   title - short descriptive text, for example "Krylov Solver Options"
 -   mansec - section of manual pages for options, for example KSP
 
+  Level: intermediate
+
   Notes: Needs to be ended by a call the PetscOptionsEnd()
 
          Can add subheadings with PetscOptionsHead()
@@ -115,9 +117,11 @@ int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *manse
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
+    Collective on the MPI_Comm used in PetscOptionsBegin()
+
    Synopsis: int PetscOptionsEnd(void)
 
-    Collective on MPI_Comm used in PetscOptionsBegin()
+  Level: intermediate
 
   Notes: Needs to be preceded by a call to PetscOptionsBegin()
 
@@ -545,6 +549,8 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
    Output Parameter:
 +  value - the value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: intermediate
    
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -612,6 +618,8 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
 +  value - the value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
    
+   Level: intermediate
+
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    See PetscOptionsList() for when the choices are given in a PetscFList()
@@ -678,6 +686,8 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
    Output Parameter:
 .  flg - whether that option was set or not
    
+   Level: intermediate
+
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must be followed by 0 or more PetscOptionsLogicalGroup()s and PetscOptionsLogicalGroupEnd()
@@ -733,6 +743,8 @@ int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg
    Output Parameter:
 .  flg - PETSC_TRUE if found, else PETSC_FALSE
    
+   Level: intermediate
+
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must follow a PetscOptionsLogicalGroupBegin() and preceded a PetscOptionsLogicalGroupEnd()
@@ -787,6 +799,8 @@ int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
    Output Parameter:
 .  flg - PETSC_TRUE if found, else PETSC_FALSE
    
+   Level: intermediate
+
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must follow a PetscOptionsLogicalGroupBegin()
@@ -1017,9 +1031,11 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
             See, for example, KSPSetFromOptions_GMRES().
 
+   Collective on the communicator passed in PetscOptionsBegin()
+
    Synopsis: int PetscOptionsTail(void)
 
-   Collective on the communicator passed in PetscOptionsBegin()
+  Level: intermediate
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -1047,6 +1063,8 @@ M*/
 .   head - the heading text
 
    
+   Level: intermediate
+
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           Must be followed by a call to PetscOptionsTail() in the same function.
