@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.12 1995/11/21 03:27:15 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.13 1995/11/25 23:49:04 curfman Exp curfman $";
 #endif
 
 /*
@@ -763,8 +763,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated 
            if n is given)
-.  data - optional location of matrix data.  Set data=0 for PETSc to
-   control all matrix memory allocation.
+.  data - optional location of matrix data.  Set data=PetscNull for PETSc
+   to control all matrix memory allocation.
 
    Output Parameter:
 .  newmat - the matrix
@@ -775,7 +775,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=0.
+   set data=PetscNull.
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.57 1995/11/04 23:19:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.58 1995/11/25 23:49:34 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -751,11 +751,11 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
-$     Set diag=0 on input for PETSc to dynamically allocate memory
-$     as needed.
+$     Set diag=PetscNull on input for PETSc to dynamically allocate
+$     memory as needed.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
-   control memory allocation.
+   if allocated by user. Otherwise, set diagv=PetscNull on input for PETSc
+   to control memory allocation.
 
    Output Parameter:
 .  newmat - the matrix 
@@ -771,7 +771,8 @@ $     as needed.
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case.
 
-   Fortran programmers cannot set diagv; It is ignored.
+   Fortran Notes:
+   Fortran programmers cannot set diagv; this variable is ignored.
 
 .keywords: matrix, block, diagonal, parallel, sparse
 
@@ -840,7 +841,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   k = 0;
   PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->size+2)*sizeof(int)
                         + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));
-  if (diagv) {
+  if (diagv != PetscNull) {
     ldiagv = (Scalar **)PetscMalloc((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
   }
   for (i=0; i<nd; i++) {
@@ -848,20 +849,20 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
     if (diag[i] > 0) { /* lower triangular */
       if (diag[i] < mbd->brend) {
         ldiag[k] = diag[i] - mbd->brstart;
-        if (diagv) ldiagv[k] = diagv[i];
+        if (diagv != PetscNull) ldiagv[k] = diagv[i];
         k++;
       }
     } else { /* upper triangular */
       if (mbd->M/nb - diag[i] > mbd->N/nb) {
         if (mbd->M/nb + diag[i] > mbd->brstart) {
           ldiag[k] = diag[i] - mbd->brstart;
-          if (diagv) ldiagv[k] = diagv[i];
+          if (diagv != PetscNull) ldiagv[k] = diagv[i];
           k++;
         }
       } else {
         if (mbd->M/nb > mbd->brstart) {
           ldiag[k] = diag[i] - mbd->brstart;
-          if (diagv) ldiagv[k] = diagv[i];
+          if (diagv != PetscNull) ldiagv[k] = diagv[i];
           k++;
         }
       }

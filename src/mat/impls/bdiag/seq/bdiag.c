@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.72 1995/11/25 19:07:12 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.73 1995/11/25 23:50:17 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1429,11 +1429,11 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
-$     Set diag=0 on input for PETSc to dynamically allocate memory
+$     Set diag=PetscNull on input for PETSc to dynamically allocate memory
 $     as needed.
 .  diagv - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user.  Otherwise, set diagv=0 on input for PETSc to 
-   control memory allocation.
+   if allocated by user.  Otherwise, set diagv=PetscNull on input for PETSc
+   to control memory allocation.
 
    Output Parameters:
 .  newmat - the matrix
@@ -1444,7 +1444,8 @@ $     as needed.
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case. 
 
-   Fortran programmers cannot set diagv; It is ignored.
+   Fortran Note:
+   Fortran programmers cannot set diagv; this value is ignored.
 
 .keywords: matrix, block, diagonal, sparse
 
@@ -1485,7 +1486,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->diagv  = (Scalar**)PetscMalloc(nda*sizeof(Scalar*)); CHKPTRQ(a->diagv);
   sizetot = 0;
 
-  if (diagv) { /* user allocated space */
+  if (diagv != PetscNull) { /* user allocated space */
     a->user_alloc = 1;
     for (i=0; i<nd; i++) a->diagv[i] = diagv[i];
   }

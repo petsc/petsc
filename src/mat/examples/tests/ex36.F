@@ -1,38 +1,46 @@
 
-C      "$Id: ex36.F,v 1.2 1995/11/23 03:52:15 bsmith Exp curfman $";
+C      "$Id: ex36.F,v 1.3 1995/11/24 20:26:33 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
 #include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
 #include "include/finclude/viewer.h"
-C
-C Demonstrates how a Fortran user can access the array storing a PETSc dense matrix.
-C The "global" varable PetscDouble() is indexed by the integer obtained from
-C MatGetArray().  This index indicates the position in PetscDouble() where the
-C matrix array storage begins.  Note also the use of PetscNull to indicate that no
-C storage is being provided (do NOT pass a zero in that location).
-C
 
-      integer ierr,idx,n,m
-      Mat     A
+C
+C  This example demonstrates the use of MatGetArray() for direct access to
+C  the array that stores a PETSc dense matrix.  The user declares an array
+C  (aa(1)) and index variable (ia), which are then used together to
+C  manipulate the array contents.
+C
+C  Note the use of PetscNull in MatCreateSeqDense() to indicate that no
+C  storage is being provided by the user. (Do NOT pass a zero in that
+C  location.)
+C
+      double precision aa(1)
+      integer          ierr, ia, n, m
+      Mat              A
 
       call PetscInitialize(ierr)
       m = 5
       n = 5
 
-      call MatCreateSeqDense(MPI_COMM_WORLD,m,n,PetscNull,A,ierr)
-      call MatGetArray(A,idx,ierr)
+C  Create matrix
+      call MatCreateSeqDense(MPI_COMM_SELF,m,n,PetscNull,A,ierr)
 
-      call FillUpMatrix(m,n,PetscDouble(idx))
+C  Access array storage
+      call MatGetArray(A,aa,ia,ierr)
 
+C  Set matrix values directly
+      call FillUpMatrix(m,n,aa(ia+1))
       call MatView(A,STDOUT_VIEWER_SELF,ierr)
-     
+
+C  Clean up
+      call MatDestroy(A,ierr)     
       call PetscFinalize(ierr)
       stop
       end
+
 C -----------------------------------------------------------------
+
       subroutine FillUpMatrix(m,n,X)
       integer          m,n,i,j
       double precision X(m,n)

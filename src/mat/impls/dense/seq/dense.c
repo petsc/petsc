@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.78 1995/11/23 04:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.79 1995/11/27 22:23:59 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -824,8 +824,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
 .  comm - MPI communicator, set to MPI_COMM_SELF
 .  m - number of rows
 .  n - number of columns
-.  data - optional location of matrix data.  Set data=0 for PETSc to
-   control all matrix memory allocation.
+.  data - optional location of matrix data.  Set data=PetscNull for PETSc
+   to control all matrix memory allocation.
 
    Output Parameter:
 .  newmat - the matrix
@@ -833,7 +833,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
   Notes:
   The data input variable is intended primarily for Fortran programmers
   who wish to allocate their own matrix memory space.  Most users should
-  set data=0.
+  set data=PetscNull.
 
 .keywords: dense, matrix, LAPACK, BLAS
 
@@ -860,7 +860,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
   l->n            = n;
   l->pivots       = 0;
   l->roworiented  = 1;
-  if (!data) {
+  if (data == PetscNull) {
     l->v = (Scalar*) PetscMalloc((m*n+1)*sizeof(Scalar)); CHKPTRQ(l->v);
     PetscMemzero(l->v,m*n*sizeof(Scalar));
     l->user_alloc = 0;

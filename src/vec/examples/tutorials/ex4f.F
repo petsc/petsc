@@ -1,5 +1,5 @@
 
-C    "$Id: ex21.F,v 1.4 1995/10/19 15:03:00 curfman Exp bsmith $";
+C      "$Id: ex36.F,v 1.3 1995/11/24 20:26:33 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -29,10 +29,12 @@ C Create initial vector and set values
        call VecCreateSeq(MPI_COMM_SELF,n,x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecSetValues(x,6,loc,xwork,INSERT_VALUES,ierr)
+       call VecAssemblyBegin(x,ierr)
+       call VecAssemblyEnd(x,ierr)
        write(6,20)
   20   format('initial vector:')
-       call VecCopy(x,y)
        call VecView(x,STDOUT_VIEWER_SELF,ierr)
+       call VecCopy(x,y,ierr)
 
 C Extract vector elements and modify them
        call VecGetArray(x,vxx,ixx,ierr)
