@@ -1,15 +1,18 @@
-# $Id: crontab,v 1.124 1998/09/02 15:06:20 balay Exp balay $ 
+# $Id: crontab,v 1.125 1998/09/14 19:20:17 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
-# This file is run every night on 'eagle.mcs.anl.gov'.
+# This file is run every night on 'soot.mcs.anl.gov'.
 # Run "crontab crontab" to install the nightly build;
 # use "crontab -r" to remove it.
+# 
+# Some jobs are run on maverick, as they require 'expect' 
+# which is not avilable on solaris machines.
 #
 #  The timing between these runs IS not important.
 #
-1  23 * * * /usr/ucb/rsh eagle /home/bsmith/petsc/maint/buildremotetest
-1  23 * * * /bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
+1  23 * * * /usr/ucb/rsh maverick /home/bsmith/petsc/maint/buildremotetest
+1  23 * * * /bin/rm -f /home/bsmith/petsc/maint/nightlylogs/*.log
 1  23 * * * /home/bsmith/petsc/maint/removelibs
 #
 ##30  1 * * * /home/bsmith/petsc/maint/buildtest 1
@@ -27,11 +30,11 @@
 #  Checks if all the nightly builds are complete and 
 # sends mail to PETSc developers if there are hanging jobs
 #
-45  8 * * * /usr/ucb/rsh eagle /home/bsmith/petsc/maint/checknightly
+45  8 * * * /usr/ucb/rsh soot /home/bsmith/petsc/maint/checknightly
 #
-# Zap unfinished processes on eagle
+# Zap unfinished processes on soot
 #
-45 9 * * * /usr/ucb/rsh eagle "zap tcsh petsc >& /home/bsmith/petsc/maint/nightlylogs/zap.log"
+45 9 * * * /usr/ucb/rsh soot "zap tcsh petsc >& /home/bsmith/petsc/maint/nightlylogs/zap.log"
 #
 # Copy over www access log files for the past 24 hours
 #
@@ -39,14 +42,14 @@
 #
 # Backup the PETSc source dir
 #
-45 5 * * *  /usr/ucb/rsh eagle /home/bsmith/petsc/maint/buildbackup
+45 5 * * *  /usr/ucb/rsh maverick /home/bsmith/petsc/maint/buildbackup
 #
 # Rebuild the fortran stubs - before the nightly builds are started.
 #
 01 22 * * * /usr/ucb/rsh fire "cd /home/bsmith/petsc; make allfortranstubs > /dev/null"
 #
 # rebuild Single Precision CSN code in src/mat/impls/csn/seq
-10 22 * * * /usr/ucb/rsh eagle "cd /home/bsmith/petsc/src/mat/impls/csn/seq; make single_precision > /dev/null"
+10 22 * * * /usr/ucb/rsh soot "cd /home/bsmith/petsc/src/mat/impls/csn/seq; make single_precision > /dev/null"
 #
 # Stash away a copy of petsc.tar.gz every tuesday
 #
@@ -54,4 +57,4 @@
 #
 # Recreate the indices on the PETSc web site once every sunday
 #
-45 5 * * 0 rsh eagle "cd /mcs/www-unix/petsc/petsc-index; /bin/rm -f index.log; build_index.cgi >& index.log; chmod g+w index.log"
+# 45 5 * * 0 rsh maverick "cd /mcs/www-unix/petsc/petsc-index; /bin/rm -f index.log; build_index.cgi >& index.log; chmod g+w index.log"
