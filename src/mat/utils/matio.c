@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.27 1996/06/11 20:34:48 curfman Exp balay $";
+static char vcid[] = "$Id: matio.c,v 1.28 1996/06/18 20:31:22 balay Exp balay $";
 #endif
 
 /* 
@@ -19,6 +19,7 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
 extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
 extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
+extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 extern int MatLoadGetInfo_Private(Viewer);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.85 1996/05/02 22:08:07 balay Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.86 1996/05/02 22:31:34 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.85 1996/05/02 22:08:07 balay Exp balay 
 
 int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11;
+  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11,flg14;
   char p[64];
 
   PetscStrcpy(p,"-");
@@ -47,6 +47,7 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   ierr = OptionsHasName(pre,"-mat_mpibdiag",&flg4); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpirowbs",&flg5); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_seqbaij",&flg11); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpibaij",&flg14); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpiaij",&flg8); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_seqaij",&flg9); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_aij",&flg10); CHKERRQ(ierr);
@@ -97,6 +98,11 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   else if (flg13){
     if (size == 1) *type = MATSEQDENSE;
     else *type = MATMPIDENSE;
+    *set = 1;
+  } 
+  else if (flg14){
+    if (size == 1) *type = MATSEQBAIJ;
+    else *type = MATMPIAIJ;
     *set = 1;
   }  
   else {
