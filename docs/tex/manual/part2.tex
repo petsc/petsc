@@ -6878,8 +6878,8 @@ within the makefile.
 {\small
 \begin{verbatim}
    ALL: ex2
-   CFLAGS   = 
-   FFLAGS   = 
+   CFLAGS   =
+   FFLAGS   =
    CPPFLAGS =
    FPPFLAGS =
 
@@ -6961,41 +6961,40 @@ line that includes the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
-\item \trl{CFLAGS, FFLAGS} - User specified additional options for the C compiler and
+\item[\trl{CFLAGS, FFLAGS}] User specified additional options for the C compiler and
         fortran compiler.
-\item \trl{CPPFLAGS, FPPFLAGS} - User specified additional flags for the C preprocessor
+\item[\trl{CPPFLAGS, FPPFLAGS}] User specified additional flags for the C preprocessor
         and fortran preprocesor.
-\item \trl{CLINKER, FLINKER} - the C and Fortran linkers. 
-\item \trl{RM} - the remove command for deleting files.
-\item \trl{EXAMPLES_1} - examples that will be built with
+\item[\trl{CLINKER, FLINKER}] the C and Fortran linkers. 
+\item[\trl{RM}] the remove command for deleting files.
+\item[\trl{EXAMPLES_1}] examples that will be built with
              \trl{make BOPT=[g,O] examples} (see Section~\ref{sec_common})
-\item \trl{RUNEXAMPLES_1} - examples that will be run with
+\item[\trl{RUNEXAMPLES_1}] examples that will be run with
              \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
-\item \trl{EXAMPLESC} - all C examples that will be checked in/out of RCS
+\item[\trl{EXAMPLESC}] all C examples that will be checked in/out of RCS
              with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item \trl{EXAMPLESF} - all Fortran examples that will be checked in/out of
+\item[\trl{EXAMPLESF}] all Fortran examples that will be checked in/out of
              RCS with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item \trl{PETSC_LIB} - all of the base PETSc libraries.
+\item[\trl{PETSC_LIB}] all of the base PETSc libraries.
              \findex{PETSC_LIB}
-\item \trl{PETSC_FORTRAN_LIB} - the PETSc Fortran interface 
+\item[\trl{PETSC_FORTRAN_LIB}] the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
-\begin{tabbing}
-1234\= EXAMPLESx\= \kill
-\> \trl{EXAMPLES_1 } \> -- basic C suite used in installation tests\\
-\> \trl{EXAMPLES_2 } \> -- additional C suite including graphics\\
-\> \trl{EXAMPLES_3 } \> -- basic Fortran .F suite\\
-\> \trl{EXAMPLES_4 } \> -- subset of 1 and 2 that runs on only a single process\\
-\> \trl{EXAMPLES_5 } \> -- examples that require complex numbers\\
-\> \trl{EXAMPLES_6 } \> -- C examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_8 } \> -- Fortran .F examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_9 } \> -- uniprocess version of 3\\
-\> \trl{EXAMPLES_10 } \> -- Fortran .F examples that require complex numbers\\
-\end{tabbing}
+\begin{itemize}
+\item[\trl{EXAMPLES_1}] basic C suite used in installation tests\\
+\item[\trl{EXAMPLES_2}] additional C suite including graphics\\
+\item[\trl{EXAMPLES_3}] basic Fortran .F suite\\
+\item[\trl{EXAMPLES_4}] subset of 1 and 2 that runs on only a single process\\
+\item[\trl{EXAMPLES_5}] examples that require complex numbers\\
+\item[\trl{EXAMPLES_6}] C examples that do not work with complex numbers\\
+\item[\trl{EXAMPLES_8}] Fortran .F examples that do not work with complex numbers\\
+\item[\trl{EXAMPLES_9}] uniprocess version of 3\\
+\item[\trl{EXAMPLES_10}] Fortran .F examples that require complex numbers\\
+\end{itemize}
 
 We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc 
 library.  Although most users do not need to understand or deal with such
