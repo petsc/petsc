@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.84 1996/01/03 00:02:37 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.85 1996/01/03 16:11:12 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -324,11 +324,8 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
     SETERRQ(1,"MatSetValues_MPIRowbs:Cannot mix inserts and adds");
   }
   a->insertmode = av;
-  if ((a->assembled) && (!a->reassemble_begun)) {
-    /* Symmetrically unscale the matrix by the diagonal */
-    BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    a->reassemble_begun = 1;
-  }
+  /* Note:  There's no need to "unscale" the matrix, since scaling is
+     confined to a->pA, and we're working with a->A here */
   for ( i=0; i<m; i++ ) {
     if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIRowbs:Negative row");
     if (im[i] >= a->M) SETERRQ(1,"MatSetValues_MPIRowbs:Row too large");
@@ -413,12 +410,8 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   Scalar        *rvalues,*svalues;
 
   StashInfo_Private(&a->stash);
-
-  if ((a->assembled) && (!a->reassemble_begun)) {
-    /* Unscale the matrix by the diagonal */
-    BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    a->reassemble_begun = 1;
-  }
+  /* Note:  There's no need to "unscale" the matrix, since scaling is
+            confined to a->pA, and we're working with a->A here */
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce(&a->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
@@ -512,27 +505,39 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
-  int          ierr, format,i,j;
+  int          ierr, format, i, j;
   FILE         *fd;
-  BSspmat      *A = a->A;
-  BSsprow      **rs = A->rows;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
 
-  if (format == FILE_FORMAT_INFO) return 0; /* do nothing for now */
-  MPIU_Seq_begin(mat->comm,1);
-  fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-           a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
-  for ( i=0; i<A->num_rows; i++ ) {
-    fprintf(fd,"row %d:",i+a->rstart);
-    for (j=0; j<rs[i]->length; j++) {
-      fprintf(fd," %d %g ", rs[i]->col[j], rs[i]->nz[j]);
-    }
-    fprintf(fd,"\n");
+  if (format == FILE_FORMAT_INFO) {
+/*   int ind_l, ind_g, clq_l, clq_g, color;
+   ind_l = BSlocal_num_inodes(a->pA); CHKERRBS(0);
+   ind_g = BSglobal_num_inodes(a->pA); CHKERRBS(0);
+   clq_l = BSlocal_num_cliques(a->pA); CHKERRBS(0);
+   clq_g = BSglobal_num_cliques(a->pA); CHKERRBS(0);
+   color = BSnum_colors(a->pA); CHKERRBS(0);
+   MPIU_fprintf(mat->comm,fd,
+    "  inodes: %d local %d global, cliques: %d local %d global, %d colors\n",
+    ind_l,ind_g,clq_l,clq_g,color); */
   }
-  fflush(fd);
-  MPIU_Seq_end(mat->comm,1);
+  else {
+    BSspmat *A = a->A;
+    BSsprow **rs = A->rows;
+    MPIU_Seq_begin(mat->comm,1);
+    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+            a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
+    for ( i=0; i<A->num_rows; i++ ) {
+      fprintf(fd,"row %d:",i+a->rstart);
+      for (j=0; j<rs[i]->length; j++) {
+        fprintf(fd," %d %g ", rs[i]->col[j], rs[i]->nz[j]);
+      }
+      fprintf(fd,"\n");
+    }
+    fflush(fd);
+    MPIU_Seq_end(mat->comm,1);
+  }
   return 0;
 }
 
@@ -734,8 +739,8 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
     if ((a->assembled) && (!a->nonew)) {  /* Free the old info */
-      if (a->pA)       {BSfree_par_mat(a->pA); CHKERRBS(0);}
-      if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);}
+      if (a->pA)       {BSfree_par_mat(a->pA);   a->pA = 0;      CHKERRBS(0);}
+      if (a->comm_pA)  {BSfree_comm(a->comm_pA); a->comm_pA = 0; CHKERRBS(0);} 
     }
     if ((!a->nonew) || (!a->assembled)) {
       /* Form permuted matrix for efficient parallel execution */
@@ -765,7 +770,6 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
       }   
     }
     a->assembled = 1;
-    a->reassemble_begun = 0;
   }
   return 0;
 }
@@ -1054,7 +1058,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   if (a->bsmap) {
       if (a->bsmap->vlocal2global) PetscFree(a->bsmap->vlocal2global);
       if (a->bsmap->vglobal2local) PetscFree(a->bsmap->vglobal2local);
-   /* if (a->bsmap->vglobal2proc)  PetscFree(a->bsmap->vglobal2proc); */
+      if (a->bsmap->vglobal2proc)  (*a->bsmap->free_g2p)(a->bsmap->vglobal2proc);
       PetscFree(a->bsmap);
   } 
 
@@ -1196,6 +1200,17 @@ int MatConvert_MPIRowbs(Mat A, MatType newtype, Mat *newmat)
   return 0;
 }
 
+static int MatPrintHelp_MPIRowbs(Mat A)
+{
+  static int called = 0; 
+  MPI_Comm   comm = A->comm;
+
+  if (called) return 0; else called = 1;
+  MPIU_printf(comm," Options for MATMPIROWBS matrix format (needed for BlockSolve):\n");
+  MPIU_printf(comm,"  -mat_rowbs_no_inode  - Do not use inodes\n");
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 extern int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
 extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,double,int,Mat *);
@@ -1224,7 +1239,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatILUFactorSymbolic_MPIRowbs,
        MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
        0,0,MatConvert_MPIRowbs,
-       0,0,0,MatForwardSolve_MPIRowbs,MatBackwardSolve_MPIRowbs};
+       0,0,0,MatForwardSolve_MPIRowbs,MatBackwardSolve_MPIRowbs,
+       0,0,0,
+       0,0,0,0,MatPrintHelp_MPIRowbs};
 
 /* ------------------------------------------------------------------- */
 
@@ -1248,9 +1265,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=0 and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   Specify the preallocated storage with either nz or nnz (not both).  Set 
+   nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.
+
+   Options Database Keys:
+$    -mat_rowbs_no_inode  - Do not use inodes.
   
 .keywords: matrix, row, symmetric, sparse, parallel, BlockSolve
 
@@ -1282,7 +1302,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   a->assembled        = 0;
   a->fact_clone       = 0;
   a->vecs_permscale   = 0;
-  a->reassemble_begun = 0;
   a->insertmode       = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
@@ -1351,12 +1370,14 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   if (OptionsHasName(PETSC_NULL,"-info")) {
     BSctx_set_pr(bspinfo,1); CHKERRBS(0);
   }
-  if (OptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise")) {
+  if ((OptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise")) ||
+    (OptionsHasName(PETSC_NULL,"-pc_icc_factorpointwise")) ||
+    (OptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode"))) {
     BSctx_set_si(bspinfo,1); CHKERRBS(0);
   } else {
     BSctx_set_si(bspinfo,0); CHKERRBS(0);
   }
-#if defined(BSMAINLOG)
+#if defined(PETSC_LOG)
   MLOG_INIT();  /* Initialize logging */
 #endif
 
@@ -1380,7 +1401,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   bsoff = BSmake_off_map( *offset, bspinfo, a->M );
   bsmap->vglobal2proc	= (void *)bsoff;
   bsmap->fglobal2proc	= BSglob2proc;
-  bsmap->free_g2p	= 0;
+  bsmap->free_g2p	= BSfree_off_map;
 
   ierr = MatCreateMPIRowbs_local(A,nz,nnz); CHKERRQ(ierr);
   if (OptionsHasName(PETSC_NULL,"-help")) {
