@@ -61,7 +61,9 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   uid_t  uid;
   gid_t *gid = PETSC_NULL;
   int    numGroups;
-  int    rbit, wbit, ebit;
+  int    rbit = S_IROTH;
+  int    wbit = S_IWOTH;
+  int    ebit = S_IXOTH;
   int    ierr;
 
   PetscFunctionBegin;
@@ -91,11 +93,6 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
         ebit = S_IXGRP;
         break;
       }
-    }
-    if (g >= numGroups) {
-      rbit = S_IROTH;
-      wbit = S_IWOTH;
-      ebit = S_IXOTH;
     }
   }
   ierr = PetscFree(gid);                                                                                  CHKERRQ(ierr);
