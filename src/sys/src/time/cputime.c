@@ -1,27 +1,35 @@
 #ifndef lint
-static char vcid[] = "$Id: cputime.c,v 1.1 1994/03/18 00:22:04 gropp Exp $";
+static char vcid[] = "$Id: cputime.c,v 1.1 1997/04/01 15:31:40 bsmith Exp bsmith $";
 #endif
 
-#include "tools.h"
-#include <stdio.h>
-#if defined(cray) || defined(__MSDOS__) || defined(HPUX)
+/*
+              This file is not currently used. It is to allow one
+     to measure CPU time usage of their job, not just real time usage.
+*/
+
+#include "petsc.h"
+#include "src/sys/src/files.h"
+#if defined(PARCH_hpux)
 #include <time.h>
-#else
-#if defined(solaris)
+#elif defined(PARCH_solaris)
 #include <sys/times.h>
 #include <limits.h>
 #else
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/resource.h>
+#if defined(__cplusplus)
+extern "C" {
 #endif
-#ifdef SOLARIS
-#include <sys/rusage.h>
+extern int getrusage(int,struct rusage*);
+#if defined(__cplusplus)
+}
 #endif
 #endif
 
 /*@
-    SYGetCPUTime - Returns the time in seconds used by the process.
+    PetscGetCPUTime - Returns the time in seconds used by the process.
 
     Returns:
     Time in seconds charged to the process.
@@ -31,50 +39,20 @@ $   #include "system/system.h"
 $   ...
 $   double t1, t2;
 $
-$   t1 = SYGetCPUTime();
+$   t1 = PetscGetCPUTime();
 $   ... code to time ...
-$   t2 = SYGetCPUTime() - t1;
+$   t2 = PetscGetCPUTime() - t1;
 $   printf( "Code took %f CPU seconds\n", t2 );
 $
 @*/
-double SYGetCPUTime()
+PLogDouble PetscGetCPUTime()
 {
-#if defined(titan)
-  return(1.0e-6*((double) clock()));
-
-#elif defined(intelnx)
-  double dclock();
-  return dclock();
-
-#elif defined(cm5)
-static int not_ready = 1;
-extern double CMMD_node_timer_busy();
-double val;
-#define CM5TOOLSTIMER1 1
-if (not_ready) {
-    CMMD_node_timer_clear( CM5TOOLSTIMER1 );
-    CMMD_node_timer_start( CM5TOOLSTIMER1 );
-    not_ready = 0;
-    }
-
-CMMD_node_timer_stop( CM5TOOLSTIMER1 );
-val = CMMD_node_timer_busy( CM5TOOLSTIMER1 );
-CMMD_node_timer_start( CM5TOOLSTIMER1 );
-return val;
-
-#elif defined(solaris)
+#if defined(PARCH_solaris)
   struct tms temp;
   times(&temp);
   return  ((double) temp.tms_utime)/((double) CLK_TCK);
-
-#elif defined(cray)
-/* PROBLEM - this is user + system on behalf of user.  times(2) may be used
-   to get the individual elements of the time */
-return ((double)clock()) / ((double)CLOCKS_PER_SEC);
-
-#elif defined(__MSDOS__) || defined(HPUX)
+#elif defined(PARCH_hpux)
 return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
-
 #else
   static struct rusage temp;
   double foo, foo1;
