@@ -1,6 +1,8 @@
 #!/bin/csh
+set dir=`dirname $0`
+set zap=${dir}/zap
 set count=0
 while ($count < 25)
-  zap make; zap src; zap ex; zap if; zap cc; zap CC; zap mat
+  $zap make; $zap src; $zap ex; $zap if; $zap cc; $zap CC; $zap mat
   set count=`expr $count + 1`
 end

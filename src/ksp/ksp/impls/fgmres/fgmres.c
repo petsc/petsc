@@ -706,8 +706,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN int KSPComputeExtremeSingularValues_FGMRES(KSP,PetscReal *,PetscReal *);
-EXTERN int KSPComputeEigenvalues_FGMRES(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 typedef int (*FCN1)(KSP,int,int,PetscReal,void*); /* force argument to next function to not be extern C*/
 typedef int (*FCN2)(void*);
@@ -805,8 +805,8 @@ int KSPCreate_FGMRES(KSP ksp)
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
   ksp->ops->view                         = KSPView_GMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FGMRES;
-  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FGMRES;
-  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_FGMRES;
+  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
+  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

@@ -126,25 +126,19 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is1+i);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is2+i);CHKERRQ(ierr);
   }
-  /*
-  if (rank==0){
-    printf(" [%d] before MatIncreaseOverlap, is1[0-1]: \n",rank);
-    ISView(is1[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-    ISView(is1[1],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-  }
-  */
+ 
   ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
-
   ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr); 
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    if (!flg ) {
-      /*
-      ierr = ISSort(is1[i]);CHKERRQ(ierr);
-      ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = ISSort(is2[i]);CHKERRQ(ierr);
-      ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-      */
+    if (!flg ){
+      int prid = size;
+      if (rank == prid){
+        ierr = ISSort(is1[i]);CHKERRQ(ierr);
+        ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        ierr = ISSort(is2[i]);CHKERRQ(ierr); 
+        ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      } 
       SETERRQ1(1,"i=%d, is1 != is2",i);
     }
   }

@@ -1,0 +1,59 @@
+#!/usr/bin/env perl
+#!/usr/bin/perl
+#!/usr/local/bin/perl
+
+if ( @ARGV > 3 ) {
+    print STDERR "Usage: $0 [-signal] [ignore-pattern] pattern \n";
+    exit;
+}
+$sig = 'KILL';
+$ignore = '';
+if ( $ARGV[0] =~ /^-([A-Z0-9]+)$/ ) {
+    $sig = $1;
+    shift;
+}
+
+$BSD = -f '/vmunix';
+$pscmd = $BSD ? "ps auxww" : "ps -ef";
+#
+# Freebsd Acts differently
+#
+open(ARCH,"uname|") || die  "Can't run 'uname': $!";
+$uname = <ARCH>;
+if ( $uname =~FreeBSD || $uname =~Linux || $uname =~Darwin) {
+    $pscmd = "ps auxww";
+}
+close(ARCH);
+
+if ($#ARGV == 1) {
+    $ignore = $ARGV[0];
+}
+$pattern = $ARGV[$#ARGV];
+
+open(PS, "$pscmd|") || die "Can't run '$pscmd': $!";
+$title = <PS>;
+
+while ( $proc = <PS> ) {
+    chop($proc);
+    ($user, $pid) = split(' ', $proc);
+    next if $pid == $$;
+    next if ($proc =~$ignore && $ignore != ''); 
+    next if $proc =~$pscmd;
+    if ( $proc =~ $pattern ) {
+        if ( kill $sig, $pid ) {
+            write;
+        }
+    }
+}
+exit(0);
+
+format STDOUT_TOP =
+			   Processes Killed
+@<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$title
+.
+
+format STDOUT =
+@<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$proc
+.

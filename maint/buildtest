@@ -44,7 +44,7 @@ rm -f $nPETSC_DIR/buildout.tar
 echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 
 cd $nPETSC_DIR
-make PETSC_ARCH=linux PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
+make PETSC_ARCH=linux BOPT=g PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
 
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
@@ -82,7 +82,7 @@ else
   set EJOBS=`grep PETSC_HAVE_ $nPETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 endif
 
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/build.log
+make BOPT=g PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/build.log
 
 if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set EJOBS=""
@@ -98,7 +98,7 @@ tar rf buildoutput.tar build.log
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
 foreach j ($JOBS $EJOBS)
-  $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' >>& examples.log
+  $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
   echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end
 echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $nPETSC_DIR/examples.log

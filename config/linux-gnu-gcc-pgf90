@@ -2,22 +2,22 @@
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set BOPT=g_c++
+  set BOPT=g
   set JOBS=(1 2 3 6 8 13 18)
 else if ($day == Mon) then
-  set BOPT=g    
+  set BOPT=O    
   set JOBS=(1 2 3 6 8 13)        
 else if ($day == Tue) then
-  set BOPT=O        
+  set BOPT=g        
   set JOBS=(1 2 3 6 8)        
 else if ($day == Wed) then
-  set BOPT=g_complex 
+  set BOPT=O
   set JOBS=(1 2 3 5 10)       
 else if ($day == Thu) then
-  set BOPT=O_c++
+  set BOPT=g
   set JOBS=(1 2 3 6 8 13 18)
 else if ($day == Fri) then
-  set BOPT=O_complex    
+  set BOPT=O
   set JOBS=(1 2 3 5 10 13)
 else if ($day == Sat) then
   set BOPT=O        

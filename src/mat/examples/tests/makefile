@@ -794,6 +794,25 @@ runex78:
 	   else echo "Possible problem with ex78_1, diffs above"; fi; \
 	   ${RM} -f ex78_1.tmp
 
+runex91:
+	-@${MPIRUN} -np 1  ex91 -ov 2 > ex91_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex91_1.out ex91_1.tmp) then true; \
+	   else echo "Possible problem with ex91_1, diffs above"; fi; \
+	   ${RM} -f ex91_1.tmp
+
+NPROCS    = 1 3 4
+OVERLAP   = 1 3
+runex92:
+	-@touch ex92_1.tmp;\
+	for np in ${NPROCS}; do \
+	  for ov in ${OVERLAP}; do \
+	   ${MPIRUN} -np $$np  ex92 -ov  $$ov >> ex92_1.tmp 2>&1; \
+	  done; \
+	done; \
+	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
+	else echo "Possible problem with ex92_1, diffs above"; fi; \
+	${RM} -f ex92_1.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
