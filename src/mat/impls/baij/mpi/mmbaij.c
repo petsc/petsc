@@ -228,5 +228,110 @@ int DisAssemble_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*      ugly stuff added for Glenn someday we should fix this up */
+
+int *uglyrmapd = 0,*uglyrmapo = 0;  /* mapping from the local ordering to the "diagonal" and "off-diagonal"
+                                      parts of the local matrix */
+Vec uglydd = 0,uglyoo = 0;   /* work vectors used to scale the two parts of the local matrix */
+
+
+#undef __FUNC__
+#define __FUNC__ "MatMPIBAIJDiagonalScaleLocalSetUp"
+int MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
+{
+  Mat_MPIBAIJ  *ina = (Mat_MPIBAIJ*) inA->data; /*access private part of matrix */
+  Mat_SeqBAIJ  *A = (Mat_SeqBAIJ*)ina->A->data;
+  Mat_SeqBAIJ  *B = (Mat_SeqBAIJ*)ina->B->data;
+  int          ierr,bs = A->bs,i,n,nt,j,cstart,cend,no,*garray = ina->garray,*lindices;
+  int          *r_rmapd,*r_rmapo;
+  
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
+  ierr = MatGetSize(ina->A,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc((inA->bmapping->n+1)*sizeof(int),&r_rmapd);CHKERRQ(ierr);
+  ierr = PetscMemzero(r_rmapd,inA->bmapping->n*sizeof(int));CHKERRQ(ierr);
+  nt   = 0;
+  for (i=0; i<inA->bmapping->n; i++) {
+    if (inA->bmapping->indices[i]*bs >= cstart && inA->bmapping->indices[i]*bs < cend) {
+      nt++;
+      r_rmapd[i] = inA->bmapping->indices[i] + 1;
+    }
+  }
+  if (nt*bs != n) SETERRQ2(1,"Hmm nt*bs %d n %d",nt*bs,n);
+  ierr = PetscMalloc((n+1)*sizeof(int),&uglyrmapd);CHKERRQ(ierr);
+  for (i=0; i<inA->bmapping->n; i++) {
+    if (r_rmapd[i]){
+      for (j=0; j<bs; j++) {
+        uglyrmapd[(r_rmapd[i]-1)*bs+j-cstart] = i*bs + j;
+      }
+    }
+  }
+  ierr = PetscFree(r_rmapd);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&uglydd);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((ina->Nbs+1)*sizeof(int),&lindices);CHKERRQ(ierr);
+  ierr = PetscMemzero(lindices,ina->Nbs*sizeof(int));CHKERRQ(ierr);
+  for (i=0; i<B->nbs; i++) {
+    lindices[garray[i]] = i+1;
+  }
+  no   = inA->bmapping->n - nt;
+  ierr = PetscMalloc((inA->bmapping->n+1)*sizeof(int),&r_rmapo);CHKERRQ(ierr);
+  ierr = PetscMemzero(r_rmapo,inA->bmapping->n*sizeof(int));CHKERRQ(ierr);
+  nt   = 0;
+  for (i=0; i<inA->bmapping->n; i++) {
+    if (lindices[inA->bmapping->indices[i]]) {
+      nt++;
+      r_rmapo[i] = lindices[inA->bmapping->indices[i]];
+    }
+  }
+  if (nt > no) SETERRQ2(1,"Hmm nt %d no %d",nt,n);
+  ierr = PetscFree(lindices);CHKERRQ(ierr);
+  ierr = PetscMalloc((nt*bs+1)*sizeof(int),&uglyrmapo);CHKERRQ(ierr);
+  for (i=0; i<inA->bmapping->n; i++) {
+    if (r_rmapo[i]){
+      for (j=0; j<bs; j++) {
+        uglyrmapo[(r_rmapo[i]-1)*bs+j] = i*bs + j;
+      }
+    }
+  }
+  ierr = PetscFree(r_rmapo);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nt*bs,&uglyoo);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "MatMPIBAIJDiagonalScaleLocal"
+int MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
+{
+  Mat_MPIBAIJ  *a = (Mat_MPIBAIJ*) A->data; /*access private part of matrix */
+  int          ierr,n,i;
+  PetscScalar  *d,*o,*s;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(scale,&s);CHKERRQ(ierr);
+  
+  ierr = VecGetLocalSize(uglydd,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(uglydd,&d);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    d[i] = s[uglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
+  }
+  ierr = VecRestoreArray(uglydd,&d);CHKERRQ(ierr);
+  /* column scale "diagonal" portion of local matrix */
+  ierr = MatDiagonalScale(a->A,PETSC_NULL,uglydd);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(uglyoo,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(uglyoo,&o);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    o[i] = s[uglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
+  }
+  ierr = VecRestoreArray(scale,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uglyoo,&o);CHKERRQ(ierr);
+  /* column scale "off-diagonal" portion of local matrix */
+  ierr = MatDiagonalScale(a->B,PETSC_NULL,uglyoo);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 
