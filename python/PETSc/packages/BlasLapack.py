@@ -31,8 +31,13 @@ class Configure(config.base.Configure):
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
+    if blasLibrary is None:
+      separateBlas = 0
+      blasLibrary  = lapackLibrary
+    else:
+      separateBlas = 1
     if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
-    if not blasLibrary is None and not isinstance(blasLibrary, list): blasLibrary = [blasLibrary]
+    if not isinstance(blasLibrary,   list): blasLibrary   = [blasLibrary]
     foundBlas   = 0
     foundLapack = 0
     otherLibs   = self.compilers.flibs
@@ -41,7 +46,7 @@ class Configure(config.base.Configure):
     foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = 1)
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
-    if foundBlas and not blasLibrary is None:
+    if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
     foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = 1)
@@ -82,6 +87,8 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     functionalBlasLapack = []
+    self.foundBlas       = 0
+    self.foundLapack     = 0
     for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
       
       self.framework.log.write('================================================================================\n')
