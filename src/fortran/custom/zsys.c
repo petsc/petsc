@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.18 1996/04/13 20:53:08 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -136,7 +136,7 @@ void petscrandomdestroy_(PetscRandom r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.18 1996/04/13 20:53:08 bsmith Exp balay $
+ *  $Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
@@ -147,10 +147,11 @@ void petscrandomdestroy_(PetscRandom r, int *__ierr ){
 */
 
 typedef struct _PtrToIdx {
-    int idx;
-    void *ptr;
+    int              idx;
+    void             *ptr;
     struct _PtrToIdx *next;
 } PtrToIdx;
+
 #define MAX_PTRS 10000
 
 static PtrToIdx PtrArray[MAX_PTRS];
@@ -193,17 +194,17 @@ com instead of comm).\n" );
 int MPIR_FromPointer(void *ptr )
 {
   int      idx;
-  PtrToIdx *new;
+  PtrToIdx *newl;
   if (DoInit) {
     DoInit = 0;
     MPIR_InitPointer();
   }
   if (!ptr) return 0;
   if (avail) {
-    new		      = avail;
+    newl		      = avail;
     avail	      = avail->next;
-    new->next	      = 0;
-    idx		      = new->idx;
+    newl->next	      = 0;
+    idx		      = newl->idx;
     PtrArray[idx].ptr = ptr;
     return idx;
   }
