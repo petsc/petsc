@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.83 2001/03/22 20:29:16 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.84 2001/07/20 21:17:46 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -34,7 +34,7 @@ struct _VecOps {
        (*destroyvecs)(const Vec[],int),     /* free array of vectors */
        (*dot)(Vec,Vec,Scalar*),             /* z = x^H * y */
        (*mdot)(int,Vec,const Vec[],Scalar*), /* z[j] = x dot y[j] */
-       (*norm)(Vec,NormType,double*),        /* z = sqrt(x^H * x) */
+       (*norm)(Vec,NormType,PetscReal*),        /* z = sqrt(x^H * x) */
        (*tdot)(Vec,Vec,Scalar*),             /* x'*y */
        (*mtdot)(int,Vec,const Vec[],Scalar*),/* z[j] = x dot y[j] */
        (*scale)(const Scalar*,Vec),          /* x = alpha * x   */
@@ -56,8 +56,8 @@ struct _VecOps {
        (*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),        /* restore data array */
-       (*max)(Vec,int*,double*),      /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,int*,double*),      /* z = min(x); idx=index of min(x) */
+       (*max)(Vec,int*,PetscReal*),      /* z = max(x); idx=index of max(x) */
+       (*min)(Vec,int*,PetscReal*),      /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
        (*setoption)(Vec,VecOption),
        (*setvaluesblocked)(Vec,int,const int[],const Scalar[],InsertMode),
@@ -68,7 +68,7 @@ struct _VecOps {
        (*getmap)(Vec,PetscMap*),
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
-       (*norm_local)(Vec,NormType,double*),
+       (*norm_local)(Vec,NormType,PetscReal*),
        (*loadintovector)(PetscViewer,Vec),
        (*reciprocal)(Vec),
        (*viewnative)(Vec,PetscViewer),
