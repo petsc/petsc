@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.243 1998/05/08 01:49:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.244 1998/05/11 21:53:56 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -311,6 +311,14 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   Scalar      *rvalues,*svalues;
 
   PetscFunctionBegin;
+  if (aij->donotstash) {
+    aij->svalues    = 0; aij->rvalues    = 0;
+    aij->nsends     = 0; aij->nrecvs     = 0;
+    aij->send_waits = 0; aij->recv_waits = 0;
+    aij->rmax       = 0;
+    PetscFunctionReturn(0);
+  }
+
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) {
@@ -351,7 +359,7 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
+  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
@@ -381,7 +389,8 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
       ierr = MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(starts); PetscFree(nprocs);
+  PetscFree(starts); 
+  PetscFree(nprocs);
 
   /* Free cache space */
   PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Number of off-processor values %d\n",aij->stash.n);
@@ -408,6 +417,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   InsertMode  addv = mat->insertmode;
 
   PetscFunctionBegin;
+
   /*  wait on receives */
   while (count) {
     ierr = MPI_Waitany(nrecvs,aij->recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
@@ -446,7 +456,8 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr        = MPI_Waitall(aij->nsends,aij->send_waits,send_status);CHKERRQ(ierr);
     PetscFree(send_status);
   }
-  PetscFree(aij->send_waits); PetscFree(aij->svalues);
+  if (aij->send_waits) PetscFree(aij->send_waits); 
+  if (aij->svalues)    PetscFree(aij->svalues);
 
   ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode); CHKERRQ(ierr);
