@@ -42,7 +42,7 @@ all: chkpetsc_dir
 	-@cd $(PETSC_DIR)/src/sys/src ; \
 	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) rs6000_time
 	$(RANLIB) $(PDIR)/*.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 
@@ -121,7 +121,7 @@ fortran: chkpetsc_dir
 	-@cd src/fortran/auto; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
 	-@echo "========================================="
 
@@ -181,7 +181,7 @@ fortran90: chkpetsc_dir fortran
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
 	$(RANLIB) $(PDIR)/libpetscfortran.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran90 interface library"
 	-@echo "========================================="
 
