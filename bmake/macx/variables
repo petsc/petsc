@@ -27,7 +27,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = cc
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = /sw/lib/libg2c.a
+C_SYS_LIB	   = -L/sw/lib -lg2c -lfrtbegin
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -43,7 +43,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = c++
 CXX_FLINKER	   = c++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = /sw/lib/libg2c.a
+CXX_SYS_LIB	   = -L/sw/lib -lg2c -lfrtbegin
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
