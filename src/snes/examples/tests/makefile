@@ -109,7 +109,7 @@ runex5:
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
 runex5_2:
-	-@$(MPIRUN) ex5 -snes_mf > ex5_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex5 -snes_mf -snes_smonitor > ex5_2.tmp 2>&1;   \
            if (diff output/ex5_2.out ex5_2.tmp) then true; \
            else echo "Possible problem with ex5_2, diffs above"; fi; \
            $(RM) -f ex5_2.tmp

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.45 1995/10/01 21:53:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.46 1995/10/12 04:20:05 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -31,8 +31,6 @@ int SNESSolve_LS(SNES snes,int *outits)
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       fnorm, gnorm, xnorm, ynorm, *history;
   Vec          Y, X, F, G, W, TMP;
-  SLES         sles;
-  KSP          ksp;
 
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
@@ -51,14 +49,6 @@ int SNESSolve_LS(SNES snes,int *outits)
   if (history && history_len > 0) history[0] = fnorm;
   if (snes->monitor) {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
 
-  /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-  if (snes->ksp_ewconv) {
-    ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,(void *)snes);
-           CHKERRQ(ierr);
-  }
-          
   for ( i=0; i<maxits; i++ ) {
     snes->iter = i+1;
 
@@ -223,11 +213,12 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     *ynorm = maxstep;
   }
   minlambda = steptol/(*ynorm);
+  ierr = MatMult(snes->jacobian,y,w); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-  ierr = VecDot(f,y,&cinitslope); CHKERRQ(ierr);
+  ierr = VecDot(f,w,&cinitslope); CHKERRQ(ierr);
   initslope = real(cinitslope);
 #else
-  VecDot(f,y,&initslope); CHKERRQ(ierr);
+  ierr = VecDot(f,w,&initslope); CHKERRQ(ierr);
 #endif
   if (initslope > 0.0) initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
@@ -244,7 +235,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
   /* Fit points with quadratic */
   lambda = 1.0; count = 0;
-  lambdatemp = -initslope/(2.0*(*gnorm - fnorm - initslope));
+  lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
   lambdaprev = lambda;
   gnormprev = *gnorm;
   if (lambdatemp <= .1*lambda) lambda = .1*lambda; 
@@ -370,11 +361,12 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     *ynorm = maxstep;
   }
   minlambda = steptol/(*ynorm);
+  ierr = MatMult(snes->jacobian,y,w); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-  ierr = VecDot(f,y,&cinitslope); CHKERRQ(ierr);
+  ierr = VecDot(f,w,&cinitslope); CHKERRQ(ierr);
   initslope = real(cinitslope);
 #else
-  ierr = VecDot(f,y,&initslope); CHKERRQ(ierr);
+  ierr = VecDot(f,w,&initslope); CHKERRQ(ierr);
 #endif
   if (initslope > 0.0) initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
@@ -401,7 +393,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
     }
-    lambdatemp = -initslope/(2.0*(*gnorm - fnorm - initslope));
+    lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
     lambdaprev = lambda;
     gnormprev = *gnorm;
     if (lambdatemp <= .1*lambda) { 

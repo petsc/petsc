@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.5 1995/10/12 04:20:45 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -38,26 +38,26 @@ is solved.  The command line options are:\n\
 #include <stdio.h>
 
 typedef struct {
-      double        param;         /* test problem parameter */
-      int           mx,my,mz;      /* Discretization in x,y-direction */
-      Vec           localX,localF; /* ghosted local vector */
-      DA            da;            /* regular array datastructure */
+    double    param;           /* test problem nonlinearity parameter */
+    int       mx, my, mz;      /* discretization in x,y,z-directions */
+    Vec       localX, localF;  /* ghosted local vectors */
+    DA        da;              /* distributed array datastructure */
 } AppCtx;
 
-int  FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
+int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
 
 int main( int argc, char **argv )
 {
+  SNES          snes;
   SLES          sles;
   PC            pc;
-  SNES          snes;
+  Mat           J;
   SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
-  int           ierr, its, N,Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
+  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           Nz = PETSC_DECIDE; 
   AppCtx        user;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Mat           J;
   DAStencilType stencil = DA_STENCIL_BOX;
 
   PetscInitialize( &argc, &argv, 0,0,help );
@@ -77,16 +77,14 @@ int main( int argc, char **argv )
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
-  N          = user.mx*user.my*user.mz;
+  N = user.mx*user.my*user.mz;
   
   /* Set up distributed array */
-  ierr = DACreate3d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,
-                    user.mx,user.my,user.mz,Nx,Ny,Nz,
-                    1,1,&user.da); 
-  CHKERRA(ierr);
-  ierr = DAGetDistributedVector(user.da,&x); CHKERRQ(ierr);
+  ierr = DACreate3d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,
+                    user.my,user.mz,Nx,Ny,Nz,1,1,&user.da); CHKERRA(ierr);
+  ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRQ(ierr);
+  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
@@ -106,9 +104,9 @@ int main( int argc, char **argv )
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* Force no preconditioning to be used. */
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
 
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
@@ -116,12 +114,13 @@ int main( int argc, char **argv )
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DADestroy(user.da); CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = VecDestroy(user.localX); CHKERRA(ierr);
+  ierr = VecDestroy(user.localF); CHKERRA(ierr);
+  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr); ierr = SNESDestroy(snes); CHKERRA(ierr);
 
+  PetscFinalize();
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)

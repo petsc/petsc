@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.20 1995/10/02 20:21:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.21 1995/10/12 04:19:54 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -104,6 +104,8 @@ int SNESSetFromOptions(SNES snes)
   double threshold = PETSC_DEFAULT;
 
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  if (snes->setup_called)
+    SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp!");
   if (SNESGetMethodFromOptions_Private(snes,&method)) {
     SNESSetMethod(snes,method);
   }
@@ -181,6 +183,9 @@ int SNESSetFromOptions(SNES snes)
 
    Input Parameter:
 .  snes - the SNES context
+
+   Options Database Keys:
+$  -help, -h
 
 .keywords: SNES, nonlinear, help
 
@@ -407,26 +412,27 @@ int SNESCreate(MPI_Comm comm,SNESType type,SNES *outsnes)
   *outsnes = 0;
   PETSCHEADERCREATE(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
-  snes->max_its         = 50;
-  snes->max_funcs	= 1000;
-  snes->norm		= 0.0;
-  snes->rtol		= 1.e-8;
-  snes->atol		= 1.e-10;
-  snes->xtol		= 1.e-8;
-  snes->trunctol	= 1.e-12;
-  snes->nfuncs          = 0;
-  snes->nfailures       = 0;
-  snes->monitor         = 0;
-  snes->data            = 0;
-  snes->view            = 0;
+  snes->max_its           = 50;
+  snes->max_funcs	  = 1000;
+  snes->norm		  = 0.0;
+  snes->rtol		  = 1.e-8;
+  snes->atol		  = 1.e-10;
+  snes->xtol		  = 1.e-8;
+  snes->trunctol	  = 1.e-12;
+  snes->nfuncs            = 0;
+  snes->nfailures         = 0;
+  snes->monitor           = 0;
+  snes->data              = 0;
+  snes->view              = 0;
   snes->computeumfunction = 0;
-  snes->umfunP          = 0;
-  snes->fc              = 0;
-  snes->deltatol        = 1.e-12;
-  snes->fmin            = -1.e30;
-  snes->method_class    = type;
+  snes->umfunP            = 0;
+  snes->fc                = 0;
+  snes->deltatol          = 1.e-12;
+  snes->fmin              = -1.e30;
+  snes->method_class      = type;
   snes->set_method_called = 0;
-  snes->ksp_ewconv      = 0;
+  snes->setup_called      = 0;
+  snes->ksp_ewconv        = 0;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PETSCNEW(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
@@ -811,6 +817,15 @@ int SNESSetUp(SNES snes)
       "SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->jacobian) SETERRQ(1,
       "SNESSetUp:Must call SNESSetJacobian() first");
+
+    /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
+    if (snes->ksp_ewconv && snes->type != SNES_EQ_NTR) {
+      SLES sles; KSP ksp;
+      ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+      ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,
+             (void *)snes); CHKERRQ(ierr);
+    }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->set_method_called)
       {ierr = SNESSetMethod(snes,SNES_UM_NTR); CHKERRQ(ierr);}
@@ -823,8 +838,9 @@ int SNESSetUp(SNES snes)
     if (!snes->jacobian) SETERRQ(1,
       "SNESSetUp:Must call SNESSetHessian() first");
   } else SETERRQ(1,"SNESSetUp:Unknown method class");
-  if (snes->setup) return (*snes->setup)(snes);
-  else return 0;
+  if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
+  snes->setup_called = 1;
+  return 0;
 }
 
 /*@C
@@ -982,9 +998,7 @@ $    -snes_ttol tol
    Notes:
    If the step computation involves an application of the inverse
    Jacobian (or Hessian), this parameter may be used to control the 
-   accuracy of that application.  In particular, this tolerance is used 
-   by SNESKSPDefaultConverged() and SNESKSPQuadraticConverged() to determine
-   the minimum convergence tolerance for the iterative linear solvers.
+   accuracy of that application. 
 
 .keywords: SNES, nonlinear, set, truncation, tolerance
 
@@ -1222,7 +1236,7 @@ int SNESSolve(SNES snes,int *its)
 {
   int ierr;
   PLogEventBegin(SNES_Solve,snes,0,0,0);
-  ierr = (*(snes)->solve)( snes,its ); CHKERRQ(ierr);
+  ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
   if (OptionsHasName(0,"-snes_view")) {
     SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
@@ -1266,13 +1280,16 @@ $    SNES_EQ_NLS - Newton's method with line search
 $    SNES_EQ_NTR - Newton's method with trust region
 $  Unconstrained minimization:
 $    SNES_UM_NTR - Newton's method with trust region 
+$    SNES_UM_NLS - Newton's method with line search
 
   Options Database Command:
 $ -snes_method  <method>
 $    Use -help for a list of available methods
 $    (for instance, ls or tr)
+
+.keysords: SNES, set, method
 @*/
-int SNESSetMethod( SNES snes, SNESMethod method)
+int SNESSetMethod(SNES snes,SNESMethod method)
 {
   int (*r)(SNES);
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
