@@ -61,8 +61,9 @@ class BabelPackageDict (UserDict.UserDict):
     self.data[key] = value
 
 class Defaults:
-  implRE    = re.compile(r'^(.*)_Impl$')
-  libraryRE = re.compile(r'^(.*)lib(.*).so$')
+  implRE       = re.compile(r'^(.*)_Impl$')
+  pythonImplRE = re.compile(r'^(.*)_Impl.py$')
+  libraryRE    = re.compile(r'^(.*)lib(.*).so$')
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
@@ -83,6 +84,7 @@ class Defaults:
 
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
+    if self.pythonImplRE.match(source):            return 1
     return 0
 
   def isNotLibrary(self, source):
@@ -243,11 +245,15 @@ class CompileDefaults (Defaults):
         actions.append(iorAction)
 
         # For skeleton and implementation source
-        if lang == 'C':
+        if lang == 'C' or lang == 'Python':
           iorAction.includeDirs.append(stubDir)
           self.addBabelInclude(iorAction)
           if self.includeDirs.has_key(package):
             iorAction.includeDirs.extend(self.includeDirs[package])
+          if lang == 'Python':
+            iorAction.includeDirs.append(bs.argDB['PYTHON_INCLUDE'])
+            # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
+            iorAction.includeDirs.append(os.path.join(self.babelDir, 'python'))
         else:
           if lang == 'C++':
             implAction = compile.CompileCxx(library)
