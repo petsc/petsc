@@ -49,6 +49,7 @@ typedef struct {
 EXTERN int MatDuplicate_AIJMUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDuplicate_SBAIJMUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,Mat*);
+          
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
   input: 
@@ -843,7 +844,7 @@ EXTERN_C_BEGIN
 int MatMPISBAIJSetPreallocation_MPISBAIJMUMPS(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat       A;
-  Mat_MUMPS *mumps;
+  Mat_MUMPS *mumps=(Mat_MUMPS*)B->spptr;
   int       ierr;
 
   PetscFunctionBegin;
@@ -868,7 +869,7 @@ int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   int       ierr,size;
   MPI_Comm  comm;
   Mat       B=*newmat;
-  Mat_MUMPS *mumps;
+  Mat_MUMPS *mumps=(Mat_MUMPS*)A->spptr;
   void      (*f)(void);
 
   PetscFunctionBegin;
