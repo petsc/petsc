@@ -15,7 +15,7 @@ versions.
 
   You can obtain more information about the new PETSc
 via http://www.mcs.anl.gov/petsc/petsc.html or in the 
-READ at ftp://info.mcs.anl.gov/pub/petsc. The distribution 
+README at ftp://info.mcs.anl.gov/pub/petsc. The distribution 
 is called petsc.tar.Z
 
   Barry Smith
@@ -47,16 +47,13 @@ ali@cray.com                           /* not a valid address */
 alm@math.psu.edu 
 almeie@rpi.edu 
 alouges@cmla10.cac-diam                /* not a valid address */
-ampferl@informatik.tu-muenchen.de 
+ampferl@informatik.tu-muenchen.de      /* not a valid address */
 antonia@server4.usr.dsi.unimi.it 
 antonio@cs.tu-berlin.de 
 antro@crs4.it 
 ardoin@ida.org 
 arem@ifi.uio.no 
 ashted@saturn.wwc.edu 
-
----- sent to people above this line -------
-
 astfalk@convex.com 
 astrid@ife.no 
 awm@osc.edu 
@@ -82,6 +79,8 @@ bordawek@bonnie.msc.anl.gov
 bottasso@scorec.rpi.edu 
 bpg@lns561.lns.cornell.edu 
 brett@mop.com 
+---- sent to people above this line -------
+
 brian@hpcvxbjp.cv.hpc.om 
 broeckho@qtp.ufl.edu 
 brown@eurhep.dec.com 
