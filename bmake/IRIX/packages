@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.4 1997/11/12 15:48:16 bsmith Exp balay $ 
+# $Id: base.site,v 1.5 1998/03/19 02:01:29 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -54,7 +54,7 @@ MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE    = -I/home/petsc/BlockSolve95/include
-BS_LIB        = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a -lpetscmat
+BS_LIB        = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a -lpetscmat
 #
 # Optional Matlab location
 #
