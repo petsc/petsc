@@ -1,6 +1,11 @@
+#ifdef PETSC_RCS_HEADER
+/* $Id: signal.c,v 1.53 1998/04/13 17:30:26 bsmith Exp $" */
+
 /*
     Defines the configuration for this machine
 */
+#endif
+
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
