@@ -359,11 +359,12 @@ int EventPerfLogDeactivate(EventPerfLog eventLog, PetscEvent event) {
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogActivate(), EventPerfLogDeactivate()
 @*/
 int EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, int cookie) {
-  int c = eventRegLog->eventInfo[c].cookie;
   int e;
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
+    int c = eventRegLog->eventInfo[e].cookie;
+
     if (c == cookie) eventLog->eventInfo[e].active = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -386,11 +387,12 @@ int EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, in
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogDeactivate(), EventPerfLogActivate()
 @*/
 int EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, int cookie) {
-  int c = eventRegLog->eventInfo[c].cookie;
   int e;
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
+    int c = eventRegLog->eventInfo[e].cookie;
+
     if (c == cookie) eventLog->eventInfo[e].active = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
