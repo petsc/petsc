@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.44 2000/02/14 17:01:30 bsmith Exp curfman $ */
+/* $Id: petscerror.h,v 1.45 2000/03/31 22:28:09 curfman Exp balay $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -195,6 +195,10 @@ extern int PetscStackPrint(PetscStack*,FILE* fp);
   PetscStackPop; \
   return(a);}
 
+#define PetscFunctionReturnVoid() \
+  {\
+  PetscStackPop;}
+
 #else
 
 /*
@@ -246,6 +250,11 @@ extern int        stack_err;
   {\
   PetscStackPop; \
   return(a);}
+
+#define PetscFunctionReturnVoid() \
+  {\
+  PetscStackPop;}
+
 
 #endif
 
