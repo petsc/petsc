@@ -268,7 +268,8 @@ class Linker(Processor):
     return self.output
 
   def processOldFile(self, f, tag):
-    '''In general, a Linker produces no "old" filesets'''
+    '''Output old library'''
+    self.oldOutput.append(self.getLibrary(f))
     return self.output
 
 class DirectoryArchiver(Linker):
@@ -339,6 +340,10 @@ class Archiver(Linker):
     '''Return a list of the archiver flags specifying the archive'''
     return [self.getLibrary(source)]
 
+  def processOldFile(self, f, tag):
+    '''An Archiver produces no "old" filesets'''
+    return self.output
+
 class SharedLinker(Linker):
   '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries.'''
   def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'so'):
@@ -392,3 +397,23 @@ class SharedLinker(Linker):
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the shared library'''
     return ['-o '+self.getLibrary(source)]
+
+class LibraryAdder (build.transform.Transform):
+  '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
+  def __init__(self, inputTag, linker):
+    build.transform.Transform.__init__(self)
+    self.inputTag = inputTag
+    if not isinstance(self.inputTag, list):
+      self.inputTag = [self.inputTag]
+    self.linker = linker
+    return
+
+  def __str__(self):
+    return 'Adding libraries from '+str(self.inputTag)+' to '+str(self.linker)
+
+  def handleFile(self, f, tag):
+    '''Put all libraries matching inputTag in linker.extraLibraries'''
+    if self.inputTag is None or tag in self.inputTag:
+      self.linker.extraLibraries.append(f)
+      return self.output
+    return build.transform.Transform.handleFile(self, f, tag)
