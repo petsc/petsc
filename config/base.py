@@ -36,8 +36,8 @@ class Configure(script.Script):
 
   def addTypedef(self, name, value):
     '''Designate that "name" should be typedefed to "value" in the configuration header'''
-    self.framework.log.write('Typdefed '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
-    self.typedefs[name] = value
+    self.framework.log.write('Typedefed '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.typedefs[value] = name
     return
 
   def addSubstitution(self, name, value):
