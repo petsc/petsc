@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.39 2000/08/15 03:44:02 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.40 2000/08/16 20:10:35 bsmith Exp bsmith $ 
 #
 CFLAGS		 = 
 FFLAGS		 = 
@@ -105,7 +105,8 @@ ex14f: ex14f.o  chkopts
 	${RM} -f ex14f.o
 
 #-------------------------------------------------------------------------------------------
-
+#   This section is used for testing examples and can be ignored 
+#-------------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
