@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.6 2001/03/05 16:10:59 bsmith Exp bsmith $*/
+/*$Id: mpimesg.c,v 1.7 2001/03/05 16:13:43 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -64,8 +64,6 @@ int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,i
   } else {
     nsends_local = nsends;
   }
-
-
   ierr = PetscMalloc(size*sizeof(int),&recv_buf);CHKERRQ(ierr);
 
   /* Now post an allreduce to determine the numer of messages the current node will receive */
