@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
 
   def check(self, funcName, libraries = None):
     '''Checks for the function "funcName", and if found defines HAVE_"funcName"'''
+    self.framework.log.write('Checking for function '+funcName+'\n')
     # Don't include <ctype.h> because on OSF/1 3.0 it includes <sys/types.h>
     # which includes <sys/select.h> which contains a prototype for
     # select.  Similarly for bzero.

@@ -22,6 +22,7 @@ class Configure(config.base.Configure):
     '''Checks that the library "libName" contains "funcName", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
+    self.framework.log.write('Checking for function '+funcName+' in library '+str(libName)+'\n')
     # Handle Fortran mangling
     if fortranMangle:
       funcName = self.compilers.mangleFortranFunction(funcName)
@@ -66,6 +67,7 @@ class Configure(config.base.Configure):
     return found
 
   def checkMath(self):
+    '''Check for sin() in libm, the math library'''
     self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
     return
 

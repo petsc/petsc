@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
 
   def check(self, header):
     '''Checks for "header", and defines HAVE_"header" if found'''
+    self.framework.log.write('Checking for header: '+header+'\n')
     found = 0
     if self.checkPreprocess('#include <'+header+'>\n'):
       found = 1
