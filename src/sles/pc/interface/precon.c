@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.207 2001/01/20 03:35:20 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.208 2001/02/05 17:15:19 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -362,10 +362,6 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (pc->nullsp) {
-    ierr = MatNullSpaceRemove(pc->nullsp,x,&x);CHKERRQ(ierr);
-  }
-
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -585,7 +581,7 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     }
   }
-  PetscFunctionReturn(0)
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -779,6 +775,13 @@ int PCSetUp(PC pc)
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   pc->setupcalled = 2;
+  if (pc->nullsp) {
+    PetscTruth test;
+    ierr = PetscOptionsHasName(pc->prefix,"-pc_test_null_space",&test);CHKERRQ(ierr);
+    if (test) {
+      ierr = MatNullSpaceTest(pc->nullsp,pc->mat);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.111 2001/01/15 21:46:45 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.112 2001/01/20 03:35:20 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -216,6 +216,11 @@ int PCSetFromOptions(PC pc)
     if (flg) {
       ierr = PCSetType(pc,type);CHKERRQ(ierr);
     }
+    /* option is actually checked in PCSetUp() */
+    if (pc->nullsp) {
+      ierr = PetscOptionsName("-pc_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
+    }
+
     /*
       Set the type if it was never set.
     */
