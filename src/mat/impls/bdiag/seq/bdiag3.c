@@ -3,7 +3,6 @@
 /* Block diagonal matrix format */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 #include "petscsys.h"
 

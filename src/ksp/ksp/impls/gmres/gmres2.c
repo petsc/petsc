@@ -54,7 +54,6 @@ M*/
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization" 
 /*@C
@@ -76,20 +75,20 @@ $    i.e. the size of Krylov space minus one
 
    KSPGMRESModifiedGramSchmidtOrthogonalization()
 
-   KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetUGSType() to determine if 
+   KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if 
      iterative refinement is used to increase stability. 
 
 
    Options Database Keys:
 
-+  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization() (default)
++  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
 -  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
 
    Level: intermediate
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetUGSType()
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType()
 @*/
 int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 {
@@ -103,4 +102,3 @@ int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

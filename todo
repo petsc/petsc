@@ -9,5 +9,9 @@ PETSc configure
 Matrices
    Add getoverlap code for seq and mpi (mpi more important) sbaij matrices
 
+Vectors
+   Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
+   and top part of Vec object to petscvec.h
+
 Fortran
    Re: [PETSC #8120] Bug report F90Array1dCreate() problem with upper bounds

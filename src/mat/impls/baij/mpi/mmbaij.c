@@ -4,7 +4,6 @@
    Support for the parallel BAIJ matrix vector multiply
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
-#include "src/vec/vecimpl.h"
 
 EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
@@ -331,24 +330,24 @@ int MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
     ierr = MatMPIBAIJDiagonalScaleLocalSetUp(A,scale);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(scale,&s);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(scale,&s);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(uglydd,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(uglydd,&d);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(uglydd,&d);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     d[i] = s[uglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
   }
-  ierr = VecRestoreArray(uglydd,&d);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(uglydd,&d);CHKERRQ(ierr);
   /* column scale "diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->A,PETSC_NULL,uglydd);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(uglyoo,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(uglyoo,&o);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(uglyoo,&o);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     o[i] = s[uglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   }
-  ierr = VecRestoreArray(scale,&s);CHKERRQ(ierr);
-  ierr = VecRestoreArray(uglyoo,&o);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(scale,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(uglyoo,&o);CHKERRQ(ierr);
   /* column scale "off-diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->B,PETSC_NULL,uglyoo);CHKERRQ(ierr);
 

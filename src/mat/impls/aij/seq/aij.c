@@ -5,7 +5,6 @@
 */
 
 #include "src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/inline/dot.h"
 #include "petscbt.h"

@@ -4,7 +4,6 @@
   format by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include "src/mat/impls/aij/seq/aij.h"                
-#include "src/vec/vecimpl.h"
 
 EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 EXTERN int MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
@@ -405,8 +404,8 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
   idx  = a->j;
   v1   = a->a;
   ii   = a->i;
@@ -566,8 +565,8 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -586,10 +585,10 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -754,10 +753,10 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(2*a->nz);
   PetscFunctionReturn(0);
@@ -862,8 +861,8 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
   
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1216,8 +1215,8 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }

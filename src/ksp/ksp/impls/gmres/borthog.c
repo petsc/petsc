@@ -8,7 +8,6 @@
 */
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 
-EXTERN_C_BEGIN
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.
  */
@@ -36,6 +35,5 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

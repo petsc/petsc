@@ -1,7 +1,6 @@
 /*$Id: mpibaij.c,v 1.234 2001/09/25 22:56:49 balay Exp $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
-#include "src/vec/vecimpl.h"
 
 EXTERN int MatSetUpMultiply_MPIBAIJ(Mat); 
 EXTERN int DisAssemble_MPIBAIJ(Mat);
@@ -48,18 +47,18 @@ int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
   PetscFunctionBegin;
   
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
-  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&va);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,A->m,&vtmp);CHKERRQ(ierr);
   ierr = MatGetRowMax(a->B,vtmp);CHKERRQ(ierr);
-  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(vtmp,&vb);CHKERRQ(ierr);
 
   for (i=0; i<A->m; i++){
     if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) va[i] = vb[i];
   }
 
-  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(vtmp,&vb);CHKERRQ(ierr); 
   ierr = VecDestroy(vtmp);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);

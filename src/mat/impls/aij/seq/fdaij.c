@@ -1,7 +1,6 @@
 /*$Id: fdaij.c,v 1.40 2001/06/21 21:16:21 bsmith Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
-#include "src/vec/vecimpl.h"
 
 EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
 EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);

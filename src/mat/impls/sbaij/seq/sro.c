@@ -1,7 +1,6 @@
 /*$Id: sro.c,v 1.26 2001/06/21 21:17:00 bsmith Exp $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"   
 #include "petscsys.h"

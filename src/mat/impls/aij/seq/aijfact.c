@@ -1,7 +1,6 @@
 /*$Id: aijfact.c,v 1.167 2001/09/11 16:32:26 bsmith Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/dot.h"
 #include "src/inline/spops.h"
 
@@ -610,8 +609,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -641,8 +640,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -663,8 +662,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
@@ -693,8 +692,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
 #endif
   PetscLogFlops(2*a->nz - A->n);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -711,8 +710,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
   PetscFunctionBegin;
   if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -742,8 +741,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz);
 
   PetscFunctionReturn(0);
@@ -760,8 +759,8 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscScalar  *x,*b,*tmp,*aa = a->a,*v,s1;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -799,8 +798,8 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
 
   PetscLogFlops(2*a->nz-A->n);
   PetscFunctionReturn(0);
@@ -819,8 +818,8 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionBegin;
   if (zz != xx) VecCopy(zz,xx);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   tmp = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -855,8 +854,8 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
 
   PetscLogFlops(2*a->nz);
   PetscFunctionReturn(0);

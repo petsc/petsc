@@ -4,7 +4,6 @@
    Support for the parallel AIJ matrix vector multiply
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "src/vec/vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIAIJ"
@@ -282,24 +281,24 @@ int MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
     ierr = MatMPIAIJDiagonalScaleLocalSetUp(A,scale);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(scale,&s);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(scale,&s);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(auglydd,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(auglydd,&d);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(auglydd,&d);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     d[i] = s[auglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
   }
-  ierr = VecRestoreArray(auglydd,&d);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(auglydd,&d);CHKERRQ(ierr);
   /* column scale "diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->A,PETSC_NULL,auglydd);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(auglyoo,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(auglyoo,&o);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(auglyoo,&o);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     o[i] = s[auglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   }
-  ierr = VecRestoreArray(scale,&s);CHKERRQ(ierr);
-  ierr = VecRestoreArray(auglyoo,&o);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(scale,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(auglyoo,&o);CHKERRQ(ierr);
   /* column scale "off-diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->B,PETSC_NULL,auglyoo);CHKERRQ(ierr);
 

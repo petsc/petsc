@@ -8,7 +8,6 @@
 */
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 
-EXTERN_C_BEGIN
 /*
   This version uses classical UNMODIFIED Gram-Schmidt.  It has options for using
   iterative refinement to improve stability.
@@ -92,7 +91,6 @@ int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

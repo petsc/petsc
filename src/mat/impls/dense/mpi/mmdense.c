@@ -4,7 +4,6 @@
    Support for the parallel dense matrix vector multiply
 */
 #include "src/mat/impls/dense/mpi/mpidense.h"
-#include "src/vec/vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIDense"

@@ -5,7 +5,6 @@
   matrix storage format.
 */
 #include "src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
-#include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
@@ -1957,9 +1956,9 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   if (bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   if (xx != bb) { 
-    ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
   } else { 
     b = x;
   } 
@@ -2065,9 +2064,9 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   } 
 
   ierr = PetscFree(t); CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
-    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
   } 
 
   PetscFunctionReturn(0);

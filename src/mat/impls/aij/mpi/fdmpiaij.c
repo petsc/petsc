@@ -1,7 +1,6 @@
 /*$Id: fdmpiaij.c,v 1.41 2001/06/21 21:16:31 bsmith Exp $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "src/vec/vecimpl.h"
 
 EXTERN int CreateColmap_MPIAIJ_Private(Mat);
 EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);

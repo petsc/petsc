@@ -5,7 +5,6 @@
 */
     
 #include "src/mat/impls/dense/mpi/mpidense.h"
-#include "src/vec/vecimpl.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -449,7 +448,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
   if (n != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   len  = PetscMin(a->A->m,a->A->n);
@@ -457,7 +456,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   for (i=0; i<len; i++) {
     x[i] = aloc->v[radd + i*m + i];
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -738,13 +737,13 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   if (ll) {
     ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
     if (s2a != s2) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size");
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       x = l[i];
       v = mat->v + i;
       for (j=0; j<n; j++) { (*v) *= x; v+= m;} 
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(n*m);
   }
   if (rr) {
@@ -752,13 +751,13 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
     if (s3a != s3) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size");
     ierr = VecScatterBegin(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
-    ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(mdn->lvec,&r);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       x = r[i];
       v = mat->v + i*m;
       for (j=0; j<m; j++) { (*v++) *= x;} 
     }
-    ierr = VecRestoreArray(mdn->lvec,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(mdn->lvec,&r);CHKERRQ(ierr);
     PetscLogFlops(n*m);
   }
   PetscFunctionReturn(0);

@@ -5,7 +5,6 @@
   matrix storage format.
 */
 #include "src/mat/impls/baij/seq/baij.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
@@ -1385,7 +1384,7 @@ int MatGetRowMax_SeqBAIJ(Mat A,Vec v)
   mbs = a->mbs;
 
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<mbs; i++) {
@@ -1404,7 +1403,7 @@ int MatGetRowMax_SeqBAIJ(Mat A,Vec v)
       aj++;
     }   
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2,7 +2,6 @@
 
 #include "src/mat/impls/baij/seq/baij.h" 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
 

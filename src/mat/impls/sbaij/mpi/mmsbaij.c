@@ -4,7 +4,6 @@
    Support for the parallel SBAIJ matrix vector multiply
 */
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
-#include "src/vec/vecimpl.h"
 
 extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
 
@@ -137,14 +136,14 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecScatterPostRecvs(sbaij->slvec0,sbaij->slvec1,INSERT_VALUES,SCATTER_FORWARD,sbaij->sMvctx);CHKERRQ(ierr); 
 
   ierr = VecGetLocalSize(sbaij->slvec1,&nt);CHKERRQ(ierr);
-  ierr = VecGetArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(sbaij->slvec1,&ptr);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs*mbs,ptr,&sbaij->slvec1a);CHKERRQ(ierr); 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,ptr+bs*mbs,&sbaij->slvec1b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(sbaij->slvec1,&ptr);CHKERRQ(ierr);
 
-  ierr = VecGetArray(sbaij->slvec0,&ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(sbaij->slvec0,&ptr);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,ptr+bs*mbs,&sbaij->slvec0b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(sbaij->slvec0,&ptr);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(sbaij->slvec0,&ptr);CHKERRQ(ierr); 
 
   ierr = PetscFree(stmp);CHKERRQ(ierr);
   ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);

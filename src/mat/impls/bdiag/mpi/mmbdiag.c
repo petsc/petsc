@@ -4,7 +4,6 @@
    Support for the MPIBDIAG matrix-vector multiply
 */
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
-#include "src/vec/vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIBDiag"

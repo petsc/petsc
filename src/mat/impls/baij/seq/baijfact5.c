@@ -3,7 +3,6 @@
     Factorization code for BAIJ format. 
 */
 #include "src/mat/impls/baij/seq/baij.h"
-#include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 /*
       Version for when blocks are 7 by 7
