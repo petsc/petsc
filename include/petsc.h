@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.43 1995/07/20 16:58:11 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.44 1995/07/21 23:39:45 curfman Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -107,6 +107,11 @@ extern int PetscSetFPTrap(int);
 #define FP_TRAP_ON     1
 #define FP_TRAP_ALWAYS 2
 
+/*
+   Definitions used for the Fortran interface:
+   FORTRANCAPS:       Names are uppercase, no trailing underscore
+   FORTRANUNDERSCORE: Names are lowercase, trailing underscore
+ */    
 #if defined(PARCH_cray) || defined(PARCH_NCUBE) || defined(PARCH_t3d)
 #define FORTRANCAPS
 #elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_hpux)
