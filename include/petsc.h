@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.115 1996/04/18 20:28:38 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.116 1996/05/03 19:28:48 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -25,12 +25,12 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define Scalar            double
 #endif
 
-extern void *(*PetscMalloc)(unsigned int,int,char*);
-extern int  (*PetscFree)(void *,int,char*);
+extern void *(*PetscTrMalloc)(unsigned int,int,char*);
+extern int  (*PetscTrFree)(void *,int,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
-#define PetscMalloc(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
-#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
-#define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
+#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FILE__)
+#define PetscNew(A)          (A*) PetscTrMalloc(sizeof(A))
+#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FILE__)
 
 extern int  PetscTrDump(FILE *);
 extern int  PetscTrSpace( double *, double *,double *);
