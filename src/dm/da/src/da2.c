@@ -1046,8 +1046,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
 #endif
-  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)())VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)())VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)(void))VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

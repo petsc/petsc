@@ -28,7 +28,7 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
   int ierr,(*f)(KSP);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp);CHKERRQ(ierr);
   }

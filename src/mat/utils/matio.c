@@ -34,7 +34,7 @@ int MatLoadRegister(char *sname,char *path,char *name,int (*function)(PetscViewe
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   }
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
-  ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)())&r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);

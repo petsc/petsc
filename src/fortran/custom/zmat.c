@@ -536,7 +536,7 @@ static int ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmult);
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)())f;
   } else if (*op == MATOP_MULT_TRANSPOSE) {
     *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmulttranspose);

@@ -426,7 +426,7 @@ int PetscViewerSetFilename(PetscViewer viewer,const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (!name) SETERRQ(1,"You must pass in non-null string");
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
@@ -458,7 +458,7 @@ int PetscViewerGetFilename(PetscViewer viewer,char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }

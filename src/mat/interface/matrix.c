@@ -2400,7 +2400,7 @@ int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,Mat
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2460,7 +2460,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     if (!MatConvertRegisterAllCalled) {
       ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)())&conv);CHKERRQ(ierr);
+    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
     } else {
@@ -2469,7 +2469,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
       ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
       ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)())&conv);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       if (conv) {
         ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
       } else {

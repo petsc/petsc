@@ -102,7 +102,7 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
     ierr = PetscStrlen((*v)->serialize_name, &len);                                                       CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                               CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd,  (*v)->serialize_name, len, PETSC_CHAR, 0);                               CHKERRQ(ierr);
-    ierr = PetscFListFind(comm, VecSerializeList, (*v)->serialize_name, (void (**)()) &serialize);        CHKERRQ(ierr);
+    ierr = PetscFListFind(comm, VecSerializeList, (*v)->serialize_name, (void (**)(void)) &serialize);    CHKERRQ(ierr);
     if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
     ierr = (*serialize)(comm, v, viewer, store);                                                          CHKERRQ(ierr);
   } else {
@@ -113,7 +113,7 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
     ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
     name[len] = 0;
     ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
-    ierr = PetscFListFind(comm, VecSerializeList, name, (void (**)()) &serialize);                        CHKERRQ(ierr);
+    ierr = PetscFListFind(comm, VecSerializeList, name, (void (**)(void)) &serialize);                    CHKERRQ(ierr);
     if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
     ierr = (*serialize)(comm, v, viewer, store);                                                          CHKERRQ(ierr);
     ierr = PetscStrfree((*v)->serialize_name);                                                            CHKERRQ(ierr);

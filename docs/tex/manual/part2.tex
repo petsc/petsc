@@ -1713,7 +1713,7 @@ and then associate it with the matrix, \trl{mat}, by using the
 command \findex{MatShellSetOperation()}
 \begin{verbatim}
   MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
-                               (void(*)()) int (*UserMult)(Mat,Vec,Vec));
+                               (void(*)(void)) int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
 Here \trl{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
