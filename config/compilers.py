@@ -549,7 +549,7 @@ class Configure(config.base.Configure):
             # Does Fortran compiler need special flag for using CPP
     for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp:-m']:
       try:
-        self.addCompilerFlag(flag, body = '#define dummy \n           dummy')
+        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n          PTesting',extraflags = '-DPtesting')
         self.fortranPreprocess = 1
         self.popLanguage()
         return

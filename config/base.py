@@ -494,8 +494,8 @@ class Configure:
       return 0
     return 1
 
-  def addCompilerFlag(self, flag, includes = '', body = ''):
-    if self.checkCompilerFlag(flag, includes, body):
+  def addCompilerFlag(self, flag, includes = '', body = '', extraflags=''):
+    if self.checkCompilerFlag(flag+' '+extraflags, includes, body):
       language = self.language[-1]
       if language == 'C':
         flagsArg = 'CFLAGS'
