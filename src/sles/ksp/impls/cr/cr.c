@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.59 2000/09/28 21:13:16 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.60 2001/01/15 21:47:14 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -25,8 +25,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   int          i,maxit,pres,ierr;
   MatStructure pflag;
   PetscReal    dp;
-  Scalar       lambda,alpha0,alpha1; 
-  Scalar       btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
+  Scalar       lambda,alpha0,alpha1,btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
   Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T,Tmp;
   Mat          Amat,Pmat;
 
@@ -46,7 +45,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   Sm1     = ksp->work[7];
   S       = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   bbotold = 1.0; /* a hack */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);    /*   r <- b - Ax       */
