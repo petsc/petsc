@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.48 1996/08/22 19:54:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.49 1996/09/14 03:07:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -481,7 +481,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   ViewerGetType(viewer,&vtype);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_INFO_DETAILED) {
+  if (format == VIEWER_FORMAT_ASCII_INFO_DETAILED) {
     int rank;
     MatInfo info;
     MPI_Comm_rank(mat->comm,&rank);
@@ -494,7 +494,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
     return 0; 
   }
-  else if (format == ASCII_FORMAT_INFO) {
+  else if (format == VIEWER_FORMAT_ASCII_INFO) {
     return 0;
   }
   if (vtype == ASCII_FILE_VIEWER) {

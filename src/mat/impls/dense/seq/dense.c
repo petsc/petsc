@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.110 1996/09/14 03:07:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.111 1996/09/23 18:21:03 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -73,12 +73,32 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
   return 0;
 }
+static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
+{
+  Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
+  int          ierr;
+  Mat          newi;
+
+  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,PETSC_NULL,&newi); CHKERRQ(ierr);
+  l = (Mat_SeqDense *) newi->data;
+  if (cpvalues == COPY_VALUES) {
+    PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
+  }
+  newi->assembled = PETSC_TRUE;
+  *newmat = newi;
+  return 0;
+}
+
 static int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,double f,Mat *fact)
 {
-  return MatConvert(A,MATSAME,fact);
+  return MatConvertSameType_SeqDense(A,fact,PETSC_FALSE);
 }
 static int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
+  Mat_SeqDense *mat = (Mat_SeqDense*) A->data, *l = (Mat_SeqDense*) (*fact)->data;
+  /* copy the numerical values */
+  PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
+  (*fact)->factor = 0;
   return MatLUFactor(*fact,0,0,1.0);
 }
 static int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,double f,Mat *fact)
@@ -380,21 +400,6 @@ static int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scala
 }
 
 /* -----------------------------------------------------------------*/
-static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
-{
-  Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
-  int          ierr;
-  Mat          newi;
-
-  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,PETSC_NULL,&newi); CHKERRQ(ierr);
-  l = (Mat_SeqDense *) newi->data;
-  if (cpvalues == COPY_VALUES) {
-    PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
-  }
-  newi->assembled = PETSC_TRUE;
-  *newmat = newi;
-  return 0;
-}
 
 #include "sys.h"
 
@@ -469,10 +474,10 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
+  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_DETAILED) {
     return 0;  /* do nothing for now */
   } 
-  else if (format == ASCII_FORMAT_COMMON) {
+  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<a->m; i++ ) {
       v = a->v + i;
       fprintf(fd,"row %d:",i);
@@ -529,7 +534,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  if (format == BINARY_FORMAT_NATIVE) {
+  if (format == VIEWER_FORMAT_BINARY_NATIVE) {
     /* store the matrix as a dense matrix */
     col_lens = (int *) PetscMalloc( 4*sizeof(int) ); CHKPTRQ(col_lens);
     col_lens[0] = MAT_COOKIE;
