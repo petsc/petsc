@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.2 2000/11/13 19:18:19 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.3 2001/02/15 23:26:12 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -7,6 +7,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.tree.*;
 
 /* For the text input regions */
@@ -154,8 +155,6 @@ public class PETScView extends JApplet {
     }); 
     System.out.println("put up continue");
 
-    Plot plot = new Plot();
-    japplet.add(plot);
 
     japplet.setVisible(true);
     japplet.validate(); 
@@ -214,6 +213,8 @@ public class PETScView extends JApplet {
     displayoptionsset();
   }
     
+  JDesktopPane rpanel;
+
   /*
         Displays the objects
   */
@@ -226,7 +227,7 @@ public class PETScView extends JApplet {
     japplet.setVisible(false);
     System.out.println("Removed panel; trying to get objects");    
 
-    japplet.setLayout(new FlowLayout());
+    japplet.setLayout(new BorderLayout());
         
 
 
@@ -241,9 +242,14 @@ public class PETScView extends JApplet {
     bpanel.add(qbutton);
     qbutton.addActionListener(new QuitActionListener());
         
-    /* Add the Panel in the bottom of the Frame */
-    japplet.add(bpanel, BorderLayout.SOUTH);
+    /* Add the Panel in the top of the Frame */
+    japplet.add(bpanel, BorderLayout.NORTH);
         
+    /* Add panel to right for displaying output */
+    rpanel = new JDesktopPane();
+    /*   rpanel.setMinimumSize(new Dimension(300,400)); */
+    japplet.add(rpanel, BorderLayout.CENTER);
+
     /* Get the memorys (we ignore the rest) */
     String mems[] = ams.get_memory_list();
     int i, cnt = 1;
@@ -299,11 +305,38 @@ public class PETScView extends JApplet {
     
     DefaultTreeModel tree = new DefaultTreeModel(root);
     JTree jtree = new JTree(tree);
+    jtree.addTreeSelectionListener(new TreeSelectionListener() {
+      public void valueChanged(TreeSelectionEvent e) {
+        System.out.println("User selected tree node"); 
+        JInternalFrame jp = new PETScViewKSP();
+        jp.getContentPane().add(new JLabel("hi"));
+        jp.getContentPane().setVisible(true);
+        jp.getContentPane().validate(); 
+        jp.getContentPane().repaint();
+	jp.getContentPane().add(new JLabel("hi"));
+        jp.setVisible(true);
+        jp.validate(); 
+        jp.repaint();
+	/*	applet.setContentPane(rpanel); */
+        rpanel.add(jp);
+	try {
+	jp.setSelected(true);
+      } catch (java.beans.PropertyVetoException opps) {;}
+        jp.setSize(100,100);
+        jp.setLocation(50,50);
+        rpanel.setVisible(true);
+        rpanel.validate(); 
+        rpanel.repaint();
+        japplet.setVisible(true);
+        japplet.validate(); 
+        japplet.repaint();
+      }
+    });
+    japplet.add(new JScrollPane(jtree), BorderLayout.WEST); 
     jtree.setCellRenderer(new MyTreeCellRenderer());
-    japplet.add(new JScrollPane(jtree), BorderLayout.NORTH); 
     jtree.setRowHeight(15);
-    jtree.setPreferredSize(new Dimension(400,650));
-    
+    jtree.setPreferredSize(new Dimension(300,550));
+
     System.out.println("Processed options set");    
     japplet.setVisible(true);
     japplet.validate(); 
@@ -350,9 +383,6 @@ public class PETScView extends JApplet {
         label += mem.get_field("Class").getStringData()[0];
         if (smem.indexOf("n_") != 0) {
 	  label += " "+smem;
-        }
-        if (selected) {
-          System.out.println("I'm selectede");
         }
         return new JLabel(label);
       } else {
