@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.105 1996/06/12 20:22:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.106 1996/06/12 20:32:22 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -49,13 +49,12 @@ int PLogInfoAllow(PetscTruth flag)
 extern FILE *petsc_history;
 
 /*@
-    PLogInfoDeActivate - Deactivates PlogInfo() messages for a PETSc object
-        class.
+    PLogInfoDeActivate - Deactivates PlogInfo() messages for a PETSc object class.
 
-  Input Parameter:
-.    objclass - for example MAT_COOKIE, SNES_COOKIE,
+    Input Parameter:
+.   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
 
-.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow()
+.seealso: PLogInfoActivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
 int PLogInfoDeactivateClass(int objclass)
 {
@@ -68,13 +67,12 @@ int PLogInfoDeactivateClass(int objclass)
 }
 
 /*@
-    PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc object
-        class.
+    PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
 
-  Input Parameter:
-.    objclass - for example MAT_COOKIE, SNES_COOKIE,
+    Input Parameter:
+.   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
 
-.seealso: PLogInfoDeActivate(),PLogInfo(),PLogInfoAllow()
+.seealso: PLogInfoDeactivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
 int PLogInfoActivateClass(int objclass)
 {
