@@ -20,6 +20,7 @@ EXTERN_C_END
 #define ICNTL(I) icntl[(I)-1] 
 #define CNTL(I) cntl[(I)-1] 
 #define INFOG(I) infog[(I)-1]
+#define INFO(I) info[(I)-1]
 #define RINFOG(I) rinfog[(I)-1]
 #define RINFO(I) rinfo[(I)-1]
 
@@ -581,7 +582,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
 
   /* numerical factorization phase */
   if(lu->id.ICNTL(18) == 0) { 
-    if (lu->myid == 0) {
+    if (!lu->myid) {
 #if defined(PETSC_USE_COMPLEX)
       lu->id.a = (mumps_double_complex*)lu->val; 
 #else
@@ -602,7 +603,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {
-    SETERRQ1(1,"1, Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+    SETERRQ2(1,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
   }
 
   if (lu->myid==0 && lu->id.ICNTL(16) > 0){
