@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.9 2000/07/12 18:56:27 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.10 2000/07/13 16:07:54 hzhang Exp balay $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
   int     n = 16,bs=1,nz=3,prob=1;
-  Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;; 
+  Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
   PetscRandom rand;
@@ -25,9 +25,9 @@ int main(int argc,char **args)
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk,r1,r2;
+  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
   int      *cols1,*cols2,mbs;
-  double   norm1,norm2,tol=1.e-10;
+  double   norm1,norm2,tol=1.e-10,r1,r2;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -151,9 +151,9 @@ int main(int argc,char **args)
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1); CHKERRA(ierr);
   ierr = MatNorm(sA,NORM_INFINITY,&norm2); CHKERRA(ierr);
-  r1 -= r2;
-  if (r1<-tol || r1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n,r1");
+  norm1 -= norm2;
+  if (norm1<-tol || norm1>tol){ 
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n,norm1");
   }
   
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
