@@ -308,6 +308,7 @@ EXTERN int globalcurrentstate,globalmaxstate;
 M*/
 #define PetscObjectSetIntComposedData(obj,id,data)                  \
 0; {PetscErrorCode ierr_;                                                       \
+  if ((obj)->int_idmax < globalmaxstate) {                            \
     ierr_ = PetscObjectIncreaseIntComposedData(obj); CHKERRQ(ierr_);  \
   }                                                                   \
   (obj)->intcomposeddata[id] = data;                                  \
