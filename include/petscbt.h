@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.2 1996/02/01 15:22:08 balay Exp balay $ */
+/* $Id: bitarray.h,v 1.3 1996/02/01 15:36:30 balay Exp balay $ */
 
 /*    
       BT_LOOKUP - Expexts a charecter array -'array' as input, and 
@@ -23,13 +23,13 @@
               2: array[index] = 1;
               3: return retval;
 */
-#define BYTE_LEN sizeof(char)
+#include <values.h>
 static char _mask, _BT_c;
 static int  _BT_idx;
-#define BT_LOOKUP( array,  index) (_BT_idx         = index/BYTE_LEN, \
+#define BT_LOOKUP( array,  index) (_BT_idx         = index/BITSPERBYTE, \
                                    _BT_c           = array[_BT_idx], \
-                                   _BT_idx         = index/BYTE_LEN, \
-                                   _mask           = (char)1 << (index%BYTE_LEN), \
+                                   _BT_idx         = index/BITSPERBYTE, \
+                                   _mask           = (char)1 << (index%BITSPERBYTE), \
                                    array[_BT_idx]  = _BT_c|_mask, \
                                    _BT_c & _mask )
 
