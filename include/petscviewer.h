@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.61 1999/01/12 23:18:23 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.62 1999/01/13 21:48:44 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -109,10 +109,10 @@ extern Viewer VIEWER_DRAW_SELF_PRIVATE;
 extern Viewer VIEWER_SOCKET_WORLD_PRIVATE;
 extern Viewer VIEWER_SOCKET_SELF_PRIVATE;  /* not yet used */
 
-extern int    ViewerInitializeDrawXWorld_Private_0(void);
-extern int    ViewerInitializeDrawXWorld_Private_1(void);
-extern int    ViewerInitializeDrawXWorld_Private_2(void);
-extern int    ViewerInitializeDrawXSelf_Private(void);
+extern int    ViewerInitializeDrawWorld_Private_0(void);
+extern int    ViewerInitializeDrawWorld_Private_1(void);
+extern int    ViewerInitializeDrawWorld_Private_2(void);
+extern int    ViewerInitializeDrawSelf_Private(void);
 extern int    ViewerInitializeSocketWorld_Private(void);
 extern Viewer VIEWER_DRAW_(MPI_Comm);
 extern int    VIEWER_DRAW_Destroy(MPI_Comm);
@@ -120,14 +120,14 @@ extern Viewer VIEWER_SOCKET_(MPI_Comm);
 extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
 
 #define VIEWER_DRAW_WORLD_0 \
-              (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAW_WORLD_PRIVATE_0) 
+              (ViewerInitializeDrawWorld_Private_0(),VIEWER_DRAW_WORLD_PRIVATE_0) 
 #define VIEWER_DRAW_WORLD_1 \
-              (ViewerInitializeDrawXWorld_Private_1(),VIEWER_DRAW_WORLD_PRIVATE_1) 
+              (ViewerInitializeDrawWorld_Private_1(),VIEWER_DRAW_WORLD_PRIVATE_1) 
 #define VIEWER_DRAW_WORLD_2 \
-              (ViewerInitializeDrawXWorld_Private_2(),VIEWER_DRAW_WORLD_PRIVATE_2) 
+              (ViewerInitializeDrawWorld_Private_2(),VIEWER_DRAW_WORLD_PRIVATE_2) 
 
 #define VIEWER_DRAW_SELF \
-              (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAW_SELF_PRIVATE) 
+              (ViewerInitializeDrawSelf_Private(),VIEWER_DRAW_SELF_PRIVATE) 
 #define VIEWER_DRAW_WORLD VIEWER_DRAW_WORLD_0
 
 #define VIEWER_SOCKET_WORLD \
@@ -157,7 +157,7 @@ extern int  ViewerSocketPutInt_Private(Viewer,int,int*);
 extern int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 extern int  ViewerInitializeASCII_Private(void);
 extern int  ViewerDestroyASCII_Private(void);
-extern int  ViewerDestroyDrawX_Private(void);
+extern int  ViewerDestroyDraw_Private(void);
 extern int  ViewerDestroySocket_Private(void);
 extern int  ViewerDestroyAMS_Private(void);
 

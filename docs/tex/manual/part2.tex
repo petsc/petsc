@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.298 1999/01/13 21:49:12 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.299 1999/01/13 22:41:46 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -143,7 +143,7 @@ viewer {\tt VIEWER\_STDOUT\_SELF} \findex{VIEWER_STDOUT_SELF}
 can be employed if
 the user does not care in what order the individual processors print
 their segments of the vector.  To display the vector in an X-window,
-one can use the default X-windows viewer {\tt VIEWER\_DRAWX\_WORLD},
+one can use the default X-windows viewer {\tt VIEWER\_DRAW\_WORLD},
 \findex{VIEWER_DRAW_WORLD}
 or one can create a viewer with the routine {\tt ViewerDrawOpenX()}.
 A variety of viewers are discussed further in Section \ref{sec:viewers}.
@@ -4220,8 +4220,8 @@ object. If one obtains the {\tt draw} object in this manner,
 one does not call the {\tt DrawOpenX()} command discussed below.
 
 \findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
-Predefined viewers, {\tt VIEWER\_DRAWX\_WORLD} 
-and {\tt VIEWER\_DRAWX\_SELF}, may be used at any time. Their initial
+Predefined viewers, {\tt VIEWER\_DRAW\_WORLD} 
+and {\tt VIEWER\_DRAW\_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
 \medskip
@@ -5857,9 +5857,9 @@ predefined viewers:
       parallel objects are printed in the natural order that would occur
       if only a single processor were in use for the entire problem;
       this viewer uses the communicator {\tt PETSC\_COMM\_WORLD}.
-\item {\tt VIEWER\_DRAWX\_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
+\item {\tt VIEWER\_DRAW\_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
-\item {\tt VIEWER\_DRAWX\_SELF} \findex{VIEWER_DRAW_SELF} causes the 
+\item {\tt VIEWER\_DRAW\_SELF} \findex{VIEWER_DRAW_SELF} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
       {\tt ViewerDrawOpenX()} causes the object to be displayed graphically.

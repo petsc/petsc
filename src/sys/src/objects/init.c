@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.26 1999/01/12 23:14:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.27 1999/01/13 21:38:32 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -839,7 +839,7 @@ int AliceFinalize(void)
        Close any default viewers that may have been opened during the run
   */
   ierr = ViewerDestroyASCII_Private();CHKERRQ(ierr);
-  ierr = ViewerDestroyDrawX_Private();CHKERRQ(ierr);
+  ierr = ViewerDestroyDraw_Private();CHKERRQ(ierr);
   ierr = ViewerDestroySocket_Private();CHKERRQ(ierr);
 #if defined(HAVE_AMS)
   ierr = PetscStackDepublish();CHKERRQ(ierr);

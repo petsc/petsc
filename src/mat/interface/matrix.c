@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.312 1999/01/12 23:14:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.313 1999/01/13 21:40:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2155,6 +2155,11 @@ int MatView_Private(Mat mat)
     if (flg) {
       ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_socket",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatView(mat,VIEWER_SOCKET_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_SOCKET_(mat->comm)); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

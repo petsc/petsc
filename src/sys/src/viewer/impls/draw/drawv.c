@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.29 1999/01/12 23:17:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.30 1999/01/13 21:46:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -313,8 +313,8 @@ Viewer VIEWER_DRAW_SELF_PRIVATE = 0, VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
        VIEWER_DRAW_WORLD_PRIVATE_1 = 0, VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXSelf_Private" 
-int ViewerInitializeDrawXSelf_Private(void)
+#define __FUNC__ "ViewerInitializeDrawSelf_Private" 
+int ViewerInitializeDrawSelf_Private(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -328,8 +328,8 @@ int ViewerInitializeDrawXSelf_Private(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_0" 
-int ViewerInitializeDrawXWorld_Private_0(void)
+#define __FUNC__ "ViewerInitializeDrawWorld_Private_0" 
+int ViewerInitializeDrawWorld_Private_0(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -343,8 +343,8 @@ int ViewerInitializeDrawXWorld_Private_0(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_1" 
-int ViewerInitializeDrawXWorld_Private_1(void)
+#define __FUNC__ "ViewerInitializeDrawWorld_Private_1" 
+int ViewerInitializeDrawWorld_Private_1(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -358,8 +358,8 @@ int ViewerInitializeDrawXWorld_Private_1(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_2" 
-int ViewerInitializeDrawXWorld_Private_2(void)
+#define __FUNC__ "ViewerInitializeDrawWorld_Private_2" 
+int ViewerInitializeDrawWorld_Private_2(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -373,8 +373,8 @@ int ViewerInitializeDrawXWorld_Private_2(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroyDrawX_Private" 
-int ViewerDestroyDrawX_Private(void)
+#define __FUNC__ "ViewerDestroyDraw_Private" 
+int ViewerDestroyDraw_Private(void)
 {
   int ierr;
 

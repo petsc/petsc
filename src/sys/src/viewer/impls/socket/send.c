@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.80 1998/12/17 22:48:58 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.81 1999/01/12 23:17:16 bsmith Exp $";
 #endif
 
 #include "petsc.h"
@@ -275,6 +275,72 @@ int ViewerDestroySocket_Private(void)
   }
   PetscFunctionReturn(0);
 }
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Viewer.
+*/
+static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_SOCKET_" 
+/*@C
+     VIEWER_SOCKET_ - Creates a window viewer shared by all processors 
+                     in a communicator.
+
+     Collective on MPI_Comm
+
+     Input Parameter:
+.    comm - the MPI communicator to share the window viewer
+
+     Notes:
+     Unlike almost all other PETSc routines, VIEWER_SOCKET_ does not return 
+     an error code.  The window viewer is usually used in the form
+$       XXXView(XXX object,VIEWER_SOCKET_(comm));
+
+.seealso: VIEWER_SOCKET_WORLD, VIEWER_SOCKET_SELF, ViewerSocketOpen(), 
+@*/
+Viewer VIEWER_SOCKET_(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  PetscFunctionBegin;
+  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
+    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  }
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, &flag );
+  if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (!flag) { /* viewer not yet created */
+    ierr = ViewerSocketOpen(comm,0,0,&viewer); 
+    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = MPI_Attr_put( comm, Petsc_Viewer_Socket_keyval, (void *) viewer );
+    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  } 
+  PetscFunctionReturn(viewer);
+}
+
+/*
+       If there is a Viewer associated with this communicator it is destroyed.
+*/
+int VIEWER_SOCKET_Destroy(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  PetscFunctionBegin;
+  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
+    PetscFunctionReturn(0);
+  }
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
+  if (flag) { 
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 #else /* defined (PARCH_win32) */
  
 #include "viewer.h"
