@@ -1,10 +1,12 @@
-/*$Id: zda.c,v 1.44 2001/04/25 14:56:44 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.45 2001/04/25 14:57:07 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dasetlocalfunction_          DASETLOCALFUNCTION
+#define dagetlocalinfo_              DAGETLOCALINFO
 #define dagetinterpolation_          DAGETINTERPOLATION
 #define dacreate1d_                  DACREATE1D
 #define dacreate3d_                  DACREATE3D
@@ -27,6 +29,7 @@
 #define darefine_                    DAREFINE
 #define dagetao_                     DAGETAO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dagetlocalinfo_              dagetlocalinfo
 #define dagetlocalvector_            dagetlocalvector
 #define darestorelocalvector_        darestorelocalvector
 #define dagetinterpolation_          dagetinterpolation
@@ -48,9 +51,32 @@
 #define dagetfieldname_              dagetfieldname
 #define darefine_                    darefine
 #define dagetao_                     dagetao
+#define dasetlocalfunction_          dasetlocalfunction
 #endif
 
+
+
 EXTERN_C_BEGIN
+
+static void (PETSC_STDCALL *f2)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlf2d(DALocalInfo *info,Scalar **in,Scalar **out,void *ptr)
+{
+  int ierr = 0;
+  (*f2)(info,&in[info->gys][info->gxs],&out[info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,int*),
+				       void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,int*),int *ierr)
+{
+   f2    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
+  *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d,0);
+}
+
+void PETSC_STDCALL dagetlocalinfo_(DA *da,DALocalInfo *ao,int *ierr)
+{
+  *ierr = DAGetLocalInfo(*da,ao);
+}
 
 void PETSC_STDCALL dagetao_(DA *da,AO *ao,int *ierr)
 {

@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.65 2001/05/03 16:22:59 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.66 2001/05/03 16:28:38 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -65,7 +65,7 @@
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction,FormInitialGuess,FormJacobian
+      external FormInitialGuess,FormJacobian
       external FormFunctionLocal
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -140,7 +140,6 @@
 
 !  Set function evaluation routine and vector
 
-!      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
       call DASetLocalFunction(da,FormFunctionLocal,0,ierr)
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
@@ -333,86 +332,6 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormFunction - Evaluates nonlinear function, F(x).
-!
-!  Input Parameters:
-!  snes - the SNES context
-!  X - input vector
-!  dummy - optional user-defined context, as set by SNESSetFunction()
-!          (not used here)
-!
-!  Output Parameter:
-!  F - function vector
-!
-!  Notes:
-!  This routine serves as a wrapper for the lower-level routine
-!  "FormFunctionLocal", where the actual computations are 
-!  done using the standard Fortran style of treating the local
-!  vector data as a multidimensional array over the local mesh.
-!  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArray() and VecRestoreArray().
-!
-      subroutine FormFunction(snes,X,F,dummy,ierr)
-      implicit none
-
-#include "ex5f.h"
-
-!  Input/output variables:
-      SNES     snes
-      Vec      X,F
-      integer  dummy
-      integer  ierr
-
-!  Declarations for use with local arrays:
-      Scalar      lx_v(0:1),lf_v(0:1)
-      PetscOffset lx_i,lf_i 
-      Vec         localX,localF
-      DALocalInfo info(DA_LOCAL_INFO_SIZE)
-
-      call DAGetLocalInfo(da,info,ierr)
-
-!  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-!  By placing code between these two statements, computations can
-!  be done while messages are in transition.
-      call DAGetLocalVector(da,localX,ierr)
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
-
-!  Get pointers to vector data.
-!    - For default PETSc vectors, VecGetArray() returns a pointer to
-!      the data array.  Otherwise, the routine is implementation dependent.
-!    - You MUST call VecRestoreArray() when you no longer need access to
-!      the array.
-!    - Note that the Fortran interface to VecGetArray() differs from the
-!      C version.  See the Fortran chapter of the users manual for details.
-
-      call VecGetArray(localX,lx_v,lx_i,ierr)
-      call VecGetArray(F,lf_v,lf_i,ierr)
-
-!  Compute function over the locally owned part of the grid
-
-      call FormFunctionLocal(info,lx_v(lx_i),lf_v(lf_i),info,ierr)
-
-!  Restore vectors
-
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
-      call VecRestoreArray(F,lf_v,lf_i,ierr)
-
-!  Insert values into global vector
-
-      call PetscLogFlops(11*ym*xm,ierr)
-
-      call DARestoreLocalVector(da,localX,ierr)
-
-!      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
-!      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
-
-      return 
-      end
-
-! ---------------------------------------------------------------------
-!
 !  FormFunctionLocal - Computes nonlinear function, called by
 !  the higher level routine FormFunction().
 !
@@ -480,6 +399,8 @@
  20   continue
 
 !      print*,'local function',f
+
+      call PetscLogFlops(11*ym*xm,ierr)
 
       return
       end
