@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.119 1999/02/03 16:21:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.120 1999/02/03 16:35:22 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -213,6 +213,10 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 
   if (a == 0) {
     (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
+    PetscFunctionReturn(0);
+  }
+  if (a < 0) {
+    (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc negative length, this is illegal!\n");
     PetscFunctionReturn(0);
   }
   nsize = a;
