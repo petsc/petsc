@@ -339,6 +339,9 @@ int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
          ierr = PetscDrawRestoreSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
       }
     }
+    ierr = PetscFree(vsdraw->drawaxis);CHKERRQ(ierr);
+    ierr = PetscFree(vsdraw->drawlg);CHKERRQ(ierr);
+    ierr = PetscFree(vsdraw->draw);CHKERRQ(ierr);
     ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
     PetscLogObjectDestroy((PetscObject)*sviewer);
     PetscHeaderDestroy((PetscObject)*sviewer);
