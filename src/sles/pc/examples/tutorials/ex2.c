@@ -19,7 +19,7 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SLES solver; KSP itmeth; PC prec; Mat A,M; Vec X,B,D;
+  SLES solver; KSP ksp; PC prec; Mat A,M; Vec X,B,D;
   MPI_Comm comm;
   PetscScalar v; KSPConvergedReason reason;
   int i,j,its,ierr;
@@ -68,9 +68,9 @@ int main(int argc,char **argv)
   ierr = SLESCreate(comm,&solver); CHKERRQ(ierr);
   ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
 
-  ierr = SLESGetKSP(solver,&itmeth); CHKERRQ(ierr);
-  ierr = KSPSetType(itmeth,KSPCG); CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(itmeth,PETSC_TRUE); CHKERRQ(ierr);
+  ierr = SLESGetKSP(solver,&ksp); CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPCG); CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE); CHKERRQ(ierr);
 
   /*
    * ILU preconditioner;
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
    * an indefinite preconditioner
    */
   ierr = SLESSolve(solver,B,X); CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(itmeth,&reason); CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
     printf("Run the executable again but with -pc_icc_shift option.\n");

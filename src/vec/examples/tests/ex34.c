@@ -15,8 +15,11 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec V; PetscReal nrm1,nrm2; MPI_Comm comm;
-  PetscScalar one=1; int ione=1, ierr;
+  Vec         V; 
+  PetscReal   nrm1,nrm2; 
+  MPI_Comm    comm;
+  PetscScalar one=1;
+  int         ione=1, ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr);
@@ -43,6 +46,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(V,NORM_2,&nrm2); CHKERRQ(ierr);
   PetscPrintf(comm,"norm1=%e, norm2=%e\n",nrm1,nrm2);
 
+  ierr = VecDestroy(V);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }

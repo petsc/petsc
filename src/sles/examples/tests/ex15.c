@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscScalar  none = -1.0,value[3],avalue;
   PetscReal    norm;
   PC           pc;
+  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

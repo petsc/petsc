@@ -52,6 +52,7 @@ int main(int argc,char **args)
   PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric;
   int            num_numfac;
   PetscScalar    sigma;
+  KSP            ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
