@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.1 1995/05/04 23:35:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.2 1995/05/11 18:49:22 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -199,9 +199,9 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr;
   if (!mbd->assembled) SETERR(1,"MatMult_MPIBDiag: Must assemble matrix first.");
-  ierr = VecScatterBegin(xx,0,mbd->lvec,0,INSERTVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
-  ierr = VecScatterEnd(xx,0,mbd->lvec,0,INSERTVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
   VecView(mbd->lvec,STDOUT_VIEWER);
   ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERR(ierr);
@@ -214,9 +214,9 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   int        ierr;
   if (!mbd->assembled) 
     SETERR(1,"MatMultAdd_MPIBDiag: Must assemble matrix first.");
-  ierr = VecScatterBegin(xx,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
-  ierr = VecScatterEnd(xx,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERR(ierr);
   return 0;
