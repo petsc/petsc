@@ -1,7 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.8 1995/11/01 23:17:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.9 1995/11/03 02:49:51 bsmith Exp bsmith $";
 #endif
 
+/*
+   Basic functions for basic parallel dense matrices.
+*/
+    
 #include "mpidense.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
@@ -385,6 +389,7 @@ static int MatGetDiagonal_MPIDense(Mat A,Vec v)
   Mat_SeqDense *aloc = (Mat_SeqDense *) a->A->data;
   int          ierr, i, n, m = a->m, radd;
   Scalar       *x;
+  
   if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIDense:must assemble matrix");
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetSize(v,&n); CHKERRQ(ierr);
@@ -401,6 +406,7 @@ static int MatDestroy_MPIDense(PetscObject obj)
   Mat          mat = (Mat) obj;
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif

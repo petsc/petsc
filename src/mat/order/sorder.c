@@ -1,7 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.12 1995/10/24 21:48:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.13 1995/11/01 23:19:07 bsmith Exp bsmith $";
 #endif
-
+/*
+     Provides the code that allows PETSc users to register their own
+  sequential matrix reordering routines.
+*/
 #include "../../matimpl.h"
 #include "sys/nreg.h"
 #include "sys.h"
@@ -65,8 +68,7 @@ int MatOrderNatural(int *N,int *ia,int* ja, int* permr, int* permc)
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatOrdering name,char *sname,
-                                    int (*order)(int*,int*,int*,int*,int*))
+int  MatReorderingRegister(MatOrdering name,char *sname,int (*order)(int*,int*,int*,int*,int*))
 {
   int ierr;
   if (!__MatReorderingList) {

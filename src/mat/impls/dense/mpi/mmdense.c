@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmdense.c,v 1.3 1995/10/23 22:02:53 curfman Exp curfman $";
+static char vcid[] = "$Id: mmdense.c,v 1.4 1995/10/23 23:14:27 curfman Exp bsmith $";
 #endif
 
 /*
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: mmdense.c,v 1.3 1995/10/23 22:02:53 curfman Exp curfm
 int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  int          ierr;
+  int          ierr,n;
   IS           tofrom;
   Vec          gvec;
 
@@ -22,7 +22,8 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,mdn->N,0,1,&tofrom); CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
-  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mdn->N,&gvec); CHKERRQ(ierr);
+  n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank];
+  ierr = VecCreateMPI(mat->comm,n,mdn->N,&gvec); CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx); CHKERRQ(ierr);

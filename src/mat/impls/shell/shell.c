@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.20 1995/11/01 19:10:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.21 1995/11/01 23:18:32 bsmith Exp bsmith $";
 #endif
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create a very simple matrix class for use with KSP without coding 
-  mush of anything.
+  much of anything.
 */
 
 #include "petsc.h"
@@ -42,9 +42,10 @@ static int MatMultTransAdd_Shell(Mat mat,Vec x,Vec y,Vec z)
 
 static int MatDestroy_Shell(PetscObject obj)
 {
-  int      ierr;
-  Mat      mat = (Mat) obj;
+  int       ierr;
+  Mat       mat = (Mat) obj;
   Mat_Shell *shell;
+
   shell = (Mat_Shell *) mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);}
   PetscFree(shell); 
@@ -98,8 +99,9 @@ $   MatShellSetMult(mat,mult);
 @*/
 int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
-  Mat      newmat;
+  Mat       newmat;
   Mat_Shell *shell;
+
   PetscHeaderCreate(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(newmat);
   *mat           = newmat;
