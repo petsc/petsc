@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.361 2001/04/17 18:49:35 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.362 2001/06/21 21:20:15 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1622,15 +1622,15 @@ and matrices of the same dimension are automatically compatible for
 parallel matrix-vector operations.
 
 Along with the matrix-vector multiplication routine, there is 
-a version for the transpose of the matrix, \findex{MatMultTrans()}
+a version for the transpose of the matrix, \findex{MatMultTranspose()}
 \begin{verbatim}
-  MatMultTrans(Mat A,Vec x,Vec y);
+  MatMultTranspose(Mat A,Vec x,Vec y);
 \end{verbatim}
 There are also versions that add the result
-to another vector: \findex{MatMultAdd()} \findex{MatMultTransAdd()}
+to another vector: \findex{MatMultAdd()} \findex{MatMultTransposeAdd()}
 \begin{verbatim}
   MatMultAdd(Mat A,Vec x,Vec y,Vec w);
-  MatMultTransAdd(Mat A,Vec x,Vec y,Vec w);
+  MatMultTransposeAdd(Mat A,Vec x,Vec y,Vec w);
 \end{verbatim}
 These routines, respectively, produce $ w = A*x + y $ and $ w = A^{T}*x + y$ . 
 In C it is legal for the vectors \trl{y} and \trl{w} to be identical.
@@ -1665,8 +1665,8 @@ page and Section~\ref{sec:viewers}.
 MatAXPY(Scalar *a,Mat X, Mat Y); & $ Y = Y + a*X $ \\
 MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
-MatMultTrans(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
-MatMultTransAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A^{T}*x $ \\
+MatMultTranspose(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
+MatMultTransposeAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A^{T}*x $ \\
 MatNorm(Mat A,NormType type,  double *r); & $ r = ||A||_{type}$ \\
 MatDiagonalScale(Mat A,Vec l,Vec r); & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $ \\
 MatScale(Scalar *a,Mat A); & $ A = a*A $ \\
