@@ -29,15 +29,4 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # The library location should be given in BLASLAPACK_LIB above
 #
 PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-#
-#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/rs6000/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
-#
-# Location of ParMetis
-#
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
-#
+

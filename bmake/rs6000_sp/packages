@@ -29,46 +29,4 @@ MPIRUN         = mpirun
 X11_INCLUDE    = 
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-#
-# Location of MPE software 
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-#
-#MPE_INCLUDE    = 
-#MPE_LIB        = 
-#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
-#
-# Location of BlockSolve 
-#
-#BLOCKSOLVE_INCLUDE = -I/home/petsc/software/BlockSolve95/include
-#BLOCKSOLVE_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# ESSL: IBM math library - 
-# The library location should be given in BLASLAPACK_LIB above
-#
-PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
-#
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-# 
-#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/rs6000/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
-#
-# Location of ParMetis
-#
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
-#
-#  Location for ALICE Memory Snooper
-#
-#AMS_INCLUDE = -I/home/bsmith/ams/src/include
-#AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpthreads
-#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-#
-# Location where adiC is installed
-#
-#ADIC_DEFINES    = 
-#ADIC_CC         = adiC -a -d gradient
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
-#
+
