@@ -508,8 +508,6 @@ class ExceptionSharedLinker(SharedLinker):
       for f in set:
         build.transform.Transform.handleFile(self, f, self.exceptions)
       library = self.getLibrary(set)
-      if not os.path.exists(library):
-        os.makedirs(library)
       self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
       command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
       output  = self.executeShellCommand(command, self.handleErrors)
