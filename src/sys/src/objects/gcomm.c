@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcomm.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcomm.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -26,9 +26,11 @@ static char vcid[] = "$Id: gcomm.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman
 @*/
 int PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
-  *comm = obj->comm;
+  ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.31 1998/04/16 16:05:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.32 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: inherit.c,v 1.31 1998/04/16 16:05:59 bsmith Exp curfm
 
 
 extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
+extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 extern int PetscObjectQuery_Petsc(PetscObject,char *,PetscObject *);
 extern int PetscObjectComposeFunction_Petsc(PetscObject,char *,char *,void *);
 extern int PetscObjectQueryFunction_Petsc(PetscObject,char *,void **);
@@ -29,6 +30,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->refct                  = 1;
   h->bops->destroy          = des;
   h->bops->view             = vie;
+  h->bops->getcomm          = PetscObjectGetComm_Petsc;
   h->bops->compose          = PetscObjectCompose_Petsc;
   h->bops->query            = PetscObjectQuery_Petsc;
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
@@ -146,6 +148,15 @@ int PetscObjectDereference(PetscObject obj)
 /*
        These are the versions private to the PETSc object data structures
 */
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectGetComm_Petsc"
+int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
+{
+  PetscFunctionBegin;
+  *comm = obj->comm;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectCompose_Petsc"
 int PetscObjectCompose_Petsc(PetscObject obj,char *name,PetscObject ptr)

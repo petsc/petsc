@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.58 1998/04/13 18:04:41 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.59 1998/05/06 20:10:36 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -14,23 +14,27 @@ extern int PetscCommFree_Private(MPI_Comm*);
 extern int PetscRegisterCookie(int *);
 
 /*
-   All major PETSc data structures have a common core; this is defined below by PETSCHEADER. 
+   All major PETSc data structures have a common core; this is defined 
+   below by PETSCHEADER. 
 
    PetscHeaderCreate() should be used whenever creating a PETSc structure.
 
-      bops->destroy()   is the routine for destroying the entire PETSc object; for
-                           example, MatDestroy() is the general matrix destruction routine.
-      bops->view()     is the routine for viewing the entire PETSc object; for
-                           example, MatView() is the general matrix viewing routine.
-      bops->query()     returns a different PETSc object that has been associated with the first
-      bops->compose()   associates a PETSc object with another PETSc object
-      bops->reference() increases the reference count for a PETSc object, when a reference count
-                           reaches zero it is destroyed
-        queryfunction()   Request a registered function
-        composefunction() Attach an additional registered function
+      destroy()         is the routine for destroying the entire PETSc object; 
+                          for example, MatDestroy() is the general matrix 
+                          destruction routine.
+      view()            is the routine for viewing the entire PETSc object; for
+                          example, MatView() is the general matrix viewing routine.
+      query()           returns a different PETSc object that has been associated
+                          with the first
+      compose()         associates a PETSc object with another PETSc object
+      reference()       increases the reference count for a PETSc object, when
+                          a reference count reaches zero it is destroyed
+      queryfunction()   Request a registered function
+      composefunction() Attach an additional registered function
 */
 
 typedef struct {
+   int (*getcomm)(PetscObject,MPI_Comm *);
    int (*view)(PetscObject,Viewer);
    int (*destroy)(PetscObject);
    int (*query)(PetscObject,char *,PetscObject *);
@@ -42,9 +46,9 @@ typedef struct {
 
 #define PETSCHEADER(ObjectOps)                         \
   int         cookie;                                  \
-  MPI_Comm    comm;                                    \
   PetscOps    *bops;                                   \
   ObjectOps   *ops;                                    \
+  MPI_Comm    comm;                                    \
   int         type;                                    \
   PLogDouble  flops,time,mem;                          \
   int         id;                                      \
