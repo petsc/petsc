@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.53 1999/11/10 03:18:02 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.54 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -22,11 +22,11 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-int      PetscBeganMPI = 0;
-int      PetscInitializedCalled = 0;
-int      PetscGlobalRank = -1,PetscGlobalSize = -1;
-MPI_Comm PETSC_COMM_WORLD = 0;
-MPI_Comm PETSC_COMM_SELF  = 0;
+PetscTruth PetscBeganMPI         = PETSC_FALSE;
+PetscTruth PetscInitializeCalled = PETSC_FALSE;
+int        PetscGlobalRank = -1,PetscGlobalSize = -1;
+MPI_Comm   PETSC_COMM_WORLD = 0;
+MPI_Comm   PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
@@ -325,6 +325,7 @@ PetscTruth        PetscPublishOptions = PETSC_FALSE;
 extern int        PLogInfoAllow(PetscTruth,char *);
 extern int        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
+static char       emacsmachinename[128];
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsCheckInitial"
@@ -509,6 +510,9 @@ int OptionsCheckInitial(void)
     ierr = PetscFree(nodes);CHKERRQ(ierr);
   }
 
+  ierr = OptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
+  if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
+
   /*
         Setup profiling and logging
   */
@@ -588,6 +592,8 @@ int OptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm,"       unless noxterm is given\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -on_error_emacs <machinename>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"    emacs jumps to error file\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");CHKERRQ(ierr);
