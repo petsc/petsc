@@ -50,7 +50,10 @@ class Builder(install.urlMapping.UrlMapping):
 
   def buildDependenceGraph(self, maker):
     '''Retrieve all dependencies and construct the dependence graph'''
+    seen = []
     for url in maker.executeTarget('getDependencies'):
+      if url in seen: continue
+      seen.append(url)
       self.debugPrint('Retrieving dependency '+url, 2, 'install')
       try:
         m = self.getMakeModule(self.retriever.retrieve(url)).PetscMake(sys.argv[1:], self.argDB)
