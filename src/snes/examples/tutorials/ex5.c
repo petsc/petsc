@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.132 2001/04/10 19:37:05 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.133 2001/05/04 15:11:17 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -61,7 +61,8 @@ typedef struct {
 */
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunctionLocal(DALocalInfo*info,Scalar**x,Scalar**f,AppCtx*);
+extern int FormFunctionLocal(DALocalInfo*,Scalar**,Scalar**,AppCtx*);
+extern int FormJacobianLocal(DALocalInfo*,Scalar**,Mat,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -72,17 +73,15 @@ int main(int argc,char **argv)
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   int                    its;                  /* iterations for convergence */
-  PetscTruth             matrix_free,coloring;
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
-  PetscTruth             matlab;
-#endif
-#if defined(PETSC_HAVE_ADIC)
-  PetscTruth             adic;
-#endif
+  PetscTruth             local_function = PETSC_TRUE,global_function = PETSC_FALSE,matlab_function = PETSC_FALSE;
+  PetscTruth             fd_jacobian = PETSC_FALSE,global_jacobian=PETSC_FALSE,local_jacobian=PETSC_TRUE,adic_jacobian=PETSC_FALSE;
   int                    ierr;
   double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
-  MatFDColoring          matfdcoloring;
+  MatFDColoring          matfdcoloring = 0;
+  ISColoring             iscoloring;
 
+
+   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -117,19 +116,22 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set function evaluation routine and vector
+     Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSetFunction(snes,r,FormFunction,&user);CHKERRQ(ierr);
+  ierr = DASetLocalFunction(user.da,FormFunctionLocal,FormJacobianLocal,ad_FormFunctionLocal);CHKERRQ(ierr);
 
+  /* Decide which FormFunction to use */
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-global_function",&global_function,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-local_function",&local_function,0);CHKERRQ(ierr);
+
+  if (global_function) {
+    ierr = SNESSetFunction(snes,r,FormFunction,&user);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matlab",&matlab);CHKERRQ(ierr);
-  if (matlab) {
+  } else if (matlabfunction) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
-  }
 #endif
-  ierr = PetscOptionsHasName(PETSC_NULL,"-adic",&adic);CHKERRQ(ierr);
-  if (adic) {
-    ierr = DASetLocalFunction(user.da,(DALocalFunction1)FormFunctionLocal,0,(DALocalFunction1)ad_FormFunctionLocal);CHKERRQ(ierr);
+  } else if (local_function) {
     ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
   }
 
@@ -143,30 +145,31 @@ int main(int argc,char **argv)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
-     -fdcoloring : using finite differences with coloring to compute the Jacobian
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-fdcoloring",&coloring);CHKERRQ(ierr);
-  if (!matrix_free) {
-    ISColoring    iscoloring;
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-adic_jacobian",&adic_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-global_jacobian",&global_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-local_jacobian",&local_jacobian,0);CHKERRQ(ierr);
 
-    if (coloring) {
-      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-    } else if (adic) {
-      ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
-      ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
-    } else {
-      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
-    }
+  if (fd_jacobian) {
+    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  } else if (adic_jacobian) {
+    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+    ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
+  } else if (global_jacobian){
+    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
+  } else if (local_jacobian){
+    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -200,10 +203,8 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-  }
-  if (coloring) {
+  ierr = MatDestroy(J);CHKERRQ(ierr);
+  if (matfdcoloring) {
     ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
   }
   ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -531,6 +532,72 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   *flag = SAME_NONZERO_PATTERN;
 
 
+  /*
+     Tell the matrix we will never add a new nonzero location to the
+     matrix. If we do, it will generate an error.
+  */
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobianLocal"
+/*
+   FormJacobianLocal - Evaluates Jacobian matrix.
+
+
+*/
+int FormJacobianLocal(DALocalInfo *info,Scalar **x,Mat jac,AppCtx *user)
+{
+  int        ierr,i,j;
+  MatStencil col[5],row;
+  Scalar     lambda,v[5],hx,hy,hxdhy,hydhx,sc;
+
+  PetscFunctionBegin;
+  lambda = user->param;
+  hx     = 1.0/(double)(info->mx-1);
+  hy     = 1.0/(double)(info->my-1);
+  sc     = hx*hy*lambda;
+  hxdhy  = hx/hy; 
+  hydhx  = hy/hx;
+
+
+  /* 
+     Compute entries for the locally owned part of the Jacobian.
+      - Currently, all PETSc parallel matrix formats are partitioned by
+        contiguous chunks of rows across the processors. 
+      - Each processor needs to insert only elements that it owns
+        locally (but any non-local elements will be sent to the
+        appropriate processor during matrix assembly). 
+      - Here, we set all entries for a particular row at once.
+      - We can set matrix entries either using either
+        MatSetValuesLocal() or MatSetValues(), as discussed above.
+  */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      row.j = j; row.i = i;
+      /* boundary points */
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+        v[0] = 1.0;
+        ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+      } else {
+      /* interior grid points */
+        v[0] = -hxdhy;                                           col[0].j = j - 1; col[0].i = i;
+        v[1] = -hydhx;                                           col[1].j = j;     col[1].i = i-1;
+        v[2] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[2].j = row.j; col[2].i = row.i;
+        v[3] = -hydhx;                                           col[3].j = j;     col[3].i = i+1;
+        v[4] = -hxdhy;                                           col[4].j = j + 1; col[4].i = i;
+        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  /* 
+     Assemble matrix, using the 2-step process:
+       MatAssemblyBegin(), MatAssemblyEnd().
+  */
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
