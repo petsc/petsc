@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.1 1998/07/27 03:25:16 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.2 1998/07/27 03:51:57 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -29,7 +29,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   Vec       sol = ts->vec_sol,update = cn->update;
   Vec       rhs = cn->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
-  Scalar    mdt = 1.0/ts->time_step, dt2 = 0.5*ts->time_step;
+  Scalar    dt = ts->time_step, two = 2.0;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -43,11 +43,10 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ierr = VecAXPY(&dt2,update,sol); CHKERRQ(ierr);
+    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
     ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
@@ -171,17 +170,17 @@ static int TSDestroy_CN(TS ts )
 int TSCnMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
-  Scalar mdt, mp5 = -0.5;
+  Scalar two = 2.0, neg_dt;
   int    ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
-  mdt = 1.0/ts->time_step;
+  neg_dt = -1.0*ts->time_step;
 
   /* apply user provided function */
   ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
-  /* shift and scale by 1/dt - 0.5*F */
-  ierr = VecAXPBY(&mdt,&mp5,x,y); CHKERRQ(ierr);
+  /* shift and scale by 2 - dt*F */
+  ierr = VecAXPBY(&two,&neg_dt,x,y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,9 +255,9 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 #define __FUNC__ "TSSetUp_CN_Linear_Constant_Matrix"
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
-  TS_CN *cn = (TS_CN*) ts->data;
-  int       ierr, M, m;
-  Scalar    mdt = 1.0/ts->time_step, mp5 = -0.5;
+  TS_CN   *cn = (TS_CN*) ts->data;
+  int     ierr, M, m;
+  Scalar  two = 2.0, neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update); CHKERRQ(ierr);  
@@ -266,8 +265,8 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     
   /* build linear system to be solved */
   if (!ts->Ashell) {
-    ierr = MatScale(&mp5,ts->A); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->A); CHKERRQ(ierr);
+    ierr = MatScale(&neg_dt,ts->A); CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->A); CHKERRQ(ierr);
   } else {
     /* construct new shell matrix */
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
@@ -276,8 +275,8 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult); CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
-    ierr = MatScale(&mp5,ts->B); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->B); CHKERRQ(ierr);
+    ierr = MatScale(&neg_dt,ts->B); CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->B); CHKERRQ(ierr);
   }
   ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
