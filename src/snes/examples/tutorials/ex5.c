@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.102 1999/01/13 21:47:26 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.103 1999/02/15 21:57:06 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -88,7 +88,7 @@ int main( int argc, char **argv )
   int      matrix_free;         /* flag - 1 indicates matrix-free version */
   int      size;                /* number of processors */
   int      m, flg, N, ierr, nloc, *ltog;
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -221,7 +221,9 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = FormFunction(snes,x,r,(void *)&user);CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
+  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n", its,fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

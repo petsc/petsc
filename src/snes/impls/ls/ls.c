@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.127 1999/03/14 22:00:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.128 1999/03/15 01:31:50 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -288,6 +288,14 @@ int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
 
    Level: advanced
 
+   Notes:
+     You must run this with -snes_no_convergence_test or your own 
+     custom test and use -snes_max_it nk or the SNES solver will generate
+     an error.
+
+     Residual norm output printed from -snes_monitor will not be correct,
+     since they are not computed.
+
 .keywords: SNES, nonlinear, line search, cubic
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
@@ -302,15 +310,13 @@ int SNESNoLineSearchNoNorms(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 1; 
+  *flag = 0; 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
-  *gnorm = 0.0;
-  *ynorm = 0.0;
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
