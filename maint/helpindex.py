@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: concepts.py,v 1.3 2000/09/22 18:37:13 balay Exp balay $ 
+# $Id: helpindex.py,v 1.4 2000/09/22 19:57:44 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -197,7 +197,8 @@ def main():
 
       fd1.close()
       fd2.close()
-
+      #make sure there is no problem re-writing to this file
+      os.system('/bin/rm -f ' + PETSC_DIR + '/docs/manualpages/help.html')
       fd = open( PETSC_DIR + '/docs/manualpages/help.html','w')
       printdata(fd,dict)
       fd.close()
