@@ -1,4 +1,4 @@
-/*$Id: sbaijfact2.c,v 1.1 2000/06/21 15:47:02 balay Exp balay $*/
+/*$Id: sbaijfact2.c,v 1.2 2000/06/25 17:07:00 balay Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -445,7 +445,6 @@ int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-/*---------------------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatSolveTranspose_SeqSBAIJ_1"
 int MatSolveTranspose_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
