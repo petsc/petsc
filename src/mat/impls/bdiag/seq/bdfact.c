@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.14 1995/10/11 03:53:08 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.15 1995/10/12 04:20:09 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -11,19 +11,33 @@ static char vcid[] = "$Id: bdfact.c,v 1.14 1995/10/11 03:53:08 curfman Exp curfm
    rather than put it in the Mat->col slot. */
 
 /* 
-   BlockMatMult_Private - Computes y -= A*v for square A, stored by columns.
+   BlockMatMult_Private - Computes C -= A*B, where
+       A is nrow X nrow,
+       B and C are nrow X ncol,
+       All matrices are dense, stored by columns, with nrow the number of
+           allocated rows for each matrix.
  */
 
-#define BMatMult(n,A,v,y) BlockMatMult_Private(n,A,v,y)
-static int BlockMatMult_Private(int n,Scalar *A,Scalar *v,Scalar *y)
+#define BMatMult(nrow,ncol,A,B,C) BlockMatMult_Private(nrow,ncol,A,B,C)
+static int BlockMatMult_Private(int nrow,int ncol,Scalar *A,Scalar *B,Scalar *C)
 {
-  Scalar v_i, *Apt = A;
-  int    i, j;
+  Scalar B_i, *Apt = A, temp;
+  int    i, j, k;
 
-  for (i=0; i<n; i++) {
-    v_i = v[i];
-    for (j=0; j<n; j++) y[j] -= Apt[j] * v_i;
-    Apt += n;
+  if (ncol == 1) {
+    for (i=0; i<nrow; i++) {
+      B_i = B[i];
+      for (k=0; k<nrow; k++) C[k] -= Apt[k] * B_i;
+      Apt += nrow;
+    }
+  } else {
+    for (j=0; j<ncol; j++) {
+      for (i=0; i<nrow; i++) {
+        B_i = B[i];
+        for (k=0; k<nrow; k++) C[k] -= Apt[k] * B_i;
+        Apt += nrow;
+      }
+    }
   }
  return 0;
 }
@@ -120,10 +134,10 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
                    "MatLUFactorNumeric_SeqBDiag:Bad elimination column");
                 if ((dnum = dgptr[dgk+mbk])) {
                   if (diag[d2] > 0) {
-                    ierr = BMatMult(nb,&dv[d][knb2],&dv[dnum-1][knb2],
+                    ierr = BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
                                     &dv[d2][elim_col*nb2]); CHKERRQ(ierr);
                   } else {
-                    ierr = BMatMult(nb,&dv[d][knb2],&dv[dnum-1][knb2],
+                    ierr = BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
                                     &dv[d2][elim_row*nb2]); CHKERRQ(ierr);
                   }
                 }
@@ -206,7 +220,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
       for (d=0; d<mainbd; d++) {
         loc = i - diag[d];
         if (loc >= 0) {
-          ierr = BMatMult(nb,&dv[d][loc*nb*nb],&y[loc*nb],&y[inb]); CHKERRQ(ierr);
+          ierr = BMatMult(nb,1,&dv[d][loc*nb*nb],&y[loc*nb],&y[inb]); CHKERRQ(ierr);
         }
       }
     }
@@ -216,7 +230,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
       for (d=mainbd+1; d<a->nd; d++) {
         col = i - diag[d];
         if (col < nbk) {
-          ierr = BMatMult(nb,&dv[d][inb2],&y[col*nb],&y[inb]); CHKERRQ(ierr);
+          ierr = BMatMult(nb,1,&dv[d][inb2],&y[col*nb],&y[inb]); CHKERRQ(ierr);
         }
       }
       LAgetrs_("N",&nb,&one,&dv[i][inb2],&nb,&a->pivot[i][inb],
