@@ -306,6 +306,7 @@ EXTERN int globalcurrentstate,globalmaxstate;
 
    Level: developer
 M*/
+#define PetscObjectSetIntComposedData(obj,id,data)                  \
 0; {PetscErrorCode ierr_;                                                       \
     ierr_ = PetscObjectIncreaseIntComposedData(obj); CHKERRQ(ierr_);  \
   }                                                                   \
