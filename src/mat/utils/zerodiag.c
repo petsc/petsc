@@ -54,6 +54,21 @@
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 {
+  int ierr,(*f)(Mat,PetscReal,IS,IS);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,atol,ris,cis);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
+int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
+{
   int         ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
   PetscScalar *v,*vv;
   PetscReal   repla;
@@ -65,9 +80,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
   PetscValidHeaderSpecific(ris,IS_COOKIE);
   PetscValidHeaderSpecific(cis,IS_COOKIE);
   
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Matrix must be of type SeqAIJ");
-
   ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col);CHKERRQ(ierr);
   ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);
@@ -139,6 +151,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
   ierr = ISDestroy(icis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
