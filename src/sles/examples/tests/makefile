@@ -25,7 +25,7 @@ TESTEXAMPLES_3 = ex7.PETSc runex7 ex7.rm ex12.PETSc ex12.rm ex16.PETSc runex16 \
 TESTEXAMPLES_4 = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
 		runex2_3 runex2_5 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		runex4 ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
-		ex11.rm ex19.PETSc ex19.rm runex19 ex19.rm
+		ex11.rm ex19.PETSc runex19 ex19.rm
 TESTEXAMPLES_5 = ex17.PETSc runex17 ex17.rm
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
 		ex11.c ex13.c ex14.c ex15.c ex17.c ex19.c
