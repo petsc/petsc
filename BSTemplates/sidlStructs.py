@@ -1,6 +1,6 @@
 class SIDLConstants:
   def getLanguages():
-    return ['C', 'C++', 'Python', 'F77', 'Java', 'Mathematica']
+    return ['C', 'C++', 'Python', 'F77', 'Java', 'Mathematica', 'Matlab']
   getLanguages = staticmethod(getLanguages)
 
   def checkLanguage(language):
