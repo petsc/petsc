@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.33 1998/04/27 04:03:35 curfman Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.34 1998/05/29 22:51:27 balay Exp bsmith $";
 #endif
 
 /*
@@ -148,7 +148,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 .vb
        J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
        h = error_rel*u[i]                    if  u[i] > umin
-         = error_rel*umin                    else
+         = +/- error_rel*umin                otherwise with +/- determined by the size of u[i]
        dx_{i} = (0, ... 1, .... 0)
 .ve
 
