@@ -8,6 +8,8 @@ libf:
 
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+
 ###################
 # Need to build libpetscfortran as a shared library as well, 
 # as-fast option produces bad .a files

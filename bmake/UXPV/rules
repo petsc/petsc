@@ -7,3 +7,5 @@ libf: ${OBJSF}
 
 #######
 shared_arch:
+
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp

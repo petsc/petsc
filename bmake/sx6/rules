@@ -13,3 +13,5 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 # as-fast option produces bad .a files
 #
 shared_arch:
+
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp

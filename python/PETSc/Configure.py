@@ -277,29 +277,9 @@ class Configure(config.base.Configure):
         traditional = '-traditional-cpp'
       else:
         traditional = ''
-      self.framework.addSubstitution('F_to_o_TARGET', """
-.F.f:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${RM} __$*.c
-
-.F.o:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f __$*.c
- 
-.F.a:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f __$*.c""")
+      self.framework.addSubstitution('F_to_o_TARGET', "include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp")
     else:
-      self.framework.addSubstitution('F_to_o_TARGET', '')
+      self.framework.addSubstitution('F_to_o_TARGET', "include ${PETSC_DIR}/bmake/common/rules.fortran.cpp")
     return
 
   def configureFortranStubs(self):

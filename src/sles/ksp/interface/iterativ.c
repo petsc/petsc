@@ -23,7 +23,8 @@ int KSPDefaultFreeWork(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  {
-    ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
+    ierr      = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
+    ksp->work = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -517,10 +518,13 @@ int KSPDefaultDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->data) {ierr = PetscFree(ksp->data);CHKERRQ(ierr);}
+  if (ksp->data) {
+    ierr      = PetscFree(ksp->data);CHKERRQ(ierr);
+    ksp->data = 0;
+  }
 
   /* free work vectors */
-  KSPDefaultFreeWork(ksp);
+  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
