@@ -124,6 +124,39 @@ int SNESView(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+  We retain a list of functions that also take SNES command 
+  line options. These are called at the end SNESSetFromOptions()
+*/
+#define MAXSETFROMOPTIONS 5
+static int numberofsetfromoptions;
+static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
+
+#undef __FUNC__  
+#define __FUNC__ "SNESAddOptionsChecker"
+/*@
+  SNESAddOptionsChecker - Adds an additional function to check for SNES options.
+
+  Not Collective
+
+  Input Parameter:
+. snescheck - function that checks for options
+
+  Level: developer
+
+.seealso: SNESSetFromOptions()
+@*/
+int SNESAddOptionsChecker(int (*snescheck)(SNES))
+{
+  PetscFunctionBegin;
+  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Too many options checkers, only %d allowed", MAXSETFROMOPTIONS);
+  }
+
+  othersetfromoptions[numberofsetfromoptions++] = snescheck;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions"
 /*@
@@ -179,7 +212,7 @@ int SNESSetFromOptions(SNES snes)
   SLES                sles;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
   PetscTruth          flg;
-  int                 ierr;
+  int                 ierr, i;
   char                *deft,type[256];
 
   PetscFunctionBegin;
@@ -246,6 +279,10 @@ int SNESSetFromOptions(SNES snes)
     } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeHessian,snes->funP);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
+    }
+
+    for(i = 0; i < numberofsetfromoptions; i++) {
+      ierr = (*othersetfromoptions[i])(snes);                                                             CHKERRQ(ierr);
     }
 
     if (snes->setfromoptions) {
@@ -1881,6 +1918,164 @@ int SNESGetConvergenceHistory(SNES snes,PetscReal **a,int **its,int *na)
   if (a)   *a   = snes->conv_hist;
   if (its) *its = snes->conv_hist_its;
   if (na) *na   = snes->conv_hist_len;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESSetRhsBC"
+/*@
+  SNESSetRhsBC - Sets the function which applies boundary conditions
+  to the Rhs of each system.
+
+  Collective on SNES
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. func - The function
+
+  Calling sequence of func:
+. func (SNES snes, Vec rhs, void *ctx);
+
+. rhs - The current rhs vector
+. ctx - The user-context
+
+  Level: intermediate
+
+.keywords: SNES, Rhs, boundary conditions
+.seealso SNESDefaultRhsBC(), SNESSetSolutionBC(), SNESSetUpdate()
+@*/
+int SNESSetRhsBC(SNES snes, int (*func)(SNES, Vec, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  snes->applyrhsbc = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultRhsBC"
+/*@
+  SNESDefaultRhsBC - The default boundary condition function which does nothing.
+
+  Not collective
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. rhs  - The Rhs
+. ctx  - The user-context
+
+  Level: beginner
+
+.keywords: SNES, Rhs, boundary conditions
+.seealso SNESSetRhsBC(), SNESDefaultSolutionBC(), SNESDefaultUpdate()
+@*/
+int SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESSetSolutionBC"
+/*@
+  SNESSetSolutionBC - Sets the function which applies boundary conditions
+  to the solution of each system.
+
+  Collective on SNES
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. func - The function
+
+  Calling sequence of func:
+. func (TS ts, Vec rsol, void *ctx);
+
+. sol - The current solution vector
+. ctx - The user-context
+
+  Level: intermediate
+
+.keywords: SNES, solution, boundary conditions
+.seealso SNESDefaultSolutionBC(), SNESSetRhsBC(), SNESSetUpdate()
+@*/
+int SNESSetSolutionBC(SNES snes, int (*func)(SNES, Vec, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  snes->applysolbc = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultSolutionBC"
+/*@
+  SNESDefaultSolutionBC - The default boundary condition function which does nothing.
+
+  Not collective
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. sol  - The solution
+. ctx  - The user-context
+
+  Level: beginner
+
+.keywords: SNES, solution, boundary conditions
+.seealso SNESSetSolutionBC(), SNESDefaultRhsBC(), SNESDefaultUpdate()
+@*/
+int SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESSetUpdate"
+/*@
+  SNESSetUpdate - Sets the general-purpose update function called
+  at the beginning of every step of the iteration.
+
+  Collective on SNES
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. func - The function
+
+  Calling sequence of func:
+. func (TS ts, int step);
+
+. step - The current step of the iteration
+
+  Level: intermediate
+
+.keywords: SNES, update
+.seealso SNESDefaultUpdate(), SNESSetRhsBC(), SNESSetSolutionBC()
+@*/
+int SNESSetUpdate(SNES snes, int (*func)(SNES, int))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  snes->update = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultUpdate"
+/*@
+  SNESDefaultUpdate - The default update function which does nothing.
+
+  Not collective
+
+  Input Parameters:
+. snes - The nonlinear solver context
+. step - The current step of the iteration
+
+.keywords: SNES, update
+.seealso SNESSetUpdate(), SNESDefaultRhsBC(), SNESDefaultSolutionBC()
+@*/
+int SNESDefaultUpdate(SNES snes, int step)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 

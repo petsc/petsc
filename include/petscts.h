@@ -36,6 +36,9 @@ E*/
 #define TS_PVODE           "pvode"
 typedef char *TSType;
 
+#define TS_SER_BEULER_BINARY "beuler_binary"
+typedef char *TSSerializeType;
+
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -44,6 +47,17 @@ typedef char *TSType;
 .seealso: TSCreate()
 E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
+
+/* Logging support */
+#if PETSC_USE_NEW_LOGGING
+extern int TS_COOKIE;
+enum {TS_Step, TS_PseudoComputeTimeStep, TS_MAX_EVENTS};
+#else
+enum {Crap_TS_Step, Crap_TS_PseudoComputeTimeStep, TS_MAX_EVENTS};
+#endif
+extern int TSEvents[TS_MAX_EVENTS];
+#define TSLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(TSEvents[e],o1,o2,o3,o4)
+#define TSLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(TSEvents[e],o1,o2,o3,o4)
 
 EXTERN int TSCreate(MPI_Comm,TSProblemType,TS*);
 EXTERN int TSSetType(TS,TSType);
@@ -86,6 +100,20 @@ EXTERN int TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,voi
 EXTERN int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 EXTERN int TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
+extern int TSSetRhsBC(TS, int (*)(TS, Vec, void *));
+extern int TSSetSystemMatrixBC(TS, int (*)(TS, Mat, Mat, void *));
+extern int TSSetSolutionBC(TS, int (*)(TS, Vec, void *));
+extern int TSSetPreStep(TS, int (*)(TS));
+extern int TSSetUpdate(TS, int (*)(TS, double, double *));
+extern int TSSetPostStep(TS, int (*)(TS));
+extern int TSDefaultRhsBC(TS, Vec, void *);
+extern int TSDefaultSystemMatrixBC(TS, Mat, Mat, void *);
+extern int TSDefaultSolutionBC(TS, Vec, void *);
+extern int TSDefaultPreStep(TS);
+extern int TSDefaultUpdate(TS, double, double *);
+extern int TSDefaultPostStep(TS);
+extern int TSSetIdentity(TS, int (*)(TS, double, Mat *, void *));
+
 EXTERN int TSPseudoSetTimeStep(TS,int(*)(TS,PetscReal*,void*),void*);
 EXTERN int TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
 EXTERN int TSPseudoComputeTimeStep(TS,PetscReal *);
@@ -105,12 +133,22 @@ EXTERN int        TSRegisterAll(char*);
 EXTERN int        TSRegisterDestroy(void);
 extern PetscTruth TSRegisterAllCalled;
 
-EXTERN int TSRegister(char*,char*,char*,int(*)(TS));
+EXTERN int TSRegister(const char[], const char[], const char[], int (*)(TS));
+extern int TSSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, TS *, PetscViewer, PetscTruth));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
+#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,0)
 #else
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
+#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,d)
 #endif
+
+extern PetscFList TSSerializeList;
+extern int TSSerializeRegisterAll(const char []);
+extern int TSSerializeRegisterDestroy(void);
+extern int TSSerializeRegisterAllCalled;
+extern int TSSerialize(MPI_Comm comm, TS *, PetscViewer, PetscTruth);
+extern int TSSetSerializeType(TS, TSSerializeType);
 
 EXTERN int TSGetSNES(TS,SNES*);
 EXTERN int TSGetSLES(TS,SLES*);

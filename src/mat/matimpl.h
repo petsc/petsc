@@ -80,20 +80,26 @@ struct _MatOps {
             (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,PetscViewer),
-            (*getmaps)(Mat,PetscMap*,PetscMap*),
+/*65*/      (*getmaps)(Mat,PetscMap*,PetscMap*),
             (*usescaledform)(Mat,PetscTruth),
             (*scalesystem)(Mat,Vec,Vec),
             (*unscalesystem)(Mat,Vec,Vec),
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
-            (*setvalueslocal)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
+/*70*/      (*setvalueslocal)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
             (*zerorowslocal)(Mat,IS,PetscScalar *),
             (*getrowmax)(Mat,Vec),
             (*convert)(Mat,MatType,Mat*),
             (*setcoloring)(Mat,ISColoring),
-            (*setvaluesadic)(Mat,void*),
+/*75*/      (*setvaluesadic)(Mat,void*),
             (*setvaluesadifor)(Mat,int,void*),
             (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*),
-            (*setfromoptions)(Mat);
+            (*setfromoptions)(Mat),
+            (*multconstrained)(Mat,Vec,Vec),
+/*80*/      (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,int,int,Mat *),
+            (*serialize)(MPI_Comm, Mat *, PetscViewer, PetscTruth),
+            (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),
+            (*multmultiple)(Mat, Mat, Mat),
+            (*solvemultiple)(Mat, Mat, Mat);
 };
 
 /*

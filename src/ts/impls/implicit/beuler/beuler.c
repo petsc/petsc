@@ -83,7 +83,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
     /*
         evaluate matrix function 
     */
-    ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
+    ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
     ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
     ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
     if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
@@ -304,28 +304,28 @@ int TSCreate_BEuler(TS ts)
   KSP        ksp;
 
   PetscFunctionBegin;
-  ts->destroy         = TSDestroy_BEuler;
-  ts->view            = TSView_BEuler;
+  ts->ops->destroy = TSDestroy_BEuler;
+  ts->ops->view    = TSView_BEuler;
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
-    if (!ts->rhsmatrix) {
-      ts->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
-      ts->step   = TSStep_BEuler_Linear_Constant_Matrix;
+    if (!ts->ops->rhsmatrix) {
+      ts->ops->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
+      ts->ops->step   = TSStep_BEuler_Linear_Constant_Matrix;
     } else {
-      ts->setup  = TSSetUp_BEuler_Linear_Variable_Matrix;  
-      ts->step   = TSStep_BEuler_Linear_Variable_Matrix;
+      ts->ops->setup  = TSSetUp_BEuler_Linear_Variable_Matrix;  
+      ts->ops->step   = TSStep_BEuler_Linear_Variable_Matrix;
     }
-    ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
+    ts->ops->setfromoptions  = TSSetFromOptions_BEuler_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    ts->setup           = TSSetUp_BEuler_Nonlinear;  
-    ts->step            = TSStep_BEuler_Nonlinear;
-    ts->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
+    ts->ops->setup           = TSSetUp_BEuler_Nonlinear;  
+    ts->ops->step            = TSStep_BEuler_Nonlinear;
+    ts->ops->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 

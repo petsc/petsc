@@ -546,8 +546,8 @@ int TSCreate_Pseudo(TS ts)
   int        ierr;
 
   PetscFunctionBegin;
-  ts->destroy         = TSDestroy_Pseudo;
-  ts->view            = TSView_Pseudo;
+  ts->ops->destroy         = TSDestroy_Pseudo;
+  ts->ops->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
@@ -556,9 +556,9 @@ int TSCreate_Pseudo(TS ts)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian");
   }
 
-  ts->setup           = TSSetUp_Pseudo;  
-  ts->step            = TSStep_Pseudo;
-  ts->setfromoptions  = TSSetFromOptions_Pseudo;
+  ts->ops->setup           = TSSetUp_Pseudo;  
+  ts->ops->step            = TSStep_Pseudo;
+  ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
 
   /* create the required nonlinear solver context */
   ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
