@@ -18,10 +18,6 @@ Meta priorities:
  * Satish - Make sure one can run block Jacobi on several matrices with number of rows
    on all matrices but first zero for both AIJ and BAIJ matrices.
 
- X Test mpiuni on DEC alpha, document any changes needed for it to work.
-
- X     Maybe, like, say, test one or two BDiag routines before making a release?
-       More test cases that involve, zero size vectors, matrices, IS's etc.
 
 Satish NT stuff
 
@@ -770,3 +766,7 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
  X make clean copy of emacs stuff for mud to give to all summer visitors, ALICE folks etc.
 
+ X Test mpiuni on DEC alpha, document any changes needed for it to work.
+
+ X     Maybe, like, say, test one or two BDiag routines before making a release?
+       More test cases that involve, zero size vectors, matrices, IS's etc.
