@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.18 1995/06/13 01:18:51 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -35,6 +35,7 @@ extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
 extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
 
 extern int SNESGetSolution(SNES,Vec*);
+extern int SNESGetSolutionUpdate(SNES,Vec*);
 extern int SNESGetFunction(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
