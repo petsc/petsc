@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.150 1996/02/16 20:05:38 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.151 1996/02/23 23:06:52 curfman Exp bsmith $";
 #endif
 
 /*
@@ -835,7 +835,7 @@ static int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
   *m = 0; *n = a->m;
   return 0;
 }
-static int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
+int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *itmp,i,shift = a->indexshift;
@@ -845,19 +845,22 @@ static int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = a->a + a->i[row] + shift;
   if (idx) {
-    if (*nz) {
-      itmp = a->j + a->i[row] + shift;
+    itmp = a->j + a->i[row] + shift;
+    if (*nz && shift) {
       *idx = (int *) PetscMalloc( (*nz)*sizeof(int) ); CHKPTRQ(*idx);
       for ( i=0; i<(*nz); i++ ) {(*idx)[i] = itmp[i] + shift;}
+    } else if (*nz) {
+      *idx = itmp;
     }
     else *idx = 0;
   }
   return 0;
 }
 
-static int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
+int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
-  if (idx) {if (*idx) PetscFree(*idx);}
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  if (idx) {if (*idx && a->indexshift) PetscFree(*idx);}
   return 0;
 }
 
