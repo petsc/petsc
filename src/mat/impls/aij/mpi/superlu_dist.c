@@ -33,8 +33,7 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
                     double *a, int *colind, int *rowptr,
                     double **at, int **rowind, int **colptr)
 {
-    register int i, j, col, relpos;
-    int *marker;
+    int i, j, col, relpos, *marker;
 
     /* Allocate storage for another copy of the matrix. */
     *at = (double *) doubleMalloc_dist(nnz);
@@ -74,9 +73,9 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
 int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
-  Mat_MPIAIJ         *a  = (Mat_MPIAIJ*)A->data; 
+  Mat_MPIAIJ              *a  = (Mat_MPIAIJ*)A->data; 
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)a->spptr; 
-  int                ierr, size=a->size;
+  int                     ierr, size=a->size;
     
   PetscFunctionBegin;
   /* Deallocate SuperLU_DIST storage */
