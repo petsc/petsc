@@ -1,22 +1,21 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscdraw
-LOCDIR        = src/draw/examples/
-RUNEXAMPLES_2 = runex1 runex2 runex3 runex4 runex4_2
-EXAMPLES_2    = ex1 ex2 ex3 ex4
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF     = ex5.F
-EXAMPLES_3    = ex5
-EXAMPLES_4    = ex1 ex4
-RUNEXAMPLES_4 = 
+CFLAGS	       = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscdraw
+LOCDIR         = src/draw/examples/
+TESTEXAMPLES_2 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc \
+		runex3 clean ex4.PETSc runex4 runex4_2 clean
+TESTEXAMPLES_3 = ex5.PETSc  clean
+TESTEXAMPLES_4 = ex1.PETSc ex4.PETSc clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF      = ex5.F
 
 runex1:
 	-@$(MPIRUN) ex1
