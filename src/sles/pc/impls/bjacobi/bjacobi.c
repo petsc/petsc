@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.58 1996/01/02 14:51:14 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.59 1996/01/02 19:50:39 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -69,7 +69,7 @@ static int PCSetFromOptions_BGS(PC pc)
     PCBGSSetUseTrueLocal(pc);
   }
   if (OptionsHasName(pc->prefix,"-pc_bgs_backward")) {
-    PCGSSetSymmetric(pc,SOR_BACKWARD_SWEEP);
+    PCBGSSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
   if (OptionsHasName(pc->prefix,"-pc_bgs_symmetric")) {
     PCBGSSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
