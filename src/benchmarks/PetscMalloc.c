@@ -5,7 +5,7 @@
 int main( int argc, char **argv)
 {
   double   x, y, value;
-  void     *arr[1000];
+  void     *arr[1000], *dummy;
   int      ierr, i, flg, rand1[1000], rand2[1000];
   SYRandom r;
   
@@ -19,6 +19,10 @@ int main( int argc, char **argv)
     rand2[i] = (int ) (value* 144327);
   }
   
+  /* Take care of paging effects */
+  dummy = PetscMalloc(100); CHKPTRA(dummy);
+  PetscFree(dummy);
+
   /* Do all mallocs */
   for (i=0 ; i< 1000; i++) {
     arr[i] = PetscMalloc(rand1[i]); CHKPTRA( arr[i]);

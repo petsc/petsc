@@ -8,6 +8,9 @@ int main( int argc, char **argv)
 
   PetscInitialize(&argc, &argv,0,0,0);
   PLogEventRegister(&e1,"*DummyEvent     ", "red");
+  /* To take care of the paging effects */
+  PLogEventBegin(e1,&x,0,0,0);
+  PLogEventEnd(e1,&x,0,0,0);  
 
   x = PetscGetTime();
 

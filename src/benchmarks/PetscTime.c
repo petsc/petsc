@@ -7,9 +7,11 @@ int main( int argc, char **argv)
   double x, y;
   
   PetscInitialize(&argc, &argv,0,0,0);
+ /* To take care of paging effects */
+   PetscTime(y);
 
    PetscTime(x);
-   PetscTime(y);
+   PetscTime(y); 
    PetscTime(y);
    PetscTime(y);
    PetscTime(y);
