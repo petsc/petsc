@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1999/02/03 15:40:45 bsmith Exp balay $ 
+# $Id: base.site,v 1.17 1999/02/24 21:39:19 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -47,6 +47,7 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
 #MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
