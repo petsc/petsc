@@ -216,7 +216,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
   PetscErrorCode ierr;
-  int              M=A->M,N=A->N,info,size,rank,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
+  int              M=A->M,N=A->N,sinfo,size,rank,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->m, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   SuperLUStat_t    stat;
   double           *berr=0;
@@ -357,20 +357,20 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, 
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+                   &lu->grid, &lu->LUstruct, berr, &stat, &sinfo);
 #else
     pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, 
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+                   &lu->grid, &lu->LUstruct, berr, &stat, &sinfo);
 #endif 
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
-	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
+	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
+    if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",sinfo);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
-	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
+    if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",sinfo);
 #endif
   }
 
@@ -534,7 +534,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)A->spptr;
   superlu_options_t options;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   char              *colperm;
 
   PetscFunctionBegin;
