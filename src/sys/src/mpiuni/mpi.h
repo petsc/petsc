@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.46 1997/04/24 18:50:12 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.47 1997/06/05 12:58:18 bsmith Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -467,7 +467,7 @@ typedef char*   MPI_Errhandler;
                       (*(void**)attribute_val)= (void *)MPIUNI_DUMMY, \
                       *(flag) = 1, \
                       MPI_SUCCESS) 
-#define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
+#define MPI_Attr_delete(comm, keyval) (MPIUNI_TMP = (void *) (comm),MPI_SUCCESS)
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\
 		    reorder, comm_cart) MPI_SUCCESS
