@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.15 1995/11/09 22:32:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.16 1995/12/13 15:59:34 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -116,7 +116,7 @@ static int SNESSetUp_UMLS(SNES snes)
 static int SNESDestroy_UMLS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
-  VecFreeVecs(snes->work,snes->nwork);
+  VecDestroyVecs(snes->work,snes->nwork);
   PetscFree(snes->data);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.19 1995/11/09 22:26:33 bsmith Exp curfman $ */
+/* $Id: vecimpl.h,v 1.20 1995/11/26 20:59:54 curfman Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -11,7 +11,7 @@
 struct _VeOps {
   int  (*duplicate)(Vec,Vec*),           /* get single vector */
        (*getvecs)(Vec,int,Vec**),        /* get array of vectors */
-       (*freevecs)(Vec*,int),            /* free array of vectors */
+       (*destroyvecs)(Vec*,int),            /* free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */

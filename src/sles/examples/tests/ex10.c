@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.48 1995/12/12 22:55:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.49 1995/12/21 18:33:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -65,7 +65,7 @@ int main(int argc,char **args)
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
   ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,
                           PETSC_DEFAULT); CHKERRA(ierr);
-  ierr = KSPSetMethod(ksp,KSPCG); CHKERRA(ierr);
+  ierr = KSPSetType(ksp,KSPCG); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.27 1995/12/21 18:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.28 1995/12/30 03:22:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -55,7 +55,7 @@ int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;
-  SNESMethod   method = SNES_EQ_NLS;  /* nonlinear solution method */
+  SNESType     method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
   int          ierr, its, N, nfails; 
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   if (OptionsHasName(PETSC_NULL,"-cavity")){

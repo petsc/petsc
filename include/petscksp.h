@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.29 1995/11/19 00:52:50 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.30 1995/12/21 18:34:37 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -15,22 +15,21 @@ typedef struct _KSP*     KSP;
 
 /*  Possible Krylov Space Methods */
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
-               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG} KSPMethod;
+               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG} KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
-extern int KSPSetMethod(KSP,KSPMethod);
+extern int KSPSetType(KSP,KSPType);
 extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);
 extern int KSPDestroy(KSP);
 
 extern int KSPRegisterAll();
 extern int KSPRegisterDestroy();
-extern int KSPRegister(KSPMethod,char *,int (*)(KSP));
+extern int KSPRegister(KSPType,char *,int (*)(KSP));
 
-extern int KSPGetMethodName(KSPMethod,char **);
+extern int KSPGetType(KSP, KSPType *,char **);
 extern int KSPSetRightPreconditioner(KSP);
 extern int KSPGetPreconditionerSide(KSP,int *);
-extern int KSPGetMethodFromContext(KSP,KSPMethod *);
 extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
 extern int KSPSetTolerances(KSP,double,double,double,int);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
@@ -48,6 +47,7 @@ extern int KSPGetBinv(KSP,PC*);
 extern int KSPSetMonitor(KSP,int (*)(KSP,int,double, void*), void *);
 extern int KSPGetMonitorContext(KSP,void **);
 extern int KSPSetResidualHistory(KSP, double *,int);
+
 extern int KSPSetConvergenceTest(KSP,int (*)(KSP,int,double, void*), void *);
 extern int KSPGetConvergenceContext(KSP,void **);
 
@@ -57,9 +57,9 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
 extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
+
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);
-
 extern int KSPGMRESSetOrthogRoutine(KSP,int (*)(KSP,int));
 extern int KSPGMRESUnmodifiedOrthog(KSP,int);
 extern int KSPGMRESBasicOrthog(KSP,int);

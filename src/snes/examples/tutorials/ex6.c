@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.26 1995/12/21 18:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.27 1995/12/30 03:25:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -21,7 +21,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;                 /* SNES context */
-  SNESMethod   method = SNES_EQ_NLS; /* nonlinear solution method */
+  SNESType     method = SNES_EQ_NLS; /* nonlinear solution method */
   SLES         sles;                 /* SLES context */
   PC           pc;                   /* PC context */
   Vec          x, r, F;              /* solution, residual, work vector */
@@ -50,7 +50,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
@@ -63,9 +63,9 @@ int main( int argc, char **argv )
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     if (OptionsHasName(PETSC_NULL,"-user_precond")) { /* user-defined precond */
-      ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
+      ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL); CHKERRA(ierr);
-    } else {ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);}
+    } else {ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);}
   }
 
   /* Set up nonlinear solver; then execute it */

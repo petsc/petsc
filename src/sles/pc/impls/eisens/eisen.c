@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.35 1995/11/19 00:28:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.36 1995/12/12 22:54:16 curfman Exp bsmith $";
 #endif
 
 /*
@@ -216,7 +216,7 @@ $  -pc_eisenstat_omega  omega
 
    To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner, 
    which can be chosen with the database options
-$    -pc_method  sor  -pc_sor_symmetric
+$    -pc_type  sor  -pc_sor_symmetric
 
 .keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
 

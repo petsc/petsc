@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.13 1995/11/30 22:36:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.14 1995/12/21 18:34:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -46,7 +46,7 @@ int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int main(int argc,char **argv)
 {
   SNES       snes;                  /* SNES context */
-  SNESMethod method = SNES_UM_NTR;  /* nonlinear solution method */
+  SNESType   method = SNES_UM_NTR;  /* nonlinear solution method */
   Vec        x, g;                  /* solution, gradient vectors */
   Mat        H;                     /* Hessian matrix */
   AppCtx     user;                  /* application context */
@@ -89,9 +89,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(g,&user.y); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);
-         CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,(void *)&user); CHKERRA(ierr);
@@ -111,7 +110,7 @@ int main(int argc,char **argv)
        preconditioner or explicitly form preconditioning matrix */
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+    ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
     ierr = MatCreate(MPI_COMM_WORLD,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
@@ -172,7 +171,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   int        rstart, rend, ldim, iglob;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
-  SNESMethod method;
+  SNESType   method;
 
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
@@ -210,7 +209,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Modify diagonal if necessary */
-  ierr = SNESGetMethodFromContext(snes,&method); CHKERRQ(ierr);
+  ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
   if (method == SNES_UM_NLS) {
     SNESGetLineSearchDampingParameter(snes,&gamma1);
     MPIU_printf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);

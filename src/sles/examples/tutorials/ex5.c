@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.42 1995/12/02 03:32:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.43 1995/12/21 18:33:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = 2*size;
-  PLogStageName(0,"Original Solve");
-  PLogStageName(1,"Second Solve");
+  PLogStageRegister(0,"Original Solve");
+  PLogStageRegister(1,"Second Solve");
 
   /* Create and assemble matrix */
   PLogStagePush(0);
@@ -73,10 +73,10 @@ int main(int argc,char **args)
   MatType mat_type;
   ierr = MatGetType(C,&mat_type); CHKERRA(ierr);
   if (mat_type == MATMPIROWBS) {
-    PC pc; KSP ksp; PCMethod pcmethod;
+    PC pc; KSP ksp; PCType pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
+    ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
     if (pcmethod == PCICC) {
       ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
     }

@@ -2,7 +2,7 @@ C
 C  Include file for Fortran use of the KSP package in PETSc
 C
 #define KSP       integer
-#define KSPMethod integer
+#define KSPType   integer
 C
 C  Various Krylov subspace methods
 C

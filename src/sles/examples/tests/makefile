@@ -15,7 +15,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex3 runex3_2 runex3_3\
 		runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
 		runex8 runex8_2
-EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14
+EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14 ex15
 RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex13
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
@@ -23,7 +23,7 @@ EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex8 ex11
 RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
 		runex3 runex4 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
-		ex11.c ex13.c ex14.c
+		ex11.c ex13.c ex14.c ex15.c
 EXAMPLESF     = ex7.F ex12.F
 
 ex1: ex1.o  chkopts
@@ -82,6 +82,10 @@ ex14: ex14.o  chkopts
 	-$(CLINKER) -o ex14 ex14.o  $(PETSC_LIB)
 	$(RM) ex14.o
 
+ex15: ex15.o  chkopts
+	-$(CLINKER) -o ex15 ex15.o  $(PETSC_LIB)
+	$(RM) ex15.o
+
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -93,25 +97,25 @@ runex1_2:
 	   else echo "Possible problem with ex1_2, diffs above"; fi; \
 	   $(RM) -f ex1_2.tmp
 runex1_3:
-	-@$(MPIRUN) ex1 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
+	-@$(MPIRUN) ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	   ex1_3.tmp 2>&1;   \
 	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   $(RM) -f ex1_3.tmp
 runex1_4:
-	-@$(MPIRUN) -np 2 ex1 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
+	-@$(MPIRUN) -np 2 ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	   ex1_4.tmp 2>&1;   \
 	   if (diff output/ex1_4.out ex1_4.tmp) then true; \
 	   else echo "Possible problem with ex1_4, diffs above"; fi; \
 	   $(RM) -f ex1_4.tmp
 runex1_5:
-	-@$(MPIRUN) ex1 -pc_method eisenstat -ksp_smonitor >\
+	-@$(MPIRUN) ex1 -pc_type eisenstat -ksp_smonitor >\
 	   ex1_5.tmp 2>&1;   \
 	   if (diff output/ex1_5.out ex1_5.tmp) then true; \
 	   else echo "Possible problem with ex1_5, diffs above"; fi; \
 	   $(RM) -f ex1_5.tmp
 runex1_6:
-	-@$(MPIRUN) -np 2 ex1 -pc_method eisenstat -ksp_smonitor >\
+	-@$(MPIRUN) -np 2 ex1 -pc_type eisenstat -ksp_smonitor >\
 	   ex1_6.tmp 2>&1;   \
 	   if (diff output/ex1_6.out ex1_6.tmp) then true; \
 	   else echo "Possible problem with ex1_6, diffs above"; fi; \
@@ -127,19 +131,19 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
 runex2_3:
-	-@$(MPIRUN) ex2 -pc_method sor -pc_sor_symmetric -ksp_smonitor > \
+	-@$(MPIRUN) ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor > \
 	    ex2_3.tmp 2>&1;   \
 	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   $(RM) -f ex2_3.tmp
 runex2_4:
-	-@$(MPIRUN) -np 2 ex2 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
+	-@$(MPIRUN) -np 2 ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	    ex2_4.tmp 2>&1;   \
 	   if (diff output/ex2_4.out ex2_4.tmp) then true; \
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   $(RM) -f ex2_4.tmp
 runex2_5:
-	-@$(MPIRUN) ex2 -pc_method eisenstat -ksp_smonitor >\
+	-@$(MPIRUN) ex2 -pc_type eisenstat -ksp_smonitor >\
 	    ex2_5.tmp 2>&1;   \
 	   if (diff output/ex2_5.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
@@ -155,7 +159,7 @@ runex3_2:
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
 runex3_3:
-	-@$(MPIRUN) -np 2 ex3 -pc_method sor -pc_sor_symmetric -ksp_smonitor >\
+	-@$(MPIRUN) -np 2 ex3 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	   ex3_3.tmp 2>&1;   \
 	   if (diff output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
@@ -171,19 +175,19 @@ runex4_2:
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   $(RM) -f ex4_2.tmp
 runex4_3:
-	-@$(MPIRUN) ex4 -pc_method sor -pc_sor_symmetric -ksp_smonitor -m 5 >\
+	-@$(MPIRUN) ex4 -pc_type sor -pc_sor_symmetric -ksp_smonitor -m 5 >\
 	   ex4_3.tmp 2>&1;   \
 	   if (diff output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   $(RM) -f ex4_3.tmp
 runex4_4:
-	-@$(MPIRUN) -np 2 ex4 -pc_method sor -pc_sor_symmetric -ksp_smonitor -m 5 >\
+	-@$(MPIRUN) -np 2 ex4 -pc_type sor -pc_sor_symmetric -ksp_smonitor -m 5 >\
 	   ex4_4.tmp 2>&1;   \
 	   if (diff output/ex4_4.out ex4_4.tmp) then true; \
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   $(RM) -f ex4_4.tmp
 runex4_5:
-	-@$(MPIRUN) ex4 -pc_method eisenstat -ksp_smonitor -m 5	 >\
+	-@$(MPIRUN) ex4 -pc_type eisenstat -ksp_smonitor -m 5	 >\
 	   ex4_5.tmp 2>&1;   \
 	   if (diff output/ex4_5.out ex4_5.tmp) then true; \
 	   else echo "Possible problem with ex4_5, diffs above"; fi; \
@@ -194,22 +198,22 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp
 runex6:
-	-@$(MPIRUN) ex6 -ksp_preonly  -pc_method lu \
+	-@$(MPIRUN) ex6 -ksp_preonly  -pc_type lu \
 	   -f ../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   $(RM) -f ex6_1.tmp
 runex6_2:
-	-@$(MPIRUN) ex6 -sub_pc_method ilu \
+	-@$(MPIRUN) ex6 -sub_pc_type ilu \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco4 \
-	   -ksp_gmres_restart 100 -sub_ksp_method preonly -pc_method bjacobi \
+	   -ksp_gmres_restart 100 -sub_ksp_type preonly -pc_type bjacobi \
 	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
 	   > ex6_2.tmp 2>&1; \
 	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   $(RM) -f ex6_2.tmp
 runex6_3:
-	-@$(MPIRUN) ex6 -pc_method ilu \
+	-@$(MPIRUN) ex6 -pc_type ilu \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco4 \
 	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_3.tmp 2>&1; \
 	   if (diff output/ex6_3.out ex6_3.tmp) then true; \
@@ -233,7 +237,7 @@ runex8_2:
 	   else echo "Possible problem with ex8_2, diffs above"; fi; \
 	   $(RM) -f ex8_2.tmp
 runex8_3:
-	-@$(MPIRUN) -np 2 ex8 -pc_method icc -mat_mpirowbs -ksp_rtol .000001 >\
+	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001 >\
 	   ex8_3.tmp 2>&1;   \
 	   if (diff output/ex8_3.out ex8_3.tmp) then true; \
 	   else echo "Possible problem with ex8_3, diffs above"; fi; \

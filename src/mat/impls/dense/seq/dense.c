@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.82 1995/12/21 18:31:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.83 1995/12/23 04:52:52 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -792,6 +792,15 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   return 0;
 }
 
+static int MatCopy_SeqDense(Mat A, Mat B)
+{
+  Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
+  if (B->type != MATSEQDENSE) return MatCopy_Basic(A,B);
+  if (a->m != b->m || a->n != b->n) SETERRQ(1,"MatCopy_SeqDense:size(B) != size(A)");
+  PetscMemcpy(b->v,a->v,a->m*a->n*sizeof(Scalar));
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatGetRow_SeqDense, MatRestoreRow_SeqDense,
@@ -813,7 +822,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
        MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,0,0,
-       MatGetValues_SeqDense};
+       MatGetValues_SeqDense,
+       MatCopy_SeqDense};
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 

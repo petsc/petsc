@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.10 1995/07/23 18:14:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.11 1995/08/22 16:29:17 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -13,7 +13,7 @@ $   1.  Copy this routine and modify it to incorporate
 $       a call to KSPRegister() for the new method.  
 $   2.  Modify the file "PETSCDIR/include/ksp.h"
 $       by appending the method's identifier as an
-$       enumerator of the KSPMethod enumeration.
+$       enumerator of the KSPType enumeration.
 $       As long as the enumerator is appended to
 $       the existing list, only the KSPRegisterAll()
 $       routine requires recompilation.

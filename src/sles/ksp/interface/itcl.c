@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.44 1995/11/30 22:32:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.45 1995/12/21 18:29:54 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: itcl.c,v 1.44 1995/11/30 22:32:08 bsmith Exp bsmith $
 #include "kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
-extern int KSPGetMethodFromOptions_Private(KSP,KSPMethod *);
+extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be 
-   allowed to set the Krylov method. 
+   allowed to set the Krylov type. 
 
    Input Parameters:
 .  ctx - the Krylov space context
@@ -25,15 +25,15 @@ extern int KSPGetMethodFromOptions_Private(KSP,KSPMethod *);
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
-  KSPMethod method;
+  KSPType   method;
   int       restart;
   PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
 
   if (OptionsHasName(PETSC_NULL,"-help")) {
     KSPPrintHelp(ctx);
   }
-  if (KSPGetMethodFromOptions_Private(ctx,&method)) {
-    KSPSetMethod(ctx,method);
+  if (KSPGetTypeFromOptions_Private(ctx,&method)) {
+    KSPSetType(ctx,method);
   }
   OptionsGetInt(ctx->prefix,"-ksp_max_it",&ctx->max_it);
   OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol);  
@@ -96,7 +96,7 @@ int KSPSetFromOptions(KSP ctx)
   return 0;
 }
   
-extern int KSPPrintMethods_Private(char *,char *);
+extern int KSPPrintTypes_Private(char *,char *);
 
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
@@ -123,7 +123,7 @@ int KSPPrintHelp(KSP ctx)
     else             p = "-";
     PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
     MPIU_printf(ctx->comm,"KSP Options -------------------------------------\n");
-    KSPPrintMethods_Private(p,"ksp_method");
+    KSPPrintTypes_Private(p,"ksp_type");
     MPIU_printf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
     MPIU_printf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",

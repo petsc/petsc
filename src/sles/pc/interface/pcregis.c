@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.24 1995/12/13 16:10:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.25 1995/12/21 16:41:26 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -27,7 +27,7 @@ $   1.  Copy this routine and modify it to incorporate
 $       a call to PCRegister() for the new method.  
 $   2.  Modify the file "PETSCDIR/include/pc.h"
 $       by appending the method's identifier as an
-$       enumerator of the PCMethod enumeration.
+$       enumerator of the PCType enumeration.
 $       As long as the enumerator is appended to
 $       the existing list, only the PCRegisterAll()
 $       routine requires recompilation.

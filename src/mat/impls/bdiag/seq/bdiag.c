@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.77 1995/12/21 18:32:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.78 1995/12/23 04:53:16 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -13,10 +13,10 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          kk, loc, ldiag, shift, row, dfound, newnz, *bdlen_new;
-  int          j, k, nb = a->nb, *diag_new;
+  int          j, k, nb = a->nb, *diag_new, roworiented = a->roworiented;
   Scalar       value, *valpt, **diagv_new;
 
-  if (nb == 1) {
+  if (nb == 1) { /* special case blocks are 1x1 */
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row = im[kk];   
       if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
@@ -26,7 +26,12 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
         if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Column too large");
         ldiag = row - in[j]; /* diagonal number */
         dfound = 0;
-        value = *v++;
+        if (roworiented) {
+          value = *v++; 
+        }
+        else {
+          value = v[kk + j*m];
+        }
         for (k=0; k<a->nd; k++) {
 	  if (a->diag[k] == ldiag) {
             dfound = 1;
@@ -103,7 +108,12 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
       for (j=0; j<n; j++) {
         ldiag = row/nb - in[j]/nb; /* block diagonal */
         dfound = 0;
-        value = *v++;
+        if (roworiented) {
+          value = *v++; 
+        }
+        else {
+          value = v[kk + j*m];
+        }
         for (k=0; k<a->nd; k++) {
           if (a->diag[k] == ldiag) {
             dfound = 1;
@@ -1248,18 +1258,17 @@ static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 static int MatSetOption_SeqBDiag(Mat A,MatOption op)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  if (op == NO_NEW_NONZERO_LOCATIONS)       a->nonew = 1;
-  else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew = 0;
-  else if (op == NO_NEW_DIAGONALS)          a->nonew_diag = 1;
-  else if (op == YES_NEW_DIAGONALS)         a->nonew_diag = 0;
+  if (op == NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
+  else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
+  else if (op == NO_NEW_DIAGONALS)          a->nonew_diag  = 1;
+  else if (op == YES_NEW_DIAGONALS)         a->nonew_diag  = 0;
+  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
+  else if (op == ROW_ORIENTED)              a->roworiented = 1;
   else if (op == ROWS_SORTED || 
            op == COLUMNS_SORTED || 
-           op == ROW_ORIENTED ||
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX)
     PLogInfo((PetscObject)A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
-  else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:COLUMN_ORIENTED");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:unknown option");}
   return 0;
@@ -1271,10 +1280,8 @@ static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
   int          i, j, n, ibase, nb = a->nb, iloc;
   Scalar       *x, *dd;
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
-  if (n != a->m) 
-     SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming matrix and vector");
-  if (a->mainbd == -1) 
-     SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal is not set");
+  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming matrix and vector");
+  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal is not set");
   dd = a->diagv[a->mainbd];
   if (a->nb == 1) {
     for (i=0; i<a->m; i++) x[i] = dd[i];
@@ -1523,9 +1530,10 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
     a->nonew = 1; a->nonew_diag = 1;
   }
 
-  a->nz         = a->maxnz; /* Currently not keeping track of exact count */
-  a->assembled  = 0;
-  *newmat       = A;
+  a->nz          = a->maxnz; /* Currently not keeping track of exact count */
+  a->assembled   = 0;
+  a->roworiented = 1;
+  *newmat        = A;
   return 0;
 }
 

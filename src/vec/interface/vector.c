@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.60 1995/12/12 05:28:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.61 1995/12/15 21:07:00 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -402,12 +402,12 @@ int VecDestroy(Vec v)
 .  V - location to put pointer to array of vectors
 
    Notes:
-   Use VecFreeVecs() to free the space. Use VecDuplicate() to form a single
+   Use VecDestroyVecs() to free the space. Use VecDuplicate() to form a single
    vector.
 
 .keywords: vector, get 
 
-.seealso:  VecFreeVecs(), VecDuplicate(), VecCreate()
+.seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate()
 @*/
 int VecDuplicateVecs(Vec v,int m,Vec **V)  
 {
@@ -416,7 +416,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 }
 
 /*@C
-   VecFreeVecs - Frees a block of vectors obtained with VecDuplicateVecs().
+   VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
    Input Parameters:
 .  vv - pointer to array of vector pointers
@@ -426,11 +426,11 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 
 .seealso: VecDuplicateVecs()
 @*/
-int VecFreeVecs(Vec *vv,int m)
+int VecDestroyVecs(Vec *vv,int m)
 {
-  if (!vv) SETERRQ(1,"VecFreeVecs:Null vectors");
+  if (!vv) SETERRQ(1,"VecDestroyVecs:Null vectors");
   PETSCVALIDHEADERSPECIFIC(*vv,VEC_COOKIE);
-  return (*(*vv)->ops.freevecs)( vv, m );
+  return (*(*vv)->ops.destroyvecs)( vv, m );
 }
 
 /*@
@@ -565,7 +565,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 }
 
 /*@
-   VecMAXPY - Computes y = alpha[j] x[j] + y. 
+   VecMAXPY - Computes y[j] = alpha[j] x + y[j]. 
 
    Input Parameters:
 .  nv - number of scalars and x-vectors

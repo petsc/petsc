@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.28 1995/11/01 23:21:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.29 1995/11/09 22:33:14 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -854,7 +854,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 }
 
 /*@C
-   DAGetScatterCtx - Gets the local to global and local to global 
+   DAGetScatter - Gets the local to global and local to global 
    vector scatter contexts for a distributed array.
 
    Input Parameter:
@@ -869,7 +869,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 
 .seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DAGetScatterCtx(DA da, VecScatter *ltog,VecScatter *gtol)
+int DAGetScatter(DA da, VecScatter *ltog,VecScatter *gtol)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *ltog = da->ltog;

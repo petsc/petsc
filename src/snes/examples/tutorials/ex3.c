@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.23 1995/12/21 18:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.24 1995/12/30 03:28:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -24,7 +24,7 @@ typedef struct {
 int main( int argc, char **argv )
 {
   SNES           snes;                  /* SNES context */
-  SNESMethod     method = SNES_EQ_NLS;  /* nonlinear solution method */
+  SNESType       method = SNES_EQ_NLS;  /* nonlinear solution method */
   Mat            J;                     /* Jacobian matrix */
   ApplicationCtx ctx;                   /* user-defined context */
   Vec            x, r, U, F;
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.126 1995/12/21 18:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.127 1995/12/23 04:53:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -61,7 +61,7 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax, N, sorted = a->sorted;
-  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen;
+  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen,roworiented = a->roworiented;
   int        *aj = a->j, nonew = a->nonew,shift = a->indexshift;
   Scalar     *ap,value, *aa = a->a;
 
@@ -75,7 +75,13 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) SETERRQ(1,"MatSetValues_SeqAIJ:Negative column");
       if (in[l] >= a->n) SETERRQ(1,"MatSetValues_SeqAIJ:Column too large");
-      col = in[l] - shift; value = *v++; 
+      col = in[l] - shift;
+      if (roworiented) {
+        value = *v++; 
+      }
+      else {
+        value = v[k + l*m];
+      }
       if (!sorted) low = 0; high = nrow;
       while (high-low > 5) {
         t = (low+high)/2;
@@ -481,6 +487,7 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   if      (op == ROW_ORIENTED)              a->roworiented = 1;
+  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
   else if (op == COLUMNS_SORTED)            a->sorted      = 1;
   else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
@@ -489,8 +496,6 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
-  else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:COLUMN_ORIENTED");}
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS");}
   else if (op == INODE_LIMIT_1)            a->inode.limit  = 1;
@@ -1224,6 +1229,8 @@ extern int MatUseDXML_SeqAIJ(Mat);
    Options Database Keys:
 $    -mat_aij_no_inode  - Do not use inodes
 $    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
+$    -mat_aij_oneindex - Internally using indexing starting at 1 rather then zero.
+.                        Note: You still index entries starting at 0!
 
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
 @*/

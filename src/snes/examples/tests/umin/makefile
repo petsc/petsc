@@ -40,7 +40,7 @@ runex1:
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_method umls > ex1_2.tmp 2>&1;\
+	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_type umls > ex1_2.tmp 2>&1;\
            if (diff output/ex1_2.out ex1_2.tmp) then true; \
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
@@ -50,12 +50,12 @@ runex2:
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_method umls > ex2_2.tmp 2>&1;\
+	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_type umls > ex2_2.tmp 2>&1;\
            if (diff output/ex2_2.out ex2_2.tmp) then true; \
            else echo "Possible problem with ex2_2, diffs above"; fi; \
            $(RM) -f ex2_2.tmp
 runex2_3:
-	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_method umls -snes_mf > ex2_3.tmp 2>&1;\
+	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_type umls -snes_mf > ex2_3.tmp 2>&1;\
            if (diff output/ex2_3.out ex2_3.tmp) then true; \
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            $(RM) -f ex2_3.tmp
@@ -66,7 +66,7 @@ runex3:
 	   $(RM) -f ex3_1.tmp
 
 runex3_2:
-	-@$(MPIRUN) -np 2 ex3 -Ny 2 -snes_method umls -snes_smonitor > ex3_2.tmp 2>&1;\
+	-@$(MPIRUN) -np 2 ex3 -Ny 2 -snes_type umls -snes_smonitor > ex3_2.tmp 2>&1;\
            if (diff output/ex3_2.out ex3_2.tmp) then true; \
            else echo "Possible problem with ex3_2, diffs above"; fi;\
 	   $(RM) -f ex3_2.tmp

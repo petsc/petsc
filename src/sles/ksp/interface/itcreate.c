@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.66 1995/11/01 23:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.67 1995/11/04 23:25:51 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -45,7 +45,7 @@ int KSPView(KSP ksp,Viewer viewer)
                                         vobj->type == ASCII_FILES_VIEWER)) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
-    KSPGetMethodName((KSPMethod)ksp->type,&method);
+    KSPGetType(ksp,PETSC_NULL,&method);
     MPIU_fprintf(ksp->comm,fd,"  method: %s\n",method);
     if (ksp->view) (*ksp->view)((PetscObject)ksp,viewer);
     if (ksp->guess_zero) MPIU_fprintf(ksp->comm,fd,
@@ -69,7 +69,7 @@ static NRList *__KSPList = 0;
 .  comm - MPI communicator
 
    Notes:
-   The default KSP method is GMRES with a restart of 10.
+   The default KSP type is GMRES with a restart of 10.
 
 .keywords: KSP, create, context
 
@@ -86,7 +86,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->view          = 0;
   ctx->prefix        = 0;
 
-  ctx->type          = (KSPMethod) -1;
+  ctx->type          = (KSPType) -1;
   ctx->max_it        = 10000;
   ctx->right_pre     = 0;
   ctx->use_pres      = 0;
@@ -124,18 +124,18 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
   ctx->setupcalled   = 0;
   /* this violates our rule about seperating abstract from implementations*/
-  return KSPSetMethod(*ksp,KSPGMRES);
+  return KSPSetType(*ksp,KSPGMRES);
 }
 
 /*@
-   KSPSetMethod - Builds KSP for a particular solver. 
+   KSPSetType - Builds KSP for a particular solver. 
 
    Input Parameter:
 .  ctx      - the Krylov space context
 .  itmethod - a known method
 
    Options Database Command:
-$  -ksp_method  <method>
+$  -ksp_type  <method>
 $      Use -help for a list of available methods
 $      (for instance, cg or gmres)
 
@@ -145,7 +145,7 @@ $      (for instance, cg or gmres)
 
 .keywords: KSP, set, method
 @*/
-int KSPSetMethod(KSP ctx,KSPMethod itmethod)
+int KSPSetType(KSP ctx,KSPType itmethod)
 {
   int ierr,(*r)(KSP);
 
@@ -157,9 +157,9 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   }
   /* Get the function pointers for the iterative method requested */
   if (!__KSPList) {KSPRegisterAll();}
-  if (!__KSPList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
+  if (!__KSPList) SETERRQ(1,"KSPSetType:Could not get list of KSP types"); 
   r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(1,"KSPSetMethod:Unknown method");}
+  if (!r) {SETERRQ(1,"KSPSetType:Unknown method");}
   if (ctx->data) PetscFree(ctx->data);
   ctx->data = 0;
   return (*r)(ctx);
@@ -167,7 +167,7 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
-   an iterative name (KSPMethod) and a function pointer.
+   an iterative name (KSPType) and a function pointer.
 
    Input Parameters:
 .  name   - for instance KSPCG, KSPGMRES, ...
@@ -178,7 +178,7 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 @*/
-int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
+int  KSPRegister(KSPType name, char *sname, int  (*create)(KSP))
 {
   int ierr;
   int (*dummy)(void *) = (int (*)(void *)) create;
@@ -204,7 +204,7 @@ int KSPRegisterDestroy()
 }
 
 /*
-   KSPGetMethodFromOptions_Private - Sets the selected KSP method from 
+   KSPGetTypeFromOptions_Private - Sets the selected KSP type from 
    the options database.
 
    Input Parameter:
@@ -216,47 +216,49 @@ int KSPRegisterDestroy()
    Returns:
    Returns 1 if the method is found; 0 otherwise.
 */
-int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
+int KSPGetTypeFromOptions_Private(KSP ctx,KSPType *itmethod)
 {
   char sbuf[50];
-  if (OptionsGetString(ctx->prefix,"-ksp_method", sbuf, 50 )) {
+  if (OptionsGetString(ctx->prefix,"-ksp_type", sbuf, 50 )) {
     if (!__KSPList) KSPRegisterAll();
-    *itmethod = (KSPMethod)NRFindID( __KSPList, sbuf );
+    *itmethod = (KSPType)NRFindID( __KSPList, sbuf );
     return 1;
   }
   return 0;
 }
 
 /*@C
-   KSPGetMethodName - Gets the KSP method name (as a string) from 
+   KSPGetType - Gets the KSP type and method name (as a string) from 
    the method type.
 
    Input Parameter:
-.  itmeth - KSP method
+.  ksp - Krylov context 
 
-   Output Parameter:
-.  name - name of KSP method
+   Output Parameters:
+.  itmeth - KSP method (or provide PETSC_NULL)
+.  name - name of KSP method (or provide PETSC_NULL)
 
 .keywords: KSP, get, method, name
 @*/
-int KSPGetMethodName(KSPMethod  itmeth,char **name )
+int KSPGetType(KSP ksp,KSPType  *itmeth,char **name )
 {
   int ierr;
   if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
-  *name = NRFindName( __KSPList, (int) itmeth );
+  if (itmeth) *itmeth = (KSPType) ksp->type;
+  if (name)  *name = NRFindName( __KSPList, (int) ksp->type);
   return 0;
 }
 
 #include <stdio.h>
 /*
-   KSPPrintMethods_Private - Prints the KSP methods available from the options 
+   KSPPrintTypes_Private - Prints the KSP methods available from the options 
    database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "ksp_method") 
+.  name - the options database name (by default "ksp_type") 
 */
-int KSPPrintMethods_Private(char* prefix,char *name)
+int KSPPrintTypes_Private(char* prefix,char *name)
 {
   FuncList *entry;
   if (!__KSPList) {KSPRegisterAll();}

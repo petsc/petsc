@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.120 1995/12/23 05:00:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.121 1995/12/23 19:28:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -170,7 +170,7 @@ int MatView(Mat mat,Viewer ptr)
       (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) &&
       (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
     MPIU_fprintf(mat->comm,fd,"Matrix Object:\n");
-    ierr = MatGetName(mat,&cstring); CHKERRQ(ierr);
+    ierr = MatGetType(mat,PETSC_NULL,&cstring); CHKERRQ(ierr);
     ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
     MPIU_fprintf(mat->comm,fd,"  type=%s, rows=%d, cols=%d\n",cstring,rows,cols);
     if (mat->ops.getinfo) {
@@ -934,8 +934,8 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if (!M) SETERRQ(1,"MatConvert:Bad new matrix address");
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
   if (newtype == mat->type || newtype == MATSAME) {
-    if (mat->ops.copyprivate) { /* customized copy */
-      ierr = (*mat->ops.copyprivate)(mat,M,COPY_VALUES); CHKERRQ(ierr);
+    if (mat->ops.convertsametype) { /* customized copy */
+      ierr = (*mat->ops.convertsametype)(mat,M,COPY_VALUES); CHKERRQ(ierr);
     }
   }
   else if (mat->ops.convert) { /* customized conversion */
@@ -1500,29 +1500,6 @@ int MatGetSubMatrixInPlace(Mat mat,IS irow,IS icol)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrixinplace) SETERRQ(PETSC_ERR_SUP,"MatGetSubmatrixInPlace");
   return (*mat->ops.getsubmatrixinplace)(mat,irow,icol);
-}
-
-/*@
-   MatGetType - Returns the type of the matrix, one of MATSEQDENSE, MATSEQAIJ, etc.
-
-   Input Parameter:
-.  mat - the matrix
-
-   Ouput Parameter:
-.  type - the matrix type
-
-   Notes:
-   The matrix types are given in petsc/include/mat.h
-
-.keywords: matrix, get, type
-
-.seealso:  MatGetName()
-@*/
-int MatGetType(Mat mat,MatType *type)
-{
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  *type = (MatType) mat->type;
-  return 0;
 }
 
 /*@

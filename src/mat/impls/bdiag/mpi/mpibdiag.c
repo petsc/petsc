@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.62 1995/12/13 14:32:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.63 1995/12/21 18:32:22 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -15,6 +15,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
+  int          roworiented = mbd->roworiented;
 
   if (mbd->insertmode != NOT_SET_VALUES && mbd->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIBDiag:Cannot mix inserts and adds");
@@ -28,11 +29,23 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       for ( j=0; j<n; j++ ) {
         if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
         if (idxn[j] >= mbd->N) SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
-        ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
+        if (roworiented) {
+          ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
+        } else {
+          ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
+        }
       }
     } 
     else {
-      ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+      if (roworiented) {
+        ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+      }
+      else {
+        row = idxm[i];
+        for ( j=0; j<n; j++ ) {
+          ierr = StashValues_Private(&mbd->stash,row,1,idxn+j,v+i+j*m,addv);CHKERRQ(ierr);
+        }
+      }
     }
   }
   return 0;
@@ -623,14 +636,14 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
       op == YES_NEW_DIAGONALS) {
         MatSetOption(mbd->A,op);
   }
+  else if (op == ROW_ORIENTED)    mbd->roworiented = 1;
+  else if (op == COLUMN_ORIENTED) mbd->roworiented = 0;
   else if (op == ROWS_SORTED || 
            op == COLUMNS_SORTED || 
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
-  else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:COLUMN_ORIENTED");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:unknown option");}
   return 0;
@@ -803,16 +816,13 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   MPI_Comm_size(comm,&mbd->size);
 
   if (M == PETSC_DECIDE) {
-    if ((m%nb)) SETERRQ(1,
-       "MatCreateMPIBDiag:Invalid block size - bad local row number");
+    if ((m%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
     MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
   }
   if (m == PETSC_DECIDE) {
-    if ((M%nb)) SETERRQ(1,
-      "MatCreateMPIBDiag:Invalid block size - bad global row number");
+    if ((M%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad global row number");
     m = M/mbd->size + ((M % mbd->size) > mbd->rank);
-    if ((m%nb)) SETERRQ(1,
-       "MatCreateMPIBDiag:Invalid block size - bad local row number");
+    if ((m%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
   }
   mbd->N   = N;
   mbd->M   = M;
@@ -880,9 +890,12 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   ierr = StashBuild_Private(&mbd->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix-vector multiply */
-  mbd->lvec      = 0;
-  mbd->Mvctx     = 0;
-  mbd->assembled = 0;
+  mbd->lvec        = 0;
+  mbd->Mvctx       = 0;
+  mbd->assembled   = 0;
+
+  /* used for MatSetValues() input */
+  mbd->roworiented = 1;
 
   *newmat = mat;
   return 0;

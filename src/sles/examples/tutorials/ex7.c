@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.13 1995/12/12 22:55:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.14 1995/12/21 18:33:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PC        pc, subpc;
   KSP       subksp;
   double    norm;
-  PCMethod  pcmethod;
+  PCType    pcmethod;
 
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(PETSC_NULL,"-m",&m);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
 
   /* Set default preconditioner */
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCBJACOBI); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCBJACOBI); CHKERRA(ierr);
 
   /* Set options */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
@@ -67,7 +67,7 @@ int main(int argc,char **args)
      illustration of setting different linear solvers for the individual 
      blocks.  These choices are obviously not recommended for solving this
      particular problem. */
-  ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
+  ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
   if (pcmethod == PCBJACOBI) {
     /* Note that SLESSetUp() MUST be called before PCBJacobiGetSubSLES(). */
     ierr = SLESSetUp(sles,x,b); CHKERRA(ierr);
@@ -75,11 +75,11 @@ int main(int argc,char **args)
     ierr = SLESGetPC(subsles[0],&subpc); CHKERRA(ierr);
     ierr = SLESGetKSP(subsles[0],&subksp); CHKERRA(ierr);
     if (rank == 0) {
-      ierr = PCSetMethod(subpc,PCILU); CHKERRA(ierr);
+      ierr = PCSetType(subpc,PCILU); CHKERRA(ierr);
       ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,
              PETSC_DEFAULT); CHKERRA(ierr);
     } else {
-      ierr = PCSetMethod(subpc,PCJACOBI); CHKERRA(ierr);
+      ierr = PCSetType(subpc,PCJACOBI); CHKERRA(ierr);
       ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
              PETSC_DEFAULT); CHKERRA(ierr);
     }

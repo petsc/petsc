@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.18 1995/12/21 18:34:15 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.19 1995/12/30 03:38:52 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -49,7 +49,7 @@ C Set up data structures
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
      *                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
 
-      call MatGetName(J,matrixname,ierr)
+      call MatGetType(J,PETSC_NULL,matrixname,ierr)
 
 C Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)

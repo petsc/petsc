@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.30 1995/11/30 22:32:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.31 1995/12/21 18:30:54 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -14,17 +14,17 @@ static char vcid[] = "$Id: pcset.c,v 1.30 1995/11/30 22:32:59 bsmith Exp bsmith 
 static NRList *__PCList = 0;
 
 /*@
-  PCSetMethod - Builds PC for a particular preconditioner. It is 
+  PCSetType - Builds PC for a particular preconditioner. It is 
                 best to use the SLESSetFromOptions() command and 
-                set the PC method from the command line rather then
+                set the PC type from the command line rather then
                 by using this routine.
 
   Input Parameter:
 .  pc - the preconditioner context.
-.  method - a known method
+.  type - a known method
 
    Options Database Command:
-$  -pc_method  <method>
+$  -pc_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, jacobi or bjacobi)
 
@@ -32,9 +32,9 @@ $      (for instance, jacobi or bjacobi)
   See "petsc/include/pc.h" for available methods (for instance,
   PCJACOBI, PCILU, or PCBJACOBI).
 
-.keywords: PC, set, method
+.keywords: PC, set, method, type
 @*/
-int PCSetMethod(PC ctx,PCMethod method)
+int PCSetType(PC ctx,PCType type)
 {
   int ierr,(*r)(PC);
   PETSCVALIDHEADERSPECIFIC(ctx,PC_COOKIE);
@@ -45,9 +45,9 @@ int PCSetMethod(PC ctx,PCMethod method)
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}
-  if (!__PCList) {SETERRQ(1,"PCSetMethod:Could not get list of methods");}
-  r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"PCSetMethod:Unknown method");}
+  if (!__PCList) {SETERRQ(1,"PCSetType:Could not get list of methods");}
+  r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
+  if (!r) {SETERRQ(1,"PCSetType:Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;
@@ -57,8 +57,8 @@ int PCSetMethod(PC ctx,PCMethod method)
 }
 
 /*@C
-   PCRegister - Adds the iterative method to the preconditioner
-   package,  given an iterative name (PCMethod) and a function pointer.
+   PCRegister - Adds the preconditioner to the preconditioner
+   package,  given a preconditioner name (PCType) and a function pointer.
 
    Input Parameters:
 .  name - for instance PCJACOBI, ...
@@ -69,7 +69,7 @@ int PCSetMethod(PC ctx,PCMethod method)
 
 .seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
-int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
+int  PCRegister(PCType name,char *sname,int (*create)(PC))
 {
   int ierr;
   if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
@@ -94,7 +94,7 @@ int PCRegisterDestroy()
 }
 
 /* 
-  PCGetMethodFromOptions_Private - Sets the selected PC method from the 
+  PCGetTypeFromOptions_Private - Sets the selected PC type from the 
   options database.
 
   Input Parameter:
@@ -107,49 +107,51 @@ int PCRegisterDestroy()
   1 if method is found; otherwise 0.
 
   Options Database Key:
-$ -pc_method  method
+$ -pc_type  method
 */
-int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
+int PCGetTypeFromOptions_Private(PC pc,PCType *method )
 {
   int  ierr;
   char sbuf[50];
-  if (OptionsGetString( pc->prefix,"-pc_method", sbuf, 50 )) {
+  if (OptionsGetString( pc->prefix,"-pc_type", sbuf, 50 )) {
     if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-    *method = (PCMethod)NRFindID( __PCList, sbuf );
+    *method = (PCType)NRFindID( __PCList, sbuf );
     return 1;
   }
   return 0;
 }
 
 /*@C
-   PCGetMethodName - Gets the PC method name (as a string) from the 
+   PCGetType - Gets the PC type and method name (as a string) from the 
    method type.
 
    Input Parameter:
-.  meth - preconditioner method
+.  pc - the preconditioner context
 
    Output Parameter:
-.  name - name of preconditioner
+.  name - name of preconditioner (or PETSC_NULL)
+.  meth - preconditioner method (or PETSC_NULL)
 
-.keywords: PC, get, method, name
+.keywords: PC, get, method, name, type
 @*/
-int PCGetMethodName(PCMethod meth,char **name)
+int PCGetType(PC pc,PCType *meth,char **name)
 {
   int ierr;
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  *name = NRFindName( __PCList, (int)meth );
+  if (meth) *meth = (PCType) pc->type;
+  if (name)  *name = NRFindName( __PCList, (int)pc->type );
   return 0;
 }
 
 /*
-   PCPrintMethods_Private - Prints the PC methods available from the options 
+   PCPrintTypes_Private - Prints the PC methods available from the options 
    database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "pc_method") 
+.  name - the options database name (by default "pc_type") 
 */
-int PCPrintMethods_Private(char *prefix,char *name)
+int PCPrintTypes_Private(char *prefix,char *name)
 {
   FuncList *entry;
   int      ierr;
@@ -178,11 +180,11 @@ int PCPrintMethods_Private(char *prefix,char *name)
 @*/
 int PCSetFromOptions(PC pc)
 {
-  PCMethod method;
+  PCType method;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
 
-  if (PCGetMethodFromOptions_Private(pc,&method)) {
-    PCSetMethod(pc,method);
+  if (PCGetTypeFromOptions_Private(pc,&method)) {
+    PCSetType(pc,method);
   }
   if (OptionsHasName(PETSC_NULL,"-help")){
     PCPrintHelp(pc);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.32 1995/11/01 23:21:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.33 1995/11/09 22:32:41 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -187,7 +187,7 @@ static int SNESDestroy_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   int  ierr;
-  ierr = VecFreeVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+  ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
   PetscFree(snes->data);
   return 0;
 }

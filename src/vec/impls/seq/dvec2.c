@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.20 1995/11/09 22:26:41 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.21 1995/11/20 04:46:12 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -91,8 +91,8 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 {
   Vec_Seq      *y = (Vec_Seq *) yin->data;
   register int n = y->n;
-  Scalar       *yy = y->array, *xx,oalpha;
   int          j;
+  Scalar       *yy = y->array, *xx,oalpha;
 
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {

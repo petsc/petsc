@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.8 1995/12/06 00:24:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.9 1995/12/21 18:31:45 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -71,7 +71,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   MatType          type;
 
   if (jac->use_true_local) {
-    MatGetType(pc->mat,&type);
+    MatGetType(pc->mat,&type,PETSC_NULL);
     if (type != MATMPIAIJ) SETERRQ(1,"PCSetUp_BJacobiMPIAIJ:Incompatible matrix type.");
     matin = (Mat_MPIAIJ *) mat->data;
   }
@@ -81,9 +81,9 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
     PLogObjectParent(pc,sles);
     ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
-    ierr = KSPSetMethod(subksp,KSPPREONLY); CHKERRQ(ierr);
+    ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
-    ierr = PCSetMethod(subpc,PCLU); CHKERRQ(ierr);
+    ierr = PCSetType(subpc,PCLU); CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(sles,"-sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
 /*

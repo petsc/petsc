@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.102 1995/12/21 18:31:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.103 1995/12/23 04:54:07 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -29,54 +29,64 @@ extern int DisAssemble_MPIAIJ(Mat);
 static int MatGetReordering_MPIAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int ierr;
+  int        ierr;
   if (aij->size == 1) {
     ierr = MatGetReordering(aij->A,type,rperm,cperm); CHKERRQ(ierr);
   } else SETERRQ(1,"MatGetReordering_MPIAIJ:not supported in parallel");
   return 0;
 }
 
-static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
-                               int *idxn,Scalar *v,InsertMode addv)
+static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *C = (Mat_SeqAIJ*) aij->A->data;
+  Scalar     value;
   int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
   int        cstart = aij->cstart, cend = aij->cend,row,col;
-  int        shift = C->indexshift;
+  int        shift = C->indexshift,roworiented = aij->roworiented;
 
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIAIJ:Cannot mix inserts and adds");
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative row");
-    if (idxm[i] >= aij->M) SETERRQ(1,"MatSetValues_MPIAIJ:Row too large");
-    if (idxm[i] >= rstart && idxm[i] < rend) {
-      row = idxm[i] - rstart;
+    if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative row");
+    if (im[i] >= aij->M) SETERRQ(1,"MatSetValues_MPIAIJ:Row too large");
+    if (im[i] >= rstart && im[i] < rend) {
+      row = im[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative column");
-        if (idxn[j] >= aij->N) SETERRQ(1,"MatSetValues_MPIAIJ:Col too large");
-        if (idxn[j] >= cstart && idxn[j] < cend){
-          col = idxn[j] - cstart;
-          ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERRQ(ierr);
+        if (in[j] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative column");
+        if (in[j] >= aij->N) SETERRQ(1,"MatSetValues_MPIAIJ:Col too large");
+        if (in[j] >= cstart && in[j] < cend){
+          col = in[j] - cstart;
+          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+          ierr = MatSetValues(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
         else {
           if (aij->assembled) {
             if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
-            col = aij->colmap[idxn[j]] + shift;
+            col = aij->colmap[in[j]] + shift;
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
               ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
-              col =  idxn[j];              
+              col =  in[j];              
             }
           }
-          else col = idxn[j];
-          ierr = MatSetValues(aij->B,1,&row,1,&col,v+i*n+j,addv);CHKERRQ(ierr);
+          else col = in[j];
+          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+          ierr = MatSetValues(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
       }
     } 
     else {
-      ierr = StashValues_Private(&aij->stash,idxm[i],n,idxn,v+i*n,addv);CHKERRQ(ierr);
+      if (roworiented) {
+        ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+      }
+      else {
+        row = im[i];
+        for ( j=0; j<n; j++ ) {
+          ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+        }
+      }
     }
   }
   return 0;
@@ -1042,8 +1052,11 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
-  else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:COLUMN_ORIENTED");}
+  else if (op == COLUMN_ORIENTED) {
+    a->roworiented = 0;
+    MatSetOption(a->A,op);
+    MatSetOption(a->B,op);
+  }
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:NO_NEW_DIAGONALS");}
   else 
@@ -1412,8 +1425,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   /* build cache for off array entries formed */
   ierr = StashBuild_Private(&a->stash); CHKERRQ(ierr);
-  a->colmap    = 0;
-  a->garray    = 0;
+  a->colmap      = 0;
+  a->garray      = 0;
+  a->roworiented = 1;
 
   /* stuff used for matrix vector multiply */
   a->lvec      = 0;

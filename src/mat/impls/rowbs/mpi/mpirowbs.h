@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.22 1995/10/19 22:23:43 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.23 1995/12/02 19:22:51 curfman Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -31,14 +31,13 @@ typedef struct {
   int         assembled;          /* MatAssemble has been called */
   int         reassemble_begun;   /* We're re-assembling */
   InsertMode  insertmode;         /* mode for MatSetValues */
-  Stash         stash;            /* stash for non-local elements */
+  Stash       stash;              /* stash for non-local elements */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   int         nsends, nrecvs;     /* numbers of sends and receives */
   Scalar      *svalues, *rvalues; /* sending and receiving data */
   int         rmax;               /* maximum message length */
-  int         vecs_permscale;     /* flag indicating permuted and scaled
-                                     vectors */
+  int         vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         fact_clone;
   int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
 
@@ -50,8 +49,8 @@ typedef struct {
   BScomm     *comm_pA;          /* communication info for triangular solves */
   BSpar_mat  *fpA;              /* factored permuted matrix */
   BScomm     *comm_fpA;         /* communication info for factorization */
-  Vec diag;                     /* diagonal scaling vector */
-  Vec xwork;                    /* work space for mat-vec mult */
+  Vec        diag;              /* diagonal scaling vector */
+  Vec        xwork;             /* work space for mat-vec mult */
   Scalar     *inv_diag;
 
   /* Cholesky factorization data */

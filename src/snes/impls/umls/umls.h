@@ -8,7 +8,7 @@
 
 typedef struct {
 /* ------------------------- Line search routine ------------------------- */
-  int (*LineSearch)(SNES,Vec,Vec,Vec,Vec,double*,double*,double*,int*);
+  int    (*LineSearch)(SNES,Vec,Vec,Vec,Vec,double*,double*,double*,int*);
   int    line;		     /* line search termination code 
 				   (set line=1 on success) */
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.38 1995/11/15 01:18:16 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.39 1995/12/14 14:32:43 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -23,7 +23,7 @@ int KSPSetUp(KSP itP)
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
   if (itP->type == -1) {
-    SETERRQ(1,"KSPSetUp:Method must be set first");
+    SETERRQ(1,"KSPSetUp:Type must be set first");
   }
   itP->setupcalled = 1;
   return (*(itP)->setup)(itP);
@@ -128,26 +128,6 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *side = (itP)->right_pre;
-  return 0;
-}
-
-/*@C
-    KSPGetMethodFromContext - Returns the chosen method type.
-
-    Input Parameter:
-.   itP - Iterative context obtained from KSPCreate()
-
-    Output Parameter:
-    method - the method type
-
-.keywords: KSP, get, method, context, type
-
-.seealso: KSPGetMethodName()
-@*/
-int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
-{
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *method = (KSPMethod) itP->type;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.12 1995/11/01 23:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.13 1995/11/04 23:28:01 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -39,8 +39,8 @@ int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   PetscFree( itg->alpha );
-  VecFreeVecs( itg->btilde, itg->maxl );
-  VecFreeVecs( itg->xtilde, itg->maxl );
+  VecDestroyVecs( itg->btilde, itg->maxl );
+  VecDestroyVecs( itg->xtilde, itg->maxl );
   PetscFree( itg );
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.25 1995/12/12 22:54:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.26 1995/12/21 18:31:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
 
   /* Create PC context and set up data structures */
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCSOR); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCSOR); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
          CHKERRA(ierr);

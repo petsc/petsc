@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.48 1995/11/09 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.49 1995/12/21 18:30:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -328,11 +328,12 @@ static int KSPDestroy_GMRES(PetscObject obj)
   if (gmresP->hh_origin) PetscFree( gmresP->hh_origin );
 
   /* Free the pointer to user variables */
-  PetscFree( gmresP->vecs );
+  if (gmresP->vecs) PetscFree( gmresP->vecs );
 
   /* free work vectors */
-  for (i=0; i<gmresP->nwork_alloc; i++) 
-    VecFreeVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
+  for (i=0; i<gmresP->nwork_alloc; i++) {
+    VecDestroyVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
+  }
   if (gmresP->user_work)  PetscFree( gmresP->user_work );
   if (gmresP->mwork_alloc) PetscFree( gmresP->mwork_alloc );
   if (gmresP->nrs) PetscFree( gmresP->nrs );
@@ -461,8 +462,9 @@ static int GMRESGetNewVectors( KSP itP,int it )
   VecDuplicateVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
   PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);CHKPTRQ(gmresP->user_work[nwork]);
   gmresP->mwork_alloc[nwork] = nalloc;
-  for (k=0; k<nalloc; k++)
+  for (k=0; k<nalloc; k++) {
     gmresP->vecs[it+VEC_OFFSET+k] = gmresP->user_work[nwork][k];
+  }
   gmresP->nwork_alloc++;
   return 0;
 }

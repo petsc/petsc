@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.37 1995/11/30 22:36:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.38 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -54,7 +54,7 @@ int main( int argc, char **argv )
   SLES          sles;                      /* linear solver */
   PC            pc;                        /* preconditioner */
   SNES          snes;                      /* nonlinear solver */
-  SNESMethod    method = SNES_EQ_NLS;      /* nonlinear solution method */
+  SNESType      method = SNES_EQ_NLS;      /* nonlinear solution method */
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user's work context */
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
@@ -115,7 +115,7 @@ int main( int argc, char **argv )
     /* Force no preconditioning to be used for matrix-free case */
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+    ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   }
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);

@@ -2,7 +2,7 @@ C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
 #define PC           integer
-#define PCMethod     integer
+#define PCType       integer
 #define MatStructure integer
 C
 C  Various preconditioners

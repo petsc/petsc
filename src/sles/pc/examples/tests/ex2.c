@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.32 1995/12/12 22:54:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.33 1995/12/21 18:31:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -18,8 +18,8 @@ int main(int argc,char **args)
   KSP       ksp;        /* KSP context */
   int       ierr, n = 10, i, its, col[3];
   Scalar    value[3], mone = -1.0, one = 1.0, zero = 0.0;
-  KSPMethod kspmethod;
-  PCMethod  pcmethod;
+  KSPType   kspmethod;
+  PCType    pcmethod;
   char      *kspname, *pcname;
   double    norm;
 
@@ -51,7 +51,7 @@ int main(int argc,char **args)
 
   /* Create PC context and set up data structures */
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
          CHKERRA(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
   /* Create KSP context and set up data structures */
   ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
-  ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
+  ierr = KSPSetType(ksp,KSPRICHARDSON); CHKERRA(ierr);
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
@@ -70,10 +70,8 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
-  KSPGetMethodFromContext(ksp,&kspmethod);
-  KSPGetMethodName(kspmethod,&kspname);
-  PCGetMethodFromContext(pc,&pcmethod);
-  PCGetMethodName(pcmethod,&pcname);
+  KSPGetType(ksp,PETSC_NULL,&kspname);
+  PCGetType(pc,PETSC_NULL,&pcname);
   MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);

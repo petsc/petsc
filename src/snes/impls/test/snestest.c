@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.18 1995/11/30 22:36:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.19 1995/12/21 18:34:09 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -23,6 +23,8 @@ int SNESSolve_Test(SNES snes,int *its)
   Scalar       mone = -1.0,one = 1.0;
   double       norm,gnorm;
   SNES_Test    *neP = (SNES_Test*) snes->data;
+
+  *its = 0;
 
   if (A != snes->jacobian_pre) 
     SETERRQ(1,"SNESSolve_Test:Cannot test with alternative preconditioner");
@@ -63,10 +65,6 @@ int SNESSolve_Test(SNES snes,int *its)
 /* ------------------------------------------------------------ */
 int SNESDestroy_Test(PetscObject obj)
 {
-  SNES snes = (SNES) obj;
-  SLESDestroy(snes->sles);
-  PLogObjectDestroy(obj);
-  PetscHeaderDestroy(obj);
   return 0;
 }
 

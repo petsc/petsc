@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.54 1995/11/19 00:17:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.55 1995/12/21 18:30:54 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: precon.c,v 1.54 1995/11/19 00:17:54 bsmith Exp bsmith
 #include "pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
-extern int PCPrintMethods_Private(char*,char*);
+extern int PCPrintTypes_Private(char*,char*);
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -26,8 +26,8 @@ int PCPrintHelp(PC pc)
   char *p; 
   if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm,"PC options ----------------------------------------\n");
-  PCPrintMethods_Private(p,"pc_method");
-  MPIU_printf(pc->comm,"Run program with %spc_method method -help for help on ",p);
+  PCPrintTypes_Private(p,"pc_type");
+  MPIU_printf(pc->comm,"Run program with %spc_type method -help for help on ",p);
   MPIU_printf(pc->comm,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
@@ -91,7 +91,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->getfactmat  = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
-  return PCSetMethod(pc,PCJACOBI);
+  return PCSetType(pc,PCJACOBI);
 }
 
 /*@
@@ -368,27 +368,6 @@ int PCSetVector(PC pc,Vec vec)
   return 0;
 }
 
-/*@C
-   PCGetMethodFromContext - Gets the preconditioner method from an 
-   active preconditioner context.
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Output parameters:
-.  method - the method ID
-
-.keywords: PC, get, method, context, type
-
-.seealso: PCGetMethodName()
-@*/
-int PCGetMethodFromContext(PC pc,PCMethod *method)
-{
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  *method = (PCMethod) pc->type;
-  return 0;
-}
-
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
@@ -472,7 +451,7 @@ int PCView(PC pc,Viewer viewer)
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerFileGetFormat_Private(viewer,&fmt); CHKERRQ(ierr);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
-    PCGetMethodName((PCMethod)pc->type,&cstring);
+    PCGetType(pc,PETSC_NULL,&cstring);
     MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);

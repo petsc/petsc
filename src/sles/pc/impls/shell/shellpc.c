@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.18 1995/11/19 00:31:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: shellpc.c,v 1.19 1995/12/12 22:46:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -46,7 +46,7 @@ static int PCDestroy_Shell(PetscObject obj)
   Usage:
 .             int (*mult)(void *,Vec,Vec);
 .             PCCreate(comm,&pc);
-.             PCSetMethod(pc,PC_Shell);
+.             PCSetType(pc,PC_Shell);
 .             PC_ShellSetApply(pc,mult,ctx);
 
 */

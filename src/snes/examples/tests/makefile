@@ -92,7 +92,7 @@ runex3:
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
 runex3_2:
-	-@$(MPIRUN) ex3 -nox -snes_smonitor -snes_method tr > ex3_2.tmp 2>&1; \
+	-@$(MPIRUN) ex3 -nox -snes_smonitor -snes_type tr > ex3_2.tmp 2>&1; \
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
@@ -102,7 +102,7 @@ runex4:
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   $(RM) -f ex4_1.tmp
 runex4_2:
-	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_method tr > ex4_2.tmp 2>&1;\
+	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_type tr > ex4_2.tmp 2>&1;\
 	   if (diff output/ex4_2.out ex4_2.tmp) then true; \
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   $(RM) -f ex4_2.tmp

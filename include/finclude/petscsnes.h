@@ -1,8 +1,8 @@
 C
 C  Include file for Fortran use of the SNES package in PETSc
 C
-#define SNES     integer
-#define SNESType integer
+#define SNES            integer
+#define SNESProblemType integer
 
 C
 C  Two classes of nonlinear solvers

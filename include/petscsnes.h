@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.36 1995/12/18 04:37:56 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.37 1995/12/19 02:20:11 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -17,26 +17,26 @@ typedef enum { SNES_UNKNOWN_METHOD=-1,
                SNES_EQ_NTEST,
                SNES_UM_NLS,
                SNES_UM_NTR 
-} SNESMethod;
+} SNESType;
 
-typedef enum { POSITIVE_FUNCTION_VALUE, NEGATIVE_FUNCTION_VALUE} SNESFunctionSign;
-
-typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION} SNESType;
-
-extern int SNESCreate(MPI_Comm,SNESType,SNES*);
-extern int SNESSetMethod(SNES,SNESMethod);
+typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION} 
+              SNESProblemType;
+extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
+extern int SNESDestroy(SNES);
+extern int SNESSetType(SNES,SNESType);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
+typedef enum { POSITIVE_FUNCTION_VALUE, NEGATIVE_FUNCTION_VALUE} SNESFunctionSign;
 extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,SNESFunctionSign);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
-extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
 extern int SNESSolve(SNES,int*);
 extern int SNESRegister(int,char*,int(*)(SNES));
 extern int SNESRegisterDestroy();
 extern int SNESRegisterAll();
 extern int SNESGetSLES(SNES,SLES*);
+
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
@@ -49,8 +49,7 @@ extern int SNESGetFunction(SNES,Vec*);
 extern int SNESPrintHelp(SNES);
 extern int SNESView(SNES,Viewer);
 extern int SNESSetFromOptions(SNES);
-extern int SNESGetMethodName(SNESMethod,char **);
-extern int SNESGetMethodFromContext(SNES,SNESMethod*);
+extern int SNESGetType(SNES,SNESType*,char**);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
@@ -87,7 +86,6 @@ extern int SNESGetApplicationContext(SNES,void **);
 extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,void*),void*);
 
 /* Unconstrained minimization routines */
-
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 extern int SNESGetGradient(SNES,Vec*);
@@ -101,11 +99,11 @@ extern int SNESGetLineSearchDampingParameter(SNES,double*);
 extern int SNESConverged_UMLS(SNES,double,double,double,void*);
 extern int SNESConverged_UMTR(SNES,double,double,double,void*);
 
+extern int SNESDefaultMatrixFreeMatAddNullSpace(Mat,int,int,Vec *);
+
 /* Should these 2 routines be private? */
 extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
 extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
-
-extern int SNESDefaultMatrixFreeMatAddNullSpace(Mat,int,int,Vec *);
 
 #endif
 

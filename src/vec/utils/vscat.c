@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.48 1995/12/07 15:07:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.49 1995/12/31 21:09:57 curfman Exp bsmith $";
 #endif
 
 /*
@@ -645,8 +645,8 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
-  if (!(ctx)->scatterend) return 0;
   ctx->inuse = 0;
+  if (!(ctx)->scatterend) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
   ierr = (*(ctx)->scatterend)(x,y,addv,mode,ctx); CHKERRQ(ierr);
   PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.10 1995/12/21 18:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.11 1995/12/30 03:30:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -51,7 +51,7 @@ int main( int argc, char **argv )
   SLES          sles;
   PC            pc;
   Mat           J;
-  SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
+  SNESType      method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
   AppCtx        user;
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
@@ -102,7 +102,7 @@ int main( int argc, char **argv )
   /* Force no preconditioning to be used. */
   ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
 
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);

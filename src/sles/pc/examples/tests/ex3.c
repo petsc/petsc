@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.28 1995/12/12 22:54:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.29 1995/12/21 18:31:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -19,8 +19,8 @@ int main(int argc,char **args)
   KSP       ksp;        /* KSP context */
   int       ierr, n = 10, i, its, col[3];
   Scalar    value[3], one = 1.0, zero = 0.0;
-  KSPMethod kspmethod;
-  PCMethod  pcmethod;
+  KSPType   kspmethod;
+  PCType    pcmethod;
   char      *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0,help);
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Create PC context and set up data structures */
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
          CHKERRA(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **args)
 
   /* Create KSP context and set up data structures */
   ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
-  ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
+  ierr = KSPSetType(ksp,KSPRICHARDSON); CHKERRA(ierr);
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
@@ -70,10 +70,8 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
-  ierr = KSPGetMethodFromContext(ksp,&kspmethod); CHKERRA(ierr);
-  ierr = KSPGetMethodName(kspmethod,&kspname); CHKERRA(ierr);
-  ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
-  ierr = PCGetMethodName(pcmethod,&pcname); CHKERRA(ierr);
+  ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
+  ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   fprintf(stdout,"Number of iterations %d\n",its);

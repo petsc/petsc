@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.26 1995/11/30 22:31:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.27 1995/12/21 18:29:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various vector routines\n\n";
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);
   ierr = VecDestroy(w); CHKERRA(ierr);
-  ierr = VecFreeVecs(z,3); CHKERRA(ierr);
+  ierr = VecDestroyVecs(z,3); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

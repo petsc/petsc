@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.9 1995/08/15 22:26:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.10 1995/08/22 16:33:01 bsmith Exp bsmith $";
 #endif
 
 #include "snesimpl.h"     /*I  "snes.h"  I*/
@@ -19,7 +19,7 @@ $   1.  Copy this routine and modify it to incorporate
 $       a call to SNESRegister() for the new method.  
 $   2.  Modify the file "PETSCDIR/include/snes.h"
 $       by appending the method's identifier as an
-$       enumerator of the SNESMethod enumeration.
+$       enumerator of the SNESType enumeration.
 $       As long as the enumerator is appended to
 $       the existing list, only the SNESRegisterAll()
 $       routine requires recompilation.

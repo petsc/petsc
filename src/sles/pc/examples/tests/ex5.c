@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.32 1995/12/12 22:54:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.33 1995/12/21 18:31:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -71,7 +71,7 @@ int main(int Argc, char **Args)
   ierr = SLESGetPC(slesmg,&pcmg); CHKERRA(ierr);
   ierr = SLESGetKSP(slesmg,&kspmg); CHKERRA(ierr);
   ierr = SLESSetFromOptions(slesmg); CHKERRA(ierr);
-  ierr = PCSetMethod(pcmg,PCMG); CHKERRA(ierr);
+  ierr = PCSetType(pcmg,PCMG); CHKERRA(ierr);
   ierr = MGSetLevels(pcmg,levels); CHKERRA(ierr);
   ierr = MGSetMethod(pcmg,am); CHKERRA(ierr);
 
@@ -79,9 +79,9 @@ int main(int Argc, char **Args)
   ierr = SLESSetOperators(csles,cmat,cmat,
          ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESGetPC(csles,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCLU); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCLU); CHKERRA(ierr);
   ierr = SLESGetKSP(csles,&ksp); CHKERRA(ierr);
-  ierr = KSPSetMethod(ksp,KSPPREONLY); CHKERRA(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY); CHKERRA(ierr);
 
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
@@ -97,7 +97,7 @@ int main(int Argc, char **Args)
     /* set smoother */
     ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]); CHKERRA(ierr);
     ierr = SLESGetPC(sles[i],&pc); CHKERRA(ierr);
-    ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
+    ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
     /* this is a dummy! */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
            ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
@@ -106,7 +106,7 @@ int main(int Argc, char **Args)
       ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0); CHKERRA(ierr);
     }
     ierr = SLESGetKSP(sles[i],&ksp); CHKERRA(ierr);
-    ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
+    ierr = KSPSetType(ksp,KSPRICHARDSON); CHKERRA(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
                             PETSC_DEFAULT,smooths); CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.26 1995/09/12 20:40:27 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.27 1995/10/13 02:04:08 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -79,13 +79,13 @@ struct _SNES {
      with the nonlinear equations code.  We should find a better way to deal 
      with this; the naming conventions are confusing.  Perhaps use unions? */
 
-  int      (*computeumfunction)(SNES,Vec,double*,void*);
-  double   fc;                /* function value */
-  void     *umfunP;           /* function pointer */
-  SNESType method_class;
-  double   deltatol;          /* trust region convergence tolerance */
-  double   fmin;              /* minimum tolerance for function value */
-  int      set_method_called; /* flag indicating set_method has been called */
+  int             (*computeumfunction)(SNES,Vec,double*,void*);
+  double          fc;                /* function value */
+  void            *umfunP;           /* function pointer */
+  SNESProblemType method_class;
+  double          deltatol;          /* trust region convergence tolerance */
+  double          fmin;              /* minimum tolerance for function value */
+  int             set_method_called; /* flag indicating set_method has been called */
 /*
    These are REALLY ugly and don't belong here, but since they must 
   be destroyed at the conclusion we have to put them somewhere.

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.78 1995/12/15 18:15:08 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.79 1995/12/21 18:34:37 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -39,6 +39,7 @@ extern int  (*PetscFree)(void *,int,char*);
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
+
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
 
@@ -61,7 +62,9 @@ extern char* PetscStrrtok(char*,char*);
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
+
 #define PETSC_NULL          0
+typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 
 #if defined(PETSC_COMPLEX)
 #define PetscAbsScalar(a)     abs(a)
@@ -75,7 +78,7 @@ extern char* PetscStrrtok(char*,char*);
 #endif
 
 /*
-       Unable to malloc error and no supported function
+     Error codes (incomplete)
 */
 #define PETSC_ERR_MEM 55   /* unable to allocate requested memory */
 #define PETSC_ERR_SUP 56   /* no support yet for this operation */
@@ -105,12 +108,11 @@ typedef struct _PetscObject* PetscObject;
 #define PETSC_DECIDE         -1
 #define PETSC_DEFAULT        -2
 
-typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
-
 #include "viewer.h"
 #include "options.h"
 
 extern double PetscGetTime();
+extern void PetscSleep(int);
 
 extern int PetscInitialize(int*,char***,char*,char*,char*);
 extern int PetscFinalize();
@@ -122,7 +124,6 @@ extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
-
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));
 #define PetscObjectChild(a) (((PetscObject) (a))->child)
 
@@ -139,10 +140,10 @@ extern int PetscAttachDebugger();
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
-extern int PetscSetFPTrap(int);
 #define FP_TRAP_OFF    0
 #define FP_TRAP_ON     1
 #define FP_TRAP_ALWAYS 2
+extern int PetscSetFPTrap(int);
 
 /*
    Definitions used for the Fortran interface:
@@ -157,7 +158,5 @@ extern int PetscSetFPTrap(int);
 
 #include "phead.h"
 #include "plog.h"
-
-extern void PetscSleep(int);
 
 #endif

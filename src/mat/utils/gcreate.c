@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.61 1995/12/21 18:33:04 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -216,36 +216,39 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 
 #include "matimpl.h"
 /*@C
-   MatGetName - Gets the matrix type name (as a string) from the matrix.
+   MatGetType - Gets the matrix type and  name (as a string) from the matrix.
 
    Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
+.  type - the matrix type
 .  name - name of matrix type
 
 .keywords: matrix, get, name
 
-.seealso:  MatGetType()
 @*/
-int MatGetName(Mat mat,char **name)
+int MatGetType(Mat mat,MatType *type,char **name)
 {
   int  itype = (int)mat->type;
   char *matname[10];
 
-  /* Note:  Be sure that this list corresponds to the enum in mat.h */
-  matname[0] = "MATSEQDENSE";
-  matname[1] = "MATSEQAIJ";
-  matname[2] = "MATMPIAIJ";
-  matname[3] = "MATSHELL";
-  matname[4] = "MATSEQROW";
-  matname[5] = "MATMPIROW";
-  matname[6] = "MATMPIROWBS";
-  matname[7] = "MATSEQBDIAG";
-  matname[8] = "MATMPIBDIAG";
-  matname[9] = "MATMPIDENSE";
-  if (itype < 0 || itype > 9) *name = "Unknown matrix type";
-  else                        *name = matname[itype];
+  if (type) *type = (MatType) mat->type;
+  if (name) {
+    /* Note:  Be sure that this list corresponds to the enum in mat.h */
+    matname[0] = "MATSEQDENSE";
+    matname[1] = "MATSEQAIJ";
+    matname[2] = "MATMPIAIJ";
+    matname[3] = "MATSHELL";
+    matname[4] = "MATSEQROW";
+    matname[5] = "MATMPIROW";
+    matname[6] = "MATMPIROWBS";
+    matname[7] = "MATSEQBDIAG";
+    matname[8] = "MATMPIBDIAG";
+    matname[9] = "MATMPIDENSE";
+    if (itype < 0 || itype > 9) *name = "Unknown matrix type";
+    else                        *name = matname[itype];
+  }
   return 0;
 }
  

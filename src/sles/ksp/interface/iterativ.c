@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.33 1995/11/01 23:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.34 1995/11/04 23:26:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.33 1995/11/01 23:15:09 bsmith Exp bsmi
 int KSPiDefaultFreeWork( KSP itP )
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->work)  return VecFreeVecs(itP->work,itP->nwork);
+  if (itP->work)  return VecDestroyVecs(itP->work,itP->nwork);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.80 1995/12/21 18:32:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.81 1995/12/23 19:45:01 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -56,7 +56,10 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   }
   else {
     nz = 0;
-    for ( i=0; i<m; i++ ) nz += nnz[i];
+    for ( i=0; i<m; i++ ) {
+      if (nnz[i] <= 0) nnz[i] = 1;
+      nz += nnz[i];
+    }
   }
 
   /* Allocate BlockSolve matrix context */
@@ -70,13 +73,16 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   for (i=0; i<m; i++) {
     bsmat->rows[i]  = vs;
     bsif->imax[i]   = nnz[i];
-    vs->length	    = 0;
     vs->diag_ind    = -1;
     if (nnz[i] > 0) {
       ierr = MatMallocRowbs_Private(A,nnz[i],&(vs->col),&(vs->nz));CHKERRQ(ierr);
     } else {
       vs->col = 0; vs->nz = 0;
     }
+    /* put zero on diagonal */
+    vs->length	    = 1;
+    vs->col[0]      = i + bsif->rstart;
+    vs->nz[0]       = 0.0;
     vs++;
   }
   PLogObjectMemory(A,sizeof(BSspmat) + len);
@@ -200,8 +206,9 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
         break;
       }
     }
-    if (vs->diag_ind == -1) 
-      SETERRQ(1,"MatAssemblyEnd_MPIRowbs_local:Must set diagonal, even if 0");
+    if (vs->diag_ind == -1) { 
+      SETERRQ(1,"MatAssemblyEnd_MPIRowbs_local: no diagonal entry");
+    }
   }
   return 0;
 }
@@ -309,6 +316,7 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) A->data;
   int          ierr, i, j, row, col, rstart = a->rstart, rend = a->rend;
+  int          roworiented = a->roworiented;
   Scalar       *zeros;
 
   if (a->insertmode != NOT_SET_VALUES && a->insertmode != av) {
@@ -330,13 +338,26 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
         if (in[j] >= a->N) SETERRQ(1,"MatSetValues_MPIRowbs:Col too large");
         if (in[j] >= 0 && in[j] < a->N){
           col = in[j];
-          ierr = MatSetValues_MPIRowbs_local(A,1,&row,1,&col,v+i*n+j,av);CHKERRQ(ierr);
+          if (roworiented) {
+            ierr = MatSetValues_MPIRowbs_local(A,1,&row,1,&col,v+i*n+j,av);CHKERRQ(ierr);
+          }
+          else {
+            ierr = MatSetValues_MPIRowbs_local(A,1,&row,1,&col,v+i+j*m,av);CHKERRQ(ierr);
+          }
         }
         else {SETERRQ(1,"MatSetValues_MPIRowbs:Invalid column");}
       }
     } 
     else {
-      ierr = StashValues_Private(&a->stash,im[i],n,in,v+i*n,av);CHKERRQ(ierr);
+      if (roworiented) {
+        ierr = StashValues_Private(&a->stash,im[i],n,in,v+i*n,av);CHKERRQ(ierr);
+      }
+      else {
+        row = im[i];
+        for ( j=0; j<n; j++ ) {
+          ierr = StashValues_Private(&a->stash,row,1,in+j,v+i+j*m,av);CHKERRQ(ierr);
+        }
+      }
     }
   }
 
@@ -383,11 +404,10 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *a = (Mat_MPIRowbs *) mat->data;
   MPI_Comm      comm = mat->comm;
-  int           size = a->size, *owners = a->rowners,st;
-  int           rank = a->rank;
-  MPI_Request   *send_waits,*recv_waits;
+  int           size = a->size, *owners = a->rowners,st,rank = a->rank;
   int           *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int           tag = mat->tag, *owner,*starts,count,ierr,sn;
+  MPI_Request   *send_waits,*recv_waits;
   InsertMode    addv;
   Scalar        *rvalues,*svalues;
 
@@ -1078,7 +1098,7 @@ static int MatSetOption_MPIRowbs(Mat A,MatOption op)
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) A->data;
 
   if      (op == ROW_ORIENTED)              a->roworiented = 1;
-/*  else if (op == COLUMN_ORIENTED)           a->roworiented = 0; */
+  else if (op == COLUMN_ORIENTED)           a->roworiented = 0; 
   else if (op == COLUMNS_SORTED)            a->sorted      = 1;
   else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;

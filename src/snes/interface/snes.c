@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.27 1995/11/30 22:35:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.28 1995/12/21 18:33:54 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: snes.c,v 1.27 1995/11/30 22:35:57 bsmith Exp bsmith $
 #include "pinclude/pviewer.h"
 #include <math.h>
 
-extern int SNESGetMethodFromOptions_Private(SNES,SNESMethod*);
-extern int SNESPrintMethods_Private(char*,char*);
+extern int SNESGetTypeFromOptions_Private(SNES,SNESType*);
+extern int SNESPrintTypes_Private(char*,char*);
 
 /*@ 
    SNESView - Prints the SNES data structure.
@@ -49,7 +49,7 @@ int SNESView(SNES snes,Viewer viewer)
                                         vobj->type == ASCII_FILES_VIEWER)) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(snes->comm,fd,"SNES Object:\n");
-    SNESGetMethodName((SNESMethod)snes->type,&method);
+    SNESGetType(snes,PETSC_NULL,&method);
     MPIU_fprintf(snes->comm,fd,"  method: %s\n",method);
     if (snes->view) (*snes->view)((PetscObject)snes,viewer);
     MPIU_fprintf(snes->comm,fd,
@@ -91,23 +91,21 @@ int SNESView(SNES snes,Viewer viewer)
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  SNESMethod method;
-  double tmp;
-  SLES   sles;
-  int    ierr;
-  int    version   = PETSC_DEFAULT;
-  double rtol_0    = PETSC_DEFAULT;
-  double rtol_max  = PETSC_DEFAULT;
-  double gamma2    = PETSC_DEFAULT;
-  double alpha     = PETSC_DEFAULT;
-  double alpha2    = PETSC_DEFAULT;
-  double threshold = PETSC_DEFAULT;
+  SNESType method;
+  double   tmp;
+  SLES     sles;
+  int      ierr,version   = PETSC_DEFAULT;
+  double   rtol_0    = PETSC_DEFAULT;
+  double   rtol_max  = PETSC_DEFAULT;
+  double   gamma2    = PETSC_DEFAULT;
+  double   alpha     = PETSC_DEFAULT;
+  double   alpha2    = PETSC_DEFAULT;
+  double   threshold = PETSC_DEFAULT;
 
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  if (snes->setup_called)
-    SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp!");
-  if (SNESGetMethodFromOptions_Private(snes,&method)) {
-    SNESSetMethod(snes,method);
+  if (snes->setup_called)SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp!");
+  if (SNESGetTypeFromOptions_Private(snes,&method)) {
+    SNESSetType(snes,method);
   }
   if (OptionsHasName(PETSC_NULL,"-help"))  SNESPrintHelp(snes);
   if (OptionsGetDouble(snes->prefix,"-snes_stol",&tmp)) {
@@ -198,7 +196,7 @@ int SNESPrintHelp(SNES snes)
   if (snes->prefix) prefix = snes->prefix;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   MPIU_printf(snes->comm,"SNES options ----------------------------\n");
-  SNESPrintMethods_Private(prefix,"snes_method");
+  SNESPrintTypes_Private(prefix,"snes_type");
   MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",prefix);
   MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",prefix);
   MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",prefix,snes->max_its);
@@ -235,7 +233,7 @@ int SNESPrintHelp(SNES snes)
   MPIU_printf(snes->comm,
    " options for solving unconstrained minimization problems only:\n");
   MPIU_printf(snes->comm,"   %ssnes_fmin tol (default %g)\n",prefix,snes->fmin);
-  MPIU_printf(snes->comm," Run program with %ssnes_method method -help for help on ",prefix);
+  MPIU_printf(snes->comm," Run program with %ssnes_type method -help for help on ",prefix);
   MPIU_printf(snes->comm,"a particular method\n");
   if (snes->printhelp) (*snes->printhelp)(snes);
   return 0;
@@ -404,7 +402,7 @@ $      (for unconstrained minimization)
 
 .seealso: SNESSetUp(), SNESSolve(), SNESDestroy()
 @*/
-int SNESCreate(MPI_Comm comm,SNESType type,SNES *outsnes)
+int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 {
   int  ierr;
   SNES snes;
@@ -833,7 +831,7 @@ int SNESSetUp(SNES snes)
 
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->set_method_called)
-      {ierr = SNESSetMethod(snes,SNES_EQ_NLS); CHKERRQ(ierr);}
+      {ierr = SNESSetType(snes,SNES_EQ_NLS); CHKERRQ(ierr);}
     if (!snes->vec_func) SETERRQ(1,
       "SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(1,
@@ -851,7 +849,7 @@ int SNESSetUp(SNES snes)
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->set_method_called)
-      {ierr = SNESSetMethod(snes,SNES_UM_NTR); CHKERRQ(ierr);}
+      {ierr = SNESSetType(snes,SNES_UM_NTR); CHKERRQ(ierr);}
     if (!snes->vec_func) SETERRQ(1,
      "SNESSetUp:Must call SNESSetGradient() first");
     if (!snes->computefunction) SETERRQ(1,
@@ -1290,7 +1288,7 @@ int SNESComputeInitialGuess( SNES snes,Vec  x )
 NRList *__NLList;
 
 /*@
-   SNESSetMethod - Sets the method for the nonlinear solver.  
+   SNESSetType - Sets the method for the nonlinear solver.  
 
    Input Parameters:
 .  snes - the SNES context
@@ -1306,21 +1304,21 @@ $    SNES_UM_NTR - Newton's method with trust region
 $    SNES_UM_NLS - Newton's method with line search
 
   Options Database Command:
-$ -snes_method  <method>
+$ -snes_type  <method>
 $    Use -help for a list of available methods
 $    (for instance, ls or tr)
 
 .keysords: SNES, set, method
 @*/
-int SNESSetMethod(SNES snes,SNESMethod method)
+int SNESSetType(SNES snes,SNESType method)
 {
   int (*r)(SNES);
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   /* Get the function pointers for the iterative method requested */
   if (!__NLList) {SNESRegisterAll();}
-  if (!__NLList) {SETERRQ(1,"SNESSetMethod:Could not get methods");}
+  if (!__NLList) {SETERRQ(1,"SNESSetType:Could not get methods");}
   r =  (int (*)(SNES))NRFindRoutine( __NLList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"SNESSetMethod:Unknown method");}
+  if (!r) {SETERRQ(1,"SNESSetType:Unknown method");}
   if (snes->data) PetscFree(snes->data);
   snes->set_method_called = 1;
   return (*r)(snes);
@@ -1329,7 +1327,7 @@ int SNESSetMethod(SNES snes,SNESMethod method)
 /* --------------------------------------------------------------------- */
 /*@C
    SNESRegister - Adds the method to the nonlinear solver package, given 
-   a function pointer and a nonlinear solver name of the type SNESMethod.
+   a function pointer and a nonlinear solver name of the type SNESType.
 
    Input Parameters:
 .  name - for instance SNES_EQ_NLS, SNES_EQ_NTR, ...
@@ -1366,7 +1364,7 @@ int SNESRegisterDestroy()
 }
 
 /*
-   SNESGetMethodFromOptions_Private - Sets the selected method from the 
+   SNESGetTypeFromOptions_Private - Sets the selected method from the 
    options database.
 
    Input Parameter:
@@ -1379,70 +1377,50 @@ int SNESRegisterDestroy()
    Returns 1 if the method is found; 0 otherwise.
 
    Options Database Key:
-$  -snes_method  method
+$  -snes_type  method
 */
-int SNESGetMethodFromOptions_Private(SNES ctx,SNESMethod *method)
+int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
 {
   char sbuf[50];
-  if (OptionsGetString(ctx->prefix,"-snes_method", sbuf, 50 )) {
+  if (OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50 )) {
     if (!__NLList) SNESRegisterAll();
-    *method = (SNESMethod)NRFindID( __NLList, sbuf );
+    *method = (SNESType)NRFindID( __NLList, sbuf );
     return 1;
   }
   return 0;
 }
 
-/*@
-   SNESGetMethodFromContext - Gets the nonlinear solver method from an 
-   active SNES context.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Output parameters:
-.  method - the method ID
-
-.keywords: SNES, nonlinear, get, method, context, type
-
-.seealso: SNESGetMethodName()
-@*/
-int SNESGetMethodFromContext(SNES snes, SNESMethod *method)
-{
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  *method = (SNESMethod) snes->type;
-  return 0;
-}
-
 /*@C
-   SNESGetMethodName - Gets the SNES method name (as a string) from
-   the method type.
+   SNESGetType - Gets the SNES type and method name (as a string).
 
    Input Parameter:
-.  method - SNES method
+.  snes - nonlinear solver context
 
    Output Parameter:
-.  name - name of SNES method
+.  method - SNES method (or PETSC_NULL)
+.  name - name of SNES method (or PETSC_NULL)
 
 .keywords: SNES, nonlinear, get, method, name
 @*/
-int SNESGetMethodName(SNESMethod method,char **name)
+int SNESGetType(SNES snes, SNESType *method,char **name)
 {
   int ierr;
   if (!__NLList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
-  *name = NRFindName( __NLList, (int) method );
+  if (method) *method = (SNESType) snes->type;
+  if (name)  *name = NRFindName( __NLList, (int) snes->type );
   return 0;
 }
 
 #include <stdio.h>
 /*
-   SNESPrintMethods_Private - Prints the SNES methods available from the 
+   SNESPrintTypes_Private - Prints the SNES methods available from the 
    options database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "snes_method") 
+.  name - the options database name (by default "snes_type") 
 */
-int SNESPrintMethods_Private(char* prefix,char *name)
+int SNESPrintTypes_Private(char* prefix,char *name)
 {
   FuncList *entry;
   if (!__NLList) {SNESRegisterAll();}
