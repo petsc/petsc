@@ -172,7 +172,7 @@ PetscErrorCode PetscAttachDebugger(void)
 
   PetscFunctionBegin;
 
-#if defined(PETSC_CANNOT_START_DEBUGGER )
+#if defined(PETSC_CANNOT_START_DEBUGGER) || !defined(PETSC_HAVE_FORK)
   (*PetscErrorPrintf)("System cannot start debugger\n");
   (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
   (*PetscErrorPrintf)("On Windows use Developer Studio(MSDEV)\n");
