@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.353 1999/11/10 03:19:04 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.354 1999/11/24 21:53:42 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -2738,6 +2738,9 @@ int MatCompress(Mat mat)
    MAT_KEEP_ZEROED_ROWS indicates when MatZeroRows() is called the zeroed entries
    are kept in the nonzero structure
 
+   MAT_IGNORE_ZERO_ENTRIES - when using ADD_VALUES for AIJ matrices this will stop
+   zero values from creating a zero location in the matrix
+
    Level: intermediate
 
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
@@ -3321,7 +3324,7 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
-  if (ov == 0) PetscFunctionReturn(0);
+  if (!ov) PetscFunctionReturn(0);
   if (!mat->ops->increaseoverlap) SETERRQ(PETSC_ERR_SUP,0,"");
   PLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);
   ierr = (*mat->ops->increaseoverlap)(mat,n,is,ov);CHKERRQ(ierr);

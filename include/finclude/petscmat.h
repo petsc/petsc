@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.56 1999/09/14 15:58:26 balay Exp bsmith $;
+!  $Id: mat.h,v 1.57 1999/11/24 21:56:02 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -82,7 +82,8 @@
       integer MAT_NEW_NONZERO_LOCATION_ERR
       integer MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
       integer MAT_KEEP_ZEROED_ROWS
-      
+      integer MAT_IGNORE_ZERO_ENTRIES
+
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
       parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
       parameter (MAT_NO_NEW_NONZERO_LOCATIONS=16)
@@ -97,6 +98,7 @@
       parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=77)
       parameter (MAT_USE_HASH_TABLE=78)
       parameter (MAT_KEEP_ZEROED_ROWS=79)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=80)
 !
 !  MatDuplicateOption
 !
