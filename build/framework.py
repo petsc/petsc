@@ -120,7 +120,7 @@ class Framework(base.Base):
     while not self.checkTmpDir(tmpDir):
       tmpDir = self.argDB['TMPDIR']
 
-    self.tmpDir = os.path.join(tmpDir, 'bs', str(os.getpid()))
+    self.tmpDir = os.path.join(tmpDir, 'bs-'+str(os.getpid()))
     if not os.path.exists(self.tmpDir):
       try:
         os.makedirs(self.tmpDir)
