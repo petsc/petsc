@@ -52,6 +52,22 @@ class VersionControl(logging.Logger):
     self.logPrint('Cloning '+str(parent)+' into '+str(child), debugSection = 'vc')
     return 0
 
+  def push(self, parent = None):
+    '''Update the parent repository from this one'''
+    if parent is None:
+      self.logPrint('Pushing changes to parent', debugSection = 'vc')
+    else:
+      self.logPrint('Pushing changes to '+str(parent), debugSection = 'vc')
+    return 0
+
+  def pull(self, parent = None):
+    '''Update this repository from the parent'''
+    if parent is None:
+      self.logPrint('Pulling changes from parent', debugSection = 'vc')
+    else:
+      self.logPrint('Pulling changes from '+str(parent), debugSection = 'vc')
+    return 0
+
 class BitKeeper(script.Script, VersionControl):
   def __init__(self, clArgs = None, argDB = None):
     script.Script.__init__(self, clArgs, argDB)
@@ -159,4 +175,22 @@ class BitKeeper(script.Script, VersionControl):
     '''Clone a parent repository into a child. Both arguments are URLs.'''
     VersionControl.clone(self, parent, child)
     self.executeShellCommand(self.bk+' clone '+str(parent)+' '+str(child))
+    return 0
+
+  def push(self, parent = None):
+    '''Update the parent repository from this one'''
+    VersionControl.clone(self, parent)
+    cmd = self.bk+' push'
+    if not parent is None:
+      cmd += ' '+str(parent)
+    self.executeShellCommand(cmd)
+    return 0
+
+  def pull(self, parent = None):
+    '''Update this repository from the parent'''
+    VersionControl.clone(self, parent)
+    cmd = self.bk+' pull'
+    if not parent is None:
+      cmd += ' '+str(parent)
+    self.executeShellCommand(cmd)
     return 0

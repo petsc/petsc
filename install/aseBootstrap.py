@@ -70,23 +70,27 @@ class Bootstrapper(script.Script):
     self.clone('bk://ase.bkbits.net/Runtime')
     self.logPrint('Retrieving Compiler')
     url = 'bk://ase.bkbits.net/Compiler'
-    dir = os.path.join(self.baseDir, os.path.dirname(self.mapper.getRepositoryPath(url)))
-    tarball = os.path.join(dir, self.mapper.getRepositoryName(url)+'.tgz')
-    if not os.path.isdir(dir):
-      os.makedirs(dir)
+    aseDir = os.path.join(self.baseDir, os.path.dirname(self.mapper.getRepositoryPath(url)))
+    tarball = os.path.join(aseDir, self.mapper.getRepositoryName(url)+'.tgz')
+    if not os.path.isdir(aseDir):
+      os.makedirs(aseDir)
     #urllib.urlretrieve(self.mapper.getMappedUrl(url)+'.tgz', tarball)
     urllib.urlretrieve(self.compilerRepository, tarball)
     self.logPrint('Expanding Compiler')
-    self.executeShellCommand('cd '+dir+'; tar -xzf '+os.path.basename(tarball), timeout = 1200.0)
+    self.executeShellCommand('cd '+aseDir+'; tar -xzf '+os.path.basename(tarball), timeout = 1200.0)
     os.remove(tarball)
+    oldDir = os.getcwd()
+    os.chdir(os.path.join(self.baseDir, self.mapper.getRepositoryPath(url)))
+    self.vc.pull(url)
+    os.chdir(oldDir)
     return
 
   def downloadBootstrap(self, url):
     self.logPrint('Retrieving bootstrap for '+url)
-    dir = os.path.join(self.baseDir, self.mapper.getRepositoryPath(url))
-    tarball = os.path.join(dir, self.mapper.getRepositoryName(url)+'_bootstrap.tgz')
+    repoDir = os.path.join(self.baseDir, self.mapper.getRepositoryPath(url))
+    tarball = os.path.join(repoDir, self.mapper.getRepositoryName(url)+'_bootstrap.tgz')
     urllib.urlretrieve(self.mapper.getMappedUrl(url+'_bootstrap')+'.tgz', tarball)
-    self.executeShellCommand('cd '+dir+'; tar -xzf '+os.path.basename(tarball))
+    self.executeShellCommand('cd '+repoDir+'; tar -xzf '+os.path.basename(tarball))
     os.remove(tarball)
     return
 
