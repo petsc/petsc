@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.94 1997/01/08 18:52:01 gropp Exp curfman $ 
+% $Id: part1.tex,v 1.95 1997/01/10 20:40:07 curfman Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -531,7 +531,7 @@ given in the file {\tt \$(PETSC\_DIR)/Troubleshooting}.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-   eagle> make BOPT=g ex1
+   eagle> make BOPT=g ex2
    gcc -DPETSC_ARCH_sun4 -pipe -c  -I../../../  -I../../..//include   
        -I/usr/local/mpi/include  -I../../..//src -g 
        -DPETSC_DEBUG -DPETSC_MALLOC -DPETSC_LOG ex1.c
@@ -545,11 +545,11 @@ given in the file {\tt \$(PETSC\_DIR)/Troubleshooting}.
       /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  
       /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm
    rm -f ex1.o
-   eagle> mpirun ex1
-   Norm of error 8.40696e-15 Iterations 5
+   eagle> mpirun ex2
+   Norm of error 3.6618e-05 iterations 7
    eagle>
    eagle> mpirun -np 2 ex2
-   Norm of error 1.08779e-15 Number of iterations 4
+   Norm of error 5.34462e-05 iterations 9
 \end{verbatim}
 }
 \nobreak
