@@ -10,8 +10,8 @@
 #define __FUNCT__ "SetSpoolesOptions"
 int SetSpoolesOptions(Mat A, Spooles_options *options)
 {
-  int          ierr;
-  char         *ordertype[]={"BestOfNDandMS","MMD","MS","ND"},indx;
+  int          ierr,indx;
+  char         *ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
   PetscTruth   flg;
 
   PetscFunctionBegin;	
