@@ -34,6 +34,8 @@ def setupfunctionC(filename):
         regtypedef = re.compile('typedef [ ]*struct')
         regdefine = re.compile('#define')
         regdefine__ = re.compile('#define [ ]*__FUNCT__')
+        regif = re.compile('#if')
+        regendif = re.compile('#endif')
 	newfile = filename + ".tmp"
 	f = open(filename)
 	g = open(newfile,"w")
@@ -76,6 +78,12 @@ def setupfunctionC(filename):
 		        fl = regdefine__.search(line)
 			if not fl:
                                 g.write(line)
+                fl = regif.search(line)
+                if fl:
+                        g.write(line)
+                fl = regendif.search(line)
+                if fl:
+                        g.write(line)
 
 		line = f.readline()
 	f.close()
