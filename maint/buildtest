@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.165 1999/08/31 03:49:02 balay Exp bsmith $ 
+# $Id: buildtest,v 1.166 1999/09/03 20:55:27 bsmith Exp bsmith $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -61,8 +61,8 @@ if ($day == Tue) then
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(2      2          2          2             2           2           2            2           2           2           2            )
   set J3=(0      3          3          3             3           6           3            3           3           3           3            )
-  set J4=(6      6          5          6             6           7           8            6           6           6           6            )
-  set J5=(0      7          10         7             8           3           0            7           8           8           13           )
+  set J4=(6      6          5          6             6           7           8            6           6           6           13           )
+  set J5=(0      7          10         7             8           3           0            7           8           8           0            )
   set J6=(0      13         13         8             12          8           0            8           13          12          0            )
   set J7=(0      14         0          14            0           0           0           14           0           0           0            )
   set J8=(0      0          0          0             0           0           0            0           0           0           0            )
