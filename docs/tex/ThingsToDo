@@ -24,13 +24,6 @@ allows reusing with different boundary conditions.
 has a different max than appindices[] and one or both of them have "holes" or 
 two values mapped to the same slot? Suggested by George Biros.
 
-  Change PetscStrcmp() to return error code.
-
-  Fixed OptionsGetXXX() so the final argument is a PetscTruth instead of int.
-
-  Supplument the MG preconditioner to support the storage of the
-tranpose of restriction and interpolation; so user need not use shell.
-
   Make KSPGetConvergedReason() and new converged tests for KSP like SNES ones.
 
   Graphics for 3d DA. Also matlab graphics for 2 and 3d DA
@@ -1141,4 +1134,12 @@ SPARSEPAK, as was done with MINPACK coloring to prevent name space pollution.
     all machines.
 
 X   Add DrawZoom fortran to PETSC
+
+
+X  Change PetscStrcmp() to return error code.
+
+X  Fixed OptionsGetXXX() so the final argument is a PetscTruth instead of int.
+
+X*  Supplument the MG preconditioner to support the storage of the
+tranpose of restriction and interpolation; so user need not use shell.
 
