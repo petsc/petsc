@@ -143,6 +143,13 @@ class ArgInt(ArgEmpty):
     self.help  = help
     self.min   = min
     self.max   = max
+
+  def convertValue(self, value):
+    try:
+      value = int(value)
+    except:
+      value = self.min
+    return value
     
   def getValue(self,key):
     if not hasattr(self,'value'):
