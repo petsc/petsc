@@ -308,7 +308,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 @*/
 int PetscPrintf(MPI_Comm comm,const char format[],...)
 {
-  int       rank,ierr,len;
+  int       rank,ierr;
+  size_t    len;
   char      *nformat,*sub1,*sub2;
   PetscReal value;
 

@@ -231,7 +231,8 @@ int PetscCompareScalar(PetscScalar d)
 */
 int PetscCompareInitialize(double tol)
 {
-  int        ierr,i,len,rank,*gflag,size,mysize;
+  int        ierr,i,rank,*gflag,size,mysize;
+  size_t     len;
   char       pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   MPI_Group  group_all,group_sub;
   PetscTruth work;

@@ -135,8 +135,9 @@ int PetscDrawSetTitle(PetscDraw draw,const char title[])
 @*/
 int PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
-  int  ierr,len1,len2,len;
-  char *newtitle;
+  int    ierr;
+  size_t len1,len2,len;
+  char   *newtitle;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

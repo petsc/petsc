@@ -56,8 +56,9 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 */
 int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  char *buf = obj->prefix ;
-  int  ierr,len1,len2;
+  char   *buf = obj->prefix;
+  int    ierr;
+  size_t len1,len2;
 
   PetscFunctionBegin;
   if (!prefix) {PetscFunctionReturn(0);}
@@ -117,8 +118,9 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 */
 int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  char *buf = obj->prefix ;
-  int  ierr,len1,len2;
+  char   *buf = obj->prefix;
+  int    ierr;
+  size_t len1,len2;
 
   PetscFunctionBegin;
   if (!prefix) {PetscFunctionReturn(0);}

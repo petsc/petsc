@@ -46,7 +46,8 @@ static int PetscViewerDestroy_String(PetscViewer viewer)
 int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
-  int                shift,ierr;
+  size_t             shift;
+  int                ierr;
   PetscTruth         isstring;
   char               tmp[4096];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;

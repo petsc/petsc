@@ -116,7 +116,8 @@ static int PetscDrawTriangle_X(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscRe
 #define __FUNCT__ "PetscDrawString_X" 
 static int PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
-  int          xx,yy,ierr,len;
+  int          xx,yy,ierr;
+  size_t       len;
   PetscDraw_X  *XiWin = (PetscDraw_X*)draw->data;
   char         *substr;
   PetscToken   *token;
@@ -176,10 +177,11 @@ int PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *y)
 #define __FUNCT__ "PetscDrawStringVertical_X" 
 int PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
-  int         xx,yy,n,i,ierr;
+  int         xx,yy,i,ierr;
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
   char        tmp[2];
   PetscReal   tw,th;
+  size_t      n;
   
   PetscFunctionBegin;
   ierr   = PetscStrlen(chrs,&n);CHKERRQ(ierr);
@@ -411,7 +413,8 @@ static int PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 {
   PetscDraw_X   *win = (PetscDraw_X*)draw->data;
   XTextProperty prop;
-  int           ierr,len;
+  int           ierr;
+  size_t        len;
 
   PetscFunctionBegin;
   XGetWMName(win->disp,win->win,&prop);

@@ -52,7 +52,8 @@ int DAView_Matlab(DA da,PetscViewer viewer)
 int DAView_Binary(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
-  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  int            i,dim,m,n,p,dof,swidth,M,N,P;
+  size_t         j,len;
   DAStencilType  stencil;
   DAPeriodicType periodic;
   MPI_Comm       comm;
@@ -67,14 +68,14 @@ int DAView_Binary(DA da,PetscViewer viewer)
 
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
-      char           fieldname[256];
+      char fieldname[PETSC_MAX_PATH_LEN];
 
       fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
-          ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
+          ierr = PetscStrncpy(fieldname,da->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
           ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
-          len  = PetscMin(256,len);CHKERRQ(ierr);
+          len  = PetscMin(PETSC_MAX_PATH_LEN,len);CHKERRQ(ierr);
           for (j=0; j<len; j++) {
             if (fieldname[j] == ' ') fieldname[j] = '_';
           }

@@ -472,7 +472,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_ASCII" 
 int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
 {
-  int               ierr,len;
+  int               ierr;
+  size_t            len;
   char              fname[PETSC_MAX_PATH_LEN],*gz;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        isstderr,isstdout;

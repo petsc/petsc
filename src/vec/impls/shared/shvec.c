@@ -141,7 +141,8 @@ int PetscSharedMemorySetSize(int s)
 #define __FUNCT__ "PetscSharedInitialize"
 int PetscSharedInitialize(MPI_Comm comm)
 {
-  int     rank,len,ierr,flag;
+  int     rank,ierr,flag;
+  size_t  len;
   char    filename[PETSC_MAX_PATH_LEN];
   usptr_t **arena;
 

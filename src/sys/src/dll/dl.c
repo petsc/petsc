@@ -130,7 +130,8 @@ int PetscDLLibraryGetInfo(void *handle,const char type[],const char *mess[])
 int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,buff[10],*en,*gz;
-  int        ierr,len1,len2,len;
+  int        ierr;
+  size_t     len1,len2,len;
   PetscTruth tflg,flg;
 
   PetscFunctionBegin;
@@ -328,7 +329,8 @@ int PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 int PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const char path[],const char insymbol[],void **value)
 {
   char               *par1,*symbol;
-  int                ierr,len;
+  int                ierr;
+  size_t             len;
   PetscDLLibraryList nlist,prev,list;
 
   PetscFunctionBegin;
@@ -440,7 +442,8 @@ int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char li
 {
   PetscDLLibraryList list,prev;
   void*              handle;
-  int                ierr,len;
+  int                ierr;
+  size_t             len;
   PetscTruth         match,dir;
   char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
   PetscToken         *token;
@@ -535,7 +538,8 @@ int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char l
 {
   PetscDLLibraryList list,prev;
   void*              handle;
-  int                ierr,len;
+  int                ierr;
+  size_t             len;
   PetscTruth         match,dir;
   char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
   PetscToken         *token;
@@ -658,7 +662,8 @@ int PetscDLLibraryClose(PetscDLLibraryList next)
 @*/
 int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char dirname[])
 {
-  int                ierr,l;
+  int                ierr;
+  size_t             l;
   PetscTruth         dir;
   char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
   char               *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;

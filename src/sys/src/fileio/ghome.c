@@ -99,7 +99,8 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 @*/
 int PetscFixFilename(const char filein[],char fileout[])
 {
-  int i,n,ierr;
+  int    i,ierr;
+  size_t n;
 
   PetscFunctionBegin;
   if (!filein || !fileout) PetscFunctionReturn(0);

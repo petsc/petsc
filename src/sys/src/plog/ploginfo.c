@@ -173,7 +173,8 @@ $
 int PetscLogInfo(void *vobj, const char message[], ...)  
 {
   va_list     Argp;
-  int         rank,urank,len;
+  int         rank,urank;
+  size_t      len;
   PetscObject obj = (PetscObject)vobj;
   char        string[8*1024];
   int         ierr;

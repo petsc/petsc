@@ -2797,7 +2797,8 @@ int MatMerge(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
 #define __FUNCT__ "MatFileSplit"
 int MatFileSplit(Mat A,char *outfile)
 {
-  int               ierr,rank,len,m,N,i,rstart,nnz;
+  int               ierr,rank,m,N,i,rstart,nnz;
+  size_t            len;
   const int         *indx;
   PetscViewer       out;
   char              *name;

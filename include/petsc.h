@@ -348,26 +348,26 @@ EXTERN int PetscDataTypeGetName(PetscDataType,const char*[]);
    around the basic Unix system calls, but a few of them have additional
    functionality and/or error checking.
 */
-EXTERN int   PetscMemcpy(void*,const void *,int);
+EXTERN int   PetscMemcpy(void*,const void *,size_t);
 EXTERN int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
-EXTERN int   PetscMemmove(void*,void *,int);
-EXTERN int   PetscMemzero(void*,int);
-EXTERN int   PetscMemcmp(const void*,const void*,int,PetscTruth *);
-EXTERN int   PetscStrlen(const char[],int*);
+EXTERN int   PetscMemmove(void*,void *,size_t);
+EXTERN int   PetscMemzero(void*,size_t);
+EXTERN int   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
+EXTERN int   PetscStrlen(const char[],size_t*);
 EXTERN int   PetscStrcmp(const char[],const char[],PetscTruth *);
 EXTERN int   PetscStrgrt(const char[],const char[],PetscTruth *);
 EXTERN int   PetscStrcasecmp(const char[],const char[],PetscTruth*);
-EXTERN int   PetscStrncmp(const char[],const char[],int,PetscTruth*);
+EXTERN int   PetscStrncmp(const char[],const char[],size_t,PetscTruth*);
 EXTERN int   PetscStrcpy(char[],const char[]);
 EXTERN int   PetscStrcat(char[],const char[]);
-EXTERN int   PetscStrncat(char[],const char[],int);
-EXTERN int   PetscStrncpy(char[],const char[],int);
+EXTERN int   PetscStrncat(char[],const char[],size_t);
+EXTERN int   PetscStrncpy(char[],const char[],size_t);
 EXTERN int   PetscStrchr(const char[],char,char *[]);
 EXTERN int   PetscStrtolower(char[]);
 EXTERN int   PetscStrrchr(const char[],char,char *[]);
 EXTERN int   PetscStrstr(const char[],const char[],char *[]);
 EXTERN int   PetscStrallocpy(const char[],char *[]);
-EXTERN int   PetscStrreplace(MPI_Comm,const char[],char[],int);
+EXTERN int   PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
 /*S
     PetscToken - 'Token' used for managing tokenizing strings

@@ -247,7 +247,8 @@ int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,Pets
 @*/
 int PetscDrawAxisDraw(PetscDrawAxis axis)
 {
-  int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank,len;
+  int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
+  size_t    len;
   PetscReal tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
   char      *p;
   PetscDraw draw = axis->win;
@@ -341,7 +342,8 @@ int PetscDrawAxisDraw(PetscDrawAxis axis)
 */
 static int PetscStripAllZeros(char *buf)
 {
-  int i,n,ierr;
+  int    i,ierr;
+  size_t n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -361,8 +363,9 @@ static int PetscStripAllZeros(char *buf)
 */
 static int PetscStripTrailingZeros(char *buf)
 {
-  int  ierr,i,n,m = -1;
-  char *found;
+  int    ierr,i,m = -1;
+  char   *found;
+  size_t n;
 
   PetscFunctionBegin;
   /* if there is an e in string DO NOT strip trailing zeros */
@@ -391,7 +394,8 @@ static int PetscStripTrailingZeros(char *buf)
 */
 static int PetscStripInitialZero(char *buf)
 {
-  int i,n,ierr;
+  int    i,ierr;
+  size_t n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -414,7 +418,8 @@ static int PetscStripInitialZero(char *buf)
 */
 static int PetscStripZeros(char *buf)
 {
-  int i,j,n,ierr;
+  int    i,j,ierr;
+  size_t n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
@@ -436,7 +441,8 @@ static int PetscStripZeros(char *buf)
 */
 static int PetscStripZerosPlus(char *buf)
 {
-  int i,j,n,ierr;
+  int    i,j,ierr;
+  size_t n;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);

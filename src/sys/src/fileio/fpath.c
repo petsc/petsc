@@ -56,7 +56,8 @@
 int PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   struct passwd *pwde;
-  int           ierr,ln;
+  int           ierr;
+  size_t        ln;
   PetscTruth    flg;
 
   PetscFunctionBegin;

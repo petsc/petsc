@@ -60,7 +60,8 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mo
 {
 #if !defined(PARCH_win32)
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
-  int        ln,ierr;
+  size_t     ln;
+  int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;

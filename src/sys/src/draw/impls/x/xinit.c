@@ -235,7 +235,8 @@ int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
 {
   XTextProperty prop;
-  int           len,ierr;
+  size_t        len;
+  int           ierr;
 
   PetscFunctionBegin;
   XGetWMName(Xiwin->disp,Xiwin->win,&prop);

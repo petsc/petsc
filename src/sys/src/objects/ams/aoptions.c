@@ -586,7 +586,8 @@ int PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscF
 @*/
 int PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *list[],int ntext,const char defaultv[],int *value,PetscTruth *set)
 {
-  int        i,ierr,len = 0, alen;
+  int        i,ierr,len = 0;
+  size_t     alen;
   char       *svalue;
   PetscTruth aset,flg;
 
