@@ -15,7 +15,7 @@ EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
 RUNEXAMPLES_1 = runex1 runex3 runex5 runex5_2 runex6 runex8 runex9 \
 		runex10 runex11 runex14 runex15 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
-		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 
+		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 \
 		ex46 ex48 ex49 ex50 ex51
 RUNEXAMPLES_2 = runex2 runex4 runex7 runex12 runex13 runex19 \
 		runex35 runex40 runex42 runex46 runex48
