@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.115 1998/04/28 04:00:15 curfman Exp balay $ 
+% $Id: part1.tex,v 1.116 1998/04/28 17:53:33 balay Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -124,11 +124,7 @@ easy movement among related topics.
 Within the PETSc distribution, the directory
 {\tt \$\{PETSC\_DIR\}/docs} contains all documentation, including this
 manual and the manual pages in PostScript and HTML
-formats. Note that one can also view the manual pages with
-the following utility that starts a Netscape session:
-\begin{verbatim}
-  ${PETSC_DIR}/bin/petscman
-\end{verbatim}
+formats. 
 
 Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
@@ -212,9 +208,9 @@ running any PETSc program with the option {\tt -help}.
       at conclusion \findex{-trdump} of the run
 \item {\tt -trmalloc} - enable memory tracing (by default this is 
       activated for the debugging versions of PETSc)
-\item {\tt -start\_in\_debugger [noxterm,dbx,xxgdb] [-display name]} 
-     - start all processes in debugger
-\item {\tt -on\_error\_attach\_debugger [noxterm,dbx,xxgdb]
+\item {\tt -start\_in\_debugger [noxterm,gdb,dbx,xxgdb] [-display name]} 
+     - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
+\item {\tt -on\_error\_attach\_debugger \findex{-on_error_attach_debugger} [noxterm,gdb,dbx,xxgdb]
       [-display name]} - start debugger only on encountering an error
 \end{itemize}
 See Section \ref{sec:debugging} for more information on debugging PETSc programs.

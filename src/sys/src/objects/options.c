@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.187 1998/04/26 03:31:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.188 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -20,7 +20,44 @@ static char vcid[] = "$Id: options.c,v 1.187 1998/04/26 03:31:15 bsmith Exp curf
 #include <malloc.h>
 #endif
 #include "pinclude/pviewer.h"
-#include "src/sys/src/files.h"
+#include "petsc.h"
+#include "sys.h"
+#include "pinclude/ptime.h"
+#if defined(HAVE_PWD_H)
+#include <pwd.h>
+#endif
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if !defined(PARCH_nt)
+#include <sys/param.h>
+#include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
+#include <windows.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#if defined (PARCH_nt_gnu)
+#include <windows.h>
+#endif
+#include <fcntl.h>
+#include <time.h>  
+#if defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#endif
+#include "pinclude/petscfix.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
+
 #include "pinclude/petscfix.h"
 
 /* 
@@ -351,10 +388,10 @@ int PetscInitializeNoArguments(void)
 
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for details.
-.  -log_trace [filename] - Print traces of all PETSc calls
++  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PLogTraceBegin().
-.  -log_info - Prints verbose information to the screen
+-  -log_info - Prints verbose information to the screen
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
@@ -954,10 +991,10 @@ int OptionsCheckInitial_Private(void)
     (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");
     (*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is");
     (*PetscHelpPrintf)(comm," detected. Useful \n       only when run in the debugger\n");
-    (*PetscHelpPrintf)(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]\n"); 
-    (*PetscHelpPrintf)(comm,"       start the debugger (gdb by default) in new xterm\n");
+    (*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"); 
+    (*PetscHelpPrintf)(comm,"       start the debugger in new xterm\n");
     (*PetscHelpPrintf)(comm,"       unless noxterm is given\n");
-    (*PetscHelpPrintf)(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]\n");
+    (*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n");
     (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");
     (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
     (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
@@ -1257,8 +1294,8 @@ static int OptionsDestroy_Private(void)
    for parallel objects looking for options.
 
    Input Parameters:
-.  name - name of option, this SHOULD have the - prepended
-.  value - the option value (not used for all options)
++  name - name of option, this SHOULD have the - prepended
+-  value - the option value (not used for all options)
 
    Note:
    Only some options have values associated with them, such as
