@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.37 1998/05/29 22:51:15 balay Exp balay $";
+static char vcid[] = "$Id: tcqmr.c,v 1.38 1998/06/01 19:32:41 balay Exp bsmith $";
 #endif
 
 /*
@@ -30,6 +30,9 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   it    = 0;
   ierr  = KSPResidual(ksp,x,u,v,r,v0,b); CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
+
+  cerr = (*ksp->converged)(ksp,0,rnorm0,ksp->cnvP);
+  if (cerr) {*its =  0; PetscFunctionReturn(0);}
 
   ierr  = VecSet(&zero,um1); CHKERRQ(ierr);
   ierr  = VecCopy(r,u); CHKERRQ(ierr);

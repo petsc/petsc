@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.127 1998/06/11 19:54:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.128 1998/06/16 14:21:31 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -248,6 +248,7 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
                                   ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
     ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
+    /* printf("accessing first\n"); fflush(stdout); */
     ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
 
     /* create PETSc container to carry AMS memory object */
@@ -257,13 +258,13 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
   } else {
     ierr = PetscObjectContainerGetPointer(container,(void **)&amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
+    /* printf("accessing \n"); fflush(stdout); */
     ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 #else
-  PetscFunctionBegin;
   SETERRQ(1,1,"PETSc compiled without ALICE Memory Snooper");
 #endif
-  PetscFunctionReturn(0);
 }
 
 
