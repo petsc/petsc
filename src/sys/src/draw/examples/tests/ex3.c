@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.19 1995/11/09 22:31:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.20 1995/11/30 22:35:37 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -12,9 +12,9 @@ int main(int argc,char **argv)
   Draw     draw;
   DrawLG   lg;
   DrawAxis axis;
-  int         n = 20,i, ierr, x = 0, y = 0, width = 300, height = 300;
-  char        *xlabel,*ylabel,*toplabel;
-  double      xd,yd;
+  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300;
+  char     *xlabel, *ylabel, *toplabel;
+  double   xd, yd;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
@@ -39,6 +39,7 @@ int main(int argc,char **argv)
   ierr = DrawFlush(draw); CHKERRA(ierr); PetscSleep(2);
 
   ierr = DrawLGDestroy(lg); CHKERRA(ierr);
+  ierr = DrawDestroy(draw); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

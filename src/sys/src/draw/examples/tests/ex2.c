@@ -1,14 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.16 1995/10/12 04:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1995/11/09 22:31:45 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Example demonstrating color map\n";
+static char help[] = "Demonstrates us of color map\n";
 
-#include "petsc.h"
-#include "is.h"
-#include "vec.h"
-#include "sys.h"
-#include "sysio.h"
 #include "draw.h"
 #include <math.h>
 
@@ -25,6 +20,7 @@ int main(int argc,char **argv)
   }
   ierr = DrawFlush(draw); CHKERRA(ierr);
   PetscSleep(2);
+  ierr = DrawDestroy(draw); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

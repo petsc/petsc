@@ -1,25 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1995/10/12 04:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.15 1995/11/09 22:31:45 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Example demonstrating opening and drawing a window\n";
+static char help[] = "Demonstrates opening and drawing a window\n";
 
-#include "petsc.h"
-#include "vec.h"
-#include "sys.h"
-#include "petsc.h"
-#include "sysio.h"
 #include "draw.h"
 #include <math.h>
 
 int main(int argc,char **argv)
 {
   Draw draw;
-  int     ierr, x = 0, y = 0, width = 300, height = 300;
+  int  ierr, x = 0, y = 0, width = 300, height = 300;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Title",x,y,width,height,&draw); CHKERRA(ierr);
   ierr = DrawSetViewPort(draw,.25,.25,.75,.75); CHKERRA(ierr);
   ierr = DrawLine(draw,0.0,0.0,1.0,1.0,DRAW_BLACK); CHKERRA(ierr);
   ierr = DrawText(draw,.2,.2,DRAW_RED,"Some Text"); CHKERRA(ierr);
@@ -32,6 +27,7 @@ int main(int argc,char **argv)
   ierr = DrawLine(draw,0.0,1.0,1.0,0.0,DRAW_BLUE);
   ierr = DrawFlush(draw); CHKERRA(ierr);
   PetscSleep(2);
+  ierr = DrawDestroy(draw); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
