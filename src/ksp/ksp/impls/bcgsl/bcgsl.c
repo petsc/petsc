@@ -690,7 +690,7 @@ int KSPCreate_BCGSL(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPBCGSLSetEll_C", "KSPBCGSSetEll",KSPBCGSLSetEll);CHKERRQ(ierr);
   
   /* Set the threshold for when exact residuals will be used */
-  bcgsl->delta = 0.01;
+  bcgsl->delta = 0.0;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPBCGSLSetXRes_C", "KSPBCGSSetXRes",KSPBCGSLSetXRes);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
