@@ -876,7 +876,8 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row sum */
-      PetscReal sums[bs];
+      PetscReal *sums;
+      ierr = PetscMalloc(bs*sizeof(PetscReal),&sums);CHKERRQ(ierr);
       sum = 0.0;
       for (j=0; j<amat->mbs; j++) {
         for (row=0; row<bs; row++) sums[row] = 0.0;
@@ -903,6 +904,7 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
         }
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_MAX,mat->comm);CHKERRQ(ierr);
+      ierr = PetscFree(sums);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
     }
