@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.94 1995/10/06 22:24:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.95 1995/10/10 14:45:51 curfman Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -881,8 +881,9 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
         *j_new++ = a->j[k+starts[i]] - first;
       }
       PetscMemcpy(a_new,a->a + starts[i],lens[i]*sizeof(Scalar));
-      a_new     += lens[i];
-      i_new[i+1] = i_new[i] + lens[i];
+      a_new      += lens[i];
+      i_new[i+1]  = i_new[i] + lens[i];
+      c->ilen[i]  = lens[i];
     }
     PETSCFREE(lens);
   }

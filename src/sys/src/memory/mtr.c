@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.36 1995/10/01 02:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.37 1995/10/01 21:51:51 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -180,7 +180,7 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   }
 
   if (a == 0) {
-    fprintf(stderr,"TrMalloc: malloc zero length, this is illegal!");
+    fprintf(stderr,"PETSC ERROR: TrMalloc: malloc zero length, this is illegal!\n");
     return 0;
   }
   nsize = a;

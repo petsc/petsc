@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.84 1995/10/03 18:38:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.85 1995/10/06 22:24:30 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1193,7 +1193,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Aloc = (Mat_SeqAIJ*) a->B->data;
   m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
-  ct = cols = (int *) PETSCMALLOC( (ai[m]-shift)*sizeof(int) ); CHKPTRQ(cols);
+  ct = cols = (int *) PETSCMALLOC( (1+ai[m]-shift)*sizeof(int) ); CHKPTRQ(cols);
   for ( i=0; i<ai[m]+shift; i++ ) {cols[i] = a->garray[aj[i]+shift];}
   for ( i=0; i<m; i++ ) {
     ierr = MatSetValues(B,ai[i+1]-ai[i],cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
@@ -1244,7 +1244,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
        0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ};
 
-/*@
+/*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).
 
@@ -1313,6 +1313,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   a->insertmode = NOTSETVALUES;
   MPI_Comm_rank(comm,&a->mytid);
   MPI_Comm_size(comm,&a->numtids);
+
+  if (m == PETSC_DECIDE && (d_nnz || o_nnz)) 
+    SETERRQ(1,"MatCreateMPIAIJ:Cannot have PETSc decide rows but set d_nnz or o_nnz");
 
   if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
     work[0] = m; work[1] = n;

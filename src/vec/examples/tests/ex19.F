@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.8 1995/10/09 19:54:29 curfman Exp curfman $";
+C    "$Id: ex19.F,v 1.9 1995/10/10 01:08:18 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -16,7 +16,7 @@ C
        two   = 2.0
        three = 3.0
 
-       call PetscInitialize(ierr)
+       call PetscInitialize(ierr)                  
        call OptionsGetInt(' ','-n',n,ierr)
 
 C Create a vector, then duplicate it

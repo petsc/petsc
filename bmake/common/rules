@@ -95,7 +95,9 @@ examples_2: chkopts
 	@-if [ "$(EXAMPLES_2)" != "" ] ; then \
           (for ex in $(EXAMPLES_2) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          > trashz 2>&1; \
+          grep -v clog trashz | grep -v "information sections" | \
+          egrep -i '(Error|warning|Can)'  >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
@@ -159,7 +161,8 @@ clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
                $(EXAMPLES_3) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen
+               trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
+               output/*~
 
 # Builds and runs examples; then cleans directory.
 testexamples: testexamples_1

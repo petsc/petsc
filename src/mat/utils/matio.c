@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.12 1995/10/01 02:27:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.13 1995/10/06 22:25:04 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -18,7 +18,7 @@ extern int MatLoad_SeqRow(Viewer,MatType,Mat *);
 extern int MatLoad_MPIAIJorMPIRow(Viewer,MatType,Mat *);
 extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
 
-/* @
+/*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().
 
@@ -42,7 +42,7 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
    probably change.
 
 .seealso: MatView(), VecLoad() 
-*/  
+ @*/  
 int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
 {
   PetscObject vobj = (PetscObject) bview;

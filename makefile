@@ -76,7 +76,6 @@ alletags:
 etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS src/*/examples/*.F
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
@@ -100,6 +99,7 @@ etags:
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
+	etags -a -f TAGS src/*/examples/*.F
 	chmod g+w TAGS
 
 # Builds the etags file that excludes the examples directories

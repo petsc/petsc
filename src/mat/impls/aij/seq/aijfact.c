@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.39 1995/09/22 20:17:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.40 1995/09/30 19:28:44 bsmith Exp gropp $";
 #endif
 
 
@@ -107,11 +107,13 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+
   PETSCFREE(fill);
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJ(A->comm,n, n, 0, 0, B); CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol); 
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
   b = (Mat_SeqAIJ *) (*B)->data;
   PETSCFREE(b->imax);
   b->singlemalloc = 0;
@@ -133,8 +135,6 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PLogObjectMemory(*B,(ainew[n]+shift-n)*(sizeof(int)+sizeof(Scalar)));
   b->maxnz = b->nz = ainew[n] + shift;
 
-  /* Cannot do this here because child is destroyed before parent created
-     PLogObjectParent(*B,isicol); */
   return 0; 
 }
 /* ----------------------------------------------------------- */
@@ -144,8 +144,16 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
   IS         iscol = b->col, isrow = b->row, isicol;
   int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
-  int        *ajtmpold, *ajtmp, nz, row,*pj, *ics, shift = a->indexshift;
-  Scalar     *rtmp,*v, *pv, *pc, multiplier, *rtmps; 
+  int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
+  Scalar     *rtmp,*v, *pc; 
+  /* These declarations are for optimizations.  They reduce the number of
+     memory references that are made by locally storing information; the
+     word "register" used here with pointers can be viewed as "private" or 
+     "known only to me"
+   */
+  int             *diag_offset = b->diag;
+  register Scalar *pv, *rtmps, multiplier;
+  register int    *pj;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
@@ -169,13 +177,18 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     while (row < i) {
       pc = rtmp + row;
       if (*pc != 0.0) {
-        pv         = b->a + b->diag[row] + shift;
-        pj         = b->j + b->diag[row] + (!shift);
+        pv         = b->a + diag_offset[row] + shift;
+        pj         = b->j + diag_offset[row] + (!shift);
         multiplier = *pc * *pv++;
         *pc        = multiplier;
-        nz         = ai[row+1] - b->diag[row] - 1;
+        nz         = ai[row+1] - diag_offset[row] - 1;
         PLogFlops(2*nz);
-        while (nz-->0) rtmps[*pj++] -= multiplier* *pv++; 
+	/* The for-loop form can aid the compiler in overlapping 
+	   loads and stores */
+        /*while (nz-->0) rtmps[*pj++] -= multiplier* *pv++;  */
+	{int __i;
+	 for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
+	}
       }      
       row = *ajtmp++ + shift;
     }

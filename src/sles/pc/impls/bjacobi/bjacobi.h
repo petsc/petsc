@@ -10,6 +10,7 @@ typedef struct {
   SLES *sles;               /* SLES contexts for blocks */
   void *data;               /* implementation-specific data */
   int  same_local_solves;   /* flag indicating whether all local solvers are same */
+  int  *l_lens,*g_lens;     /* lens of each block */
 } PC_BJacobi;
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.1 1995/10/04 03:24:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.2 1995/10/06 22:24:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -61,6 +61,21 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     MatGetType(pc->mat,&type);
     if (type != MATMPIAIJ) SETERRQ(1,"PCSetUp_BJacobiMPIAIJ:Incompatible matrix type.");
     matin = (Mat_MPIAIJ *) mat->data;
+  }
+
+  /* user set local number of blocks but not global */
+  if (jac->n == -1 && jac->n_local >= 0) {
+    MPI_Allreduce(&jac->n_local,&jac->n,1,MPI_INT,MPI_SUM,pc->comm);
+  }
+  /* user set global, not local */
+  if (jac->n_local == -1 && jac->n > 0) {
+    if (jac->n == numtids) jac->n_local = 1;
+    else SETERRQ(1,"PCSetUp_BJacobiMPIAIJ:Must have exactly 1 block per processor\n"); 
+  }
+  /* user set nothing */
+  if (jac->n_local == -1 && jac->n == -1) {
+    jac->n       = numtids;
+    jac->n_local = 1;
   }
 
   if (numtids != jac->n) {

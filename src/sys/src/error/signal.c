@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.19 1995/09/21 20:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.20 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -70,7 +70,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
   PetscStrcat(buf,"-on_error_attach_debugger ");
   PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs");
-  ierr =  PetscError(0,0,"Unknown",buf,1);
+  ierr =  PetscError(0,0,"Unknown file and line number",1,buf);
   MPI_Abort(MPI_COMM_WORLD,ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.59 1995/09/30 19:31:53 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.60 1995/10/05 13:53:05 curfman Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -74,16 +74,16 @@ extern char* PetscStrrtok(char*,char*);
 #define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
 
 #if defined(PETSC_DEBUG)
-#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
-#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
+#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
                           MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
 #define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
 #define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #else
-#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
-#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
+#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
                           MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
@@ -110,11 +110,11 @@ extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 
-extern int PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
-extern int PetscAbortErrorHandler(int,char*,char*,char*,int,void* );
-extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,void*); 
-extern int PetscError(int,char*,char*,char*,int);
-extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),void*);
+extern int PetscDefaultErrorHandler(int,char*,char*,int,char*,void*);
+extern int PetscAbortErrorHandler(int,char*,char*,int,char*,void* );
+extern int PetscAttachDebuggerErrorHandler(int,char*,char*,int,char*,void*); 
+extern int PetscError(int,char*,char*,int,char*);
+extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),void*);
 extern int PetscPopErrorHandler();
 
 extern int PetscSetDebugger(char *,int,char *);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.67 1995/10/03 18:38:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.68 1995/10/06 22:24:41 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -361,6 +361,11 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
      insert all of the values.
   */
   if (mrow->mat_is_structurally_symmetric) return 0;
+
+  if (av == INSERT_VALUES) 
+    SETERRQ(1,"MatSetValues_MPIRowbs:Not currently possible to insert values\n\
+                 in a MPIRowbs matrix unless options SYMMETRIC_MATRIX or\n\
+                 STRUCTURALLY_SYMMETRIC_MATRIX have been used.");
 
   /* The following code adds zeros to the symmetric counterpart (ILU) */
   /* this is only needed to insure that the matrix is structurally symmetric */
@@ -1298,6 +1303,11 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   int          i, ierr, Mtemp, *offset, low, high;
   BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
+  *newmat = 0;
+
+  if (m == PETSC_DECIDE && nnz) 
+    SETERRQ(1,"MatCreateMPIRowbs:Cannot have PETSc decide rows but set nnz");
+
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROWBS,comm);
   PLogObjectCreate(mat);
   PLogObjectMemory(mat,sizeof(struct _Mat));

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.41 1995/09/11 18:45:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.42 1995/09/30 19:26:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -27,9 +27,9 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
    This is a ugly hack. But to do it right is kind of silly.
 */
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce((void *) &work,(void *) &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
   *z = sum;
   return 0;
@@ -39,7 +39,7 @@ static int VecAsum_MPI(  Vec xin, double *z )
 {
   double work;
   VecAsum_Seq( xin, &work );
-  MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   return 0;
 }
 
@@ -129,7 +129,7 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   MPI_Comm_size(comm,&numtids);
   MPI_Comm_rank(comm,&mytid); 
   if (N == PETSC_DECIDE) { 
-    MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_INT,MPI_SUM,comm );
+    MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
     N = sum;
   }
   if (n == PETSC_DECIDE) { 

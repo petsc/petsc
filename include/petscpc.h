@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.32 1995/08/26 18:44:55 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.33 1995/09/01 20:02:06 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module.
@@ -49,7 +49,8 @@ extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
 
-extern int PCBJacobiSetBlocks(PC, int);
+extern int PCBJacobiSetTotalBlocks(PC, int, int*);
+extern int PCBJacobiSetLocalBlocks(PC, int, int*);
 
 extern int PCBSIterSetBlockSolve(PC);
 extern int PCBSIterSetFromOptions(PC);

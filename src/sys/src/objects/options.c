@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.46 1995/10/06 22:23:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.47 1995/10/10 17:57:12 curfman Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.

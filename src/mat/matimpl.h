@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.28 1995/10/01 21:52:24 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.29 1995/10/06 22:24:20 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -38,7 +38,8 @@ struct _MatOps {
             (*copyprivate)(Mat,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,double,int),
-            (*incompletecholeskyfactor)(Mat,IS,double);
+            (*incompletecholeskyfactor)(Mat,IS,double),
+            (*axpy)(Scalar *,Mat,Mat);
 };
 
 #define FACTOR_LU       1

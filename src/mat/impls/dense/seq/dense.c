@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.61 1995/10/01 21:52:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.62 1995/10/10 16:14:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,6 +18,16 @@ typedef struct {
   int    m,n,pad;
   int    *pivots;   /* pivots in LU factorization */
 } Mat_SeqDense;
+
+int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
+{
+  Mat_SeqDense *x = (Mat_SeqDense*) X->data,*y = (Mat_SeqDense*) Y->data;
+  int          N = x->m*x->n, one = 1;
+  BLaxpy_( &N, alpha, x->v, &one, y->v, &one );
+  PLogFlops(2*N-1);
+  return 0;
+}
+
 
 static int MatGetInfo_SeqDense(Mat matin,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
@@ -661,7 +671,8 @@ static struct _MatOps MatOps = {MatInsert_SeqDense,
        MatGetSize_SeqDense,MatGetSize_SeqDense,MatGetOwnershipRange_SeqDense,
        0,0,MatGetArray_SeqDense,0,0,
        MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
-       MatCopyPrivate_SeqDense};
+       MatCopyPrivate_SeqDense,0,0,0,0,
+       MatAXPY_SeqDense};
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 

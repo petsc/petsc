@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.29 1995/09/06 03:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.30 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: err.c,v 1.29 1995/09/06 03:04:50 bsmith Exp bsmith $"
 
 struct EH {
   int    cookie;
-  int    (*handler)(int, char*,char *,char *,int,void *);
+  int    (*handler)(int, char*,char *,int,char*,void *);
   void   *ctx;
   struct EH* previous;
 };
@@ -55,8 +55,8 @@ $    PetscAbortErrorHandler()
 .seealso: PetscPuchErrorHandler(), PetscDefaultErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
-                           int number,void *ctx)
+int PetscAbortErrorHandler(int line,char* dir,char *file,int number,
+                           char *message,void *ctx)
 {
   abort(); return 0;
 }
@@ -90,8 +90,8 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
-                             int number,void *ctx)
+int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
+                             char *message,void *ctx)
 {
   static int out_of_memory = 0, no_support = 0;
   int tid;
@@ -148,7 +148,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
 
 .seealso: PetscPopErrorHandler()
 @*/
-int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
+int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),
                           void *ctx )
 {
   struct  EH *neweh = (struct EH*) PETSCMALLOC(sizeof(struct EH)); CHKPTRQ(neweh);
@@ -177,7 +177,7 @@ int PetscPopErrorHandler()
 
   return 0;
 }
-/*@
+/*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
 
@@ -196,14 +196,14 @@ $     SETERRQ(number,message)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-.keywords: error, SETERR
+.keywords: error, SETERRQ
 
 .seealso: PetscDefaultErrorHandler(), PetscPushErrorHandler()
 @*/
-int PetscError(int line,char *dir,char *file,char *message,int number)
+int PetscError(int line,char *dir,char *file,int number,char *message)
 {
-  if (!eh) return PetscDefaultErrorHandler(line,dir,file,message,number,0);
-  else  return (*eh->handler)(line,dir,file,message,number,eh->ctx);
+  if (!eh) return PetscDefaultErrorHandler(line,dir,file,number,message,0);
+  else  return (*eh->handler)(line,dir,file,number,message,eh->ctx);
 }
 
 /*

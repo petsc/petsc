@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.18 1995/09/30 19:31:53 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.19 1995/10/06 22:25:48 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -81,6 +81,7 @@
 #define SNES_HessianEval                        66
 
 #define MAT_GetSubMatrix                        70
+#define KSP_GMRESOrthogonalization              71
 
 /* event numbers 80 to 99 are reserved for applications */
 

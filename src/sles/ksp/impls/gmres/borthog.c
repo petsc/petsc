@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.5 1995/03/25 01:25:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.6 1995/04/26 18:22:06 bsmith Exp bsmith $";
 #endif
 
 #define RERROR  gmres_error
@@ -14,6 +14,7 @@ int GMRESBasicOrthog( KSP itP,int it )
   int    j;
   Scalar *hh, *hes, tmp;
 
+  PLogEventBegin(KSP_GMRESOrthogonalization,itP,0,0,0);
   /* update hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -24,6 +25,7 @@ int GMRESBasicOrthog( KSP itP,int it )
     /* vv(j) <- vv(j) - hh[j][it] vv(it) */
     tmp = - (*hh++);  VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );
   }
+  PLogEventEnd(KSP_GMRESOrthogonalization,itP,0,0,0);
   return 0;
 }
 
@@ -41,6 +43,7 @@ int GMRESUnmodifiedOrthog(KSP  itP,int it )
   int    j;
   Scalar *hh, *hes;
 
+  PLogEventBegin(KSP_GMRESOrthogonalization,itP,0,0,0);
   /* update hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -58,5 +61,6 @@ int GMRESUnmodifiedOrthog(KSP  itP,int it )
   for (j=0; j<=it; j++) hh[j] = -hes[j];
   VecMAXPY(it+1, hh, VEC_VV(it+1),&VEC_VV(0) );
   for (j=0; j<=it; j++) hh[j] = -hh[j];
+  PLogEventEnd(KSP_GMRESOrthogonalization,itP,0,0,0);
   return 0;
 }

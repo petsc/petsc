@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.19 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.20 1995/10/06 22:23:55 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -59,7 +59,7 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
       fprintf(stderr,
               "*** floating point error 0x%x occurred at pc=%X ***\n",
               code, SIGPC(scp));
-    ierr = PetscError(0,0,"Unknown","floating point error",1);
+    ierr = PetscError(0,0,"Unknown file",1,"floating point error");
     exit(ierr);
 }
 
@@ -125,7 +125,7 @@ void SYsample_handler( unsigned exception[],int val[] )
         fprintf(stderr,
             "*** floating point error 0x%x occurred ***\n",
             code);  
-    ierr = PetscError(0,0,"Unknown","floating point error",1);
+    ierr = PetscError(0,0,"Unknown file",1,"floating point error");
     MPI_Abort(MPI_COMM_WORLD,0);
 }
 int PetscSetFPTrap(int flag)
@@ -161,7 +161,7 @@ struct { int code_no; char *name; } error_codes[] = {
 void SYsample_handler(int sig)
 {
   int ierr;
-  ierr = PetscError(0,0,"Unknown","floating point error",1);
+  ierr = PetscError(0,0,"Unknown file",1,"floating point error");
 }
 int PetscSetFPTrap(int on)
 {
@@ -232,7 +232,7 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
       fprintf(stderr,
               "*** floating point error 0x%x occurred ***\n",
               flt_context.trap );
-    ierr = PetscError(0,0,"Unknown","floating point error",1);
+    ierr = PetscError(0,0,"Unknown file",1,"floating point error");
     exit(ierr);
 }
 
@@ -271,7 +271,7 @@ void SYsample_handler(int sig)
 {
   int ierr;
   fprintf(stderr, "*** floating point error occurred ***\n" );
-  ierr = PetscError(0,0,"Unknown","floating point error",1);
+  ierr = PetscError(0,0,"Unknown file",1,"floating point error");
   exit(ierr);
 }
 int PetscSetFPTrap(int on)

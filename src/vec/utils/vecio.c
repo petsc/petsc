@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.13 1995/09/21 20:07:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.14 1995/09/30 19:26:26 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: vecio.c,v 1.13 1995/09/21 20:07:58 bsmith Exp bsmith 
 #include "sysio.h"
 #include "pinclude/pviewer.h"
 
-/*@ 
+/*@C 
   VecLoad - Loads a vector that has been stored in binary format
   with VecView().
 

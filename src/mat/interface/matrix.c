@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.93 1995/10/07 20:47:53 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.94 1995/10/08 16:48:25 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1279,7 +1279,7 @@ int MatGetArray(Mat mat,Scalar **v)
   return (*mat->ops.getarray)(mat,v);
 }
 
-/*@
+/*@C
    MatGetSubMatrix - Extracts a submatrix from a matrix.
 
    Input Parameters:
