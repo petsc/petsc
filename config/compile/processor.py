@@ -10,12 +10,14 @@ class Processor(object):
           break
     else:
       self.name          = name
-    self.flagsName       = flagsName
+    if isinstance(flagsName, list):
+      self.flagsName     = flagsName
+    else:
+      self.flagsName = [flagsName]
     self.requiredFlags   = ['']
     self.outputFlag      = ''
     self.sourceExtension = sourceExtension
     self.targetExtension = targetExtension
-    self.child           = None
     return
 
   def pushRequiredFlags(self, flags):
@@ -26,24 +28,17 @@ class Processor(object):
     return
 
   def checkSetup(self):
-    '''Check that hits program has been specified. We assume that configure has checked its viability.'''
+    '''Check that this program has been specified. We assume that configure has checked its viability.'''
     if not hasattr(self, 'name'):
-      raise RuntimeError('No valid argument name set for '+self.language+' '+self.__class__.__name__.lower()+'. Please set with the option --with-'+self.name.lower()+' or -'+self.name+' and load the config.compilers module.')
+      raise RuntimeError('No valid argument name set for '+self.language+' '+self.__class__.__name__.lower())
     if not self.name in self.argDB:
       raise RuntimeError('Could not find a '+self.language+' '+self.__class__.__name__.lower()+'. Please set with the option --with-'+self.name.lower()+' or -'+self.name+' and load the config.compilers module.')
-    ##if not self.child is None:
-    ##  This causes problems
-    ##  self.child.checkSetup()
     return
 
   def getFlags(self):
     '''Returns a string with the flags specified for running this processor.'''
     if not hasattr(self, '_flags'):
-      if not isinstance(self.flagsName, list):
-        self.flagsName = [self.flagsName]
       flags = ' '.join([self.argDB[name] for name in self.flagsName])
-      if not self.child is None:
-        flags += ' '+self.child.flags
       return flags
     return self._flags
   def setFlags(self, flags):

@@ -14,7 +14,7 @@ class Compiler(config.compile.processor.Processor):
     config.compile.processor.Processor.__init__(self, argDB, 'FC', 'FFLAGS', '.F', '.o')
     self.requiredFlags[-1] = '-c'
     self.outputFlag        = '-o'
-    self.child             = Preprocessor(argDB)
+    self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
 class Linker(config.compile.processor.Processor):
@@ -24,7 +24,7 @@ class Linker(config.compile.processor.Processor):
     config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     if self.name == compiler.name:
-      self.child    = compiler
+      self.flagsName.extend(compiler.flagsName)
     return
 
   def getExtraArguments(self):
