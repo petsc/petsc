@@ -175,6 +175,9 @@ class UsingCompiler:
     self.extraLibraries = SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
 
+  def getDefines(self):
+    return self.defines
+
   def getClientLibrary(self, project, lang):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
     return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
@@ -238,9 +241,6 @@ class UsingC (UsingCompiler):
     '''The suffix for C files'''
     return ['.h', '.c']
 
-  def getDefines(self):
-    return self.defines
-
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
 
@@ -274,9 +274,6 @@ class UsingCxx (UsingCompiler):
   def getCompileSuffixes(self):
     '''The suffix for C++ files'''
     return ['.hh', '.cc']
-
-  def getDefines(self):
-    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagCxx(root = rootDir)
@@ -333,9 +330,6 @@ class UsingPython(UsingCompiler):
     '''The suffix for Python files'''
     return ['.py']
 
-  def getDefines(self):
-    return self.defines
-
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
 
@@ -375,9 +369,6 @@ class UsingF77 (UsingCompiler):
   def getCompileSuffixes(self):
     '''The suffix for Fortran 77 files'''
     return ['.f', '.f90']
-
-  def getDefines(self):
-    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
@@ -438,13 +429,13 @@ class UsingJava (UsingCompiler):
     '''The suffix for Java files'''
     return ['.java']
 
-  def getDefines(self):
-    return self.defines
-
   def getSIDLRuntimeLibraries(self):
     '''The SIDL runtime library for Java'''
     # Should be self.babelLibDir/sidl.jar
-    return bs.argDB['JAVA_RUNTIME_LIB']
+    runtimeLibs = bs.argDB['JAVA_RUNTIME_LIB']
+    if not isinstance(runtimeLibs, list):
+      runtimeLibs = [runtimeLibs]
+    return runtimeLibs
 
   def getClientLibrary(self, project, lang, isJNI = 0):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.jar'''
