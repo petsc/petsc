@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.5 1997/11/03 04:49:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.6 1998/03/20 22:52:39 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -512,7 +512,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 */
 /* ------------- Note currently these are commented out -----------------
 extern int SNESCreate_EQ_LS(SNES);
-int SNESRegisterAll()
+int SNESRegisterAll(void)
 {
   SNESRegisterAllCalled = 1;
 
@@ -521,7 +521,7 @@ int SNESRegisterAll()
 }
 
 extern int KSPCreate_GMRES(KSP);
-int KSPRegisterAll()
+int KSPRegisterAll(void)
 {
   KSPRegisterAllCalled = 1;
 
@@ -531,7 +531,7 @@ int KSPRegisterAll()
 
 extern int PCCreate_BJacobi(PC);
 extern int PCCreate_ILU(PC);
-int PCRegisterAll()
+int PCRegisterAll(void)
 {
   PCRegisterAllCalled = 1;
 
@@ -543,7 +543,7 @@ int PCRegisterAll()
 
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
 extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-int MatLoadRegisterAll()
+int MatLoadRegisterAll(void)
 {
   int ierr;
 
@@ -552,13 +552,13 @@ int MatLoadRegisterAll()
   return 0;
 }  
 
-int MatConvertRegisterAll()
+int MatConvertRegisterAll(void)
 {
   return 0;
 }
 
 extern int MatOrder_Natural(Mat,MatReorderingType,IS*,IS*);
-int MatReorderingRegisterAll()
+int MatReorderingRegisterAll(void)
 {
   int           ierr;
 

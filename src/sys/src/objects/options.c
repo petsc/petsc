@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.171 1998/03/24 16:59:26 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.172 1998/03/24 20:39:04 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -283,7 +283,7 @@ int PetscCompareInitialize(double tol)
 /* ------------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PetscInitializeOptions"
-int PetscInitializeOptions()
+int PetscInitializeOptions(void)
 {
   PetscFunctionBegin;
   options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
@@ -702,7 +702,7 @@ extern int PetscSetUseTrMalloc_Private(int);
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsCheckInitial_Private"
-int OptionsCheckInitial_Private()
+int OptionsCheckInitial_Private(void)
 {
   char     string[64],mname[256];
   MPI_Comm comm = PETSC_COMM_WORLD;
@@ -1207,7 +1207,7 @@ int OptionsPrint(FILE *fd)
 
 .seealso: OptionsCreate_Private()
 */
-static int OptionsDestroy_Private()
+static int OptionsDestroy_Private(void)
 {
   int i;
 

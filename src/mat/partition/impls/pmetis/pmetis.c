@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.4 1997/12/01 01:55:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.5 1998/01/14 02:42:04 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -177,7 +177,7 @@ int PartitioningCreate_Parmetis(Partitioning part)
 */
 #undef __FUNC__  
 #define __FUNC__ "PartitioningApply_Parmetis" 
-int PartitioningApply_Parmetis()
+int PartitioningApply_Parmetis(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

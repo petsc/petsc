@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.25 1997/09/03 15:36:04 gropp Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.26 1997/10/19 03:27:52 bsmith Exp balay $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -158,7 +158,7 @@ int XiMatchFontSize( XiFont *font, int w, int h )
   PetscFunctionReturn(0);
 }
 #else
-int dummy_text()
+int dummy_text(void)
 {
   PetscFunctionReturn(0);
 }

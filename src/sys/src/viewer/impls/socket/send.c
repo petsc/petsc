@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.65 1998/03/06 20:35:02 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.66 1998/03/12 23:22:21 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -226,7 +226,7 @@ Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeMatlabWorld_Private"
-int ViewerInitializeMatlabWorld_Private()
+int ViewerInitializeMatlabWorld_Private(void)
 {
   int  ierr,port = 5005,flag;
   char machine[128];
@@ -244,7 +244,7 @@ int ViewerInitializeMatlabWorld_Private()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroyMatlab_Private"
-int ViewerDestroyMatlab_Private()
+int ViewerDestroyMatlab_Private(void)
 {
   int ierr;
 
@@ -259,7 +259,7 @@ int ViewerDestroyMatlab_Private()
 #include "viewer.h"
 Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
-int ViewerInitializeMatlabWorld_Private()
+int ViewerInitializeMatlabWorld_Private(void)
 { 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -270,7 +270,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-int ViewerDestroyMatlab_Private()
+int ViewerDestroyMatlab_Private(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

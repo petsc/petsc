@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.37 1998/01/06 20:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.38 1998/03/12 23:21:00 bsmith Exp balay $";
 #endif
 
 
@@ -495,7 +495,7 @@ int XiGetNumcolors( Draw_X *XiWin )
   PetscFunctionReturn(XiWin->numcolors);
 }
 #else
-int dummy_xcolor()
+int dummy_xcolor(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.12 1998/03/12 23:16:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.13 1998/03/20 22:47:23 bsmith Exp balay $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -44,7 +44,7 @@ DLLibraryList DLLibrariesLoaded = 0;
       PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
             search path.
 */ 
-int PetscInitialize_DynamicLibraries()
+int PetscInitialize_DynamicLibraries(void)
 {
   char *libname[32],libs[256];
   int  nmax,i,ierr,flg;
@@ -92,7 +92,7 @@ int PetscInitialize_DynamicLibraries()
 /*
       PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries
 */ 
-int PetscFinalize_DynamicLibraries()
+int PetscFinalize_DynamicLibraries(void)
 {
   int ierr;
 
@@ -105,7 +105,7 @@ int PetscFinalize_DynamicLibraries()
 
 #undef __FUNC__  
 #define __FUNC__ "PetscInitalize_DynamicLibraries"
-int PetscInitialize_DynamicLibraries()
+int PetscInitialize_DynamicLibraries(void)
 {
   PetscFunctionBegin;
 
@@ -113,7 +113,7 @@ int PetscInitialize_DynamicLibraries()
 }
 #undef __FUNC__  
 #define __FUNC__ "PetscFinalize_DynamicLibraries"
-int PetscFinalize_DynamicLibraries()
+int PetscFinalize_DynamicLibraries(void)
 {
   PetscFunctionBegin;
 
@@ -268,7 +268,7 @@ int DLRegisterDestroy(DLList fl )
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegisterDestroyAll"
-int DLRegisterDestroyAll()
+int DLRegisterDestroyAll(void)
 {
   DLList tmp2,tmp1 = dlallhead;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.69 1997/10/19 03:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.70 1997/11/28 16:20:34 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -297,7 +297,7 @@ int Elastic20Stiff(double **Ke)
 /* 
   paulsetup20 - Sets up data structure for forming local elastic stiffness.
  */
-int paulsetup20()
+int paulsetup20(void)
 {
   int     i, j, k, cnt;
   double  x[4],w[4];

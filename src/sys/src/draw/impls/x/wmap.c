@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.18 1997/10/12 23:25:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.19 1997/10/19 03:27:52 bsmith Exp balay $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -52,7 +52,7 @@ int Xi_wait_map( Draw_X *XiWin)
   PetscFunctionReturn(0);
 }
 #else
-int dummy_wmap()
+int dummy_wmap(void)
 {
   PetscFunctionReturn(0);
 }

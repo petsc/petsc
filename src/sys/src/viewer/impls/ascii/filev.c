@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.67 1997/12/01 01:56:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.68 1998/03/12 23:22:24 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -22,7 +22,7 @@ Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDER
 */
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitialize_Private"
-int ViewerInitialize_Private()
+int ViewerInitialize_Private(void)
 {
   PetscFunctionBegin;
   ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
@@ -38,7 +38,7 @@ int ViewerInitialize_Private()
 */
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Private"
-int ViewerDestroy_Private()
+int ViewerDestroy_Private(void)
 {
   PetscFunctionBegin;
   ViewerDestroy(VIEWER_STDERR_SELF);

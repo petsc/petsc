@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.105 1998/03/20 22:51:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.106 1998/03/23 21:23:20 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -843,7 +843,7 @@ Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawXSelf_Private" 
-int ViewerInitializeDrawXSelf_Private()
+int ViewerInitializeDrawXSelf_Private(void)
 {
   int ierr,xywh[4],size = 4,flg;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.26 1997/10/28 14:22:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.27 1997/12/01 01:54:40 bsmith Exp balay $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -226,7 +226,7 @@ int PCBSIterSetFromOptions(PC pc)
 #else
 #undef __FUNC__  
 #define __FUNC__ "MatNull_MPIRowbs"
-int MatNull_MPIRowbs()
+int MatNull_MPIRowbs(void)
 {
   PetscFunctionBegin;  
   PetscFunctionReturn(0);

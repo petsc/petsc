@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.44 1997/12/12 19:37:06 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.45 1998/03/16 21:57:30 balay Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -399,7 +399,7 @@ int PetscSetFPTrap(int on)
 #if defined(PARCH_paragon)
 #undef __FUNC__  
 #define __FUNC__ "PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows()
+int PetscSetBenignUnderflows(void)
 {
 
   PetscFunctionBegin;
@@ -420,7 +420,7 @@ int PetscSetBenignUnderflows()
 #elif defined(PARCH_rs6000)
 #undef __FUNC__  
 #define __FUNC__ "PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows()
+int PetscSetBenignUnderflows(void)
 {
   PetscFunctionBegin;
   /* abrupt_underflow seems to have disappeared! */
@@ -430,7 +430,7 @@ int PetscSetBenignUnderflows()
 #else
 #undef __FUNC__  
 #define __FUNC__ "PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows()
+int PetscSetBenignUnderflows(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

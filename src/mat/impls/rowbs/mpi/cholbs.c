@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.46 1997/07/09 20:54:23 balay Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.47 1997/10/19 03:25:37 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -224,7 +224,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #else
 #undef __FUNC__  
 #define __FUNC__ "MatNullMPIRowbs"
-int MatNullMPIRowbs()
+int MatNullMPIRowbs(void)
 {
   PetscFunctionBegin;  
   PetscFunctionReturn(0);

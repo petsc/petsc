@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.28 1998/03/23 21:26:31 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.29 1998/03/24 00:04:07 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -308,7 +308,7 @@ $      with USE_PETSC_LOG)
 .seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogEventActivate(),
           PLogEventDeactivate()
 @*/
-int PLogMPEBegin()
+int PLogMPEBegin(void)
 {
   int i, rank;
     

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.18 1997/12/04 19:37:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.19 1998/03/16 18:56:24 bsmith Exp balay $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -132,7 +132,7 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
   PetscFunctionReturn(0);
 }
 #else
-int dummy_tone()
+int dummy_tone(void)
 {
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: mmregis.c,v 1.3 1997/10/11 18:39:18 curfman Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -17,7 +17,7 @@ extern int MMCreate_Hybrid_EF1(MM);
   Notes: 
   Currently the default method MMEULER must be registered.
 */
-int MMRegisterAll()
+int MMRegisterAll(void)
 {
   MMRegisterAllCalled = 1;
 
