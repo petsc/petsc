@@ -91,6 +91,7 @@ ICASE/NASA paragon: Back in action at Va-Tech :(
      machine:  sioux.cc.vt.edu
      account:  mcinnes
      password: petsc-passwd
+     info:     http://paradox.cc.vt.edu/ and http://pawne.cc.vt.edu/
      
       - must do "unsetenv TERM" so that make does'nt crash
       - must use make -e PETSC_DIR=<whatever> (which always crashes)
