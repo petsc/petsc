@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.51 1996/07/22 17:32:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.52 1996/08/08 14:42:12 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -379,10 +379,13 @@ static int PCSetUp_MG(PC pc)
   mg[0]->b = pc->vec;
   if (mg[0]->csles) {
     ierr = SLESSetOperators(mg[0]->csles,pc->mat,pc->pmat,pc->flag);
+           CHKERRQ(ierr);
   } else if (mg[0]->smoothd) {
     ierr = SLESSetOperators(mg[0]->smoothd,pc->mat,pc->pmat,pc->flag);
+           CHKERRQ(ierr);
   } else {
     ierr = SLESSetOperators(mg[0]->smoothu,pc->mat,pc->pmat,pc->flag); 
+           CHKERRQ(ierr);
   }
 
   for ( i=0; i<n; i++ ) {
