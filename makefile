@@ -20,11 +20,19 @@ all: chkpetsc_dir
            ACTION=libfast  tree 
 	$(RANLIB) $(PDIR)/*.a
 
+#
+#  libfast cannot run on .F files on certain machines thus we
+# use lib and check for errors here.
+#
 fortran: chkpetsc_dir
 	-@cd src/fortran/custom; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
+          grep -v clog trashz | grep -v "information sections" | \
+          egrep -i '(Error|warning|Can)' >> /dev/null;\
+          if [ "$$?" != 1 ]; then \
+          cat trashz ; fi; $(RM) trashz
 	-@cd src/fortran/auto; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib   
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
     
 ranlib:
