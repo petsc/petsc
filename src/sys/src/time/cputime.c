@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.20 1998/04/20 15:43:23 balay Exp curfman $";
+static char vcid[] = "$Id: cputime.c,v 1.21 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 /*
@@ -8,6 +8,38 @@ static char vcid[] = "$Id: cputime.c,v 1.20 1998/04/20 15:43:23 balay Exp curfma
 */
 
 #include "petsc.h"                     /*I "petsc.h" I*/
+#include "sys.h"
+#include "pinclude/ptime.h"
+#if defined(HAVE_PWD_H)
+#include <pwd.h>
+#endif
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if !defined(PARCH_nt)
+#include <sys/param.h>
+#include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
+#include <windows.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#if defined (PARCH_nt_gnu)
+#include <windows.h>
+#endif
+#include <fcntl.h>
+#include <time.h>  
+#if defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#endif
+#include "pinclude/petscfix.h"
 
 #undef __FUNC__
 #define __FUNC__ "PetscGetCPUTime"
@@ -26,9 +58,8 @@ int PetscGetCPUTime(PLogDouble *t)
   PetscFunctionReturn(0);
 }
 
-#elif defined(PARCH_hpux)  
+#elif defined(HAVE_CLOCK)
 
-#include "src/sys/src/files.h"
 #include <time.h>
 #include <sys/types.h>
 
@@ -39,20 +70,8 @@ int PetscGetCPUTime(PLogDouble *t)
   PetscFunctionReturn(0);
 }  
 
-#elif defined(PARCH_t3d) || defined (PARCH_nt)  
-
-#include "src/sys/src/files.h"
-#include <sys/types.h>
-int PetscGetCPUTime(PLogDouble *t)
-{
-  PetscFunctionBegin;
-  *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
-  PetscFunctionReturn(0);
-}  
-
 #else
 
-#include "src/sys/src/files.h"
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
