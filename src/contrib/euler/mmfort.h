@@ -1,11 +1,11 @@
-C
-C  Include file for Fortran use of the MM (multi-model) package
-C
+!
+!  Include file for Fortran use of the MM (multi-model) package
+!
 #define MM           integer
 #define MMType       integer
-C
-C  Various multimodels
-C
+!
+!  Various multimodels
+!
       integer MMEULER, MMFP, MMHYBRID_EF1, MMHYBRID_E, 
      *        MMHYBRID_F, MMNEW 
 

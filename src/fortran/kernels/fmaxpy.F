@@ -1,10 +1,9 @@
-
-C
-C  "$Id: somefort.F,v 1.13 1997/05/02 19:34:46 bsmith Exp $";
-C
-C    Fortran kernel for the MAXPY() vector routine
-C
-C
+!
+!  "$Id: fmaxpy.F,v 1.2 1997/09/17 23:13:43 bsmith Exp balay $";
+!
+!    Fortran kernel for the MAXPY() vector routine
+!
+!
       subroutine FortranMAXPY4(x, a1, a2, a3, a4, y1, y2, y3, y4, n)
       implicit none
 #include "include/FINCLUDE/petsc.h"

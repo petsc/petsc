@@ -1,10 +1,9 @@
-
-C
-C  "$Id: fmult.F,v 1.3 1997/10/20 02:37:47 curfman Exp bsmith $";
-C
-C    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
-C
-C
+!
+!  "$Id: fmult.F,v 1.4 1997/12/07 04:35:22 bsmith Exp balay $";
+!
+!    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
+!
+!
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
       implicit none
 #include "include/FINCLUDE/petsc.h"

@@ -1,8 +1,8 @@
-C
-C  "$Id: snesdnest.F,v 1.4 1997/07/05 17:18:05 curfman Exp curfman $";
-C
-C  Noise estimation routine, written by Jorge More'.  Details are below.
-C
+!
+!  "$Id: snesdnest.F,v 1.5 1997/07/21 13:25:18 curfman Exp balay $";
+!
+!  Noise estimation routine, written by Jorge More'.  Details are below.
+!
 
       subroutine dnest(nf,fval,h,fnoise,fder2,hopt,info,eps)
       implicit none
@@ -10,84 +10,84 @@ C
       integer nf, info
       double precision h, fnoise, fder2, hopt
       double precision fval(nf), eps(nf)
-c     **********
-c
-c     Subroutine dnest
-c
-c     This subroutine estimates the noise in a function
-c     and provides estimates of the optimal difference parameter
-c     for a forward-difference approximation.
-c
-c     The user must provide a difference parameter h, and the
-c     function value at nf points centered around the current point.
-c     For example, if nf = 7, the user must provide
-c
-c        f(x-2*h), f(x-h), f(x), f(x+h),  f(x+2*h),
-c
-c     in the array fval. The use of nf = 7 function evaluations is 
-c     recommended.
-c
-c     The noise in the function is roughly defined as the variance in
-c     the computed value of the function. The noise in the function
-c     provides valuable information. For example, function values
-c     smaller than the noise should be considered to be zero.
-c
-c     This subroutine requires an initial estimate for h. Under estimates
-c     are usually preferred. If noise is not detected, the user should
-c     increase or decrease h according to the ouput value of info.
-c     In most cases, the subroutine detects noise with the initial
-c     value of h.
-c
-c     The subroutine statement is
-c
-c       subroutine dnest(nf,fval,h,hopt,fnoise,info,eps)
-c
-c     where
-c
-c       nf is an integer variable.
-c         On entry nf is the number of function values.
-c         On exit nf is unchanged.
-c
-c       f is a double precision array of dimension nf.
-c         On entry f contains the function values.
-c         On exit f is overwritten.
-c
-c       h is a double precision variable.
-c         On entry h is an estimate of the optimal difference parameter.
-c         On exit h is unchanged.
-c
-c       fnoise is a double precision variable.
-c         On entry fnoise need not be specified.
-c         On exit fnoise is set to an estimate of the function noise
-c            if noise is detected; otherwise fnoise is set to zero.
-c
-c       hopt is a double precision variable.
-c         On entry hopt need not be specified.
-c         On exit hopt is set to an estimate of the optimal difference
-c            parameter if noise is detected; otherwise hopt is set to zero.
-c
-c       info is an integer variable.
-c         On entry info need not be specified.
-c         On exit info is set as follows:
-c
-c            info = 1  Noise has been detected.
-c
-c            info = 2  Noise has not been detected; h is too small.
-c                      Try 100*h for the next value of h.
-c
-c            info = 3  Noise has not been detected; h is too large.
-c                      Try h/100 for the next value of h.
-c
-c            info = 4  Noise has been detected but the estimate of hopt
-c                      is not reliable; h is too small.
-c
-c       eps is a double precision work array of dimension nf.
-c
-c     MINPACK-2 Project. April 1997.
-c     Argonne National Laboratory.
-c     Jorge J. More'.
-c
-c     **********
+!     **********
+!
+!     Subroutine dnest
+!
+!     This subroutine estimates the noise in a function
+!     and provides estimates of the optimal difference parameter
+!     for a forward-difference approximation.
+!
+!     The user must provide a difference parameter h, and the
+!     function value at nf points centered around the current point.
+!     For example, if nf = 7, the user must provide
+!
+!        f(x-2*h), f(x-h), f(x), f(x+h),  f(x+2*h),
+!
+!     in the array fval. The use of nf = 7 function evaluations is 
+!     recommended.
+!
+!     The noise in the function is roughly defined as the variance in
+!     the computed value of the function. The noise in the function
+!     provides valuable information. For example, function values
+!     smaller than the noise should be considered to be zero.
+!
+!     This subroutine requires an initial estimate for h. Under estimates
+!     are usually preferred. If noise is not detected, the user should
+!     increase or decrease h according to the ouput value of info.
+!     In most cases, the subroutine detects noise with the initial
+!     value of h.
+!
+!     The subroutine statement is
+!
+!       subroutine dnest(nf,fval,h,hopt,fnoise,info,eps)
+!
+!     where
+!
+!       nf is an integer variable.
+!         On entry nf is the number of function values.
+!         On exit nf is unchanged.
+!
+!       f is a double precision array of dimension nf.
+!         On entry f contains the function values.
+!         On exit f is overwritten.
+!
+!       h is a double precision variable.
+!         On entry h is an estimate of the optimal difference parameter.
+!         On exit h is unchanged.
+!
+!       fnoise is a double precision variable.
+!         On entry fnoise need not be specified.
+!         On exit fnoise is set to an estimate of the function noise
+!            if noise is detected; otherwise fnoise is set to zero.
+!
+!       hopt is a double precision variable.
+!         On entry hopt need not be specified.
+!         On exit hopt is set to an estimate of the optimal difference
+!            parameter if noise is detected; otherwise hopt is set to zero.
+!
+!       info is an integer variable.
+!         On entry info need not be specified.
+!         On exit info is set as follows:
+!
+!            info = 1  Noise has been detected.
+!
+!            info = 2  Noise has not been detected; h is too small.
+!                      Try 100*h for the next value of h.
+!
+!            info = 3  Noise has not been detected; h is too large.
+!                      Try h/100 for the next value of h.
+!
+!            info = 4  Noise has been detected but the estimate of hopt
+!                      is not reliable; h is too small.
+!
+!       eps is a double precision work array of dimension nf.
+!
+!     MINPACK-2 Project. April 1997.
+!     Argonne National Laboratory.
+!     Jorge J. More'.
+!
+!     **********
       double precision zero
       parameter(zero=0.0d0)
 
@@ -105,8 +105,8 @@ c     **********
       fder2 = zero
       hopt = zero
 
-c     Compute an estimate of the second derivative and
-c     determine a bound on the error.
+!     Compute an estimate of the second derivative and
+!     determine a bound on the error.
 
       mh = (nf+1)/2
       est1 = ((fval(mh+1)-2*fval(mh)+fval(mh-1))/h)/h
@@ -124,7 +124,7 @@ c     determine a bound on the error.
          fder2 = zero
       end if         
 
-c     Compute the range of function values.
+!     Compute the range of function values.
 
       fmin = fval(1)
       fmax = fval(1)
@@ -133,7 +133,7 @@ c     Compute the range of function values.
          fmax = max(fmax,fval(i))
       end do
 
-c     Construct the difference table.
+!     Construct the difference table.
 
       dnoise = .false.
       do j = 1, 6
@@ -146,7 +146,7 @@ c     Construct the difference table.
             scale = max(scale,abs(fval(i)))
          end do
 
-c        Compute the estimates for the noise level.
+!        Compute the estimates for the noise level.
 
          if (scale .eq. zero) then
             stdv = zero
@@ -159,7 +159,7 @@ c        Compute the estimates for the noise level.
          end if
          eps(j) = const(j)*stdv
 
-c        Determine differences in sign.
+!        Determine differences in sign.
 
          do i = 1, nf - j - 1
             if (min(fval(i),fval(i+1)) .lt. zero .and.
@@ -167,11 +167,11 @@ c        Determine differences in sign.
          end do
       end do
 
-c     First requirement for detection of noise.
+!     First requirement for detection of noise.
 
       dnoise = dsgn(4)
 
-c     Check for h too small or too large.
+!     Check for h too small or too large.
 
       info = 0
       if (fmax .eq. fmin) then
@@ -182,7 +182,7 @@ c     Check for h too small or too large.
 
       if (info .ne. 0) return
 
-c     Determine the noise level.
+!     Determine the noise level.
 
       emin = min(eps(4),eps(5),eps(6))
       emax = max(eps(4),eps(5),eps(6))
@@ -212,7 +212,7 @@ c     Determine the noise level.
          return
       end if
 
-c     Noise not detected; decide if h is too small or too large.
+!     Noise not detected; decide if h is too small or too large.
 
       if (.not. cancel(4)) then
          if (dsgn(4)) then
@@ -231,16 +231,16 @@ c     Noise not detected; decide if h is too small or too large.
          return
       end if
 
-c     If there is cancelllation on the third and fourth column
-c     then h is too small
+!     If there is cancelllation on the third and fourth column
+!     then h is too small
 
       info = 2
 
-c      if (cancel .or. dsgn(3)) then
-c         info = 2
-c      else
-c         info = 3
-c      end if
+!      if (cancel .or. dsgn(3)) then
+!         info = 2
+!      else
+!         info = 3
+!      end if
 
 
 

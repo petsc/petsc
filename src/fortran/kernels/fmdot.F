@@ -1,10 +1,9 @@
-
-C
-C  "$Id: fmdot.F,v 1.2 1997/09/17 23:13:43 bsmith Exp bsmith $";
-C
-C    Fortran kernel for the MDot() vector routine
-C
-C
+!
+!  "$Id: fmdot.F,v 1.3 1997/09/18 01:49:36 bsmith Exp balay $";
+!
+!    Fortran kernel for the MDot() vector routine
+!
+!
       subroutine FortranMDot4(x, y1, y2, y3, y4, n,sum1,sum2,sum3,sum4)
       implicit none
 #include "include/FINCLUDE/petsc.h"

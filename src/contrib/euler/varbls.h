@@ -1,25 +1,25 @@
-c
-c  Local arrays, including ghost points, for the current
-c  iterate, corresponding to the X vector in PETSc code.
-c  Space is allocated in UserCreateEuler().
-c
-c  Note: The original code stored each component variable in
-c  a separate array in the common block /varbls/  ... In the
-c  current code, we reorder the variables and store them in
-c  the array xx (which corresponds exactly to the local array
-c  for the PETSc vector X).  This provides better cache locality
-c  and alleviates the need for translation back and forth between
-c  formats.
-c
-c  Uniprocessor array sizes:
-c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
-c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
-c
-c      double precision  r(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision ru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision rv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision rw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c /*   double precision  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
+!
+!  Local arrays, including ghost points, for the current
+!  iterate, corresponding to the X vector in PETSc code.
+!  Space is allocated in UserCreateEuler().
+!
+!  Note: The original code stored each component variable in
+!  a separate array in the common block /varbls/  ... In the
+!  current code, we reorder the variables and store them in
+!  the array xx (which corresponds exactly to the local array
+!  for the PETSc vector X).  This provides better cache locality
+!  and alleviates the need for translation back and forth between
+!  formats.
+!
+!  Uniprocessor array sizes:
+!      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
+!      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
+!
+!      double precision  r(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision ru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision rv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision rw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+! /*   double precision  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
       double precision  p(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
 #define R(i,j,k) xx(1,i,j,k)
@@ -37,16 +37,16 @@ c /*   double precision  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
         double precision 
      &    xx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
-c ---------------------------------------------------------------
-c
-c  Local arrays, including ghost points, for the full potential
-c  unknowns, corresponding to the X vector in PETSc code.
-c  Space is allocated in UserCreateEuler().
-c
-c       double precision fp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c
-c  Uniprocessor array sizes:
-c      double precision FP(NI1,NJ1,NK1),RH(NI1,NJ1,NK1)
+! ---------------------------------------------------------------
+!
+!  Local arrays, including ghost points, for the full potential
+!  unknowns, corresponding to the X vector in PETSc code.
+!  Space is allocated in UserCreateEuler().
+!
+!       double precision fp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!
+!  Uniprocessor array sizes:
+!      double precision FP(NI1,NJ1,NK1),RH(NI1,NJ1,NK1)
 
 #define FP(i,j,k) xx(ndof,i,j,k)
 

@@ -1,9 +1,7 @@
-
-
-C
-C  "$Id: somefort.F,v 1.12 1997/01/15 23:17:41 bsmith Exp bsmith $";
-C
-C  Utility routine used to set some values into a Fortran common block
+!
+!  "$Id: somefort.F,v 1.13 1997/05/02 19:34:46 bsmith Exp balay $";
+!
+!  Utility routine used to set some values into a Fortran common block
 
       subroutine PetscSetCommonBlock(s1,s2,s3,s4,s5)
       implicit none
@@ -24,26 +22,26 @@ C  Utility routine used to set some values into a Fortran common block
       end
 
 #if defined(HAVE_NAGF90)
-C
-C  These functions are needed if you are using 
-C  MPICH, have not compiled MPICH for the NAG 
-C  Fortran 90 compiler, but are compiling PETSc
-C  with the NAG Fortran 90 compiler. 
-C 
+!
+!  These functions are needed if you are using 
+!  MPICH, have not compiled MPICH for the NAG 
+!  Fortran 90 compiler, but are compiling PETSc
+!  with the NAG Fortran 90 compiler. 
+! 
       integer function mpir_iargc()
       use f90_unix
       implicit none
-C
+!
 
 
       mpir_iargc = iargc()
       return
       end
-c     
+!     
       subroutine mpir_getarg( i, s )
       use f90_unix
       implicit none
-C
+!
 
 
       integer       i

@@ -1,10 +1,9 @@
-
-C
-C  "$Id: fnorm.F,v 1.2 1997/09/17 23:13:43 bsmith Exp bsmith $";
-C
-C    Fortran kernel for the Norm() vector routine
-C
-C
+!
+!  "$Id: fnorm.F,v 1.3 1997/09/18 01:50:16 bsmith Exp balay $";
+!
+!    Fortran kernel for the Norm() vector routine
+!
+!
       subroutine FortranNormSqr(x, n,sum1)
       implicit none
 #include "include/FINCLUDE/petsc.h"

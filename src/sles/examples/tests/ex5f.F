@@ -1,6 +1,6 @@
-
-C      "$Id: ex5f.F,v 1.3 1997/07/10 20:21:42 balay Exp bsmith $";
-
+!
+!      "$Id: ex5f.F,v 1.4 1998/03/24 16:40:53 bsmith Exp balay $";
+!
        implicit none
 
 #include "include/FINCLUDE/petsc.h"
@@ -9,9 +9,9 @@ C      "$Id: ex5f.F,v 1.3 1997/07/10 20:21:42 balay Exp bsmith $";
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/viewer.h"
-C
-C      Solves a linear system matrix free
-C
+!
+!      Solves a linear system matrix free
+!
 
       Mat        A
       Vec        x,y
@@ -46,8 +46,8 @@ C
       end
 
 
-C  This is a bogus multiply that copies the vector. This corresponds to 
-C  an identity matrix A
+!  This is a bogus multiply that copies the vector. This corresponds to 
+!  an identity matrix A
  
       subroutine mymatmult(A,x,y,ierr)
      

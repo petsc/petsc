@@ -1,9 +1,9 @@
-C
-C  "$Id: fsolve.F,v 1.5 1997/12/07 04:04:29 bsmith Exp bsmith $";
-C
-C    Fortran kernel for sparse triangular solve in the AIJ matrix format
-C
-C
+!
+!  "$Id: fsolve.F,v 1.6 1997/12/07 16:10:32 bsmith Exp balay $";
+!
+!    Fortran kernel for sparse triangular solve in the AIJ matrix format
+!
+!
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
 #include "include/FINCLUDE/petsc.h"
@@ -13,9 +13,9 @@ C
 
       integer          i,j,jstart,jend
       Scalar           sum
-C     
-C     Forward Solve
-C
+!     
+!     Forward Solve
+!
       x(0) = b(0)
       do 20 i=1,n-1
          jstart = ai(i)
@@ -27,9 +27,9 @@ C
          x(i) = sum
  20   continue
       
-C
-C     Backward solve the upper triangular
-C
+!
+!     Backward solve the upper triangular
+!
       do 40 i=n-1,0,-1
          jstart  = adiag(i) + 1
          jend    = ai(i+1) - 1

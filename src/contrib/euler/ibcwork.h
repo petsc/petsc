@@ -1,6 +1,6 @@
-c
-c  Local function components due to boundary conditions
-c  
+!
+!  Local function components due to boundary conditions
+!  
       double precision 
      & fff(ndof,xsf1:xefp1,ysf1:yefp1,zsf1:zefp1)
 

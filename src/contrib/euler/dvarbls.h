@@ -1,17 +1,17 @@
-c
-c  Parallel array sizes, including ghost points, for the
-c  residual, corresponding to the F vector in PETSc code.
-c  Space is allocated in UserCreateEuler().
-c
-c      double precision  dr(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision dru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision drv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision drw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      double precision  de(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c
-c  Uniprocessor array sizes:
-c      COMMON /DVRBLS/ DR(NI1,NJ1,NK1),DRU(NI1,NJ1,NK1),DRV(NI1,NJ1,NK1)
-c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
+!
+!  Parallel array sizes, including ghost points, for the
+!  residual, corresponding to the F vector in PETSc code.
+!  Space is allocated in UserCreateEuler().
+!
+!      double precision  dr(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision dru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision drv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision drw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!      double precision  de(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+!
+!  Uniprocessor array sizes:
+!      COMMON /DVRBLS/ DR(NI1,NJ1,NK1),DRU(NI1,NJ1,NK1),DRV(NI1,NJ1,NK1)
+!      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
 
 #define DR(i,j,k) dxx(1,i,j,k)
 #define DRU(i,j,k) dxx(2,i,j,k)
@@ -28,14 +28,14 @@ c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
         double precision
      &   dxx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
-c ---------------------------------------------------------------
-c
-c  Parallel array sizes, including ghost points, for the full
-c  potential component of the residual, corresponding to the F
-c  vector in PETSc code.  Space is allocated in UserCreateEuler().
-c  This space is used for the multi-model variant of code.
-c
-c      double precision dfp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+! ---------------------------------------------------------------
+!
+!  Parallel array sizes, including ghost points, for the full
+!  potential component of the residual, corresponding to the F
+!  vector in PETSc code.  Space is allocated in UserCreateEuler().
+!  This space is used for the multi-model variant of code.
+!
+!      double precision dfp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
 #define DFP(i,j,k) dxx(ndof,i,j,k)
 
