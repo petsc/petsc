@@ -14,7 +14,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "InterpolatingFunctionsElement"
-static PetscErrorCode InterpolatingFunctionsElement(int partial,int node,double xi,double eta, double *value)
+static PetscErrorCode InterpolatingFunctionsElement(PetscInt partial,PetscInt node,PetscReal xi,PetscReal eta, PetscReal *value)
 {
   /* 4 node bilinear interpolation functions */
   PetscFunctionBegin;
@@ -52,13 +52,13 @@ static PetscErrorCode InterpolatingFunctionsElement(int partial,int node,double 
    data structure and then used repeatedly to compute each element load and element stiffness.
    Uses InterpolatingFunctionsElement(). 
 */
-int SetReferenceElement(AppCtx* appctx)
+PetscErrorCode SetReferenceElement(AppCtx* appctx)
 {
-  int        i,j;
-  int        bn = 4; /* number of basis functions*/
-  int        qn = 4; /* number of quadrature points */
-  double     t;  /* for quadrature point */
-  double     gx[4],gy[4]; /* Gauss points: */  
+  PetscInt        i,j;
+  PetscInt        bn = 4; /* number of basis functions*/
+  PetscInt        qn = 4; /* number of quadrature points */
+  PetscReal     t;  /* for quadrature point */
+  PetscReal     gx[4],gy[4]; /* Gauss points: */  
   AppElement *phi = &appctx->element;
 
   PetscFunctionBegin;
@@ -93,13 +93,13 @@ int SetReferenceElement(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SetLocalElement"
-int SetLocalElement(AppElement *phi)
+PetscErrorCode SetLocalElement(AppElement *phi)
 {
   /* the coordinates array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
      the images of the support points for the 4 basis functions */ 
-  int    i,j;
-  int    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
-  double Dh[4][2][2],Dhinv[4][2][2]; /* the Jacobian and inverse of the Jacobian */
+  PetscInt    i,j;
+  PetscInt    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
+  PetscReal Dh[4][2][2],Dhinv[4][2][2]; /* the Jacobian and inverse of the Jacobian */
  
   PetscFunctionBegin;
  /* The function h takes the reference element to the local (true) element.
@@ -159,10 +159,11 @@ int SetLocalElement(AppElement *phi)
 */
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-int ComputeRHSElement(AppElement *phi)
+PetscErrorCode ComputeRHSElement(AppElement *phi)
 {
-  int    i,j,ierr; 
-  int    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
+  PetscInt    i,j;
+  PetscErrorCode ierr; 
+  PetscInt    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
   PetscScalar f;
 
   PetscFunctionBegin;
@@ -197,8 +198,8 @@ int ComputeRHSElement(AppElement *phi)
 #define __FUNCT__ "ComputeStiffness"
 int ComputeStiffnessElement(AppElement *phi)
 {
-  int i,j,k;
-  int bn = 4,qn = 4; /* number of basis functions, number of Gauss points */
+  PetscInt i,j,k;
+  PetscInt bn = 4,qn = 4; /* number of basis functions, number of Gauss points */
 
   PetscFunctionBegin;
   /* could even do half as many by exploiting symmetry  */

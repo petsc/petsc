@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   DA             da;
   Vec            local,global,local_copy;
   PetscScalar    value,mone = -1.0;
-  double         norm,work;
+  PetscReal      norm,work;
   PetscViewer    viewer;
   char           filename[64];
   FILE           *file;

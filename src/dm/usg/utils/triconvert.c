@@ -17,7 +17,7 @@ int main(int argc,char **args)
   char       filebase[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN];
   FILE       *file;
   AOData     ao;
-  PetscReal  *vertex,ddummy;
+  PetscReal  *vertex;
   PetscBT    vertex_boundary;
   PetscTruth flag;
 
@@ -51,13 +51,19 @@ int main(int argc,char **args)
   ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRQ(ierr);
 
   if (nstuff == 1) {
+    double v0,v1,ddummy;
     for (i=0; i<nvertex; i++) {
-      fscanf(file,"%d %le %le %le %d\n",&dummy,vertex+2*i,vertex+2*i+1,&ddummy,&bound);
+      fscanf(file,"%d %le %le %le %d\n",&dummy,&v0,&v1,&ddummy,&bound);
+      vertex[2*i]   = v0;
+      vertex[2*i+1] = v1;
       if (bound) PetscBTSet(vertex_boundary,i);
     }
   } else  if (nstuff == 0) {
+    double v0,v1,ddummy;
     for (i=0; i<nvertex; i++) {
-      fscanf(file,"%d %le %le %d\n",&dummy,vertex+2*i,vertex+2*i+1,&bound);
+      fscanf(file,"%d %le %le %d\n",&dummy,&v0,&v1,&bound);
+      vertex[2*i]   = v0;
+      vertex[2*i+1] = v1;
       if (bound) PetscBTSet(vertex_boundary,i);
     }
   } else SETERRQ(1,"No support yet for that number of vertex quantities");

@@ -259,7 +259,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
     /* vertex_ptr points to place in the matrix to set the values */
     vertex_ptr = grid->cell_vertex + vertexn*i;
 
-    ierr = MatSetValuesLocal(algebra->A,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(algebra->A,vertexn,vertex_ptr,vertexn,vertex_ptr,(PetscReal*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);
     /* ierr = MatSetValues(algebra->localA,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);*/
   }
   ierr = MatAssemblyBegin(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
