@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.16 1998/05/08 16:12:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.17 1998/05/18 20:14:02 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -17,7 +17,6 @@ static char vcid[] = "$Id: ffpath.c,v 1.16 1998/05/08 16:12:44 bsmith Exp bsmith
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_nt)
-#include <sys/param.h>
 #include <sys/utsname.h>
 #endif
 #if defined(PARCH_nt)
