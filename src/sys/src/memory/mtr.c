@@ -26,7 +26,7 @@ EXTERN int   PetscTrFreeDefault(void*,int,char*,char*,char*);
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
-#if (PETSC_SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOID_P == 8)
 void *PetscLow = (void*)0x0 ,*PetscHigh = (void*)0xEEEEEEEEEEEEEEEE;
 #else
 void *PetscLow  = (void*)0x0,*PetscHigh = (void*)0xEEEEEEEE;  
@@ -39,7 +39,7 @@ int PetscSetUseTrMalloc_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-#if (PETSC_SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOID_P == 8)
   PetscLow     = (void*)0xEEEEEEEEEEEEEEEE;
 #else
   PetscLow     = (void*)0xEEEEEEEE; 
@@ -63,7 +63,7 @@ int PetscSetUseTrMalloc_Private(void)
  */
 
 
-#if (PETSC_SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOID_P == 8)
 #define TR_ALIGN_BYTES      8
 #define TR_ALIGN_MASK       0x7
 #else

@@ -12,8 +12,8 @@
 # you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
 # BLAS and LAPACK library
 #
-BLASLAPACK_LIB =  @BLASLAPACK_LIB@
-PETSC_BLASLAPACK_FLAGS = @PETSC_BLASLAPACK_FLAGS@
+BLAS_LIB     = @BLAS_LIB@
+LAPACK_LIB   = @LAPACK_LIB@
 #
 # Location of MPI (Message Passing Interface) software  
 #
@@ -27,9 +27,8 @@ MPIRUN         = @MPIRUN@
 #
 # Location of X-windows software
 #
-X11_INCLUDE    = @CPP_X_INCLUDE@
-X11_LIB	       = @X_LIBRARIES@
-PETSC_HAVE_X11 = @PETSC_HAVE_X11@
+X11_INCLUDE = @X_CFLAGS@
+X11_LIB     = @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@
 #
 #
 # Optional location of MPE
@@ -39,67 +38,63 @@ MPE_INCLUDE    = @MPE_INCLUDE@
 #
 # Optional location of BlockSolve (MPI version)
 #
-BLOCKSOLVE_INCLUDE    = @BLOCKSOLVE_INCLUDE@
-BLOCKSOLVE_LIB	      = @BLOCKSOLVE_LIB@
-PETSC_HAVE_BLOCKSOLVE = @PETSC_HAVE_BLOCKSOLVE@
+BLOCKSOLVE_INCLUDE = @BLOCKSOLVE_INCLUDE@
+BLOCKSOLVE_LIB	   = @BLOCKSOLVE_LIB@
 #
 # Optional Matlab location
 #
-CMEX		  = @CMEX@
-MCC		  = @MCC@
-MATLABCOMMAND	  = @MATLABCOMMAND@
-PETSC_HAVE_MATLAB = 
-
+CMEX          = @CMEX@
+MCC           = @MCC@
+MATLABCOMMAND = @MATLABCOMMAND@
 #
 # Option location where adiC is installed
 #
-ADIC_INCLUDE	= @ADIC_INCLUDE@
-ADIC_LIB	= @ADIC_LIB@
-ADIC_CC		= @ADIC_CC@
-PETSC_HAVE_ADIC	= @PETSC_HAVE_ADIC@
+ADIC_INCLUDE = @ADIC_INCLUDE@
+ADIC_LIB     = @ADIC_LIB@
+ADIC_CC      = @ADIC_CC@
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE	 = @PVODE_INCLUDE@
-PVODE_LIB	 = @PVODE_LIB@
-PETSC_HAVE_PVODE = @PETSC_HAVE_PVODE@
-
+PVODE_INCLUDE = @PVODE_INCLUDE@
+PVODE_LIB     = @PVODE_LIB@
 #
+# Optional location of Triangle; Jon Shewchucks's mesh generator
 #
-# Optional location of ParMetis
+TRIANGLE_INCLUDE = @TRIANGLE_INCLUDE@
+TRIANGLE_LIB     = @TRIANGLE_LIB@
 #
-PARMETIS_INCLUDE    = 
-PARMETIS_LIB	    = 
-PETSC_HAVE_PARMETIS = 
-
+# Optional location of ParMETIS; George Karypis's mesh partitioner
+#
+PARMETIS_INCLUDE = @PARMETIS_INCLUDE@
+PARMETIS_LIB     = @PARMETIS_LIB@
 #
 #  Optional location for ALICE Memory Snooper
 #
 AMS_DIR	       = 
 AMS_INCLUDE    = 
 AMS_LIB	       = 
-PETSC_HAVE_AMS = 
-
 #
 # Optional location of SPAI;
 #
 SPAI_INCLUDE	= 
 SPAI_LIB	= 
-PETSC_HAVE_SPAI	=
 # Location of JAVA
 # 
-JAVAC           =
-JAVA            =
-PETSC_HAVE_JAVA =
+JAVAC = @JAVAC@
+JAVA  = @JAVA@
+#
+# Location/name of Perl
+#
+PERL = @PERL@
 #
 # Location/name of Python
 #
-PETSC_PYTHON    =
+PYTHON = @PYTHON@
 #
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-C_DYLIBPATH     = 
-F_DYLIBPATH     = 
+C_DYLIBPATH = @DYLIBPATH@
+F_DYLIBPATH = @DYLIBPATH@

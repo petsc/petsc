@@ -4,11 +4,12 @@
 AR               = @AR@
 AR_FLAGS         = @AR_FLAGS@
 RM               = rm -f
-OMAKE            = make
+OMAKE            = @MAKE@ --no-print-directory
 RANLIB           = @RANLIB@
 SHELL            = /bin/sh
 SED              = /bin/sed
 MKDIR            = @MKDIR@
+@SET_MAKE@
 #
 PARCH            = @PETSC_ARCH@
 LIB_SUFFIX       = a
@@ -19,14 +20,14 @@ C_CC       = @CC@  @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
 # SLFLAG=? (-R on solaris)
 # For now, assume that this is the linker dir flag
-C_CLINKER_SLFLAG   = -L
-C_FLINKER_SLFLAG   = -L
+C_CLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
+C_FLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
 C_CLINKER  = @CC@
 C_FLINKER  = @FC@
 # What is CCV? Solaris base is cc -V -c | head -1
-C_CCV      = @CC@ -c
-C_FCV	   = @FC@
-C_SYS_LIB  = @LIBS@ @FC_LIB@
+C_CCV      = @CC@ --version | head -1
+C_FCV	   = @FC@ --version | head -1
+C_SYS_LIB  = @LIBS@ @FLIBS@
 # ########################## FIXES FOR BROKEN DEFINITIONS IN COMMON_x ######
 # The definitions of CLINKER and FLINKER in the PETSc bmake/common_xxx 
 # contain an explicit : character for an option that we are not using nor
@@ -37,29 +38,30 @@ C_SYS_LIB  = @LIBS@ @FC_LIB@
 # Regrettably, this file loses in the war of battling definitions.
 # Fixing this requires changing common_xxx.
 # I belive that these should in fact be
-#CLINKER = ${C_CLINKER} ${COPTFLAGS} ${C_CLINKER_SL_PATH}
-#FLINKER = ${C_FLINKER} ${FOPTFLAGS} ${C_FLINKER_SL_PATH}
+CLINKER = ${C_CLINKER} @LDFLAGS@ ${COPTFLAGS} ${C_CLINKER_SL_PATH}
+FLINKER = ${C_FLINKER} @LDFLAGS@ ${FOPTFLAGS} ${C_FLINKER_SL_PATH}
 # where C_CLINKER_SL_PATH is defined in the architecture-specific base files.
 # A typical definition might be
-# C_CLINKER_SL_PATH = ${CLINKER_SLFLAG}${INSTALL_LIB_DIR}:${DYLIBPATH}
+C_CLINKER_SL_PATH = ${C_CLINKER_SLFLAG}${LDIR}:${C_DYLIBPATH}
+C_FLINKER_SL_PATH = ${C_FLINKER_SLFLAG}${LDIR}:${F_DYLIBPATH}
 # but might also be
 # C_CLINKER_SL_PATH = 
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g
 G_FOPTFLAGS      = -g
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O
+O_COPTFLAGS      = -O -Wall -Wshadow -fomit-frame-pointer
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = @CCC@
+CXX_CC           = @CXX@
 CXX_FC           = @FC@   -xpp=cpp
 CXX_CLINKER_SLFLAG =
 CXX_FLINKER_SLFLAG =
-CXX_CLINKER      = @CCC@
-CXX_FLINKER      = @CCC@
+CXX_CLINKER      = @CXX@
+CXX_FLINKER      = @CXX@
 # What is CXX_CCV?
-CXX_CCV          = @CCC@  -c
+CXX_CCV          = @CXX@ --version | head -1
 CXX_SYS_LIB      = @LIBS@ @FC_LIB@
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g

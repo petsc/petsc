@@ -63,7 +63,7 @@ PETSC_HAVE_VPRINTF_CHAR
 final argument to vprintf() is a char *, rather than the usual void *
 true under freebsd #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
 
-PETSC_SIZEOF_VOIDP
+PETSC_SIZEOF_VOID_P
 used in handling passing pointers to PETSc objects between C and
 Fortran. When this is 8 (bytes) then we use integer*8 as
 PetscFortranAddr and PetscOffset.
