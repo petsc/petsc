@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.42 1997/01/01 03:38:01 bsmith Exp balay $";
+static char vcid[] = "$Id: bdfact.c,v 1.43 1997/01/06 20:24:51 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -85,12 +85,12 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
 
   if (!a->pivot) {
-    a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
+    a->pivot = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(a->pivot);
     PLogObjectMemory(C,m*sizeof(int));
   }
-  v_work = (Scalar *) PetscMalloc((bs2+bs)*sizeof(Scalar));CHKPTRQ(v_work);
+  v_work = (Scalar *) PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
   multiplier = v_work + bs;
-  dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
+  dgptr = (int *) PetscMalloc((mblock+nblock+1)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
   for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
@@ -143,7 +143,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
     }
   }
 
-  dgptr = (int *) PetscMalloc((m+n)*sizeof(int)); CHKPTRQ(dgptr);
+  dgptr = (int *) PetscMalloc((m+n+1)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(m+n)*sizeof(int));
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
   for ( k=0; k<m; k++ ) { /* k = pivot_row */
