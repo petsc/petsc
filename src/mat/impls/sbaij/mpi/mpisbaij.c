@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.5 2000/07/17 18:41:49 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.6 2000/07/18 16:54:44 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -1263,6 +1263,17 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible parition of A and yy");
   }
 
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr); 
+  /* do diagonal part */
+  ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
+  /* do supperdiagonal part */
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
+  /* do subdiagonal part */
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+#ifdef old /* working code */
   /* do diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
 
@@ -1274,16 +1285,6 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   /* do subdiagonal part */
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-#ifdef old
-  /* do subdiagonal part */
-  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
-  /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  /* do local part */
-  ierr = (*a->B->ops->mult)(a->B,xx,yy);CHKERRQ(ierr);
-  ierr = (*a->A->ops->multadd)(a->A,xx,yy,yy);CHKERRQ(ierr); 
-  /* receive remote parts */
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -1297,6 +1298,21 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int        ierr;
 
   PetscFunctionBegin;
+
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], calledMatMultAdd_MPISBAIJ \n",rank);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr); 
+  /* do diagonal part */
+  ierr = (*a->A->ops->multadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
+  /* do supperdiagonal part */
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,zz);CHKERRQ(ierr);
+  /* do subdiagonal part */
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+#ifdef old
   /* do subdiagonal part */
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
@@ -1306,7 +1322,7 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = (*a->A->ops->multadd)(a->A,xx,zz,zz);CHKERRQ(ierr);  
   /* receive remote parts */
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-
+#endif
   PetscFunctionReturn(0);
 }
 
