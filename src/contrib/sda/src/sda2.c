@@ -1,0 +1,618 @@
+#ifndef lint
+static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp bsmith $";
+#endif
+ 
+/*
+  Code for manipulating distributed regular arrays in parallel.
+  Peter Mell changed this file on 7/10/95.
+*/
+
+#include "daimpl.h"    /*I   "da.h"   I*/
+#include "pinclude/pviewer.h"
+#include "draw.h"
+#include <math.h>
+
+static int DAView_2d(PetscObject dain,Viewer ptr)
+{
+  DA          da = (DA) dain;
+  PetscObject vobj = (PetscObject)ptr;
+  int         rank, ierr;
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+
+  MPI_Comm_rank(da->comm,&rank); 
+
+  if (!ptr) { /* so that viewers may be used from debuggers */
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  }
+
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+
+  if (vobj->cookie == VIEWER_COOKIE) {
+    FILE *fd;
+    ierr = ViewerFileGetPointer(ptr,&fd);  CHKERRQ(ierr);
+    if (vobj->type == ASCII_FILE_VIEWER) {
+      MPIU_Seq_begin(da->comm,1);
+      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
+                 da->N,da->m,da->n,da->w,da->s);
+      fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
+      fflush(fd);
+      MPIU_Seq_end(da->comm,1);
+    }
+    else if (vobj->type == ASCII_FILES_VIEWER) {
+
+      if (!rank) {
+      }
+      else {
+      }
+    }
+  }
+  else if (vobj->cookie == DRAW_COOKIE) {
+    Draw win = (Draw) ptr;
+    double  ymin = -1*da->s-1, ymax = da->N+da->s;
+    double  xmin = -1*da->s-1, xmax = da->M+da->s;
+    double  x,y;
+    int     base,*idx;
+    char    node[10];
+ 
+    DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
+
+    /* first processor draw all node lines */
+    if (!rank) {
+      ymin = 0.0; ymax = da->N - 1;
+      for ( xmin=0; xmin<da->M; xmin++ ) {
+        DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
+      }
+      xmin = 0.0; xmax = da->M - 1;
+      for ( ymin=0; ymin<da->N; ymin++ ) {
+        DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
+      }
+    }
+    DrawSyncFlush(win);
+    DrawPause(win);
+    MPI_Barrier(da->comm);
+
+    /* draw my box */
+    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; 
+    xmax =(da->xe-1)/da->w;
+    DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
+    DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
+    DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
+    DrawLine(win,xmax,ymin,xmax,ymax,DRAW_RED);
+
+    /* put in numbers */
+    base = (da->base)/da->w;
+    for ( y=ymin; y<=ymax; y++ ) {
+      for ( x=xmin; x<=xmax; x++ ) {
+        sprintf(node,"%d",base++);
+        DrawText(win,x,y,DRAW_BLACK,node);
+      }
+    }
+
+    DrawSyncFlush(win);
+    DrawPause(win);
+    MPI_Barrier(da->comm);
+    /* overlay ghost numbers, useful for error checking */
+    /* put in numbers */
+
+    base = 0; idx = da->idx;
+    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
+    for ( y=ymin; y<ymax; y++ ) {
+      for ( x=xmin; x<xmax; x++ ) {
+        if ((base % da->w) == 0) {
+          sprintf(node,"%d",idx[base]/da->w);
+          DrawText(win,x/da->w,y,DRAW_BLUE,node);
+        }
+        base++;
+      }
+    }        
+    DrawSyncFlush(win);
+    DrawPause(win);
+  }
+  return 0;
+}
+
+/*@C
+    DACreate2d - Creates a two-dimensional regular array that is
+    distributed across some processors.
+
+   Input Parameters:
+.  comm - MPI communicator
+.  wrap - type of periodicity should the array have, if any
+$         DA_NONPERIODIC, DA_XPERIODIC, 
+$         DA_YPERIODIC, DA_XYPERIODIC  
+.  stencil_type - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
+.  M,N - global dimension in each direction of the array
+.  m,n - corresponding number of processors in each dimension 
+         (or PETSC_DECIDE to have calculated)
+.  w - number of degress of freedom per node
+.  s - stencil width
+
+   Output Parameter:
+.  inra - the resulting array object
+
+   Notes:
+   The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
+   standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
+   the standard 9-pt stencil.
+
+.keywords: distributed array, create, two-dimensional
+
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
+@*/
+int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
+                int M, int N, int m,int n, int w, int s, DA *inra)
+{
+  int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
+  int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
+  int           xbase,*bases,j,x_t,y_t,s_t,base,count;
+  int           s_x,s_y; /* s proportionalized to w */
+  DA            da;
+  Vec           local,global;
+  VecScatter    ltog,gtol;
+  IS            to,from;
+  *inra = 0;
+
+  PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
+  PLogObjectCreate(da);
+  PLogObjectMemory(da,sizeof(struct _DA));
+
+  MPI_Comm_size(comm,&size); 
+  MPI_Comm_rank(comm,&rank); 
+
+  if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
+    /* try for squarish distribution */
+    m = (int) sqrt( ((double)M)*((double)size)/((double)N) );
+    if (m == 0) m = 1;
+    while (m > 0) {
+      n = size/m;
+      if (m*n == size) break;
+      m--;
+    }
+    if (M > N && m < n) {int _m = m; m = n; n = _m;}
+    if (m*n != size)SETERRQ(1,"DaCreate2d:Internally Created Bad Partition");
+  }
+  else if (m*n != size) SETERRQ(1,"DACreate2d:Given Bad partition"); 
+
+  if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
+  if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
+
+  /* determine local owned region */
+  x = M/m + ((M % m) > (rank % m));
+  y = N/n + ((N % n) > (rank/m));
+
+  if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
+  if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
+  if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+  else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+  xe = xs + x;
+  if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
+  else { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
+  ye = ys + y;
+
+  /* determine ghost region */
+  /* Assume No Periodicity */
+  if (xs-s > 0) Xs = xs - s; else Xs = 0; 
+  if (ys-s > 0) Ys = ys - s; else Ys = 0; 
+  if (xe+s <= M) Xe = xe + s; else Xe = M; 
+  if (ye+s <= N) Ye = ye + s; else Ye = N;
+
+  /* X Periodic */
+  if (wrap == DA_XPERIODIC || wrap ==  DA_XYPERIODIC) {
+    Xs = xs - s; 
+    Xe = xe + s; 
+  }
+
+  /* Y Periodic */
+  if (wrap == DA_YPERIODIC || wrap ==  DA_XYPERIODIC) {
+    Ys = ys - s;
+    Ye = ye + s;
+  }
+
+  /* Resize all X parameters to reflect w */
+  x   *= w;
+  xs  *= w;
+  xe  *= w;
+  Xs  *= w;
+  Xe  *= w;
+  s_x = s*w;
+  s_y = s;
+
+  /* determine starting point of each processor */
+  nn = x*y;
+  bases = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(bases);
+  MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
+  bases[0] = 0;
+  for ( i=1; i<=size; i++ ) {
+    bases[i] += bases[i-1];
+  }
+
+  /* allocate the base parallel and sequential vectors */
+  ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);CHKERRQ(ierr);
+
+  /* generate appropriate vector scatters */
+  /* local to global inserts non-ghost point region into global */
+  VecGetOwnershipRange(global,&start,&end);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
+
+  left  = xs - Xs; down  = ys - Ys; up    = down + y;
+  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
+  count = 0;
+  for ( i=down; i<up; i++ ) {
+    for ( j=0; j<x; j++ ) {
+      idx[count++] = left + i*(Xe-Xs) + j;
+    }
+  }
+  ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from);CHKERRQ(ierr);
+  PetscFree(idx);
+
+  ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,ltog);
+  ISDestroy(from); ISDestroy(to);
+
+  /* global to local must include ghost points */
+  if (stencil_type == DA_STENCIL_BOX) {
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);CHKERRQ(ierr); 
+  } else {
+    /* must drop into cross shape region */
+    /*       ---------|
+            |  top    |
+         |---         ---|
+         |   middle      |
+         |               |
+         ----         ----
+            | bottom  |
+            -----------
+        Xs xs        xe  Xe */
+    /* bottom */
+    left  = xs - Xs; down = ys - Ys; up    = down + y;
+    count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
+    idx   = (int *) PetscMalloc( count*sizeof(int) ); CHKPTRQ(idx);
+    count = 0;
+    for ( i=0; i<down; i++ ) {
+      for ( j=0; j<xe-xs; j++ ) {
+        idx[count++] = left + i*(Xe-Xs) + j;
+      }
+    }
+    /* middle */
+    for ( i=down; i<up; i++ ) {
+      for ( j=0; j<Xe-Xs; j++ ) {
+        idx[count++] = i*(Xe-Xs) + j;
+      }
+    }
+    /* top */
+    for ( i=up; i<Ye-Ys; i++ ) {
+      for ( j=0; j<xe-xs; j++ ) {
+        idx[count++] = left + i*(Xe-Xs) + j;
+      }
+    }
+    ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to);CHKERRQ(ierr);
+    PetscFree(idx);
+  }
+
+
+  /* determine who lies on each side of use stored in    n6 n7 n8
+                                                         n3    n5
+                                                         n0 n1 n2
+  */
+
+  /* Assume the Non-Periodic Case */
+  n1 = rank - m; 
+  if (rank % m) {
+    n0 = n1 - 1; 
+  }
+  else {
+    n0 = -1;
+  }
+  if ((rank+1) % m) {
+    n2 = n1 + 1;
+    n5 = rank + 1;
+    n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
+  }
+  else {
+    n2 = -1; n5 = -1; n8 = -1;
+  }
+  if (rank % m) {
+    n3 = rank - 1; 
+    n6 = n3 + m; if (n6 >= m*n) n6 = -1;
+  }
+  else {
+    n3 = -1; n6 = -1;
+  }
+  n7 = rank + m; if (n7 >= m*n) n7 = -1;
+
+
+  /* Modify for Periodic Cases */
+  if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
+  } 
+  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
+  }
+  else if (wrap == DA_XYPERIODIC) {
+
+    /* Handle all four corners */
+    if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
+    if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
+    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
+    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
+
+    /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
+
+    /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
+  }
+
+  if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
+
+  idx = (int *)PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
+  PLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
+  nn = 0;
+
+  xbase = bases[rank];
+  for ( i=1; i<=s_y; i++ ) {
+    if (n0 >= 0) { /* left below */
+      x_t = (M/m + ((M % m) > (n0 % m)))*w;
+      y_t = N/n + ((N % n) > (n0/m));
+      s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n1 >= 0) { /* directly below */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n1/m));
+      s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n2 >= 0) { /* right below */
+      x_t = (M/m + ((M % m) > (n2 % m)))*w;
+      y_t = N/n + ((N % n) > (n2/m));
+      s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=0; i<y; i++ ) {
+    if (n3 >= 0) { /* directly left */
+      x_t = (M/m + ((M % m) > (n3 % m)))*w;
+      y_t = y;
+      s_t = bases[n3] + (i+1)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+
+    for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+
+    if (n5 >= 0) { /* directly right */
+      x_t = (M/m + ((M % m) > (n5 % m)))*w;
+      y_t = y;
+      s_t = bases[n5] + (i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=1; i<=s_y; i++ ) {
+    if (n6 >= 0) { /* left above */
+      x_t = (M/m + ((M % m) > (n6 % m)))*w;
+      y_t = N/n + ((N % n) > (n6/m));
+      s_t = bases[n6] + (i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n7 >= 0) { /* directly above */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n7/m));
+      s_t = bases[n7] + (i-1)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n8 >= 0) { /* right above */
+      x_t = (M/m + ((M % m) > (n8 % m)))*w;
+      y_t = N/n + ((N % n) > (n8/m));
+      s_t = bases[n8] + (i-1)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  base = bases[rank];
+  ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,gtol);
+  ISDestroy(to); ISDestroy(from);
+
+  da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n; da->w = w; da->s = s;
+  da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye;
+  da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye;
+
+  PLogObjectParent(da,global);
+  PLogObjectParent(da,local);
+
+  da->global       = global; 
+  da->local        = local; 
+  da->gtol         = gtol;
+  da->ltog         = ltog;
+  da->idx          = idx;
+  da->Nl           = nn;
+  da->base         = base;
+  da->wrap         = wrap;
+  da->view         = DAView_2d;
+  da->stencil_type = stencil_type;
+  *inra = da;
+
+  /* recalculate the idx including missed ghost points */
+  /* Assume the Non-Periodic Case */
+  n1 = rank - m; 
+  if (rank % m) {
+    n0 = n1 - 1; 
+  }
+  else {
+    n0 = -1;
+  }
+  if ((rank+1) % m) {
+    n2 = n1 + 1;
+    n5 = rank + 1;
+    n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
+  }
+  else {
+    n2 = -1; n5 = -1; n8 = -1;
+  }
+  if (rank % m) {
+    n3 = rank - 1; 
+    n6 = n3 + m; if (n6 >= m*n) n6 = -1;
+  }
+  else {
+    n3 = -1; n6 = -1;
+  }
+  n7 = rank + m; if (n7 >= m*n) n7 = -1;
+
+
+  /* Modify for Periodic Cases */
+  if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
+  } 
+  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
+  }
+  else if (wrap == DA_XYPERIODIC) {
+
+    /* Handle all four corners */
+    if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
+    if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
+    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
+    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
+
+    /* Handle Top and Bottom Sides */
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
+
+    /* Handle Left and Right Sides */
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
+  }
+
+  nn = 0;
+
+  xbase = bases[rank];
+  for ( i=1; i<=s_y; i++ ) {
+    if (n0 >= 0) { /* left below */
+      x_t = (M/m + ((M % m) > (n0 % m)))*w;
+      y_t = N/n + ((N % n) > (n0/m));
+      s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n1 >= 0) { /* directly below */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n1/m));
+      s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n2 >= 0) { /* right below */
+      x_t = (M/m + ((M % m) > (n2 % m)))*w;
+      y_t = N/n + ((N % n) > (n2/m));
+      s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=0; i<y; i++ ) {
+    if (n3 >= 0) { /* directly left */
+      x_t = (M/m + ((M % m) > (n3 % m)))*w;
+      y_t = y;
+      s_t = bases[n3] + (i+1)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+
+    for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+
+    if (n5 >= 0) { /* directly right */
+      x_t = (M/m + ((M % m) > (n5 % m)))*w;
+      y_t = y;
+      s_t = bases[n5] + (i)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+
+  for ( i=1; i<=s_y; i++ ) {
+    if (n6 >= 0) { /* left above */
+      x_t = (M/m + ((M % m) > (n6 % m)))*w;
+      y_t = N/n + ((N % n) > (n6/m));
+      s_t = bases[n6] + (i)*x_t - s_x;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n7 >= 0) { /* directly above */
+      x_t = x;
+      y_t = N/n + ((N % n) > (n7/m));
+      s_t = bases[n7] + (i-1)*x_t;
+      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+    }
+    if (n8 >= 0) { /* right above */
+      x_t = (M/m + ((M % m) > (n8 % m)))*w;
+      y_t = N/n + ((N % n) > (n8/m));
+      s_t = bases[n8] + (i-1)*x_t;
+      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+    }
+  }
+  PetscFree(bases);
+
+  /* construct the local to local scatter context */
+  /* 
+      We simply remap the values in the from part of 
+    global to local to read from an array with the ghost values 
+    rather then from the plan array.
+  */
+  ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
+  left  = xs - Xs; down  = ys - Ys; up    = down + y;
+  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
+  count = 0;
+  for ( i=down; i<up; i++ ) {
+    for ( j=0; j<x; j++ ) {
+      idx[count++] = left + i*(Xe-Xs) + j;
+    }
+  }
+  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
+  PetscFree(idx);
+
+
+  return 0;
+}
+
+ 
