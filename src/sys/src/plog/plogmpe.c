@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.39 1999/02/05 18:36:16 curfman Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.40 1999/03/15 20:58:52 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -435,11 +435,10 @@ int PLogMPEDump(const char sname[])
   char name[256];
   PetscFunctionBegin;
 
-  if (sname) PetscStrcpy(name,sname);
-  else PetscStrcpy(name,"mpe.log");
-
   if (PetscBeganMPE == 1) {
     PLogInfo(0,"PLogMPEDump: Finalizing MPE.\n");
+    if (sname) PetscStrcpy(name,sname);
+    else PetscGetProgramName(name,256);
     MPE_Finish_log(name); 
   } else {
     PLogInfo(0,"PLogMPEDump: Not finalizing MPE.\n");
