@@ -430,9 +430,9 @@ int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
 int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
   Mat        B;
   Mat_DSC    *lu;   
-  int        ierr,bs; 
+  int        ierr,bs,index; 
   PetscTruth flg;
-  char       buff[32],*ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
+  char       *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
   PetscFunctionBegin; 
 
@@ -472,63 +472,48 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
          "None",
          lu->scheme_code,&lu->scheme_code,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_dscpack_factor","factor_type","None",
-             ftype,2,ftype[0],buff,32,&flg);CHKERRQ(ierr);
-  while (flg) {
-    ierr = PetscStrcmp(buff,"LLT",&flg);CHKERRQ(ierr);
-    if (flg) {
+  ierr = PetscOptionsEList("-mat_dscpack_factor","factor_type","None",ftype,2,ftype[0],&index,&flg);CHKERRQ(ierr);
+  if (flg) {
+    switch (index) {
+    case 0:
+      lu->factor_type = DSC_LDLT;
+      break;
+    case 1:
       lu->factor_type = DSC_LLT;
       break;
     }
-    ierr = PetscStrcmp(buff,"LDLT",&flg);CHKERRQ(ierr);
-    if (flg) {
-      lu->factor_type = DSC_LDLT;
-      break;
-    }
-    SETERRQ1(1,"Unknown factor type %s",buff);
   }
-  ierr = PetscOptionsInt("-mat_dscpack_MaxMemAllowed","", \
-         "None",
+  ierr = PetscOptionsInt("-mat_dscpack_MaxMemAllowed","","None",
          lu->max_mem_allowed,&lu->max_mem_allowed,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-mat_dscpack_stats","display stats: 0 = no display,  1 = display",
          "None", lu->stat,&lu->stat,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_dscpack_LBLAS","BLAS level used in the local phase","None",
-             ltype,3,ltype[2],buff,32,&flg);CHKERRQ(ierr);
-  while (flg) {
-    ierr = PetscStrcmp(buff,"LBLAS1",&flg);CHKERRQ(ierr);
-    if (flg) {
+  ierr = PetscOptionsEList("-mat_dscpack_LBLAS","BLAS level used in the local phase","None",ltype,3,ltype[2],&index,&flg);CHKERRQ(ierr);
+  if (flg) {
+    switch (index) {
+    case 0:
       lu->LBLASLevel = DSC_LBLAS1;
       break;
-    }
-    ierr = PetscStrcmp(buff,"LBLAS2",&flg);CHKERRQ(ierr);
-    if (flg) {
+    case 1:
       lu->LBLASLevel = DSC_LBLAS2;
       break;
-    }
-    ierr = PetscStrcmp(buff,"LBLAS3",&flg);CHKERRQ(ierr);
-    if (flg) {
+    case 2:
       lu->LBLASLevel = DSC_LBLAS3;
       break;
     }
-    SETERRQ1(1,"Unknown local phase BLAS level %s",buff);
   }
 
-  ierr = PetscOptionsEList("-mat_dscpack_DBLAS","BLAS level used in the distributed phase","None",
-             dtype,2,dtype[1],buff,32,&flg);CHKERRQ(ierr);
-  while (flg) {
-    ierr = PetscStrcmp(buff,"DBLAS1",&flg);CHKERRQ(ierr);
-    if (flg) {
+  ierr = PetscOptionsEList("-mat_dscpack_DBLAS","BLAS level used in the distributed phase","None",dtype,2,dtype[1],&index,&flg);CHKERRQ(ierr);
+  if (flg) {
+    switch (index) {
+    case 0:
       lu->DBLASLevel = DSC_DBLAS1;
       break;
-    }
-    ierr = PetscStrcmp(buff,"DBLAS2",&flg);CHKERRQ(ierr);
-    if (flg) {
+    case 1:
       lu->DBLASLevel = DSC_DBLAS2;
       break;
     }
-    SETERRQ1(1,"Unknown distributed phase BLAS level %s",buff);
   }
 
   PetscOptionsEnd();

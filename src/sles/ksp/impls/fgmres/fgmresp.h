@@ -29,6 +29,7 @@
                                  before restarting */
 
     int   (*orthog)(KSP,int); /* orthogonalization function to use */
+    KSPGMRESCGSRefinementType cgstype;
     
     Vec   *vecs;              /* holds the work vectors */
    

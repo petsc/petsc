@@ -71,30 +71,24 @@ $   it is one minus the number of GMRES iterations since last restart;
 $    i.e. the size of Krylov space minus one
 
    Notes:
-   Several orthogonalization routines are predefined, including
+   Two orthogonalization routines are predefined, including
 
    KSPGMRESModifiedGramSchmidtOrthogonalization()
 
-   KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
-       NOT recommended; however, for some problems, particularly
-       when using parallel distributed vectors, this may be
-       significantly faster. Default.
+   KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetUGSType() to determine if 
+     iterative refinement is used to increase stability. 
 
-   KSPGMRESIROrthogonalization() - iterative refinement
-       version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
-       which may be more numerically stable.
 
    Options Database Keys:
 
 +  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization() (default)
-.  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
--  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
+-  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
 
    Level: intermediate
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors()
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetUGSType()
 @*/
 int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 {

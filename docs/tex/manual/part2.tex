@@ -2163,25 +2163,34 @@ and \trl{-ksp_richardson_scale <factor>}. \findex{-ksp_gmres_restart}
 \findex{-ksp_richardson_scale}
 
 The default technique for orthogonalization of the Hessenberg
-matrix in GMRES is the iterative refinement Gram-Schmidt method.
-\findex{KSPGMRESIROrthogonalization} This can be set  by using the command line option 
-\trl{-ksp_gmres_irorthog}. \findex{-ksp_gmres_irorthog} Or
-via 
-\begin{tabbing}
-  KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);
-\end{tabbing}
-A slightly
-faster approach is to use the 
+matrix in GMRES is 
+the
 unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
 with \findex{KSPGMRESSetOrthogonalization()} 
-\findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
+\findex{KSPGMRESClassicalGramSchmidtOrthogonalization}
 \begin{tabbing}
-  KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
+  KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);
 \end{tabbing}
-or the options database \findex{-ksp_gmres_unmodifiedgramschmidt}
-command \trl{-ksp_gmres_unmodifiedgramschmidt}.
-Note that this algorithm is numerically unstable, but may deliver 
-slightly better speed performance. One can also use 
+or the options database \findex{-ksp_gmres_classicalgramschmidt}
+command \trl{-ksp_gmres_classicalgramschmidt}.
+By default this will use one step of iterative refinement to improve the 
+stability of the orthogonalization if a simple test indicates that it is needed.
+This can be changed with the option
+\begin{tabbing}
+KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
+\end{tabbing}
+\findex{KSPGMRESSetCGSRefinementType()} \findex{KSPGMRESCGSRefinementType}
+or via the options database with 
+\begin{tabbing}
+-ksp\_gmres\_cgs\_refinement\_type none,ifneeded,always
+\end{tabbing}
+\findex{-ksp_gmres_cgs_refinement_type}
+The values for \trl{KSPGMRESCGSRefinementType} are \trl{KSP_GMRES_CGS_REFINEMENT_NONE},
+\findex{KSP_GMRES_CGS_REFINEMENT_NONE},
+\trl{KSP_GMRES_CGS_REFINEMENT_IFNEEDED} and \trl{KSP_GMRES_CGS_REFINEMENT_ALWAYS}.
+\findex{KSP_GMRES_CGS_REFINEMENT_IFNEEDED}, \findex{KSP_GMRES_CGS_REFINEMENT_ALWAYS}
+
+One can also use 
 modifed Gram-Schmidt, 
 \findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
 KSPGMRESModifiedGramSchmidtOrthogonalization(), by using the command line option 
@@ -5285,7 +5294,7 @@ is presented.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_unmodifiedgramschmidt -log_summary -mat_mpibaij \
+mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 Number of iterations =  19
@@ -5361,7 +5370,7 @@ the average message length, and the number of global reductions.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_unmodifiedgramschmidt -log_summary -mat_mpibaij \
+mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------

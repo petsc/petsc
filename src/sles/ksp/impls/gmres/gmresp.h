@@ -8,44 +8,44 @@
 #include "src/sles/ksp/kspimpl.h"        /*I "petscksp.h" I*/
 
 typedef struct {
-    /* Hessenberg matrix and orthogonalization information.  Hes holds
+  /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used
        to estimate the Singular Values of the matrix */
-    PetscScalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
-    /* Work space for computing eigenvalues/singular values */
-    PetscReal *Dsvd;
-    PetscScalar *Rsvd;
+  PetscScalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
+  /* Work space for computing eigenvalues/singular values */
+  PetscReal   *Dsvd;
+  PetscScalar *Rsvd;
       
-    /* parameters */
-    PetscReal haptol;
-    int    max_k;
+  /* parameters */
+  PetscReal haptol;
+  int       max_k;
 
-    int   (*orthog)(KSP,int); /* Functions to use (special to gmres) */
+  int                       (*orthog)(KSP,int); /* Functions to use (special to gmres) */
+  KSPGMRESCGSRefinementType cgstype;
     
-    Vec   *vecs;  /* holds the work vectors */
-    /* vv_allocated is the number of allocated gmres direction vectors */
-    int    q_preallocate,delta_allocate;
-    int    vv_allocated;
-    /* vecs_allocated is the total number of vecs available (used to 
+  Vec   *vecs;  /* holds the work vectors */
+  /* vv_allocated is the number of allocated gmres direction vectors */
+  int    q_preallocate,delta_allocate;
+  int    vv_allocated;
+  /* vecs_allocated is the total number of vecs available (used to 
        simplify the dynamic allocation of vectors */
-    int    vecs_allocated;
-    /* Since we may call the user "obtain_work_vectors" several times, 
+  int    vecs_allocated;
+  /* Since we may call the user "obtain_work_vectors" several times, 
        we have to keep track of the pointers that it has returned 
-       (so that we may free the storage) */
-    Vec    **user_work;
-    int    *mwork_alloc;    /* Number of work vectors allocated as part of
+      (so that we may free the storage) */
+  Vec    **user_work;
+  int    *mwork_alloc;    /* Number of work vectors allocated as part of
                                a work-vector chunck */
-    int    nwork_alloc;     /* Number of work vectors allocated */
+  int    nwork_alloc;     /* Number of work vectors allocated */
 
-    /* In order to allow the solution to be constructed during the solution
-       process, we need some additional information: */
+  /* In order to allow the solution to be constructed during the solution
+     process, we need some additional information: */
 
-    int    it;              /* Current iteration: inside restart */
-    PetscScalar *nrs;            /* temp that holds the coefficients of the 
+  int    it;              /* Current iteration: inside restart */
+  PetscScalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */
-    Vec    sol_temp;        /* used to hold temporary solution */
-
+  Vec    sol_temp;        /* used to hold temporary solution */
 } KSP_GMRES;
 
 #define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))

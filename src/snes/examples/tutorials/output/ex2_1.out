@@ -13,7 +13,7 @@ SNES Object:
   total number of function evaluations=4
   KSP Object:
     type: gmres
-      GMRES: restart=30, using Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000

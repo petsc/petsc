@@ -223,9 +223,9 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal
 #define __FUNCT__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
-  int        ierr,m,levels = 1;
+  int        ierr,index,m,levels = 1;
   PetscTruth flg;
-  char       buff[16],*type[] = {"additive","multiplicative","full","cascade"};
+  char       *type[] = {"additive","multiplicative","full","cascade","kascade"};
 
   PetscFunctionBegin;
 
@@ -246,23 +246,26 @@ static int PCSetFromOptions_MG(PC pc)
     if (flg) {
       ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,4,"multiplicative",buff,15,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&index,&flg);CHKERRQ(ierr);
     if (flg) {
       MGType     mg;
-      PetscTruth isadd,ismult,isfull,iskask,iscasc;
-
-      ierr = PetscStrcmp(buff,type[0],&isadd);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[1],&ismult);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[2],&isfull);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[3],&iscasc);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,"kaskade",&iskask);CHKERRQ(ierr);
-
-      if      (isadd)  mg = MGADDITIVE;
-      else if (ismult) mg = MGMULTIPLICATIVE;
-      else if (isfull) mg = MGFULL;
-      else if (iskask) mg = MGKASKADE;
-      else if (iscasc) mg = MGKASKADE;
-      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",buff);
+      switch (index) {
+      case 0:
+        mg = MGADDITIVE;
+        break;
+      case 1:
+        mg = MGMULTIPLICATIVE;
+        break;
+      case 2:
+        mg = MGFULL;
+        break;
+      case 3:
+        mg = MGKASKADE;
+        break;
+      case 4:
+        mg = MGKASKADE;
+        break;
+      }
       ierr = MGSetType(pc,mg);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_mg_log","Log times for each multigrid level","None",&flg);CHKERRQ(ierr);

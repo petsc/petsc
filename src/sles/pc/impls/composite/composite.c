@@ -144,28 +144,16 @@ static int PCDestroy_Composite(PC pc)
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  int              ierr,nmax = 8,i;
-  PCCompositeType  type=PC_COMPOSITE_ADDITIVE;
+  int              ierr,nmax = 8,i,index;
   PC_CompositeLink next;
-  char             *pcs[8],stype[16],*types[] = {"multiplicative","additive","special"};
+  char             *pcs[8],*types[] = {"multiplicative","additive","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,"multiplicative",stype,16,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,types[0],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscTruth ismult,isadd,isspecial;
-
-      ierr = PetscStrcmp(stype,types[0],&ismult);CHKERRQ(ierr);
-      ierr = PetscStrcmp(stype,types[1],&isadd);CHKERRQ(ierr);
-      ierr = PetscStrcmp(stype,types[2],&isspecial);CHKERRQ(ierr);
-
-      if (ismult)          type = PC_COMPOSITE_MULTIPLICATIVE;
-      else if (isadd)      type = PC_COMPOSITE_ADDITIVE;
-      else if (isspecial)  type = PC_COMPOSITE_SPECIAL;
-      else SETERRQ(1,"Unknown composite type given");
-
-      ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
+      ierr = PCCompositeSetType(pc,(PCCompositeType)index);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {

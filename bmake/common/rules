@@ -431,6 +431,7 @@ fortranstubs:
           grep -v "object file assumed" | \
           grep -v "consider using mkstemp"  |\
           grep -v EXTERNAL  |\
+          grep -v "warning prebinding disabled"  |\
           grep -v volatile  |\
           grep -v -i inconsistent | grep -v Anachronism | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\

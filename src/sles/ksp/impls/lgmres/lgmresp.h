@@ -29,7 +29,8 @@
     int    max_k;             /* maximum size of the approximation space  
                                  before restarting */
 
-    int   (*orthog)(KSP,int); /* orthogonalization function to use */
+    int                       (*orthog)(KSP,int); /* orthogonalization function to use */
+    KSPGMRESCGSRefinementType cgstype;
     
     Vec   *vecs;              /* holds the work vectors */
    

@@ -341,39 +341,19 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
-  int        ierr;
-  char       method[128],*btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
+  int        ierr,index;
+  char       *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PVODE ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",method,127,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",&index,&flag);CHKERRQ(ierr);
     if (flag) {
-      PetscTruth isbdf,isadams;
-
-      ierr = PetscStrcmp(method,btype[0],&isbdf);CHKERRQ(ierr);
-      ierr = PetscStrcmp(method,btype[1],&isadams);CHKERRQ(ierr);
-      if (isbdf) {
-        ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
-      } else if (isadams) {
-        ierr = TSPVodeSetType(ts,PVODE_ADAMS);CHKERRQ(ierr);
-      } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode type.\n");
-      }
+      ierr = TSPVodeSetType(ts,(TSPVodeType)index);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",method,127,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",&index,&flag);CHKERRQ(ierr);
     if (flag) {
-      PetscTruth ismodified,isunmodified;
-
-      ierr = PetscStrcmp(method,otype[0],&ismodified);CHKERRQ(ierr);
-      ierr = PetscStrcmp(method,otype[1],&isunmodified);CHKERRQ(ierr);
-      if (ismodified) {
-        ierr = TSPVodeSetGramSchmidtType(ts,PVODE_MODIFIED_GS);CHKERRQ(ierr);
-      } else if (isunmodified) {
-        ierr = TSPVodeSetGramSchmidtType(ts,PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
-      } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode Gram-Schmidt orthogonalization type \n");
-      }
+      ierr = TSPVodeSetGramSchmidtType(ts,(TSPVodeGramSchmidtType)index);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);

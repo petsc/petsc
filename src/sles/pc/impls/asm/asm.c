@@ -361,9 +361,9 @@ static int PCDestroy_ASM(PC pc)
 static int PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
-  int        blocks,ovl,ierr;
+  int        blocks,ovl,ierr,index;
   PetscTruth flg;
-  char       buff[16],*type[] = {"basic","restrict","interpolate","none"};
+  char       *type[] = {"basic","restrict","interpolate","none"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
@@ -373,22 +373,9 @@ static int PCSetFromOptions_ASM(PC pc)
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,"restrict",buff,15,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,type[1],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      PCASMType  atype;
-      PetscTruth isbasic,isrestrict,isinterpolate,isnone;
-
-      ierr = PetscStrcmp(buff,type[0],&isbasic);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[1],&isrestrict);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[2],&isinterpolate);CHKERRQ(ierr);
-      ierr = PetscStrcmp(buff,type[3],&isnone);CHKERRQ(ierr);
-
-      if (isbasic)            atype = PC_ASM_BASIC;
-      else if (isrestrict)    atype = PC_ASM_RESTRICT;
-      else if (isinterpolate) atype = PC_ASM_INTERPOLATE;
-      else if (isnone)        atype = PC_ASM_NONE;
-      else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
-      ierr = PCASMSetType(pc,atype);CHKERRQ(ierr);
+      ierr = PCASMSetType(pc,(PCASMType)index);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -283,9 +283,8 @@ static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","
 static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr,n = 4,i;
+  int        ierr,n = 4,i,index;
   PetscTruth flg;
-  char       result[32];
 
   PetscFunctionBegin;
   jac->maxlevels       = 25;
@@ -402,59 +401,23 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = HYPRE_BoomerAMGSetGridRelaxPoints(jac->hsolver,jac->gridrelaxpoints);CHKERRQ(ierr);
 
 
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],result,16,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      int type = -1;
-      for (i=0; i<2; i++) {
-        ierr = PetscStrcmp(result,HYPREBoomerAMGMeasureType[i],&flg);CHKERRQ(ierr);
-        if (flg) {
-          type = i;
-          break;
-        }
-      }
-      if (type == -1) SETERRQ1(1,"Unknown measure type %s",result);
-      jac->measuretype = type;
-      ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
+      jac->measuretype = index;
     }
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],result,25,&flg);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      int type = -1;
-      for (i=0; i<7; i++) {
-        ierr = PetscStrcmp(result,HYPREBoomerAMGCoarsenType[i],&flg);CHKERRQ(ierr);
-        if (flg) {
-          type = i;
-          break;
-        }
-      }
-      if (type == -1) SETERRQ1(1,"Unknown coarsen type %s",result);
-      jac->coarsentype = type;
-      ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
+      jac->coarsentype = index;
     }
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],result,32,&flg);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      int type = -1;
-      for (i=0; i<10; i++) {
-        ierr = PetscStrcmp(result,HYPREBoomerAMGRelaxType[i],&flg);CHKERRQ(ierr);
-        if (flg) {
-          type = i;
-          break;
-        }
-      }
-      if (type == -1) SETERRQ1(1,"Unknown relax type %s",result);
-      jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = type;
+      jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = index;
     }
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],result,32,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      int type = -1;
-      for (i=0; i<10; i++) {
-        ierr = PetscStrcmp(result,HYPREBoomerAMGRelaxType[i],&flg);CHKERRQ(ierr);
-        if (flg) {
-          type = i;
-          break;
-        }
-      }
-      if (type == -1) SETERRQ1(1,"Unknown relax type %s",result);
-      jac->relaxtype[3] = type;
+      jac->relaxtype[3] = index;
     }
     ierr = HYPRE_BoomerAMGSetGridRelaxType(jac->hsolver,jac->relaxtype);CHKERRQ(ierr); 
     ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
@@ -538,24 +501,9 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
     ierr = PetscOptionsLogical("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,0);CHKERRQ(ierr);
     ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],buff,32,&flag);CHKERRQ(ierr);
-    while (flag) {
-      ierr = PetscStrcmp(symtlist[0],buff,&flag);CHKERRQ(ierr);
-      if (flag) {
-        jac->symt = 0;
-        break;
-      }
-      ierr = PetscStrcmp(symtlist[1],buff,&flag);CHKERRQ(ierr);
-      if (flag) {
-        jac->symt = 1;
-        break;
-      }
-      ierr = PetscStrcmp(symtlist[2],buff,&flag);CHKERRQ(ierr);
-      if (flag) {
-        jac->symt = 2;
-        break;
-      }
-      SETERRQ1(1,"Unknown HYPRE ParaSails Sym option %s",buff);
+    ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&index,&flag);CHKERRQ(ierr);
+    if (flag) {
+      jac->symt = index;
     }
     ierr = HYPRE_ParaSailsSetSym(jac->hsolver,jac->symt);CHKERRQ(ierr);
 
@@ -671,24 +619,21 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
 static int PCSetFromOptions_HYPRE(PC pc)
 {
-  int        ierr;
-  char       buff[32],*type[] = {"pilut","parasails","boomerAMG","euclid"};
+  int        index,ierr;
+  char       *type[] = {"pilut","parasails","boomerAMG","euclid"};
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"pilut",buff,32,&flg);CHKERRQ(ierr);
-
-    
+    ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"pilut",&index,&flg);CHKERRQ(ierr);
     if (PetscOptionsPublishCount) {   /* force the default if it was not yet set and user did not set with option */
       if (!flg && !pc->ops->apply) {
-        flg  = PETSC_TRUE;
-        ierr = PetscStrcpy(buff,"pilut");CHKERRQ(ierr);
+        flg   = PETSC_TRUE;
+        index = 0
       }
     }
-
     if (flg) {
-      ierr = PCHYPRESetType_HYPRE(pc,buff);CHKERRQ(ierr);
+      ierr = PCHYPRESetType_HYPRE(pc,type[index]);CHKERRQ(ierr);
     } 
     if (pc->ops->setfromoptions) {
       ierr = pc->ops->setfromoptions(pc);CHKERRQ(ierr);

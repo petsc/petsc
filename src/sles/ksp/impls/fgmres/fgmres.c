@@ -20,6 +20,7 @@ static int    FGMRESGetNewVectors(KSP,int);
 static int    FGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
 static int    BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
+extern int KSPView_GMRES(KSP,PetscViewer);
 /*
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
@@ -663,48 +664,16 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-/*
-
-   KSPView_FGMRES -Prints information about the current Krylov method 
-                  being used.
-
- */
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_FGMRES" 
-int KSPView_FGMRES(KSP ksp,PetscViewer viewer)
-{
-  KSP_FGMRES   *fgmres = (KSP_FGMRES *)ksp->data; 
-  char         *cstr;
-  int          ierr;
-  PetscTruth   isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    if (fgmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
-      cstr = "Unmodified Gram-Schmidt Orthogonalization";
-    } else if (fgmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
-      cstr = "Modified Gram-Schmidt Orthogonalization";
-    } else if (fgmres->orthog == KSPGMRESIROrthogonalization) {
-      cstr = "Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization";
-    } else {
-      cstr = "unknown orthogonalization";
-    }
-    ierr = PetscViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
-  } else {
-    SETERRQ(1,"Viewer type not supported for this object");
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
-  int         ierr,restart;
+  int         ierr,restart,index;
   PetscReal   haptol;
   KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
   PetscTruth  flg;
+  char        *types[] = {"none","ifneeded","always"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
@@ -714,12 +683,14 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
     if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+    ierr = PetscOptionsLogicalGroupBegin("-ksp_gmres_classicalgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
     ierr = PetscOptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
+    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[gmres->cgstype],&index,&flg);CHKERRQ(ierr);    
+    if (flg) {
+      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)index);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;
@@ -808,6 +779,10 @@ int KSPGMRESSetRestart_FGMRES(KSP ksp,int max_k)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+EXTERN int KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_FGMRES"
 int KSPCreate_FGMRES(KSP ksp)
@@ -825,7 +800,7 @@ int KSPCreate_FGMRES(KSP ksp)
   ksp->ops->setup                        = KSPSetUp_FGMRES;
   ksp->ops->solve                        = KSPSolve_FGMRES;
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
-  ksp->ops->view                         = KSPView_FGMRES;
+  ksp->ops->view                         = KSPView_GMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FGMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FGMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_FGMRES;
@@ -842,12 +817,15 @@ int KSPCreate_FGMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
                                      KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",
+                                    "KSPGMRESSetCGSRefinementType_GMRES",
+                                     KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
 
   fgmres->haptol              = 1.0e-30;
   fgmres->q_preallocate       = 0;
   fgmres->delta_allocate      = FGMRES_DELTA_DIRECTIONS;
-  fgmres->orthog              = KSPGMRESUnmodifiedGramSchmidtOrthogonalization;
+  fgmres->orthog              = KSPGMRESClassicalGramSchmidtOrthogonalization;
   fgmres->nrs                 = 0;
   fgmres->sol_temp            = 0;
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;
@@ -855,7 +833,7 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
   fgmres->modifyctx           = PETSC_NULL;
   fgmres->modifydestroy       = PETSC_NULL;
-
+  fgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_IFNEEDED;
   /*
         This is not great since it changes this without explicit request from the user
      but there is no left preconditioning in the FGMRES

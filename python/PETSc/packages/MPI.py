@@ -171,12 +171,12 @@ class Configure(config.base.Configure):
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
       yield ('User specified library and includes', [libs], includes)
-      raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used\n')
+      raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-      raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used\n')
+      raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
@@ -337,7 +337,7 @@ class Configure(config.base.Configure):
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
-      raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs')
+      raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     return
 
   def configureTypes(self):

@@ -155,9 +155,19 @@ EXTERN int KSPComputeEigenvaluesExplicitly(KSP,int,PetscReal*,PetscReal*);
 
 EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
 EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
-EXTERN int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
 EXTERN int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
-EXTERN int KSPGMRESIROrthogonalization(KSP,int);
+EXTERN int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,int);
+/*E
+    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
+
+   Level: advanced
+
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+          KSPGMRESSetCGSRefinementType()
+
+E*/
+typedef enum {KSP_GMRES_CGS_REFINEMENT_NONE, KSP_GMRES_CGS_REFINEMENT_IFNEEDED, KSP_GMRES_CGS_REFINEMENT_ALWAYS} KSPGMRESCGSRefinementType;
+EXTERN int KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
 
 EXTERN int KSPFGMRESModifyPCNoChange(KSP,int,int,PetscReal,void*);
 EXTERN int KSPFGMRESModifyPCSLES(KSP,int,int,PetscReal,void*);

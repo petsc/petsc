@@ -11,6 +11,7 @@
 #define KSPCGType integer
 #define KSPConvergedReason integer 
 #define KSPNormType integer
+#define KSPGMRESCGSRefinementType integer
 !
 !  Various Krylov subspace methods
 !
@@ -91,7 +92,17 @@
       external KSPVECVIEWMONITOR
       external KSPSINGULARVALUEMONITOR
       external KSPGMRESKRYLOVMONITOR
-
+!
+!   Possible arguments to KSPGMRESSetRefinementType()
+!
+      integer KSP_GMRES_CGS_REFINEMENT_NONE
+      integer KSP_GMRES_CGS_REFINEMENT_IFNEEDED
+      integer KSP_GMRES_CGS_REFINEMENT_ALWAYS
+!
+      parameter (KSP_GMRES_CGS_REFINEMENT_NONE = 0)
+      parameter (KSP_GMRES_CGS_REFINEMENT_IFNEEDED = 1)
+      parameter (KSP_GMRES_CGS_REFINEMENT_ALWAYS = 2)
+!
 !PETSC_DEC_ATTRIBUTES(KSPDEFAULTCONVERGED,'_KSPDEFAULTCONVERGED')
 !PETSC_DEC_ATTRIBUTES(KSPDEFAULTMONITOR,'_KSPDEFAULTMONITOR')
 !PETSC_DEC_ATTRIBUTES(KSPTRUEMONITOR,'_KSPTRUEMONITOR')

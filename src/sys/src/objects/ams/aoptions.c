@@ -564,11 +564,10 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
 .  man - manual page with additional information on option
 .  list - the possible choices
 .  ntext - number of choices
-.  defaultv - the default (current) value
--  len - the size of the output value array
+-  defaultv - the default (current) value
 
    Output Parameter:
-+  value - the value to return
++  value - the index of the value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
    
    Level: intermediate
@@ -586,9 +585,11 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,char *value,int len,PetscTruth *set)
+int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,int *value,PetscTruth *set)
 {
-  int i,ierr;
+  int        i,ierr,len = 0, alen;
+  char       *svalue;
+  PetscTruth aset,flg;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -611,7 +612,13 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = PetscOptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
+  for ( i=0; i<ntext; i++) {
+    ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
+    if (alen > len) len = alen;
+  }
+  len += 5; /* a little extra space for user mistypes */
+  ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(amspub.prefix,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%s> (one of)",amspub.prefix?amspub.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
     for (i=0; i<ntext; i++){
@@ -619,7 +626,22 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
     }
     ierr = (*PetscHelpPrintf)(amspub.comm,"\n");CHKERRQ(ierr);
   }
-
+  if (aset) {
+    if (set) *set = PETSC_TRUE;
+    for (i=0; i<ntext; i++) {
+      ierr = PetscStrcmp(svalue,list[i],&flg);CHKERRQ(ierr);
+      if (flg) {
+        *value = i;
+        ierr = PetscFree(svalue);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
+    }
+    ierr = PetscFree(svalue);CHKERRQ(ierr);
+    SETERRQ3(1,"Unknown option %s for -%s%s",svalue,amspub.prefix?amspub.prefix:"",opt+1);
+  } else if (set) {
+    ierr = PetscFree(svalue);CHKERRQ(ierr);
+    *set = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 

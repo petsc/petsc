@@ -425,7 +425,7 @@ $                    natural - see KSPSetNormType()
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  int        ierr;
+  int        ierr,index;
   char       type[256],*stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscTruth flg;
 
@@ -451,26 +451,22 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsLogical("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscTruth isnone,ispreconditioned,isunpreconditioned,isnatural;
-
-      ierr = PetscStrcmp(type,stype[0],&isnone);CHKERRQ(ierr);
-      ierr = PetscStrcmp(type,stype[1],&ispreconditioned);CHKERRQ(ierr);
-      ierr = PetscStrcmp(type,stype[2],&isunpreconditioned);CHKERRQ(ierr);
-      ierr = PetscStrcmp(type,stype[3],&isnatural);CHKERRQ(ierr);
-
-      if (isnone) {
+      switch (index) {
+      case 0:
         ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
         ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
-      } else if (ispreconditioned) {
+        break;
+      case 1:
         ierr = KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM);CHKERRQ(ierr);
-      } else if (isunpreconditioned) {
+        break;
+      case 2:
         ierr = KSPSetNormType(ksp,KSP_UNPRECONDITIONED_NORM);CHKERRQ(ierr);
-      } else if (isnatural) {
+        break;
+      case 3:
         ierr = KSPSetNormType(ksp,KSP_NATURAL_NORM);CHKERRQ(ierr);
-      } else {
-        SETERRQ1(1,"Unknown KSP normtype %s",type);
+        break;
       }
     }
 

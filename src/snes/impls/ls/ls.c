@@ -985,8 +985,8 @@ static int SNESView_LS(SNES snes,PetscViewer viewer)
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
-  char       ver[16],*lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  int        ierr;
+  char       *lses[] = {"basic","basicnonorms","quadratic","cubic"};
+  int        ierr,index;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -995,25 +995,22 @@ static int SNESSetFromOptions_LS(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",ver,16,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",&index,&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscTruth isbasic,isnonorms,isquad,iscubic;
-
-      ierr = PetscStrcmp(ver,lses[0],&isbasic);CHKERRQ(ierr);
-      ierr = PetscStrcmp(ver,lses[1],&isnonorms);CHKERRQ(ierr);
-      ierr = PetscStrcmp(ver,lses[2],&isquad);CHKERRQ(ierr);
-      ierr = PetscStrcmp(ver,lses[3],&iscubic);CHKERRQ(ierr);
-
-      if (isbasic) {
+      switch (index) {
+      case 0:
         ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
-      } else if (isnonorms) {
+        break;
+      case 1:
         ierr = SNESSetLineSearch(snes,SNESNoLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
-      } else if (isquad) {
+        break;
+      case 2:
         ierr = SNESSetLineSearch(snes,SNESQuadraticLineSearch,PETSC_NULL);CHKERRQ(ierr);
-      } else if (iscubic) {
+        break;
+      case 3:
         ierr = SNESSetLineSearch(snes,SNESCubicLineSearch,PETSC_NULL);CHKERRQ(ierr);
+        break;
       }
-      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown line search");}
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
