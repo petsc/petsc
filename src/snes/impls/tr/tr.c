@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.50 1996/03/24 15:31:33 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.51 1996/03/24 16:05:47 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -42,7 +42,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   return(0);
 }
 /*
-   SNESSolve_TR - Implements Newton's Method with a very simple trust 
+   SNESSolve_EQ_TR - Implements Newton's Method with a very simple trust 
    region approach for solving systems of nonlinear equations. 
 
    The basic algorithm is taken from "The Minpack Project", by More', 
@@ -53,7 +53,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
    necessarily have many of the bells and whistles of other 
    implementations.  
 */
-static int SNESSolve_TR(SNES snes,int *its)
+static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
@@ -172,7 +172,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESSetUp_TR( SNES snes )
+static int SNESSetUp_EQ_TR( SNES snes )
 {
   int ierr;
   snes->nwork = 4;
@@ -182,7 +182,7 @@ static int SNESSetUp_TR( SNES snes )
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESDestroy_TR(PetscObject obj )
+static int SNESDestroy_EQ_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   int  ierr;
@@ -192,7 +192,7 @@ static int SNESDestroy_TR(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 
-static int SNESSetFromOptions_TR(SNES snes)
+static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
   double  tmp;
@@ -215,11 +215,11 @@ static int SNESSetFromOptions_TR(SNES snes)
   return 0;
 }
 
-static int SNESPrintHelp_TR(SNES snes,char *p)
+static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
 
-  PetscFPrintf(snes->comm,stdout," method SNES_EQ_NTR (tr) for systems of nonlinear equations:\n");
+  PetscFPrintf(snes->comm,stdout," method SNES_EQ_TR (tr) for systems of nonlinear equations:\n");
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu <mu> (default %g)\n",p,ctx->mu);
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta <eta> (default %g)\n",p,ctx->eta);
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma <sigma> (default %g)\n",p,ctx->sigma);
@@ -230,7 +230,7 @@ static int SNESPrintHelp_TR(SNES snes,char *p)
   return 0;
 }
 
-static int SNESView_TR(PetscObject obj,Viewer viewer)
+static int SNESView_EQ_TR(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
   SNES_TR    *tr = (SNES_TR *)snes->data;
@@ -250,8 +250,8 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
 
 /* ---------------------------------------------------------------- */
 /*@
-   SNESConverged_EQTR - Default test for monitoring the convergence of the
-   trust region method SNES_EQ_NTR for solving systems of nonlinear equations.
+   SNESConverged_EQ_TR - Default test for monitoring the convergence of the
+   trust region method SNES_EQ_TR for solving systems of nonlinear equations.
 
    Input Parameters:
 .  snes - the SNES context
@@ -284,7 +284,7 @@ $           set with SNESSetTolerances()
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_EQTR(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   double  epsmch = 1.0e-14;   /* This must be fixed */
@@ -299,7 +299,7 @@ int SNESConverged_EQTR(SNES snes,double xnorm,double pnorm,double fnorm,void *du
     return 1;
   }
   if (neP->itflag) {
-    info = SNESDefaultConverged(snes,xnorm,pnorm,fnorm,dummy);
+    info = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,dummy);
     if (info) return info;
   } 
   if (neP->delta < xnorm * epsmch) {
@@ -310,20 +310,20 @@ int SNESConverged_EQTR(SNES snes,double xnorm,double pnorm,double fnorm,void *du
   return 0;
 }
 /* ------------------------------------------------------------ */
-int SNESCreate_TR(SNES snes )
+int SNESCreate_EQ_TR(SNES snes )
 {
   SNES_TR *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"SNESCreate_TR:For SNES_NONLINEAR_EQUATIONS only");
-  snes->type 		= SNES_EQ_NTR;
-  snes->setup		= SNESSetUp_TR;
-  snes->solve		= SNESSolve_TR;
-  snes->destroy		= SNESDestroy_TR;
-  snes->converged	= SNESConverged_EQTR;
-  snes->printhelp       = SNESPrintHelp_TR;
-  snes->setfromoptions  = SNESSetFromOptions_TR;
-  snes->view            = SNESView_TR;
+    SETERRQ(1,"SNESCreate_EQ_TR:For SNES_NONLINEAR_EQUATIONS only");
+  snes->type 		= SNES_EQ_TR;
+  snes->setup		= SNESSetUp_EQ_TR;
+  snes->solve		= SNESSolve_EQ_TR;
+  snes->destroy		= SNESDestroy_EQ_TR;
+  snes->converged	= SNESConverged_EQ_TR;
+  snes->printhelp       = SNESPrintHelp_EQ_TR;
+  snes->setfromoptions  = SNESSetFromOptions_EQ_TR;
+  snes->view            = SNESView_EQ_TR;
 
   neP			= PetscNew(SNES_TR); CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_TR));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.34 1996/03/24 15:31:44 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.35 1996/03/24 16:06:04 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -18,7 +18,7 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
    "Line search algorithms with guaranteed sufficient decrease",
    Argonne National Laboratory", Technical Report MCS-P330-1092.
 */
-static int SNESSolve_UMLS(SNES snes,int *outits)
+static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UMLS    *neP = (SNES_UMLS *) snes->data;
   int          maxits, success, iters, history_len, i, global_dim, ierr, kspmaxit;
@@ -102,7 +102,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   return 0;
 }
 /* ---------------------------------------------------------- */
-static int SNESSetUp_UMLS(SNES snes)
+static int SNESSetUp_UM_LS(SNES snes)
 {
   int ierr;
   snes->nwork = 4;
@@ -112,7 +112,7 @@ static int SNESSetUp_UMLS(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESDestroy_UMLS(PetscObject obj )
+static int SNESDestroy_UM_LS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   VecDestroyVecs(snes->work,snes->nwork);
@@ -120,7 +120,7 @@ static int SNESDestroy_UMLS(PetscObject obj )
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESSetFromOptions_UMLS(SNES snes)
+static int SNESSetFromOptions_UM_LS(SNES snes)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
   double    tmp;
@@ -143,7 +143,7 @@ static int SNESSetFromOptions_UMLS(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESPrintHelp_UMLS(SNES snes,char *p)
+static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
@@ -160,7 +160,7 @@ static int SNESPrintHelp_UMLS(SNES snes,char *p)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESView_UMLS(PetscObject obj,Viewer viewer)
+static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
   SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
@@ -178,8 +178,8 @@ static int SNESView_UMLS(PetscObject obj,Viewer viewer)
 }
 /* ---------------------------------------------------------- */
 /*@ 
-   SNESConverged_UMLS - Default test for monitoring the 
-   convergence of the SNESSolve_UMLS() routine. 
+   SNESConverged_UM_LS - Default test for monitoring the 
+   convergence of the SNESSolve_UM_LS() routine. 
 
    Input Parameters:
 .  snes - the SNES context
@@ -197,7 +197,7 @@ $  -3  if  line search attempt failed,
 $   0  otherwise,
 
    where
-$  atol     - absolute function tolerance,
+$  atol     - absolute gradient norm tolerance,
 $             set with SNESSetTolerances()
 $  epsmch   - machine epsilon
 $  fmin     - lower bound on function value,
@@ -206,7 +206,7 @@ $  max_func - maximum number of function evaluations,
 $             set with SNESSetTolerances()
 $  nfunc    - number of function evaluations
 @*/
-int SNESConverged_UMLS(SNES snes,double xnorm,double gnorm,double f,
+int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,
                        void *dummy)
 {
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
@@ -288,7 +288,7 @@ $        Tolerances may be too small.
 $    7:  Search direction is not a descent direction.
 
    Notes:
-   This routine is used within the SNES_UM_NLS method.
+   This routine is used within the SNES_UM_LS method.
 @ */
 int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
                   double *step,double *gnorm,int *info)
@@ -487,23 +487,23 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   return 0;
 }
 /* ---------------------------------------------------------- */
-int SNESCreate_UMLS(SNES snes)
+int SNESCreate_UM_LS(SNES snes)
 {
   SNES_UMLS *neP;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "SNESCreate_UMLS:For SNES_UNCONSTRAINED_MINIMIZATION only");
-  snes->type 		  = SNES_UM_NLS;
-  snes->setup		  = SNESSetUp_UMLS;
-  snes->solve		  = SNESSolve_UMLS;
-  snes->destroy		  = SNESDestroy_UMLS;
-  snes->converged	  = SNESConverged_UMLS;
-  snes->printhelp         = SNESPrintHelp_UMLS;
-  snes->view              = SNESView_UMLS;
-  snes->setfromoptions    = SNESSetFromOptions_UMLS;
+    "SNESCreate_UM_LS:For SNES_UNCONSTRAINED_MINIMIZATION only");
+  snes->type 		  = SNES_UM_LS;
+  snes->setup		  = SNESSetUp_UM_LS;
+  snes->solve		  = SNESSolve_UM_LS;
+  snes->destroy		  = SNESDestroy_UM_LS;
+  snes->converged	  = SNESConverged_UM_LS;
+  snes->printhelp         = SNESPrintHelp_UM_LS;
+  snes->view              = SNESView_UM_LS;
+  snes->setfromoptions    = SNESSetFromOptions_UM_LS;
 
   neP			  = PetscNew(SNES_UMLS); CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_UMLS));
+  PLogObjectMemory(snes,sizeof(SNES_UM_LS));
   snes->data	          = (void *) neP;
   neP->LineSearch	  = SNESMoreLineSearch; 
   neP->gamma		  = 0.0;

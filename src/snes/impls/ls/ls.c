@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.65 1996/03/24 15:31:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.66 1996/03/24 16:05:52 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -24,13 +24,13 @@ static char vcid[] = "$Id: ls.c,v 1.65 1996/03/24 15:31:27 curfman Exp curfman $
     and Schnabel.
 */
 
-int SNESSolve_LS(SNES snes,int *outits)
+int SNESSolve_EQ_LS(SNES snes,int *outits)
 {
-  SNES_LS      *neP = (SNES_LS *) snes->data;
-  int          maxits, i, history_len, ierr, lits, lsfail;
-  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  double       fnorm, gnorm, xnorm, ynorm, *history;
-  Vec          Y, X, F, G, W, TMP;
+  SNES_LS       *neP = (SNES_LS *) snes->data;
+  int           maxits, i, history_len, ierr, lits, lsfail;
+  MatStructure  flg = DIFFERENT_NONZERO_PATTERN;
+  double        fnorm, gnorm, xnorm, ynorm, *history;
+  Vec           Y, X, F, G, W, TMP;
 
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
@@ -83,14 +83,14 @@ int SNESSolve_LS(SNES snes,int *outits)
   }
   if (i == maxits) {
     PLogInfo(snes,
-      "SNESSolve_LS: Maximum number of iterations has been reached: %d\n",maxits);
+      "SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *outits = i+1;
   return 0;
 }
 /* ------------------------------------------------------------ */
-int SNESSetUp_LS(SNES snes )
+int SNESSetUp_EQ_LS(SNES snes )
 {
   int ierr;
   snes->nwork = 4;
@@ -100,7 +100,7 @@ int SNESSetUp_LS(SNES snes )
   return 0;
 }
 /* ------------------------------------------------------------ */
-int SNESDestroy_LS(PetscObject obj)
+int SNESDestroy_EQ_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
   int  ierr;
@@ -335,7 +335,7 @@ $  -snes_line_search quadratic
 
    Notes:
    Use SNESSetLineSearch()
-   to set this routine within the SNES_EQ_NLS method.  
+   to set this routine within the SNES_EQ_LS method.  
 
 .keywords: SNES, nonlinear, quadratic, line search
 
@@ -427,7 +427,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 /* ------------------------------------------------------------ */
 /*@C
    SNESSetLineSearch - Sets the line search routine to be used
-   by the method SNES_LS.
+   by the method SNES_EQ_LS.
 
    Input Parameters:
 .  snes - nonlinear context obtained from SNESCreate()
@@ -469,15 +469,15 @@ $   -snes_line_search [basic,quadratic,cubic]
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double*,double*,int*))
 {
-  if ((snes)->type == SNES_EQ_NLS) ((SNES_LS *)(snes->data))->LineSearch = func;
+  if ((snes)->type == SNES_EQ_LS) ((SNES_LS *)(snes->data))->LineSearch = func;
   return 0;
 }
 /* ------------------------------------------------------------------ */
-static int SNESPrintHelp_LS(SNES snes,char *p)
+static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
 
-  PetscPrintf(snes->comm," method SNES_EQ_NLS (ls) for systems of nonlinear equations:\n");
+  PetscPrintf(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
   PetscPrintf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
   PetscPrintf(snes->comm,"   %ssnes_line_search_alpha <alpha> (default %g)\n",p,ls->alpha);
   PetscPrintf(snes->comm,"   %ssnes_line_search_maxstep <max> (default %g)\n",p,ls->maxstep);
@@ -485,7 +485,7 @@ static int SNESPrintHelp_LS(SNES snes,char *p)
   return 0;
 }
 /* ------------------------------------------------------------------ */
-static int SNESView_LS(PetscObject obj,Viewer viewer)
+static int SNESView_EQ_LS(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
   SNES_LS    *ls = (SNES_LS *)snes->data;
@@ -508,7 +508,7 @@ static int SNESView_LS(PetscObject obj,Viewer viewer)
   return 0;
 }
 /* ------------------------------------------------------------------ */
-static int SNESSetFromOptions_LS(SNES snes)
+static int SNESSetFromOptions_EQ_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
   char    ver[16];
@@ -538,25 +538,25 @@ static int SNESSetFromOptions_LS(SNES snes)
     else if (!PetscStrcmp(ver,"cubic")) {
       SNESSetLineSearch(snes,SNESCubicLineSearch);
     }
-    else {SETERRQ(1,"SNESSetFromOptions_LS:Unknown line search");}
+    else {SETERRQ(1,"SNESSetFromOptions_EQ_LS:Unknown line search");}
   }
   return 0;
 }
 /* ------------------------------------------------------------ */
-int SNESCreate_LS(SNES  snes )
+int SNESCreate_EQ_LS(SNES  snes )
 {
   SNES_LS *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"SNESCreate_LS:For SNES_NONLINEAR_EQUATIONS only");
-  snes->type		= SNES_EQ_NLS;
-  snes->setup		= SNESSetUp_LS;
-  snes->solve		= SNESSolve_LS;
-  snes->destroy		= SNESDestroy_LS;
-  snes->converged	= SNESDefaultConverged;
-  snes->printhelp       = SNESPrintHelp_LS;
-  snes->setfromoptions  = SNESSetFromOptions_LS;
-  snes->view            = SNESView_LS;
+    SETERRQ(1,"SNESCreate_EQ_LS:For SNES_NONLINEAR_EQUATIONS only");
+  snes->type		= SNES_EQ_LS;
+  snes->setup		= SNESSetUp_EQ_LS;
+  snes->solve		= SNESSolve_EQ_LS;
+  snes->destroy		= SNESDestroy_EQ_LS;
+  snes->converged	= SNESConverged_EQ_LS;
+  snes->printhelp       = SNESPrintHelp_EQ_LS;
+  snes->setfromoptions  = SNESSetFromOptions_EQ_LS;
+  snes->view            = SNESView_EQ_LS;
 
   neP			= PetscNew(SNES_LS);   CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_LS));
