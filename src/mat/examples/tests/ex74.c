@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.20 2000/07/27 14:30:34 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.21 2000/07/28 14:22:22 hzhang Exp balay $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -321,6 +321,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
+  ierr = MatDestroy(sC);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);
   ierr = VecDestroy(s1);CHKERRA(ierr);
