@@ -426,6 +426,10 @@ PetscErrorCode ISSort(IS is)
 .  flg - output flag, either PETSC_TRUE if the index set is sorted, 
          or PETSC_FALSE otherwise.
 
+   Notes: For parallel IS objects this only indicates if the local part of the IS
+          is sorted. So some processors may return PETSC_TRUE while others may 
+          return PETSC_FALSE.
+
    Level: intermediate
 
 .seealso: ISSort()

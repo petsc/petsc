@@ -29,7 +29,9 @@ EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
   Input Parameters:
 + viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
-- outtype - the type of vector VECSEQ or VECMPI or PETSC_NULL
+- outtype - the type of vector VECSEQ or VECMPI or PETSC_NULL (which indicates
+            using VECSEQ if the communicator in the Viewer is of size 1; otherwise
+            use VECMPI).
 
   Output Parameter:
 . newvec - the newly loaded vector

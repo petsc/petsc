@@ -32,6 +32,11 @@
 #define PCNN 'nn'
 #define PCCHOLESKY 'cholesky'
 #define PCRAMG 'ramg'
+#define PCSAMG 'samg'
+#define PCPBJACOBI 'pbjacobi'
+#define PCMAT 'mat'
+#define PCHYPRE 'hypre'
+#define PCFIELDSPLIT 'fieldsplit'
 
 #endif
 

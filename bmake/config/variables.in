@@ -25,6 +25,7 @@ DOCTEXT            = @DOCTEXT@
 MAPNAMES           = @MAPNAMES@
 BIB2HTML           = @BIB2HTML@
 C2HTML             = @C2HTML@
+LGRIND             = @LGRIND@
 
 top_builddir       = @PETSC_DIR@
 INSTALL_DIR        = @INSTALL_DIR@

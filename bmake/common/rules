@@ -341,10 +341,16 @@ fortranstubs:
 	  -ptr64 PETSC_USE_POINTER_CONVERSION  -fcaps PETSC_HAVE_FORTRAN_CAPS \
           -fuscore PETSC_HAVE_FORTRAN_UNDERSCORE ${SOURCEC}
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex
 
 #
 #
+.c.tex:
+	${LGRIND}/${PETSC_ARCH}/lgrind -d ${LGRIND}/lgrindef -i $< > $*.tex
+
+.tex.mtex:
+	PYTHONPATH=${PETSC_DIR}/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/maint/mapnameslatex.py > $*.mtex
+
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
@@ -411,6 +417,7 @@ fortranstubs:
 #
 .cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
+
 .c.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
@@ -441,6 +448,7 @@ fortranstubs:
           echo "--------------Error detected during compile or link!-----------------------";\
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz
+
 .F.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
@@ -473,6 +481,7 @@ fortranstubs:
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz;
 
+#---------------------------------------------------------------------------------------
 
 deleteshared: chkopts_basic
 	${RM} ${INSTALL_LIB_DIR}/*.${SLSUFFIX} ${INSTALL_LIB_DIR}/so_locations
