@@ -96,12 +96,6 @@ class Package(config.base.Configure):
       alllibs.append(libs)
     return alllibs
 
-  def generateGuess(self,name,dir,include = None, libdir = None):
-    if not include: include = os.path.join(dir,self.includedir)
-    if not libdir:  libdir  = self.libdir
-    for l in self.generateLibList(os.path.join(dir,libdir)):
-      yield(name+self.PACKAGE,l,include)
-    
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
       if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
@@ -195,10 +189,10 @@ class Package(config.base.Configure):
         break
     if Dir is None:
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
-      if maxTrys <= 0:
+      if retry <= 0:
         raise RuntimeError('Unable to download '+self.name)
       self.downLoad()
-      return self.getDir()
+      return self.getDir(retry = 0)
     if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
@@ -214,6 +208,10 @@ class Package(config.base.Configure):
     libs         = []
     incls        = []
     for l in self.deps:
+      if not hasattr(l,'found'):
+        raise RuntimeError(l.PACKAGE+' does not have found attribute!')
+      if not l.found:
+        raise RuntimeError('Did not find '+l.PACKAGE+' needed by '+self.name)
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
       

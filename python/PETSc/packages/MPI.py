@@ -8,7 +8,7 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.foundMPI     = 0
+    self.found        = 0
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.argDB        = framework.argDB
@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    if self.foundMPI:
+    if self.found   :
       desc = ['MPI:']	
       desc.append('  Type: '+self.name)
       desc.append('  Version: '+self.version)
@@ -276,7 +276,7 @@ class Configure(config.base.Configure):
     yield('Default MPICH install location (C:\Program Files\MPICH with SDK.gcc',self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
     
     # If necessary, download MPICH
-    if not self.foundMPI and self.framework.argDB['download-mpich'] == 2:
+    if not self.found    and self.framework.argDB['download-mpich'] == 2:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
       raise RuntimeError('Downloaded MPICH could not be used. Please check in install in '+os.path.dirname(include)+'\n')
@@ -444,12 +444,12 @@ class Configure(config.base.Configure):
         if not self.executeTest(self.checkSharedLibrary):
           nonsharedMPI.append((name, self.lib, self.include, version))
           continue
-      self.foundMPI = 1
+      self.found = 1
       functionalMPI.append((name, self.lib, self.include, version))
       if not self.framework.argDB['with-alternatives']:
         break
     # User chooses one or take first (sort by version)
-    if self.foundMPI:
+    if self.found:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
       self.dlib = self.lib + self.compilers.flibs
       if hasattr(self.framework,'packages'):
