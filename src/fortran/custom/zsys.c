@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.34 1997/09/18 03:24:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.35 1997/09/26 02:16:37 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,6 +35,7 @@ static char vcid[] = "$Id: zsys.c,v 1.34 1997/09/18 03:24:17 bsmith Exp bsmith $
 #define petscbinarywrite_          PETSCBINARYWRITE
 #define petscbinaryclose_          PETSCBINARYCLOSE
 #define petscbinaryseek_           PETSCBINARYSEEK
+#define petscgetprogramname_       PETSCGETPROGRAMNAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petsctrlog_                petsctrlog
 #define petscattachdebugger_       petscattachdebugger
@@ -63,6 +64,7 @@ static char vcid[] = "$Id: zsys.c,v 1.34 1997/09/18 03:24:17 bsmith Exp bsmith $
 #define petscbinarywrite_          petscbinarywrite
 #define petscbinaryclose_          petscbinaryclose
 #define petscbinaryseek_           petscbinaryseek
+#define petscgetprogramname_       petscgetprogramname
 #endif
 
 #if defined(__cplusplus)
@@ -238,6 +240,20 @@ void petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *__ierr ){
 	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
 }
 
+void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
+{
+  char *tmp;
+  int len;
+#if defined(USES_CPTOFCD)
+  tmp = _fcdtocp(name);
+  len = _fcdlen(name) - 1;
+#else
+  tmp = name;
+  len = len_in - 1;
+#endif
+  *__ierr = PetscGetProgramName(tmp,len);
+}
+
 #if defined(__cplusplus)
 }
 #endif
@@ -354,7 +370,3 @@ PETSC ERROR:com instead of comm).\n",rank );
 }
 
 #endif
-
-
-
-
