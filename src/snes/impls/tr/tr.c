@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.56 1996/08/23 20:36:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.57 1996/09/17 20:05:02 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -106,19 +106,19 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
-        PLogInfo(snes, "Scaling direction by %g \n",norm );
+        PLogInfo(snes,"SNES: Scaling direction by %g \n",norm );
         ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
       } else {
         gpnorm = 0.0;
-        PLogInfo(snes,"Direction is in Trust Region \n" );
+        PLogInfo(snes,"SNES: Direction is in Trust Region\n" );
         ynorm = norm;
       }
-      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);             /* Y <- X + Y */
+      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);            /* Y <- X + Y */
       ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /*  F(X) */
-      ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);             /* gnorm <- || g || */
+      ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);      /* gnorm <- || g || */
       if (fnorm == gpnorm) rho = 0.0;
       else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
 
@@ -126,13 +126,13 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      PLogInfo(snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
+      PLogInfo(snes,"SNES: iter %d: f_norm=%g, g_norm=%g, ynorm=%g\n",
                                              i, fnorm, gnorm, ynorm );
-      PLogInfo(snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
+      PLogInfo(snes,"SNES: gpred=%g, rho=%g, delta=%g,iters=%d\n", 
                                                gpnorm, rho, delta, lits);
       neP->delta = delta;
       if (rho > neP->sigma) break;
-      PLogInfo(snes,"Trying again in smaller region\n");
+      PLogInfo(snes,"SNES: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
       neP->itflag = 0;
       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
@@ -166,7 +166,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     } 
   }
   if (i == maxits) {
-    PLogInfo(snes,"Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo(snes,"SNES: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *its = i+1;
