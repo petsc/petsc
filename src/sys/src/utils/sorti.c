@@ -20,10 +20,10 @@
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static PetscErrorCode PetscSortInt_Private(int *v,int right)
+static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 {
   PetscErrorCode ierr;
-  int i,vl,last,tmp;
+  PetscInt i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -61,10 +61,10 @@ static PetscErrorCode PetscSortInt_Private(int *v,int right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PetscSortInt(int n,int i[])
+PetscErrorCode PetscSortInt(PetscInt n,PetscInt i[])
 {
   PetscErrorCode ierr;
-  int j,k,tmp,ik;
+  PetscInt j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -94,10 +94,10 @@ PetscErrorCode PetscSortInt(int n,int i[])
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static PetscErrorCode PetscSortIntWithArray_Private(int *v,int *V,int right)
+static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,PetscInt right)
 {
   PetscErrorCode ierr;
-  int i,vl,last,tmp;
+  PetscInt i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -137,10 +137,10 @@ static PetscErrorCode PetscSortIntWithArray_Private(int *v,int *V,int right)
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PetscSortIntWithArray(int n,int i[],int I[])
+PetscErrorCode PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt I[])
 {
   PetscErrorCode ierr;
-  int j,k,tmp,ik;
+  PetscInt j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {

@@ -628,12 +628,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscDrawCreate_X" 
 PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 {
-  PetscDraw_X *Xwin;
+  PetscDraw_X    *Xwin;
   PetscErrorCode ierr;
-  int         rank,xywh[4],osize = 4;
-  int         x = draw->x,y = draw->y,w = draw->w,h = draw->h;
-  static int  xavailable = 0,yavailable = 0,xmax = 0,ymax = 0,ybottom = 0;
-  PetscTruth  flg;
+  PetscMPIInt    rank;
+  int            xywh[4],osize = 4;
+  int            x = draw->x,y = draw->y,w = draw->w,h = draw->h;
+  static int     xavailable = 0,yavailable = 0,xmax = 0,ymax = 0,ybottom = 0;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   if (!draw->display) {

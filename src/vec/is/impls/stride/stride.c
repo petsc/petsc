@@ -7,7 +7,7 @@
 EXTERN PetscErrorCode VecInitializePackage(char *);
 
 typedef struct {
-  int N,n,first,step;
+  PetscInt N,n,first,step;
 } IS_Stride;
 
 #undef __FUNCT__  
@@ -40,7 +40,7 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISInvertPermutation_Stride" 
-PetscErrorCode ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
+PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
   PetscErrorCode ierr;
@@ -50,7 +50,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
     ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
   } else {
     IS  tmp;
-    int *indices,n = isstride->n;
+    PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(is->comm,n,indices,&tmp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-PetscErrorCode ISStrideGetInfo(IS is,int *first,int *step)
+PetscErrorCode ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 {
   IS_Stride *sub;
 
@@ -152,14 +152,14 @@ PetscErrorCode ISDestroy_Stride(IS is)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_Stride" 
-PetscErrorCode ISGetIndices_Stride(IS in,int **idx)
+PetscErrorCode ISGetIndices_Stride(IS in,PetscInt **idx)
 {
   IS_Stride *sub = (IS_Stride*)in->data;
   PetscErrorCode ierr;
-  int       i;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc((sub->n+1)*sizeof(int),idx);CHKERRQ(ierr);
+  ierr      = PetscMalloc((sub->n+1)*sizeof(PetscInt),idx);CHKERRQ(ierr);
   (*idx)[0] = sub->first;
   for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ PetscErrorCode ISGetIndices_Stride(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_Stride" 
-PetscErrorCode ISRestoreIndices_Stride(IS in,int **idx)
+PetscErrorCode ISRestoreIndices_Stride(IS in,PetscInt **idx)
 {
   PetscErrorCode ierr;
 
@@ -178,7 +178,7 @@ PetscErrorCode ISRestoreIndices_Stride(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize_Stride" 
-PetscErrorCode ISGetSize_Stride(IS is,int *size)
+PetscErrorCode ISGetSize_Stride(IS is,PetscInt *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -189,7 +189,7 @@ PetscErrorCode ISGetSize_Stride(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetLocalSize_Stride" 
-PetscErrorCode ISGetLocalSize_Stride(IS is,int *size)
+PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -203,7 +203,7 @@ PetscErrorCode ISGetLocalSize_Stride(IS is,int *size)
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride      *sub = (IS_Stride *)is->data;
-  int            i,n = sub->n;
+  PetscInt            i,n = sub->n;
   PetscMPIInt    rank,size;
   PetscTruth     iascii;
   PetscErrorCode ierr;
@@ -304,10 +304,10 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
+PetscErrorCode ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscErrorCode ierr;
-  int        min,max;
+  PetscInt        min,max;
   IS         Nindex;
   IS_Stride  *sub;
   PetscTruth flg;
@@ -325,7 +325,7 @@ PetscErrorCode ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   ierr           = PetscNew(IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;
-  ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   sub->first     = first;
   sub->step      = step;
   if (step > 0) {min = first; max = first + step*(n-1);}

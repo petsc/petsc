@@ -24,9 +24,9 @@ typedef struct _p_IS* IS;
     Default index set data structures that PETSc provides.
 */
 typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
-EXTERN PetscErrorCode   ISCreateGeneral(MPI_Comm,int,const int[],IS *);
-EXTERN PetscErrorCode   ISCreateBlock(MPI_Comm,int,int,const int[],IS *);
-EXTERN PetscErrorCode   ISCreateStride(MPI_Comm,int,int,int,IS *);
+EXTERN PetscErrorCode   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
 
 EXTERN PetscErrorCode   ISDestroy(IS);
 
@@ -35,11 +35,11 @@ EXTERN PetscErrorCode   ISPermutation(IS,PetscTruth*);
 EXTERN PetscErrorCode   ISSetIdentity(IS);
 EXTERN PetscErrorCode   ISIdentity(IS,PetscTruth*);
 
-EXTERN PetscErrorCode   ISGetIndices(IS,int *[]);
-EXTERN PetscErrorCode   ISRestoreIndices(IS,int *[]);
-EXTERN PetscErrorCode   ISGetSize(IS,int *);
-EXTERN PetscErrorCode   ISGetLocalSize(IS,int *);
-EXTERN PetscErrorCode   ISInvertPermutation(IS,int,IS*);
+EXTERN PetscErrorCode   ISGetIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode   ISRestoreIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode   ISGetSize(IS,PetscInt *);
+EXTERN PetscErrorCode   ISGetLocalSize(IS,PetscInt *);
+EXTERN PetscErrorCode   ISInvertPermutation(IS,PetscInt,IS*);
 EXTERN PetscErrorCode   ISView(IS,PetscViewer);
 EXTERN PetscErrorCode   ISEqual(IS,IS,PetscTruth *);
 EXTERN PetscErrorCode   ISSort(IS);
@@ -48,19 +48,19 @@ EXTERN PetscErrorCode   ISDifference(IS,IS,IS*);
 EXTERN PetscErrorCode   ISSum(IS,IS,IS*);
 
 EXTERN PetscErrorCode   ISBlock(IS,PetscTruth*);
-EXTERN PetscErrorCode   ISBlockGetIndices(IS,int *[]);
-EXTERN PetscErrorCode   ISBlockRestoreIndices(IS,int *[]);
-EXTERN PetscErrorCode   ISBlockGetSize(IS,int *);
-EXTERN PetscErrorCode   ISBlockGetBlockSize(IS,int *);
+EXTERN PetscErrorCode   ISBlockGetIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode   ISBlockRestoreIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode   ISBlockGetSize(IS,PetscInt *);
+EXTERN PetscErrorCode   ISBlockGetBlockSize(IS,PetscInt *);
 
 EXTERN PetscErrorCode   ISStride(IS,PetscTruth*);
-EXTERN PetscErrorCode   ISStrideGetInfo(IS,int *,int*);
+EXTERN PetscErrorCode   ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
 EXTERN PetscErrorCode   ISStrideToGeneral(IS);
 
 EXTERN PetscErrorCode   ISDuplicate(IS,IS*);
 EXTERN PetscErrorCode   ISAllGather(IS,IS*);
-EXTERN PetscErrorCode   ISAllGatherIndices(MPI_Comm,int,const int[],int*,int*[]);
+EXTERN PetscErrorCode   ISAllGatherIndices(MPI_Comm,PetscInt,const PetscInt[],PetscInt*,PetscInt*[]);
 
 /* --------------------------------------------------------------------------*/
 extern PetscCookie IS_LTOGM_COOKIE;
@@ -84,11 +84,11 @@ extern PetscCookie IS_LTOGM_COOKIE;
 S*/
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int)
-  int n;                  /* number of local indices */
-  int *indices;           /* global index of each local index */
-  int globalstart;        /* first global referenced in indices */
-  int globalend;          /* last + 1 global referenced in indices */
-  int *globals;           /* local index for each global index between start and end */
+  PetscInt n;                  /* number of local indices */
+  PetscInt *indices;           /* global index of each local index */
+  PetscInt globalstart;        /* first global referenced in indices */
+  PetscInt globalend;          /* last + 1 global referenced in indices */
+  PetscInt *globals;           /* local index for each global index between start and end */
 };
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
@@ -105,21 +105,21 @@ typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 E*/
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
-EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
-EXTERN PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,const PetscInt[],ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm,PetscInt,const PetscInt[],ISLocalToGlobalMapping*);
 EXTERN PetscErrorCode ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
 EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
-EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,int,const int[],int*,int[]);
-EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,int*);
-EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,int*,int*[],int*[],int**[]);
-EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int*[],int*[],int**[]);
-EXTERN PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
+EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
+EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
+EXTERN PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
 #define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
 {\
-  int _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
+  PetscInt _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
   for (_i=0; _i<N; _i++) {\
     if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
     if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",(in)[_i],_Nmax,_i);\
@@ -144,7 +144,7 @@ typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 #define MPIU_COLORING_VALUE MPI_CHAR
 #define IS_COLORING_MAX     255
 typedef unsigned char ISColoringValue;
-EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,int,ISColoringValue*,int*,ISColoringValue*[]);
+EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 
 /*S
      ISColoring - sets of IS's that define a coloring
@@ -165,15 +165,15 @@ struct _p_ISColoring {
   IS              *is;              /* for each color indicates columns */
   MPI_Comm        comm;
   ISColoringValue *colors;          /* for each column indicates color */
-  int             N;                /* number of columns */
+  PetscInt             N;                /* number of columns */
   ISColoringType  ctype;
 };
 typedef struct _p_ISColoring* ISColoring;
 
-EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,int,const ISColoringValue[],ISColoring*);
+EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,const ISColoringValue[],ISColoring*);
 EXTERN PetscErrorCode ISColoringDestroy(ISColoring);
 EXTERN PetscErrorCode ISColoringView(ISColoring,PetscViewer);
-EXTERN PetscErrorCode ISColoringGetIS(ISColoring,int*,IS*[]);
+EXTERN PetscErrorCode ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
 EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,IS*[]);
 #define ISColoringReference(coloring) ((coloring)->refct++,0)
 #define ISColoringSetType(coloring,type) ((coloring)->ctype = type,0)
@@ -181,11 +181,11 @@ EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,IS*[]);
 /* --------------------------------------------------------------------------*/
 
 EXTERN PetscErrorCode ISPartitioningToNumbering(IS,IS*);
-EXTERN PetscErrorCode ISPartitioningCount(IS,int[]);
+EXTERN PetscErrorCode ISPartitioningCount(IS,PetscInt[]);
 
-EXTERN PetscErrorCode ISCompressIndicesGeneral(int,int,int,const IS[],IS[]);
-EXTERN PetscErrorCode ISCompressIndicesSorted(int,int,int,const IS[],IS[]);
-EXTERN PetscErrorCode ISExpandIndicesGeneral(int,int,int,const IS[],IS[]);
+EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -75,22 +75,22 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,int ismax,const IS isrow[],const
 #define __FUNCT__ "MatGetSubMatrices_MPIDense_Local" 
 PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
-  Mat_MPIDense  *c = (Mat_MPIDense*)C->data;
-  Mat           A = c->A;
-  Mat_SeqDense  *a = (Mat_SeqDense*)A->data,*mat;
+  Mat_MPIDense   *c = (Mat_MPIDense*)C->data;
+  Mat            A = c->A;
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data,*mat;
   PetscErrorCode ierr;
-  int           N = C->N,rstart = c->rstart,count;
-  int           **irow,**icol,*nrow,*ncol,*w1,*w3,*w4,*rtable,start,end,size;
-  int           **sbuf1,rank,m,i,j,k,l,ct1,**rbuf1,row,proc;
-  int           nrqs,msz,**ptr,idex,*ctr,*pa,*tmp,bsz,nrqr;
-  int           is_no,jmax,*irow_i,**rmap,*rmap_i;
-  int           len,ctr_j,*sbuf1_j,*rbuf1_i;
-  int           tag0,tag1;
-  MPI_Request   *s_waits1,*r_waits1,*s_waits2,*r_waits2;
-  MPI_Status    *r_status1,*r_status2,*s_status1,*s_status2;
-  MPI_Comm      comm;
-  PetscScalar   **rbuf2,**sbuf2;
-  PetscTruth    sorted;
+  PetscMPIInt    rank,size,tag0,tag1;
+  int            N = C->N,rstart = c->rstart,count;
+  int            **irow,**icol,*nrow,*ncol,*w1,*w3,*w4,*rtable,start,end;
+  int            **sbuf1,m,i,j,k,l,ct1,**rbuf1,row,proc;
+  int            nrqs,msz,**ptr,idex,*ctr,*pa,*tmp,bsz,nrqr;
+  int            is_no,jmax,*irow_i,**rmap,*rmap_i;
+  int            len,ctr_j,*sbuf1_j,*rbuf1_i;
+  MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;
+  MPI_Status     *r_status1,*r_status2,*s_status1,*s_status2;
+  MPI_Comm       comm;
+  PetscScalar    **rbuf2,**sbuf2;
+  PetscTruth     sorted;
 
   PetscFunctionBegin;
   comm   = C->comm;

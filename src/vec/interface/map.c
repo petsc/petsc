@@ -189,7 +189,7 @@ PetscErrorCode PetscMapDestroy(PetscMap map)
 .seealso: PetscMapSetSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
 Concepts: PetscMap^local size
 @*/
-PetscErrorCode PetscMapSetLocalSize(PetscMap m,int n)
+PetscErrorCode PetscMapSetLocalSize(PetscMap m,PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -217,7 +217,7 @@ PetscErrorCode PetscMapSetLocalSize(PetscMap m,int n)
    Concepts: PetscMap^local size
 
 @*/
-PetscErrorCode PetscMapGetLocalSize(PetscMap m,int *n)
+PetscErrorCode PetscMapGetLocalSize(PetscMap m,PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -242,7 +242,7 @@ PetscErrorCode PetscMapGetLocalSize(PetscMap m,int *n)
 .seealso: PetscMapSetLocalSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
  Concepts: PetscMap^size
 @*/
-PetscErrorCode PetscMapSetSize(PetscMap m,int N)
+PetscErrorCode PetscMapSetSize(PetscMap m,PetscInt N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -269,7 +269,7 @@ PetscErrorCode PetscMapSetSize(PetscMap m,int N)
 
    Concepts: PetscMap^size
 @*/
-PetscErrorCode PetscMapGetSize(PetscMap m,int *N)
+PetscErrorCode PetscMapGetSize(PetscMap m,PetscInt *N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -296,7 +296,7 @@ PetscErrorCode PetscMapGetSize(PetscMap m,int *N)
 
 .seealso: PetscMapGetLocalSize(), PetscMapGetGlobalRange()
 @*/
-PetscErrorCode PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
+PetscErrorCode PetscMapGetLocalRange(PetscMap m,PetscInt *rstart,PetscInt *rend)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -327,7 +327,7 @@ PetscErrorCode PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 .seealso: PetscMapGetSize(), PetscMapGetLocalRange()
 
 @*/
-PetscErrorCode PetscMapGetGlobalRange(PetscMap m,int *range[])
+PetscErrorCode PetscMapGetGlobalRange(PetscMap m,PetscInt *range[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 

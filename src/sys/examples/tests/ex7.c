@@ -12,7 +12,7 @@ static char help[] = "Tests PetscSetCommWorld().\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   MPI_Init(&argc,&argv);
 

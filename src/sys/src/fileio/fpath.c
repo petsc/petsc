@@ -53,7 +53,7 @@
 
 .seealso: PetscGetRelativePath()
 @*/
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   struct passwd *pwde;
   PetscErrorCode ierr;
@@ -99,7 +99,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 	/* Find username */
 	name = fullpath + 1;
 	p    = name;
-	while (*p && isalnum((int)(*p))) p++;
+	while (*p && *p != '/') p++;
 	*p = 0; p++;
 	pwde = getpwnam(name);
 	if (!pwde) PetscFunctionReturn(0);

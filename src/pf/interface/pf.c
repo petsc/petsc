@@ -30,7 +30,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PFSet(PF pf,PetscErrorCode (*apply)(void*,int,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
+PetscErrorCode PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -126,7 +126,7 @@ static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 
 .seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
-PetscErrorCode PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
+PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
   PF  newpf;
   PetscErrorCode ierr;
@@ -181,7 +181,7 @@ PetscErrorCode PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  int i,rstart,rend,n,p;
+  PetscInt i,rstart,rend,n,p;
   PetscTruth nox = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -254,7 +254,7 @@ PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
+PetscErrorCode PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
 {
   PetscErrorCode ierr;
 

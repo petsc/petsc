@@ -172,11 +172,11 @@ $
 @*/
 PetscErrorCode PetscLogInfo(void *vobj, const char message[], ...)  
 {
-  va_list     Argp;
-  int         rank,urank;
-  size_t      len;
-  PetscObject obj = (PetscObject)vobj;
-  char        string[8*1024];
+  va_list        Argp;
+  PetscMPIInt    rank,urank;
+  size_t         len;
+  PetscObject    obj = (PetscObject)vobj;
+  char           string[8*1024];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

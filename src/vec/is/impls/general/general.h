@@ -9,10 +9,10 @@
 #include "petscsys.h"
 
 typedef struct {
-  int        N;         /* number of indices */ 
-  int        n;         /* local number of indices */ 
+  PetscInt   N;         /* number of indices */ 
+  PetscInt   n;         /* local number of indices */ 
   PetscTruth sorted;    /* indicates the indices are sorted */ 
-  int        *idx;
+  PetscInt   *idx;
 } IS_General;
 
 #endif

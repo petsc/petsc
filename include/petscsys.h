@@ -15,12 +15,12 @@ EXTERN PetscErrorCode  PetscGetDate(char[],size_t);
 EXTERN PetscErrorCode  PetscSetInitialDate(void);
 EXTERN PetscErrorCode  PetscGetInitialDate(char[],size_t);
 
-EXTERN PetscErrorCode  PetscSortInt(int,int[]);
-EXTERN PetscErrorCode  PetscSortIntWithPermutation(int,const int[],int[]);
-EXTERN PetscErrorCode  PetscSortStrWithPermutation(int,const char*[],int[]);
-EXTERN PetscErrorCode  PetscSortIntWithArray(int,int[],int[]);
-EXTERN PetscErrorCode  PetscSortReal(int,PetscReal[]);
-EXTERN PetscErrorCode  PetscSortRealWithPermutation(int,const PetscReal[],int[]);
+EXTERN PetscErrorCode  PetscSortInt(PetscInt,PetscInt[]);
+EXTERN PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
+EXTERN PetscErrorCode  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
+EXTERN PetscErrorCode  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+EXTERN PetscErrorCode  PetscSortReal(PetscInt,PetscReal[]);
+EXTERN PetscErrorCode  PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 
 EXTERN PetscErrorCode  PetscSetDisplay(void);
 EXTERN PetscErrorCode  PetscGetDisplay(char[],size_t);
@@ -46,11 +46,11 @@ EXTERN PetscErrorCode PetscRandomGetValue(PetscRandom,PetscScalar*);
 EXTERN PetscErrorCode PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
 EXTERN PetscErrorCode PetscRandomDestroy(PetscRandom);
 
-EXTERN PetscErrorCode PetscGetFullPath(const char[],char[],int);
-EXTERN PetscErrorCode PetscGetRelativePath(const char[],char[],int);
-EXTERN PetscErrorCode PetscGetWorkingDirectory(char[],int);
+EXTERN PetscErrorCode PetscGetFullPath(const char[],char[],size_t);
+EXTERN PetscErrorCode PetscGetRelativePath(const char[],char[],size_t);
+EXTERN PetscErrorCode PetscGetWorkingDirectory(char[],size_t);
 EXTERN PetscErrorCode PetscGetRealPath(char[],char[]);
-EXTERN PetscErrorCode PetscGetHomeDirectory(char[],int);
+EXTERN PetscErrorCode PetscGetHomeDirectory(char[],size_t);
 EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscTruth*);
 EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscTruth*);
 EXTERN PetscErrorCode PetscBinaryRead(int,void*,int,PetscDataType);

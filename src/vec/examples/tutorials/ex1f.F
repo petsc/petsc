@@ -40,6 +40,7 @@
       PetscReal        norm,v,v1,v2
       integer          n,ierr,flg,rank
       PetscScalar      one,two,three,dots(3),dot
+      character*(80)   name
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -74,7 +75,8 @@
       call VecCreate(PETSC_COMM_WORLD,x,ierr)
       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
-
+      call VecGetType(x,name,ierr)
+      print*,name
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).
 

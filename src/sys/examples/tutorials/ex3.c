@@ -24,7 +24,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int i,ierr,imax=10000,icount,USER_EVENT;
+  PetscErrorCode ierr;
+  int            i,imax=10000,icount;
+  PetscEvent     USER_EVENT;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 

@@ -288,8 +288,9 @@ PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], Pet
   eventLog->eventInfo[e].cookie = cookie;
 #if defined(PETSC_HAVE_MPE)
   if (UseMPE) {
-    const char *color;
-    int        rank, beginID, endID;
+    const char  *color;
+    PetscMPIInt rank;
+    int         beginID, endID;
 
     beginID = MPE_Log_get_event_number();
     endID   = MPE_Log_get_event_number();
@@ -673,7 +674,8 @@ PetscErrorCode PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, 
   EventRegLog    eventRegLog;
   EventPerfLog   eventPerfLog;
   PetscLogDouble cur_time;
-  int            rank, stage;
+  PetscMPIInt    rank;
+  int            stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -706,7 +708,8 @@ PetscErrorCode PetscLogEventEndTrace(PetscEvent event,int t,PetscObject o1,Petsc
   EventRegLog    eventRegLog;
   EventPerfLog   eventPerfLog;
   PetscLogDouble cur_time;
-  int            rank, stage;
+  int            stage;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

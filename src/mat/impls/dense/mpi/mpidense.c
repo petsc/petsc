@@ -517,8 +517,8 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
-  PetscErrorCode ierr;
-  int               size = mdn->size,rank = mdn->rank; 
+  PetscErrorCode    ierr;
+  PetscMPIInt       size = mdn->size,rank = mdn->rank; 
   PetscViewerType   vtype;
   PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
@@ -1258,9 +1258,10 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,const MatType type,Mat *newmat)
 {
   PetscErrorCode ierr;
-  int          *rowners,i,size,rank,m,nz,j;
-  PetscScalar  *array,*vals,*vals_ptr;
-  MPI_Status   status;
+  PetscMPIInt    rank,size;
+  int            *rowners,i,m,nz,j;
+  PetscScalar    *array,*vals,*vals_ptr;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1326,14 +1327,14 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,con
 #define __FUNCT__ "MatLoad_MPIDense"
 PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
 {
-  Mat          A;
-  PetscScalar  *vals,*svals;
-  MPI_Comm     comm = ((PetscObject)viewer)->comm;
-  MPI_Status   status;
-  int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
-  int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
-  int          tag = ((PetscObject)viewer)->tag;
-  int          i,nz,j,rstart,rend,fd;
+  Mat            A;
+  PetscScalar    *vals,*svals;
+  MPI_Comm       comm = ((PetscObject)viewer)->comm;
+  MPI_Status     status;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
+  int            header[4],*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
+  int            *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
+  int            i,nz,j,rstart,rend,fd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

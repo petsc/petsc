@@ -7,7 +7,8 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **args){
+int main(int argc,char **args)
+{
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);

@@ -6,7 +6,7 @@
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {
-  PetscErrorCode (*apply)(void*,int,PetscScalar*,PetscScalar*);
+  PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*);
   PetscErrorCode (*applyvec)(void*,Vec,Vec);
   PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*view)(void*,PetscViewer);
@@ -15,8 +15,8 @@ struct _PFOps {
 
 struct _p_PF {
   PETSCHEADER(struct _PFOps)
-  int    dimin,dimout;             /* dimension of input and output spaces */
-  void   *data;
+  PetscInt dimin,dimout;             /* dimension of input and output spaces */
+  void     *data;
 };
 
 #endif
