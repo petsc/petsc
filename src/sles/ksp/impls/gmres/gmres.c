@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.166 2001/01/31 04:35:31 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.167 2001/02/03 03:54:35 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -325,25 +325,12 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
   ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr);
   ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&VEC_VV(0));CHKERRQ(ierr);
 
-  ierr = 
-  /* If we preconditioned on the right, we need to solve for the correction to
-     the unpreconditioned problem */
-  if (ksp->pc_side == PC_RIGHT) {
-    if (vdest != vs) {
-      ierr = KSP_PCApply(ksp,ksp->B,VEC_TEMP,vdest);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,vs,vdest);CHKERRQ(ierr);
-    } else {
-      ierr = KSP_PCApply(ksp,ksp->B,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest);CHKERRQ(ierr);
-    }
-  } else if (ksp->pc_side == PC_LEFT) {
-    if (vdest != vs) {
-      ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,vs,vdest);CHKERRQ(ierr);
-    } else {
-      ierr = VecAXPY(&one,VEC_TEMP,vdest);CHKERRQ(ierr);
-    }
+  ierr = KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
+  /* add solution to previous solution */
+  if (vdest != vs) {
+    ierr = VecCopy(vs,vdest);CHKERRQ(ierr);
   }
+  ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
