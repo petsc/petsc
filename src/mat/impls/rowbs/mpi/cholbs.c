@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.11 1995/06/08 20:37:58 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.12 1995/07/10 04:22:30 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -89,6 +89,70 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_FORWARD);
+  MLOG_ELM(mbs->procinfo->procset);
+#endif
+  if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+      BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
+#if defined(PETSC_DEBUG)
+  MLOG_ACC(MS_BACKWARD);
+#endif
+
+  /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
+  if (!mbs->vecs_permscale) {
+    ierr = VecPMult( y, mbs->diag, mbs->xwork );  CHKERRQ(ierr);
+    BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
+  }
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+{
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  int          ierr;
+  Scalar       *ya, *xa, *xworka;
+
+  /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
+  if (!mbs->vecs_permscale) {
+    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
+    BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecPMult( mbs->diag, mbs->xwork, y ); CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy( x, y ); CHKERRQ(ierr);
+  }
+  VecGetArray(y,&ya);  
+
+#if defined(PETSC_DEBUG)
+  MLOG_ELM(mbs->procinfo->procset);
+#endif
+  if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+      BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
+#if defined(PETSC_DEBUG)
+  MLOG_ACC(MS_FORWARD);
+  MLOG_ELM(mbs->procinfo->procset);
+#endif
+
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+{
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  int          ierr;
+  Scalar       *ya, *xworka;
+
+  ierr = VecCopy( x, y ); CHKERRQ(ierr);
+  ierr = VecGetArray( y, &ya );   CHKERRQ(ierr);
+  ierr = VecGetArray( mbs->xwork, &xworka ); CHKERRQ(ierr);
+#if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
   if (mbs->procinfo->single)
