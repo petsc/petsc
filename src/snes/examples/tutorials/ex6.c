@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.40 1996/09/27 20:31:58 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.41 1996/10/02 02:22:47 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -14,7 +14,8 @@ with a user-provided preconditioner.  Input arguments are:\n\
    Concepts: SNES^Using different matrices for the Jacobian and preconditioner;
    Concepts: SNES^Using matrix-free methods and a user-provided preconditioner;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions();
+   Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
+   Routines: SLESGetPC(); PCSetType(); PCShellSetApply(); PCSetType();
    Processors: 1
 T*/
 
@@ -133,7 +134,18 @@ int main( int argc, char **argv )
   PetscFinalize();
 
   return 0;
-}/* --------------------  Evaluate Function F(x) --------------------- */
+}
+/* ------------------------------------------------------------------- */
+/* 
+   FormInitialGuess - Forms initial approximation.
+
+   Input Parameters:
+   user - user-defined application context
+   X - vector
+
+   Output Parameter:
+   X - vector
+ */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   Scalar *xx, *ff,*FF,d;
@@ -153,9 +165,22 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
   return 0;
-}/* --------------------  Evaluate Jacobian F'(x) -------------------- */
-/* This routine demonstrates the use of different matrices for the Jacobian 
-   and preconditioner */
+}
+/* ------------------------------------------------------------------- */
+/*
+   FormJacobian - This routine demonstrates the use of different
+   matrices for the Jacobian and preconditioner
+nn
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+.  ptr - optional user-defined context, as set by SNESSetJacobian()
+
+   Output Parameters:
+.  A - Jacobian matrix
+.  B - different preconditioning matrix
+.  flag - flag indicating matrix structure
+*/
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
                  void *dummy)
 {
@@ -189,11 +214,19 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
-}/* --------------------  User-defined preconditioner  -------------------- */
-/* This routine demonstrates the use of a user-provided preconditioner and
-   is intended as a template for customized versions.  This code implements
-   just the null preconditioner, which of course is not recommended for
-   general use.
+}
+/* ------------------------------------------------------------------- */
+/*
+   MatrixFreePreconditioner - This routine demonstrates the use of a
+   user-provided preconditioner.  This code implements just the null
+   preconditioner, which of course is not recommended for general use.
+
+   Input Parameters:
+.  ctx - optional user-defined context, as set by PCShellSetApply()
+.  x - input vector
+
+   Output Parameter:
+.  y - preconditioned vector
 */
 int MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
 {
