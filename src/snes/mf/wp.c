@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.10 1999/05/04 20:35:51 balay Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.11 1999/05/12 03:32:36 bsmith Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -10,7 +10,9 @@ static char vcid[] = "$Id: wp.c,v 1.10 1999/05/04 20:35:51 balay Exp bsmith $";
 
       Notes:
         1) || U || does not change between linear iterations so can be reused
-        2) In GMRES || a || == 1 and so does not need to ever be computed
+        2) In GMRES || a || == 1 and so does not need to ever be computed if you never 
+           have a restart. Unfortunately a RESTART computes a matrix vector product 
+           with ||a|| != 0 which breaks this
 
       Reference:  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative 
       Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998, 
@@ -31,8 +33,6 @@ typedef struct {
   PetscTruth computenorma,computenormU;   
 } MatSNESMFWP;
 
-extern int VecNorm_Seq(Vec,NormType,double *);
-
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFCompute_WP"
 /*
@@ -52,45 +52,24 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 {
   MatSNESMFWP        *hctx = (MatSNESMFWP *) ctx->hctx;
   MPI_Comm           comm = ctx->comm;
-  double             normU, ovalues[2],values[2];
-  double             norma = 1.0, normUfact = hctx->normUfact;
+  double             normU;
+  double             norma = 1.0;
   int                ierr;
 
   if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {
-    /*
-       This algorithm requires 2 norms. Rather than
-       use directly the VecNorm()routine (and thus have 
-       two separate collective operations, we use the sequential routines
-       and manually call MPI for the collective phase.
- 
-       We sparately log the VecNorm() stages to get 
-       accurate profiling. 
-    */
-
-    PLogEventBegin(VEC_Norm,a,0,0,0);
-    ierr = VecNorm_Seq(U,NORM_2,&normU);CHKERRQ(ierr);
-    ierr = VecNorm_Seq(a,NORM_2,&norma);CHKERRQ(ierr);
-    ovalues[0] = normU*normU;
-    ovalues[1] = norma*norma;
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(ovalues,values,2,MPI_DOUBLE,MPI_SUM,comm );CHKERRQ(ierr);
-#else
-    ierr = MPI_Allreduce(ovalues,values,4,MPI_DOUBLE,MPI_SUM,comm );CHKERRQ(ierr);
-#endif
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
-    normU = sqrt(values[0]);
-    norma = sqrt(values[1]);
-    PLogEventEnd(VEC_Norm,a,0,0,0);
-    hctx->normUfact = normUfact = sqrt(1.0+normU);
+    ierr = VecNormBegin(U,NORM_2,&normU);CHKERRQ(ierr);
+    ierr = VecNormBegin(a,NORM_2,&norma);CHKERRQ(ierr);
+    ierr = VecNormEnd(U,NORM_2,&normU);CHKERRQ(ierr);
+    ierr = VecNormEnd(a,NORM_2,&norma);CHKERRQ(ierr);
+    hctx->normUfact = sqrt(1.0+normU);
   } else if (hctx->computenormU || !ctx->ncurrenth) {
     ierr = VecNorm(U,NORM_2,&normU);CHKERRQ(ierr);
-    hctx->normUfact = normUfact = sqrt(1.0+normU);
+    hctx->normUfact = sqrt(1.0+normU);
   } else if (hctx->computenorma) {
     ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
   }
 
-  *h = ctx->error_rel*normUfact/norma;
+  *h = ctx->error_rel*hctx->normUfact/norma;
   PetscFunctionReturn(0);
 } 
 
@@ -330,7 +309,7 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
   /* allocate my own private data structure */
   hctx                     = (MatSNESMFWP *)PetscMalloc(sizeof(MatSNESMFWP));CHKPTRQ(hctx);
   ctx->hctx                = (void *) hctx;
-  hctx->computenormU       = PETSC_TRUE;
+  hctx->computenormU       = PETSC_FALSE;
   hctx->computenorma       = PETSC_TRUE;
 
   /* set the functions I am providing */
