@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 1999/01/15 20:47:06 balay Exp balay $ 
+# $Id: base.site,v 1.22 1999/01/15 23:55:28 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -48,7 +48,7 @@ X11_LIB        = -lX11
 #
 #MPE_LIB      = -lmpe -lpmpich
 #MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_LIB       = -L${MPI_BUILD_HOME}/mpe -lmpe
 MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional Matlab location, remove if not needed.
