@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.107 1998/07/13 19:28:47 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.108 1998/07/16 15:43:32 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -19,7 +19,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 {
   VecScatter_MPI_General *to=(VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General *) ctx->fromdata;
-  int                    i,rank,ierr;
+  int                    i,rank,ierr,format;
   FILE                   *fd;
   ViewerType             vtype;
 
@@ -27,32 +27,59 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
- 
     MPI_Comm_rank(ctx->comm,&rank);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(ctx->comm,1);
-    fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
-    for ( i=0; i<to->n; i++ ){
-      fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
-    }
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format ==  VIEWER_FORMAT_ASCII_INFO) {
+      int nsend_max,nrecv_max,lensend_max,lenrecv_max,alldata;
+      int i,itmp;
 
-    fprintf(fd,"Now the indices\n");
-    for ( i=0; i<to->starts[to->n]; i++ ){
-      fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
-    }
+      ierr = MPI_Reduce(&to->n,&nsend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Reduce(&from->n,&nrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
+      itmp = 0;
+      for ( i=0; i<to->n; i++ ){
+        itmp += to->starts[i+1] - to->starts[i];
+      }
+      ierr = MPI_Reduce(&itmp,&lensend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
+      itmp = 0;
+      for ( i=0; i<from->n; i++ ){
+        itmp += from->starts[i+1] - from->starts[i];
+      }
+      ierr = MPI_Reduce(&itmp,&lenrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Reduce(&itmp,&alldata,1,MPI_INT,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 
-    fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
-    for ( i=0; i<from->n; i++ ){
-      fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
-    }
+      PetscPrintf(ctx->comm,"VecScatter statistics\n");
+      PetscPrintf(ctx->comm,"  Maximum number sends %d\n",nsend_max);
+      PetscPrintf(ctx->comm,"  Maximum number receives %d\n",nrecv_max);
+      PetscPrintf(ctx->comm,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));
+      PetscPrintf(ctx->comm,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));
+      PetscPrintf(ctx->comm,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));
 
-    fprintf(fd,"Now the indices\n");
-    for ( i=0; i<from->starts[from->n]; i++ ){
-      fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
-    }
+    } else { 
+      PetscSequentialPhaseBegin(ctx->comm,1);
+      fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
+      for ( i=0; i<to->n; i++ ){
+        fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
+      }
 
-    fflush(fd);
-    PetscSequentialPhaseEnd(ctx->comm,1);
+      fprintf(fd,"Now the indices\n");
+      for ( i=0; i<to->starts[to->n]; i++ ){
+        fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
+      }
+
+      fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
+      for ( i=0; i<from->n; i++ ){
+        fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
+      }
+
+      fprintf(fd,"Now the indices\n");
+      for ( i=0; i<from->starts[from->n]; i++ ){
+        fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
+      }
+
+      fflush(fd);
+      PetscSequentialPhaseEnd(ctx->comm,1);
+    }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -1997,6 +2024,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   to->type   = VEC_SCATTER_MPI_GENERAL; 
   from->type = VEC_SCATTER_MPI_GENERAL;
 
+  from->bs = bs;
+  to->bs   = bs;
   if (bs > 1) {
     int         flg,flgs = 0;
     int         *sstarts = to->starts,   *rstarts = from->starts;
@@ -2009,8 +2038,6 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     ctx->copy      = VecScatterCopy_PtoP_X;
     ctx->view      = VecScatterView_MPI;
   
-    from->bs = bs;
-    to->bs   = bs;
     tag      = ctx->tag;
     comm     = ctx->comm;
 
