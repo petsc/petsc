@@ -4,11 +4,10 @@
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CheckCompressedRow"
 /*@C
-   Mat_CheckCompressedRow - Determines whether the compressed row matrix format should be used. If
-                            the format is to be used, this routine creates Mat_CompressedRow struct.
-
-                            Compressed row format provides high performance routines by
-                            taking advantage of zero rows.
+   Mat_CheckCompressedRow - Determines whether the compressed row matrix format should be used. 
+      If the format is to be used, this routine creates Mat_CompressedRow struct.
+      Compressed row format provides high performance routines by taking advantage of zero rows.
+      Supported types are MATAIJ, MATBAIJ and MATSBAIJ.
 
    Collective
 
@@ -23,10 +22,13 @@
 PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscReal ratio) 
 {
   PetscErrorCode ierr;
-  PetscInt       nrows,*cpi=PETSC_NULL,*ridx=PETSC_NULL,nz,i,row,m=A->m/A->bs; 
+  PetscInt       nrows,*cpi=PETSC_NULL,*ridx=PETSC_NULL,nz,i,row,m=A->m; 
+  MatType        mtype;
+  PetscMPIInt    size;  
+  PetscTruth     aij;
 
   PetscFunctionBegin;  
-  if (!compressedrow->use) PetscFunctionReturn(0); 
+  if (!compressedrow->use) PetscFunctionReturn(0);
   if (compressedrow->checked){
     if (!A->same_nonzero){
       ierr = PetscFree(compressedrow->i);CHKERRQ(ierr); 
@@ -35,11 +37,27 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
     } else if (compressedrow->i == PETSC_NULL) {
       /* Don't know why this occures. For safe, recheck. */
       PetscLogInfo(A,"Mat_CheckCompressedRow: compressedrow.checked, but compressedrow.i==null. Recheck.\n");
-    } else { /* use compressedrow, checked, and A->same_nonzero = PETSC_TRUE. Skip check */
-      PetscFunctionReturn(0);
+    } else { /* use compressedrow, checked, A->same_nonzero = PETSC_TRUE. Skip check */
+      PetscLogInfo(A,"Mat_CheckCompressedRow: Skip check. m: %d, n: %d,M: %d, N: %d,nrows: %d, ii: %p, type: %s\n",A->m,A->n,A->M,A->N,compressedrow->nrows,compressedrow->i,A->type_name);
+      PetscFunctionReturn(0); 
     }
   }
   compressedrow->checked = PETSC_TRUE; 
+
+  /* set m=A->m/A->bs for BAIJ and SBAIJ matrices */
+  ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr); 
+  if (!aij){
+    if (size == 1){
+      ierr = PetscStrcmp(mtype,MATSEQAIJ,&aij);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcmp(mtype,MATMPIAIJ,&aij);CHKERRQ(ierr);
+    }
+  }
+  if (!aij){
+    m = m/A->bs;
+  } 
 
   /* compute number of zero rows */
   nrows = 0; 
@@ -71,5 +89,6 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
     compressedrow->i      = cpi;
     compressedrow->rindex = ridx;
   }
+ 
   PetscFunctionReturn(0);
 }
