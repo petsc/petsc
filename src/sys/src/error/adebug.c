@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.18 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.19 1995/07/28 04:19:40 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -8,6 +8,9 @@ static char vcid[] = "$Id: adebug.c,v 1.18 1995/07/17 03:54:14 bsmith Exp bsmith
 #include <unistd.h>
 #if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
 #endif
 #include "petscfix.h"
 
