@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.30 1996/01/01 01:05:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.31 1996/01/26 04:35:39 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -936,19 +936,21 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 .  da - the distributed array
 
    Output Parameters:
-.  ltog - local to global scatter context
-.  gtol - global to local scatter context
+.  ltog - local to global scatter context (may be PETSC_NULL)
+.  gtol - global to local scatter context (may be PETSC_NULL) 
+.  ltol - local to local scatter context (may be PETSC_NULL)
 
 .keywords: distributed array, get, scatter, context, global to local,
            local to global
 
 .seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DAGetScatter(DA da, VecScatter *ltog,VecScatter *gtol)
+int DAGetScatter(DA da, VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  *ltog = da->ltog;
-  *gtol = da->gtol;
+  if (ltog) *ltog = da->ltog;
+  if (gtol) *gtol = da->gtol;
+  if (ltol) *ltol = da->ltol;
   return 0;
 }
  
