@@ -26,9 +26,9 @@ Additional Capabilities that PETSc Needs:
   - make ViewerPushFormat() ViewerPopFormat() use that to eliminate
     saving of formats in for example MatCreate().
 
-  - ILUDT()
+  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
-  - ordering with flow direction.
+  - ordering with flow direction - made MatReodering_SeqAIJ_Flow() stub.
 
   - Better way of dealing with MatAssembly - when elements are not inserted
     (satish)
@@ -56,14 +56,13 @@ Additional Capabilities that PETSc Needs:
 
   - Create an INDEX for examples
 
-
   * Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
 
- (Barry)  - Have all preconditioners (including LU) support null space, see 
+  * Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
- (Bill)   - Make configure fully functional in PETSc 2.0
+  - Make configure fully functional in PETSc 2.0
 
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems. Or different document.
@@ -71,7 +70,6 @@ Additional Capabilities that PETSc Needs:
   - Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
-
 
   - Do something about viewer formats - maybe use enum?
     Make ViewerGetFormat() a real public routine (seems good to me); else
