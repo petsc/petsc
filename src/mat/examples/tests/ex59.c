@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex59.c,v 1.6 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex59.c,v 1.7 1999/05/04 20:33:03 balay Exp curfman $";
 #endif
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
@@ -14,14 +14,25 @@ int main(int argc,char **args)
   int         i,j, m = 3, n = 2, rank,size, ierr, rstart, rend;
   Scalar      v;
   IS          isrow,iscol;
+  PetscTruth  set;
+  MatType     type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-         m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRQ(ierr);
+  switch (type) {
+  case MATMPIDENSE:
+    ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+           m*n,m*n,PETSC_NULL,&C); CHKERRA(ierr);
+    break;
+  default:
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+           m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
+    break;
+  }
 
   /*
         This is JUST to generate a nice test matrix, all processors fill up
@@ -29,12 +40,13 @@ int main(int argc,char **args)
   */
   for ( i=0; i<m*n; i++ ) { 
     for ( j=0; j<m*n; j++ ) {
-      v = i + j; 
+      v = i + j + 1; 
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* 
