@@ -1,10 +1,13 @@
-/*$Id: zmat.c,v 1.91 2001/01/16 18:22:02 balay Exp bsmith $*/
+/*$Id: zmat.c,v 1.92 2001/02/26 16:06:57 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
+#define matmpibaijgetseqbaij_            MATMPIBAIJGETSEQBAIJ
 #define matgetrowij_                     MATGETROWIJ
+#define matrestorerowij_                 MATRESTOREROWIJ
 #define matsetfromoptions_               MATSETFROMOPTIONS
 #define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
 #define matpartitioningdestroy_          MATPARTITIONINGDESTROY
@@ -52,6 +55,9 @@
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matmpiaijgetseqaij_              matmpiaijgetseqaij
+#define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
+#define matrestorerowij_                 matrestorerowij
 #define matgetrowij_                     matgetrowij
 #define matcreateseqaijwitharrays_       matcreateseqaijwitharrays
 #define matpartitioningdestroy_          matpartitioningdestroy
@@ -103,6 +109,16 @@
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,int *ierr)
+{
+  *ierr = MatMPIAIJGetSeqAIJ(*A,Ad,Ao);
+}
+
+void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,int *ierr)
+{
+  *ierr = MatMPIBAIJGetSeqBAIJ(*A,Ad,Ao);
+}
+
 void PETSC_STDCALL matgetrowij_(Mat *B,int *shift,PetscTruth *sym,int *n,int *ia,long *iia,int *ja,long *jja,
                                 PetscTruth *done,int *ierr)
 {
@@ -110,6 +126,13 @@ void PETSC_STDCALL matgetrowij_(Mat *B,int *shift,PetscTruth *sym,int *n,int *ia
   *ierr = MatGetRowIJ(*B,*shift,*sym,n,&IA,&JA,done);if (*ierr) return;
   *iia  = PetscIntAddressToFortran(ia,IA);
   *jja  = PetscIntAddressToFortran(ja,JA);
+}
+
+void PETSC_STDCALL matrestorerowij_(Mat *B,int *shift,PetscTruth *sym,int *n,int *ia,long *iia,int *ja,long *jja,
+                                    PetscTruth *done,int *ierr)
+{
+  int *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
+  *ierr = MatRestoreRowIJ(*B,*shift,*sym,n,&IA,&JA,done);
 }
 
 void PETSC_STDCALL matsetfromoptions_(Mat *B,int *ierr)
