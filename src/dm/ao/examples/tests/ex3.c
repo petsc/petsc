@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.4 1997/07/09 21:02:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.1 1997/09/20 03:33:58 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests application ordering\n\n";
+static char help[] = "Tests AOData \n\n";
 
 #include "petsc.h"
 #include "ao.h"
@@ -10,43 +10,35 @@ static char help[] = "Tests application ordering\n\n";
 
 int main(int argc,char **argv)
 {
-  int         n, ierr,flg,rank,size,*ispetsc,*isapp,start,N,i;
-  AO          ao;
+  int         n, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  AOData      aodata;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); n = rank + 2;
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
-  /* create the orderings */
-  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRA(ispetsc);
-  isapp   = ispetsc + n;
+  keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
+  data = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRA(data);
 
-  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-  MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+  /*
+     We assign the first set of keys (0 to 2) to processor 0, etc.
+     This computes the first local key on each processor
+  */
+  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
   start -= n;
 
-  for ( i=0; i<n; i++ ) {  
-    ispetsc[i] = start + i;
-    isapp[i]   = N - start - i - 1;
-  }
-
-  /* create the application ordering */
-  ierr = AOCreateBasic(MPI_COMM_WORLD,n,isapp,ispetsc,&ao); CHKERRA(ierr);
-
-  ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-
-  /* check the mapping */
-  ierr = AOPetscToApplication(ao,n,ispetsc); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    if (ispetsc[i] != isapp[i]) {
-      fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,i,ispetsc[i]);
-    }
+    keys[i]     = start + i;
+    data[2*i]   = -(start + i);
+    data[2*i+1] = -(start + i) - 10000;
   }
 
-  PetscFree(ispetsc);
+  ierr = AODataCreateBasic(PETSC_COMM_WORLD,bs,n,keys,data,PETSC_INT,&aodata);CHKERRA(ierr);
 
-  ierr = AODestroy(ao); CHKERRA(ierr);
+  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
+  ierr = AODataDestroy(aodata); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
