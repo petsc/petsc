@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.196 2000/03/14 02:23:41 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.197 2000/03/29 04:33:03 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1596,7 +1596,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .keywords: vector, get, array
 
-.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray()
+.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 @*/
 int VecGetArray(Vec x,Scalar *a[])
 {
@@ -1721,7 +1721,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
    not zero the array pointer a.
 
    Fortran Note:
-   This routine is used differently from Fortran
+   This routine is used differently from Fortran 77
 $    Vec         x
 $    Scalar      x_array(1)
 $    PetscOffset i_x
@@ -1736,10 +1736,11 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    See the Fortran chapter of the users manual and 
    petsc/src/snes/examples/tutorials/ex5f.F for details.
+   For Fortran 90 see VecRestoreArrayF90()
 
 .keywords: vector, restore, array
 
-.seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray()
+.seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 @*/
 int VecRestoreArray(Vec x,Scalar *a[])
 {
