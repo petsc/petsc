@@ -74,6 +74,7 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
+		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
 	fi
 
