@@ -311,7 +311,7 @@ class Configure(config.base.Configure):
         if arg == '-rpath':
           lib = argIter.next()
           self.framework.log.write( 'Found -rpath library: '+lib+'\n')
-          flibs.append('-rpath '+lib)
+          flibs.append('-Wl,-rpath,'+lib)
           continue
         # Check for ???
         # Should probably try to ensure unique directory options here too.
