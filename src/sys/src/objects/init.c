@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.29 1999/01/27 19:46:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.30 1999/01/31 16:05:34 bsmith Exp balay $";
 #endif
 /*
 
@@ -361,7 +361,7 @@ int OptionsCheckInitial_Alice(void)
     (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");
     (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");
     (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");
-    (*PetscHelpPrintf)(comm,"See docs/manualpages/manualpages.html for help. \n");
+    (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");
 #if !defined(PARCH_win32)
     (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);
 #endif

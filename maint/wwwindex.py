@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.15 1999/02/02 21:17:09 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.16 1999/02/02 23:16:22 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -63,15 +63,13 @@ def printindex(outfilename,headfilename,titles,tables):
             fd.write('</TD></TR>\n')
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
-                  func_name,ext = posixpath.splitext(name)
-                  rel_dir       = split(path,'/')[-1]
-                  mesg          = '<TD WIDTH=250><A HREF="' + rel_dir + '/' + name + '">' + \
+                  mesg          = '<TD WIDTH=250><A HREF="'+ './' + name + '">' + \
                                   func_name + '</A></TD>'
                   fd.write(mesg)
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="manualpages.html"><IMG SRC="up.gif">Table of Contents</A>\n')
+      fd.write('<BR><A HREF="../manualpages.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
       fd.close()
 
 # Read in the filename contents, and search for the formatted
