@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.8 1996/08/15 12:48:03 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.9 1996/12/17 23:58:24 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -20,7 +20,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   aj    = a->j;
   bs    = a->bs;
 
-  if (ov < 0)  SETERRQ(1,"MatIncreaseOverlap_SeqBAIJ: illegal overlap value used");
+  if (ov < 0)  SETERRQ(1,"illegal overlap value used");
 
   table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
@@ -38,7 +38,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>m) SETERRQ(1,"MatIncreaseOverlap_SeqBAIJ: index greater than mat-dim");
+      if (ival>m) SETERRQ(1,"index greater than mat-dim");
       if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   Mat          C;
 
   ierr = ISSorted(iscol,(PetscTruth*)&i);
-  if (!i) SETERRQ(1,"MatGetSubmatrices_SeqBAIJ:IS is not sorted");
+  if (!i) SETERRQ(1,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
@@ -111,9 +111,9 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
     c = (Mat_SeqBAIJ *)((*B)->data);
 
     if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) 
-      SETERRQ(1,"MatGetSubMatrix_SeqBAIJ:");
+      SETERRQ(1,"");
     if (PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int))) {
-      SETERRQ(1,"MatGetSubmatrix_SeqBAIJ:Cannot reuse matrix. wrong no of nonzeros");
+      SETERRQ(1,"Cannot reuse matrix. wrong no of nonzeros");
     }
     PetscMemzero(c->ilen,c->mbs*sizeof(int));
     C = *B;

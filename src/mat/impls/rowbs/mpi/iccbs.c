@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.17 1996/08/12 03:41:39 bsmith Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.18 1996/12/18 17:36:57 balay Exp balay $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -120,14 +120,14 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
 
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   if (Amat != Pmat && Amat->type == MATMPIROWBS)
-    SETERRQ(1,"PCSetUp_ICC_MPIRowbs:Does not support different Amat and\n\
+    SETERRQ(1,"Does not support different Amat and\n\
       Pmat with MATMPIROWBS format for both.  Use a different format for\n\
       Amat (e.g., MATMPIAIJ) and keep Pmat the same.");
 
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
   if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
-    SETERRQ(1,"PCSetUp_ICC_MPIRowbs: BS iterative solvers not currently supported");
+    SETERRQ(1,"BS iterative solvers not currently supported");
 /*    iccbs->blocksize  = 1;
     iccbs->pre_option = PRE_STICCG;
     iccbs->rtol       = 1.e-5;
@@ -203,11 +203,11 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
   Mat_MPIRowbs *amat = (Mat_MPIRowbs *) pc->mat->data;
   Scalar       *xa, *ba; */
 
-  SETERRQ(1,"PCBSIterSolve: Currently out of commission.");
+  SETERRQ(1,"Currently out of commission.");
   /* Note: The vectors x and b are permuted within BSpar_solve */
 /*
-  if (amat != pc->pmat->data) SETERRQ(1,"PCBSIterSolve:Need same pre and matrix");
-  if (pc->mat->type != MATMPIROWBS) SETERRQ(1,"PCBSIterSolve:MATMPIROWBS only");
+  if (amat != pc->pmat->data) SETERRQ(1,"Need same pre and matrix");
+  if (pc->mat->type != MATMPIROWBS) SETERRQ(1,"MATMPIROWBS only");
   VecGetArray(b,&ba); VecGetArray(x,&xa);
   *its = BSpar_solve(iccbs->blocksize,amat->pA,amat->fpA,amat->comm_pA,ba,xa,
              iccbs->pre_option,iccbs->rtol,iccbs->max_it,&(iccbs->rnorm),
@@ -268,11 +268,11 @@ int PCBSIterSetFromOptions(PC pc)
 */
 int PCBSIterSetBlockSolve(PC pc)
 {
-  SETERRQ(1,"PCBSIterSetBlockSolve: Not currently supported.");
+  SETERRQ(1,"Not currently supported.");
 /*
   PC_ICC *icc = (PC_ICC *) pc->data;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->setupcalled) SETERRQ(1,"PCBSIterSetBlockSolve:Must call before PCSetUp");
+  if (pc->setupcalled) SETERRQ(1,"Must call before PCSetUp");
   if (pc->type != PCICC) return 0;
   icc->bs_iter = 1;
   return 0; */

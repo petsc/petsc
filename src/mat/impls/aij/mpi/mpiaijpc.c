@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.22 1996/11/19 16:31:04 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.23 1996/12/17 18:19:47 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -94,7 +94,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
 
   if (jac->use_true_local) {
     MatGetType(pc->mat,&type,PETSC_NULL);
-    if (type != MATMPIAIJ) SETERRQ(1,"PCSetUp_BJacobi_MPIAIJ:Incompatible matrix type.");
+    if (type != MATMPIAIJ) SETERRQ(1,"Incompatible matrix type.");
     matin = (Mat_MPIAIJ *) mat->data;
   }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.13 1996/09/30 20:19:38 curfman Exp balay $";
+static char vcid[] = "$Id: beuler.c,v 1.14 1996/12/18 17:48:21 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -356,7 +356,7 @@ int TSCreate_BEuler(TS ts )
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->A) {
-      SETERRQ(1,"TSCreate_BEuler:Must set rhs matrix for linear problem");
+      SETERRQ(1,"Must set rhs matrix for linear problem");
     }
     ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
     if (!ts->rhsmatrix) {
@@ -379,7 +379,7 @@ int TSCreate_BEuler(TS ts )
     ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     if (!ts->A) {
-      SETERRQ(1,"TSCreate_BEuler:Must set Jacobian for nonlinear problem");
+      SETERRQ(1,"Must set Jacobian for nonlinear problem");
     }
     ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
     if (mtype == MATSHELL) {
@@ -389,7 +389,7 @@ int TSCreate_BEuler(TS ts )
     ts->step            = TSStep_BEuler_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
-  } else SETERRQ(1,"TSCreate_BEuler:No such problem");
+  } else SETERRQ(1,"No such problem");
 
   beuler   = PetscNew(TS_BEuler); CHKPTRQ(beuler);
   PetscMemzero(beuler,sizeof(TS_BEuler));

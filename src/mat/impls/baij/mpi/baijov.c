@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.12 1996/09/14 03:08:37 bsmith Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.13 1996/12/17 23:41:40 balay Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -34,7 +34,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
     ierr = ISGetSize(is_in[i],&n);  CHKERRQ(ierr);
     for (j=0; j<n ; j++) {
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>Nbs) SETERRQ(1,"MatCompressIndicesGeneral_MPIBAIJ: index greater than mat-dim");
+      if (ival>Nbs) SETERRQ(1,"index greater than mat-dim");
       if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
@@ -55,7 +55,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
 
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg); CHKERRQ(ierr);
-    if (!flg) SETERRQ(1,"MatCompressIndicesSorted_MPIBAIJ: Indices are not sorted");
+    if (!flg) SETERRQ(1,"Indices are not sorted");
   }
   nidx  = (int *) PetscMalloc((Nbs+1)*sizeof(int)); CHKPTRQ(nidx); 
   /* Now chech if the indices are in block order */
@@ -118,7 +118,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
   is_new = (IS *)PetscMalloc(imax*sizeof(IS)); CHKPTRQ(is_new);
   /* Convert the indices into block format */
   ierr = MatCompressIndicesGeneral_MPIBAIJ(C, imax, is,is_new); CHKERRQ(ierr);
-  if (ov < 0){ SETERRQ(1," MatIncreaseOverlap_MPIBAIJ:Negative overlap specified\n");}
+  if (ov < 0){ SETERRQ(1,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C, imax, is_new); CHKERRQ(ierr);
   }
@@ -741,7 +741,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],(PetscTruth*)&j);
-    if (!j) SETERRQ(1,"MatGetSubmatrices_MPIBAIJ:IS is not sorted");
+    if (!j) SETERRQ(1,"IS is not sorted");
   }
 
   len    = (2*ismax+1)*(sizeof(int *) + sizeof(int)) + (Mbs+1)*sizeof(int);
@@ -1182,10 +1182,10 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
-        SETERRQ(1,"MatGetSubmatrices_MPIBAIJ:Cannot reuse matrix. wrong size");
+        SETERRQ(1,"Cannot reuse matrix. wrong size");
       }
       if (PetscMemcmp(mat->ilen,lens[i], mat->mbs *sizeof(int))) {
-        SETERRQ(1,"MatGetSubmatrices_MPIBAIJ:Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(1,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       PetscMemzero(mat->ilen,mat->mbs*sizeof(int));

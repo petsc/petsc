@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdaij.c,v 1.4 1996/11/27 22:53:02 bsmith Exp balay $";
+static char vcid[] = "$Id: fdaij.c,v 1.5 1996/12/17 23:39:21 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -109,7 +109,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(1,"MatFDColoringCreate_SeqAIJ:Invalid coloring");
+            SETERRQ(1,"Invalid coloring");
           }
 
         }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.8 1996/11/07 15:11:13 bsmith Exp balay $";
+static char vcid[] = "$Id: stringv.c,v 1.9 1996/12/17 18:09:17 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -59,7 +59,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   va_end( Argp );
 
   shift = PetscStrlen(tmp);
-  if (shift > 512) SETERRQ(1,"ViewerStringSPrintf:String too long");
+  if (shift > 512) SETERRQ(1,"String too long");
   
   if (shift >= v->maxlen - v->curlen - 1) shift = v->maxlen - v->curlen - 1;
   PetscStrncpy(v->head,tmp,shift);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.69 1996/12/08 20:07:38 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.70 1996/12/17 23:34:09 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: aijfact.c,v 1.69 1996/12/08 20:07:38 bsmith Exp balay
 #define __FUNCTION__ "MatOrder_Flow_SeqAIJ"
 int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
-  SETERRQ(PETSC_ERR_SUP,"MatOrder_Flow_SeqAIJ:Code not written");
+  SETERRQ(PETSC_ERR_SUP,"Code not written");
 }
 
 /*
@@ -248,7 +248,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     }
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"MatLUFactorNumeric_SeqAIJ:Zero pivot");
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }
   }
 
@@ -577,7 +577,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
       flev    = ajfill + ainew[row] + shift + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
       if (*xi++ + shift != row) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"MatILUFactorSymbolic_SeqAIJ:zero pivot");
+        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"zero pivot");
       }
       fm      = row;
       while (nnz-- > 0) {

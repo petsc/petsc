@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.80 1996/12/17 18:01:48 balay Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.81 1996/12/18 18:01:31 balay Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -224,7 +224,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_BOPT_g)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"Out of range");
 #endif
       xx[ix[i]] = y[i];
     }
@@ -232,7 +232,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   else {
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_BOPT_g)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"Out of range");
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -305,7 +305,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq:Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,"Must call with MPI_COMM_SELF");
   PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+n*sizeof(Scalar));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.119 1996/12/12 13:50:46 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.120 1996/12/18 00:19:14 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -20,11 +20,11 @@ static int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,
 
   for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
-    if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
+    if (row < 0) SETERRQ(1,"Negative row");
+    if (row >= a->m) SETERRQ(1,"Row too large");
     for (j=0; j<n; j++) {
-      if (in[j] < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative col.");
-      if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Col. too large");
+      if (in[j] < 0) SETERRQ(1,"Negative col.");
+      if (in[j] >= a->n) SETERRQ(1,"Col. too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       if (roworiented) {
@@ -110,8 +110,8 @@ static int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
 
   for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
-    if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
+    if (row < 0) SETERRQ(1,"Negative row");
+    if (row >= a->m) SETERRQ(1,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -194,11 +194,11 @@ static int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
   for ( kk=0; kk<m; kk++ ) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
-    if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+    if (row < 0) SETERRQ(1,"Negative row");
+    if (row >= a->m) SETERRQ(1,"Row too large");
     for (j=0; j<n; j++) {
       if (in[j] < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative column");
-      if (in[j] >= a->n) SETERRQ(1,"MatGetValues_SeqBDiag:Column too large");
+      if (in[j] >= a->n) SETERRQ(1,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       for (k=0; k<a->nd; k++) {
@@ -224,8 +224,8 @@ static int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
   for ( kk=0; kk<m; kk++ ) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
-    if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+    if (row < 0) SETERRQ(1,"Negative row");
+    if (row >= a->m) SETERRQ(1,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -860,7 +860,7 @@ static int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
      ordering maybe :-) */
 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
-  if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
+  if (mainbd == -1) SETERRQ(1,"Main diagonal not set");
   dd = a->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
@@ -1016,7 +1016,7 @@ static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
      ordering maybe :-) */
 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
-  if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
+  if (mainbd == -1) SETERRQ(1,"Main diagonal not set");
   dd = a->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
@@ -1394,7 +1394,7 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
     PetscFree(tmp);
   }
   else {
-    SETERRQ(1,"MatNorm_SeqBDiag:No support for two norm");
+    SETERRQ(1,"No support for two norm");
   }
   return 0;
 }
@@ -1420,7 +1420,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     dvnew = anew->diagv[d];
     dwork = a->diagv[nd-d-1];
     if (anew->bdlen[d] != a->bdlen[nd-d-1])
-      SETERRQ(1,"MatTranspose_SeqBDiag:Incompatible diagonal lengths");
+      SETERRQ(1,"Incompatible diagonal lengths");
     shifto = a->diag[nd-d-1];
     shiftn = anew->diag[d];
     if (shifto > 0)  shifto = bs*bs*shifto; else shifto = 0;
@@ -1500,7 +1500,7 @@ static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
     ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
     ict += nz;
   }
-  if (ict != a->maxnz) SETERRQ(1,"MatView_SeqBDiag_Binary:Error in nonzero count");
+  if (ict != a->maxnz) SETERRQ(1,"Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
   ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
@@ -1725,7 +1725,7 @@ static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
-    SETERRQ(PETSC_ERR_SUP,"MatView_SeqBDiag:Matlab viewer");
+    SETERRQ(PETSC_ERR_SUP,"Matlab viewer");
   }
   else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
     return MatView_SeqBDiag_ASCII(A,viewer);
@@ -1829,7 +1829,7 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_STRUCTURALLY_SYMMETRIC)
     PLogInfo(A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:unknown option");}
+    {SETERRQ(PETSC_ERR_SUP,"unknown option");}
   return 0;
 }
 
@@ -1858,8 +1858,8 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 
   VecSet(&zero,v);
   VecGetArray_Fast(v,x); VecGetLocalSize_Fast(v,n);
-  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
-  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
+  if (n != a->m) SETERRQ(1,"Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(1,"Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
   dd = a->diagv[a->mainbd];
   for (i=0; i<len; i++) {
@@ -1879,8 +1879,8 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 
   VecSet(&zero,v);
   VecGetArray_Fast(v,x); VecGetLocalSize_Fast(v,n);
-  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
-  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
+  if (n != a->m) SETERRQ(1,"Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(1,"Main diagonal not set");
   dd = a->diagv[a->mainbd];
   len = PetscMin(a->m,a->n);
   for (i=0; i<len; i++) x[i] = dd[i];
@@ -1926,14 +1926,14 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
-    if (rows[i]<0 || rows[i]>m) SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
+    if (rows[i]<0 || rows[i]>m) SETERRQ(1,"row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
     PetscMemzero(val,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
   }
   if (diag) {
-    if (a->mainbd == -1) SETERRQ(1,"MatZeroRows_SeqBDiag:Main diagonal does not exist");
+    if (a->mainbd == -1) SETERRQ(1,"Main diagonal does not exist");
     dd = a->diagv[a->mainbd];
     for ( i=0; i<N; i++ ) dd[rows[i]] = *diag;
   }
@@ -2049,7 +2049,7 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != a->m) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Left scaling vector wrong length");
+    if (m != a->m) SETERRQ(1,"Left scaling vector wrong length");
     if (bs == 1) {
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
@@ -2059,11 +2059,11 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         else          for (j=0; j<len; j++) dv[j]      *= l[j];
       }
       PLogFlops(a->nz);
-    } else SETERRQ(1,"MatDiagonalScale_SeqBDiag:Not yet done for bs>1");
+    } else SETERRQ(1,"Not yet done for bs>1");
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != a->n) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Right scaling vector wrong length");
+    if (n != a->n) SETERRQ(1,"Right scaling vector wrong length");
     if (bs == 1) {
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
@@ -2073,7 +2073,7 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         else          for (j=0; j<len; j++) dv[j]      *= r[j-diag];
       }
       PLogFlops(a->nz);
-    } else SETERRQ(1,"MatDiagonalScale_SeqBDiag:Not yet done for bs>1");
+    } else SETERRQ(1,"Not yet done for bs>1");
   }
   return 0;
 }
@@ -2159,7 +2159,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128],size;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"MatCreateSeqBAIJ:Comm must be of size 1");
+  if (size > 1) SETERRQ(1,"Comm must be of size 1");
 
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;
@@ -2171,7 +2171,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
     nd   = nd2;
   }
 
-  if ((n%bs) || (m%bs)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
+  if ((n%bs) || (m%bs)) SETERRQ(1,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
@@ -2331,12 +2331,12 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   
   PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
+  if (size > 1) SETERRQ(1,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
+  if (header[0] != MAT_COOKIE) SETERRQ(1,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
-  if (M != N) SETERRQ(1,"MatLoad_SeqBDiag:Can only load square matrices");
+  if (M != N) SETERRQ(1,"Can only load square matrices");
   /* 
      This code adds extra rows to make sure the number of rows is 
     divisible by the blocksize

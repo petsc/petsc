@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.48 1996/11/07 15:11:10 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.49 1996/12/17 18:04:20 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -145,7 +145,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
     v->fd        = fopen(name,"w"); 
-    if (!v->fd) SETERRQ(1,"ViewerFileOpenASCII:Cannot open file");
+    if (!v->fd) SETERRQ(1,"Cannot open file");
   }
   v->format        = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat       = 0;
@@ -238,7 +238,7 @@ $       matrices are stored as dense)
 int ViewerPushFormat(Viewer v,int format,char *name)
 {
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->iformat > 9) SETERRQ(1,"ViewerPushFormat:Too many pushes");
+  if (v->iformat > 9) SETERRQ(1,"Too many pushes");
 
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->formats[v->iformat]       = v->format;

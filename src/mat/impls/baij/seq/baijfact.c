@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.31 1996/12/08 20:09:19 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.32 1996/12/18 00:01:02 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -818,7 +818,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"MatLUFactorNumeric_SeqBAIJ_1:Zero pivot");
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }
     pv[diag] = 1.0/pv[diag];
   }
@@ -1334,7 +1334,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
       flev    = ajfill + ainew[row] + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
       if (*xi++ != row) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"MatILUFactorSymbolic_SeqBAIJ:zero pivot");
+        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"zero pivot");
       }
       fm      = row;
       while (nnz-- > 0) {

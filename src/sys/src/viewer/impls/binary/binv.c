@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.24 1996/08/08 14:46:27 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.25 1996/12/17 18:02:19 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -113,18 +113,18 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   if (!rank) {
     if (type == BINARY_CREATE) {
       if ((v->fdes = creat(name,0666)) == -1)
-        SETERRQ(1,"ViewerFileOpenBinary:Cannot create file for writing");
+        SETERRQ(1,"Cannot create file for writing");
     } 
     else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
-        SETERRQ(1,"ViewerFileOpenBinary:Cannot open file for reading");
+        SETERRQ(1,"Cannot open file for reading");
       }
     }
     else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
-        SETERRQ(1,"ViewerFileOpenBinary:Cannot open file for writing");
+        SETERRQ(1,"Cannot open file for writing");
       }
-    } else SETERRQ(1,"ViewerFileOpenBinary:Unknown file type");
+    } else SETERRQ(1,"Unknown file type");
   }
   else v->fdes = -1;
   v->format    = 0;
