@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.5 1996/02/05 15:21:03 balay Exp bsmith $ */
+/* $Id: bitarray.h,v 1.6 1997/10/01 22:43:45 bsmith Exp balay $ */
 
 /*    
       BTSet - Expexts a charecter array -'array' as input, and 
@@ -37,18 +37,18 @@ static int  _BT_idx;
 #define BTCreate(m,array) (array = (char *)PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char)),\
                            ( !array ) ? 1 : (BTMemzero(m,array),0) )
 
-#define BTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE)
+#define BTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE+1)
 
 #define BTLookupSet(array, index)    (_BT_idx         = (index)/BITSPERBYTE, \
                                         _BT_c           = array[_BT_idx], \
                                         _mask           = (char)1 << ((index)%BITSPERBYTE), \
-                                        array[_BT_idx]  = _BT_c|_mask, \
+                                        array[_BT_idx]  = _BT_c | _mask, \
                                         _BT_c & _mask )
 
 #define BTSet(array, index)    (_BT_idx         = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _mask           = (char)1 << ((index)%BITSPERBYTE), \
-                                 array[_BT_idx]  = _BT_c|_mask,0)
+                                 array[_BT_idx]  = _BT_c | _mask,0)
 
 
 #define BTClear(array, index)  (_BT_idx         = (index)/BITSPERBYTE, \
