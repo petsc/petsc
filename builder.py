@@ -188,7 +188,12 @@ class Builder(logging.Logger):
   def updateOutputFiles(self, outputFiles, newOutputFiles):
     for language in newOutputFiles:
       if language in outputFiles:
-        outputFiles[language].union_update(newOutputFiles[language])
+        if isinstance(outputFiles[language], sets.Set) and isinstance(outputFiles[language], sets.Set):
+          outputFiles[language].union_update(newOutputFiles[language])
+        elif isinstance(outputFiles[language], dict) and isinstance(outputFiles[language], dict):
+          self.updateOutputFiles(outputFiles[language], outputFiles[language])
+        else:
+          raise RuntimeError('Mismatched output files')
       else:
         outputFiles[language] = newOutputFiles[language]
     return outputFiles

@@ -260,6 +260,8 @@ class SIDLMake(Make):
     builder.popConfiguration()
     for serverDir in compiler.serverDirs.values():
       for root, dirs, files in os.walk(serverDir):
+        if os.path.basename(root) == 'SCCS':
+          continue
         builder.versionControl.edit(builder.versionControl.getClosedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
     return
 
@@ -276,6 +278,8 @@ class SIDLMake(Make):
     committed = 0
     for serverDir in compiler.serverDirs.values():
       for root, dirs, files in os.walk(serverDir):
+        if os.path.basename(root) == 'SCCS':
+          continue
         implFiles = filter(lambda a: self.implRE.match(a), files)
         added     = added or vc.add(builder.versionControl.getNewFiles([os.path.join(root, f) for f in implFiles]))
         reverted  = reverted or vc.revert(builder.versionControl.getUnchangedFiles([os.path.join(root, f) for f in implFiles]))
