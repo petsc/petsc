@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.298 1999/12/26 23:37:09 bsmith Exp balay $ 
+# $Id: makefile,v 1.299 2000/01/26 16:49:43 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -61,7 +61,7 @@ info:
 #
 MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
 info_h:
-	-@$(RM) -f MINFO
+	-@$(RM) -f MINFO ${MINFO}
 	-@echo  "static char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
