@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.120 1996/07/02 18:09:25 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.121 1996/07/08 22:24:30 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -21,7 +21,11 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define MPIU_SCALAR       MPIU_COMPLEX
 #define PetscReal(a)      real(a)
 #define PetscAbsScalar(a) abs(a)
+#if defined(USES_TEMPLATED_COMPLEX)
+#define Scalar            complex<double>
+#else
 #define Scalar            complex
+#endif
 #else
 #define MPIU_SCALAR       MPI_DOUBLE
 #define PetscReal(a)      a
