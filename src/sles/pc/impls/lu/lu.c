@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.131 2000/05/05 22:17:06 balay Exp bsmith $*/
+/*$Id: lu.c,v 1.132 2000/05/20 20:27:58 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -8,11 +8,11 @@
 
 typedef struct {
   Mat             fact;             /* factored matrix */
-  PetscReal       actualfill;      /* actual fill in factor */
+  PetscReal       actualfill;       /* actual fill in factor */
   int             inplace;          /* flag indicating in-place factorization */
-  IS              row,col;         /* index sets used for reordering */
+  IS              row,col;          /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
-  PetscTruth      reuseorering;     /* reuses previous reordering computed */
+  PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous LU */
   MatLUInfo       info;
 } PC_LU;
@@ -27,7 +27,7 @@ int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   lu               = (PC_LU*)pc->data;
-  lu->reuseorering = flag;
+  lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -52,7 +52,7 @@ static int PCSetFromOptions_LU(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  PetscReal  fill,dtcol;
+  PetscReal  fill,dtcol,damping;
   char       tname[256];
 
   PetscFunctionBegin;
@@ -63,6 +63,10 @@ static int PCSetFromOptions_LU(PC pc)
   ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCLUSetFill(pc,fill);CHKERRQ(ierr);
+  }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_damping",&damping,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetDamping(pc,damping);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -94,6 +98,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_damping <damping>: damping added to diagonal\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," -pc_lu_mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);CHKERRQ(ierr);
@@ -127,7 +132,7 @@ static int PCView_LU(PC pc,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
     }
     if (lu->reusefill)    {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (lu->reuseorering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+    if (lu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
@@ -182,7 +187,7 @@ static int PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
-      if (!dir->reuseorering) {
+      if (!dir->reuseordering) {
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
@@ -259,6 +264,20 @@ int PCLUSetFill_LU(PC pc,PetscReal fill)
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   dir->info.fill = fill;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PCLUSetDamping_LU"></a>*/"PCLUSetDamping_LU"
+int PCLUSetDamping_LU(PC pc,PetscReal damping)
+{
+  PC_LU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_LU*)pc->data;
+  dir->info.damping = damping;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -419,6 +438,40 @@ int PCLUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
+#define __FUNC__ /*<a name="PCLUSetDamping"></a>*/"PCLUSetDamping"
+/*@
+   PCLUSetDamping - adds this quantity to the diagonal of the matrix during the 
+     LU numerical factorization
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  damping - amount of damping
+
+   Options Database Key:
+.  -pc_lu_damping <damping> - Sets damping amount
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCILUSetFill()
+@*/
+int PCLUSetDamping(PC pc,PetscReal damping)
+{
+  int ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetDamping_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,damping);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ /*<a name="PCLUSetUseInPlace"></a>*/"PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
@@ -543,11 +596,12 @@ int PCCreate_LU(PC pc)
   dir->inplace          = 0;
   dir->info.fill        = 5.0;
   dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
+  dir->info.damping     = 0.0;
   dir->col              = 0;
   dir->row              = 0;
   ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
-  dir->reuseorering     = PETSC_FALSE;
+  dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;
 
   pc->ops->destroy           = PCDestroy_LU;
@@ -562,6 +616,8 @@ int PCCreate_LU(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
                     PCLUSetFill_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetDamping_C","PCLUSetDamping_LU",
+                    PCLUSetDamping_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
                     PCLUSetUseInPlace_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
