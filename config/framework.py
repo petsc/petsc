@@ -65,6 +65,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.logName         = 'configure.log'
     self.header          = 'matt_config.h'
     self.makeMacroHeader = ''
+    self.makeRuleHeader  = ''
     self.cHeader         = 'matt_fix.h'
     self.headerPrefix    = ''
     self.substPrefix     = ''
