@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.80 1996/08/05 15:39:13 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.81 1996/08/06 04:04:29 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -205,6 +205,9 @@ extern int    PLogDump(char*);
 extern int    PLogEventRegister(int*,char*,char*);
 extern double PetscGetFlops();
 
+extern double irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
+extern double irecv_len, isend_len, recv_len, send_len;
+extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 /*
      This does not use for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
@@ -216,9 +219,6 @@ extern double PetscGetFlops();
 /*
    Logging of MPI activities
 */
-extern double irecv_ct,   isend_ct,    wait_ct,       wait_any_ct, recv_ct, send_ct;
-extern double irecv_len,  isend_len,   recv_len,      send_len;
-extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define TypeSize(buff,count,type) \
 { \
