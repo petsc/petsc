@@ -187,8 +187,8 @@ extern int    atoi(char*);
 
 #if defined(__cplusplus)
 extern int  getdomainname(char *,int);
-extern int  exit(int);
-extern int  abort();
+extern void exit(int);
+extern void abort();
 
 #else
 extern char *mktemp(char*);
