@@ -180,17 +180,24 @@ class Configure(config.base.Configure):
       # We use the framework in order to remove the PETSC_ namespace
       if self.framework.argDB['C_VERSION']   == 'Unknown':
         self.framework.argDB['C_VERSION']   = options.getCompilerVersion('C',       self.compilers.CC,  self)
-      if self.framework.argDB['CXX_VERSION'] == 'Unknown':
-        self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
+      if self.framework.argDB['CXX']:
+        if self.framework.argDB['CXX_VERSION'] == 'Unknown':
+          self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
+      else:
+          self.framework.argDB['CXX_VERSION'] = ''
 
       if self.framework.argDB['CFLAGS_g']   == 'Unknown':
         self.framework.argDB['CFLAGS_g']    = options.getCompilerFlags('C',       self.compilers.CC,  'g', self)
       if self.framework.argDB['CFLAGS_O']   == 'Unknown':
         self.framework.argDB['CFLAGS_O']    = options.getCompilerFlags('C',       self.compilers.CC,  'O', self)
-      if self.framework.argDB['CXXFLAGS_g'] == 'Unknown':
-        self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
-      if self.framework.argDB['CXXFLAGS_O'] == 'Unknown':
-        self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
+      if self.framework.argDB['CXX']:
+        if self.framework.argDB['CXXFLAGS_g'] == 'Unknown':
+          self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
+        if self.framework.argDB['CXXFLAGS_O'] == 'Unknown':
+          self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
+      else:
+        self.framework.argDB['CXXFLAGS_g']  = ''
+        self.framework.argDB['CXXFLAGS_O']  = ''
 
       if hasattr(self.compilers,'FC'):
         if self.framework.argDB['F_VERSION']   == 'Unknown':
@@ -201,14 +208,15 @@ class Configure(config.base.Configure):
           self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
     # does C++ compiler (IBM's xlC) need special for .c files as c++?
-    self.pushLanguage('C++')
-    self.sourceExtension = '.c'
-    if not self.checkCompile('class somename { int i; };'):
-      oldFlags = self.framework.argDB['CXXFLAGS']
-      self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
+    if self.framework.argDB['CXX']:
+      self.pushLanguage('C++')
+      self.sourceExtension = '.c'
       if not self.checkCompile('class somename { int i; };'):
-        self.framework.argDB['CXXFLAGS'] = oldFlags
-    self.popLanguage()
+        oldFlags = self.framework.argDB['CXXFLAGS']
+        self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
+        if not self.checkCompile('class somename { int i; };'):
+          self.framework.argDB['CXXFLAGS'] = oldFlags
+      self.popLanguage()
 
 
     self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
