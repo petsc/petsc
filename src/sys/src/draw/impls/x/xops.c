@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.113 1998/06/04 21:16:50 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.114 1998/07/14 15:33:15 bsmith Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -956,7 +956,7 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 
      Collective on MPI_Comm
 
-     Input Parameters:
+     Input Parameter:
 .    comm - the MPI communicator to share the window viewer
 
      Notes:
