@@ -109,12 +109,13 @@ clean:
 #    1 - basic C suite used in installation tests
 #    2 - additional C suite including graphics
 #    3 - basic Fortran .F suite
-#    4 - subset of 1 and 2 that runs on only a single processor
-#    5 - examples that require complex numbers
+#    4 - uniprocessor version of 1 and 2
+#    5 - C examples that require complex numbers
 #    6 - C examples that don't work with complex numbers 
 #    7 - C examples that require BlockSolve
 #    8 - Fortran .F examples that don't work with complex numbers
 #    9 - uniprocessor version of 3
+#   10 - Fortran examples that require complex
 #
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
@@ -125,6 +126,7 @@ testexamples_6: $(TESTEXAMPLES_6)
 testexamples_7: $(TESTEXAMPLES_7)
 testexamples_8: $(TESTEXAMPLES_8)
 testexamples_9: $(TESTEXAMPLES_9)
+testexamples_10: $(TESTEXAMPLES_10)
 buildexamples_1: $(BUILDEXAMPLES_1)
 buildexamples_2: $(BUILDEXAMPLES_2)
 buildexamples_3: $(BUILDEXAMPLES_3)
@@ -134,6 +136,7 @@ buildexamples_6: $(BUILDEXAMPLES_6)
 buildexamples_7: $(BUILDEXAMPLES_7)
 buildexamples_8: $(BUILDEXAMPLES_8)
 buildexamples_9: $(BUILDEXAMPLES_9)
+buildexamples_10: $(BUILDEXAMPLES_10)
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
@@ -172,7 +175,7 @@ lint:
 # Builds Fortran-77 wrappers
 fortranstubs:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/src/fortran/auto \
-	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
+	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix Petsc\
 	  -ptr64 HAVE_64BITS -fcaps HAVE_FORTRAN_CAPS \
           -fuscore HAVE_FORTRAN_UNDERSCORE $(SOURCEC)
 
