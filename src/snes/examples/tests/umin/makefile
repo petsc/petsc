@@ -24,7 +24,7 @@ DIRS          =
 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
-        dmsabc.o dodcps.o dgl2co.o mpinter.o pdgl2fg.o
+        dmsabc.o dodcps.o dgl2co.o mpinter.o
 
 ex1: ex1.o $(FOBJ1) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ1)  $(PETSC_LIB)
