@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.21 1997/08/13 22:24:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.22 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -333,6 +333,8 @@ $      COLORING_ID - incidence-degree
    the following 
 $    -mat_coloring natural, -mat_coloring sl, -mat_coloring lf,
 $    -mat_coloring id
+   To see the coloring use
+$    -mat_coloring_view
 
    The user can define additional colorings; see MatColoringRegister().
 
@@ -360,7 +362,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);
 
   PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
-  ierr = OptionsHasName(PETSC_NULL,"-matcoloring_view",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);
   if (flag) {
     Viewer viewer;
     ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
