@@ -4,8 +4,9 @@
 #
 setenv victim `ls -ld $1 | cut -f4 -d" "`
 mv $1 $1.stolen
-/usr/5bin/echo "y \n ." rcs -u $1 
-co -l $1
+rcs -u $1 
+/usr/local/bin/co -l $1
 /bin/cp $1.stolen $1
-echo "I have stolen $1 in " `pwd` | mail $victim
+/usr/local/bin/ci -u $1
+/usr/local/bin/co -l $1
 
