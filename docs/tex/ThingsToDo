@@ -42,6 +42,9 @@ Additional Capabilities that PETSc Needs:
    - Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
      code to cheaply stablize.
 
+   - Introduce a concept of Vecs and provide multiple right hand side
+     versions of MatMult.... Then do KSP versions.
+
    - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
      (requested by Xiao Chuan Cai; this is supposedly much faster than
      our current code).
