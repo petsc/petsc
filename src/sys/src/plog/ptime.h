@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.58 1999/03/31 23:59:34 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.59 1999/04/01 04:36:02 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -136,6 +136,18 @@ EXTERN_C_END
 #define PetscTimeAdd(v)      {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
                              (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+/* ------------------------------------------------------------------
+   ASCI RED machine has a fast clock accessiable through dclock() 
+*/
+#elif defined (USE_DCLOCK)
+extern PLogDouble dclock();
+#define PetscTime(v)         (v)=dclock();
+
+#define PetscTimeSubtract(v) (v)-=dclock();
+
+#define PetscTimeAdd(v)      (v)+=dclock();
+
 
 /* ------------------------------------------------------------------
    NT uses a special time code
