@@ -71,7 +71,7 @@ elif [ "$LARCH" = "OSF1" ]; then
     LARCH="alpha"
 elif [ "$LARCH" = "Hurd" ]; then
         LARCH="hurd"
-elif [ "$LARCH" = "Rhapsody" ]; then
+elif [ "$LARCH" = "Rhapsody" ] || [ "$LARCH" = "Darwin" ]; then
         LARCH="macx"
 elif [ "$LARCH" = "5000" ]; then
         LARCH="UXPV"

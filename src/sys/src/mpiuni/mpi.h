@@ -499,15 +499,13 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Scatterv(sendbuf,sendcounts,displs,\
      sendtype, recvbuf,recvcount,\
      recvtype,root,comm) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendbuf),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendcounts),\
+     (MPIUNI_Memcpy(recvbuf,sendbuf,(recvcount)*(recvtype)),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendtype),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvbuf),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvcount),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendcounts),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (root),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_Abort(MPI_COMM_WORLD,0))
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
+     MPI_SUCCESS)
 #define MPI_Allgather(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvcount),\
