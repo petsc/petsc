@@ -20,7 +20,7 @@ class Compiler (build.processor.Compiler):
     if self.processor is None:
       self.processor = self.argDB['CXX']
     compiler = self.processor
-    if config.compilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler):
       import commands
       # Make sure g++ is recent enough
       (status, output) = commands.getstatusoutput(compiler+' -dumpversion')
