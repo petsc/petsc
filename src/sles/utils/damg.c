@@ -277,7 +277,7 @@ int DMMGSolve(DMMG *dmmg)
 #define __FUNCT__ "DMMGSolveSLES"
 int DMMGSolveSLES(DMMG *dmmg,int level)
 {
-  int        ierr,its;
+  int        ierr;
 
   PetscFunctionBegin;
   ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
