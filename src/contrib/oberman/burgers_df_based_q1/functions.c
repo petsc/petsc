@@ -1,6 +1,7 @@
 /* functions.c */
 #include <math.h>
 
+/*------------------------------------------------------*/
 /* forcing fucntions */
  double g(double x, double y){ 
   return 0; } 
@@ -9,7 +10,7 @@
 /* Boundary Conditions */
 /* use the  exact solution for the burgers equation */
 
-/*
+/*-------------------------------------------------
 double bc1(double x, double y)
 {
   double eta = 0.04;
@@ -31,6 +32,7 @@ double soln(double x, double y)
   return a1+a2*x+a3*y+a4*x*y;
 }
 */
+/*--------------------------------------------------------*/
 
 double soln(double x, double y)
 {
@@ -40,6 +42,7 @@ double soln(double x, double y)
   return a1+a2*(x+1) +a3*y+a4*(x+1)*y+a5*(exp(lambda*x)+exp(-lambda*x))*cos(lambda*y);
 }
 
+/*------------------------------------------------------------*/
 double bc1(double x, double y)
   {
     double a2, a4, a5, lambda, eta;
@@ -49,6 +52,7 @@ double bc1(double x, double y)
     q = soln(x,y);
   return -2*eta*(a2+a4*y+lambda*a5*(exp(lambda*x)-exp(-lambda*x))*cos(lambda*y))/q;
 }
+/*----------------------------------------------------------*/
 
 double bc2(double x, double y)
 {

@@ -50,7 +50,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscFunctionReturn(0);
 }
 
-
+/*-------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetLocal"
 /*
@@ -125,7 +125,7 @@ if(0){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingV
   if(1){ printf("the number of cells on processor %d: %d\n ", rank, grid->cell_n);}
 
  if( 1 ){  printf("grid cell_df\n");   PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF);}
-  /*       Get the numerical values of all vertices for local vertices  */
+  /*       Get the numerical values/coords of all vertices for local vertices  */
   ierr = AODataSegmentGetIS(ao,"vertex","values",grid->vertex_global,(void **)&grid->vertex_value);CHKERRQ(ierr);
   /* Get Df's corresponding to the vertices */
  ierr = AODataSegmentGetIS(ao,"vertex","df",grid->vertex_global,(void **)&grid->vertex_df);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ if(0){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingV
 
 }
 
-
+/*--------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtGraphics"
 int AppCtxGraphics(AppCtx *appctx)
@@ -213,6 +213,7 @@ int AppCtxGraphics(AppCtx *appctx)
   PetscFunctionReturn(0);
 }
 
+/*-----------------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtDestroy"
 int AppCtxDestroy(AppCtx *appctx)
