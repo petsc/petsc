@@ -398,7 +398,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 
     if (type == PETSC_BINARY_RDONLY){
       /* possibly get the file from remote site or compressed file */
-      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
+      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
         SETERRQ1(1,"Cannot locate file: %s on node zero",vbinary->filename);

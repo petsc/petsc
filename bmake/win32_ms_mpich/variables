@@ -12,7 +12,7 @@ RANLIB           = true
 SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
-DIFF             = ndiff_wrapper
+DIFF             = ${PETSC_DIR}/bin/ndiff_wrapper
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} cl
