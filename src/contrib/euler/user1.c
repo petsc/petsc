@@ -651,9 +651,11 @@ int UserDestroyEuler(Euler *app)
  */
 int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
-  Euler   *app = (Euler *)ptr;
-  int     iter;                /* nonlinear solver iteration number */
-  int     fortmat, flg, ierr;
+  Euler  *app = (Euler *)ptr;
+  int    iter;                   /* nonlinear solver iteration number */
+  int    fortmat, flg, ierr;
+  Vec    fvec;
+  Scalar *fvec_array;
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
@@ -717,6 +719,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
      the matrix. */
   ierr = MatSetUnfactored(*pjac); CHKERRQ(ierr);
 
+  ierr = SNESGetFunction(snes,&fvec); CHKERRQ(ierr);
+  ierr = VecGetArray(fvec,&fvec_array); CHKERRQ(ierr);
+
   /* Form Jacobian matrix */
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   if (app->mat_assemble_direct) {
@@ -730,7 +735,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,app->fff,&app->fort_ao); CHKERRQ(ierr);
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,fvec_array,&app->fort_ao); CHKERRQ(ierr);
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   /* Or store the matrix in the intermediate Eagle format for later conversion ... */
@@ -744,7 +749,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,app->fff, &app->fort_ao); CHKERRQ(ierr);
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array, &app->fort_ao); CHKERRQ(ierr);
     /* Convert Jacobian from Eagle format */
     if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
     ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
@@ -954,7 +959,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 
   PLogEventBegin(app->event_localf,0,0,0,0);
 
-  ierr =localfortfct_(&app->first_time_resid,app->fff,
+  ierr =localfortfct_(&app->first_time_resid,fv_array,
          app->xx,app->p,app->xx_bc,app->p_bc,
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -978,8 +983,6 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
         Assemble vector Fvec(X)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DFVecView(Fvec,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   if (app->use_vecsetvalues) {
 
@@ -987,12 +990,12 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
     ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
 
     /* Build Fvec(X) using VecSetValues() */
-    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, app->fff,
+    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, fv_array,
          app->ltog, &app->nloc ); CHKERRQ(ierr);
   } else {
 #endif
     /* Build Fvec(X) directly, without using VecSetValues() */
-    ierr = rbuild_direct_(app->fff, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
+    ierr = rbuild_direct_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   }
 #endif
@@ -1374,7 +1377,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
-  ierr = VecGetArray(app->F,&app->fff);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);

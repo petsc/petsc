@@ -252,15 +252,9 @@ c       Using local grid
 
 c -------------------------------------------------------------------
 c
-      integer function localfortfct(first_time_resid,xx,p,xx_bc,p_bc,
-     &                sadai,sadaj,sadak,
+      integer function localfortfct(first_time_resid,fff,
+     &                xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                fbcri1,fbcrui1,fbcrvi1,fbcrwi1,fbcei1,
-     &                fbcri2,fbcrui2,fbcrvi2,fbcrwi2,fbcei2,
-     &                fbcrj1,fbcruj1,fbcrvj1,fbcrwj1,fbcej1,
-     &                fbcrj2,fbcruj2,fbcrvj2,fbcrwj2,fbcej2,
-     &                fbcrk1,fbcruk1,fbcrvk1,fbcrwk1,fbcek1,
-     &                fbcrk2,fbcruk2,fbcrvk2,fbcrwk2,fbcek2,
      &                dxx,br,bl,be,f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
 c localfortfct - Evaluates local Fortran function (using implicit BCs).
@@ -295,14 +289,8 @@ C  Compute pressures
       endif
 
 C  If using implicit BC's, compute function components for boundary points 
-      ierr = residbc(xx, p, xx_bc, p_bc, sadai, sadaj, sadak,
-     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
-     &         fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &         fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &         fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &         fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &         fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &         fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2)
+      ierr = residbc(xx, fff, p, xx_bc, p_bc, sadai, sadaj, sadak,
+     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,residbc',
      &                rank,ierr
