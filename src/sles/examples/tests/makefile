@@ -26,7 +26,7 @@ TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
 		  runex2_3 runex2_5 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		  runex4 ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc runex19 ex19.rm clean
-TESTEXAMPLES_5  = ex17.PETSc ex17.rm clean
+TESTEXAMPLES_5  = ex17.PETSc ex17.rm ex22.PETSc ex22.rm clean
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm ex8.PETSc runex8_3 runex8_4 \
@@ -43,13 +43,13 @@ BUILDEXAMPLES_3 = ex7.PETSc ex7.rm ex12.PETSc ex12.rm ex16.PETSc ex16.rm ex20.PE
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
 		  ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc ex19.rm clean
-BUILDEXAMPLES_5 = ex17.PETSc ex17.rm clean
+BUILDEXAMPLES_5 = ex17.PETSc ex17.rm ex22.PETSc ex22.rm clean
 BUILDEXAMPLES_6 = ex6.PETSc ex6.rm ex8.PETSc ex8.rm  clean
 BUILDEXAMPLES_7 = ex6.PETSc ex6.rm ex8.PETSc  ex8.rm clean
 BUILDEXAMPLES_8  = ex16.PETSc runex16 ex16.rm 
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
-		  ex11.c ex13.c ex14.c ex15.c ex17.c ex19.c
+		  ex11.c ex13.c ex14.c ex15.c ex17.c ex19.c ex22.c
 EXAMPLESF       = ex7.F ex12.F ex16.F ex20.F
 
 ex1: ex1.o  chkopts
@@ -135,6 +135,10 @@ ex20: ex20.o  chkopts
 ex21: ex21.o  chkopts
 	-$(CLINKER) -o ex21 ex21.o   $(PETSC_LIB)
 	$(RM) ex21.o
+
+ex22: ex22.o  chkopts
+	-$(CLINKER) -o ex22 ex22.o  $(PETSC_LIB)
+	$(RM) ex22.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
@@ -366,5 +370,18 @@ runex20:
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   $(RM) -f ex20_1.tmp
+
+runex22:
+	-@$(MPIRUN) ex22 -mat_aij -mat_view_info_detailed -ksp_smonitor > ex22_1.tmp 2>&1; \
+	   if (diff output/ex22_1.out ex22_1.tmp) then true; \
+	   else echo "Possible problem with ex22_1, diffs above"; fi; \
+	   $(RM) -f ex22_1.tmp
+
+runex22:
+	-@$(MPIRUN) -np 4 ex1 -m_eta 10 -m_xi 11 -mat_aij -mat_view_info \
+	   -ksp_smonitor -pc_type bjacobi > ex22_2.tmp 2>&1;	  \
+	   if (diff output/ex22_2.out ex22_2.tmp) then true; \
+	   else echo "Possible problem with ex22_2, diffs above"; fi; \
+	   $(RM) -f ex22_2.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
