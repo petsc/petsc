@@ -29,6 +29,17 @@ class Configure:
     self.pushLanguage('C')
     return
 
+  def getRoot(self):
+    import sys
+    # This has the problem that when we reload a module of the same name, this gets screwed up
+    #   Therefore, we call it in the initializer, and stash it
+    if not hasattr(self, '_root_'):
+      if hasattr(sys.modules[self.__module__], '__file__'):
+        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
+      else:
+        self._root_ = os.getcwd()
+    return self._root_
+
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
     self.framework.log.write('TEST '+str(test.im_func.__name__)+' from '+str(test.im_class.__module__)+'\n')

@@ -24,4 +24,11 @@ class Builder(install.base.Base):
     if not isinstance(setupTarget, list): setupTarget = [setupTarget]
     for t in setupTarget:
       maker.executeTarget(t)
-    return maker.main(target)
+    ret = maker.main(target)
+    # Python filters nonexistent paths, so we must add it again
+    #   TODO: Should use getClientDir() from maker here
+    import os
+    path = os.path.join(root, 'python-scandal')
+    if not path in sys.path:
+      sys.path.append(path)
+    return ret

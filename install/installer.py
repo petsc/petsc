@@ -18,11 +18,13 @@ class Installer(install.base.Base):
     import nargs
     argDB = nargs.ArgDict('ArgDict', localDict = localDict)
 
-    argDB.setLocalType('backup',       nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
-    argDB.setLocalType('forceInstall', nargs.ArgBool('Forced installation overwrites any existing project'))
+    argDB.setLocalType('backup',            nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
+    argDB.setLocalType('forceInstall',      nargs.ArgBool('Forced installation overwrites any existing project'))
+    argDB.setLocalType('retrievalCanExist', nargs.ArgBool('Allow a porject to exist prior to installation'))
 
-    argDB['backup']       = 0
-    argDB['forceInstall'] = 0
+    argDB['backup']            = 0
+    argDB['forceInstall']      = 0
+    argDB['retrievalCanExist'] = 0
 
     argDB.insertArgs(clArgs)
     argDB.insertArgs(initDict)
@@ -61,4 +63,6 @@ if __name__ == '__main__':
       if installer.checkBootstrap():
         booter = Installer(localDict = 1, initDict = installer.argDB)
         booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler')
+      if installer.checkBootstrap():
+        raise RuntimeError('Should not still be bootstraping')
       installer.install(url)
