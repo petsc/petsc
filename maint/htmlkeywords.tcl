@@ -90,12 +90,7 @@ proc deletespace { name } {
 
 proc write_keywords_file { } {
     global  keywords Keywords Keywordsfunction 
-    global  PETSC_DIR html
-    
-    set PETSC_DIR ../..
-    if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
-        set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
-    }   
+    global  html
 
     exec /bin/rm -f docs/www/keywords.html
     set keywords_file [ open docs/www/keywords.html w ]
@@ -131,7 +126,6 @@ proc write_keywords_file { } {
         set i 0
         while { $i < $n } {
             set functionname [ join [ lindex $Keywordsfunction($keyword) $i ] " " ]
-            #set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
             puts $keywords_file {<TABLE>}
             puts $keywords_file {<TD WIDTH=192 ><BR></TD>}
             puts $keywords_file {<TD WIDTH=300 >}
@@ -157,12 +151,18 @@ proc write_keywords_file { } {
 ####               main()                    #####    
 ##################################################
 # Initialise some global datastructures
-# change dir to PETSC_DIR
+# change dir to PETSC_HOME
 proc main { }  {
     global Keywords Keywordsfunction keywords keyword html
+    global sub argc argv
 
-    set PETSC_DIR /home/bsmith/petsc
-    cd $PETSC_DIR
+    set PETSC_HOME /home/bsmith/petsc
+    cd $PETSC_HOME
+
+    set PETSC_DIR ../..
+    if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
+        set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
+    }   
 
     set files [ glob docs/www/man*/*.html]
     set keywords {}
@@ -204,7 +204,6 @@ proc main { }  {
     }
 
     # Modify the filename and make it hypertext 
-    set PETSC_DIR  ../..
     foreach filename $files {
         set functionname $Functionname($filename)
         set tmp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $functionname ]
