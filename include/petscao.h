@@ -1,8 +1,8 @@
-/* $Id: ao.h,v 1.14 1997/12/01 23:12:21 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.15 1997/12/12 19:40:34 bsmith Exp curfman $ */
 
 /* 
-   An application ordering is mapping between application-centric
-  ordering (the ordering that is "natural" to the application) and 
+  An application ordering is mapping between an application-centric
+  ordering (the ordering that is "natural" for the application) and 
   the parallel ordering that PETSc uses.
 */
 #if !defined(__AO_PACKAGE)

@@ -1,21 +1,31 @@
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.70 1998/04/28 03:49:10 curfman Exp $";
+#endif
 
-static char help[] ="Reads in an AODatabase and displays the key and segment names\n\
-    -d dumps the entire database\n\
-    -e allows you to add charactor string values to the database\n\
-    -r allows you to remove items from the database\n";
+static char help[] = 
+"Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
+    -f input_file : Specifies input file\n\
+    -d : Dumps the entire database\n\
+    -e : Allows addition of character string values to the database\n\
+    -r : Allows removal of items from the database\n\n";
 
+/*T
+   Concepts: AOData^Using an AOData database for grid information;
+   Routines: AODataLoadBasic(); AODataKeyExists(); AODataKeyAdd();
+   Routines: AODataSegmentAdd(); AODataView();
+   Processors: n
+T*/
 
-/*
-
-*/
-
-/*
-      The ao.h include file allows you to access all the various AO and AOData routines
-   for manipulating simple parallel databases of grid (and related) information
+/* 
+  Include "ao.h" so that we can use the various AO and AOData routines for
+  manipulating simple parallel databases of grid (and related) information.
+  Note that this file automatically includes:
+     petsc.h  - base PETSc routines   
+     sys.h    - system routines
+     is.h     - index sets            
 */
 
 #include "ao.h"
-
 
 int main( int argc, char **argv )
 {
@@ -26,8 +36,8 @@ int main( int argc, char **argv )
   PetscTruth     keyexists;
 
   /* ---------------------------------------------------------------------
-     Initialize PETSc
-     ------------------------------------------------------------------------*/
+       Initialize PETSc
+     --------------------------------------------------------------------- */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -42,7 +52,6 @@ int main( int argc, char **argv )
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata); CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
-
 
   ierr = OptionsHasName(0,"-d",&flag);CHKERRA(ierr);
   if (!flag) {

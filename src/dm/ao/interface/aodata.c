@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.25 1998/04/24 02:18:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: aodata.c,v 1.26 1998/04/27 14:27:41 curfman Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -980,19 +980,19 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentAdd" 
 /*@C
-   AODataSegmentAdd - Add another data segment to a AOData database.
+   AODataSegmentAdd - Adds another data segment to a AOData database.
 
    Collective on AOData
 
    Input Parameters:
-+  aodata - the database
-.  name - the name of the key
++  aodata  - the database
+.  name    - the name of the key
 .  segment - the name of the data segment
-.  bs - the fundamental blocksize of the data
-.  n - the number of data items contributed by this processor
-.  keys - the keys provided by this processor
-.  data - the actual data
--  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
+.  bs      - the fundamental blocksize of the data
+.  n       - the number of data items contributed by this processor
+.  keys    - the keys provided by this processor
+.  data    - the actual data
+-  dtype   - the data type (one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.)
 
 .keywords: database additions
 

@@ -1,24 +1,19 @@
 
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.24 1998/04/09 04:19:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.25 1998/04/13 18:02:03 bsmith Exp curfman $";
 #endif
 
 /*
-    The most basic AOData routines. These store the 
-  entire database on each processor. These are very simple, not that
-  we do not even use a private data structure for AOData and the 
-  private datastructure for AODataSegment is just used as a simple array.
+  The most basic AOData routines. These store the entire database on each processor.
+  These routines are very simple; note that we do not even use a private data structure
+  for AOData, and the private datastructure for AODataSegment is just used as a simple array.
 
-    These are made slightly complicated by having to be able to handle
-  logical variables stored in bit arrays. Thus
-
-  *  before mallocing to hold a bit array, we shrunk the array length by a factor
-     of 8 using BTLength()
-
-  *  we use PetscBitMemcpy() to allow us to copy at the individual bit level.
-     (for regular datatypes this just does a regular memcpy().
+  These are made slightly complicated by having to be able to handle logical variables
+  stored in bit arrays. Thus,
+    - Before mallocing to hold a bit array, we shrunk the array length by a factor
+      of 8 using BTLength()
+    - We use PetscBitMemcpy() to allow us to copy at the individual bit level;
+      for regular datatypes this just does a regular memcpy().
 */
 
 #include "src/ao/aoimpl.h"
@@ -219,7 +214,6 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "AODataView_Basic"
@@ -840,24 +834,24 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
 #undef __FUNC__  
 #define __FUNC__ "AODataCreateBasic" 
 /*@C
-   AODataCreateBasic - Creates a AO datastructure.
+   AODataCreateBasic - Creates an AO datastructure.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm  - MPI communicator that is to share AO
-.  n - total number of keys that will be added
++  comm  - MPI communicator that is to share AO
+-  n - total number of keys that will be added
 
    Output Parameter:
 .  aoout - the new database
 
-   Collective on MPI_Comm
-
-   Options Database Key:
-$   -ao_data_view : call AODataView() at the conclusion of AODataAdd()
-$   -ao_data_view_info : call AODataView() at the conclusion of AODataAdd()
+   Options Database Keys:
++  -ao_data_view - Prints entire database at the conclusion of AODataSegmentAdd()
+-  -ao_data_view_info - Prints info about database at the conclusion of AODataSegmentAdd()
 
 .keywords: AOData, create
 
-.seealso: AODataAdd(), AODataDestroy()
+.seealso: AODataSegmentAdd(), AODataDestroy()
 @*/
 int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 {
@@ -883,7 +877,9 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 #undef __FUNC__  
 #define __FUNC__ "AODataLoadBasic" 
 /*@C
-   AODataLoadBasic - Loads a AO database from a file.
+   AODataLoadBasic - Loads an AO database from a file.
+
+   Collective on Viewer
 
    Input Parameters:
 .  viewer - the binary file containing the data
@@ -891,15 +887,13 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
    Output Parameter:
 .  aoout - the new database
 
-   Collective on Viewer
+   Options Database Keys:
++  -ao_data_view - Prints entire database at the conclusion of AODataLoadBasic()
+-  -ao_data_view_info - Prints info about database at the conclusion of AODataLoadBasic()
 
-   Options Database Key:
-$   -ao_data_view : call AODataView() at the conclusion of AODataLoadBasic()
-$   -ao_data_view_info : call AODataView() at the conclusion of AODataLoadBasic()
+.keywords: AOData, create, load, basic
 
-.keywords: AOData, create, load
-
-.seealso: AODataAdd(), AODataDestroy(), AODataCreateBasic()
+.seealso: AODataSegmentAdd(), AODataDestroy(), AODataCreateBasic(), AODataView() 
 @*/
 int AODataLoadBasic(Viewer viewer,AOData *aoout)
 {
