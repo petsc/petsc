@@ -64,6 +64,8 @@ extern char   *realpath(char *,char *);
 extern int    getrusage(int,s_rusage);
 extern int    vfprintf (FILE *, const char *, char * );
 extern int    getpagesize();
+#include <sys/time.h>
+extern int    gettimeofday(struct timeval *,struct timezone *);
 /*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed
