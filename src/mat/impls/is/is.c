@@ -66,6 +66,21 @@ int MatMult_IS(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatView_IS"
+int MatView_IS(Mat A,PetscViewer viewer)
+{
+  Mat_IS      *a = (Mat_IS*)A->data;
+  int         ierr;
+  PetscViewer sviewer;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  ierr = MatView(a->A,sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetLocalToGlobalMapping_IS" 
 int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 {
@@ -205,6 +220,7 @@ int MatCreate_IS(Mat A)
   A->ops->zerorowslocal           = MatZeroRowsLocal_IS;
   A->ops->assemblybegin           = MatAssemblyBegin_IS;
   A->ops->assemblyend             = MatAssemblyEnd_IS;
+  A->ops->view                    = MatView_IS;
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
