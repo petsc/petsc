@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.6 1997/01/01 03:41:24 bsmith Exp bsmith $";
+C "$Id: ex4f.F,v 1.7 1997/01/04 18:14:26 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -228,7 +228,7 @@ C  this vector to zero by calling VecSet().
       if (rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of Newton iterations = ',i1)
 
 C  Draw contour plot of solution
 
