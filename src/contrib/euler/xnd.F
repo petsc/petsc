@@ -36,12 +36,19 @@ c wish to address.
 C************************************************************************
       integer function JULIANNE( time_init, jsolve, app, cfl_init,
      &                    rtol, eps, b1, b2, b3, b4, b5, b6, d, dt,
-     &                    r, ru, rv, rw, e, p,
-     &                    dr, dru, drv, drw, de, 
+     &                    xx, p, dxx,
      &                    br, bl, be, sadai, sadaj, sadak,
      &                    aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
      &                    x, y, z, f1, g1, h1,
      &                    sp, sm, sp1, sp2, sm1, sm2, beta1, ifreq1)
+c      integer function JULIANNE( time_init, jsolve, app, cfl_init,
+c     &                    rtol, eps, b1, b2, b3, b4, b5, b6, d, dt,
+c     &                    r, ru, rv, rw, e, p,
+c     &                    dr, dru, drv, drw, de, 
+c     &                    br, bl, be, sadai, sadaj, sadak,
+c     &                    aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
+c     &                    x, y, z, f1, g1, h1,
+c     &                    sp, sm, sp1, sp2, sm1, sm2, beta1, ifreq1)
 
 #include "param.h"
 #include "matrixb.h"
@@ -119,7 +126,8 @@ C Default frequency of forming Jacobian is every 10 iterations
          ifreq = 10
       endif
 c Read input and set up initial conditions
-      CALL IC(r,ru,rv,rw,e,p)
+      CALL IC(xx,p)
+c      CALL IC(r,ru,rv,rw,e,p)
       cfl_init = cfl
       READ (15,100) NB,NT
       close(15)
@@ -200,8 +208,10 @@ c Apply boundary conditions only for original solver!
 c For SNES version, boundary conditions are handled elsewhere.
 #if defined(ACTIVATE_JULIANNE)
       if (jsolve .eq. 1) 
-     &   CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+     &   CALL BC_UNI(xx,p,sadai,sadaj,sadak,
      &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c     &   CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       epsi = one/eps
 #endif
       if (rank .eq. 0) WRITE (6,300) NB,NT
@@ -224,17 +234,25 @@ c         endif
 c At each step, solve a Newton problem, and update the boundary conditions
          CALL STEP(time_init,eps,epsi,rtol,converge,
      &             b1,b2,b3,b4,b5,b6,d,dt,
-     &             r,ru,rv,rw,e,p,
-     &             dr,dru,drv,drw,de,
+     &             xx,p,dxx,
      &             br,bl,be,sadai,sadaj,sadak,
      &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &             f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c         CALL STEP(time_init,eps,epsi,rtol,converge,
+c     &             b1,b2,b3,b4,b5,b6,d,dt,
+c     &             r,ru,rv,rw,e,p,
+c     &             dr,dru,drv,drw,de,
+c     &             br,bl,be,sadai,sadaj,sadak,
+c     &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &             f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
          if (converge .eq. 1) goto 20
     2    CONTINUE
    20    continue
 c Calculate the physical quanties of interest
-         CALL PVAR(r,ru,rv,rw,e,p,
+         CALL PVAR(xx,p,
      &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
+c         CALL PVAR(r,ru,rv,rw,e,p,
+c     &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
       endif
       if (jsolve .eq. 1 .and. no_output .eq. 0) then
          write(29,*) ' ];'
@@ -271,7 +289,8 @@ C************************************************************************
 
 C************************************************************************
 
-      SUBROUTINE IC(r,ru,rv,rw,e,p)
+      SUBROUTINE IC(xx,p)
+c      SUBROUTINE IC(r,ru,rv,rw,e,p)
 c IC reads case data and initializes the flow field to plug flow
 #include "param.h"
 #include "varbls.h"
@@ -347,10 +366,13 @@ c      DO 2 I=1,NI1
 
 C************************************************************************
 
-      integer function bcpart_j1(r,ru,rv,rw,e,p,
-     &                   r_bc,ru_bc,rv_bc,rw_bc,e_bc,p_bc,
+      integer function bcpart_j1(xx,p,xx_bc,p_bc,
      &                   sadai,sadaj,sadak,
      &                   aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      integer function bcpart_j1(r,ru,rv,rw,e,p,
+c     &                   r_bc,ru_bc,rv_bc,rw_bc,e_bc,p_bc,
+c     &                   sadai,sadaj,sadak,
+c     &                   aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c
 c Applies boundary conditions for j=1 plane
@@ -387,8 +409,8 @@ c        DO 2 I=2,NI
         IF (I.LE.ITL.OR.I.GT.ITU) GO TO 4
         IF (NCYC.GT.10) GO TO 15
         ADA=SADAJ(I,1,K)**2
-        QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
-     *     +RW(I,2,K)*AJZ(I,1,K)
+        QDA=RU(I,2,K)*AJX(I,1,K)+ RV(I,2,K)*AJY(I,1,K)
+     &     +RW(I,2,K)*AJZ(I,1,K)
         FF=two*QDA/ADA
         RU(I,1,K)=RU(I,2,K)-FF*AJX(I,1,K)
         RV(I,1,K)=RV(I,2,K)-FF*AJY(I,1,K)
@@ -400,13 +422,14 @@ c        DO 2 I=2,NI
    15   CONTINUE
 C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
         QDA=(RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
-     *     +RW(I,2,K)*AJZ(I,1,K))/R(I,2,K)
+     &     +RW(I,2,K)*AJZ(I,1,K))/R(I,2,K)
         P0=p5*(P(I,1,K)+P(I,2,K))
         R0=p5*(R(I,1,K)+R(I,2,K))
         C0=SQRT(GAM*P0/R0)
         PB=P(I,2,K)-R0*C0*QDA/SADAJ(I,1,K)
         P(I,1,K)=2.*PB-P(I,2,K)
-        R(I,1,K)=R(I,2,K)+2.*(PB-P(I,2,K))/C0**2
+        R(I,1,K)=R(I,2,K)
+     &    +2.*(PB-P(I,2,K))/C0**2
         FF=two*QDA/SADAJ(I,1,K)**2
         U=RU(I,2,K)/R(I,2,K)-FF*AJX(I,1,K)
         V=RV(I,2,K)/R(I,2,K)-FF*AJY(I,1,K)
@@ -414,7 +437,8 @@ C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
         RU(I,1,K)=U*R(I,1,K)
         RV(I,1,K)=V*R(I,1,K)
         RW(I,1,K)=W*R(I,1,K)
-        RQDQ=p5*(RU(I,1,K)**2+RV(I,1,K)**2+RW(I,1,K)**2)/R(I,1,K)
+        RQDQ=p5*(RU(I,1,K)**2+RV(I,1,K)**2+
+     &   RW(I,1,K)**2)/R(I,1,K)
         E(I,1,K)=P(I,1,K)*RGM1+RQDQ
         GO TO 2
     4   CONTINUE
@@ -442,8 +466,10 @@ c  100 format(i3,i3,i3,6e16.8)
 
 C************************************************************************
 
-      integer function BC(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      integer function BC(xx,p,sadai,sadaj,sadak,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      integer function BC(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c Apply boundary conditions
 #include "param.h"
@@ -476,12 +502,15 @@ c   See bc_uni() for uniprocessor case.
 c        DO 20 K=2,NK
 c        DO 20 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
-        R0=p5*(R(I,NJ,K)+R(I,NJ1,K))
+        R0=p5*(R(I,NJ,K)+
+     &    R(I,NJ1,K))
         P0=p5*(P(I,NJ,K)+P(I,NJ1,K))
         C0=SQRT(GAM*P0/R0)
         R0C0=R0*C0
-        U2=RU(I,NJ,K)/R(I,NJ,K)
-        V2=RV(I,NJ,K)/R(I,NJ,K)
+        U2=RU(I,NJ,K)/
+     &     R(I,NJ,K)
+        V2=RV(I,NJ,K)/
+     &     R(I,NJ,K)
         W2=RW(I,NJ,K)/R(I,NJ,K)
         PB=p5*(PINIT+P(I,NJ,K)-R0C0/SADAJ(I,NJ,K)*(AJX(I,NJ,K)*(RUINIT-
      *   U2)+AJY(I,NJ,K)*(RVINIT-V2)+AJZ(I,NJ,K)*(RWINIT-W2)))
@@ -580,9 +609,12 @@ c    8   CONTINUE
 
 C************************************************************************
 
-      SUBROUTINE EIGENV(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      SUBROUTINE EIGENV(dt,xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                  tstype)
+c      SUBROUTINE EIGENV(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &                  tstype)
 c
 c Forms diagonal blocks for eigendecomposition.
 c
@@ -619,17 +651,20 @@ c      DO 2 I=2,NI
       AIXA=AIX(I,J,K)+AIX(I-1,J,K)
       AIYA=AIY(I,J,K)+AIY(I-1,J,K)
       AIZA=AIZ(I,J,K)+AIZ(I-1,J,K)
-      CONU=(RU(I,J,K)*AIXA+RV(I,J,K)*AIYA+RW(I,J,K)*AIZA)/R(I,J,K)
+      CONU=(RU(I,J,K)*AIXA+RV(I,J,K)*AIYA+
+     &      RW(I,J,K)*AIZA)/R(I,J,K)
       EI=ABS(CONU)+C*(SADAI(I,J,K)+SADAI(I-1,J,K))
       AJXA=AJX(I,J,K)+AJX(I,J-1,K)
       AJYA=AJY(I,J,K)+AJY(I,J-1,K)
       AJZA=AJZ(I,J,K)+AJZ(I,J-1,K)
-      CONV=(RU(I,J,K)*AJXA+RV(I,J,K)*AJYA+RW(I,J,K)*AJZA)/R(I,J,K)
+      CONV=(RU(I,J,K)*AJXA+RV(I,J,K)*AJYA+
+     &      RW(I,J,K)*AJZA)/R(I,J,K)
       EJ=ABS(CONV)+C*(SADAJ(I,J,K)+SADAJ(I,J-1,K))
       AKXA=AKX(I,J,K)+AKX(I,J,K-1)
       AKYA=AKY(I,J,K)+AKY(I,J,K-1)
       AKZA=AKZ(I,J,K)+AKZ(I,J,K-1)
-      CONW=(RU(I,J,K)*AKXA+RV(I,J,K)*AKYA+RW(I,J,K)*AKZA)/R(I,J,K)
+      CONW=(RU(I,J,K)*AKXA+RV(I,J,K)*AKYA+
+     &      RW(I,J,K)*AKZA)/R(I,J,K)
       EK=ABS(CONW)+C*(SADAK(I,J,K)+SADAK(I,J,K-1))
       DT(I,J,K)=CFL*two/(EI+EJ+EK)
     2 CONTINUE
@@ -737,7 +772,9 @@ c      DO 4 K=1,NK
 C************************************************************************
 
       SUBROUTINE RLVECS(QER,QEL,I1,J1,K1,IB,JB,KB,AX,AY,AZ,SADA,
-     &                   r,ru,rv,rw,e,p,br,bl,be)
+     &                   xx,p,br,bl,be)
+c      SUBROUTINE RLVECS(QER,QEL,I1,J1,K1,IB,JB,KB,AX,AY,AZ,SADA,
+c     &                   r,ru,rv,rw,e,p,br,bl,be)
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"
