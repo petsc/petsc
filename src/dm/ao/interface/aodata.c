@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.12 1997/10/28 14:25:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.13 1997/11/03 04:50:45 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -41,6 +41,31 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,int *key)
   *key     = aodata->nkeys;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyExists" 
+/*@
+   AODataKeyExists - Determines if a key exists in the database.
+
+   Input Paramters:
+.    keyname - string name of key
+
+   Output Parameter:
+.    flag - PETSC_TRUE if found, else PETSC_FALSE
+
+@*/
+int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
+{
+  int ierr,iflag,ikey;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = AODataKeyFind_Private(aodata,keyname,&iflag,&ikey);CHKERRQ(ierr);
+  if (!iflag) *flag = PETSC_TRUE;
+  else *flag = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentFind_Private" 
@@ -91,6 +116,31 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
   *flag    = 1;
   *key     = aodata->nkeys;
   *segment = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentExists" 
+/*@
+   AODataSegmentExists - Determines if a key  and segment exists in the database.
+
+   Input Paramters:
+.    keyname - string name of key
+.    segname - string name of segment
+
+   Output Parameter:
+.    flag - PETSC_TRUE if found, else PETSC_FALSE
+
+@*/
+int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
+{
+  int ierr,iflag,ikey,iseg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = AODataSegmentFind_Private(aodata,keyname,segname,&iflag,&iseg,&ikey);CHKERRQ(ierr);
+  if (!iflag) *flag = PETSC_TRUE;
+  else *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -208,17 +258,13 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 @*/
 int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
-  int ierr,n,*keys;
+  int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
 
-  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -336,17 +382,11 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
 @*/
 int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
-  int ierr,n,*keys;
+  int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-
-  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -459,6 +499,36 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.segmentgetreduced)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGetExtrema" 
+/*@
+   AODataSegmentGetExtrema - Gets the largest and smallest values for each entry in the block
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+
+   Output Parameters:
+.  vmax - the maximum values (user must provide enough space)
+.  vmin - the minimum values (user must provide enough space)
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,void *vmin)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.segmentgetextrema)(aodata,name,segment,vmax,vmin); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -890,5 +960,28 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "AODataSegmentPartition"
+/*@C
+     AODataSegmentPartition - Partition a segment type across processors 
+         relative to a key that is partitioned. This will try to keep as
+         many elements of the segment on the same processor as corresponding
+         neighboring key elements are.
+
+    Input Parameters:
+.    aodata - the database
+.    key - the key you wish partitioned and renumbered
+
+.seealso: AODataKeyPartition()
+@*/
+int AODataSegmentPartition(AOData aodata,char *key,char *seg)
+{
+  int             ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.segmentpartition)(aodata,key,seg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
