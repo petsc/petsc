@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.24 1995/08/21 16:03:02 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.25 1995/08/31 16:36:57 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -10,57 +10,57 @@
 
 struct _SNES {
   PETSCHEADER
-  char *prefix;
+  char *prefix;                     /* options database prefix */
 
   /*  ----------------- User provided stuff ------------------------*/
-  void  *user;		             /* User context */
+  void  *user;		            /* user context */
 
-  int   (*computeinitialguess)(SNES,Vec,void*); /* Calculates initial guess */
-  Vec   vec_sol,vec_sol_always;     /* Pointer to solution */
-  Vec   vec_sol_update_always;      /* Pointer to solution update */
-  void  *gusP;
+  int   (*computeinitialguess)(SNES,Vec,void*); /* initial guess routine */
+  Vec   vec_sol,vec_sol_always;     /* pointer to solution */
+  Vec   vec_sol_update_always;      /* pointer to solution update */
+  void  *gusP;                      /* user initial guess context */
 
-  int   (*computefunction)(SNES,Vec,Vec,void*);
+  int   (*computefunction)(SNES,Vec,Vec,void*);  /* function routine */
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
-  void  *funP;
-  int   rsign;                      /* sign (+/-)  of residual */
+  void  *funP;                      /* user function context */
+  int   rsign;                      /* sign (+/-) of residual */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-  Mat   jacobian;                   /* Jacobian (or Hessian) matrix context */
-  Mat   jacobian_pre;
-  void  *jacP;
-  SLES  sles;
+  Mat   jacobian;                   /* Jacobian (or Hessian) matrix */
+  Mat   jacobian_pre;               /* preconditioner matrix */
+  void  *jacP;                      /* user Jacobian context */
+  SLES  sles;                       /* linear solver context */
 
-  int   (*computescaling)(Vec,Vec,void*);
-  Vec   scaling;
-  void  *scaP;
+  int   (*computescaling)(Vec,Vec,void*);  /* scaling routine */
+  Vec   scaling;                           /* scaling vector */
+  void  *scaP;                             /* scaling context */
 
   /* ---------------- Petsc (or user) Provided stuff ---------------------*/
-  int   (*monitor)(SNES,int,double,void*);   
-  void  *monP;		
-  int   (*converged)(SNES,double,double,double,void*);     
-  void  *cnvP;		
+  int   (*monitor)(SNES,int,double,void*); /* monitor routine */
+  void  *monP;		                   /* monitor routine context */
+  int   (*converged)(SNES,double,double,double,void*); /* converg. routine */
+  void  *cnvP;		                   /* convergence context */
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  int   (*setup)(SNES);         /* Sets up the nonlinear solver */
-  int   (*solve)(SNES,int*);        /* Actual nonlinear solver */
-  int   (*setfromoptions)(SNES);
-  int   (*printhelp)(SNES);
-  void  *data;     
+  int   (*setup)(SNES);             /* sets up the nonlinear solver */
+  int   (*solve)(SNES,int*);        /* actual nonlinear solver */
+  int   (*setfromoptions)(SNES);    /* sets options from database */
+  int   (*printhelp)(SNES);         /* prints info */
+  void  *data;                      /* implementationspecific data */
 
   /* ------------------  Parameters -------------------------------------- */
 
-  int      max_its;            /* Max number of iterations */
-  int      max_funcs;          /* Max number of function evals (NLM only) */
-  int      nfuncs;             /* Number of residual evaluations */
-  int      iter;               /* Global iteration number */
-  double   norm;               /* Residual norm of current iterate (NLE)
-				  or gradient norm of current iterate (NLM) */
-  double   rtol;               /* Relative tolerance */
-  double   atol;               /* Absolute tolerance */
-  double   xtol;               /* Relative tolerance in solution */
-  double   trunctol;
+  int      max_its;            /* max number of iterations */
+  int      max_funcs;          /* max number of function evals (NLM only) */
+  int      nfuncs;             /* number of function evaluations */
+  int      iter;               /* global iteration number */
+  double   norm;               /* residual norm of current iterate
+				  (or gradient norm of current iterate) */
+  double   rtol;               /* relative tolerance */
+  double   atol;               /* absolute tolerance */
+  double   xtol;               /* relative tolerance in solution */
+  double   trunctol;           /* truncation tolerance */
 
   /* ------------------- Default work-area management ------------------ */
 
@@ -68,10 +68,10 @@ struct _SNES {
   Vec      *work;
 
   /* -------------------- Miscellaneous Information --------------------- */
-  double   *conv_hist;         /* If !0, stores residual norm (NLE) or
-				  gradient norm (NLM) at each iteration */
-  int      conv_hist_len;      /* Amount of convergence history space */
-  int      nfailures;          /* Number of unsuccessful step attempts */
+  double   *conv_hist;         /* If !0, stores residual norm (or
+				  gradient norm) at each iteration */
+  int      conv_hist_len;      /* amount of convergence history space */
+  int      nfailures;          /* number of unsuccessful step attempts */
 
   /* ---------------------------- SUMS Stuff ---------------------------- */
   /* unconstrained minimization stuff ... For now we share everything else
