@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
     help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     return
 
   def executeShellCommand(self, command):
@@ -307,9 +308,10 @@ int checkInit(void) {
       if not self.include: continue
       if not self.executeTest(self.checkWorkingLink): continue
       version = self.executeTest(self.configureVersion)
-      if not self.executeTest(self.checkSharedLibrary):
-        nonsharedMPI.append((name, self.lib, self.include, version))
-        continue
+      if self.framework.argDB['with-mpi-shared']:
+        if not self.executeTest(self.checkSharedLibrary):
+          nonsharedMPI.append((name, self.lib, self.include, version))
+          continue
       self.foundMPI = 1
       functionalMPI.append((name, self.lib, self.include, version))
     # User chooses one or take first (sort by version)
