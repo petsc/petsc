@@ -1,4 +1,4 @@
-# $Id: base,v 1.7 1997/12/18 20:36:24 balay Exp bsmith $ 
+# $Id: base,v 1.8 1998/01/28 20:59:10 bsmith Exp curfman $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -19,11 +19,11 @@ RANLIB   = ranlib
 OMAKE    = make
 SHELL    = /bin/sh
 # 
-#  Some systems may require instead
+# Some systems may require instead
 # CLINKER = xlc $(COPTFLAGS) -bI:/usr/lpp/xlf/lib/lowsys.exp 
 # CLINKER = xlc $(COPTFLAGS)
-#  Next line is a hack for IBM SPx, you should remove it if 
-# you are running on plain IBM RS6000 workstations and replace 
+# The next line is a hack for IBM SPx machines; you should remove it 
+# if you are running on plain IBM RS6000 workstations and replace it
 # with one of the above.
 #
 CLINKER  = mpcc $(COPTFLAGS) 
@@ -33,9 +33,9 @@ CLINKER  = mpcc $(COPTFLAGS)
 # This used to be the default, but I've removed it since most system have
 # licensed runtimes
 #
-# FLINKER = xlf 
-#  Next line is a hack for IBM SPx, you should remove it if 
-# you are running on plain IBM RS6000 workstations and replace 
+# FLINKER = xlf $(FOPTFLAGS)
+# The next line is a hack for IBM SPx machines; you should remove it 
+# if you are running on plain IBM RS6000 workstations and replace it
 # with the above.
 #
 FLINKER = mpxlf $(FOPTFLAGS)
