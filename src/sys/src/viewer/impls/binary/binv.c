@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.47 1998/09/25 03:15:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.48 1998/10/29 04:03:07 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -150,54 +150,58 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
   /* only first processor opens file if writeable */
   if (!rank || type == BINARY_RDONLY) {
 
-    /*
+    if (type == BINARY_RDONLY){
+      /*
           Check if the file exists
-    */
-    ierr  = PetscTestFile(name,'r',&exists);CHKERRQ(ierr);
-    if (!exists) {
-      char *tname;
-      int  size;
+      */
+      ierr  = PetscTestFile(name,'r',&exists);CHKERRQ(ierr);
+      if (!exists) {
+        char *tname;
+        int  size;
 
-      MPI_Comm_size(comm,&size);
-      if (size == 1) {
-        tname = (char *) PetscMalloc((3+PetscStrlen(name))*sizeof(char));CHKPTRQ(tname);
-        PetscStrcpy(tname,name);
-        PetscStrcat(tname,".gz");
-        ierr  = PetscTestFile(tname,'r',&exists);CHKERRQ(ierr);
-        if (exists) { /* try to uncompress it */
-          FILE *fp;
-          char command[1024],buffer[1024],sid[16];
+        MPI_Comm_size(comm,&size);
+        if (size == 1) {
+          tname = (char *) PetscMalloc((3+PetscStrlen(name))*sizeof(char));CHKPTRQ(tname);
+          PetscStrcpy(tname,name);
+          PetscStrcat(tname,".gz");
+          ierr  = PetscTestFile(tname,'r',&exists);CHKERRQ(ierr);
+          if (exists) { /* try to uncompress it */
+            FILE *fp;
+            char command[1024],buffer[1024],sid[16];
 
-          /* should also include PID for uniqueness */
-          PetscStrcpy(v->filename,"/tmp/petscbinary.tmp");
-          sprintf(sid,"%d",id++);
-          PetscStrcat(v->filename,sid);
+            /* should also include PID for uniqueness */
+            PetscStrcpy(v->filename,"/tmp/petscbinary.tmp");
+            sprintf(sid,"%d",id++);
+            PetscStrcat(v->filename,sid);
 
-          PetscStrcpy(command,"gunzip -c ");
-          PetscStrcat(command,name);
-          PetscStrcat(command," > ");
-          PetscStrcat(command,v->filename);
+            PetscStrcpy(command,"gunzip -c ");
+            PetscStrcat(command,name);
+            PetscStrcat(command," > ");
+            PetscStrcat(command,v->filename);
 
-          PLogInfo(*binv,"Uncompressing file %s into %s\n",name,v->filename);
-          fp = popen(command,"r");
-          if (!fp) SETERRQ(1,1,"Cannot uncompress file");
-          fgets(buffer,1024,fp);
-          ierr = pclose(fp);
-          if (ierr) { 
-            SETERRQ(1,1,"Unable to uncompress compressed binary file");
+            PLogInfo(*binv,"Uncompressing file %s into %s\n",name,v->filename);
+            fp = popen(command,"r");
+            if (!fp) SETERRQ(1,1,"Cannot uncompress file");
+            fgets(buffer,1024,fp);
+            ierr = pclose(fp);
+            if (ierr) { 
+              SETERRQ(1,1,"Unable to uncompress compressed binary file");
+            }
+            PLogInfo(*binv,"Uncompressed file %s\n %s\n",name,buffer);
+            v->compressedfile = PETSC_TRUE;
+
           }
-          PLogInfo(*binv,"Uncompressed file %s\n %s\n",name,buffer);
-          v->compressedfile = PETSC_TRUE;
-
+          PetscFree(tname);
+          fname = v->filename;
+        } else {
+          SETERRQ(PETSC_ERR_FILE_OPEN,1,"Cannot open file for reading, does not exist");
         }
-        PetscFree(tname);
-        fname = v->filename;
       } else {
-        SETERRQ(PETSC_ERR_FILE_OPEN,1,"Cannot open file for reading, does not exist");
+        fname = name;
       }
-    } else {
-      fname = name;
-    }
+  } else {
+    fname = name;
+  }
 
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {

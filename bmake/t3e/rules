@@ -1,5 +1,8 @@
-# $Id: base,v 1.20 1998/06/12 17:45:38 balay Exp balay $ 
+# $Id: base,v 1.21 1998/10/15 22:50:58 balay Exp bsmith $ 
 
+#  For Cray C90 etc add the additional flag
+#define USE_CRAY90_POINTER 1 
+#  to petscconf.h in this directory.
 #
 #   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
 #  the t3d below to t3e.
