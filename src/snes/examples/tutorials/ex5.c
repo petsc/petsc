@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.33 1995/10/25 13:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.34 1995/11/01 23:21:41 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -40,10 +40,10 @@ options are:\n\
 
 /* User-defined application context */
 typedef struct {
-      double      param;         /* test problem parameter */
-      int         mx,my;         /* discretization in x, y directions */
-      Vec         localX,localF; /* ghosted local vector */
-      DA          da;            /* distributed array data structure */
+   double      param;         /* test problem parameter */
+   int         mx,my;         /* discretization in x, y directions */
+   Vec         localX,localF; /* ghosted local vector */
+   DA          da;            /* distributed array data structure */
 } AppCtx;
 
 int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(SNES,Vec,void*);
@@ -51,16 +51,16 @@ int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main( int argc, char **argv )
 {
-  SLES          sles;
-  PC            pc;
-  SNES          snes;
-  SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
-  Vec           x,r;
+  SLES          sles;                      /* linear solver */
+  PC            pc;                        /* preconditioner */
+  SNES          snes;                      /* nonlinear solver */
+  SNESMethod    method = SNES_EQ_NLS;      /* nonlinear solution method */
+  Vec           x, r;                      /* solution, residual vectors */
+  Mat           J;                         /* Jacobian matrix */
+  AppCtx        user;                      /* user's work context */
+  DAStencilType stencil = DA_STENCIL_BOX;  /* stencil type for DA */
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, size; 
-  AppCtx        user;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Mat           J;
-  DAStencilType stencil = DA_STENCIL_BOX;
 
   PetscInitialize( &argc, &argv, 0,0,help );
   if (OptionsHasName(0,"-star")) stencil = DA_STENCIL_STAR;
