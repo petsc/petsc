@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.111 1997/08/13 22:27:41 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.112 1997/09/08 15:00:33 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -138,7 +138,7 @@ extern int PLogInfoDeactivateClass(int);
 extern int PLogInfoActivateClass(int);
 extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
-#if defined(PETSC_LOG)  /* --------------------------------------------*/
+#if defined(PETSC_LOG)  /* --- Logging is turned on --------------------------------*/
 
 #define PLogFlops(n) {_TotalFlops += (n);}
 
@@ -366,20 +366,18 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #endif /* ! PETSC_USING_MPIUNI && ! PARCH_hpux */
 
-#else  /* ------------------------------------------------------------*/
+#else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PLogFlops(n)
 
-#if defined (HAVE_MPE)
-#define MPEBEGIN    1000 
-extern int PLogMPEBegin();
-extern int PLogMPEDump(char *);
-extern int PLogEventMPEActivate(int);
-extern int PLogEventMPEDeactivate(int);
-#else
+/*
+     With logging turned off, then MPE has to be turned off
+*/
+#define MPEBEGIN                  1000 
+#define PLogMPEBegin()  
+#define PLogMPEDump(a) 
 #define PLogEventMPEActivate(a)   0
 #define PLogEventMPEDeactivate(a) 0
-#endif
 
 #define PLogEventActivate(a)   0
 #define PLogEventDeactivate(a) 0
