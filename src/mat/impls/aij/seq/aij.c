@@ -1445,7 +1445,6 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsSymmetric_SeqAIJ"
 int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
@@ -1455,7 +1454,6 @@ int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
   ierr = MatIsTranspose_SeqAIJ(A,A,f); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_SeqAIJ"
