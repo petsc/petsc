@@ -1,14 +1,14 @@
-ITOOLSDIR = ../../../../../
+IPETSCDIR = ../../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. -I../seq \
-           -I$(ITOOLSDIR)/pinclude $(BS_INCLUDE) $(CONF)
-SOURCEC  = mpirowbs.c bsinit.c cholbs.c
+           -I$(IPETSCDIR)/pinclude $(BS_INCLUDE) $(CONF)
+SOURCEC  = mpirowbs.c cholbs.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = mpirowbs.o bsinit.o cholbs.o
+OBJSC    = mpirowbs.o cholbs.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
@@ -18,4 +18,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

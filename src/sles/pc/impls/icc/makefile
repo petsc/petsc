@@ -1,12 +1,10 @@
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude \
-           $(BS_INCLUDE) -I../../../../src/mat \
-           -I../../../../src/mat/impls/row/seq \
-           $(CONF) -D__DIR__='"pc/impls/icc/"'
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude \
+           $(BS_INCLUDE) $(CONF) -D__DIR__='"pc/impls/icc/"'
 SOURCEC  = icc.c iccbs.c
 SOURCEF  =
 WSOURCEC = 
@@ -21,4 +19,4 @@ MANSEC   = 4
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
