@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.62 2001/02/17 21:45:19 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.63 2001/03/22 18:47:52 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -165,7 +165,7 @@ EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
 
 /*S
-     DM -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
+     DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
           
    Level: intermediate
 
@@ -200,6 +200,7 @@ struct _p_DMMG {
   int           (*initialguess)(SNES,Vec,void*);
   Vec           work1,work2;
 };
+
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
 EXTERN int DMMGDestroy(DMMG*);
 EXTERN int DMMGSetUp(DMMG*);
