@@ -1,6 +1,6 @@
 #define dim 3
 #define n 7
-#define ntest 100
+#define ntest 1
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -44,7 +44,7 @@
       enddo
       print *, 'Norm of w is ',dsqrt(sum)
 !      call PetscGetTime(starttime,ierr)
-      call product3DMXM(A,B,v,w)      
+      call product3DNEW(A,B,v,w)      
 !      call PetscGetTime(endtime,ierr)
 
 !      print*,'Total Flop rate ',3*2.0d-6*n**(dim+1)/(endtime-starttime)
@@ -202,4 +202,61 @@
       return
       end
 
+#undef __FUNCT__
+#define __FUNCT__ "product3DNEW"
+      subroutine product3DNEW(A,B,v,w)
+      implicit none
+      double precision A(n,n,dim),B(n*n*dim),v(n,n,n),w(n,n,n),sum
+      double precision w1(n,n,n),w2(n,n,n)
+      double precision st1,st2,st3,et1,et2,et3,elap1,elap2,elap3
+      double precision flops,flops1,flops2,flops3
+      integer i,k,p,q,r,ierr,itest
+      
+
+! First do I x I x A      
+      elap1 = 0.0d0    
+      do itest = 1,ntest
+         call PetscGetTime(st1,ierr)
+         call productIA(n,n*n,A(1,1,1),v,w)
+         call PetscGetTime(et1,ierr)
+         elap1 = elap1 + (et1-st1)
+      enddo
+      elap1 = elap1/ntest
+! Next do I x A x I
+      elap2 = 0.0d0
+      do itest = 1,ntest
+         call PetscGetTime(st2,ierr)
+         call productIAI(n,n,n,B((n*n+1)),v,w1)
+         call PetscGetTime(et2,ierr)
+         elap2 = elap2 + (et2-st2)
+      enddo
+      elap2 = elap2/ntest
+! Finally do A x I x I
+      elap3 = 0.0d0
+      do itest = 1,ntest
+         call PetscGetTime(st3,ierr)
+         call productAI(n,n*n,B((2*n*n+1)),v,w2)
+         call PetscGetTime(et3,ierr)
+         elap3 = elap3 + (et3-st3)
+      enddo
+      elap3 = elap3/ntest
+      do p=1,n
+        do q=1,n
+          do r=1,n
+             w(r,q,p) = w(r,q,p)+w1(r,q,p)+w2(r,q,p)
+          enddo
+       enddo
+      enddo
+      flops1 = 2.0d-6*n**(dim+1)/elap1
+      flops2 = 2.0d-6*n**(dim+1)/elap2
+      flops3 = 2.0d-6*n**(dim+1)/elap3
+      flops =  3*2.0d-6*n**(dim+1)/(elap1+elap2+elap3)
+      print *,'In subroutine product3DMXM .......'
+      print*,'Flop rate for I x I x A is ',flops1
+      print*,'Flop rate for I x A x I is ',flops2
+      print*,'Flop rate for A x I x I is ',flops3
+      print*,'Total flop rate is ',flops
+!
+      return
+      end
 

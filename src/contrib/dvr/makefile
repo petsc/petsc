@@ -1,5 +1,6 @@
 # $Id: makefile,v 1.45 2001/08/22 18:00:07 balay Exp $ 
 #
+All:dvr
 CFLAGS		 = 
 FFLAGS		 = 
 CPPFLAGS         =
@@ -7,8 +8,8 @@ FPPFLAGS         =
 MANSEC           = 
 LOCDIR		 = src/contrib/dvr
 EXAMPLESC	 = 
-EXAMPLESF	 = dvr.F mxm44f2g.F
-DVR_OBJSF        = dvr.o mxm44f2g.o
+EXAMPLESF	 = dvr.F mxm44f2g.F basic.F
+DVR_OBJSF        = dvr.o mxm44f2g.o basic.o
 
 include ${PETSC_DIR}/bmake/common/base
 
