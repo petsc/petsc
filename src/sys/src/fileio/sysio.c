@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.69 2000/05/05 22:13:54 balay Exp balay $*/
+/*$Id: sysio.c,v 1.70 2000/05/08 15:07:28 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -501,4 +501,199 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscSynchronizedBinaryRead"></a>*/"PetscSynchronizedBinaryRead"
+/*@C
+   PetscSynchronizedBinaryRead - Reads from a binary file.
 
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator 
+.  fd - the file
+.  n  - the number of items to read 
+-  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
+
+   Output Parameters:
+.  p - the buffer
+
+   Options Database:
+.   -binary_longints - indicates the file was generated on a Cray vector 
+         machine (not the T3E/D) and the ints are stored as 64 bit 
+         quantities, otherwise they are stored as 32 bit
+
+   Level: developer
+
+   Notes: 
+   Does a PetscBinaryRead() followed by an MPI_Bcast()
+
+   PetscSynchronizedBinaryRead() uses byte swapping to work on all machines.
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine.
+
+   Note that Cray C90 and similar machines cannot generate files with 
+   32 bit integers; use the flag -binary_longints to read files from the 
+   C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
+   machines, not the same as the C90.
+
+.keywords: binary, input, read
+
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+@*/
+int PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,PetscDataType type)
+{
+  int          ierr,rank;
+  MPI_Datatype mtype;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscBinaryRead(fd,p,n,type);CHKERRQ(ierr);
+  }
+  ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
+  ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscSynchronizedBinarySeek"></a>*/"PetscSynchronizedBinarySeek" 
+/*@C
+   PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.
+
+   Not Collective
+
+   Input Parameters:
++  fd - the file
+.  whence - if BINARY_SEEK_SET then size is an absolute location in the file
+            if BINARY_SEEK_CUR then size is offset from current location
+            if BINARY_SEEK_END then size is offset from end of file
+-  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
+            etc. in your calculation rather than sizeof() to compute byte lengths.
+
+   Output Parameter:
+.   offset - new offset in file
+
+   Level: developer
+
+   Notes: 
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine. Hence you CANNOT use sizeof()
+   to determine the offset or location.
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+@*/
+int PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,int size,PetscBinarySeekType whence,int *offset)
+{
+  int ierr,rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscBinarySeek(fd,size,whence,offset);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedBinaryWrite"
+/*@C
+   PetscSynchronizedBinaryWrite - Writes to a binary file.
+
+   Not Collective
+
+   Input Parameters:
++  comm   - MPI communicator
+.  fd     - the file
+.  p      - the buffer
+.  n      - the number of items to write
+.  type   - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
+-  istemp - 0 if buffer data should be preserved, 1 otherwise.
+
+   Level: advanced
+
+   Notes: 
+   PetscBinaryWrite() uses byte swapping to work on all machines.
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine.
+
+   The Buffer p should be read-write buffer, and not static data.
+   This way, byte-swapping is done in-place, and then the buffer is
+   written to the file.
+   
+   This routine restores the original contents of the buffer, after 
+   it is written to the file. This is done by byte-swapping in-place 
+   the second time. If the flag istemp is set to 1, the second
+   byte-swapping operation is not done, thus saving some computation,
+   but the buffer corrupted is corrupted.
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryWrite()
+@*/
+int PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd,void *p,int n,PetscDataType type,int istemp)
+{
+  int ierr,rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscBinaryWrite(fd,p,n,type,istemp);CHKERRQ(ierr);
+  } else {
+    ;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedBinaryFlush"
+/*@C
+   PetscSynchronizedBinaryFlush - Flushes parallel data printed to a binary file
+
+   Not Collective
+
+   Input Parameters:
++  comm   - MPI communicator
+-  fd     - the file
+
+   Level: advanced
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryWrite(), PetscSynchronizedFlush()
+@*/
+int PetscSynchronizedBinaryFlush(MPI_Comm comm,int fd)
+{
+  int           ierr,rank,size,n,i,N,tag,j,tmp[2],ssize;
+  void          *p;
+  PetscDataType type;
+  MPI_Status    status;
+  MPI_Datatype  mtype;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&size);CHKERRQ(ierr);
+  if (!rank) {
+    for (i=1; i<size; i++) {
+      ierr = MPI_Recv(&N,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
+      for (j=0; j<N; j++) {
+        ierr = MPI_Recv(tmp,2,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
+        n    = tmp[0];
+        type = (PetscDataType)tmp[1];
+        ierr = PetscDataTypeGetSize(type,&ssize);CHKERRQ(ierr);
+        p    = (void*)PetscMalloc(n*ssize);CHKPTRQ(p);
+        ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
+        ierr = MPI_Recv(p,n,mtype,i,tag,comm,&status);CHKERRQ(ierr);
+        ierr = PetscBinaryWrite(fd,p,n,type,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscFree(p);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    ;
+  }
+  PetscFunctionReturn(0);
+}
