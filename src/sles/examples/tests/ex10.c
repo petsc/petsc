@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.37 1995/10/05 00:02:29 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.38 1995/10/05 13:54:55 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -79,7 +79,7 @@ int main(int argc,char **args)
       "Norm of error %g, Number of iterations %d\n",norm,its);
   else 
     MPIU_printf(MPI_COMM_WORLD,
-      "Norm of error < 1.e-12, Number of iterations %d\n",norm,its);
+      "Norm of error < 1.e-12, Number of iterations %d\n",its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
