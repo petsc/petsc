@@ -1,46 +1,18 @@
-/*$Id: fdate.c,v 1.37 2000/08/16 15:12:15 balay Exp balay $*/
+/* $Id: fdate.c,v 1.38 2000/08/17 19:03:10 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscfix.h"
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if !defined(PARCH_win32)
-#include <sys/utsname.h>
-#endif
-#if defined(PARCH_win32)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
-#endif
-#include <fcntl.h>
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 #if defined(PETSC_HAVE_SYS_TIME_H)
 #include <sys/types.h>
 #include <sys/time.h>
 #endif
+#include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
 EXTERN_C_BEGIN
 EXTERN int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
-
 
 static char starttime[64];
    
