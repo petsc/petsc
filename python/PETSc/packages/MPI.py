@@ -18,7 +18,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
-    self.arch         = self.framework.require('PETSc.packages.arch', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.name         = 'MPI'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
