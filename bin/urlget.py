@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.9 1998/02/03 18:30:16 balay Exp balay $ 
+# $Id: urlget.py,v 1.10 1998/02/03 20:56:57 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -59,95 +59,95 @@ def geturltimestamp(date) :
                            atoi(sec),-1,-1,0)
     return mktime(newtime) - timezone
 
-    
-# Set the temp dir location as /tmp
-tempfile.tempdir='/tmp'
+def main() :
+    # Set the temp dir location as /tmp
+    tempfile.tempdir='/tmp'
+    arg_len = len(sys.argv)
 
-arg_len = len(sys.argv)
-if arg_len < 2 : 
-    print 'Error! Insufficient arguments.'
-    print 'Usage:', sys.argv[0], 'url-filename'
-    sys.exit()
-
-urlfilename = sys.argv[1]
-url_split   = urlparse.urlparse(urlfilename)
-outfilename = os.path.join(tempfile.tempdir,urltofile(urlfilename))
-
-# If the url is ftp:// use ftp module to retrive the file
-if re.search('ftp',url_split[0]) >= 0 :   
-    ftp = ftplib.FTP(url_split[1])
-    ftp.login()
-    try:      
-        timestamp = getftptimestamp(ftp,url_split[2])
-        #if local file exists, check the timestamp, and get the URL only if it is more recent
-        uselocalcopy = 0
-        if os.path.isfile(outfilename) == 1 :
-            mtime = os.stat(outfilename)[7]
-            if mtime >= timestamp:
-                uselocalcopy = 1
-        if uselocalcopy == 0 :
-            fp = open(outfilename,'w')
-            # This function is a callback function which is called by ftp.retrbinary
-            # with the data as argument. This function is responsible to write the
-            # data to the file. The fp is opened before the function is
-            # declared so as to pass the filepointer to the function
-            def writefile(buf,fp = fp):
-                fp.write(buf)
-            ftp.retrbinary('RETR '+ url_split[2],writefile)
-            fp.close()
-            os.utime(outfilename,(timestamp,timestamp))
-        ftp.quit()
-    except:
-        print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
-        ftp.close()
+    if arg_len < 2 : 
+        print 'Error! Insufficient arguments.'
+        print 'Usage:', sys.argv[0], 'url-filename'
         sys.exit()
-        # if the url is http: use the url module to retrive the file
-elif re.search('http',url_split[0]) >= 0 :  
-    tmpfilename = ()
-    try:
-        h = httplib.HTTP(url_split[1])
-        h.putrequest('GET', url_split[2])
-        h.putheader('Accept','*/*')
-        h.endheaders()
-        errcode, errmesg, headers = h.getreply()
-        if errcode != 200 :
-            print 'Error! Accessing url on the server.',errorcode,errmesg
+
+    urlfilename = sys.argv[1]
+    url_split   = urlparse.urlparse(urlfilename)
+    outfilename = os.path.join(tempfile.tempdir,urltofile(urlfilename))
+
+    # If the url is ftp:// use ftp module to retrive the file
+    if re.search('ftp',url_split[0]) >= 0 :   
+        ftp = ftplib.FTP(url_split[1])
+        ftp.login()
+        try:      
+            timestamp = getftptimestamp(ftp,url_split[2])
+            # if local file exists, check the timestamp, and get the URL only if it is more recent
+            uselocalcopy = 0
+            if os.path.isfile(outfilename) == 1 :
+                mtime = os.stat(outfilename)[7]
+                if mtime >= timestamp:
+                    uselocalcopy = 1
+            if uselocalcopy == 0 :
+                fp = open(outfilename,'w')
+                # This function is a callback function which is called by ftp.retrbinary
+                # with the data as argument. This function is responsible to write the
+                # data to the file. The fp is opened before the function is
+                # declared so as to pass the filepointer to the function
+                def writefile(buf,fp = fp):
+                    fp.write(buf)
+                ftp.retrbinary('RETR '+ url_split[2],writefile)
+                fp.close()
+                os.utime(outfilename,(timestamp,timestamp))
+            ftp.quit()
+        except:
+            print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
+            ftp.close()
+            sys.exit()
+            # if the url is http: use the url module to retrive the file
+    elif re.search('http',url_split[0]) >= 0 :  
+        tmpfilename = ()
+        try:
+            h = httplib.HTTP(url_split[1])
+            h.putrequest('GET', url_split[2])
+            h.putheader('Accept','*/*')
+            h.endheaders()
+            errcode, errmesg, headers = h.getreply()
+            if errcode != 200 :
+                print 'Error! Accessing url on the server.',errorcode,errmesg
+                h.close()
+                sys.exit()
+            filesize   = headers.dict['content-length']
+            if filesize < 2000 :
+                print 'Error! Accessing url on the server. bytes-received :',filesize
+                h.close()
+                sys.exit()
+            # Get Tie remote timestamps
+            urltimestamp = headers.dict['last-modified']
+            timestamp = geturltimestamp(urltimestamp)
+            # if local file exists, check the timestamp, and get the URL only if it is more recent
+            uselocalcopy = 0
+            if os.path.isfile(outfilename) == 1 :
+                mtime = os.stat(outfilename)[7]
+                if mtime >= timestamp:
+                    uselocalcopy = 1
+            if uselocalcopy == 0 :
+                f    = h.getfile()
+                data = f.read()
+                # Now write this data to a file
+                fp = open(outfilename,'w')
+                fp.write(data)
+                fp.close()
+                # Change the modified time of the file
+                os.utime(outfilename,(timestamp,timestamp))
+                f.close()
+            h.close()
+        except:
+            print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
             h.close()
             sys.exit()
-        filesize   = headers.dict['content-length']
-        if filesize < 2000 :
-            print 'Error! Accessing url on the server. bytes-received :',filesize
-            h.close()
-            sys.exit()
-        # Get Tie remote timestamps
-        urltimestamp = headers.dict['last-modified']
-        timestamp = geturltimestamp(urltimestamp)
-        #if local file exists, check the timestamp, and get the URL only if it is more recent
-        uselocalcopy = 0
-        if os.path.isfile(outfilename) == 1 :
-            mtime = os.stat(outfilename)[7]
-            if mtime >= timestamp:
-                uselocalcopy = 1
-        if uselocalcopy == 0 :
-            f    = h.getfile()
-            data = f.read()
-            # Now write this data to a file
-            fp = open(outfilename,'w')
-            fp.write(data)
-            fp.close()
-            # Change the modified time of the file
-            os.utime(outfilename,(timestamp,timestamp))
-            f.close()
-        h.close()
-    except:
-        print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
-        h.close()
+    else:
+        print 'Error! Unknown protocol. Use http or ftp protocol only'
         sys.exit()
-else:
-    print 'Error! Unknown protocol. Use http or ftp protocol only'
-    sys.exit()
-os.chmod(outfilename,500)
-print outfilename
-sys.exit()
+        os.chmod(outfilename,500)
+        print outfilename
+        sys.exit()
 
-
+main()
