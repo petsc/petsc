@@ -43,15 +43,9 @@ rcheng@oasys.dt.navy.mil
 
   - add map object to vectors and matrices to replace current local size, ownership range etc.
 
-  - Add support for some KSP methods not to compute the residual norms,
-    or do convergence test.
-    KSP now has ksp->avoidnorms need to use it in CG and maybe others.
-    add to Changes file KSPSetAvoidNorms().
-
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
 
   - Support saving SLES etc objects with a binary viewer to read in later
-
 
   - Change function prototypes and declaration as 
 
@@ -69,7 +63,6 @@ rcheng@oasys.dt.navy.mil
 > >     An output array: []
 
 
-
   -  Are these the same thing?
       MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
 
@@ -78,8 +71,6 @@ rcheng@oasys.dt.navy.mil
 
   - add Denis Vanderstaeten's version of block orthogonalization that does
     several vectors together; between unmodified and modified gram-schmidt
-
-  -  a basic member function like viewpublic and destroypublic for object validation
 
   - make PETSc thread-safe
 
@@ -103,10 +94,7 @@ rcheng@oasys.dt.navy.mil
     malloced on a machine and how much memory you can use before it 
     starts disk thrashing.
 
-  - Change from function,ctx model to functoid model, i.e. function object.
-
-
-  - Add RCS header to all makefiles and scripts in maint
+  - Change from function,ctx model to functoid model, i.e. function object?
 
   - MatZeroColumns()
 
@@ -134,8 +122,6 @@ rcheng@oasys.dt.navy.mil
         PetscToPointer()
     Make Petsc[To/From]PointerComm public instead of private?
 
-  * Remove the unused tacky argument to the PETSc profiling 
-     functions; not needed anymore.
 
   - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
 
@@ -208,8 +194,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
     executable.
-
-  - Spruce up manpages
 
   - Provide support for user defining a class of their events and
     turning them all off???? Maybe not. Currently PETsc itself does
@@ -297,10 +281,8 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - Use MPI topology routines for DA codes.
 
-
   - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
     the convergence test.  Talk to Jorge about the importance of this test.
-
 
  - TS stuff
    - Add verify timestep for all TS styles.
@@ -313,10 +295,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
     adding elements, just get nonzero info.  Then allocate space.
 
   * Make configure fully functional in PETSc 2.0
-      - document usage somewhere
-      - needs to handle:  set PETSCFLAGS
-         - complex numbers: -DUSES_TEMPLATED_COMPLEX
-         - etc.
 
  * Make all systems use shared libraries if possible, and document how to
            use these variants.
@@ -403,7 +381,7 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
    - Redo parts of inline for basic operations and improved performance.
 
-   * Parallel dense matrix implementation.
+   - Parallel dense matrix implementation. NO?
 
    - Introduce a concept of Vecs and provide multiple right hand side
      versions of MatMult.... Then do KSP versions.
@@ -465,8 +443,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
      after the <pre><tt> and before the text. This causes the first line 
      of verbatim text to be printed incorrectly. I think this can be fixed
      by simply putting a \n after the outputed <pre><tt>)
-
-   - allow inputed example files to have PETSc routine names mapped to manpages.
 
     doesn't handle \& correctly as a & in regular text.
 
@@ -1031,3 +1007,16 @@ are drawn on top of the contour plots (that's a separate problem).
    matrix-vector product if no new nonzero was set.
 
  X Add MatSeqAIJSetColumnIndices() and for SeqBAIJ also.
+
+ X Add support for some KSP methods not to compute the residual norms,
+    or do convergence test.
+    KSP now has ksp->avoidnorms need to use it in CG and maybe others.
+    add to Changes file KSPSetAvoidNorms().
+
+ X Add RCS header to all makefiles and scripts in maint
+
+ X Remove the unused tacky argument to the PETSc profiling 
+   functions; not needed anymore.
+
+ X Spruce up manpages
+
