@@ -1,4 +1,4 @@
-/*$Id: select.c,v 1.1 2000/04/20 03:35:46 bsmith Exp bsmith $*/
+/*$Id: select.c,v 1.2 2000/04/21 03:47:33 bsmith Exp bsmith $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
@@ -13,6 +13,7 @@
 +    comm - MPI communicator, all processors in communicator must call this but input 
             from first communicator is the only one that is used
 .    machine - location to run popup program or PETSC_NULL
+.    title - text to display above choices
 .    n - number of choices
 -    choices - array of strings
 
@@ -22,38 +23,60 @@
      Level: developer
 
      Notes:
-       Uses DISPLAY variable or -display option to deteremine where it opens the window
+       Uses DISPLAY variable or -display option to determine where it opens the window
+
+       Currently this uses a file ~username/.popuptmp to pass the value back from the 
+       xterm; hence this program must share a common file system with the machine
+       parameter passed in below.
 
 .keywords: architecture, machine     
 @*/
-int PetscPopUpSelect(MPI_Comm comm,char *machine,int n,char **choices,int *choice)
+int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
-  int  i,ierr,rank,rows = n + 3,cols = 0,len;
+  int  i,ierr,rank,rows = n + 2,cols,len;
   char buffer[2048],display[128],geometry[64];
   FILE *fp;
 
   PetscFunctionBegin;
+  if (!title) SETERRQ(1,1,"Must pass in a title line");
+  if (n < 1) SETERRQ(1,1,"Must pass in at least one selection");
+  if (n == 1) {*choice = 0; PetscFunctionReturn(0);}
+
+  ierr = PetscStrlen(title,&cols);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrlen(choices[i],&len);CHKERRQ(ierr);
     cols = PetscMax(cols,len);
   }
-  sprintf(geometry,"-geometry %dx%d ",rows,cols);
-  ierr = PetscStrcpy(buffer,"xterm -display ");
+  cols += 4;
+  sprintf(geometry," -geometry %dx%d ",cols,rows);
+  ierr = PetscStrcpy(buffer,"xterm -bw 100 -bd blue +sb -display ");
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
-  ierr = PetscStrcat(buffer,geometry);CHKERRQ(ierr);
   ierr = PetscStrcat(buffer,display);CHKERRQ(ierr);
+  ierr = PetscStrcat(buffer,geometry);CHKERRQ(ierr);
   ierr = PetscStrcat(buffer," -e ${PETSC_DIR}/bin/popup ");CHKERRQ(ierr);
+
+  ierr = PetscStrcat(buffer,"\"");CHKERRQ(ierr);
+  ierr = PetscStrcat(buffer,title);CHKERRQ(ierr);
+  ierr = PetscStrcat(buffer,"\" ");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrcat(buffer,"\"");CHKERRQ(ierr);
     ierr = PetscStrcat(buffer,choices[i]);CHKERRQ(ierr);
     ierr = PetscStrcat(buffer,"\" ");CHKERRQ(ierr);
   }
   ierr = PetscPOpen(comm,machine,buffer,"r",&fp);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ;
+    FILE *fd;
+
+    ierr = PetscFOpen(PETSC_COMM_SELF,"${HOMEDIRECTORY}/.popuptmp","r",&fd);CHKERRQ(ierr);
+    fscanf(fd,"%d",choice);
+    *choice -= 1;
+    if (*choice < 0 || *choice > n-1) SETERRQ(1,1,"Selection %d out of range",*choice);
+    ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
   }
+  ierr = MPI_Bcast(choice,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

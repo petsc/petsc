@@ -35,6 +35,8 @@ add to it).
 
   General
 
+  added PetscPoUpSelect(), see src/sys/examples/tests/ex15.c
+
   added int PetscShowMemoryUsage(Viewer viewer,char *message)
 
   added PreLoadBegin(), PreLoadStage() and PreLoadEnd() to simplify getting
