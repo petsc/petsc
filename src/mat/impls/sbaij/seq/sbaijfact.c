@@ -1237,16 +1237,17 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
       }
 
       /* check for zero pivot and save diagoanl element */
-      if (dk < zeropivot){
-        if (damping > 0.0) {
-          if (ndamp) damping *= 2.0;
+      if (PetscRealPart(dk) < zeropivot){
+        if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
+        if (damping > 0.0) {        
+          if (ndamp) damping *= 2.0;    
           damp = PETSC_TRUE;
           ndamp++;
           break; 
         } else if (PetscAbsScalar(dk) < zeropivot){
-          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",k,dk,zeropivot);  
+          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
         } else {
-          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %d of Cholesky factorization\n",1./PetscRealPart(dk),k);
+          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %d of Cholesky factorization\n",PetscRealPart(dk),k);
         }
       }
       

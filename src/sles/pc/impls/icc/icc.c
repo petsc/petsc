@@ -30,11 +30,7 @@ int PCICCSetDamping_ICC(PC pc,PetscReal damping)
 
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
-  if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 1.e-12;
-  } else {
-    dir->info.damping = damping;
-  }
+  dir->info.damping = damping;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

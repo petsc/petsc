@@ -123,12 +123,12 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
                      *ai,*aj,i;
   PetscScalar        *av;
   double             cputotal,facops;
-#if !defined(PETSC_USE_COMPLEX)
-  int                *ivec1, *ivec2;
-  double             *dvec;
-#else
+#if defined(PETSC_USE_COMPLEX)
   int                nz_row,*aj_tmp;
   PetscScalar        *av_tmp;
+#else
+  int                *ivec1, *ivec2;
+  double             *dvec;
 #endif
   
   PetscFunctionBegin;
@@ -156,17 +156,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
   
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
-#if !defined(PETSC_USE_COMPLEX)
-  ivec1 = InpMtx_ivec1(lu->mtxA);  
-  for (irow = 0; irow < nrow; irow++){
-    for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
-  }
-  ivec2 = InpMtx_ivec2(lu->mtxA); 
-  IVcopy(nz, ivec2, aj);
-  dvec  = InpMtx_dvec(lu->mtxA);
-  DVcopy(nz, dvec, av);
-  InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
-#else
+#if defined(PETSC_USE_COMPLEX)
   for (irow=0; irow<nrow; irow++) {
     nz_row = ai[irow+1] - ai[irow];
     aj_tmp = aj + ai[irow];
@@ -176,6 +166,16 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       av_tmp++;
     }
   }
+#else
+  ivec1 = InpMtx_ivec1(lu->mtxA);  
+  for (irow = 0; irow < nrow; irow++){
+    for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
+  }
+  ivec2 = InpMtx_ivec2(lu->mtxA); 
+  IVcopy(nz, ivec2, aj);
+  dvec  = InpMtx_dvec(lu->mtxA);
+  DVcopy(nz, dvec, av);
+  InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
 #endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
   if ( lu->options.msglvl > 0 ) {
@@ -244,9 +244,14 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
     } else {
       InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-      if ( lu->options.symflag == SPOOLES_SYMMETRIC || lu->options.symflag == SPOOLES_HERMITIAN ) {
+      if ( lu->options.symflag == SPOOLES_SYMMETRIC) {
         InpMtx_mapToUpperTriangle(lu->mtxA) ; 
       }
+#if defined(PETSC_USE_COMPLEX)
+      if ( lu->options.symflag == SPOOLES_HERMITIAN ) {
+        InpMtx_mapToUpperTriangleH(lu->mtxA) ; 
+      }
+#endif
       InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     }
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
