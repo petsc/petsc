@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the PETSc package
+C
+C      Base include file for Fortran use of the PETSc package
 C
 #define MPI_Comm integer
 C
@@ -14,8 +14,16 @@ C
 
       integer STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,
      *        STDOUT_VIEWER_WORLD
-      common /fortransucks/ STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,
-     *                      STDOUT_VIEWER_WORLD
+      common /fortranview/ STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,
+     *                     STDOUT_VIEWER_WORLD
+
+C #if defined(PETSC_DEBUG)
+C #define SETERRQ(n,s)     call PetscError(s,n)
+C #define SETERRA(n,s)   {int _ierr = PetscError(s,n)
+C                         call MPI_Abort(MPI_COMM_WORLD,_ierr);}
+C #define CHKERRQ(n)       if (n .ne. 0) call SETERRQ(n,0)
+C #define CHKERRA(n)       if (n .ne. 0) call SETERRA(n,0)
+C #endif
 C
-C      End of Fortran include file for the PETSc package
+C      End of base Fortran include file for the PETSc package
 
