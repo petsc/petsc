@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.58 2000/01/11 21:02:20 bsmith Exp balay $";
+!    "$Id: ex2f.F,v 1.59 2000/05/05 22:18:00 balay Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -366,6 +366,7 @@
 
  100  format('iteration ',i5,' solution vector:')
  200  format('iteration ',i5,' residual norm ',e10.4)
+      ierr = 0
       end
 
 ! --------------------------------------------------------------
@@ -379,7 +380,7 @@
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 !    dummy - optional user-defined monitor context (unused here)
 !
-      subroutine MyKSPConverged(ksp,n,rnorm,dummy,flag,ierr)
+      subroutine MyKSPConverged(ksp,n,rnorm,flag,dummy,ierr)
 
       implicit none
 
@@ -396,7 +397,8 @@
       else
         flag = 0
       endif
-        
+      ierr = 0
+
       end
 
 
