@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.75 1995/09/10 20:51:32 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.76 1995/09/11 01:54:12 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1062,7 +1062,7 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        ierr, i, j, rstart = aij->rstart, cstart = aij->cstart;
+  int        ierr, i, j, cstart = aij->cstart;
   double     sum = 0.0;
   Mat_AIJ    *amat = (Mat_AIJ*) aij->A->data, *bmat = (Mat_AIJ*) aij->B->data;
   Scalar     *v;
