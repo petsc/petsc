@@ -5,7 +5,7 @@
 
 ALL: lib 
 
-CFLAGS    = ${MATLAB_INCLUDE}
+CFLAGS    = ${MATLAB_ENGINE_INCLUDE}
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = matlab.c

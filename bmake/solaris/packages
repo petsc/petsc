@@ -73,9 +73,9 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_INCLUDE    = -I${MATLAB_ROOT}/extern/include
-MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
+#MATLAB_ENGINE_INCLUDE    = -I${MATLAB_ROOT}/extern/include
+MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
+MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed

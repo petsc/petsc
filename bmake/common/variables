@@ -122,11 +122,16 @@ PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVOD
                 ${PETSC_HAVE_SUPERLUDIST} ${PETSC_HAVE_SUPERLU} ${PETSC_HAVE_SPOOLES}\
                                            ${PETSC_HAVE_TRILINOS} ${PETSC_HAVE_HYPRE} ${PETSC_HAVE_PARMETIS}
 EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
-                ${AMS_LIB}            ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
+                ${AMS_LIB}            ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_ENGINE_LIB}   \
                                                                ${LUSOL_LIB}        ${DSCPACK_LIB} \
                 ${RAMG_LIB}           ${ADIFOR_LIB}            ${SUPERLUDIST_LIB}  ${SUPERLU_LIB} \
                 ${TRIANGLE_LIB}       ${PLAPACK_LIB}           ${TRILINOS_LIB}     ${HYPRE_LIB} \
                 ${SPOOLES_LIB} 
+#
+#   Directories that depend on each external package
+#
+BLOCKSOLVE_DIRS = src/mat/impls/rowbs/mpi src/mat/utils src/mat/interface src/fortran/custom
+PVODE_DIRS = src/ts/impls/implicit/pvode src/ts/interface
 #
 # ----------------------------------------------------------------------------------------
 #

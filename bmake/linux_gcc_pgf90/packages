@@ -80,9 +80,9 @@ MATLABCOMMAND   = matlab
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_INCLUDE    = -I/software/linux/com/packages/matlab-r12/extern/include
-#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -L/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -leng -lmx -lmat -lmi -lut
+#MATLAB_ENGINE_INCLUDE    = -I/software/linux/com/packages/matlab-r12/extern/include
+#MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
+#MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -L/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -leng -lmx -lmat -lmi -lut
 #PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed

@@ -48,14 +48,7 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #BLOCKSOLVE_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
 #PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Matlab location
 #
-#MATLAB_LIB     = -L/usr/local/src/matlab5/extern/lib/lnx86 -lmx
-#MATLAB_INCLUDE = -I/usr/local/src/matlab5/extern/include
-#CMEX           = /usr/local/src/matlab5/bin/cmex 
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location where adiC is installed
 #
 ADIC_DEFINES    = -Dad_GRAD_MAX=36
 ADIC_CC         = adiC -a -d gradient

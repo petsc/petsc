@@ -59,12 +59,6 @@ MPIRUN         = mpirun
 BLOCKSOLVE_INCLUDE = -I/usr/local/lib/petsc/BlockSolve95/include
 BLOCKSOLVE_LIB     = -L/usr/local/lib/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
-# Optional Matlab location
-#
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/alpha/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/bin/cmex 
-#
 # Option location where adiC is installed
 #
 #ADIC_DEFINES    = -Dad_GRAD_MAX=36

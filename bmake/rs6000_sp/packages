@@ -48,15 +48,6 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
 #
-# Matlab location
-#
-#CMEX            = /software/aix-4/com/packages/matlab-5.2/bin/mex
-#MCC             = xlc
-#MATLABCOMMAND   = matlab
-#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_LIB        = -L/software/aix-4/com/packages/matlab-r11.1/extern/lib/ibm_rs -leng -lmx -lmat -lmi -lut
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 #PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
