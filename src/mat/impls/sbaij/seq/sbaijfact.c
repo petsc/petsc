@@ -1334,8 +1334,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
     /* check for zero pivot and save diagoanl element */
     if (dk == 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");  
-    } else if (PetscAbs(dk) < 1.e-10) {
-      printf(" dk %g is too small\n",dk);
     }
 
     /* save nonzero entries in k-th row of U ... */
