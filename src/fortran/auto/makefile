@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.50 1998/02/19 15:56:04 balay Exp balay $ 
+# $Id: makefile,v 1.51 1998/03/24 17:36:54 balay Exp balay $ 
 
 ALL: lib
 
@@ -12,7 +12,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
         dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eigef.c \
         eisenf.c fdmatrixf.c flushf.c fpf.c gcookief.c getcolvf.c gmpref.c \
         gmres2f.c griddataf.c gridf.c gvecf.c gveckspf.c gvecsnesf.c \
-        histsf.c iluf.c indexf.c inheritf.c iscoloringf.c isdifff.c \
+        histsf.c iluf.c indexf.c inheritf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
         luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c mpibaijf.c \
         mpiuf.c mtrf.c partitionf.c pbvecf.c pcnullf.c pcsetf.c pcslesf.c \
@@ -33,7 +33,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
         dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eigef.o \
         eisenf.o fdmatrixf.o flushf.o fpf.o gcookief.o getcolvf.o gmpref.o \
         gmres2f.o griddataf.o gridf.o gvecf.o gveckspf.o gvecsnesf.o \
-        histsf.o iluf.o indexf.o inheritf.o iscoloringf.o isdifff.o \
+        histsf.o iluf.o indexf.o inheritf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
         luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o mpibaijf.o \
         mpiuf.o mtrf.o partitionf.o pbvecf.o pcnullf.o pcsetf.o pcslesf.o \
