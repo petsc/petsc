@@ -7,14 +7,13 @@
   {bischof,roh}@mcs.anl.gov.
 */
 
-#include <string.h>
+#include "petsc.h"
 #include <stdarg.h>
 
 #include "ad_deriv.h"
 #include "ad_grad.h"
-#if defined(__cplusplus)
-extern "C" {
-#endif
+
+EXTERN_C_BEGIN
 
 int ad_grad_size = 0;
 int ad_total_grad_size = 0;
@@ -62,8 +61,5 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
   }   
 }
 
-
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 

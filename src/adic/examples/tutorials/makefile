@@ -26,7 +26,7 @@ BUILDEXAMPLES_9 =
 EXAMPLESC       = ex1.c ex2.c ex3.c ex3func.c ex4.c ex5.c
 EXAMPLESF       =
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1.ad:  chkopts 
 	${ADIC_CC} -h ${CFLAGS} ex1.c

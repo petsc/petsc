@@ -14,8 +14,8 @@
 /*   PRIVATELY OWNED RIGHTS.                                          */
 /*                                                                    */
 /**********************************************************************/
-#if !defined(PETSC_AD_DERIV_H)
-#define PETSC_AD_DERIV_H
+#if !defined(AD_DERIV_H)
+#define AD_DERIV_H
 
 typedef double InactiveDouble;
 typedef float InactiveFloat;
