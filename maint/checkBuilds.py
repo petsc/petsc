@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 import user
-import script
-
 import os
 import re
+
+try:
+  import script
+except ImportError:
+  import sys
+
+  if os.path.isdir('python'):
+    sys.path.insert(0, os.path.join('python', 'BuildSystem'))
+  elif os.path.isdir('..', 'python'):
+    sys.path.insert(0, os.path.join(os.path.abspath('..'), 'python', 'BuildSystem'))
+  import script
 
 class BuildChecker(script.Script):
   def __init__(self):
@@ -40,7 +49,7 @@ class BuildChecker(script.Script):
                'osf5.0':               ['mipsUltrix'],
                'solaris2.9':           ['solaris'],
                'solaris-gnu':          ['gcc'],
-               'solaris-lam':          ['solaris'],
+               'solaris2.9-lam':       ['solaris'],
                'solaris-uni':          ['solaris'],
                # Untested architectures
                'irix6.5':         ['sgiMipsPro'],
