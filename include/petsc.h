@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.281 2001/01/15 21:50:04 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.282 2001/01/21 00:05:49 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -44,7 +44,15 @@
 /*
        Basic PETSc constants
 */
+
+/*E
+    PetscTruth - Logical variable. Actually and integer
+
+   Level: beginner
+
+E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
+
 #define PETSC_YES            PETSC_TRUE
 #define PETSC_NO             PETSC_FALSE
 #define PETSC_NULL           0
@@ -515,3 +523,28 @@ EXTERN int PetscScalarView(int,Scalar[],PetscViewer);
 
 #endif
 
+/*M
+    size - integer variable used to contain the number of processors in
+           the relevent MPI_Comm
+
+   Level: beginner
+
+.seealso: rank, comm
+M*/
+
+/*M
+    rank - integer variable used to contain the number of this processor relative
+           to all in the relevent MPI_Comm
+
+   Level: beginner
+
+.seealso: size, comm
+M*/
+
+/*M
+    comm - MPI_Comm used in the current routine or object
+
+   Level: beginner
+
+.seealso: size, rank
+M*/
