@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.35 1999/12/18 01:00:03 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.36 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -41,5 +41,6 @@ extern int        OptionsSelectBegin(MPI_Comm,char*,char*);
 extern int        OptionsSelectInt(MPI_Comm,char*,char*,int);
 extern int        OptionsSelectDouble(MPI_Comm,char*,char*,double);
 extern int        OptionsSelectName(MPI_Comm,char*,char*);
+extern int        OptionsSelectList(MPI_Comm,char*,char*,char**,int,char*);
 extern int        OptionsSelectEnd(MPI_Comm);
 #endif
