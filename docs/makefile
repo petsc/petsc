@@ -5,9 +5,9 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
-DOCS     = manualpages/sec/* manualpages/index.html tex/manual/manual.tex \
+DOCS     = manualpages/sec/bop.* tex/manual/manual.tex \
 	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/manual/manual_tex.tex \
+	   tex/manual/abstract.tex tex/manual/acknowl.tex \
 	   tex/petsc.bib tex/petsc-patches.html tex/petsc-benchmarks.html \
 	   tex/petsc-components.html tex/petsc-patches*
 OBJSC    =

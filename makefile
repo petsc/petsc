@@ -332,9 +332,9 @@ etags_fexamples:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common/base bmake/common/rules_win32 bmake/common/test \
+BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/common/bopt* bmake/*/rules bmake/*/variables bmake/*/packages \
-	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/win32/makefile.dos bmake/config/*.in \
+	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/config/*.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
@@ -381,11 +381,12 @@ allcleanhtml:
 
 # Builds Fortran stub files
 allfortranstubs:
-	-@include/foldinclude/generateincludes
+	-@include/foldinclude/generateincludes ${PETSC_DIR}
 	-@${RM} -f src/fortran/auto/*.c
 	-${OMAKE} ACTION=fortranstubs tree_basic
-	-@cd src/fortran/auto; ${OMAKE} fixfortran
 	chmod g+w src/fortran/auto/*.c
+	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src
+	-@cd src/fortran/auto; ${OMAKE} fixfortran
 
 allci: 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 

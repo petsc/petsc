@@ -452,13 +452,16 @@ int PCShellGetName(PC pc,char **name)
 
    Calling sequence of apply:
 .vb
-   int apply (void *ptr,Vec b,Vec x,Vec r,int maxits)
+   int apply (void *ptr,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
 .ve
 
 +  ptr - the application context
 .  b - right-hand-side
 .  x - current iterate
 .  r - work space
+.  rtol - relative tolerance of residual norm to stop at
+.  atol - absolute tolerance of residual norm to stop at
+.  dtol - if residual norm increases by this factor than return
 -  maxits - number of iterations to run
 
    Level: developer
@@ -467,9 +470,9 @@ int PCShellGetName(PC pc,char **name)
 
 .seealso: PCShellSetApply()
 @*/
-int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
+int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
 {
-  int ierr,(*f)(PC,int (*)(void*,Vec,Vec,Vec,int),void *);
+  int ierr,(*f)(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

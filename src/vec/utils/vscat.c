@@ -702,8 +702,8 @@ EXTERN int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
 EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 /* =======================================================================*/
-#define VECSEQ 0
-#define VECMPI 1
+#define VEC_SEQ_ID 0
+#define VEC_MPI_ID 1
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate"
@@ -748,7 +748,7 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
-  int        len,size,cando,totalv,ierr,*range,xin_type = VECSEQ,yin_type = VECSEQ; 
+  int        len,size,cando,totalv,ierr,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
   PetscTruth flag;
   MPI_Comm   comm,ycomm;
   PetscTruth ixblock,iyblock,iystride,islocal;
@@ -765,11 +765,11 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   */
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) {xin_type = VECMPI;}
+  if (size > 1) {xin_type = VEC_MPI_ID;}
 
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
-  if (size > 1) {comm = ycomm; yin_type = VECMPI;}
+  if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
   
   /* generate the Scatter context */
   PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);
@@ -793,10 +793,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /*
       if ix or iy is not included; assume just grabbing entire vector
   */
-  if (!ix && xin_type == VECSEQ) {
+  if (!ix && xin_type == VEC_SEQ_ID) {
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&ix);CHKERRQ(ierr);
     tix  = ix;
-  } else if (!ix && xin_type == VECMPI) {
+  } else if (!ix && xin_type == VEC_MPI_ID) {
     int bign;
     ierr = VecGetSize(xin,&bign);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,bign,0,1,&ix);CHKERRQ(ierr);
@@ -805,10 +805,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
   }
 
-  if (!iy && yin_type == VECSEQ) {
+  if (!iy && yin_type == VEC_SEQ_ID) {
     ierr = ISCreateStride(comm,ctx->to_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
-  } else if (!iy && yin_type == VECMPI) {
+  } else if (!iy && yin_type == VEC_MPI_ID) {
     int bign;
     ierr = VecGetSize(yin,&bign);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,bign,0,1,&iy);CHKERRQ(ierr);
@@ -821,7 +821,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         Check for special cases
      ==========================================================================================================*/
   /* ---------------------------------------------------------------------------*/
-  if (xin_type == VECSEQ && yin_type == VECSEQ) {
+  if (xin_type == VEC_SEQ_ID && yin_type == VEC_SEQ_ID) {
     if (ix->type == IS_GENERAL && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,*idy;
       VecScatter_Seq_General *to,*from;
@@ -1013,7 +1013,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin_type == VECMPI && yin_type == VECSEQ) {
+  if (xin_type == VEC_MPI_ID && yin_type == VEC_SEQ_ID) {
 
   /* ===========================================================================================================
         Check for special cases
@@ -1225,7 +1225,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin_type == VECSEQ && yin_type == VECMPI) {
+  if (xin_type == VEC_SEQ_ID && yin_type == VEC_MPI_ID) {
   /* ===========================================================================================================
         Check for special cases
      ==========================================================================================================*/
@@ -1283,7 +1283,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin_type == VECMPI && yin_type == VECMPI) {
+  if (xin_type == VEC_MPI_ID && yin_type == VEC_MPI_ID) {
     /* no special cases for now */
     int nx,ny,*idx,*idy;
     ierr    = ISGetLocalSize(ix,&nx);CHKERRQ(ierr); 

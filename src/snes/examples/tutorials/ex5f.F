@@ -183,20 +183,16 @@
       A = J
 #endif
 
-      call DAGetColoring(da,IS_COLORING_GHOSTED,                                 &
-     &                     coloring,ierr)
-      call MatSetColoring(J,coloring,ierr)
-      call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,             &
-     &                         da,ierr)
-      call ISColoringDestroy(coloring,ierr)
+      call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                        &
+     &                       da,ierr)
 
 #if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
-      if (adifor_jacobian .eq. 0) then
-        call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                      &
-     &                       da,ierr)
+      if (adifor_jacobian .eq. 1) then
+        call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &
+     &                         da,ierr)
       endif
 #endif
 
