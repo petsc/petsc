@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.16 1995/05/02 19:02:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.17 1995/05/10 21:14:53 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -23,7 +23,12 @@ typedef struct {
 .  step - the stride width
 
    Notes:
-   Returns info on stride index set. This is a pseudo-public function.
+   Returns info on stride index set. This is a pseudo-public function that
+   should not be needed by most users.
+
+.keywords: IS, index set, stride, get, information
+
+.seealso: ISCreateStrideSequential()
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
@@ -101,10 +106,10 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
    containing a list of evenly spaced integers.
 
    Input Parameters:
+.  comm - the MPI communicator
 .  n - the length of the index set
 .  first - the first element of the index set
 .  step - the change to the next index
-.  comm - the MPI communicator
 
    Output Parameter:
 .  is - the location to stash the index set
