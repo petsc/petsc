@@ -12,7 +12,7 @@ LIBBASE	      = libpetscmat
 EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
 		ex15 ex16 ex19 ex20 ex21 ex22
 RUNEXAMPLES_1 = runex1	runex3	runex5 runex6  runex8 runex9\
-		runex10 runex11 runex14 runex15 runex15_2 runex16\
+		runex10 runex11 runex14 runex15 runex16\
 		runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
 		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex46
@@ -231,15 +231,10 @@ runex2:
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN)  ex2 -mat_row > ex2_2.tmp 2>&1;   \
+	-@$(MPIRUN)  ex2 -mat_bdiag> ex2_2.tmp 2>&1;   \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
-runex2_3:
-	-@$(MPIRUN)  ex2 -mat_bdiag> ex2_3.tmp 2>&1;   \
-	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
-	   else echo "Possible problem with ex2_3, diffs above"; fi; \
-	   $(RM) -f ex2_3.tmp
 runex3:
 	-@$(MPIRUN)  ex3 > ex3_1.tmp 2>&1;   \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
@@ -305,11 +300,6 @@ runex15:
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
-runex15_2: # Note that runex15 and runex15_2 have identical output
-	-@$(MPIRUN)  ex15 -mat_mpirow  > ex15_2.tmp 2>&1;   \
-	   if (diff output/ex15_1.out ex15_2.tmp) then true; \
-	   else echo "Possible problem with ex15_2, diffs above"; fi; \
-	   $(RM) -f ex15_2.tmp
 runex16:
 	-@$(MPIRUN)  ex16 > ex16_1.tmp 2>&1;   \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
@@ -326,7 +316,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   $(RM) -f ex19_1.tmp
 runex20:
-	-@$(MPIRUN)  ex20 -mat_row -conv_mat_bdiag > ex20_1.tmp 2>&1;	\
+	-@$(MPIRUN)  ex20 -conv_mat_bdiag > ex20_1.tmp 2>&1;	\
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   $(RM) -f ex20_1.tmp
