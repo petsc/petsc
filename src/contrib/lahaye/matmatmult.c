@@ -6,14 +6,58 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-typedef struct _p_Space *FreeSpace;
-typedef struct _p_Space {
-  FreeSpace morespace;
-  int       *head;
-  int       *space;
-  int       used;
-  int       remaining;
-} _p_FreeSpace;  
+typedef struct _Space *FreeSpaceList;
+typedef struct _Space {
+  FreeSpaceList more_space;
+  int           *array;
+  int           *array_head;
+  int           total_array_size;
+  int           local_used;
+  int           local_remaining;
+} FreeSpace;  
+
+#undef __FUNCT__
+#define __FUNCT__ "GetMoreSpace"
+int GetMoreSpace(int size,FreeSpaceList *list) {
+  FreeSpaceList a;
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof(FreeSpace),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(int),&(a->array_head));CHKERRQ(ierr);
+  a->array            = a->array_head;
+  a->local_remaining  = size;
+  a->local_used       = 0;
+  a->total_array_size = 0;
+  a->more_space       = NULL;
+
+  if (*list) {
+    (*list)->more_space = a;
+    a->total_array_size = (*list)->total_array_size;
+  }
+
+  a->total_array_size += size;
+  *list               =  a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MakeSpaceContiguous"
+int MakeSpaceContiguous(int *space,FreeSpaceList *head) {
+  FreeSpaceList a;
+  int           ierr;
+
+  PetscFunctionBegin;
+  while ((*head)!=NULL) {
+    a     =  (*head)->more_space;
+    ierr  =  PetscMemcpy(space,(*head)->array_head,((*head)->local_used)*sizeof(int));CHKERRQ(ierr);CHKMEMQ;
+    space += (*head)->local_used;
+    ierr  =  PetscFree((*head)->array_head);CHKERRQ(ierr);
+    ierr  =  PetscFree(*head);CHKERRQ(ierr);
+    *head =  a;
+  }
+  PetscFunctionReturn(0);
+}
 
 static int logkey_symbolic=0;
 static int logkey_numeric=0;
@@ -29,14 +73,14 @@ static int logkey_numeric=0;
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ_Symbolic"
 int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
 {
-  FreeSpace   free_space,current_space;
-  Mat_SeqAIJ  *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int         aishift=a->indexshift,bishift=b->indexshift;
-  int         *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         *ci,*bjj,*cj,*cj2,*densefill,*sparsefill;
-  int         an=A->N,am=A->M,bn=B->N,bm=B->M;
-  int         ierr,i,j,k,anzi,brow,bnzj,cnzi,free_space_size=bi[bm];
-  MatScalar   *ca;
+  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  int            aishift=a->indexshift,bishift=b->indexshift;
+  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  int            *ci,*bjj,*cj,*densefill,*sparsefill;
+  int            an=A->N,am=A->M,bn=B->N,bm=B->M;
+  int            ierr,i,j,k,anzi,brow,bnzj,cnzi;
+  MatScalar      *ca;
 
   PetscFunctionBegin;
   /* some error checking which could be moved into interface layer */
@@ -57,12 +101,8 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   ierr = PetscMemzero(densefill,(2*bn+1)*sizeof(int));CHKERRQ(ierr);CHKMEMQ;
   sparsefill = densefill + bn;
 
-  ierr = PetscMalloc(sizeof(_p_FreeSpace),&free_space);CHKMEMQ;
-  ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(free_space->head));CHKERRQ(ierr);CHKMEMQ;
-  free_space->space     = free_space->head;
-  free_space->remaining = free_space_size;
-  free_space->used      = 0;
-  free_space->morespace = NULL;
+  /* Initial FreeSpace size is nnz(B)=bi[bm] */
+  ierr = GetMoreSpace(bi[bm],&free_space);CHKERRQ(ierr);CHKMEMQ;
   current_space = free_space;
 
   /* Determine fill for each row: */
@@ -88,46 +128,31 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
     ierr = PetscSortInt(cnzi,sparsefill);CHKERRQ(ierr);CHKMEMQ;
 
     /* If free space is not available, make more free space */
-    /* For Lahaye's code, the estimated nnz in the product equals b->nz, so just increment */
-    /* using the same estimate.  For other codes, this might not be such a good estimator. */
-    if (current_space->remaining<cnzi) {
-      ierr = PetscMalloc(sizeof(_p_FreeSpace),&(current_space->morespace));CHKERRQ(ierr);CHKMEMQ;
-      current_space = current_space->morespace;
-      ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(current_space->head));CHKERRQ(ierr);CHKMEMQ;
-      current_space->space     = current_space->head;
-      current_space->remaining = free_space_size;
-      current_space->used      = 0;
-      current_space->morespace = NULL;
+    /* Double the amount of total space in the list */
+    if (current_space->local_remaining<cnzi) {
+      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);CHKMEMQ;
     }
 
     /* Copy data into free space, and zero out densefill */
-    ierr = PetscMemcpy(current_space->space,sparsefill,cnzi*sizeof(int));CHKERRQ(ierr);CHKMEMQ;
-    current_space->space     += cnzi;
-    current_space->used      += cnzi;
-    current_space->remaining -= cnzi;
+    ierr = PetscMemcpy(current_space->array,sparsefill,cnzi*sizeof(int));CHKERRQ(ierr);CHKMEMQ;
+    current_space->array           += cnzi;
+    current_space->local_used      += cnzi;
+    current_space->local_remaining -= cnzi;
     for (j=0;j<cnzi;j++) {
       densefill[sparsefill[j]] = 0;CHKMEMQ;
     }
     ci[i+1] = ci[i] + cnzi;CHKMEMQ;
   }
 
-  /* nnz is now stored in ci[an], column indices are in the list of free space */
+  /* nnz is now stored in ci[am], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[an]+1)*sizeof(int),&cj);CHKERRQ(ierr);CHKMEMQ;
-  cj2 = cj;
-  while (free_space != NULL) {
-    current_space = free_space->morespace;
-    ierr = PetscMemcpy(cj2,free_space->head,(free_space->used)*sizeof(int));CHKERRQ(ierr);CHKMEMQ;
-    cj2 += free_space->used;
-    ierr = PetscFree(free_space->head);CHKERRQ(ierr);
-    ierr = PetscFree(free_space);CHKERRQ(ierr);
-    free_space = current_space;
-  }
+  ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);CHKMEMQ;
+  ierr = MakeSpaceContiguous(cj,&free_space);CHKERRQ(ierr);CHKMEMQ;
   ierr = PetscFree(densefill);CHKERRQ(ierr);
     
   /* Allocate space for ca */
-  ierr = PetscMalloc((ci[an]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);CHKMEMQ;
+  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);CHKMEMQ;
   
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
@@ -204,5 +229,16 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   ierr = PetscFree(temp);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
+int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMult_SeqAIJ_SeqAIJ_Symbolic(A,B,C);CHKERRQ(ierr);
+  ierr = MatMatMult_SeqAIJ_SeqAIJ_Numeric(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
