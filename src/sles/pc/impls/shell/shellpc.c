@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.43 1998/05/29 20:36:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.44 1998/07/15 14:30:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "PCApply_SetUp"
-static int PCApply_SetUp(PC pc)
+static int PCSetUp_Shell(PC pc)
 {
   PC_Shell *shell;
   int      ierr;
@@ -364,7 +364,7 @@ int PCCreate_Shell(PC pc)
   pc->data         = (void *) shell;
   pc->apply        = PCApply_Shell;
   pc->applyrich    = 0;
-  pc->setup        = 0;
+  pc->setup        = PCSetUp_Shell;
   pc->view         = PCView_Shell;
   pc->name         = 0;
   shell->apply     = 0;
