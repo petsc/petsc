@@ -60,6 +60,9 @@ AC_PREREQ(2.13)
 dnl Find other required files in the config subdirectory
 AC_CONFIG_AUX_DIR(config)
 dnl
+dnl Set flag for error exit
+Fatal_errors_seen=no
+dnl
 dnl Find the root PETSC directory if it hasn't been specified
 if test -z "$PETSC_DIR" ; then 
     PETSC_DIR=`pwd`
@@ -117,6 +120,14 @@ AC_ARG_ENABLE(opt, [ --enable-opt=flags - Choose compiler optimization],
               COPTFLAGS="$COPTFLAGS $enable_opt")
 AC_ARG_ENABLE(optname, [ --enable-optname=name - Choose BOPT name],
               BOPTNAME="$enable_optname")
+AC_ARG_WITH(cc,[  --with-cc=C_compiler - Choose the C compiler],
+            CC="$withval")
+AC_ARG_WITH(fc,[  --with-fc=Fortran_compiler - Choose the Fortran compiler],
+            FC="$withval")
+AC_ARG_WITH(cxx,[  --with-cxx=C++_compiler - Choose the C++ compiler],
+            CXX="$withval")
+AC_ARG_WITH(gnu,[  --with-gnu - Choose GNU compilers over native],
+            USE_GNU=$withval,USE_GNU=no)
 AC_ARG_ENABLE(installsite,
 [ --enable-installsite - Install bmake site files],install_sitefiles=yes,
 install_sitefiles=no)
@@ -652,7 +663,8 @@ AC_TRY_LINK(,[
 LIBS="$save_LIBS"
 ])
 if test "$ac_cv_func_blas" != "yes" ; then
-    AC_MSG_ERROR([configure could not find the BLAS library.  If no
+    Fatal_errors_seen=yes
+    AC_MSG_WARN([configure could not find the BLAS library.  If no
     BLAS library is available, see the installation instructions about
     downloading one.  If one is available in an unusual place, use the
     --with-blas=path and --with-lapack=path options to configure to 
@@ -715,6 +727,10 @@ dnl
   if test -n "$HAVE_FPXCP_H" -a -n "$HAVE_FPTRAP_H" -a -n "$HAVE_FP_SH_FPXCP_H" -a -n "$HAVE_FP_TRAP" ; then
     HAVE_RS6000_STYLE_FPTRAP="yes"
   fi
+
+if test "$Fatal_errors_seen" != "no" ; then
+    AC_MSG_ERROR([Configure is aborting because of errors])
+fi
 
 dnl
 dnl The "extra commands" are not executed in the environment of the
