@@ -9,34 +9,6 @@
 #include "stdlib.h"
 #endif
 
-/*MC
-  MATSUPERLU_DIST - a matrix type providing direct solvers for parallel matrices 
-  via the external package SuperLU_DIST.
-
-  If SuperLU_DIST is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SuperLU_DIST solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
-  This matrix type is only supported for double precision real.
-
-  This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
-  and from MATMPIAIJ otherwise.
-
-  Options Database Keys:
-+ -mat_type superlu_dist
-. -mat_superlu_dist_r <n> : number of rows in processor partition
-. -mat_superlu_dist_c <n> : number of columns in processor partition
-. -mat_superlu_dist_matinput 0|1 : matrix input mode; 0=global, 1=distributed
-. -mat_superlu_dist_equil :, equilibrate the matrix
-. -mat_superlu_dist_rowperm LargeDiag|NATURAL : row permutation
-. -mat_superlu_dist_colperm MMD_AT_PLUS_A|MMD_ATA|COLAMD|NATURAL : column permutation
-. -mat_superlu_dist_replacetinypivot : replace tiny pivots
-. -mat_superlu_dist_iterrefine : use iterative refinement
-- -mat_superlu_dist_statprint : print factorization information
-
-.seealso: PCLU
-M*/
-
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "superlu_zdefs.h"
@@ -672,6 +644,39 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*MC
+  MATSUPERLU_DIST - a matrix type providing direct solvers (LU) for parallel matrices 
+  via the external package SuperLU_DIST.
+
+  If SuperLU_DIST is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes SuperLU_DIST solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
+  and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
+  MatSeqAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+  Options Database Keys:
++ -mat_type superlu_dist
+. -mat_superlu_dist_r <n> - number of rows in processor partition
+. -mat_superlu_dist_c <n> - number of columns in processor partition
+. -mat_superlu_dist_matinput <0,1> - matrix input mode; 0=global, 1=distributed
+. -mat_superlu_dist_equil - equilibrate the matrix
+. -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
+. -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,COLAMD,NATURAL> - column permutation
+. -mat_superlu_dist_replacetinypivot - replace tiny pivots
+. -mat_superlu_dist_iterrefine - use iterative refinement
+- -mat_superlu_dist_statprint - print factorization information
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

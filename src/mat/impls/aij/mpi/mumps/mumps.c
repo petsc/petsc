@@ -657,6 +657,44 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATAIJMUMPS - a matrix type providing direct solvers (LU, Cholesky) for distributed
+  and sequential matrices via the external package MUMPS.
+
+  If MUMPS is installed (see the manual for instructions
+  on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes MUMPS solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJMUMPS).
+  This matrix type is only supported for double precision real.
+
+  If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
+  Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
+  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+  Options Database Keys:
++ -mat_type aijmumps
+. -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
+. -mat_mumps_icntl_4 <0,1,2,3,4> - print level
+. -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
+. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
+. -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
+. -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
+. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -sles_view
+. -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_15 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_cntl_1 <delta> - relative pivoting threshold
+. -mat_mumps_cntl_2 <tol> - stopping criterion for refinement
+- -mat_mumps_cntl_3 <adelta> - absolute pivoting threshold
+
+  Level: beginner
+
+.seealso: MATSBAIJMUMPS
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJ_MUMPS"
@@ -676,6 +714,44 @@ int MatCreate_AIJ_MUMPS(Mat A) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*MC
+  MATSBAIJMUMPS - a symmetric matrix type providing direct solvers (LU, Cholesky) for
+  distributed and sequential matrices via the external package MUMPS.
+
+  If MUMPS is installed (see the manual for instructions
+  on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes MUMPS solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJMUMPS).
+  This matrix type is only supported for double precision real.
+
+  If created with a single process communicator, this matrix type inherits from MATSEQSBAIJ.
+  Otherwise, this matrix type inherits from MATMPISBAIJ.  Hence for single process communicators,
+  MatSeqSBAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+  Options Database Keys:
++ -mat_type aijmumps
+. -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
+. -mat_mumps_icntl_4 <0,...,4> - print level
+. -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
+. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
+. -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
+. -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
+. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -sles_view
+. -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_icntl_15 <n> - efficiency control (see MUMPS User's Guide)
+. -mat_mumps_cntl_1 <delta> - relative pivoting threshold
+. -mat_mumps_cntl_2 <tol> - stopping criterion for refinement
+- -mat_mumps_cntl_3 <adelta> - absolute pivoting threshold
+
+  Level: beginner
+
+.seealso: MATAIJMUMPS
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
