@@ -263,7 +263,7 @@ runex5f_5:
 	   ${RM} -f ex5f_5.tmp
 testex5f: ex5f.PETSc
 	@if [ -f ex5f ]; then \
-	   ${MPIRUN} -np 1 ex5f  > ex5f_1.tmp 2>&1; \
+	   ${MPIRUN} -np 1 ex5f -mat_type seqaij > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/examples/tutorials/ex5f run successfully on 1 processor"; \
 	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f on 1 processor"; \
@@ -325,7 +325,7 @@ runex19:
 	   ${RM} -f ex19_1.tmp
 testex19: ex19.PETSc
 	@if [ -f ex19 ]; then \
-           ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
+           ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4  -mat_type seqaij > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
 	   else echo "Error running C/C++ src/snes/examples/tutorials/ex19 on 1 processor"; \
@@ -339,7 +339,7 @@ testex19: ex19.PETSc
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then \
-           ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4 -snes_xmonitor   > ex19_1.tmp 2>&1; \
+           ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4 -snes_xmonitor -mat_type seqaij  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
 	   else echo "Error running Graphics examples src/snes/examples/tutorials/ex19 on 1 processor"; \
@@ -363,7 +363,7 @@ runex23:
 	   ${RM} -f ex23_1.tmp
 
 runex25:
-	-@${MPIRUN} -np 1 ex25 -preload off > ex25_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex25 -preload off -mat_type seqaij> ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1, diffs above"; fi; \
 	   ${RM} -f ex25_1.tmp
@@ -374,9 +374,9 @@ runex25_2:
 	   else echo "Possible problem with ex25_2, diffs above"; fi; \
 	   ${RM} -f ex25_2.tmp
 runex27:
-	-@${MPIRUN} -np 1 ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
+	-@${MPIRUN} -np 1 ex27 -mat_type seqaij -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
 runex27_p:
-	-@${MPIRUN} -np 1 ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
+	-@${MPIRUN} -np 1 ex27 -mat_type seqaij -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
 
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex5.PETSc runex5_13 ex5.rm ex6.PETSc runex6 runex6_2 \
