@@ -63,37 +63,41 @@ Code  Management</a></strong></li>
       <p>&nbsp;Please join the petsc-announce <a
  href="http://www-fp.mcs.anl.gov/petsc/mail_list.html"> mailing list</a>.</p>
                
-      <p><b>&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; PETSc Relase Version</b></p>
+      <p><b>PETSc Release Version</b></p>
                
       <ul>
                    
-        <p> &nbsp;&nbsp; <a
- href="ftp://ftp.mcs.anl.gov/pub/petsc/petsc.tar.gz">petsc.tar.gz</a> - full 
+        <p>  <a href="ftp://ftp.mcs.anl.gov/pub/petsc/petsc.tar.gz">petsc.tar.gz</a> - full 
 distribution with documentation<br>
- &nbsp;&nbsp; <a
+  <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/petsc-lite.tar.gz"> petsc-lite.tar.gz</a>
  - smaller version with no documentation (all documentation may be accessed
 on line)<br>
- &nbsp;&nbsp; <a
- href="http://www.mcs.anl.gov/petsc/petsc-2/download/petsc-patches.html">
- petsc-patches</a> - latest patches to the PETSc distribution.</p>
+  We no longer distribute seperate patch files, instead the fixes are included in the tar file. See 
+<a href="http://petsc.bkbits.net:8080/petsc-release-2.2.1/ChangeSet@1.2475..?nav=index.html">source code</a> and <a href="http://sidl.bkbits.net:8080/BuildSystem-release-2.2.1/ChangeSet@1.1061..?nav=index.html"> configure</a> for the list of fixes.</ul>
                                               
+      <p><b>  Previous PETSc Releases</b></p>
+               
+      <ul>
+                   
+         <a href="ftp://ftp.mcs.anl.gov/pub/petsc/software_old/v2.2.0.petsc.tar.gz">petsc-2.2.0.tar.gz</a><br>
+         <a href="ftp://ftp.mcs.anl.gov/pub/petsc/software_old/v2.1.6.petsc.tar.gz">petsc-2.1.6.tar.gz</a><br>
+         <a href="http://www.mcs.anl.gov/petsc/petsc-2/download/petsc-patches.html">patches for all previous releases</a><br>
+          <a href="ftp://ftp.mcs.anl.gov/pub/petsc/software_old">older releases</a><br>
+        We urge you, whenever possible, to upgrade to the latest version of PETSc.</p></ul>
+
         <p><b>PETSc development repository</b><a
  href="http://bitkeeper.com"><b></b></a></p>
                    
-        <p>&nbsp;Now you can work with development copy of PETSc, and be up-to-date
-with our     day-to-day work. This also facilitates easy submission of patches
-back to     us. This usage is for <b>experts only</b>.</p>
-                   
-        <p>&nbsp;<a href="../developers/index.html">Additional Instructions</a>
- &nbsp; to use development version of PETSc<br>
-          </p>
+        <p>You can work with the <a href="../developers/index.html">development copy of PETSc</a>, and be up-to-date
+                 with our     day-to-day work. This also facilitates easy submission of patches
+                 back to     us. This usage is for <b>experts only</b>.</p>
                    
         <p><b>Linux Package versions</b><br>
          <br>
- &nbsp;&nbsp; Petsc Debian Package&nbsp;-&nbsp; <a href="http://lyre.mit.edu/~powell/petsc.html">http://lyre.mit.edu/~powell/petsc.html</a><br>
+  Petsc Debian Package- <a href="http://lyre.mit.edu/~powell/petsc.html">http://lyre.mit.edu/~powell/petsc.html</a><br>
          <br>
- &nbsp;&nbsp; PETSc SuSE RPM - there is not yet a SuSE RPM for the latest 
+  PETSc SuSE RPM - there is not yet a SuSE RPM for the latest 
 release<br>
          </p>
          
@@ -101,14 +105,14 @@ release<br>
         <p><b>Troubleshooting download problems<br>
           </b></p>
                    
-        <p>If using internet connection sharing (via NAT box) or using a firewall,&nbsp;
+        <p>If using internet connection sharing (via NAT box) or using a firewall,
 FTP protocol does not work properly. You would need to use passive mode in
 the ftp protocol to be able to download the PETSc distibution. Most web browsers,
 and some ftp clients use the ftp passive mode by default.<br>
           </p>
                    
         <p>If using wget, use the following options:<br>
-  wget --passive-ftp&nbsp; ftp://ftp.mcs.anl.gov/pub/petsc/petsc-lite.tar.gz<br>
+  wget --passive-ftp ftp://ftp.mcs.anl.gov/pub/petsc/petsc-lite.tar.gz<br>
           </p>
                    
         <p><span style="font-weight: bold;">Explanation: </span>FTP protocol 
