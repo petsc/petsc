@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.21 2000/10/09 21:03:51 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.22 2000/10/10 15:42:49 hzhang Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -193,7 +193,7 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*(a->s_nz*2 - a->m) - a->m);  /* s_nz = (nz+m)/2 */
+  PLogFlops(2*(a->s_nz*2 - A->m) - A->m);  /* s_nz = (nz+m)/2 */
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(8*(a->s_nz*2 - a->m) - a->m); 
+  PLogFlops(8*(a->s_nz*2 - A->m) - A->m); 
   PetscFunctionReturn(0);
 }
 
@@ -290,7 +290,7 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(18*(a->s_nz*2 - a->m) - a->m);
+  PLogFlops(18*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +342,7 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(32*(a->s_nz*2 - a->m) - a->m);
+  PLogFlops(32*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -397,7 +397,7 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(50*(a->s_nz*2 - a->m) - a->m);
+  PLogFlops(50*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -456,7 +456,7 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(72*(a->s_nz*2 - a->m) - a->m);
+  PLogFlops(72*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
@@ -515,7 +515,7 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(98*(a->s_nz*2 - a->m) - a->m);
+  PLogFlops(98*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -542,8 +542,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    k = a->m;
-    a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+    a->mult_work = (Scalar*)PetscMalloc((A->m+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work; 
     
@@ -581,7 +580,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*(a->s_nz*2 - a->m)*bs2 - a->m);
+  PLogFlops(2*(a->s_nz*2 - A->m)*bs2 - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -631,7 +630,7 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   
-  PLogFlops(2*(a->s_nz*2 - a->m));
+  PLogFlops(2*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -688,7 +687,7 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(4*(a->s_nz*2 - a->m));
+  PLogFlops(4*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -748,7 +747,7 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(18*(a->s_nz*2 - a->m));
+  PLogFlops(18*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -811,7 +810,7 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(32*(a->s_nz*2 - a->m));
+  PLogFlops(32*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -877,7 +876,7 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(50*(a->s_nz*2 - a->m));
+  PLogFlops(50*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
@@ -945,7 +944,7 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(72*(a->s_nz*2 - a->m));
+  PLogFlops(72*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -1017,7 +1016,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(98*(a->s_nz*2 - a->m));
+  PLogFlops(98*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -1050,8 +1049,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    k = a->m;
-    a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+    a->mult_work = (Scalar*)PetscMalloc((A->m+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work; 
   
@@ -1093,7 +1091,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy != xx) ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  PLogFlops(2*(a->s_nz*2 - a->m));
+  PLogFlops(2*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
 
@@ -1239,14 +1237,17 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data,*b = (Mat_SeqSBAIJ *)B->data;
-  int         ierr;
+  int          ierr;
+  PetscTruth   flag;
 
   PetscFunctionBegin;
-  if (B->type !=MATSEQSBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQBAIJ,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
-  if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| (a->s_nz != b->s_nz)) {
-    *flg = PETSC_FALSE; PetscFunctionReturn(0); 
+  if ((A->m != B->m) || (A->n != B->n) || (a->bs != b->bs)|| (a->s_nz != b->s_nz)) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0); 
   }
   
   /* if the a->i are the same */
@@ -1287,7 +1288,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
     j=ai[i];              
     if (aj[j] == i) {             /* if this is a diagonal element */
@@ -1313,7 +1314,7 @@ int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
-  m   = a->m;
+  m   = A->m;
   bs  = a->bs;
   mbs = a->mbs;
   bs2 = a->bs2;
@@ -1376,10 +1377,10 @@ int MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
 
   PetscFunctionBegin;
-  info->rows_global    = (double)a->m;
-  info->columns_global = (double)a->m;
-  info->rows_local     = (double)a->m;
-  info->columns_local  = (double)a->m;
+  info->rows_global    = (double)A->m;
+  info->columns_global = (double)A->m;
+  info->rows_local     = (double)A->m;
+  info->columns_local  = (double)A->m;
   info->block_size     = a->bs2;
   info->nz_allocated   = a->s_maxnz; /*num. of nonzeros in upper triangular part */
   info->nz_used        = a->bs2*a->s_nz; /*num. of nonzeros in upper triangular part */ 
@@ -1433,7 +1434,7 @@ int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<mbs; i++) {
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;
