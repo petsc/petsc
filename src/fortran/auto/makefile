@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.73 1998/10/31 22:27:29 bsmith Exp balay $ 
+# $Id: makefile,v 1.74 1998/11/07 20:30:31 balay Exp balay $ 
 
 ALL: lib
 
@@ -21,7 +21,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
         trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c tagmf.c \
         viewf.c vinvf.c vrmlmeshf.c vscatf.c xopsf.c zerodiagf.c \
-	cmeshf.c optionsf.c snesmfjdefaultf.c
+	cmeshf.c optionsf.c snesmfjdefaultf.c snesmfjdeff.c
 
 SOURCEF	 = 
 SOURCEH	 = 
@@ -42,8 +42,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
         trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o tagmf.o \
         viewf.o vinvf.o vrmlmeshf.o vscatf.o xopsf.o zerodiagf.o \
-	cmeshf.o optionsf.o snesmfjdefaultf.o
-
+	cmeshf.o optionsf.o snesmfjdefaultf.o snesmfjdeff.o
 
 OBJSF	 =
 LIBBASE	 = libpetscfortran
