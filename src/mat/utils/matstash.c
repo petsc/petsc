@@ -51,21 +51,25 @@ int StashInfo_Private(Stash *stash)
 int StashValues_Private(Stash *stash,int row,int n, int *idxn,
                         Scalar *values,InsertMode addv)
 {
-  int    i,j,N = stash->n,found,*n_idx, *n_idy;
+  int    i,/* j,N = stash->n, */found,*n_idx, *n_idy;
   Scalar val,*n_array;
 
   for ( i=0; i<n; i++ ) {
     found = 0;
     val = *values++;
+/*
+   Removed search!
+
     for ( j=0; j<N; j++ ) {
       if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
-        /* found a match */
+        
         if (addv == ADD_VALUES) stash->array[j] += val;
         else stash->array[j] = val;
         found = 1;
         break;
       }
     }
+*/
     if (!found) { /* not found so add to end */
       if ( stash->n == stash->nmax ) {
         /* allocate a larger stash */
