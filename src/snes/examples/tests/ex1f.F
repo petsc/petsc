@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.35 1999/03/03 16:02:14 balay Exp balay $";
+! "$Id: ex4f.F,v 1.36 1999/03/03 18:44:46 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -186,7 +186,7 @@
 !      because clearly if we had a routine to compute the Jacobian we won't need
 !      to use finite differences.
 !
-        call FormJacobian(snes,x,J,J,str,0,ierr)
+        call FormJacobian(snes,x,J,J,str,0)
 !
 !       Color the matrix, i.e. determine groups of columns that share no common 
 !      rows. These columns in the Jacobian can all be computed simulataneously.
