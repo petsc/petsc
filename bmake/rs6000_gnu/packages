@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1998/04/07 18:47:49 balay Exp bsmith $ 
+# $Id: base.site,v 1.14 1998/05/12 18:51:16 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@
 
 #FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a -Wl,-bI:/usr/lpp/xlf/lib/lowsys.exp
 #FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a
-FC_LIB         = /home/alice/egcs/rs6000/lib/libf2c.a
+FC_LIB         = -lg2c
 
 # Location of BLAS and LAPACK. See ${PETSC_DIR}/readme for information on 
 # retrieving them.
