@@ -1,7 +1,7 @@
 /*
     The PF mathematical functions interface routines, callable by users.
 */
-#include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
+#include "src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /* Logging support */
 PetscCookie PF_COOKIE = 0;

@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = ../../include/vecimpl.h ../../include/petscvec.h
-DIRS     = is utils interface impls  examples esi
+DIRS     = is utils interface impls  examples esi pf
 LOCDIR   = src/vec/
 MANSEC   = Vec
 
