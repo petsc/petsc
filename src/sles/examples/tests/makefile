@@ -15,7 +15,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex3 runex3_2 runex3_3\
 		runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
 		runex8 runex8_2
-EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14 ex15
+EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14 ex15 ex18
 RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex6_4 runex6_5 runex13
 EXAMPLES_3    = ex7 ex12 ex16
 RUNEXAMPLES_3 = runex7 runex16
@@ -23,7 +23,7 @@ EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex8 ex11
 RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
 		runex3 runex4 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
-		ex11.c ex13.c ex14.c ex15.c ex17.c
+		ex11.c ex13.c ex14.c ex15.c ex17.c ex18.c
 EXAMPLESF     = ex7.F ex12.F ex16.F
 
 ex1: ex1.o  chkopts
@@ -93,6 +93,10 @@ ex16: ex16.o  chkopts
 ex17: ex17.o  chkopts
 	-$(CLINKER) -o ex17 ex17.o  $(PETSC_LIB)
 	$(RM) ex17.o
+
+ex18: ex18.o  chkopts
+	-$(CLINKER) -o ex18 ex18.o  $(PETSC_LIB)
+	$(RM) ex18.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
