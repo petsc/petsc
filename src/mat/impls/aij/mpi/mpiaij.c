@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.174 1996/11/19 16:31:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.175 1996/11/20 05:04:38 curfman Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -891,16 +891,17 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
 
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_COLUMNS_SORTED ||
-      op == MAT_ROW_ORIENTED) {
-        a->roworiented = 1;
+      op == MAT_COLUMNS_SORTED) {
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);
-  }
-  else if (op == MAT_ROWS_SORTED || 
-           op == MAT_SYMMETRIC ||
-           op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_YES_NEW_DIAGONALS)
+  } else if (op == MAT_ROW_ORIENTED) {
+    a->roworiented = 1; 
+    MatSetOption(a->A,op);
+    MatSetOption(a->B,op);
+  } else if (op == MAT_ROWS_SORTED || 
+             op == MAT_SYMMETRIC ||
+             op == MAT_STRUCTURALLY_SYMMETRIC ||
+             op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0;
