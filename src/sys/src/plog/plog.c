@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.26 1995/08/05 20:41:51 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.27 1995/08/05 20:55:34 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"    /*I "petsc.h"  I*/
@@ -57,7 +57,7 @@ static int PrintInfo = 0;
 .   flag - PETSC_TRUE or PETSC_FALSE
 
     Options Database Key:
-$  -info
+$  -info 
 
 .keywords: allow, information, printing, monitoring
 @*/
@@ -316,6 +316,46 @@ int PLogAllBegin()
   return 0;
 }
 
+/* @
+   PLogDestroy - Destroys the object and event logging data and resets the global
+   counters. 
+
+   Notes:
+   This routine should be employed when the user wants to dump summary information
+   for multiple segments of code within one PETSc program.  
+
+   Example of Usage:
+   If the option -log_sumary is used to run the program containing the following
+   code, then 2 sets of summary data will be printed (one during PLogPrint and
+   one during PetscFinalize, which in turn calls PLogPrint).
+$
+$     PetscInitialize(int argc,char **args,0,0);
+$     [section 1 of code]
+$     PLogPrint(MPI_COMM_WORLD,stdout);
+$     PLogDestroy();
+$     PLogBegin();
+$     [section 2 of code]
+$     PetscFinalize();
+$
+
+   Perhaps this should be 2 separate routines: PLogDestroy and PLogClear?
+   Right now nothing is freeing the objects and events by default.
+@ */
+int PLogDestroy()
+{
+  if (objects) {PETSCFREE(objects); objects = 0;}
+  if (events)  {PETSCFREE(events); events = 0;}
+  PETSCMEMSET(EventsType,0,sizeof(EventsType));
+  PETSCMEMSET(ObjectsType,0,sizeof(ObjectsType));
+  _TotalFlops      = 0;
+  nobjects         = 0;
+  nevents          = 0;
+  ObjectsDestroyed = 0;
+  _PHC             = 0;
+  _PHD             = 0;
+  return 0;
+}
+
 /*@
     PLogBegin - Turns on logging of objects and events. This logs flop
     rates and object creation and should not slow programs down too much.
@@ -430,8 +470,8 @@ static char *(oname[]) = {"Viewer           ",
                           "                 ",
 			  "                 "};
 static char *(name[]) = {"MatMult         ",
-                         "MatBeginAssembly",
-                         "MatEndAssembly  ",
+                         "MatAssemblyBegin",
+                         "MatAssemblyEnd  ",
                          "MatGetReordering",
                          "MatMultTrans    ",
                          "MatMultAdd      ",
@@ -469,8 +509,8 @@ static char *(name[]) = {"MatMult         ",
                          "VecAYPX         ",
                          "VecSwap         ",
                          "VecWAXPY        ",
-                         "VecBeginAssembly",
-                         "VecEndAssembly  ",
+                         "VecAssemblyBegin",
+                         "VecAssemblyEnd  ",
                          "VecMTDot        ",
                          "VecMDot         ",
                          "VecMAXPY        ",
