@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.12 1995/10/24 21:54:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.13 1995/11/09 22:33:23 bsmith Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -28,16 +28,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&win); CHKERRA(ierr);
   
-  OptionsGetInt(0,"-M",&M);
-  OptionsGetInt(0,"-N",&N);
-  OptionsGetInt(0,"-P",&P);
-  OptionsGetInt(0,"-m",&m);
-  OptionsGetInt(0,"-n",&n);
-  OptionsGetInt(0,"-p",&p);
-  OptionsGetInt(0,"-s",&s);
-  OptionsGetInt(0,"-w",&w);
+  OptionsGetInt(PetscNull,"-M",&M);
+  OptionsGetInt(PetscNull,"-N",&N);
+  OptionsGetInt(PetscNull,"-P",&P);
+  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PetscNull,"-p",&p);
+  OptionsGetInt(PetscNull,"-s",&s);
+  OptionsGetInt(PetscNull,"-w",&w);
 
-  if (OptionsHasName(0,"-star")) stencil_type =  DA_STENCIL_STAR;
+  if (OptionsHasName(PetscNull,"-star")) stencil_type =  DA_STENCIL_STAR;
 
   ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,&da); 
   CHKERRA(ierr);

@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.7 1995/11/01 19:11:21 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.8 1995/11/23 13:41:18 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -23,8 +23,8 @@ C
       call PetscInitialize(ierr)
       m = 3
       n = 3
-      call OptionsGetInt(' ','-m',m,ierr)
-      call OptionsGetInt(' ','-n',n,ierr)
+      call OptionsGetInt(PetscNull,'-m',m,ierr)
+      call OptionsGetInt(PetscNull,'-n',n,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.42 1995/11/04 23:23:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.43 1995/11/09 22:26:59 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -29,7 +29,7 @@ int KSPSetFromOptions(KSP ctx)
   int       restart;
   PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
 
-  if (OptionsHasName(0,"-help")) {
+  if (OptionsHasName(PetscNull,"-help")) {
     KSPPrintHelp(ctx);
   }
   if (KSPGetMethodFromOptions_Private(ctx,&method)) {

@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.3 1995/10/19 22:26:52 curfman Exp bsmith $";
+C      "$Id: ex12.F,v 1.4 1995/11/01 19:11:21 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -26,7 +26,7 @@ C
       call PetscInitialize(ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(' ','-f',f,ierr)
+      call OptionsGetString(PetscNull,'-f',f,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f

@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.5 1995/10/10 01:22:43 curfman Exp bsmith $";
+C    "$Id: ex5.F,v 1.6 1995/11/09 22:31:45 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
@@ -21,11 +21,11 @@ C
 
       call PetscInitialize(ierr)
 
-      call OptionsGetInt(' ','-width',width,ierr) 
-      call OptionsGetInt(' ','-height',height,ierr)
-      call OptionsGetInt(' ','-n',n,ierr)
+      call OptionsGetInt(PetscNull,'-width',width,ierr) 
+      call OptionsGetInt(PetscNull,'-height',height,ierr)
+      call OptionsGetInt(PetscNull,'-n',n,ierr)
 
-      call DrawOpenX(MPI_COMM_SELF,' ',' ',x,y,width,height,draw,ierr)
+      call DrawOpenX(MPI_COMM_SELF,PetscNull,PetscNull,x,y,width,height,draw,ierr)
 
       call DrawLGCreate(draw,1,lg,ierr)
       call DrawLGGetAxis(lg,axis,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.45 1995/11/01 19:11:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.46 1995/11/01 23:19:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(0,"-m",&m);
+  OptionsGetInt(PetscNull,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 

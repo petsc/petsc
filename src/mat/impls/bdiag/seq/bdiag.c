@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.73 1995/11/25 23:50:17 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.74 1995/11/29 22:08:09 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1577,7 +1577,7 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
 
   /* create our matrix */
   nb = 1;
-  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
+  OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
   ierr = MatCreateSeqBDiag(comm,M,N,0,nb,0,0,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;

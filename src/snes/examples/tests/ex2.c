@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:20:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1995/11/21 03:29:28 curfman Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -82,9 +82,20 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
 }/* --------------------  User-defined monitor ----------------------- */
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
-  int ierr;
-  Vec x;
-  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
+  int      ierr;
+  Vec      x;
+  MPI_Comm comm;
+
+  PetscObjectGetComm((PetscObject)snes,&comm);
+  if (fnorm > 1.e-9 || fnorm == 0.0) {
+    MPIU_printf(comm, "iter = %d, Function norm %g \n",its,fnorm);
+  }
+  else if (fnorm > 1.e-11){
+    MPIU_printf(comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+  }
+  else {
+    MPIU_printf(comm, "iter = %d, Function norm < 1.e-11\n",its);
+  }
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   return 0;

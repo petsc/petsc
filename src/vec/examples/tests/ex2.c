@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:13:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1995/10/22 04:17:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(0,"-n",&n);
+  OptionsGetInt(PetscNull,"-n",&n);
 
   /* create two vector */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);

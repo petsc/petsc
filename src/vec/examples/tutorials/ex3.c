@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.19 1995/10/12 04:13:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.20 1995/11/09 22:26:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   DrawLG     lg;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(0,"-n",&n);
+  OptionsGetInt(PetscNull,"-n",&n);
 
   /* create vector */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);

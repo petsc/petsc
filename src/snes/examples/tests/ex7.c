@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.13 1995/10/30 17:13:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.14 1995/11/09 22:32:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -30,7 +30,7 @@ int main( int argc, char **argv )
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(0,"-n",&n);
+  OptionsGetInt(PetscNull,"-n",&n);
   h = 1.0/(n-1);
 
   /* Set up data structures */

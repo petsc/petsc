@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.32 1995/11/01 23:15:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.33 1995/11/06 02:32:52 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -107,7 +107,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
     fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
-    if (OptionsHasName(0,"-trdump")) {
+    if (OptionsHasName(PetscNull,"-trdump")) {
       TrDump(stderr);
     }
     else {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.25 1995/11/01 23:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.26 1995/11/09 22:32:22 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -109,7 +109,7 @@ int SNESSetFromOptions(SNES snes)
   if (SNESGetMethodFromOptions_Private(snes,&method)) {
     SNESSetMethod(snes,method);
   }
-  if (OptionsHasName(0,"-help"))  SNESPrintHelp(snes);
+  if (OptionsHasName(PetscNull,"-help"))  SNESPrintHelp(snes);
   if (OptionsGetDouble(snes->prefix,"-snes_stol",&tmp)) {
     SNESSetSolutionTolerance(snes,tmp);
   }
@@ -1238,7 +1238,7 @@ int SNESSolve(SNES snes,int *its)
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
-  if (OptionsHasName(0,"-snes_view")) {
+  if (OptionsHasName(PetscNull,"-snes_view")) {
     SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   }
   return 0;

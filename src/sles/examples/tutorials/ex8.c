@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.2 1995/11/01 19:11:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.3 1995/11/09 22:30:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -20,14 +20,14 @@ int main(int argc,char **args)
   IS      *is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(0,"-m",&m);   /* mesh lines in x */
-  OptionsGetInt(0,"-n",&n);   /* mesh lines in y */
-  OptionsGetInt(0,"-M",&M);   /* subdomains in x */
-  OptionsGetInt(0,"-N",&N);   /* subdomains in y */
-  OptionsGetInt(0,"-overlap",&overlap);
+  OptionsGetInt(PetscNull,"-m",&m);   /* mesh lines in x */
+  OptionsGetInt(PetscNull,"-n",&n);   /* mesh lines in y */
+  OptionsGetInt(PetscNull,"-M",&M);   /* subdomains in x */
+  OptionsGetInt(PetscNull,"-N",&N);   /* subdomains in y */
+  OptionsGetInt(PetscNull,"-overlap",&overlap);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,m*n,m*n,5,0,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,m*n,m*n,5,PetscNull,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

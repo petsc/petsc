@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.18 1995/11/29 20:49:09 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.19 1995/11/30 18:04:36 balay Exp bsmith $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -336,8 +336,8 @@ int Mat_AIJ_CheckInode(Mat A)
   int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size, limit;
 
   limit      = 5;               /* Mult/Solve Can't Handle more than 5 */
-  if (OptionsHasName(0, "-mat_aij_no_inode")) return 0;
-  OptionsGetInt(0, "-mat_aij_inode_limit", &limit);
+  if (OptionsHasName(PetscNull, "-mat_aij_no_inode")) return 0;
+  OptionsGetInt(PetscNull, "-mat_aij_inode_limit", &limit);
   if(limit > 5) limit = 5;
   m = a->m;        
   if (!a->inode.size && m){

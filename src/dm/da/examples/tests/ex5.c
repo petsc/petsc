@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.10 1995/10/24 21:54:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.11 1995/11/09 22:33:23 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -27,8 +27,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  OptionsGetInt(0,"-M",&M);
-  OptionsGetInt(0,"-time",&time_steps);
+  OptionsGetInt(PetscNull,"-M",&M);
+  OptionsGetInt(PetscNull,"-time",&time_steps);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); 

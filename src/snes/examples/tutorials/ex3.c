@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.19 1995/10/26 22:39:54 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.20 1995/11/15 03:45:05 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -33,7 +33,7 @@ int main( int argc, char **argv )
   MatType        mtype;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(0,"-n",&N);
+  OptionsGetInt(PetscNull,"-n",&N);
   ctx.h = 1.0/(N-1);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&ctx.rank);

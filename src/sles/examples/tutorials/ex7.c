@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.10 1995/10/19 22:26:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.11 1995/11/01 19:11:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PCMethod  pcmethod;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(0,"-m",&m);
+  OptionsGetInt(PetscNull,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 
@@ -85,7 +85,7 @@ int main(int argc,char **args)
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  if (!OptionsHasName(0,"-noslesview")) {
+  if (!OptionsHasName(PetscNull,"-noslesview")) {
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
 

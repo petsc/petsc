@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.12 1995/09/30 19:31:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.13 1995/11/01 23:21:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -71,12 +71,12 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.problem = 1;
-  OptionsGetInt(0,"-p",&user.problem);
+  OptionsGetInt(PetscNull,"-p",&user.problem);
   user.param = 5.0;
-  OptionsGetDouble(0,"-par",&user.param);
+  OptionsGetDouble(PetscNull,"-par",&user.param);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
-  OptionsGetInt(0,"-my",&my);
-  OptionsGetInt(0,"-mx",&mx);
+  OptionsGetInt(PetscNull,"-my",&my);
+  OptionsGetInt(PetscNull,"-mx",&mx);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  if (OptionsHasName(0,"-snes_mf")) {
+  if (OptionsHasName(PetscNull,"-snes_mf")) {
     ierr = MatShellCreate(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
     if (user.problem == 1) {

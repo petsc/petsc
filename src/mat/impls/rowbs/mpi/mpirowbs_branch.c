@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.75 1995/11/01 23:18:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.76 1995/11/15 13:46:59 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1388,10 +1388,10 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   BSctx_set_err(bspinfo,0); CHKERRBS(0);
 #endif
   BSctx_set_rt(bspinfo,1); CHKERRBS(0);
-  if (OptionsHasName(0,"-info")) {
+  if (OptionsHasName(PetscNull,"-info")) {
     BSctx_set_pr(bspinfo,1); CHKERRBS(0);
   }
-  if (OptionsHasName(0,"-pc_ilu_factorpointwise")) {
+  if (OptionsHasName(PetscNull,"-pc_ilu_factorpointwise")) {
     BSctx_set_si(bspinfo,1); CHKERRBS(0);
   } else {
     BSctx_set_si(bspinfo,0); CHKERRBS(0);

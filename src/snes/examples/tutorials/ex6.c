@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.22 1995/10/29 18:43:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.23 1995/11/23 04:29:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -31,7 +31,7 @@ int main( int argc, char **argv )
   Scalar       v;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(0,"-n",&n);
+  OptionsGetInt(PetscNull,"-n",&n);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -60,10 +60,10 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
   /* Set preconditioner for matrix-free method */
-  if (OptionsHasName(0,"-snes_mf")) {
+  if (OptionsHasName(PetscNull,"-snes_mf")) {
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    if (OptionsHasName(0,"-user_precond")) { /* user-defined precond */
+    if (OptionsHasName(PetscNull,"-user_precond")) { /* user-defined precond */
       ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,(void*)0); 
              CHKERRA(ierr);

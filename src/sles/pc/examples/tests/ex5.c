@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.29 1995/11/01 19:09:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.30 1995/11/01 23:17:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -50,13 +50,13 @@ int main(int Argc, char **Args)
 
   PetscInitialize(&Argc,&Args,0,0,help);
 
-  OptionsGetInt(0,"-x",&x_mesh);  
-  OptionsGetInt(0,"-l",&levels);  
-  OptionsGetInt(0,"-c",&cycles);  
-  OptionsGetInt(0,"-smooths",&smooths);  
-  if (OptionsHasName(0,"-a")) {am = MGADDITIVE;}
-  if (OptionsHasName(0,"-f")) {am = MGFULL;}
-  if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
+  OptionsGetInt(PetscNull,"-x",&x_mesh);  
+  OptionsGetInt(PetscNull,"-l",&levels);  
+  OptionsGetInt(PetscNull,"-c",&cycles);  
+  OptionsGetInt(PetscNull,"-smooths",&smooths);  
+  if (OptionsHasName(PetscNull,"-a")) {am = MGADDITIVE;}
+  if (OptionsHasName(PetscNull,"-f")) {am = MGFULL;}
+  if (OptionsHasName(PetscNull,"-j")) {use_jacobi = 1;}
          
   N = (int *) PetscMalloc(levels*sizeof(int)); CHKPTRA(N);
   N[0] = x_mesh;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.7 1995/09/30 19:26:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex18.c,v 1.8 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(0,"-n",&n); if (n < 5) n = 5;
+  OptionsGetInt(PetscNull,"-n",&n); if (n < 5) n = 5;
 
 
   /* create two vectors */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.58 1995/11/25 23:49:34 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.59 1995/11/29 22:08:01 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1029,7 +1029,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
 
   nb = 1;   /* uses a block size of 1 by default; maybe need a different options
               database key, since this is used for MatCreate() also? */
-  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
+  OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
   ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,0,0,newmat); CHKERRQ(ierr);
   A = *newmat;
 

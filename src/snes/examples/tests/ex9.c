@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.7 1995/11/01 23:21:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.8 1995/11/23 04:29:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -60,19 +60,19 @@ int main( int argc, char **argv )
   DAStencilType stencil = DA_STENCIL_BOX;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  if (OptionsHasName(0,"-star")) stencil = DA_STENCIL_STAR;
+  if (OptionsHasName(PetscNull,"-star")) stencil = DA_STENCIL_STAR;
 
   user.mx    = 4; 
   user.my    = 4; 
   user.mz    = 4; 
   user.param = 6.0;
-  OptionsGetInt(0,"-mx",&user.mx); 
-  OptionsGetInt(0,"-my",&user.my);
-  OptionsGetInt(0,"-mz",&user.mz);
-  OptionsGetInt(0,"-Nx",&Nx); 
-  OptionsGetInt(0,"-Ny",&Ny);
-  OptionsGetInt(0,"-Nz",&Nz);
-  OptionsGetDouble(0,"-par",&user.param);
+  OptionsGetInt(PetscNull,"-mx",&user.mx); 
+  OptionsGetInt(PetscNull,"-my",&user.my);
+  OptionsGetInt(PetscNull,"-mz",&user.mz);
+  OptionsGetInt(PetscNull,"-Nx",&Nx); 
+  OptionsGetInt(PetscNull,"-Ny",&Ny);
+  OptionsGetInt(PetscNull,"-Nz",&Nz);
+  OptionsGetDouble(PetscNull,"-par",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }

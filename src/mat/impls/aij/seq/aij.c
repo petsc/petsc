@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.121 1995/11/25 19:07:38 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.122 1995/11/25 23:49:53 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1231,11 +1231,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
-  OptionsGetDouble(0,"-mat_lu_pivotthreshold",&B->lupivotthreshold);
+  OptionsGetDouble(PetscNull,"-mat_lu_pivotthreshold",&B->lupivotthreshold);
   b->row              = 0;
   b->col              = 0;
   b->indexshift       = 0;
-  if (OptionsHasName(0,"-mat_aij_oneindex")) b->indexshift = -1;
+  if (OptionsHasName(PetscNull,"-mat_aij_oneindex")) b->indexshift = -1;
 
   b->m       = m;
   b->n       = n;
@@ -1281,13 +1281,13 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.size       = 0;
 
   *A = B;
-  if (OptionsHasName(0,"-mat_aij_superlu")) {
+  if (OptionsHasName(PetscNull,"-mat_aij_superlu")) {
     ierr = MatUseSuperLU_SeqAIJ(B); CHKERRQ(ierr);
   }
-  if (OptionsHasName(0,"-mat_aij_essl")) {
+  if (OptionsHasName(PetscNull,"-mat_aij_essl")) {
     ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr);
   }
-  if (OptionsHasName(0,"-mat_aij_dxml")) {
+  if (OptionsHasName(PetscNull,"-mat_aij_dxml")) {
     if (!b->indexshift) SETERRQ(1,"MatCreateSeqAIJ:need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B); CHKERRQ(ierr);
   }
