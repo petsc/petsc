@@ -57,7 +57,7 @@ endif
 if ($day == Wed) then
   set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        tiamat      yukon        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++     Opg_complex O           g            )
-  set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4_uni    rs6000_quad solaris     IRIX64       )
+  set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4_uni    rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
   set J1=(3      1          1          1             1           1           4           1           1           1            )
   set J2=(0      2          2          2             2           2           9           2           2           2            )
@@ -83,7 +83,7 @@ endif
 if ($day == Fri) then
   set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        tiamat      yukon        )
   set B =(g      O_c++      g_complex  O_complex     g_complex   O           Opg         g_complex   g_c++       O            )
-  set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4        rs6000_quad solaris     IRIX64       )
+  set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4        rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
   set J1=(0      1          1          1             1           1           1           1           1           1            )
   set J2=(2      2          2          2             2           2           2           2           2           2            )
@@ -96,7 +96,7 @@ endif
 if ($day == Sat) then
   set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        tiamat      yukon        )
   set B =(O      O          O          Opg_complex   O           Opg         g_complex   Opg         O_complex   O_c++        )
-  set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4_uni    rs6000_quad solaris     IRIX64       )
+  set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha_nolog sun4_uni    rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      shared      shared      shared      shared       )
   set J1=(1      1          1          1             1           1           4           1           1           1            )
   set J2=(0      2          2          2             2           2           9           2           2           2            )
