@@ -258,7 +258,6 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
     }
   }
 #endif
-
   PetscFunctionReturn(0);
 }
 
@@ -736,7 +735,6 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Most nonzeros blocks in any row is %D\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
-  
   PetscFunctionReturn(0);
 }
 
@@ -801,7 +799,6 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
   MatScalar      *ap,value,*aa=a->a,*bap;
 
   PetscFunctionBegin;
-
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];       /* row number */ 
     brow = row/bs;      /* block row number */ 
@@ -823,102 +820,99 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
       col = in[l]; 
       bcol = col/bs;              /* block col number */
 
-      if (brow <= bcol){
-        ridx = row % bs; cidx = col % bs; /*row and col index inside the block */
-        if ((brow==bcol && ridx<=cidx) || (brow<bcol)){    
-          /* element value a(k,l) */
-          if (roworiented) {
-            value = v[l + k*n];             
-          } else {
-            value = v[k + l*m];
-          }
+      if (brow > bcol) continue; /* ignore lower triangular values */
+      
+      ridx = row % bs; cidx = col % bs; /*row and col index inside the block */
+      if ((brow==bcol && ridx<=cidx) || (brow<bcol)){    
+        /* element value a(k,l) */
+        if (roworiented) {
+          value = v[l + k*n];             
+        } else {
+          value = v[k + l*m];
+        }
 
-          /* move pointer bap to a(k,l) quickly and add/insert value */
-          if (col < lastcol) low = 0; high = nrow;
-          lastcol = col;
-          while (high-low > 7) {
-            t = (low+high)/2;
-            if (rp[t] > bcol) high = t;
-            else              low  = t;
-          }
-          for (i=low; i<high; i++) {
-            /* printf("The loop of i=low.., rp[%D]=%D\n",i,rp[i]); */
-            if (rp[i] > bcol) break;
-            if (rp[i] == bcol) {
-              bap  = ap +  bs2*i + bs*cidx + ridx;
+        /* move pointer bap to a(k,l) quickly and add/insert value */
+        if (col < lastcol) low = 0; high = nrow;
+        lastcol = col;
+        while (high-low > 7) {
+          t = (low+high)/2;
+          if (rp[t] > bcol) high = t;
+          else              low  = t;
+        }
+        for (i=low; i<high; i++) {
+          if (rp[i] > bcol) break;
+          if (rp[i] == bcol) {
+            bap  = ap +  bs2*i + bs*cidx + ridx;
+            if (is == ADD_VALUES) *bap += value;  
+            else                  *bap  = value; 
+            /* for diag block, add/insert its symmetric element a(cidx,ridx) */
+            if (brow == bcol && ridx < cidx){
+              bap  = ap +  bs2*i + bs*ridx + cidx;
               if (is == ADD_VALUES) *bap += value;  
               else                  *bap  = value; 
-              /* for diag block, add/insert its symmetric element a(cidx,ridx) */
-              if (brow == bcol && ridx < cidx){
-                bap  = ap +  bs2*i + bs*ridx + cidx;
-                if (is == ADD_VALUES) *bap += value;  
-                else                  *bap  = value; 
-              }
-              goto noinsert1;
             }
-          }      
+            goto noinsert1;
+          }
+        }      
       
-      if (nonew == 1) goto noinsert1;
-      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      if (nrow >= rmax) {
-        /* there is no extra room in row, therefore enlarge */
-        PetscInt       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
-        MatScalar *new_a;
+        if (nonew == 1) goto noinsert1;
+        else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
+        if (nrow >= rmax) {
+          /* there is no extra room in row, therefore enlarge */
+          PetscInt       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
+          MatScalar *new_a;
 
-        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
+          if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
 
-        /* Malloc new storage space */
-        len   = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(PetscInt);
-        ierr  = PetscMalloc(len,&new_a);CHKERRQ(ierr);
-        new_j = (PetscInt*)(new_a + bs2*new_nz);
-        new_i = new_j + new_nz;
+          /* Malloc new storage space */
+          len   = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(PetscInt);
+          ierr  = PetscMalloc(len,&new_a);CHKERRQ(ierr);
+          new_j = (PetscInt*)(new_a + bs2*new_nz);
+          new_i = new_j + new_nz;
 
-        /* copy over old data into new slots */
-        for (ii=0; ii<brow+1; ii++) {new_i[ii] = ai[ii];}
-        for (ii=brow+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        ierr = PetscMemcpy(new_j,aj,(ai[brow]+nrow)*sizeof(PetscInt));CHKERRQ(ierr);
-        len  = (new_nz - CHUNKSIZE - ai[brow] - nrow);
-        ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
-        ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
-        /* free up old matrix storage */
-        ierr = PetscFree(a->a);CHKERRQ(ierr);
-        if (!a->singlemalloc) {
-          ierr = PetscFree(a->i);CHKERRQ(ierr);
-          ierr = PetscFree(a->j);CHKERRQ(ierr);
+          /* copy over old data into new slots */
+          for (ii=0; ii<brow+1; ii++) {new_i[ii] = ai[ii];}
+          for (ii=brow+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
+          ierr = PetscMemcpy(new_j,aj,(ai[brow]+nrow)*sizeof(PetscInt));CHKERRQ(ierr);
+          len  = (new_nz - CHUNKSIZE - ai[brow] - nrow);
+          ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+          ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
+          ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
+          /* free up old matrix storage */
+          ierr = PetscFree(a->a);CHKERRQ(ierr);
+          if (!a->singlemalloc) {
+            ierr = PetscFree(a->i);CHKERRQ(ierr);
+            ierr = PetscFree(a->j);CHKERRQ(ierr);
+          }
+          aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
+          a->singlemalloc = PETSC_TRUE;
+
+          rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
+          rmax = imax[brow] = imax[brow] + CHUNKSIZE;
+          ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));CHKERRQ(ierr);
+          a->maxnz += bs2*CHUNKSIZE;
+          a->reallocs++;
+          a->nz++;
         }
-        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
-        a->singlemalloc = PETSC_TRUE;
 
-        rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
-        rmax = imax[brow] = imax[brow] + CHUNKSIZE;
-        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));CHKERRQ(ierr);
-        a->maxnz += bs2*CHUNKSIZE;
-        a->reallocs++;
-        a->nz++;
-      }
-
-      N = nrow++ - 1;     
-      /* shift up all the later entries in this row */
-      for (ii=N; ii>=i; ii--) {
-        rp[ii+1] = rp[ii];
-        ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      if (N>=i) {
-        ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      rp[i]                      = bcol; 
-      ap[bs2*i + bs*cidx + ridx] = value; 
+        N = nrow++ - 1;     
+        /* shift up all the later entries in this row */
+        for (ii=N; ii>=i; ii--) {
+          rp[ii+1] = rp[ii];
+          ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        }
+        if (N>=i) {
+          ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        }
+        rp[i]                      = bcol; 
+        ap[bs2*i + bs*cidx + ridx] = value; 
       noinsert1:;
-      low = i;      
-      /* } */
-        }
-      } /* end of if .. if..  */
-    }                     /* end of loop over added columns */
+        low = i;      
+      }
+    }   /* end of loop over added columns */
     ailen[brow] = nrow; 
-  }                       /* end of loop over added rows */
-
+  }   /* end of loop over added rows */
   PetscFunctionReturn(0);
 } 
 
@@ -1065,7 +1059,6 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
   }
 
   ierr = MatCholeskyFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 #endif
@@ -1103,7 +1096,6 @@ PetscErrorCode MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,PetscInt *indices)
   for (i=0; i<n; i++) {
     baij->ilen[i] = baij->imax[i];
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2079,7 +2071,6 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   if (bb != xx) { 
     ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   } 
-
   PetscFunctionReturn(0);
 } 
 
