@@ -1,6 +1,4 @@
-#ifndef lint
-static char vcid[] = "$Id: mpi.h,v 1.17 1995/12/18 16:39:59 balay Exp balay $";
-#endif
+/* $Id: mpi.h,v 1.18 1995/12/19 21:58:53 balay Exp $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
