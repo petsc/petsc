@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.171 1999/03/31 03:43:25 bsmith Exp bsmith $ */
+14/* $Id: mat.h,v 1.172 1999/04/01 21:18:31 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -234,6 +234,8 @@ extern int MatSolveTrans(Mat,Vec,Vec);
 extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
 
 extern int MatSetUnfactored(Mat);
+
+/*  MatSORType may be bitwise ORd together, so do not change the numbers */
 
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
