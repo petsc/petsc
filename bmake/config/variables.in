@@ -8,11 +8,12 @@ OMAKE            = make
 RANLIB           = @RANLIB@
 SHELL            = /bin/sh
 SED              = /bin/sed
+MKDIR            = @MKDIR@
 #
 PARCH            = @PETSC_ARCH@
 # ######################### C and Fortran compiler ########################
 #
-C_CC       = @CC@ -DPARCH_@PETSC_ARCH@ @CC_SHARED_OPT@
+C_CC       = @CC@  @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
 # SLFLAG=? (-R on solaris)
 # For now, assume that this is the linker dir flag
