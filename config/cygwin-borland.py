@@ -15,7 +15,6 @@ if __name__ == '__main__':
     '-AR_FLAGS=-u',
     '--with-ranlib=true',
     '--with-blas-lapack-dir=c:/software/f2cblaslapack/win32_borland',
-    '--with-c-blas-lapack=1',
     '--with-mpi=0'
     ]
 
