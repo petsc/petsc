@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.61 1996/07/03 14:00:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.62 1996/07/22 17:42:17 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -626,7 +626,7 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
-         NOT COMMONLY NEEDED (see SLESSolve()).
+   This routine is NOT commonly needed (see SLESSolve()).
 
    Input Parameter:
 .  ctx - iterative context obtained from KSPCreate()
@@ -634,20 +634,20 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
    Output Parameter: Provide exactly one of
 .  v - location to stash solution.   
 .  V - the solution is returned in this location. This vector is created 
-       internally. This vector should NOT be  destroyed by the user with
-       a VecDestroy().
+       internally. This vector should NOT be destroyed by the user with
+       VecDestroy().
 
    Notes:
-    This routine must be called after SLESSolve().
-    This routine can be used in one of two ways
-$  KSPBuildSolution(ctx,PETSC_NULL,&V) or
-$  KSPBuildSolution(ctx,v,PETSC_NULL); 
+   This routine must be called after SLESSolve().
+   This routine can be used in one of two ways
+$    KSPBuildSolution(ctx,PETSC_NULL,&V) or
+$    KSPBuildSolution(ctx,v,PETSC_NULL); 
    In the first case an internal vector is allocated to store the solution
-   (you cannot destroy this vector). In the second case the solution
-   is generated in the vector that you provide. Note that for certain 
-   methods, like KSPCG, the second case requires a copy of the solution,
+   (the user cannot destroy this vector). In the second case the solution
+   is generated in the vector that the user provides. Note that for certain 
+   methods, such as KSPCG, the second case requires a copy of the solution,
    while in the first case the call is essentially free since it simply 
-   returns the vector where the solution already is. 
+   returns the vector where the solution already is stored.
 
 .keywords: KSP, build, solution
 
