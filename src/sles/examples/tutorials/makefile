@@ -18,7 +18,7 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm clean
-TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
+TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
@@ -218,6 +218,12 @@ runex5_4:
 	-@$(MPIRUN) -np 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
+
+runex5_5:
+	-@$(MPIRUN) -np 2 ex5 -mat_bdiag -mat_block_size 2 > ex5_5.tmp 2>&1; \
+	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
+	   else echo "Possible problem with ex5_5, diffs above"; fi; \
+	   $(RM) -f ex5_5.tmp
 
 runex6f:
 	-@$(MPIRUN) -np 1 ex6f -pc_type jacobi -mat_view -ksp_smonitor > ex6f_1.tmp 2>&1; \
