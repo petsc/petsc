@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.24 1995/04/16 00:50:21 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.25 1995/04/16 03:50:52 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -192,7 +192,7 @@ int KSPRegisterDestroy()
    Returns 1 if the method is found; 0 otherwise.
 
    Options Database Key:
-$  -kspmethod  itmethod
+$  -ksp_method  itmethod
 
 .keywords: KSP, options, database, get, method
 
@@ -201,7 +201,7 @@ $  -kspmethod  itmethod
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 {
   char sbuf[50];
-  if (OptionsGetString(0,ctx->prefix,"-kspmethod", sbuf, 50 )) {
+  if (OptionsGetString(0,ctx->prefix,"-ksp_method", sbuf, 50 )) {
     if (!__ITList) KSPRegisterAll();
     *itmethod = (KSPMETHOD)NRFindID( __ITList, sbuf );
     return 1;

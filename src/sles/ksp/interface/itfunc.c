@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.16 1995/04/16 03:50:17 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.17 1995/04/16 22:12:40 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -80,7 +80,7 @@ int KSPDestroy(KSP itP)
 .  maxits - maximum number of iterations to use
 
    Options Database Key:
-$  -kspmaxit  maxits
+$  -ksp_maxit  maxits
 
 .keywords: KSP, set, maximum, iterations
 
@@ -169,7 +169,7 @@ int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
 .  tol - tolerance
 
    Options Database Key:
-$  -ksprtol  tol
+$  -ksp_rtol  tol
 
    Notes:
    Use KSPSetAbsoluteTolerance() to set the absolute tolerance. The
@@ -197,7 +197,7 @@ int KSPSetRelativeTolerance(KSP itP, double tol)
 .  tol - tolerance
 
    Options Database Key:
-$  -kspdivtol  tol
+$  -ksp_divtol  tol
 
 .keywords: KSP, set, convergence, divergence, tolerance, residual, norm
 
@@ -219,7 +219,7 @@ int KSPSetDivergenceTolerance(KSP itP, double tol)
 .  tol - tolerance
 
    Options Database Key:
-$  -kspatol  tol
+$  -ksp_atol  tol
 
    Notes:
    Use KSPSetRelativeTolerance() to set the relative tolerance. The
@@ -291,7 +291,7 @@ int KSPSetDoNotCalculateResidual(KSP itP)
    residual.  With right preconditioning this flag is ignored.
 
    Options Database Key:
-$  -ksppreres
+$  -ksp_preres
 
 .keywords: KSP, set, residual, precondition, flag
 @*/
@@ -327,7 +327,7 @@ int KSPSetInitialGuessNonzero(KSP itP)
 .  itP - iterative context obtained from KSPCreate()
 
    Options Database Key:
-$  -kspeigen
+$  -ksp_eigen
 
    Notes:
    Currently this option is not valid for all iterative methods.
@@ -483,7 +483,7 @@ int KSPGetBinv(KSP itP, PC *B)
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
 
    Options Database Keys:
-$  -kspmonitor   : key for setting KSPDefaultMonitor()
+$  -ksp_monitor   : key for setting KSPDefaultMonitor()
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 

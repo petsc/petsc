@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.11 1995/04/13 04:49:55 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.12 1995/04/16 03:43:21 curfman Exp bsmith $";
 #endif
 
 /*
@@ -114,7 +114,7 @@ $  -sor_local_backward
    Notes: 
    To use the Eisenstat trick with SSOR, employ the PCESOR preconditioner,
    which can be chosen with the database option 
-$     -pcmethod eisenstat
+$     -pc_method eisenstat
 
 .keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
 

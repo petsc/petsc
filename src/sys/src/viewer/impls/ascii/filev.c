@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.3 1995/03/25 01:28:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.4 1995/04/13 14:42:26 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -57,7 +57,9 @@ int ViewerFileOpen(char *name,Viewer *lab)
   else {
     v->fd          = fopen(name,"w"); if (!v->fd) SETERR(1,0);
   }
+#if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
+#endif
   *lab           = v;
   return 0;
 }
@@ -85,7 +87,9 @@ int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
   else {
     v->fd        = fopen(name,"w"); if (!v->fd) SETERR(1,0);
   }
+#if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
+#endif
   *lab           = v;
   return 0;
 }

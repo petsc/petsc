@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.17 1995/04/16 00:50:11 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.18 1995/04/16 03:50:38 curfman Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -35,11 +35,11 @@ int KSPSetFromOptions(KSP ctx)
   if (KSPGetMethodFromOptions(ctx,&method)) {
     KSPSetMethod(ctx,method);
   }
-  OptionsGetInt(0,ctx->prefix,"-kspmax_it",&ctx->max_it);
-  OptionsGetDouble(0,ctx->prefix,"-ksprtol",&ctx->rtol);  
-  OptionsGetDouble(0,ctx->prefix,"-kspatol",&ctx->atol);
-  OptionsGetDouble(0,ctx->prefix,"-kspdivtol",&ctx->divtol);
-  if (OptionsHasName(0,ctx->prefix,"-kspmonitor")){
+  OptionsGetInt(0,ctx->prefix,"-ksp_max_it",&ctx->max_it);
+  OptionsGetDouble(0,ctx->prefix,"-ksp_rtol",&ctx->rtol);  
+  OptionsGetDouble(0,ctx->prefix,"-ksp_atol",&ctx->atol);
+  OptionsGetDouble(0,ctx->prefix,"-ksp_divtol",&ctx->divtol);
+  if (OptionsHasName(0,ctx->prefix,"-ksp_monitor")){
     int mytid = 0;
     MPI_Initialized(&mytid);
     if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
@@ -50,7 +50,7 @@ int KSPSetFromOptions(KSP ctx)
   /* this is not good!
        1) there is no way to free lg at end of KSP
   */
-  if (OptionsHasName(0,ctx->prefix,"-kspxmonitor")){
+  if (OptionsHasName(0,ctx->prefix,"-ksp_xmonitor")){
     int       ierr,mytid = 0;
     DrawLGCtx lg;
     MPI_Initialized(&mytid);
@@ -60,13 +60,13 @@ int KSPSetFromOptions(KSP ctx)
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
     }
   }
-  if (OptionsHasName(0,ctx->prefix,"-ksppreres")) {
+  if (OptionsHasName(0,ctx->prefix,"-ksp_preres")) {
     KSPSetUsePreconditionedResidual(ctx);
   }
-  if (OptionsGetInt(0,ctx->prefix,"-kspgmres_restart",&restart)) {
+  if (OptionsGetInt(0,ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
-  if (OptionsHasName(0,0,"-kspeigen")) {
+  if (OptionsHasName(0,0,"-ksp_eigen")) {
     KSPSetCalculateEigenvalues(ctx);
   }
   return 0;
@@ -94,20 +94,20 @@ int KSPPrintHelp(KSP ctx)
     else             p = "-";
     VALIDHEADER(ctx,KSP_COOKIE);
     fprintf(stderr,"KSP Options -------------------------------------\n");
-    KSPPrintMethods(p,"kspmethod");
-    fprintf(stderr," %sksprtol tol: relative tolerance, defaults to %g\n",
+    KSPPrintMethods(p,"ksp_method");
+    fprintf(stderr," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
-    fprintf(stderr," %skspatol tol: absolute tolerance, defaults to %g\n",
+    fprintf(stderr," %sksp_atol tol: absolute tolerance, defaults to %g\n",
                      p,ctx->atol);
-    fprintf(stderr," %skspdivtol tol: divergence tolerance, defaults to %g\n",
+    fprintf(stderr," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
                      p,ctx->divtol);
-    fprintf(stderr," %skspmax_it maxit: maximum iterations, defaults to %d\n",
+    fprintf(stderr," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
-    fprintf(stderr," %sksppreres: use precond. resid. in converg. test\n",p);
-    fprintf(stderr," %skspmonitor: use residual convergence monitor)\n",p);
-    fprintf(stderr," %skspxmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    fprintf(stderr," %skspgmres_restart num: gmres restart, defaults to 10)\n",p);
-    fprintf(stderr," %skspeigen: calculate eigenvalues during linear solve\n",p);
+    fprintf(stderr," %sksp_preres: use precond. resid. in converg. test\n",p);
+    fprintf(stderr," %sksp_monitor: use residual convergence monitor)\n",p);
+    fprintf(stderr," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
+    fprintf(stderr," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
+    fprintf(stderr," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
   }
   return 1;
 }

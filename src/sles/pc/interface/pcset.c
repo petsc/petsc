@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.7 1995/04/12 20:39:13 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.8 1995/04/16 03:43:49 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -93,7 +93,7 @@ int PCRegisterDestroy()
   1 if method is found; otherwise 0.
 
   Options Database Key:
-$ -pcmethod  method
+$ -pc_method  method
 
 .keywords: PC, options, database, get, method
 
@@ -102,7 +102,7 @@ $ -pcmethod  method
 int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 {
   char sbuf[50];
-  if (OptionsGetString(  0, pc->prefix,"-pcmethod", sbuf, 50 )) {
+  if (OptionsGetString(  0, pc->prefix,"-pc_method", sbuf, 50 )) {
     if (!__PCList) PCRegisterAll();
     *method = (PCMETHOD)NRFindID( __PCList, sbuf );
     return 1;

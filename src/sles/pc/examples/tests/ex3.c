@@ -24,9 +24,9 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
-  ierr = VecCreateSequential(n,&b);     CHKERRA(ierr);
-  ierr = VecCreateSequential(n,&ustar); CHKERRA(ierr);
-  ierr = VecCreateSequential(n,&u);     CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
   ierr = VecSet(&one,ustar);            CHKERRA(ierr);
   ierr = VecSet(&zero,u);               CHKERRA(ierr);
 
