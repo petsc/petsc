@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.5 2000/01/21 23:25:10 bsmith Exp kaushik $*/
+/*$Id: user.h,v 1.6 2000/01/21 23:55:30 kaushik Exp bsmith $*/
 #include "petsc.h" 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)|| defined(HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
@@ -76,7 +76,6 @@
 #define f77LVCOLOR  f77name(LVCOLOR,lvcolor,lvcolor_)
 #define f77LBCOLOR  f77name(LBCOLOR,lbcolor,lbcolor_)
 
-/* Added by D. K. Kaushik 1/10/97) */
 #define f77FILLA    f77name(FILLA,filla,filla_)
 #define f77LSTGS    f77name(LSTGS,lstgs,lstgs_)
 #define f77IREAD    f77name(IREAD,iread,iread_)
@@ -84,14 +83,6 @@
                   
 #define max_colors  200
 #define max_nbtran 20
-
-/*
-#ifdef DOUBLE
-#define REAL double
-#else
-#define REAL float
-#endif
-*/
 
 #define REAL double
 
@@ -287,7 +278,29 @@ typedef struct{                               /*============================*/
 }CGMCOM;                                      /* COMMON GMCOM               */
                                               /*============================*/
 
-int  set_up_grid(GRID *);
-void write_fine_grid(GRID *);
-void fcalloc(int, REAL**);
-void icalloc(int, int**);
+extern int  set_up_grid(GRID *);
+extern int write_fine_grid(GRID *);
+extern void fcalloc(int, REAL**);
+extern void icalloc(int, int**);
+
+/* Fortran routines called from C */
+EXTERN_C_BEGIN
+extern void f77FORLINK(void);
+extern void f77OPENM(int*);
+extern void f77FILLA(int*,int*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                     int*,int*,int*,int*,int*,int*,Scalar*,Mat*,Scalar*,Scalar*,Scalar*,Scalar*,
+                     int*,int*);
+extern void f77READR1(int*,int*);
+extern void f77SUMGS(int*,int*,int*,Scalar*,Scalar*,int*,int*);
+extern void f77INIT(int*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
+extern void f77LSTGS(int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
+extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, Scalar*,Scalar*,int*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
+extern void f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,Scalar*,Scalar*,int*,int*,
+                     Scalar*,Scalar*,Scalar*,int*,int*);
+extern void f77GETIA(int*,int*,int*,int*,int*,int*);
+extern void f77GETJA(int*,int*,int*,int*,int*,int*,int*);
+EXTERN_C_END
