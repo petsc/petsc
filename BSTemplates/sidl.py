@@ -93,7 +93,7 @@ class UsingSIDL (SIDLConstants):
 
   def setupIncludeDirectories(self):
     rootDir    = self.getRootDir()
-    includeDir = os.path.join(rootDir, 'server-sidl')
+    includeDir = os.path.join(rootDir, 'server-'+self.getBaseLanguage().lower()+'-'+self.getBasePackage())
     for lang in self.getLanguages():
       self.includeDirs[lang].append(includeDir)
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
@@ -124,7 +124,10 @@ class UsingSIDL (SIDLConstants):
 
   def getBaseLanguage(self):
     '''The implementation language for the SIDL runtime library, usually C'''
-    return 'C'
+    if bs.argDB.has_key('SIDLRUNTIME_LANG'):
+      return bs.argDB['SIDLRUNTIME_LANG']
+    else:
+      return 'C'
 
   def getPackages(self):
     return self.packages
