@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.39 1996/12/08 23:59:22 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.40 1997/01/01 03:42:38 bsmith Exp balay $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -134,7 +134,7 @@ extern void *PetscLow,*PetscHigh;
 /*
    Some machines do not double align doubles 
 */
-#if defined(PARCH_freebsd) || defined(PARCH_rs6000) || defined(PARCH_linux)
+#if defined(PARCH_freebsd) || defined(PARCH_rs6000) || defined(PARCH_linux) || defined(PARCH_sun4) 
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}          \
   if ((unsigned long)h & (unsigned long)3) {                        \
