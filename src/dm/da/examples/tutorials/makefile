@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 2000/08/17 20:01:50 balay Exp bsmith $ 
+# $Id: makefile,v 1.19 2000/12/05 01:40:32 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -24,10 +24,10 @@ runex2:
 	-@${MPIRUN} -np 3 ex2
 
 TESTEXAMPLES_1  =
-TESTEXAMPLES_2  =
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
 TESTEXAMPLES_5  =
-TESTEXAMPLES_13 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
+TESTEXAMPLES_13 = 
 
 include ${PETSC_DIR}/bmake/common_test
