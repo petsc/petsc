@@ -7,8 +7,11 @@ AR_FLAGS	   = cr
 RM		   = rm -f
 OMAKE		   = make  --no-print-directory
 RANLIB		   = ranlib -s -c
-#SHELL              = /usr/local/bin/bash
-SHELL		   = /bin/sh
+# /bin/sh (zsh) on Mac OS X is buggy resulting in incomplete build of PETSc libraries. 
+# Do not use it. Just install bash (either from fink from fink.sourceforge.net or just 
+# from the tar file from a gnu ftp server.)
+#SHELL		   = /bin/sh
+SHELL              = /usr/local/bin/bash
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
