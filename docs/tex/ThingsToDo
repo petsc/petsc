@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
 
+  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
+    parameter (similar to matrix-free stuff)
+
   X  add test to PetscCommDup_Private() to verify that all processors
      are using the same tag, when PETSC_BOPT_g is defined.
 
