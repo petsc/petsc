@@ -409,9 +409,12 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
    Notes: This matrix object does not support most matrix operations, include
    MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
-   when the matrix is destroyed. And you must allocate them with PetscMalloc(). If you 
+   when the matrix is destroyed; you must allocate them with PetscMalloc(). If you 
     call from Fortran you need not create the arrays with PetscMalloc().
    Should not include the matrix diagonals.
+
+   If you already have a matrix, you can create the adjacency matrix by a call
+   to MatConvert, specifying a type of MATMPIADJ.
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
