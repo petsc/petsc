@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.67 2001/01/17 22:28:26 bsmith Exp balay $";*/
+/* "$Id: flow.c,v 1.68 2001/01/23 20:58:30 balay Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -1215,7 +1215,7 @@ int GetLocalOrdering(GRID *grid)
      MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
      MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
      if (rank == 0) {
-       ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo); CHKERRQ(ierr);
+       ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo);CHKERRQ(ierr);
        sprintf(part_file,"hyb_part_vec.%d",2*size);
        fp = fopen(part_file,"w");
        for (i = 0; i < nnodes; i++)

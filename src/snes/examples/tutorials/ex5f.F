@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.56 2001/01/15 21:48:06 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.57 2001/01/17 22:26:26 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -91,7 +91,8 @@
       my         = 4
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,    &
+     &                           flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(1,' ',ierr)
