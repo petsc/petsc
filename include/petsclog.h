@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.8 1995/08/04 01:53:24 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.9 1995/08/04 15:03:07 curfman Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -171,6 +171,7 @@ M*/
 #define PLogObjectMemory(p,m) {((PetscObject)(p))->mem += (m);}
 extern int PLogObjectState(PetscObject,char *,...);
 extern int PLogInfo(PetscObject,char*,...);
+extern int PLogDestroy();
 
 #else
 
