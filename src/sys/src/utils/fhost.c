@@ -54,7 +54,7 @@ int PetscGetHostName(char name[],int nlen)
   char           *domain;
   int            ierr;
   PetscTruth     flag;
-#if defined(PETSC_HAVE_UNAME)
+#if defined(PETSC_HAVE_UNAME) && !defined(PARCH_win32) && !defined(PARCH_win32_gnu)
   struct utsname utname;
 #endif
 

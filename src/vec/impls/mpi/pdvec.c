@@ -414,6 +414,13 @@ static int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #endif
   PetscFunctionReturn(0);
 }
+#else /* !defined(PETSC_HAVE_NETCDF) */
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Netcdf"
+static int VecView_MPI_Netcdf(Vec xin,PetscViewer v) {
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 #endif
 
 #undef __FUNCT__  
