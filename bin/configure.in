@@ -610,8 +610,8 @@ AC_CACHE_CHECK([whether the BLAS are available],ac_cv_func_blas,
 [save_LIBS="$LIBS"
 LIBS="$LIBS $BLAS_LIB"
 AC_TRY_LINK(,[
-    call dgemm()
-    call ddot()
+        call dgemm()
+        call ddot()
 ],ac_cv_func_blas=yes,ac_cv_func_blas=no)
 LIBS="$save_LIBS"
 ])
