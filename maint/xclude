@@ -10,7 +10,6 @@ petsc/src/mat/impls/aij/seq/LUSOL_BLAS.f
 petsc/src/contrib/esmf
 petsc/src/contrib/esmf/RCS
 petsc/docs/exercises/RCS
-petsc/src/contrib/oberman/oldstuff
 petsc/bmake/linux_gcc_pgf77_gm
 petsc/bmake/linux_gcc_pgf77
 petsc/src/contrib/mattevents
@@ -34,6 +33,9 @@ petsc/src/contrib/oberman/ns_q2q1/RCS
 petsc/src/contrib/oberman/ns_q1q0_penalty/RCS
 petsc/src/contrib/oberman/oldstuff
 petsc/src/contrib/oberman/quasigeo_q1
+petsc/src/contrib/oberman/laplacian_q1/gr33n
+petsc/src/contrib/oberman/laplacian_q1/gr44
+petsc/src/contrib/oberman/laplacian_q1/gr99
 petsc/src/contrib/keyes
 petsc/src/contrib/src
 petsc/src/contrib/java
