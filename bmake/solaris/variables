@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.21 2000/07/21 13:24:34 balay Exp bsmith $ 
+# $Id: base_variables,v 1.22 2000/07/24 03:19:53 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -9,6 +9,7 @@ OMAKE		   = make
 RANLIB		   = true
 SHELL		   = /bin/sh
 SED		   = /bin/sed
+MKDIR              = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc    -KPIC -dalign -xtarget=native

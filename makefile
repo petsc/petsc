@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.326 2000/09/23 14:46:59 balay Exp bsmith $ 
+# $Id: makefile,v 1.327 2000/11/28 17:26:31 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -100,8 +100,8 @@ build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree 
-	${RANLIB} ${PDIR}/*.a
-	-@chmod g+w  ${PDIR}/*.a
+	${RANLIB} ${LDIR}/*.a
+	-@chmod g+w  ${LDIR}/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 
@@ -119,20 +119,20 @@ build_fortran:
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf  clean
 	-@cd src/mat/impls/aij/seq; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} lib clean
-	${RANLIB} ${PDIR}/libpetscfortran.a
-	${RANLIB} ${PDIR}/libpetsc.a
-	-@chmod g+w  ${PDIR}/*.a
+	${RANLIB} ${LDIR}/libpetscfortran.a
+	${RANLIB} ${LDIR}/libpetsc.a
+	-@chmod g+w  ${LDIR}/*.a
 	-@echo "Completed compiling Fortran source"
 	-@echo "========================================="
 
 petscblas: info chkpetsc_dir
-	-${RM} -f ${PDIR}/libpetscblas.*
+	-${RM} -f ${LDIR}/libpetscblas.*
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
 	-@cd src/blaslapack/c; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	${RANLIB} ${PDIR}/libpetscblas.a
-	-@chmod g+w  ${PDIR}/*.a
+	${RANLIB} ${LDIR}/libpetscblas.a
+	-@chmod g+w  ${LDIR}/*.a
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 #
@@ -178,11 +178,11 @@ matlabcodes:
 
 # Ranlib on the libraries
 ranlib:
-	${RANLIB} ${PDIR}/*.a
+	${RANLIB} ${LDIR}/*.a
 
 # Deletes PETSc libraries
 deletelibs: chkopts_basic
-	-${RM} -f ${PDIR}/*
+	-${RM} -f ${LDIR}/*
 
 
 # ------------------------------------------------------------------
@@ -332,7 +332,7 @@ allrcslabel:
 # they are not currently used.
 #
 alladicignore:
-	-@${RM} ${PDIR}/adicignore
+	-@${RM} ${LDIR}/adicignore
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
 
 alladic:
@@ -361,7 +361,7 @@ alladiclib:
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "========================================="
-	-@${RM} -f  ${PDIR}/*adic.a
+	-@${RM} -f  ${LDIR}/*adic.a
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
@@ -423,8 +423,8 @@ noise: info chkpetsc_dir
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${PDIR}/libpetscsnes.a
-	-@chmod g+w  ${PDIR}/libpetscsnes.a
+	${RANLIB} ${LDIR}/libpetscsnes.a
+	-@chmod g+w  ${LDIR}/libpetscsnes.a
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 
