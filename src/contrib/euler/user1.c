@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.73 1998/03/24 02:12:23 curfman Exp balay $";
+static char vcid[] = "$Id: user1.c,v 1.74 1998/04/01 00:20:45 balay Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -111,13 +111,13 @@ Duct problem options:\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
+  PetscFortranAddr fort_app;      /* Fortran interface user context */
   MPI_Comm comm;                  /* communicator */
   SNES     snes;                  /* SNES context */
   SLES     sles;                  /* SLES context */
   Euler    *app;                  /* user-defined context */
   Viewer   view;                  /* viewer for printing vectors */
   char     stagename[2][16];      /* names of profiling stages */
-  int      fort_app;              /* Fortran interface user context */
   int      logging;               /* flag indicating use of logging */
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
@@ -130,13 +130,19 @@ int main(int argc,char **argv)
   int        maxsnes;               /* maximum number of SNES iterations */
   double     rtol = 1.e-10;         /* SNES relative convergence tolerance */
   Scalar     c_lift, c_drag;
-  PLogDouble time1,time2,tsolve;    /* time for solution process */
+  double     time1,time2,tsolve;    /* time for solution process */
+  /* PLogDouble time1,time2,tsolve; v2.0.22 */   /* time for solution process */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize PETSc and print help information
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+
+  /* Initialize Fortran functionality, needed because the main application program
+     is written in C, and we also use some Fortran routines that call PETSc routines */
+  PetscInitializeFortran();
+
   comm = MPI_COMM_WORLD;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRA(ierr);
   if (flg) {PetscPrintf(comm,help3);PetscPrintf(comm,help4);PetscPrintf(comm,help5);}
@@ -214,12 +220,12 @@ int main(int argc,char **argv)
     if (app->size != 1) SETERRA(1,1,"Original code runs on 1 processor only.");
     ierr = OptionsGetDouble(PETSC_NULL,"-julianne_rtol",&rtol,&flg); CHKERRA(ierr);
 
-    ierr = PackWork(app,app->da,app->X,app->localX,&app->xx); CHKERRQ(ierr);
-    ierr = PackWork(app,app->da,app->F,app->localDX,&app->dxx); CHKERRQ(ierr);
+    ierr = PackWork(app,app->da,app->X,app->localX,&app->xx); CHKERRA(ierr);
+    ierr = PackWork(app,app->da,app->F,app->localDX,&app->dxx); CHKERRA(ierr);
 
     PLogEventBegin(init3,0,0,0,0);
-    *(int*) (&fort_app) = PetscFromPointer(app);
-    ierr = PetscGetTime(&time1); CHKERRA(ierr);
+    *(long *) (&fort_app) = PetscFromPointer(app);
+    ierr = PetscGetTime(&time1); CHKERRA(ierr); 
 
     ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
            &rtol,&app->eps_jac,app->b1,app->b2,
@@ -244,7 +250,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PLogEventBegin(init2,0,0,0,0);
-  *(int*) (&fort_app) = PetscFromPointer(app);
+  *(long *) (&fort_app) = PetscFromPointer(app);
   ierr = PetscGetTime(&time1); CHKERRA(ierr);
 
   solve_with_julianne = 0;
@@ -258,8 +264,8 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
-  ierr = GetWingCommunicator(app,&app->fort_wing_comm,&wing); CHKERRQ(ierr);
-  ierr = PetscGetTime(&time2); CHKERRA(ierr);
+  ierr = GetWingCommunicator(app,&app->fort_wing_comm,&wing); CHKERRA(ierr);
+  ierr = PetscGetTime(&time2); CHKERRA(ierr); 
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -350,7 +356,7 @@ int main(int argc,char **argv)
      Solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscGetTime(&(app->time_init)); CHKERRA(ierr);
+  ierr = PetscGetTime(&(app->time_init)); CHKERRA(ierr); 
   ierr = SNESSolve(snes,app->X,&its); CHKERRA(ierr);
   PetscPrintf(comm,"number of Newton iterations = %d\n\n",its);
 
@@ -370,7 +376,7 @@ int main(int argc,char **argv)
     int i, overlap;
     if (app->rank == 0) {
       overlap = 0;
-      ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
+      ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRA(ierr);
       if (app->problem == 1) {
         sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","c",app->cfl_snes_it,overlap,app->size);
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","c",app->cfl_snes_it,overlap,app->size);
@@ -430,17 +436,17 @@ int main(int argc,char **argv)
     ierr = MonitorDumpVRML(snes,app->X,app->F,app); CHKERRA(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-bump_dump",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-bump_dump",&flg); CHKERRA(ierr);
   if (flg && app->problem >= 5) {
     Scalar *xa;
-    ierr = VecGetArray(app->X,&xa); CHKERRQ(ierr);
+    ierr = VecGetArray(app->X,&xa); CHKERRA(ierr);
     its = -1;
     if (app->mmtype == MMFP) {
-      ierr = VisualizeFP_Matlab(its,app,xa); CHKERRQ(ierr);
+      ierr = VisualizeFP_Matlab(its,app,xa); CHKERRA(ierr);
     } else if (app->mmtype == MMEULER) {
-      ierr = VisualizeEuler_Matlab(its,app,xa); CHKERRQ(ierr);
+      ierr = VisualizeEuler_Matlab(its,app,xa); CHKERRA(ierr);
     } else SETERRQ(1,0,"Option not supported yet");
-    ierr = VecRestoreArray(app->X,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(app->X,&xa); CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1094,9 +1100,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = MMSetFromOptions(app->multimodel); CHKERRQ(ierr);
   ierr = MMGetNumberOfComponents(app->multimodel,&app->ndof); CHKERRQ(ierr);
   ndof = app->ndof;
-  ierr = MMGetType(app->multimodel,&app->mmtype,&mmname); CHKERRQ(ierr);
-  PetscPrintf(app->comm,"Multi-model: %s, enum=%d, ndof=%d, mm_xs=%d, mm_xe=%d\n",
-      mmname,app->mmtype,ndof,app->mm_xs,app->mm_xe); 
+  ierr = MMGetType(app->multimodel,&app->mmtype); CHKERRQ(ierr);
+  PetscPrintf(app->comm,"Multi-model: %s, ndof=%d, mm_xs=%d, mm_xe=%d\n",
+      app->mmtype,ndof,app->mm_xs,app->mm_xe); 
 
   /* Set type of formulation */
   ierr = OptionsHasName(PETSC_NULL,"-dt_mult",&flg); CHKERRQ(ierr);
@@ -1198,10 +1204,10 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = PetscCObjectToFortranObject(ao,&app->fort_ao); CHKERRQ(ierr);
 
   /* Get global and local vectors */
-  ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
-  ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);
   ierr = VecGetArray(app->localX,&app->xx);
@@ -1235,9 +1241,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /* Create pressure work vector, used for explicit boundary conditions */
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,1,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da1); CHKERRQ(ierr);
-  ierr = DAGetDistributedVector(app->da1,&app->P); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(app->da1,&app->P); CHKERRQ(ierr);
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);
-  ierr = DAGetLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
 
   /* Do only for FP or multimodel */
   if (app->mmtype != MMEULER) {
@@ -1275,6 +1281,11 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
               Setup parallel grid for Fortran code 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  if (!PetscStrcmp(app->mmtype,"euler"))       app->mmtype_int = MMEULER_INT;
+  else if (!PetscStrcmp(app->mmtype,"fp"))     app->mmtype_int = MMFP_INT;
+  else if (!PetscStrcmp(app->mmtype,"hybrid")) app->mmtype_int = MMHYBRID_EF1_INT;
+  else SETERRQ(1,1,"unknown method type");
+
   ierr = MPICCommToFortranComm(comm,&fort_comm);
   ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_wake, &app->no_output,
             &app->bctype, &app->rank, &app->size, &problem,
@@ -1296,7 +1307,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
             &ndof, &app->global_grid, &app->bcswitch, 
-            &app->mmtype,&app->bump,&nk1,&app->mm_xs,&app->mm_xe); CHKERRQ(ierr);
+            &app->mmtype_int,&app->bump,&nk1,&app->mm_xs,&app->mm_xe); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
