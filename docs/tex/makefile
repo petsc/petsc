@@ -24,7 +24,6 @@ clean:
 #
 homepage:
 	@echo "Making PETSc homepage"
-	-/usr/bin/cp  ../onepager.ps /home/ftp/pub/petsc/onepager.ps
 	-/usr/bin/cp  ../manual.ps /home/ftp/pub/petsc/manual.ps
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp  ftp_readme /home/ftp/pub/petsc/README
@@ -34,15 +33,11 @@ homepage:
 	-/usr/bin/cp  ../../CodeManagement /home/ftp/pub/petsc
 	-/usr/bin/cp  ../../Troubleshooting /home/ftp/pub/petsc
 	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
-	-/usr/bin/cp ../../Performance /home/ftp/pub/petsc
 	-/usr/bin/cp petsc.html /mcs/www/petsc
+	-/usr/bin/cp petsc-patches.html /mcs/www/petsc
 	-/usr/bin/cp petscwww.gif /mcs/www/petsc
-	-/usr/bin/cp petsc.map /mcs/www/petsc
 	-/usr/bin/cp ../manual.html /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
-	-/usr/bin/cp summaries.html /mcs/www/petsc
-	-/usr/bin/cp talks/supercomputing95/petscview.ps /home/ftp/pub/petsc
-	-/usr/bin/cp talks/supercomputing95/petscview2.ps /home/ftp/pub/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
 	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
@@ -57,4 +52,8 @@ homepage:
 	-cd /mcs/www/petsc/www; /bin/rm -rf *.cit 
 	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
 	-/bin/rm $(HOME)/www.tar
+	-rm -r /mcs/www/petsc/www/RCS
 	@echo "Finshed making PETSc homepage: remember to do the source!"
+
+
+
