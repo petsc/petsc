@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.24 1996/10/17 23:11:41 balay Exp balay $ */
+/* $Id: ptime.h,v 1.25 1996/10/20 04:07:46 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -107,8 +107,9 @@ extern UTP_readTime(struct timestruc_t *);
 /*
     Dec Alpha has a very fast system clock accessible through getclock()
 */
-#elif defined(PARCH_junk)
-#include <sys/timers.h>
+#elif defined(PARCH_alpha)
+#include <sys/types.h>
+#include <sys/time.h>
 
 #define PetscTime(v)         {static struct  timespec _tp; \
                              getclock(TIMEOFDAY,&_tp); \
@@ -188,5 +189,3 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
 #endif
-
-
