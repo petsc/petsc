@@ -1,5 +1,6 @@
 
-/* $Id: bvec1.c,v 1.23 1998/05/08 16:12:04 bsmith Exp balay $ */
+
+/* $Id: bvec1.c,v 1.24 1998/05/29 22:50:29 balay Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -104,11 +105,14 @@ int VecSwap_Seq(  Vec xin,Vec yin )
 #define __FUNC__ "VecAXPY_Seq"
 int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  int      one = 1;
+  Vec_Seq  *x = (Vec_Seq *)xin->data;
+  int      one = 1,ierr;
+  Scalar   *yarray;
 
   PetscFunctionBegin;
-  BLaxpy_( &x->n, alpha, x->array, &one, y->array, &one );
+  ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
+  BLaxpy_( &x->n, alpha, x->array, &one, yarray, &one );
+  ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
   PLogFlops(2*x->n);
   PetscFunctionReturn(0);
 }

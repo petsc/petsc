@@ -1,11 +1,11 @@
-/* $Id: da.h,v 1.39 1998/03/20 22:54:24 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.40 1998/04/16 16:18:34 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
    problems on regular distributed arrays.
 */
-#if !defined(__DA_PACKAGE)
-#define __DA_PACKAGE
+#if !defined(__DA_H)
+#define __DA_H
 #include "petsc.h"
 #include "vec.h"
 #include "ao.h"

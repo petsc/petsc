@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.140 1998/05/20 23:03:33 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.141 1998/05/30 01:49:15 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1045,7 +1045,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(x->bmapping,ni,ix,lix); CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)( x,ni,lix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.71 1998/05/13 16:42:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.72 1998/05/13 16:50:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -91,8 +91,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!ksp->calc_sings) {
     PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);
-  }
-  else {
+  } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin); CHKERRQ(ierr);
     c = emax/emin;
     PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.13 1998/05/08 16:12:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.14 1998/05/29 20:35:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -262,10 +262,14 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
 
 int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  int ierr;
+  int ierr,size;
 
   PetscFunctionBegin;
-  ierr = VecCreateMPI(comm,n,N,vv);CHKERRQ(ierr);
+  MPI_Comm_size(comm,&size);
+  if (size > 1) {
+    SETERRQ(1,1,"No supported for shared memory vector objects on this machine");
+  }
+  ierr = VecCreateSeq(comm,PetscMax(n,N),vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

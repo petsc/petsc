@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.75 1998/04/29 18:15:45 balay Exp bsmith $;
+!  $Id: petsc.h,v 1.76 1998/06/01 00:16:45 bsmith Exp bsmith $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -12,13 +12,10 @@
 #define PetscDataType integer 
 
 #if (SIZEOF_VOIDP == 8)
-#define PetscOffset integer*8
-#else
-#define PetscOffset integer
-#endif
-#if (SIZEOF_VOIDP == 8) && !defined(USE_POINTER_CONVERSION)
+#define PetscOffset        integer*8
 #define PetscFortranAddr   integer*8
 #else
+#define PetscOffset        integer
 #define PetscFortranAddr   integer
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.98 1998/04/29 18:40:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.99 1998/05/19 01:42:01 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -385,7 +385,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 .keywords: SLES, solve, linear system
 
 .seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
-          KSPDefaultConverged(), KSPSetInitialGuessNonzero()
+          KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {

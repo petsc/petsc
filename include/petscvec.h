@@ -1,12 +1,12 @@
-/* $Id: vec.h,v 1.71 1998/04/03 23:19:27 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.72 1998/05/29 20:40:07 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
 
-#ifndef __VEC_PACKAGE 
-#define __VEC_PACKAGE
+#ifndef __VEC_H 
+#define __VEC_H
 #include "is.h"
 #include "sys.h"
 
@@ -25,8 +25,9 @@ extern int MapCreateMPI(MPI_Comm,int,int,Map*);
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
 extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);  
 extern int VecCreateMPIWithArray(MPI_Comm,int,int,Scalar*,Vec*);  
-extern int VecCreate(MPI_Comm,int,int,Vec*); 
 extern int VecCreateShared(MPI_Comm,int,int,Vec*);  
+extern int VecCreate(MPI_Comm,int,int,Vec*); 
+extern int VecCreateWithType(MPI_Comm,char *,int,int,Vec*); 
 
 extern int VecDestroy(Vec);        
 
@@ -78,6 +79,15 @@ extern int VecAssemblyEnd(Vec);
 extern int VecSetBlockSize(Vec,int);
 extern int VecSetValuesBlocked(Vec,int,int*,Scalar*,InsertMode);
 
+extern int VecRegisterAllCalled;
+extern int VecRegisterAll(char *);
+extern int VecRegister_Private(char*,char*,char*,int(*)(MPI_Comm,int,int,Vec*));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define VecRegister(a,b,c,d) VecRegister_Private(a,b,c,0)
+#else
+#define VecRegister(a,b,c,d) VecRegister_Private(a,b,c,d)
+#endif
+
 typedef enum {SCATTER_FORWARD=0,SCATTER_REVERSE=1,SCATTER_FORWARD_LOCAL=2,
               SCATTER_REVERSE_LOCAL=3,SCATTER_LOCAL=2} ScatterMode;
 extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
@@ -101,7 +111,7 @@ extern int VecEqual(Vec,Vec,PetscTruth*);
 extern int VecLoad(Viewer,Vec*);
 
 extern int VecGetSize(Vec,int*);
-extern int VecGetType(Vec,VecType*,char**);
+extern int VecGetType(Vec,char**);
 extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
 

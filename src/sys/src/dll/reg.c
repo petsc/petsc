@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.17 1998/05/15 17:20:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.18 1998/05/15 17:32:15 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -159,10 +159,10 @@ int DLRegisterCreate(DLList *fl )
       Add list to front of nasty-global lists of lists
   */
   if (!dlallhead) {
-    dlallhead       = *fl;
-    (*fl)->next     = 0;
+    dlallhead   = *fl;
+    (*fl)->next = 0;
   } else {
-    DLList tmp = dlallhead;
+    DLList tmp  = dlallhead;
     
     dlallhead   = *fl;
     (*fl)->next = tmp;
@@ -278,11 +278,12 @@ int DLRegisterDestroy(DLList fl)
 int DLRegisterDestroyAll(void)
 {
   DLList tmp2,tmp1 = dlallhead;
+  int    ierr;
 
   PetscFunctionBegin;
   while (tmp1) {
     tmp2 = tmp1->next;
-    DLRegisterDestroy(tmp1);
+    ierr = DLRegisterDestroy(tmp1);CHKERRQ(ierr);
     tmp1 = tmp2;
   }
   dlallhead = 0;
@@ -310,10 +311,13 @@ int DLRegisterDestroyAll(void)
 */
 int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 {
-  FuncList entry = fl->head;
-  char     *function, *path;
-  int      ierr;
-  
+  FuncList      entry = fl->head;
+  char          *function, *path;
+  int           ierr;
+#if defined(USE_DYNAMIC_LIBRARIES)
+  DLLibraryList libs;
+#endif
+ 
   PetscFunctionBegin;
   ierr = DLRegisterGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 
@@ -349,6 +353,7 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
         PetscFunctionReturn(0);
       } else {
         PetscErrorPrintf("Registered function name: %s\n",entry->rname);
+        ierr = DLLibraryPrintPath();CHKERRQ(ierr);
         SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
       }
 #endif
@@ -360,16 +365,20 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
   /* Function never registered; try for it anyway */
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);
-  if (r) {
+  if (*r) {
     ierr = DLRegister(&fl,name,name,r); CHKERRQ(ierr);
     PetscFree(function);
     PetscFunctionReturn(0);
   }
 #endif
 
+  PetscErrorPrintf("Function name: %s\n",function);
   PetscFree(function);
 
-  if (name) PetscErrorPrintf("Function name: %s\n",name);
+#if defined(USE_DYNAMIC_LIBRARIES)
+  ierr = DLLibraryPrintPath();CHKERRQ(ierr);
+#endif
+
   SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
 #if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);

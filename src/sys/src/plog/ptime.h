@@ -1,11 +1,11 @@
-/* $Id: ptime.h,v 1.52 1998/04/26 03:39:25 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.53 1998/05/05 03:35:33 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
 */
 
-#if !defined(__PTIME_PACKAGE)
-#define __PTIME_PACKAGE
+#if !defined(__PTIME_H)
+#define __PTIME_H
 
 #include "petsc.h"
 #include "pinclude/petscfix.h"

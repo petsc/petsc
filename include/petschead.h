@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.63 1998/05/20 18:17:29 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.64 1998/06/02 00:54:57 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -26,16 +26,18 @@ extern int PetscRegisterCookie(int *);
       getcomm()         - Gets the object's communicator.
       view()            - Is the routine for viewing the entire PETSc object; for
                           example, MatView() is the general matrix viewing routine.
+      reference()       - Increases the reference count for a PETSc object; when
+                          a reference count reaches zero it is destroyed.
       destroy()         - Is the routine for destroying the entire PETSc object; 
                           for example, MatDestroy() is the general matrix 
                           destruction routine.
+      compose()         - Associates a PETSc object with another PETSc object.
       query()           - Returns a different PETSc object that has been associated
                           with the first object.
-      compose()         - Associates a PETSc object with another PETSc object.
       composefunction() - Attaches an additional registered function.
-      reference()       - Increases the reference count for a PETSc object; when
-                          a reference count reaches zero it is destroyed.
       queryfunction()   - Requests a registered function that has been registered.
+      composelanguage() - associates the object's representation in a different language
+      querylanguage()   - obtain the object's representation in a different language
 */
 
 typedef struct {
@@ -112,45 +114,10 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 /* ---------------------------------------------------------------------------------------*/
 
 /* 
-     PetscLow and PetscHigh are a way of checking whether an address is 
-  out of range.  These are set in src/sys/src/memory/tr.c
-
-     The macro USE_TRMALLOC_RANGE must be turned on to enable this 
-  feature. We seem to have some problems with this on the DEC alpha
-  hence it is currently turned off.
+    Macros to test if a PETSc object is valid and if pointers are
+valid
 
 */
-extern void *PetscLow,*PetscHigh;
-
-#if defined(USE_TRMALLOC_RANGE)
-#define PetscValidHeaderSpecific(h,ck)                                        \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
-  if ((unsigned long)h & (unsigned long)3) {                                  \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");             \
-  }                                                                           \
-  if (PetscLow > (void *) h || PetscHigh < (void *)h){                        \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object:out of range");\
-  }                                                                           \
-  if (((PetscObject)(h))->cookie != ck) {                                     \
-    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                     \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");                 \
-    } else {                                                                    \
-      SETERRQ(PETSC_ERR_ARG_WRONG,0,"Wrong Object");                          \
-    }                                                                         \
-  }}
-#define PetscValidHeader(h)                                                   \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
-  if ((unsigned long)h & (unsigned long)3) {                                  \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");             \
-  } else if (PetscLow > (void *) h || PetscHigh < (void *)h){                 \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object:out of range");\
-  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");                 \
-  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||                     \
-      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {                    \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");                      \
-  }}
-#else
 #define PetscValidHeaderSpecific(h,ck)                              \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
@@ -163,6 +130,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_ARG_WRONG,0,"Wrong Object");                \
     }                                                               \
   }} 
+
 #define PetscValidHeader(h)                                         \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
@@ -173,22 +141,19 @@ extern void *PetscLow,*PetscHigh;
       ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");            \
   }}
-#endif
 
 #define PetscValidIntPointer(h)                                     \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3){                         \
     SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer to Int");       \
   }}
+
 #define PetscValidPointer(h)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3){                         \
     SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer");              \
   }}
 
-/*
-   Some machines do not double align doubles 
-*/
 #if !defined(HAVE_DOUBLE_ALIGN)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
@@ -220,9 +185,6 @@ struct _p_PetscObject {
   PETSCHEADER(int)
 };
 
-extern int PetscObjectSetOptionsPrefix(PetscObject,char*);
-extern int PetscObjectAppendOptionsPrefix(PetscObject,char*);
-extern int PetscObjectGetOptionsPrefix(PetscObject,char**);
 
 #endif
 

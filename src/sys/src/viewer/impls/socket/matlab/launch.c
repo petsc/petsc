@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: launch.c,v 1.3 1996/12/18 17:01:37 balay Exp bsmith $";
+static char vcid[] = "$Id: launch.c,v 1.4 1998/04/03 21:00:37 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = launch(programname,number processors); 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: launch.c,v 1.3 1996/12/18 17:01:37 balay Exp bsmith $
 #include <stdio.h>
 #include <errno.h>
 extern int fork();
-extern void system(char *);
+extern int system(const char *);
 #include "src/viewer/impls/matlab/matlab.h"
 #include "mex.h"
 #define ERROR(a) {fprintf(stderr,"LAUNCH: %s \n",a); return ;}

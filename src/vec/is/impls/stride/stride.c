@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.71 1998/04/27 17:01:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.72 1998/05/08 16:11:54 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -79,12 +79,13 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(first);
-  PetscValidIntPointer(step);
+  if (first) PetscValidIntPointer(first);
+  if (step) PetscValidIntPointer(step);
 
   sub = (IS_Stride *) is->data;
   if (is->type != IS_STRIDE) PetscFunctionReturn(0);
-  *first = sub->first; *step = sub->step;
+  if (first) *first = sub->first; 
+  if (step)  *step  = sub->step;
   PetscFunctionReturn(0);
 }
 

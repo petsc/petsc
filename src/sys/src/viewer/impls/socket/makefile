@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1998/04/23 23:39:33 balay Exp curfman $ 
+# $Id: makefile,v 1.36 1998/04/27 21:59:35 curfman Exp bsmith $ 
 
 ALL: lib 
 
@@ -27,19 +27,19 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 # Depending on your compiler, you may need to change CC below to cc, for example.
 receive:  
-	${CMEX} -V4 CC=gcc ${CFLAGS} receive.c receivesparse.c  receivedense.c 
+	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} receive.c receivesparse.c  receivedense.c 
 	${RM} -f receive.o receivesparse.o  receivedense.o 
 
 openport: 
-	${CMEX} -V4 CC=gcc ${CFLAGS} openport.c 
+	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} openport.c 
 	${RM} -f  openport.o 
 
 closeport:
-	${CMEX} -V4 CC=gcc ${CFLAGS} closeport.c
+	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} closeport.c
 	${RM} -f  closeport.o 
 
 launch: 
-	${CMEX} -V4 CC=gcc  ${CFLAGS} launch.c
+	${CMEX} -V4 -g CC=${MCC}  ${CFLAGS} launch.c
 	${RM} -f  launch.o 
 
 

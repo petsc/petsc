@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: closeport.c,v 1.7 1997/09/09 15:02:30 curfman Exp curfman $";
+static char vcid[] = "$Id: closeport.c,v 1.8 1997/09/09 15:15:15 curfman Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -34,15 +34,16 @@ typedef struct { int onoff; int time; } Linger;
 #define __FUNC__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
-  int t = 0;
+  int    t = 0;
   Linger linger;
+
   linger.onoff = 1;
-  linger.time  = 0;
+  linger.time  = 0; 
 
   if (nrhs == 0) ERROR("Needs one argument, the port");
   t = (int) *mxGetPr(prhs[0]);
 
-  if (setsockopt(t,SOL_SOCKET,SO_LINGER,&linger,sizeof(Linger))) 
+  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char *) &linger,sizeof(Linger))) 
     ERROR("Setting linger");
   if (close(t)) ERROR("closing socket");
   return;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.99 1998/05/30 00:04:16 balay Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.100 1998/06/01 19:32:56 balay Exp bsmith $";
 #endif
 
 /*
@@ -602,7 +602,7 @@ int KSPSetFromOptions_GMRES(KSP ksp)
 }
 
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
-extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *);
+extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *,int *);
 extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
 #undef __FUNC__  

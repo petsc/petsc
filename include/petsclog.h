@@ -1,11 +1,11 @@
-/* $Id: petsclog.h,v 1.120 1998/04/15 18:03:04 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.121 1998/05/05 03:09:56 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
 */
 
-#if !defined(__PLOG_PACKAGE)
-#define __PLOG_PACKAGE
+#if !defined(__PLOG_H)
+#define __PLOG_H
 #include "petsc.h"  
 
 /*

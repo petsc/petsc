@@ -1,12 +1,12 @@
-/* $Id: ao.h,v 1.15 1997/12/12 19:40:34 bsmith Exp curfman $ */
+/* $Id: ao.h,v 1.16 1998/05/03 22:09:23 curfman Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
   ordering (the ordering that is "natural" for the application) and 
   the parallel ordering that PETSc uses.
 */
-#if !defined(__AO_PACKAGE)
-#define __AO_PACKAGE
+#if !defined(__AO_H)
+#define __AO_H
 #include "is.h"
 #include "mat.h"
 

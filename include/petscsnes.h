@@ -1,9 +1,9 @@
-/* $Id: snes.h,v 1.69 1998/04/22 00:11:06 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.70 1998/04/22 14:13:33 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
-#if !defined(__SNES_PACKAGE)
-#define __SNES_PACKAGE
+#if !defined(__SNES_H)
+#define __SNES_H
 #include "sles.h"
 
 typedef struct _p_SNES* SNES;

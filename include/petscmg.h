@@ -1,9 +1,9 @@
-/* $Id: mg.h,v 1.10 1996/01/01 17:23:15 curfman Exp bsmith $ */
+/* $Id: mg.h,v 1.11 1996/11/07 15:12:51 bsmith Exp bsmith $ */
 /*
       Structure used for Multigrid code 
 */
-#if !defined(__MG_PACKAGE)
-#define __MG_PACKAGE
+#if !defined(__MG_H)
+#define __MG_H
 #include "sles.h"
 
 /*  Possible Multigrid Variants */

@@ -1,9 +1,9 @@
-/* $Id: options.h,v 1.26 1998/05/04 02:32:04 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.27 1998/05/04 03:59:04 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
-#if !defined(__OPTIONS_PACKAGE)
-#define __OPTIONS_PACKAGE
+#if !defined(__OPTIONS_H)
+#define __OPTIONS_H
 #include "petsc.h"
 
 extern int  OptionsHasName(char*,char *,int*);

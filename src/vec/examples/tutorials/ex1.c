@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.48 1998/04/16 04:15:28 curfman Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.49 1998/06/11 15:14:18 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
                             (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
 
-     With VecCreate() the option -vec_mpi or -vec_shared causes the 
+     With VecCreate() the option -vec_type mpi or -vec_type shared causes the 
      particular type of vector to be formed.
 
   */

@@ -1,10 +1,10 @@
-/* $Id: ts.h,v 1.27 1998/04/09 04:19:44 bsmith Exp curfman $ */
+/* $Id: ts.h,v 1.28 1998/04/22 14:24:10 curfman Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
 */
-#if !defined(__TS_PACKAGE)
-#define __TS_PACKAGE
+#if !defined(__TS_H)
+#define __TS_H
 #include "snes.h"
 
 typedef struct _p_TS* TS;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.125 1998/05/21 20:14:10 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.126 1998/05/29 22:49:37 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -455,6 +455,11 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   s                  = (Vec_Seq *) (*V)->data;
   s->array_allocated = array;
   PetscFunctionReturn(0);
+}
+
+int VecCreateSeq_Stub(MPI_Comm comm, int n, int N, Vec *v)
+{
+  return VecCreateSeq(comm,PetscMax(n,N),v);
 }
 
 #undef __FUNC__  

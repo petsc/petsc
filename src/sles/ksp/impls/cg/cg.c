@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.72 1998/04/09 04:10:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.73 1998/05/29 20:35:46 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: cg.c,v 1.72 1998/04/09 04:10:03 bsmith Exp bsmith $";
 #include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
-extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *);
+extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *,int *);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_CG"

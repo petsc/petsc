@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.7 1998/05/06 22:07:48 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -72,7 +72,8 @@ int establish(u_short);
 #define __FUNCTION__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
-  struct sockaddr_in isa;
+  struct sockaddr_in isa; 
+
   int                i,t;
 
 /* open port*/
@@ -84,7 +85,7 @@ int SOCKConnect_Private(int portnumber)
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ( (t = accept(listenport,&isa,&i)) < 0 ) {
+  if ( (t = accept(listenport,(struct sockaddr *)&isa,&i)) < 0 ) {
      fprintf(stderr,"RECEIVE: error from accept\n");
      return(-1);
   }
@@ -99,7 +100,7 @@ int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
   int                s;
-  struct sockaddr_in sa;
+  struct sockaddr_in sa;  
   struct hostent     *hp;
   struct utsname utname;
 
@@ -111,13 +112,15 @@ int establish(u_short portnum)
      fprintf(stderr,"RECEIVE: error from gethostbyname\n");
      return(-1);
   }
-  sa.sin_family = hp->h_addrtype;
-  sa.sin_port = htons(portnum);
+
+  sa.sin_family = hp->h_addrtype; 
+  sa.sin_port = htons(portnum); 
+
   if ( (s = socket(AF_INET,SOCK_STREAM,0)) < 0 ) {
      fprintf(stderr,"RECEIVE: error from socket\n");
      return(-1);
   }
-  while ( bind(s,&sa,sizeof(sa) ) < 0 ) {
+  while ( bind(s,(struct sockaddr *) &sa,sizeof(sa) ) < 0 ) {
      if ( errno != EADDRINUSE ) { 
         close(s);
         fprintf(stderr,"RECEIVE: error from bind\n");

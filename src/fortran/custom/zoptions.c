@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.46 1998/05/06 15:14:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.47 1998/06/03 22:06:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -324,67 +324,6 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     *lx = base + addr;
   }
   return 0;
-}
-
-/*@
-    PetscCObjectToFortranObject - Converts a PETSc object represented
-    in C to one appropriate to pass to a Fortran routine.
-
-    Not collective
-
-    Input Parameter:
-.   cobj - the PETSc C object
-
-    Output Parameter:
-.   fobj - the PETSc Fortran object
-
-    Notes:
-    This do not copy the data in the object; they merely (possibly) massage
-    the pointer. These are not currently needed as all PETSc objects have
-    the same representation in C and Fortran.
-
-    PetscCObjectToFortranObject() must be called in a C/C++ routine.
-    See examples petsc/src/vec/examples/ex24.c and ex24f.F
-
-.keywords: Fortran, C, object, convert, interlanguage
-
-.seealso: PetscFortranObjectToCObject()
-@*/
-int PetscCObjectToFortranObject(void *cobj,PetscFortranAddr *fobj)
-{
-  PetscValidHeader(cobj);
-  *fobj = PetscFromPointer(cobj);
-  PetscFunctionReturn(0);
-}
-
-/*@
-    PetscFortranObjectToCObject - Converts a PETSc object represented
-    in Fortran to one appropriate for C.
-
-    Not collective
-
-    Input Parameter:
-.   fobj - the PETSc Fortran object
-
-    Output Parameter:
-.   cobj - the PETSc C object
-
-    Notes:
-    This do not copy the data in the object; they merely (possibly) massage
-    the pointer. These are not currently needed as all PETSc objects have
-    the same representation in C and Fortran.
-
-    PetscCObjectToFortranObject() must be called in a C/C++ routine.
-    See examples petsc/src/vec/examples/tutorials/ex7.c and ex7f.F
-
-.keywords: Fortran, C, object, convert, interlanguage
-
-.seealso: PetscCObjectToFortranObject()
-@*/
-int PetscFortranObjectToCObject(PetscFortranAddr fobj,void *cobj)
-{
-  (*(void **) cobj) = (void *) PetscToPointer(&fobj); 
-  PetscFunctionReturn(0);
 }
 
 /*@

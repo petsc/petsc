@@ -1,59 +1,45 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.34 1998/04/24 22:10:51 curfman Exp curfman $";
+static char vcid[] = "$Id: vecreg.c,v 1.1 1998/06/10 17:43:23 bsmith Exp bsmith $";
 #endif
 
-#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
-extern int KSPCreate_Richardson(KSP);
-extern int KSPCreate_Chebychev(KSP);
-extern int KSPCreate_CG(KSP);
-extern int KSPCreate_TCQMR(KSP);
-extern int KSPCreate_GMRES(KSP);
-extern int KSPCreate_BCGS(KSP);
-extern int KSPCreate_CGS(KSP);
-extern int KSPCreate_TFQMR(KSP);
-extern int KSPCreate_LSQR(KSP);
-extern int KSPCreate_PREONLY(KSP);
-extern int KSPCreate_CR(KSP);
-extern int KSPCreate_QCG(KSP);
-
+extern int VecCreateMPI(MPI_Comm,int,int,Vec *);
+extern int VecCreateShared(MPI_Comm,int,int,Vec *);
+extern int VecCreateSeq_Stub(MPI_Comm,int,int,Vec *);
   
+
 /*
-    This is used by KSPSetType() to make sure that at least one 
-    KSPRegisterAll() is called. In general, if there is more than one
-    DLL, then KSPRegisterAll() may be called several times.
+    This is used by VecCreate() to make sure that at least one 
+    VecRegisterAll() is called. In general, if there is more than one
+    DLL, then VecRegisterAll() may be called several times.
 */
-extern int KSPRegisterAllCalled;
+extern int VecRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegisterAll"
+#define __FUNC__ "VecRegisterAll"
 /*@C
-  KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
+  VecRegisterAll - Registers all of the Vec components in the PETSc package.
 
   Not Collective
 
-.keywords: KSP, register, all
+.keywords: Vec, register, all
 
-.seealso:  KSPRegisterDestroy()
+.seealso:  VecRegisterDestroy()
 @*/
-int KSPRegisterAll(char *path)
+int VecRegisterAll(char *path)
 {
   int ierr;
 
   PetscFunctionBegin;
-  KSPRegisterAllCalled = 1;
+  VecRegisterAllCalled = 1;
 
-  ierr = KSPRegister(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCR,         path,"KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecMPI",    path,"VecCreateMPI",     VecCreateMPI);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecShared", path,"VecCreateShared",  VecCreateShared);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreateSeq_Stub",VecCreateSeq_Stub);CHKERRQ(ierr);
+
+  ierr = VecRegister("mpi",             path,"VecCreateMPI",     VecCreateMPI);CHKERRQ(ierr);
+  ierr = VecRegister("shared",          path,"VecCreateShared",  VecCreateShared);CHKERRQ(ierr);
+  ierr = VecRegister("seq",             path,"VecCreateSeq_Stub",VecCreateSeq_Stub);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

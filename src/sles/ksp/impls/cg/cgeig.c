@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.38 1997/10/19 03:23:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.39 1997/12/01 01:53:08 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -13,7 +13,7 @@ static int ccgtql1_private(int *, double *, double *, int *);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_CG"
-int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
+int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
   Scalar *d, *e;
@@ -22,6 +22,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  *neig = n;
 
   PetscMemzero(c,nmax*sizeof(double));
   if (n == 0) {

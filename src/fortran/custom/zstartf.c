@@ -39,8 +39,7 @@ extern void petscsetcommonblock_(PetscFortranAddr*,PetscFortranAddr*,PetscFortra
    program is written in Fortran; in this case, just calling
    PetscInitialize() in the main (Fortran) program is sufficient.
 
-.seealso:  PetscFortranObjectToCObject(), PetscCObjectToFortranObject(),
-           PetscInitialize()
+.seealso:  PetscInitialize()
 
 .keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/

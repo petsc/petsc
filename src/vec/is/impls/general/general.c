@@ -1,18 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.70 1998/04/13 17:25:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.71 1998/04/27 17:01:33 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
-#include "src/is/isimpl.h"
-#include "pinclude/pviewer.h"
-#include "sys.h"
-
-typedef struct {
-  int n;         /* number of indices */ 
-  int sorted;    /* indicates the indices are sorted */ 
-  int *idx;
-} IS_General;
+#include "src/is/impls/general/general.h" /*I  "is.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_General" 

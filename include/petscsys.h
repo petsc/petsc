@@ -1,9 +1,9 @@
-/* $Id: sys.h,v 1.35 1998/05/04 02:32:18 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.36 1998/06/09 20:54:24 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
-#if !defined(__SYS_PACKAGE)
-#define __SYS_PACKAGE
+#if !defined(__SYS_H)
+#define __SYS_H
 
 #include "petsc.h"
 

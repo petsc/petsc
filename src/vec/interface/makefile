@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/04/23 23:30:08 balay Exp bsmith $
+# $Id: makefile,v 1.31 1998/05/29 20:35:27 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = vector.o map.o
 OBJSF    =
-LIBBASE  = libvec
+LIBBASE  = libpetscvec
 MANSEC   = 1
 LOCDIR   = src/vec/interface/
 

@@ -1,11 +1,11 @@
-/* $Id: is.h,v 1.45 1998/06/07 19:29:06 curfman Exp curfman $ */
+/* $Id: is.h,v 1.46 1998/06/07 19:56:07 curfman Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
    are used for defining scatters and gathers.
 */
-#if !defined(__IS_PACKAGE)
-#define __IS_PACKAGE
+#if !defined(__IS_H)
+#define __IS_H
 #include "petsc.h"
 
 #define IS_COOKIE PETSC_COOKIE+2

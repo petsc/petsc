@@ -1,10 +1,10 @@
-/* $Id: viewer.h,v 1.51 1998/04/03 23:19:27 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.52 1998/05/11 18:06:11 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
 
-#if !defined(__VIEWER_PACKAGE)
-#define __VIEWER_PACKAGE
+#if !defined(__VIEWER_H)
+#define __VIEWER_H
 
 typedef struct _p_Viewer*            Viewer;
 
@@ -19,7 +19,7 @@ typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER,
                BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER} ViewerType;
 
 extern int ViewerFileOpenASCII(MPI_Comm,char*,Viewer *);
-typedef enum { BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
+typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
 extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
 extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
 extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.15 1997/09/22 15:16:00 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.16 1998/03/20 22:52:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
      finished reading.
   */
   PetscSleep(100);
-  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  /* ierr = ViewerDestroy(viewer); CHKERRA(ierr); */
   ierr = VecDestroy(copy); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.16 1998/04/16 04:15:22 curfman Exp balay $"
+!    "$Id: ex1f.F,v 1.17 1998/04/20 18:11:27 balay Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -72,7 +72,7 @@
 !                         is the same as VecCreateMPI()
 !
 !     VecCreate() allows one to determine at runtime which version to use
-!                 with the options -vec_mpi or -vec_shared
+!                 with the options -vec_type mpi or -vec_type shared
 !
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 

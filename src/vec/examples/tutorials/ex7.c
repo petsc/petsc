@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.16 1997/11/28 16:18:34 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.17 1998/03/30 22:26:17 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -22,7 +22,7 @@ and from Fortran to C\n\n";
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void ex7f_(PetscFortranAddr*,int*);
+extern void ex7f_(Vec *,int*);
 #if defined(__cplusplus)
 }
 #endif
@@ -30,7 +30,6 @@ extern void ex7f_(PetscFortranAddr*,int*);
 int main(int argc,char **args)
 {
   int              ierr, m = 10;
-  PetscFortranAddr fvec;
   int              fcomm;
   Vec              vec;
 
@@ -44,16 +43,13 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec); CHKERRA(ierr);
 
   /* 
-     Call Fortran routine - the use of PetscCObjectToFortranObject()
-     insures that the PETSc vector is properly interpreted on the 
-     Fortran side. Note that Fortran treats all PETSc objects as integers.
-     Similarly the MPI Communicator is passed through MPICCommToFortranComm()
-     so that it can be properly interpreted from Fortran.
+     Call Fortran routine - the use of MPICCommToFortranComm() allows 
+     translation of the MPI_Comm from C so that it can be properly 
+     interpreted from Fortran.
   */
-  ierr = PetscCObjectToFortranObject(vec,&fvec); CHKERRA(ierr);
   ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm); CHKERRA(ierr);
 
-  ex7f_(&fvec,&fcomm);
+  ex7f_(&vec,&fcomm);
 
   ierr = VecView(vec,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(vec); CHKERRA(ierr);

@@ -1,9 +1,9 @@
-/* $Id: sles.h,v 1.21 1997/04/02 21:03:40 bsmith Exp balay $ */
+/* $Id: sles.h,v 1.22 1997/05/23 18:33:57 balay Exp bsmith $ */
 /*
    Defines interface to the linear solvers.
 */
-#if !defined(__SLES_PACKAGE)
-#define __SLES_PACKAGE
+#if !defined(__SLES_H)
+#define __SLES_H
 #include "pc.h"
 #include "ksp.h"
 

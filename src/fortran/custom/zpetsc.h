@@ -14,34 +14,14 @@ extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_FUNCTION_Fortran;
 /*  ----------------------------------------------------------------------*/
 /*
-   On 32 bit machines we store each PETSc object C pointer directly as a
-   Fortran integer. On 64 bit machines we convert these with the routines
-       C pointer       = PetscToPointer(Fortran integer)
-       Fortran integer = PetscFromPointer(C pointer)
-
+   We store each PETSc object C pointer directly as a
+   Fortran integer*4 or *8 depending on the size of pointers.
 */
-
-#if defined(USE_POINTER_CONVERSION)
-#define PetscFInt int
-#else
 #define PetscFInt long
-#endif
 
-#if defined(USE_POINTER_CONVERSION)
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void *PetscToPointer(void *);
-extern int PetscFromPointer(void *);
-extern void PetscRmPointer(void *);
-#if defined(__cplusplus)
-}
-#endif
-#else
 #define PetscToPointer(a)     (*(long *)(a))
 #define PetscFromPointer(a)        (long)(a)
 #define PetscRmPointer(a)
-#endif
 
 /*  ----------------------------------------------------------------------*/
 /*

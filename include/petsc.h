@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.220 1998/06/01 16:09:30 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.221 1998/06/09 20:53:40 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -188,6 +188,9 @@ extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
 #endif
 extern int PetscObjectQueryFunction(PetscObject,char *,void **);
+extern int PetscObjectSetOptionsPrefix(PetscObject,char*);
+extern int PetscObjectAppendOptionsPrefix(PetscObject,char*);
+extern int PetscObjectGetOptionsPrefix(PetscObject,char**);
 
 /*
     Defines PETSc error handling.
@@ -228,6 +231,7 @@ extern int DLLibrarySym(MPI_Comm,DLLibraryList *,char*,char *, void **);
 extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryClose(DLLibraryList);
+extern int DLLibraryPrintPath();
 
 /*
     Mechanism for translating PETSc object representations between languages

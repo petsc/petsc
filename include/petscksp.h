@@ -1,9 +1,9 @@
-/* $Id: ksp.h,v 1.67 1998/05/12 21:59:31 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.68 1998/05/13 16:41:25 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef __KSP_PACKAGE
-#define __KSP_PACKAGE
+#ifndef __KSP_H
+#define __KSP_H
 #include "petsc.h"
 #include "vec.h"
 #include "mat.h"
@@ -79,7 +79,7 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
 extern int KSPComputeExtremeSingularValues(KSP, double*,double*);
-extern int KSPComputeEigenvalues(KSP,int,double*,double*);
+extern int KSPComputeEigenvalues(KSP,int,double*,double*,int *);
 extern int KSPComputeEigenvaluesExplicitly(KSP,int,double*,double*);
 
 extern int KSPGMRESSetRestart(KSP, int);

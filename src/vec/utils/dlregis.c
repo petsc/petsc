@@ -1,15 +1,16 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.8 1998/04/22 19:13:41 curfman Exp $";
+static char vcid[] = "$Id: dlregis.c,v 1.1 1998/06/10 19:21:42 bsmith Exp bsmith $";
 #endif
 
-#include "sles.h"
+#include "vec.h"
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryRegister"
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
+  This one registers all the vector types that are in the basic PETSc libpetscvec
   library.
 
   Input Parameter:
@@ -24,15 +25,13 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = KSPRegisterAll(path); CHKERRQ(ierr);
-  ierr = PCRegisterAll(path); CHKERRQ(ierr);
+  ierr = VecRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Krylov subspace method and preconditioner library. Contains:\n\
-     GMRES, PCG, Bi-CG-stab, ...\n\
-     Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
+static char *contents = "PETSc Vector library. Contains:\n\
+     PETSc#VecSeq, PETSc#VecMPI, PETSc#VecShared ...\n";
 
 static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;

@@ -1,10 +1,10 @@
-/* $Id: pc.h,v 1.79 1998/03/23 21:27:32 bsmith Exp curfman $ */
+/* $Id: pc.h,v 1.80 1998/04/22 14:24:26 curfman Exp bsmith $ */
 
 /*
       Preconditioner module. 
 */
-#if !defined(__PC_PACKAGE)
-#define __PC_PACKAGE
+#if !defined(__PC_H)
+#define __PC_H
 #include "petsc.h"
 #include "mat.h"
 

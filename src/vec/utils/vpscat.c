@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.101 1998/04/27 20:36:09 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.102 1998/05/24 20:27:55 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -118,14 +118,15 @@ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Se
 int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
   MPI_Comm               comm = ctx->comm;
-  Scalar                 *xv = x->array,*yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv,*yv, *val, *rvalues,*svalues;
   MPI_Request            *rwaits, *swaits;
   int                    tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
   int                    nrecvs, nsends,iend,ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -194,6 +195,8 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     }  else {SETERRQ(1,1,"Wrong insert option");}
   }
 
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -202,14 +205,14 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -258,6 +261,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------------*/
@@ -470,13 +474,15 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
+  Scalar                 *xv, *yv, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx,ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
+
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -585,6 +591,8 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 #endif
     } else {SETERRQ(1,1,"Wrong insert option");}
   }  
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -593,14 +601,14 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -689,6 +697,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -697,12 +706,13 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
+  Scalar                 *xv, *yv, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -799,6 +809,8 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 #endif
     }  else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -807,14 +819,14 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -882,6 +894,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -890,12 +903,14 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
+  Scalar                 *xv, *yv, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
+
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -987,6 +1002,8 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 #endif
     }  else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -995,14 +1012,14 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -1067,6 +1084,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1075,12 +1093,14 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
+  Scalar                 *xv, *yv, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j, nrecvs, nsends,idx;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
+
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -1170,6 +1190,8 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 #endif
     }  else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1178,14 +1200,14 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -1247,6 +1269,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1255,12 +1278,13 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
+  Scalar                 *xv, *yv, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -1342,6 +1366,8 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 #endif
     }  else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1350,14 +1376,14 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *y = (Vec_MPI *)yin->data;
-  Scalar                 *rvalues, *yv = y->array,*val;
+  Scalar                 *rvalues, *yv,*val;
   int                    ierr,nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
+  ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -1416,6 +1442,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1596,18 +1623,27 @@ int VecScatterDestroy_PtoP(VecScatter ctx)
 int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
   Vec_MPI                *x = (Vec_MPI *)xin->data;
-  Vec_Seq                *y = (Vec_Seq *) yin->data;
+  Vec_Seq                *y = (Vec_Seq *)yin->data;
   VecScatter_MPI_General *from,*to;
-  int                    *source,*lens,rank = x->rank, *owners = xin->map->range;
-  int                    size = x->size,*lowner,*start,found, lengthy = y->n;
+  int                    *source,*lens,rank, *owners;
+  int                    size,*lowner,*start,found, lengthy;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag = xin->tag,slen,ierr;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
-  MPI_Comm               comm = xin->comm;
+  MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
+  Map                    map;
   
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+  ierr = VecGetMap(xin,&map);
+  ierr = MapGetGlobalRange(map,&owners);
+
+  ierr = VecGetSize(yin,&lengthy);CHKERRQ(ierr);
+
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
   PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
@@ -2108,16 +2144,19 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   Vec_MPI     *x = (Vec_MPI *)xin->data;
-  int         *lens,rank = x->rank, *owners = xin->map->range,size = x->size,found;
+  int         *lens,rank, *owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
   int         *owner,*starts,count,tag = xin->tag,slen,ierr;
   int         *rvalues,*svalues,base,imdex,nmax,*values;
-  MPI_Comm    comm = xin->comm;
+  MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
 
   PetscFunctionBegin;
-  if (x->size == 1) {
+  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);
+  if (size == 1) {
     ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,yin,ctx); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

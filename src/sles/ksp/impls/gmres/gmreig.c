@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.7 1998/05/05 19:40:13 bsmith Exp balay $";
+static char vcid[] = "$Id: gmreig.c,v 1.8 1998/06/03 19:57:34 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"
@@ -55,7 +55,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 #if defined(HAVE_ESSL)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
@@ -67,6 +67,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  *neig = n;
 
   if (n == 0) {
     PetscFunctionReturn(0);
@@ -115,7 +116,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 #elif !defined(USE_PETSC_COMPLEX)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
@@ -127,10 +128,12 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  *neig = n;
 
   if (n == 0) {
     PetscFunctionReturn(0);
   }
+
   /* copy R matrix to work space */
   PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
 
@@ -150,7 +153,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 #else
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
@@ -162,6 +165,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  *neig = n;
 
   if (n == 0) {
     PetscFunctionReturn(0);
