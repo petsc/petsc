@@ -1,4 +1,4 @@
-/*$Id$*/
+/*$Id: matmatmult.c,v 1.1 2001/08/31 05:21:54 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -14,6 +14,9 @@ typedef struct _p_space {
   int        used;
   int        remaining;
 } _p_free_space;  
+
+static int logkey_symbolic=0;
+static int logkey_numeric=0;
 
 /*
      MatMatMult_SeqAIJ_SeqAIJ_Symbolic - Forms the symbolic product of two SeqAIJ matrices
@@ -40,6 +43,11 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   if (aishift || bishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
   if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
   
+  if (!logkey_symbolic) {
+    ierr = PetscLogEventRegister(&logkey_symbolic,"MatMatMult_Symbolic",PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
+
   /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
@@ -130,6 +138,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   /* These are PETSc arrays, so change flag to free them */
   c->freedata = PETSC_TRUE;
 
+  ierr = PetscLogEventEnd(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,6 +167,11 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   if (am!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",am,cm);
   if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
   if (bn!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",bn,cn);
+
+  if (!logkey_numeric) {
+    ierr = PetscLogEventRegister(&logkey_numeric,"MatMatMult_Numeric",PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
 
   /* Allocate temp accumulation space to avoid searching for nonzero columns in C */
   ierr = PetscMalloc((cn+1)*sizeof(MatScalar),&temp);CHKERRQ(ierr);
@@ -188,5 +202,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   }
   /* Free temp */
   ierr = PetscFree(temp);CHKERRQ(ierr);
+
+  ierr = PetscLogEventEnd(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
