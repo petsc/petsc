@@ -417,7 +417,7 @@ class Configure(config.base.Configure):
     if 'CXX' in self.framework.argDB:
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
-    if 'FC' in self.framework.argDB:
+    if 'FC' in self.framework.argDB and self.framework.argDB['FC']:
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
