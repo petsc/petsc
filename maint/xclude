@@ -20,7 +20,7 @@ petsc/bin/petscrun
 petsc/bin/petscrun.demo
 petsc/bin/demos
 petsc/bin/petscdemo
-petsc/docs/manual
+petsc/docs/splitmanual
 petsc/src/blaslapack
 petsc/src/apps
 petsc/src/usg
