@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.93 1999/01/15 15:44:43 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.94 1999/01/27 19:46:59 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -116,6 +116,7 @@ struct _p_Mat {
 
 typedef struct {
   int    nmax;            /* maximum stash size */
+  int    oldnmax;         /* the nmax value used previously */
   int    n;               /* stash size */
   int    *idx;            /* global row numbers in stash */
   int    *idy;            /* global column numbers in stash */
